@@ -31,6 +31,8 @@ def on_ready():
 client.run()
 ```
 
+You can find examples in the examples directory.
+
 ## Requirements
 
 - Python 2.7+ or Python 3.3+.
