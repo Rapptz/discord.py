@@ -1,0 +1,3 @@
+*.json
+*.pyc
+docs/_build
