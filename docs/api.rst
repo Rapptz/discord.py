@@ -38,6 +38,12 @@ This page outlines the different types of events listened to by :meth:`Client.ev
 
     :param response: The received message response after gone through ``json.loads``.
 
+.. function:: on_message_delete(message)
+
+    Called when a message is deleted from any given server.
+
+    :param message: A :class:`Message` of the deleted message.
+
 
 Data Classes
 --------------

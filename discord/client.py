@@ -27,8 +27,8 @@ DEALINGS IN THE SOFTWARE.
 import requests
 import json, re
 import endpoints
+from collections import deque
 from ws4py.client.threadedclient import WebSocketClient
-# from threading import Timer
 from sys import platform as sys_platform
 from errors import InvalidEventName, InvalidDestination
 from user import User
@@ -43,6 +43,12 @@ class Client(object):
     """Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
+    A number of options can be passed to the :class:`Client` via keyword arguments.
+
+    :param int max_length: The maximum number of messages to store in :attr:`messages`. Defaults to 5000.
+
+    Instance attributes:
+
      .. attribute:: user
 
          A :class:`User` that represents the connected client. None if not logged in.
@@ -52,6 +58,11 @@ class Client(object):
      .. attribute:: private_channels
 
          A list of :class:`PrivateChannel` that the connected client is participating on.
+     .. attribute:: messages
+
+        A deque_ of :class:`Message` that the client has received from all servers and private messages.
+
+    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
     """
 
     def __init__(self, **kwargs):
@@ -60,12 +71,14 @@ class Client(object):
         self.servers = []
         self.private_channels = []
         self.token = ''
+        self.messages = deque([], maxlen=kwargs.get('max_length', 5000))
         self.events = {
             'on_ready': _null_event,
             'on_disconnect': _null_event,
             'on_error': _null_event,
             'on_response': _null_event,
-            'on_message': _null_event
+            'on_message': _null_event,
+            'on_message_delete': _null_event
         }
 
         self.ws = WebSocketClient(endpoints.WEBSOCKET_HUB, protocols=['http-only', 'chat'])
@@ -119,6 +132,14 @@ class Client(object):
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
             self.events['on_message'](message)
+            self.messages.append(message)
+        elif event == 'MESSAGE_DELETE':
+            channel = self.get_channel(data.get('channel_id'))
+            message_id = data.get('id')
+            found = next((m for m in self.messages if m.id == message_id), None)
+            if found is not None:
+                self.events['on_message_delete'](found)
+                self.messages.remove(found)
 
     def _opened(self):
         print('Opened!')
