@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pydiscord documentation build configuration file, created by
+# discord.py documentation build configuration file, created by
 # sphinx-quickstart on Fri Aug 21 05:43:30 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pydiscord'
+project = u'discord.py'
 copyright = u'2015, Rapptz'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -197,7 +197,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pydiscorddoc'
+htmlhelp_basename = 'discord.pydoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -219,7 +219,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'pydiscord.tex', u'pydiscord Documentation',
+  ('index', 'discord.py.tex', u'discord.py Documentation',
    u'Rapptz', 'manual'),
 ]
 
@@ -249,7 +249,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pydiscord', u'pydiscord Documentation',
+    ('index', 'discord.py', u'discord.py Documentation',
      [u'Rapptz'], 1)
 ]
 
@@ -263,8 +263,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'pydiscord', u'pydiscord Documentation',
-   u'Rapptz', 'pydiscord', 'One line description of project.',
+  ('index', 'discord.py', u'discord.py Documentation',
+   u'Rapptz', 'discord.py', 'One line description of project.',
    'Miscellaneous'),
 ]
 

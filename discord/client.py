@@ -346,8 +346,8 @@ class Client(object):
                     'token': self.token,
                     'properties': {
                         '$os': sys_platform,
-                        '$browser': 'pydiscord',
-                        '$device': 'pydiscord',
+                        '$browser': 'discord.py',
+                        '$device': 'discord.py',
                         '$referrer': '',
                         '$referring_domain': ''
                     }

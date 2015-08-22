@@ -1,6 +1,6 @@
-# PyDiscord
+# discord.py
 
-PyDiscord is an API wrapper for Discord written in Python.
+discord.py is an API wrapper for Discord written in Python.
 
 This was written to allow easier writing of bots or chat logs.
 

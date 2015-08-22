@@ -16,9 +16,9 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
-setup(name='pydiscord',
+setup(name='discord.py',
       author='Rapptz',
-      url='https://github.com/Rapptz/pydiscord',
+      url='https://github.com/Rapptz/discord.py',
       version=version,
       packages=['discord'],
       license='MIT',

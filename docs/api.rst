@@ -3,7 +3,7 @@
 API Reference
 ===============
 
-The following section outlines the API of pydiscord.
+The following section outlines the API of discord.py.
 
 
 Client
