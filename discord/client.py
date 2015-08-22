@@ -350,7 +350,8 @@ class Client(object):
                         '$device': 'discord.py',
                         '$referrer': '',
                         '$referring_domain': ''
-                    }
+                    },
+                    'v': 2
                 }
             }
 
