@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
+import re
 from user import User
 
 class Message(object):
@@ -36,10 +37,10 @@ class Message(object):
 
     .. attribute:: edited_timestamp
 
-        A datetime object containing the edited time of the message. Could be None.
+        A naive UTC datetime object containing the edited time of the message. Could be None.
     .. attribute:: timestamp
 
-        A datetime object containing the time the message was created.
+        A naive UTC datetime object containing the time the message was created.
     .. attribute:: tts
 
         Checks the message has text-to-speech support.
@@ -70,12 +71,14 @@ class Message(object):
         # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
+        # sometimes the .%f modifier is missing
         time_format = "%Y-%m-%dT%H:%M:%S.%f+00:00"
         self.edited_timestamp = None
         if edited_timestamp is not None:
-            self.edited_timestamp = datetime.datetime.strptime(edited_timestamp, time_format)
+            temp = edited_timestamp.replace('+00:00', '')
+            self.edited_timestamp = datetime.datetime(*map(int, re.split(r'[^\d]', temp)))
 
-        self.timestamp = datetime.datetime.strptime(timestamp, time_format)
+        self.timestamp = datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
         self.tts = tts
         self.content = content
         self.mention_everyone = mention_everyone
