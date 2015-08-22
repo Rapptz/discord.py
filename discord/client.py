@@ -357,6 +357,32 @@ class Client(object):
             self.ws.send(json.dumps(second_payload))
             self._is_logged_in = True
 
+    def logs_from(self, channel, limit=500):
+        """A generator that obtains logs from a specified channel.
+
+        Yielding from the generator returns a :class:`Message` object with the message data.
+
+        Example: ::
+
+        for message in client.logs_from(channel):
+            if message.content.startswith('!hello'):
+                client.edit_message(message, 'goodbye')
+
+
+        :param channel: The :class:`Channel` to obtain the logs from.
+        :param limit: The number of messages to retrieve.
+        """
+
+        url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
+        params = {
+            'limit': limit
+        }
+        response = requests.get(url, params=params, headers=self.headers)
+        if response.status_code == 200:
+            messages = response.json()
+            for message in messages:
+                yield Message(channel=channel, **message)
+
     def event(self, function):
         """A decorator that registers an event to listen to.
 
