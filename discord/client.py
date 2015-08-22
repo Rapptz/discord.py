@@ -221,6 +221,7 @@ class Client(object):
         :param destination: The location to send the message.
         :param content: The content of the message to send.
         :param mentions: A list of :class:`User` to mention in the message or a boolean. Ignored for private messages.
+        :return: The :class:`Message` sent or None if error occurred.
         """
 
         channel_id = ''
@@ -257,6 +258,11 @@ class Client(object):
             payload['mentions'] = mentions
 
         response = requests.post(url, json=payload, headers=self.headers)
+        if response.status_code == 200:
+            data = response.json()
+            channel = self.get_channel(data.get('channel_id'))
+            message = Message(channel=channel, **response.json())
+            return message
 
 
     def login(self, email, password):

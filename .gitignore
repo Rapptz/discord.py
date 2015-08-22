@@ -1,3 +1,4 @@
 *.json
 *.pyc
 docs/_build
+*.buildinfo
