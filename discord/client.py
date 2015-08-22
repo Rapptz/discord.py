@@ -364,9 +364,9 @@ class Client(object):
 
         Example: ::
 
-        for message in client.logs_from(channel):
-            if message.content.startswith('!hello'):
-                client.edit_message(message, 'goodbye')
+            for message in client.logs_from(channel):
+                if message.content.startswith('!hello'):
+                    client.edit_message(message, 'goodbye')
 
 
         :param channel: The :class:`Channel` to obtain the logs from.

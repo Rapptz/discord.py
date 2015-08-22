@@ -61,7 +61,7 @@ class Message(object):
         A boolean specifying if the message mentions everyone.
     .. attribute:: mentions
 
-        An array of :class:`User`s that were mentioned.
+        An array of :class:`User` that were mentioned.
     .. attribute:: id
 
         The message ID.
