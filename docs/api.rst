@@ -39,10 +39,16 @@ This page outlines the different types of events listened to by :meth:`Client.ev
     :param response: The received message response after gone through ``json.loads``.
 
 .. function:: on_message_delete(message)
+.. function:: on_message_edit(before, after)
 
-    Called when a message is deleted from any given server.
+    Called when a message is deleted or edited from any given server. If the message is not found in the
+    :attr:`Client.messages` cache, then these events will not be called. This happens if the message
+    is too old or the client is participating in high traffic servers. To fix this, increase
+    the ``max_length`` option of :class:`Client`.
 
     :param message: A :class:`Message` of the deleted message.
+    :param before: A :class:`Message` of the previous version of the message.
+    :param after: A :class:`Message` of the current version of the message.
 
 
 Data Classes

@@ -93,7 +93,8 @@ class Client(object):
             'on_error': _null_event,
             'on_response': _null_event,
             'on_message': _null_event,
-            'on_message_delete': _null_event
+            'on_message_delete': _null_event,
+            'on_message_edit': _null_event
         }
 
         self.ws = WebSocketClient(endpoints.WEBSOCKET_HUB, protocols=['http-only', 'chat'])
@@ -113,6 +114,9 @@ class Client(object):
         self.headers = {
             'authorization': self.token,
         }
+
+    def _get_message(self, msg_id):
+        return next((m for m in self.messages if m.id == msg_id), None)
 
     def _received_message(self, msg):
         response = json.loads(str(msg))
@@ -152,10 +156,23 @@ class Client(object):
         elif event == 'MESSAGE_DELETE':
             channel = self.get_channel(data.get('channel_id'))
             message_id = data.get('id')
-            found = next((m for m in self.messages if m.id == message_id), None)
+            found = self._get_message(message_id)
             if found is not None:
                 self.events['on_message_delete'](found)
                 self.messages.remove(found)
+        elif event == 'MESSAGE_UPDATE':
+            # {u'edited_timestamp': u'2015-08-22T01:19:23.002892+00:00', u'attachments': [], u'channel_id': u'81840769509363712', u'tts': False, u'timestamp': u'2015-08-22T01:19:20.377000+00:00', u'author': {u'username': u'Danny', u'discriminator': u'9173', u'id': u'80088516616269824', u'avatar': u'd9dab18704d8cdcf5a022f9e913420fa'}, u'content': u'goodbye', u'embeds': [], u'mention_everyone': False, u'mentions': [], u'id': u'84456339153092608'}
+            older_message = self._get_message(data.get('id'))
+            if older_message is not None:
+                message = Message(channel=older_message.channel, **data)
+                self.events['on_message_edit'](older_message, message)
+                older_message.edited_timestamp = message.edited_timestamp
+            else:
+                # if we couldn't find the message in our cache, just add it to the list
+                channel = self.get_channel(data.get('channel_id'))
+                message = Message(channel=channel, **data)
+                self.messages.append(message)
+
 
     def _opened(self):
         print('Opened at {}'.format(int(time.time())))
