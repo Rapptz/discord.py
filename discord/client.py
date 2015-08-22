@@ -118,6 +118,14 @@ class Client(object):
     def _get_message(self, msg_id):
         return next((m for m in self.messages if m.id == msg_id), None)
 
+    def _resolve_mentions(self, content, mentions):
+        if isinstance(mentions, list):
+            return [user.id for user in mentions]
+        elif mentions == True:
+            return re.findall(r'@<(\d+)>', content)
+        else:
+            return []
+
     def _received_message(self, msg):
         response = json.loads(str(msg))
         if response.get('op') != 0:
@@ -258,13 +266,7 @@ class Client(object):
             raise InvalidDestination('Destination must be Channel, PrivateChannel, or User')
 
         content = str(content)
-
-        if isinstance(mentions, list):
-            mentions = [user.id for user in mentions]
-        elif mentions == True:
-            mentions = re.findall(r'@<(\d+)>', content)
-        else:
-            mentions = []
+        mentions = self._resolve_mentions(content, mentions)
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         payload = {
@@ -278,7 +280,7 @@ class Client(object):
         if response.status_code == 200:
             data = response.json()
             channel = self.get_channel(data.get('channel_id'))
-            message = Message(channel=channel, **response.json())
+            message = Message(channel=channel, **data)
             return message
 
     def delete_message(self, message):
@@ -290,6 +292,32 @@ class Client(object):
         """
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
+
+    def edit_message(self, message, new_content, mentions=True):
+        """Edits a :class:`Message` with the new message content.
+
+        The new_content must be able to be transformed into a string via ``str(new_content)``.
+
+        :param message: The :class:`Message` to edit.
+        :param new_content: The new content to replace the message with.
+        :param mentions: The mentions for the user. Same as :meth:`send_message`.
+        :return: The new edited message or None if an error occurred."""
+        channel = message.channel
+        content = str(new_content)
+
+        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, channel.id, message.id)
+        payload = {
+            'content': content
+        }
+
+        if not channel.is_private:
+            payload['mentions'] = self._resolve_mentions(content, mentions)
+
+        response = requests.patch(url, headers=self.headers, json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            return Message(channel=channel, **data)
+
 
     def login(self, email, password):
         """Logs in the user with the following credentials.
