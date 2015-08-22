@@ -25,9 +25,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import requests
-import json, re
+import json, re, time
 import endpoints
 from collections import deque
+from threading import Timer
 from ws4py.client.threadedclient import WebSocketClient
 from sys import platform as sys_platform
 from errors import InvalidEventName, InvalidDestination
@@ -38,6 +39,20 @@ from message import Message
 
 def _null_event(*args, **kwargs):
     pass
+
+def _keep_alive_handler(seconds, ws):
+    def wrapper():
+        _keep_alive_handler(seconds, ws)
+        payload = {
+            'op': 1,
+            'd': int(time.time())
+        }
+
+        ws.send(json.dumps(payload))
+
+    t =  Timer(seconds, wrapper)
+    t.start()
+    return t
 
 class Client(object):
     """Represents a client connection that connects to Discord.
@@ -124,7 +139,8 @@ class Client(object):
                 self.private_channels.append(PrivateChannel(id=pm['id'], user=User(**pm['recipient'])))
 
             # set the keep alive interval..
-            self.ws.heartbeat_freq = data.get('heartbeat_interval')
+            interval = data.get('heartbeat_interval') / 1000.0
+            self.keep_alive = _keep_alive_handler(interval, self.ws)
 
             # we're all ready
             self.events['on_ready']()
@@ -142,10 +158,10 @@ class Client(object):
                 self.messages.remove(found)
 
     def _opened(self):
-        print('Opened!')
+        print('Opened at {}'.format(int(time.time())))
 
     def _closed(self, code, reason=None):
-        print('closed with ', code, reason)
+        print('Closed with {} ("{}") at {}'.format(code, reason, int(time.time())))
 
     def run(self):
         """Runs the client and allows it to receive messages and events."""
