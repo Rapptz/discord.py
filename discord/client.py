@@ -264,6 +264,15 @@ class Client(object):
             message = Message(channel=channel, **response.json())
             return message
 
+    def delete_message(self, message):
+        """Deletes a :class:`Message`
+
+        A fairly straightforward function.
+
+        :param message: The :class:`Message` to delete.
+        """
+        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
+        response = requests.delete(url, headers=self.headers)
 
     def login(self, email, password):
         """Logs in the user with the following credentials.
