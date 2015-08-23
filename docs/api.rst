@@ -50,6 +50,17 @@ This page outlines the different types of events listened to by :meth:`Client.ev
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
+.. function:: on_status(server, user, status, game_id):
+
+    Called whenever a user changes their status or game playing status.
+
+    The status is usually either "idle", "online" or "offline".
+
+    :param server: The :class:`Server` the user belongs to.
+    :param user: The :class:`User` whose status changed.
+    :param status: The new status of the user.
+    :param game_id: The game ID that the user is playing. Can be None.
+
 
 Data Classes
 --------------

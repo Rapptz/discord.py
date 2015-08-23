@@ -94,7 +94,8 @@ class Client(object):
             'on_response': _null_event,
             'on_message': _null_event,
             'on_message_delete': _null_event,
-            'on_message_edit': _null_event
+            'on_message_edit': _null_event,
+            'on_status': _null_event,
         }
 
         self.ws = WebSocketClient(endpoints.WEBSOCKET_HUB, protocols=['http-only', 'chat'])
@@ -169,7 +170,6 @@ class Client(object):
                 self.events['on_message_delete'](found)
                 self.messages.remove(found)
         elif event == 'MESSAGE_UPDATE':
-            # {u'edited_timestamp': u'2015-08-22T01:19:23.002892+00:00', u'attachments': [], u'channel_id': u'81840769509363712', u'tts': False, u'timestamp': u'2015-08-22T01:19:20.377000+00:00', u'author': {u'username': u'Danny', u'discriminator': u'9173', u'id': u'80088516616269824', u'avatar': u'd9dab18704d8cdcf5a022f9e913420fa'}, u'content': u'goodbye', u'embeds': [], u'mention_everyone': False, u'mentions': [], u'id': u'84456339153092608'}
             older_message = self._get_message(data.get('id'))
             if older_message is not None:
                 message = Message(channel=older_message.channel, **data)
@@ -180,6 +180,23 @@ class Client(object):
                 channel = self.get_channel(data.get('channel_id'))
                 message = Message(channel=channel, **data)
                 self.messages.append(message)
+        elif event == 'PRESENCE_UPDATE':
+            guild_id = data.get('guild_id')
+            server = next((s for s in self.servers if s.id == guild_id), None)
+            if server is not None:
+                status = data.get('status')
+                user = User(**data.get('user'))
+                # check to see if the member is in our server list of members
+                member = next((u for u in server.members if u == user), None)
+                if status == 'online':
+                    if member is None:
+                        server.members.append(user)
+                if status == 'offline':
+                    server.members.remove(user)
+
+                # call the event now
+                self.events['on_status'](server, user, status, data.get('game_id'))
+
 
 
     def _opened(self):
