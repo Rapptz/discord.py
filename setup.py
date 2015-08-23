@@ -2,7 +2,7 @@ from setuptools import setup
 import re
 
 requirements = ''
-from open('requirements.txt') as f:
+with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 version = ''
