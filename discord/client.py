@@ -196,6 +196,8 @@ class Client(object):
 
                 # call the event now
                 self.events['on_status'](server, user, status, data.get('game_id'))
+        elif event == 'USER_UPDATE':
+            self.user = User(**data)
 
 
 
