@@ -18,6 +18,7 @@ Event Reference
 ~~~~~~~~~~~~~~~~
 
 This page outlines the different types of events listened to by :meth:`Client.event`.
+All events are 'sandboxed', in that if an exception is thrown while the event is called then it is caught and then ignored.
 
 
 .. function:: on_ready()
@@ -34,7 +35,8 @@ This page outlines the different types of events listened to by :meth:`Client.ev
 .. function:: on_response(response)
 
     Called whenever a message is received from the websocket. Used mainly for debugging purposes.
-    The parameter passed is raw data that was parsed via ``json.loads``.
+    The parameter passed is raw data that was parsed via ``json.loads``. Note that this is called
+    before the :class:`Client` processes the event.
 
     :param response: The received message response after gone through ``json.loads``.
 

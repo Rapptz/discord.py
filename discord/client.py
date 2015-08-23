@@ -127,12 +127,18 @@ class Client(object):
         else:
             return []
 
+    def _invoke_event(self, event_name, *args, **kwargs):
+        try:
+            self.events[event_name](*args, **kwargs)
+        except Exception as e:
+            pass
+
     def _received_message(self, msg):
         response = json.loads(str(msg))
         if response.get('op') != 0:
             return
 
-        self.events['on_response'](response)
+        self._invoke_event('on_response', response)
         event = response.get('t')
         data = response.get('d')
 
@@ -156,7 +162,7 @@ class Client(object):
             self.keep_alive = _keep_alive_handler(interval, self.ws)
 
             # we're all ready
-            self.events['on_ready']()
+            self._invoke_event('on_ready')
         elif event == 'MESSAGE_CREATE':
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
@@ -173,7 +179,7 @@ class Client(object):
             older_message = self._get_message(data.get('id'))
             if older_message is not None:
                 message = Message(channel=older_message.channel, **data)
-                self.events['on_message_edit'](older_message, message)
+                self._invoke_event('on_message_edit', older_message, message)
                 older_message.edited_timestamp = message.edited_timestamp
             else:
                 # if we couldn't find the message in our cache, just add it to the list
@@ -195,7 +201,7 @@ class Client(object):
                     server.members.remove(user)
 
                 # call the event now
-                self.events['on_status'](server, user, status, data.get('game_id'))
+                self._invoke_event('on_status', server, user, status, data.get('game_id'))
         elif event == 'USER_UPDATE':
             self.user = User(**data)
 
