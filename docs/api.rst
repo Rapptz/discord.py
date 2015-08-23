@@ -63,6 +63,13 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
     :param status: The new status of the user.
     :param game_id: The game ID that the user is playing. Can be None.
 
+.. function:: on_channel_delete(channel)
+
+    Called whenever a channel is removed from a server.
+
+    Note that you can get the server from :attr:`Channel.server`.
+
+    :param channel: The :class:`Channel` that got deleted.
 
 Data Classes
 --------------

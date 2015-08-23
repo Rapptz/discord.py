@@ -96,6 +96,8 @@ class Client(object):
             'on_message_delete': _null_event,
             'on_message_edit': _null_event,
             'on_status': _null_event,
+            'on_channel_delete': _null_event,
+            'on_channel_creation': _null_event,
         }
 
         self.ws = WebSocketClient(endpoints.WEBSOCKET_HUB, protocols=['http-only', 'chat'])
@@ -204,6 +206,14 @@ class Client(object):
                 self._invoke_event('on_status', server, user, status, data.get('game_id'))
         elif event == 'USER_UPDATE':
             self.user = User(**data)
+        elif event == 'CHANNEL_DELETE':
+            guild_id = data.get('guild_id')
+            server =  next((s for s in self.servers if s.id == guild_id), None)
+            if server is not None:
+                channel_id = data.get('id')
+                channel = next((c for c in server.channels if c.id == channel_id), None)
+                server.channels.remove(channel)
+                self._invoke_event('on_channel_delete', channel)
 
 
 
