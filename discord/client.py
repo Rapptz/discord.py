@@ -367,7 +367,8 @@ class Client(object):
 
             for message in client.logs_from(channel):
                 if message.content.startswith('!hello'):
-                    client.edit_message(message, 'goodbye')
+                    if message.author == client.user:
+                        client.edit_message(message, 'goodbye')
 
 
         :param channel: The :class:`Channel` to obtain the logs from.
