@@ -367,7 +367,6 @@ class Client(object):
             data = response.json()
             return Message(channel=channel, **data)
 
-
     def login(self, email, password):
         """Logs in the user with the following credentials and initialises
         the connection to Discord.
@@ -417,7 +416,6 @@ class Client(object):
         self._is_logged_in = False
         self.keep_alive.cancel()
 
-
     def logs_from(self, channel, limit=500):
         """A generator that obtains logs from a specified channel.
 
@@ -462,4 +460,35 @@ class Client(object):
 
         self.events[function.__name__] = function
         return function
+
+    def create_channel(self, server, name, type='text'):
+        """Creates a channel in the specified server.
+
+        In order to create the channel the client must have the proper permissions.
+
+        :param server: The :class:`Server` to create the channel from.
+        :param name: The name of the channel to create.
+        :param type: The type of channel to create. Valid values are 'text' or 'voice'.
+        :returns: The recently created :class:`Channel`.
+        """
+        url = '{}/{}/channels'.format(endpoints.SERVERS, server.id)
+        payload = {
+            'name': name,
+            'type': type
+        }
+        response = requests.post(url, json=payload, headers=self.headers)
+        if response.status_code == 200:
+            channel = Channel(server=server, **response.json())
+            return channel
+
+    def delete_channel(self, channel):
+        """Deletes a channel.
+
+        In order to delete the channel, the client must have the proper permissions
+        in the server the channel belongs to.
+
+        :param channel: The :class:`Channel` to delete.
+        """
+        url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
+        response = requests.delete(url, headers=self.headers)
 
