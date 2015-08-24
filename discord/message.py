@@ -65,6 +65,9 @@ class Message(object):
     .. attribute:: id
 
         The message ID.
+    .. attribute:: attachments
+
+        An array of attachments given to a message.
     """
 
     def __init__(self, edited_timestamp, timestamp, tts, content, mention_everyone, mentions, embeds, attachments, id, channel, author, **kwargs):
@@ -72,13 +75,11 @@ class Message(object):
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
         # sometimes the .%f modifier is missing
-        time_format = "%Y-%m-%dT%H:%M:%S.%f+00:00"
         self.edited_timestamp = None
         if edited_timestamp is not None:
-            temp = edited_timestamp.replace('+00:00', '')
-            self.edited_timestamp = datetime.datetime(*map(int, re.split(r'[^\d]', temp)))
+            self.edited_timestamp = self._parse_time(edited_timestamp)
 
-        self.timestamp = datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
+        self.timestamp = self._parse_time(timestamp)
         self.tts = tts
         self.content = content
         self.mention_everyone = mention_everyone
@@ -87,6 +88,8 @@ class Message(object):
         self.channel = channel
         self.author = User(**author)
         self.mentions = [User(**mention) for mention in mentions]
+        self.attachments = attachments
 
-
+    def _parse_time(self, time_string):
+        return datetime.datetime(*map(int, re.split(r'[^\d]', time_string.replace('+00:00', ''))))
 

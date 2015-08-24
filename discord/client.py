@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import requests
-import json, re, time
+import json, re, time, copy
 import endpoints
 from collections import deque
 from threading import Timer
@@ -179,14 +179,21 @@ class Client(object):
         elif event == 'MESSAGE_UPDATE':
             older_message = self._get_message(data.get('id'))
             if older_message is not None:
-                message = Message(channel=older_message.channel, **data)
+                # create a copy of the new message
+                message = copy.deepcopy(older_message)
+                # update the new update
+                for attr in data:
+                    if attr == 'channel_id':
+                        continue
+                    value = data[attr]
+                    if 'time' in attr:
+                        setattr(message, attr, message._parse_time(value))
+                    else:
+                        setattr(message, attr, value)
                 self._invoke_event('on_message_edit', older_message, message)
-                older_message.edited_timestamp = message.edited_timestamp
-            else:
-                # if we couldn't find the message in our cache, just add it to the list
-                channel = self.get_channel(data.get('channel_id'))
-                message = Message(channel=channel, **data)
-                self.messages.append(message)
+                # update the older message
+                older_message = message
+
         elif event == 'PRESENCE_UPDATE':
             guild_id = data.get('guild_id')
             server = next((s for s in self.servers if s.id == guild_id), None)
