@@ -26,6 +26,10 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
     Called when the client is done preparing the data received from Discord. Usually after login is successful
     and the :attr:`Client.servers` and co. are filled up.
 
+.. function:: on_disconnect()
+
+    Called when the client disconnects for whatever reason. Be it error or manually.
+
 .. function:: on_message(message)
 
     Called when a message is created and sent to a server.

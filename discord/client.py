@@ -110,7 +110,6 @@ class Client(object):
         self.ws.opened = self._opened
         self.ws.closed = self._closed
         self.ws.received_message = self._received_message
-        self.ws.connect()
 
         # the actual headers for the request...
         # we only override 'authorization' since the rest could use the defaults.
@@ -236,6 +235,7 @@ class Client(object):
 
     def _closed(self, code, reason=None):
         print('Closed with {} ("{}") at {}'.format(code, reason, int(time.time())))
+        self._invoke_event('on_disconnect')
 
     def run(self):
         """Runs the client and allows it to receive messages and events."""
@@ -369,7 +369,8 @@ class Client(object):
 
 
     def login(self, email, password):
-        """Logs in the user with the following credentials.
+        """Logs in the user with the following credentials and initialises
+        the connection to Discord.
 
         After this function is called, :attr:`is_logged_in` returns True if no
         errors occur.
@@ -377,6 +378,8 @@ class Client(object):
         :param str email: The email used to login.
         :param str password: The password used to login.
         """
+
+        self.ws.connect()
 
         payload = {
             'email': email,
@@ -406,6 +409,14 @@ class Client(object):
 
             self.ws.send(json.dumps(second_payload))
             self._is_logged_in = True
+
+    def logout(self):
+        """Logs out of Discord and closes all connections."""
+        response = requests.post(endpoints.LOGOUT)
+        self.ws.close()
+        self._is_logged_in = False
+        self.keep_alive.cancel()
+
 
     def logs_from(self, channel, limit=500):
         """A generator that obtains logs from a specified channel.
