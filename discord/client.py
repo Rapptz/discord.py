@@ -97,7 +97,7 @@ class Client(object):
             'on_message_edit': _null_event,
             'on_status': _null_event,
             'on_channel_delete': _null_event,
-            'on_channel_creation': _null_event,
+            'on_channel_create': _null_event,
         }
 
         self.ws = WebSocketClient(endpoints.WEBSOCKET_HUB, protocols=['http-only', 'chat'])
@@ -214,8 +214,22 @@ class Client(object):
                 channel = next((c for c in server.channels if c.id == channel_id), None)
                 server.channels.remove(channel)
                 self._invoke_event('on_channel_delete', channel)
+        elif event == 'CHANNEL_CREATE':
+            is_private = data.get('is_private', False)
+            channel = None
+            if is_private:
+                recipient = User(**data.get('recipient'))
+                pm_id = data.get('id')
+                channel = PrivateChannel(id=pm_id, user=recipient)
+                self.private_channels.append(channel)
+            else:
+                guild_id = data.get('guild_id')
+                server = next((s for s in self.servers if s.id == guild_id), None)
+                if server is not None:
+                    channel = Channel(server=server, **data)
+                    server.channels.append(channel)
 
-
+            self._invoke_event('on_channel_create', channel)
 
     def _opened(self):
         print('Opened at {}'.format(int(time.time())))

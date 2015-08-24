@@ -1,9 +1,10 @@
 from setuptools import setup
 import re
 
-requirements = ''
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+requirements = [
+  'ws4py',
+  'requests'
+]
 
 version = ''
 with open('discord/__init__.py') as f:
