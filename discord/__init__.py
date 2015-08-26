@@ -24,3 +24,4 @@ from channel import Channel, PrivateChannel
 from server import Server
 from message import Message
 from errors import *
+from permissions import Permissions
