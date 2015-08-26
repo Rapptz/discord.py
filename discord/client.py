@@ -205,7 +205,7 @@ class Client(object):
                 if status == 'online':
                     if member is None:
                         server.members.append(user)
-                if status == 'offline':
+                if status == 'offline' and user in server.members:
                     server.members.remove(user)
 
                 # call the event now
@@ -281,7 +281,7 @@ class Client(object):
             'recipient_id': user.id
         }
 
-        r = response.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
+        r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
         if r.status_code == 200:
             data = r.json()
             self.private_channels.append(PrivateChannel(id=data['id'], user=user))
