@@ -21,7 +21,7 @@ __build__ = 0x002010
 from client import Client
 from user import User
 from channel import Channel, PrivateChannel
-from server import Server
+from server import Server, Member, Permissions, Role
 from message import Message
 from errors import *
 from permissions import Permissions

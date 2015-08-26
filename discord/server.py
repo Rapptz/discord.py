@@ -25,6 +25,59 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from user import User
+from permissions import Permissions
+import datetime, re
+
+class Role(object):
+    """"Represents a Discord role in a :class:`Server`.
+
+    Instance attributes:
+
+    .. attribute:: id
+
+        The ID for the role.
+    .. attribute:: name
+
+        The name of the role.
+    .. attribute:: permissions
+
+        A :class:`Permissions` that represents the role's permissions.
+    """
+
+    def __init__(self, id, name, permissions):
+        self.id = id
+        self.name = name
+        self.permissions = Permissions(permissions)
+
+class Member(User):
+    """Represents a Discord member to a :class:`Server`.
+
+    This is a subclass of :class:`User` that extends more functionality
+    that server members have such as roles and permissions.
+
+    Instance attributes:
+
+    .. attribute:: deaf
+
+        Specifies if the member is currently deafened by the user.
+    .. attribute:: mute
+
+        Specifies if the member is currently muted by the user.
+    .. attribute:: roles
+
+        An array of :class:`Role` that the member belongs to.
+    .. attribute:: joined_at
+
+        A datetime object that specifies the date and time that the member joined the server for
+        the first time.
+    """
+
+    def __init__(self, deaf, joined_at, user, roles, mute):
+        super(Member, self).__init__(**user)
+        self.deaf = deaf
+        self.mute = mute
+        self.joined_at = datetime.datetime(*map(int, re.split(r'[^\d]', joined_at.replace('+00:00', ''))))
+        self.roles = roles
 
 class Server(object):
     """Represents a Discord server.
@@ -36,7 +89,7 @@ class Server(object):
         The server name.
     .. attribute:: roles
 
-        An array of role names.
+        An array of :class:`Role` that the server has available.
     .. attribute:: region
 
         The region the server belongs on.
@@ -48,7 +101,7 @@ class Server(object):
         The channel ID for the AFK channel. None if it doesn't exist.
     .. attribute:: members
 
-        An array of :class:`User` that are currently on the server.
+        An array of :class:`Member` that are currently on the server.
     .. attribute:: channels
 
         An array of :class:`Channel` that are currently on the server.
