@@ -29,7 +29,7 @@ from permissions import Permissions
 import datetime, re
 
 class Role(object):
-    """"Represents a Discord role in a :class:`Server`.
+    """Represents a Discord role in a :class:`Server`.
 
     Instance attributes:
 

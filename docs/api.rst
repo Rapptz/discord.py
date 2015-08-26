@@ -92,10 +92,17 @@ Some classes are just there to be data containers, this lists them. It should be
 .. autoclass:: Server
     :members:
 
+.. autoclass:: Member
+    :members:
+
+.. autoclass:: Role
+    :members:
+
+.. autoclass:: Permissions
+    :members:
+
 .. autoclass:: Channel
     :members:
 
 .. autoclass:: PrivateChannel
     :members:
-
-
