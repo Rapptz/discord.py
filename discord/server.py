@@ -76,6 +76,9 @@ class Member(User):
     .. attribute:: game_id
 
         The game ID that the user is currently playing. Could be None if no game is being played.
+    .. attribute:: server
+
+        The :class:`Server` that the member belongs to.
     """
 
     def __init__(self, deaf, joined_at, user, roles, mute):
@@ -86,6 +89,7 @@ class Member(User):
         self.roles = roles
         self.status = 'offline'
         self.game_id = None
+        self.server = None
 
 class Server(object):
     """Represents a Discord server.

@@ -172,7 +172,7 @@ class Client(object):
 
                 for presence in guild['presences']:
                     user_id = presence['user']['id']
-                    member = next((m for m in members if member.id == user_id), None)
+                    member = next((m for m in members if m.id == user_id), None)
                     if member is not None:
                         member.status = presence['status']
                         member.game_id = presence['game_id']
@@ -184,6 +184,11 @@ class Client(object):
                         members.remove(member)
 
                 server = Server(**guild)
+
+                # give all the members their proper server
+                for member in server.members:
+                    member.server = server
+
                 for channel in guild['channels']:
                     changed_roles = []
                     permission_overwrites = channel['permission_overwrites']
