@@ -61,6 +61,8 @@ class Client(object):
     A number of options can be passed to the :class:`Client` via keyword arguments.
 
     :param int max_length: The maximum number of messages to store in :attr:`messages`. Defaults to 5000.
+    :param bool no_offline_members: If this is set to True, then the :attr:`Server.member` lists
+                will only have members that are online. Defaults to False.
 
     Instance attributes:
 
@@ -87,6 +89,7 @@ class Client(object):
         self.private_channels = []
         self.token = ''
         self.messages = deque([], maxlen=kwargs.get('max_length', 5000))
+        self.no_offline_members = kwargs.get('no_offline_members', False)
         self.events = {
             'on_ready': _null_event,
             'on_disconnect': _null_event,
@@ -166,6 +169,19 @@ class Client(object):
                         if role is not None:
                             roles[j] = role
                     members[i] = Member(**member)
+
+                for presence in guild['presences']:
+                    user_id = presence['user']['id']
+                    member = next((m for m in members if member.id == user_id), None)
+                    if member is not None:
+                        member.status = presence['status']
+                        member.game_id = presence['game_id']
+
+                # prune offline lists if wanted
+                if self.no_offline_members:
+                    pruned = filter(lambda m: m.status == 'offline', members)
+                    for member in pruned:
+                        members.remove(member)
 
                 server = Server(**guild)
                 for channel in guild['channels']:
