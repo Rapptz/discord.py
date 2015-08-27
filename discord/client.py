@@ -98,6 +98,8 @@ class Client(object):
             'on_status': _null_event,
             'on_channel_delete': _null_event,
             'on_channel_create': _null_event,
+            'on_member_join': _null_event,
+            'on_member_remove': _null_event,
         }
 
         gateway = requests.get(endpoints.GATEWAY)
@@ -127,6 +129,9 @@ class Client(object):
 
     def _get_message(self, msg_id):
         return next((m for m in self.messages if m.id == msg_id), None)
+
+    def _get_server(self, guild_id):
+        return next((s for s in self.servers if s.id == guild_id), None)
 
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
@@ -252,8 +257,7 @@ class Client(object):
                 older_message = message
 
         elif event == 'PRESENCE_UPDATE':
-            guild_id = data.get('guild_id')
-            server = next((s for s in self.servers if s.id == guild_id), None)
+            server = self._get_server(data.get('guild_id'))
             if server is not None:
                 status = data.get('status')
                 member_id = data['user']['id']
@@ -266,8 +270,7 @@ class Client(object):
         elif event == 'USER_UPDATE':
             self.user = User(**data)
         elif event == 'CHANNEL_DELETE':
-            guild_id = data.get('guild_id')
-            server =  next((s for s in self.servers if s.id == guild_id), None)
+            server =  self._get_server(data.get('guild_id'))
             if server is not None:
                 channel_id = data.get('id')
                 channel = next((c for c in server.channels if c.id == channel_id), None)
@@ -282,13 +285,23 @@ class Client(object):
                 channel = PrivateChannel(id=pm_id, user=recipient)
                 self.private_channels.append(channel)
             else:
-                guild_id = data.get('guild_id')
-                server = next((s for s in self.servers if s.id == guild_id), None)
+                server = self._get_server(data.get('guild_id'))
                 if server is not None:
                     channel = Channel(server=server, **data)
                     server.channels.append(channel)
 
             self._invoke_event('on_channel_create', channel)
+        elif event == 'GUILD_MEMBER_ADD':
+            server = self._get_server(data.get('guild_id'))
+            member = Member(deaf=False, mute=False, **data)
+            server.members.append(member)
+            self._invoke_event('on_member_join', member)
+        elif event == 'GUILD_MEMBER_REMOVE':
+            server = self._get_server(data.get('guild_id'))
+            user_id = data['user']['id']
+            member = next((m for m in server.members if m.id == user_id), None)
+            server.members.remove(member)
+            self._invoke_event('on_member_remove', member)
 
     def _opened(self):
         print('Opened at {}'.format(int(time.time())))
