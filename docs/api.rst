@@ -45,7 +45,7 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
     :param response: The received message response after gone through ``json.loads``.
 
 .. function:: on_message_delete(message)
-.. function:: on_message_edit(before, after)
+              on_message_edit(before, after)
 
     Called when a message is deleted or edited from any given server. If the message is not found in the
     :attr:`Client.messages` cache, then these events will not be called. This happens if the message
@@ -56,16 +56,11 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
-.. function:: on_status(server, user, status, game_id):
+.. function:: on_status(member):
 
-    Called whenever a user changes their status or game playing status.
+    Called whenever a :class:`Member` changes their status or game playing status.
 
-    The status is usually either "idle", "online" or "offline".
-
-    :param server: The :class:`Server` the user belongs to.
-    :param user: The :class:`User` whose status changed.
-    :param status: The new status of the user.
-    :param game_id: The game ID that the user is playing. Can be None.
+    :param server: The :class:`Member` who has had their status changed.
 
 .. function:: on_channel_delete(channel)
               on_channel_create(channel)

@@ -81,15 +81,15 @@ class Member(User):
         The :class:`Server` that the member belongs to.
     """
 
-    def __init__(self, deaf, joined_at, user, roles, mute):
+    def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
         super(Member, self).__init__(**user)
         self.deaf = deaf
         self.mute = mute
         self.joined_at = datetime.datetime(*map(int, re.split(r'[^\d]', joined_at.replace('+00:00', ''))))
         self.roles = roles
         self.status = 'offline'
-        self.game_id = None
-        self.server = None
+        self.game_id = kwargs.get('game_id', None)
+        self.server = kwargs.get('server', None)
 
 class Server(object):
     """Represents a Discord server.

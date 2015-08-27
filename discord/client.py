@@ -264,17 +264,21 @@ class Client(object):
             server = next((s for s in self.servers if s.id == guild_id), None)
             if server is not None:
                 status = data.get('status')
-                user = User(**data.get('user'))
+                member_id = data['user']['id']
                 # check to see if the member is in our server list of members
-                member = next((u for u in server.members if u == user), None)
+                member = next((u for u in server.members if u.id == member_id), None)
+
+                if member is None:
+                    # create the member if it doesn't exist
+                    member = Member(**data)
+
                 if status == 'online':
-                    if member is None:
-                        server.members.append(user)
-                if status == 'offline' and user in server.members:
-                    server.members.remove(user)
+                    server.members.append(member)
+                elif status == 'offline' and self.no_offline_members:
+                    server.members.remove(member)
 
                 # call the event now
-                self._invoke_event('on_status', server, user, status, data.get('game_id'))
+                self._invoke_event('on_status', member)
         elif event == 'USER_UPDATE':
             self.user = User(**data)
         elif event == 'CHANNEL_DELETE':
