@@ -149,7 +149,15 @@ class Client(object):
 
             for guild in guilds:
                 guild['roles'] = [Role(**role) for role in guild['roles']]
-                guild['members'] = [Member(**member) for member in guild['members']]
+                # guild['members'] = [Member(**member) for member in guild['members']]
+                members = guild['members']
+                for i, member in enumerate(members):
+                    roles = member['roles']
+                    for j, roleid in enumerate(roles):
+                        role = next((r for r in guild['roles'] if r.id == roleid), None)
+                        if role is not None:
+                            roles[j] = role
+                    members[i] = Member(**member)
 
                 server = Server(**guild)
                 for channel in guild['channels']:
