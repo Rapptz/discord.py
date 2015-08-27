@@ -31,7 +31,7 @@ from collections import deque
 from threading import Timer
 from ws4py.client.threadedclient import WebSocketClient
 from sys import platform as sys_platform
-from errors import InvalidEventName, InvalidDestination
+from errors import InvalidEventName, InvalidDestination, GatewayNotFound
 from user import User
 from channel import Channel, PrivateChannel
 from server import Server, Member, Permissions, Role
@@ -100,7 +100,15 @@ class Client(object):
             'on_channel_create': _null_event,
         }
 
-        self.ws = WebSocketClient(endpoints.WEBSOCKET_HUB, protocols=['http-only', 'chat'])
+        gateway = requests.get(endpoints.GATEWAY)
+        if gateway.status_code != 200:
+            raise GatewayNotFound()
+        gateway_js = gateway.json()
+        url = gateway_js.get('url')
+        if url is None:
+            raise GatewayNotFound()
+
+        self.ws = WebSocketClient(url, protocols=['http-only', 'chat'])
 
         # this is kind of hacky, but it's to avoid deadlocks.
         # i.e. python does not allow me to have the current thread running if it's self

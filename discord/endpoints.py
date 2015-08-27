@@ -24,9 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-WEBSOCKET_HUB = 'wss://discordapp.com/hub'
 BASE          = 'https://discordapp.com'
 API_BASE      = BASE     + '/api'
+GATEWAY       = API_BASE + '/gateway'
 USERS         = API_BASE + '/users'
 LOGIN         = API_BASE + '/auth/login'
 LOGOUT        = API_BASE + '/auth/logout'

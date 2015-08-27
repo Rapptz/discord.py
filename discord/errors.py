@@ -31,3 +31,7 @@ class InvalidEventName(Exception):
 class InvalidDestination(Exception):
     """Thrown when the destination from :meth:`Client.send_message` is invalid."""
     pass
+
+class GatewayNotFound(Exception):
+    """Thrown when the gateway hub for the :class:`Client` websocket is not found."""
+    pass
