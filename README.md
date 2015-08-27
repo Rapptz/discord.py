@@ -4,6 +4,16 @@ discord.py is an API wrapper for Discord written in Python.
 
 This was written to allow easier writing of bots or chat logs.
 
+## Installing
+
+Installing is pretty easy.
+
+```
+pip install discord.py
+```
+
+Will install the latest 'stable' version of the library.
+
 ## This module is alpha!
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility.
