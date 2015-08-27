@@ -46,15 +46,20 @@ class Channel(object):
     .. attribute:: type
 
         The channel type. Usually ``'voice'`` or ``'text'``.
+    .. attribute:: changed_roles
+
+        An array of :class:`Roles` that have been overridden from their default
+        values in the :attr:`Server.roles` attribute.
     """
 
-    def __init__(self, name, server, id, position, type, **kwargs):
+    def __init__(self, name, server, id, position, type, permission_overwrites=None, **kwargs):
         self.name = name
         self.server = server
         self.id = id
         self.is_private = False
         self.position = position
         self.type = type
+        self.changed_roles = permission_overwrites if permission_overwrites is not None else []
 
 class PrivateChannel(object):
     """Represents a Discord private channel.
