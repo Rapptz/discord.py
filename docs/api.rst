@@ -108,3 +108,19 @@ Some classes are just there to be data containers, this lists them. It should be
 
 .. autoclass:: PrivateChannel
     :members:
+
+Exceptions
+------------
+
+The following exceptions are thrown by the library.
+
+
+.. autoclass:: InvalidEventName
+    :members:
+
+.. autoclass:: InvalidDestination
+    :members:
+
+.. autoclass:: GatewayNotFound
+    :members:
+
