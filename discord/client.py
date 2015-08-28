@@ -162,7 +162,6 @@ class Client(object):
 
             for guild in guilds:
                 guild['roles'] = [Role(**role) for role in guild['roles']]
-                # guild['members'] = [Member(**member) for member in guild['members']]
                 members = guild['members']
                 for i, member in enumerate(members):
                     roles = member['roles']
