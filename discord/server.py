@@ -70,7 +70,7 @@ class Member(User):
 
         A datetime object that specifies the date and time in UTC that the member joined the server for
         the first time.
-    ,, attribute:: status
+    .. attribute:: status
 
         A string that denotes the user's status. Can be 'online', 'offline' or 'idle'.
     .. attribute:: game_id
