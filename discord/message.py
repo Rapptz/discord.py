@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import datetime
 import re
-from user import User
+from .user import User
 
 class Message(object):
     """Represents a message from Discord.

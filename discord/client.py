@@ -26,16 +26,16 @@ DEALINGS IN THE SOFTWARE.
 
 import requests
 import json, re, time, copy
-import endpoints
 from collections import deque
 from threading import Timer
 from ws4py.client.threadedclient import WebSocketClient
 from sys import platform as sys_platform
-from errors import InvalidEventName, InvalidDestination, GatewayNotFound
-from user import User
-from channel import Channel, PrivateChannel
-from server import Server, Member, Permissions, Role
-from message import Message
+from . import endpoints
+from .errors import InvalidEventName, InvalidDestination, GatewayNotFound
+from .user import User
+from .channel import Channel, PrivateChannel
+from .server import Server, Member, Permissions, Role
+from .message import Message
 
 def _null_event(*args, **kwargs):
     pass

@@ -24,8 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from user import User
-from permissions import Permissions
+from .user import User
+from .permissions import Permissions
 import datetime, re
 
 class Role(object):

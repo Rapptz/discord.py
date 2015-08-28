@@ -18,10 +18,10 @@ __copyright__ = 'Copyright 2015 Rapptz'
 __version__ = '0.4.0'
 __build__ = 0x004000
 
-from client import Client
-from user import User
-from channel import Channel, PrivateChannel
-from server import Server, Member, Permissions, Role
-from message import Message
-from errors import *
-from permissions import Permissions
+from .client import Client
+from .user import User
+from .channel import Channel, PrivateChannel
+from .server import Server, Member, Permissions, Role
+from .message import Message
+from .errors import *
+from .permissions import Permissions
