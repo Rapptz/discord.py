@@ -228,14 +228,14 @@ class Client(object):
         elif event == 'MESSAGE_CREATE':
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
-            self.events['on_message'](message)
+            self._invoke_event('on_message', message)
             self.messages.append(message)
         elif event == 'MESSAGE_DELETE':
             channel = self.get_channel(data.get('channel_id'))
             message_id = data.get('id')
             found = self._get_message(message_id)
             if found is not None:
-                self.events['on_message_delete'](found)
+                self._invoke_event('on_message_delete', found)
                 self.messages.remove(found)
         elif event == 'MESSAGE_UPDATE':
             older_message = self._get_message(data.get('id'))
