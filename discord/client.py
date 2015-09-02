@@ -244,7 +244,7 @@ class Client(object):
                 message = copy.deepcopy(older_message)
                 # update the new update
                 for attr in data:
-                    if attr == 'channel_id':
+                    if attr == 'channel_id' or attr == 'author':
                         continue
                     value = data[attr]
                     if 'time' in attr:
