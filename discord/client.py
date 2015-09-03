@@ -102,25 +102,6 @@ class Client(object):
             'on_member_remove': _null_event,
         }
 
-        gateway = requests.get(endpoints.GATEWAY)
-        if gateway.status_code != 200:
-            raise GatewayNotFound()
-        gateway_js = gateway.json()
-        url = gateway_js.get('url')
-        if url is None:
-            raise GatewayNotFound()
-
-        self.ws = WebSocketClient(url, protocols=['http-only', 'chat'])
-
-        # this is kind of hacky, but it's to avoid deadlocks.
-        # i.e. python does not allow me to have the current thread running if it's self
-        # it throws a 'cannot join current thread' RuntimeError
-        # So instead of doing a basic inheritance scheme, we're overriding the member functions.
-
-        self.ws.opened = self._opened
-        self.ws.closed = self._closed
-        self.ws.received_message = self._received_message
-
         # the actual headers for the request...
         # we only override 'authorization' since the rest could use the defaults.
         self.headers = {
@@ -450,8 +431,6 @@ class Client(object):
         :param str password: The password used to login.
         """
 
-        self.ws.connect()
-
         payload = {
             'email': email,
             'password': password
@@ -463,6 +442,27 @@ class Client(object):
             body = r.json()
             self.token = body['token']
             self.headers['authorization'] = self.token
+
+            gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+            if gateway.status_code != 200:
+                raise GatewayNotFound()
+            gateway_js = gateway.json()
+            url = gateway_js.get('url')
+            if url is None:
+                raise GatewayNotFound()
+
+            self.ws = WebSocketClient(url, protocols=['http-only', 'chat'])
+
+            # this is kind of hacky, but it's to avoid deadlocks.
+            # i.e. python does not allow me to have the current thread running if it's self
+            # it throws a 'cannot join current thread' RuntimeError
+            # So instead of doing a basic inheritance scheme, we're overriding the member functions.
+
+            self.ws.opened = self._opened
+            self.ws.closed = self._closed
+            self.ws.received_message = self._received_message
+            self.ws.connect()
+
             second_payload = {
                 'op': 2,
                 'd': {
