@@ -14,9 +14,13 @@ pip install discord.py
 
 Will install the latest 'stable' version of the library.
 
-## This module is alpha!
+### This module is alpha!
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility.
+
+I recommend that you follow the discussion in the [unofficial Discord API discord channel][ch] and update your installation periodically through `pip install --upgrade discord.py`.
+
+[ch]: https://discord.gg/0SBTUU1wZTUzBx2q
 
 ## Quick Example
 
@@ -54,7 +58,8 @@ Usually `pip` will handle these for you.
 ## Related Projects
 
 - [discord.js](https://github.com/discord-js/discord.js)
-- [node-discord](https://github.com/izy521/node-discord)
+- [discord.io](https://github.com/izy521/discord.io)
 - [Discord.NET](https://github.com/RogueException/Discord.Net)
 - [DiscordSharp](https://github.com/Luigifan/DiscordSharp)
 - [Discord4J](https://github.com/knobody/Discord4J)
+- [discordrb](https://github.com/meew0/discordrb)
