@@ -76,6 +76,9 @@ class Client(object):
      .. attribute:: messages
 
         A deque_ of :class:`Message` that the client has received from all servers and private messages.
+    .. attribute:: email
+
+        The email used to login. This is only set if login is successful, otherwise it's None.
 
     .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
     """
@@ -83,6 +86,7 @@ class Client(object):
     def __init__(self, **kwargs):
         self._is_logged_in = False
         self.user = None
+        self.email = None
         self.servers = []
         self.private_channels = []
         self.token = ''
@@ -451,6 +455,8 @@ class Client(object):
         r = requests.post(endpoints.LOGIN, json=payload)
 
         if r.status_code == 200:
+            self.email = email
+
             body = r.json()
             self.token = body['token']
             self.headers['authorization'] = self.token
