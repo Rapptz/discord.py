@@ -80,6 +80,17 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
 
     :param member: The :class:`Member` that joined or left.
 
+.. function:: on_server_create(server)
+              on_server_delete(server)
+
+    Called when a :class:`Server` is created or deleted.
+
+    Note that the server that is created must belong to the :class:`Client` and the server
+    that got deleted must have been part of the client's participating servers.
+
+    :param server: The :class:`Server` that got created or deleted.
+
+
 Data Classes
 --------------
 

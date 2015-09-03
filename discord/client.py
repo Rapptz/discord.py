@@ -100,6 +100,8 @@ class Client(object):
             'on_channel_create': _null_event,
             'on_member_join': _null_event,
             'on_member_remove': _null_event,
+            'on_server_create': _null_event,
+            'on_server_delete': _null_event,
         }
 
         # the actual headers for the request...
@@ -113,6 +115,62 @@ class Client(object):
 
     def _get_server(self, guild_id):
         return next((s for s in self.servers if s.id == guild_id), None)
+
+    def _add_server(self, guild):
+        guild['roles'] = [Role(**role) for role in guild['roles']]
+        members = guild['members']
+        for i, member in enumerate(members):
+            roles = member['roles']
+            for j, roleid in enumerate(roles):
+                role = next((r for r in guild['roles'] if r.id == roleid), None)
+                if role is not None:
+                    roles[j] = role
+            members[i] = Member(**member)
+
+        for presence in guild['presences']:
+            user_id = presence['user']['id']
+            member = next((m for m in members if m.id == user_id), None)
+            if member is not None:
+                member.status = presence['status']
+                member.game_id = presence['game_id']
+
+
+        server = Server(**guild)
+
+        # give all the members their proper server
+        for member in server.members:
+            member.server = server
+
+        for channel in guild['channels']:
+            changed_roles = []
+            permission_overwrites = channel['permission_overwrites']
+
+            for overridden in permission_overwrites:
+                # this is pretty inefficient due to the deep nested loops unfortunately
+                role = next((role for role in guild['roles'] if role.id == overridden['id']), None)
+                if role is None:
+                    continue
+                denied = overridden.get('deny', 0)
+                allowed = overridden.get('allow', 0)
+                override = copy.deepcopy(role)
+
+                # Basically this is what's happening here.
+                # We have an original bit array, e.g. 1010
+                # Then we have another bit array that is 'denied', e.g. 1111
+                # And then we have the last one which is 'allowed', e.g. 0101
+                # We want original OP denied to end up resulting in whatever is in denied to be set to 0.
+                # So 1010 OP 1111 -> 0000
+                # Then we take this value and look at the allowed values. And whatever is allowed is set to 1.
+                # So 0000 OP2 0101 -> 0101
+                # The OP is (base ^ denied) & ~denied.
+                # The OP2 is base | allowed.
+                override.permissions.value = ((override.permissions.value ^ denied) & ~denied) | allowed
+                changed_roles.append(override)
+
+            channel['permission_overwrites'] = changed_roles
+        channels = [Channel(server=server, **channel) for channel in guild['channels']]
+        server.channels = channels
+        self.servers.append(server)
 
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
@@ -142,60 +200,7 @@ class Client(object):
             guilds = data.get('guilds')
 
             for guild in guilds:
-                guild['roles'] = [Role(**role) for role in guild['roles']]
-                members = guild['members']
-                for i, member in enumerate(members):
-                    roles = member['roles']
-                    for j, roleid in enumerate(roles):
-                        role = next((r for r in guild['roles'] if r.id == roleid), None)
-                        if role is not None:
-                            roles[j] = role
-                    members[i] = Member(**member)
-
-                for presence in guild['presences']:
-                    user_id = presence['user']['id']
-                    member = next((m for m in members if m.id == user_id), None)
-                    if member is not None:
-                        member.status = presence['status']
-                        member.game_id = presence['game_id']
-
-
-                server = Server(**guild)
-
-                # give all the members their proper server
-                for member in server.members:
-                    member.server = server
-
-                for channel in guild['channels']:
-                    changed_roles = []
-                    permission_overwrites = channel['permission_overwrites']
-
-                    for overridden in permission_overwrites:
-                        # this is pretty inefficient due to the deep nested loops unfortunately
-                        role = next((role for role in guild['roles'] if role.id == overridden['id']), None)
-                        if role is None:
-                            continue
-                        denied = overridden.get('deny', 0)
-                        allowed = overridden.get('allow', 0)
-                        override = copy.deepcopy(role)
-
-                        # Basically this is what's happening here.
-                        # We have an original bit array, e.g. 1010
-                        # Then we have another bit array that is 'denied', e.g. 1111
-                        # And then we have the last one which is 'allowed', e.g. 0101
-                        # We want original OP denied to end up resulting in whatever is in denied to be set to 0.
-                        # So 1010 OP 1111 -> 0000
-                        # Then we take this value and look at the allowed values. And whatever is allowed is set to 1.
-                        # So 0000 OP2 0101 -> 0101
-                        # The OP is (base ^ denied) & ~denied.
-                        # The OP2 is base | allowed.
-                        override.permissions.value = ((override.permissions.value ^ denied) & ~denied) | allowed
-                        changed_roles.append(override)
-
-                    channel['permission_overwrites'] = changed_roles
-                channels = [Channel(server=server, **channel) for channel in guild['channels']]
-                server.channels = channels
-                self.servers.append(server)
+                self._add_server(guild)
 
             for pm in data.get('private_channels'):
                 self.private_channels.append(PrivateChannel(id=pm['id'], user=User(**pm['recipient'])))
@@ -282,6 +287,13 @@ class Client(object):
             member = next((m for m in server.members if m.id == user_id), None)
             server.members.remove(member)
             self._invoke_event('on_member_remove', member)
+        elif event == 'GUILD_CREATE':
+            self._add_server(data)
+            self._invoke_event('on_server_create', self.servers[-1])
+        elif event == 'GUILD_DELETE':
+            server = self._get_server(data.get('id'))
+            self.servers.remove(server)
+            self._invoke_event('on_server_delete', server)
 
     def _opened(self):
         print('Opened at {}'.format(int(time.time())))
