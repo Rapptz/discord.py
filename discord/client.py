@@ -576,3 +576,38 @@ class Client(object):
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
 
+    def kick(self, server, user):
+        """Kicks a :class:`User` from their respective :class:`Server`.
+
+        You must have the proper permissions to kick a user in the server.
+
+        :param server: The :class:`Server` to kick the member from.
+        :param user: The :class:`User` to kick.
+        """
+
+        url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
+        response = requests.delete(url, headers=self.headers)
+
+    def ban(self, server, user):
+        """Bans a :class:`User` from their respective :class:`Server`.
+
+        You must have the proper permissions to ban a user in the server.
+
+        :param server: The :class:`Server` to ban the member from.
+        :param user: The :class:`User` to ban.
+        """
+
+        url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
+        response = requests.put(url, headers=self.headers)
+
+    def unban(self, server, name):
+        """Unbans a :class:`User` from their respective :class:`Server`.
+
+        You must have the proper permissions to unban a user in the server.
+
+        :param server: The :class:`Server` to unban the member from.
+        :param user: The :class:`User` to unban.
+        """
+
+        url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
+        response = requests.delete(url, headers=self.headers)
