@@ -647,3 +647,28 @@ class Client(object):
             self.headers['authorization'] = self.token
             self.user = User(**data)
 
+    def create_channel(self, server, name, type='text'):
+        """Creates a :class:`Channel` in the specified :class:`Server`.
+
+        Note that you need the proper permissions to create the channel.
+
+        :param server: The :class:`Server` to create the channel in.
+        :param name: The channel's name.
+        :param type: The type of channel to create. 'text' or 'voice'.
+        :returns: The newly created :class:`Channel` if successful, else None.
+        """
+
+        payload = {
+            'name': name,
+            'type': type
+        }
+
+        url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
+        response = requests.post(url, headers=self.headers, json=payload)
+        if response.status_code in (200, 201):
+            data = response.json()
+            channel = Channel(server=server, **data)
+            # We don't append it to server.channels because CHANNEL_CREATE handles it for us.
+            return channel
+
+        return None
