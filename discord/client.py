@@ -617,3 +617,33 @@ class Client(object):
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
+
+    def edit_profile(self, password, **fields):
+        """Edits the current profile of the client.
+
+        All fields except password are optional.
+
+        :param password: The current password for the client's account.
+        :param new_password: The new password you wish to change to.
+        :param email: The new email you wish to change to.
+        :param username: The new username you wish to change to.
+        """
+
+        payload = {
+            'password': password,
+            'new_password': fields.get('new_password'),
+            'email': fields.get('email', self.email),
+            'username': fields.get('username', self.user.name),
+            'avatar': self.user.avatar
+        }
+
+        url = '{0}/@me'.format(endpoints.USERS)
+        response = requests.patch(url, headers=self.headers, json=payload)
+
+        if response.status_code == 200:
+            data = response.json()
+            self.token = data['token']
+            self.email = data['email']
+            self.headers['authorization'] = self.token
+            self.user = User(**data)
+
