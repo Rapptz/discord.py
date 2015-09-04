@@ -672,3 +672,14 @@ class Client(object):
             return channel
 
         return None
+
+    def delete_channel(self, channel):
+        """Deletes a :class:`Channel` from its respective :class:`Server`.
+
+        Note that you need proper permissions to delete the channel.
+
+        :param channel: The :class:`Channel` to delete.
+        """
+
+        url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
+        requests.delete(url, headers=self.headers)
