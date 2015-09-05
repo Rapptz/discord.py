@@ -31,6 +31,7 @@ from .channel import Channel, PrivateChannel
 from .server import Server, Member, Permissions, Role
 from .message import Message
 from .utils import parse_time
+from .invite import Invite
 
 import requests
 import json, re, time, copy
@@ -694,3 +695,33 @@ class Client(object):
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         requests.delete(url, headers=self.headers)
+
+    def create_invite(self, destination, **options):
+        """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
+
+        The available options are:
+
+        :param destination: The :class:`Server` or :class:`Channel` to create the invite to.
+        :param max_age: How long the invite should last. If it's 0 then the invite doesn't expire. Defaults to 0.
+        :param max_uses: How many uses the invite could be used for. If it's 0 then there are unlimited uses. Defaults to 0.
+        :param temporary: A boolean to denote that the invite grants temporary membership (i.e. they get kicked after they disconnect). Defaults to False.
+        :param xkcd: A boolean to indicate if the invite URL is human readable. Defaults to False.
+        :returns: The :class:`Invite` if creation is successful, None otherwise.
+        """
+
+        payload = {
+            'max_age': options.get('max_age', 0),
+            'max_uses': options.get('max_uses', 0),
+            'temporary': options.get('temporary', False),
+            'xkcdpass': options.get('xkcd', False)
+        }
+
+        url = '{0}/{1.id}/invites'.format(endpoints.CHANNELS, destination)
+        response = requests.post(url, headers=self.headers, json=payload)
+        if response.status_code in (200, 201):
+            data = response.json()
+            data['server'] = self._get_server(data['guild']['id'])
+            data['channel'] = next((ch for ch in data['server'].channels if ch.id == data['channel']['id']))
+            return Invite(**data)
+
+        return None

@@ -120,6 +120,9 @@ Some classes are just there to be data containers, this lists them. It should be
 .. autoclass:: PrivateChannel
     :members:
 
+.. autoclass:: Invite
+    :members:
+
 Exceptions
 ------------
 
