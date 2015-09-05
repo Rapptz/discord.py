@@ -81,6 +81,12 @@ class Invite(object):
         self.channel = kwargs.get('channel')
 
     @property
+    def id(self):
+        """Returns the proper code portion of the invite."""
+        return self.xkcd if self.xkcd else self.code
+
+    @property
     def url(self):
         """A property that retrieves the invite URL."""
-        return 'http://discord.gg/{}'.format(self.xkcd if self.xkcd else self.code)
+        return 'http://discord.gg/{}'.format(self.id)
+

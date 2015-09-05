@@ -748,3 +748,14 @@ class Client(object):
             return Invite(**data)
 
         return None
+
+    def accept_invite(self, invite):
+        """Accepts an :class:`Invite`.
+
+        :param invite: The :class:`Invite` to accept.
+        :returns: True if the invite was successfully accepted, False otherwise.
+        """
+
+        url = '{0}/invite/{1.id}'.format(endpoints.API_BASE, invite)
+        response = requests.post(url, headers=self.headers)
+        return response.status_code in (200, 201)
