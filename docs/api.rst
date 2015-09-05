@@ -30,6 +30,19 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
 
     Called when the client disconnects for whatever reason. Be it error or manually.
 
+.. function:: on_error(event, type, value, traceback)
+
+    Usually when an event throws an uncaught exception, it is swallowed. If you want to handle
+    the uncaught exceptions for whatever reason, this event is called. If an exception is thrown
+    on this event then it propagates (i.e. it is not swallowed silently).
+
+    The parameters for this event are retrieved through the use of ``sys.exc_info()``.
+
+    :param event: The event name that had the uncaught exception.
+    :param type: The type of exception that was swallowed.
+    :param value: The actual exception that was swallowed.
+    :param traceback: The traceback object representing the traceback of the exception swallowed.
+
 .. function:: on_message(message)
 
     Called when a message is created and sent to a server.

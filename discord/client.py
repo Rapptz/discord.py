@@ -38,7 +38,7 @@ import json, re, time, copy
 from collections import deque
 from threading import Timer
 from ws4py.client.threadedclient import WebSocketClient
-from sys import platform as sys_platform
+import sys
 
 def _null_event(*args, **kwargs):
     pass
@@ -197,7 +197,8 @@ class Client(object):
         try:
             self.events[event_name](*args, **kwargs)
         except Exception as e:
-            pass
+            self.events['error'](event_name, *sys.exc_info())
+
 
     def _received_message(self, msg):
         response = json.loads(str(msg))
@@ -511,7 +512,7 @@ class Client(object):
                 'd': {
                     'token': self.token,
                     'properties': {
-                        '$os': sys_platform,
+                        '$os': sys.platform,
                         '$browser': 'discord.py',
                         '$device': 'discord.py',
                         '$referrer': '',
