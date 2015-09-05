@@ -127,6 +127,7 @@ class Client(object):
     def _add_server(self, guild):
         guild['roles'] = [Role(**role) for role in guild['roles']]
         members = guild['members']
+        owner = guild['owner_id']
         for i, member in enumerate(members):
             roles = member['roles']
             for j, roleid in enumerate(roles):
@@ -134,6 +135,10 @@ class Client(object):
                 if role is not None:
                     roles[j] = role
             members[i] = Member(**member)
+
+            # found the member that owns the server
+            if members[i].id == owner:
+                owner = members[i]
 
         for presence in guild['presences']:
             user_id = presence['user']['id']
@@ -143,7 +148,7 @@ class Client(object):
                 member.game_id = presence['game_id']
 
 
-        server = Server(**guild)
+        server = Server(owner=owner, **guild)
 
         # give all the members their proper server
         for member in server.members:

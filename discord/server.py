@@ -123,9 +123,9 @@ class Server(object):
     .. attribute:: id
 
         The server's ID.
-    .. attribute:: owner_id
+    .. attribute:: owner
 
-        The ID of the server's owner.
+        The :class:`Member` who owns the server.
     """
 
     def __init__(self, **kwargs):
@@ -137,4 +137,4 @@ class Server(object):
         self.members = kwargs.get('members')
         self.icon = kwargs.get('icon')
         self.id = kwargs.get('id')
-        self.owner_id = kwargs.get('owner_id')
+        self.owner = kwargs.get('owner')
