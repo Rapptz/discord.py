@@ -107,6 +107,7 @@ class Client(object):
             'on_channel_create': _null_event,
             'on_member_join': _null_event,
             'on_member_remove': _null_event,
+            'on_member_join': _null_event,
             'on_server_create': _null_event,
             'on_server_delete': _null_event,
         }
@@ -294,6 +295,22 @@ class Client(object):
             member = next((m for m in server.members if m.id == user_id), None)
             server.members.remove(member)
             self._invoke_event('on_member_remove', member)
+        elif event == 'GUILD_MEMBER_UPDATE':
+            server = self._get_server(data.get('guild_id'))
+            user_id = data['user']['id']
+            member = next((m for m in server.members if m.id == user_id), None)
+            if member is not None:
+                user = data['user']
+                member.name = user['username']
+                member.discriminator = user['discriminator']
+                member.avatar = user['avatar']
+                member.roles = []
+                # update the roles
+                for role in server.roles:
+                    if role.id in data['roles']:
+                        member.roles.append(role)
+
+                self._invoke_event('on_member_update', member)
         elif event == 'GUILD_CREATE':
             self._add_server(data)
             self._invoke_event('on_server_create', self.servers[-1])

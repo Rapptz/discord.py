@@ -80,6 +80,12 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
 
     :param member: The :class:`Member` that joined or left.
 
+.. function:: on_member_update(member)
+
+    Called when a :class:`Member` updates their profile.
+
+    :param member: The :class:`Member` that updated their profile with the updated info.
+
 .. function:: on_server_create(server)
               on_server_delete(server)
 
