@@ -70,25 +70,25 @@ class Message(object):
         An array of attachments given to a message.
     """
 
-    def __init__(self, edited_timestamp, timestamp, tts, content, mention_everyone, mentions, embeds, attachments, id, channel, author, **kwargs):
+    def __init__(self, **kwargs):
         # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
         # sometimes the .%f modifier is missing
-        self.edited_timestamp = None
-        if edited_timestamp is not None:
+        self.edited_timestamp = kwargs.get('edited_timestamp')
+        if self.edited_timestamp is not None:
             self.edited_timestamp = self._parse_time(edited_timestamp)
 
-        self.timestamp = self._parse_time(timestamp)
-        self.tts = tts
-        self.content = content
-        self.mention_everyone = mention_everyone
-        self.embeds = embeds
-        self.id = id
-        self.channel = channel
-        self.author = User(**author)
-        self.mentions = [User(**mention) for mention in mentions]
-        self.attachments = attachments
+        self.timestamp = self._parse_time(kwargs.get('timestamp'))
+        self.tts = kwargs.get('tts')
+        self.content = kwargs.get('content')
+        self.mention_everyone = kwargs.get('mention_everyone')
+        self.embeds = kwargs.get('embeds')
+        self.id = kwargs.get('id')
+        self.channel = kwargs.get('channel')
+        self.author = User(**kwargs.get('author', {}))
+        self.mentions = [User(**mention) for mention in kwargs.get('mentions', {})]
+        self.attachments = kwargs.get('attachments')
 
     def _parse_time(self, time_string):
         return datetime.datetime(*map(int, re.split(r'[^\d]', time_string.replace('+00:00', ''))))

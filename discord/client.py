@@ -683,3 +683,12 @@ class Client(object):
 
         url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
         requests.delete(url, headers=self.headers)
+
+    def leave_server(self, server):
+        """Leaves a :class:`Server`.
+
+        :param server: The :class:`Server` to leave.
+        """
+
+        url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
+        requests.delete(url, headers=self.headers)

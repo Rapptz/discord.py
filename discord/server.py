@@ -128,13 +128,13 @@ class Server(object):
         The ID of the server's owner.
     """
 
-    def __init__(self, name, roles, region, afk_timeout, afk_channel_id, members, icon, id, owner_id, **kwargs):
-        self.name = name
-        self.roles = roles
-        self.region = region
-        self.afk_timeout = afk_timeout
-        self.afk_channel_id = afk_channel_id
-        self.members = members
-        self.icon = icon
-        self.id = id
-        self.owner_id = owner_id
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+        self.roles = kwargs.get('roles')
+        self.region = kwargs.get('region')
+        self.afk_timeout = kwargs.get('afk_timeout')
+        self.afk_channel_id = kwargs.get('afk_channel_id')
+        self.members = kwargs.get('members')
+        self.icon = kwargs.get('icon')
+        self.id = kwargs.get('id')
+        self.owner_id = kwargs.get('owner_id')

@@ -52,14 +52,14 @@ class Channel(object):
         values in the :attr:`Server.roles` attribute.
     """
 
-    def __init__(self, name, server, id, position, type, permission_overwrites=None, **kwargs):
-        self.name = name
-        self.server = server
-        self.id = id
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+        self.server = kwargs.get('server')
+        self.id = kwargs.get('id')
         self.is_private = False
-        self.position = position
-        self.type = type
-        self.changed_roles = permission_overwrites if permission_overwrites is not None else []
+        self.position = kwargs.get('position')
+        self.type = kwargs.get('type')
+        self.changed_roles = kwargs.get('permission_overwrites', [])
 
 class PrivateChannel(object):
     """Represents a Discord private channel.
