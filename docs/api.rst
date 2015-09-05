@@ -18,7 +18,7 @@ Event Reference
 ~~~~~~~~~~~~~~~~
 
 This page outlines the different types of events listened to by :meth:`Client.event`.
-All events are 'sandboxed', in that if an exception is thrown while the event is called then it is caught and then ignored.
+All events are 'sandboxed', in that if an exception is thrown while the event is called then it is caught and propagated to :func:`on_error`.
 
 
 .. function:: on_ready()
@@ -69,7 +69,7 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
-.. function:: on_status(member):
+.. function:: on_status(member)
 
     Called whenever a :class:`Member` changes their status or game playing status.
 

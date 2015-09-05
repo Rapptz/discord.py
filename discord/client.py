@@ -79,7 +79,7 @@ class Client(object):
      .. attribute:: messages
 
         A deque_ of :class:`Message` that the client has received from all servers and private messages.
-    .. attribute:: email
+     .. attribute:: email
 
         The email used to login. This is only set if login is successful, otherwise it's None.
 
