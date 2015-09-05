@@ -24,18 +24,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import requests
-import json, re, time, copy
-from collections import deque
-from threading import Timer
-from ws4py.client.threadedclient import WebSocketClient
-from sys import platform as sys_platform
 from . import endpoints
 from .errors import InvalidEventName, InvalidDestination, GatewayNotFound
 from .user import User
 from .channel import Channel, PrivateChannel
 from .server import Server, Member, Permissions, Role
 from .message import Message
+from .utils import parse_time
+
+import requests
+import json, re, time, copy
+from collections import deque
+from threading import Timer
+from ws4py.client.threadedclient import WebSocketClient
+from sys import platform as sys_platform
 
 def _null_event(*args, **kwargs):
     pass
@@ -238,7 +240,7 @@ class Client(object):
                         continue
                     value = data[attr]
                     if 'time' in attr:
-                        setattr(message, attr, message._parse_time(value))
+                        setattr(message, attr, parse_time(value))
                     else:
                         setattr(message, attr, value)
                 self._invoke_event('on_message_edit', older_message, message)

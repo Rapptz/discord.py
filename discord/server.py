@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .permissions import Permissions
-import datetime, re
+from .utils import parse_time
 
 class Role(object):
     """Represents a Discord role in a :class:`Server`.
@@ -85,7 +85,7 @@ class Member(User):
         super(Member, self).__init__(**user)
         self.deaf = deaf
         self.mute = mute
-        self.joined_at = datetime.datetime(*map(int, re.split(r'[^\d]', joined_at.replace('+00:00', ''))))
+        self.joined_at = parse_time(joined_at)
         self.roles = roles
         self.status = 'offline'
         self.game_id = kwargs.get('game_id', None)

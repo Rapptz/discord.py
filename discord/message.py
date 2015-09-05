@@ -24,8 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import datetime
-import re
+from .utils import parse_time
 from .user import User
 
 class Message(object):
@@ -75,11 +74,8 @@ class Message(object):
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
         # sometimes the .%f modifier is missing
-        self.edited_timestamp = kwargs.get('edited_timestamp')
-        if self.edited_timestamp is not None:
-            self.edited_timestamp = self._parse_time(edited_timestamp)
-
-        self.timestamp = self._parse_time(kwargs.get('timestamp'))
+        self.edited_timestamp = parse_time(kwargs.get('edited_timestamp'))
+        self.timestamp = parse_time(kwargs.get('timestamp'))
         self.tts = kwargs.get('tts')
         self.content = kwargs.get('content')
         self.mention_everyone = kwargs.get('mention_everyone')
@@ -89,7 +85,4 @@ class Message(object):
         self.author = User(**kwargs.get('author', {}))
         self.mentions = [User(**mention) for mention in kwargs.get('mentions', {})]
         self.attachments = kwargs.get('attachments')
-
-    def _parse_time(self, time_string):
-        return datetime.datetime(*map(int, re.split(r'[^\d]', time_string.replace('+00:00', ''))))
 
