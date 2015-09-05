@@ -107,7 +107,7 @@ class Client(object):
             'on_channel_create': _null_event,
             'on_member_join': _null_event,
             'on_member_remove': _null_event,
-            'on_member_join': _null_event,
+            'on_member_update': _null_event,
             'on_server_create': _null_event,
             'on_server_delete': _null_event,
         }
@@ -197,7 +197,7 @@ class Client(object):
         try:
             self.events[event_name](*args, **kwargs)
         except Exception as e:
-            self.events['error'](event_name, *sys.exc_info())
+            self.events['on_error'](event_name, *sys.exc_info())
 
 
     def _received_message(self, msg):
