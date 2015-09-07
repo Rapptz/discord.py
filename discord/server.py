@@ -138,3 +138,9 @@ class Server(object):
         self.icon = kwargs.get('icon')
         self.id = kwargs.get('id')
         self.owner = kwargs.get('owner')
+
+    def get_default_role(self):
+        """Gets the @everyone role that all members have by default."""
+        for role in roles:
+            if role.name == '@everyone':
+                return role
