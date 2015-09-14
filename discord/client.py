@@ -760,3 +760,47 @@ class Client(object):
         url = '{0}/invite/{1.id}'.format(endpoints.API_BASE, invite)
         response = requests.post(url, headers=self.headers)
         return response.status_code in (200, 201)
+
+    def edit_role(self, server, role):
+        """Edits the specified :class:`Role` for the entire :class:`Server`.
+
+        To use this you have to edit the role yourself and then pass it
+        to this member function. For example: ::
+
+            server = message.channel.server
+            role = find(lambda r: r.name == 'My Cool Role', server.roles)
+            role.name = 'My Not So Cool Role'
+            role.permissions.can_kick_members = False
+            role.permissions.can_ban_members = False
+            client.edit_role(server, role)
+
+        Note that you cannot edit the name of the @everyone role as that role is special.
+
+        :param server: The :class:`Server` the role belongs to.
+        :param role: The :class:`Role` to edit.
+        :return: ``True`` if editing was successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
+
+        payload = {
+            'name': role.name,
+            'permissions': role.permissions.value
+        }
+
+        response = requests.patch(url, json=payload, headers=self.headers)
+        return response.status_code == 204
+
+    def delete_role(self, server, role):
+        """Deletes the specified :class:`Role` for the entire :class:`Server`.
+
+        Works in a similar matter to :func:`edit_role`.
+
+        :param server: The :class:`Server` the role belongs to.
+        :param role: The :class:`Role` to delete.
+        :return: ``True`` if deleting was successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
+        response = requests.delete(url, headers=self.headers)
+        return response.status_code == 204
