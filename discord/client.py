@@ -30,7 +30,7 @@ from .user import User
 from .channel import Channel, PrivateChannel
 from .server import Server, Member, Permissions, Role
 from .message import Message
-from .utils import parse_time
+from . import utils
 from .invite import Invite
 
 import requests
@@ -119,10 +119,10 @@ class Client(object):
         }
 
     def _get_message(self, msg_id):
-        return next((m for m in self.messages if m.id == msg_id), None)
+        return utils.find(lambda m: m.id == msg_id, self.messages)
 
     def _get_server(self, guild_id):
-        return next((s for s in self.servers if s.id == guild_id), None)
+        return utils.find(lambda g: g.id == guild_id, self.servers)
 
     def _add_server(self, guild):
         guild['roles'] = [Role(**role) for role in guild['roles']]
@@ -131,7 +131,7 @@ class Client(object):
         for i, member in enumerate(members):
             roles = member['roles']
             for j, roleid in enumerate(roles):
-                role = next((r for r in guild['roles'] if r.id == roleid), None)
+                role = utils.find(lambda r: r.id == roleid, guild['roles'])
                 if role is not None:
                     roles[j] = role
             members[i] = Member(**member)
@@ -142,7 +142,7 @@ class Client(object):
 
         for presence in guild['presences']:
             user_id = presence['user']['id']
-            member = next((m for m in members if m.id == user_id), None)
+            member = utils.find(lambda m: m.id == user_id, members)
             if member is not None:
                 member.status = presence['status']
                 member.game_id = presence['game_id']
@@ -160,7 +160,7 @@ class Client(object):
 
             for overridden in permission_overwrites:
                 # this is pretty inefficient due to the deep nested loops unfortunately
-                role = next((role for role in guild['roles'] if role.id == overridden['id']), None)
+                role = utils.find(lambda r: r.id == overridden['id'], guild['roles'])
                 if role is None:
                     continue
                 denied = overridden.get('deny', 0)
@@ -248,7 +248,7 @@ class Client(object):
                         continue
                     value = data[attr]
                     if 'time' in attr:
-                        setattr(message, attr, parse_time(value))
+                        setattr(message, attr, utils.parse_time(value))
                     else:
                         setattr(message, attr, value)
                 self._invoke_event('on_message_edit', older_message, message)
@@ -260,7 +260,7 @@ class Client(object):
             if server is not None:
                 status = data.get('status')
                 member_id = data['user']['id']
-                member = next((u for u in server.members if u.id == member_id), None)
+                member = utils.find(lambda m: m.id == member_id, server.members)
                 if member is not None:
                     member.status = data.get('status')
                     member.game_id = data.get('game_id')
@@ -272,7 +272,7 @@ class Client(object):
             server =  self._get_server(data.get('guild_id'))
             if server is not None:
                 channel_id = data.get('id')
-                channel = next((c for c in server.channels if c.id == channel_id), None)
+                channel = utils.find(lambda c: c.id == channel_id, server.channels)
                 server.channels.remove(channel)
                 self._invoke_event('on_channel_delete', channel)
         elif event == 'CHANNEL_CREATE':
@@ -298,13 +298,13 @@ class Client(object):
         elif event == 'GUILD_MEMBER_REMOVE':
             server = self._get_server(data.get('guild_id'))
             user_id = data['user']['id']
-            member = next((m for m in server.members if m.id == user_id), None)
+            member = utils.find(lambda m: m.id == user_id, server.members)
             server.members.remove(member)
             self._invoke_event('on_member_remove', member)
         elif event == 'GUILD_MEMBER_UPDATE':
             server = self._get_server(data.get('guild_id'))
             user_id = data['user']['id']
-            member = next((m for m in server.members if m.id == user_id), None)
+            member = utils.find(lambda m: m.id == user_id, server.members)
             if member is not None:
                 user = data['user']
                 member.name = user['username']
@@ -399,7 +399,7 @@ class Client(object):
             channel_id = destination.id
             is_private_message = destination.is_private
         elif isinstance(destination, User):
-            found = next((pm for pm in self.private_channels if pm.user == destination), None)
+            found = utils.find(lambda pm: pm.user == destination, self.private_channels)
             if found is None:
                 # Couldn't find the user, so start a PM with them first.
                 self.start_private_message(destination)
@@ -744,7 +744,8 @@ class Client(object):
         if response.status_code in (200, 201):
             data = response.json()
             data['server'] = self._get_server(data['guild']['id'])
-            data['channel'] = next((ch for ch in data['server'].channels if ch.id == data['channel']['id']))
+            channel_id = data['channel']['id']
+            data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
             return Invite(**data)
 
         return None

@@ -32,3 +32,26 @@ def parse_time(timestamp):
     if timestamp:
         return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
+
+def find(predicate, seq):
+    """A helper to return the first element found in the sequence
+    that meets the predicate. For example: ::
+
+        member = find(lambda m: m.name == 'Mighty', channel.server.members)
+
+    would find the first :class:`Member` whose name is 'Mighty' and return it.
+
+    This is different from `filter`_ due to the fact it stops the moment it finds
+    a valid entry.
+
+    .. _filter: https://docs.python.org/3.6/library/functions.html#filter
+
+    :param predicate: A function that returns a boolean-like result.
+    :param seq: The sequence to iterate through.
+    :return: The first result of the predicate that returned a ``True``-like value or ``None`` if nothing was found.
+    """
+
+    for element in seq:
+        if predicate(element):
+            return element
+    return None
