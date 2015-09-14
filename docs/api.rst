@@ -110,6 +110,12 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
     :param server: The :class:`Server` that got created or deleted.
 
 
+Utility Functions
+-----------------
+
+.. autofunction:: discord.utils.find
+
+
 Data Classes
 --------------
 
