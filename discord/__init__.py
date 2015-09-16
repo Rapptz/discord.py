@@ -27,3 +27,14 @@ from .errors import *
 from .permissions import Permissions
 from .invite import Invite
 from . import utils
+
+import logging
+
+try:
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger(__name__).addHandler(NullHandler())

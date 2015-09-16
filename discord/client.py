@@ -39,6 +39,11 @@ from collections import deque
 from threading import Timer
 from ws4py.client.threadedclient import WebSocketClient
 import sys
+import logging
+
+log = logging.getLogger(__name__)
+request_logging_format = '{name}: {response.request.method} {response.url} has returned {response.status_code}'
+request_success_log = '{name}: {response.url} with {json} received {data}'
 
 def _null_event(*args, **kwargs):
     pass
@@ -51,6 +56,7 @@ def _keep_alive_handler(seconds, ws):
             'd': int(time.time())
         }
 
+        log.debug('Keeping websocket alive with timestamp {0}'.format(payload['d']))
         ws.send(json.dumps(payload))
 
     t =  Timer(seconds, wrapper)
@@ -195,13 +201,15 @@ class Client(object):
 
     def _invoke_event(self, event_name, *args, **kwargs):
         try:
+            log.info('attempting to invoke event {}'.format(event_name))
             self.events[event_name](*args, **kwargs)
         except Exception as e:
+            log.error('an error ({}) occurred in event {} so on_error is invoked instead'.format(type(e).__name__, event_name))
             self.events['on_error'](event_name, *sys.exc_info())
-
 
     def _received_message(self, msg):
         response = json.loads(str(msg))
+        log.debug('WebSocket Event: {}'.format(response))
         if response.get('op') != 0:
             return
 
@@ -326,14 +334,15 @@ class Client(object):
             self._invoke_event('on_server_delete', server)
 
     def _opened(self):
-        print('Opened at {}'.format(int(time.time())))
+        log.info('Opened at {}'.format(int(time.time())))
 
     def _closed(self, code, reason=None):
-        print('Closed with {} ("{}") at {}'.format(code, reason, int(time.time())))
+        log.info('Closed with {} ("{}") at {}'.format(code, reason, int(time.time())))
         self._invoke_event('on_disconnect')
 
     def run(self):
         """Runs the client and allows it to receive messages and events."""
+        log.info('Client is being run')
         self.ws.run_forever()
 
     @property
@@ -372,7 +381,10 @@ class Client(object):
         r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
         if r.status_code == 200:
             data = r.json()
+            log.debug(request_success_log.format(name='start_private_message', response=response, json=payload, data=data))
             self.private_channels.append(PrivateChannel(id=data['id'], user=user))
+        else:
+            log.error(request_logging_format.format(name='start_private_message', response=r))
 
     def send_message(self, destination, content, mentions=True):
         """Sends a message to the destination given with the content given.
@@ -423,9 +435,12 @@ class Client(object):
         response = requests.post(url, json=payload, headers=self.headers)
         if response.status_code == 200:
             data = response.json()
+            log.debug(request_success_log.format(name='send_message', response=response, json=payload, data=data))
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
             return message
+        else:
+            log.error(request_logging_format.format(name='send_message', response=response))
 
     def delete_message(self, message):
         """Deletes a :class:`Message`
@@ -436,6 +451,7 @@ class Client(object):
         """
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(name='delete_message', response=response))
 
     def edit_message(self, message, new_content, mentions=True):
         """Edits a :class:`Message` with the new message content.
@@ -460,7 +476,10 @@ class Client(object):
         response = requests.patch(url, headers=self.headers, json=payload)
         if response.status_code == 200:
             data = response.json()
+            log.debug(request_success_log.format(name='edit_message', response=response, json=payload, data=data))
             return Message(channel=channel, **data)
+        else:
+            log.error(request_logging_format.format(name='edit_message', response=response))
 
     def login(self, email, password):
         """Logs in the user with the following credentials and initialises
@@ -481,6 +500,7 @@ class Client(object):
         r = requests.post(endpoints.LOGIN, json=payload)
 
         if r.status_code == 200:
+            log.info('logging in returned status code 200')
             self.email = email
 
             body = r.json()
@@ -495,8 +515,8 @@ class Client(object):
             if url is None:
                 raise GatewayNotFound()
 
+            log.info('websocket gateway has been found')
             self.ws = WebSocketClient(url, protocols=['http-only', 'chat'])
-
             # this is kind of hacky, but it's to avoid deadlocks.
             # i.e. python does not allow me to have the current thread running if it's self
             # it throws a 'cannot join current thread' RuntimeError
@@ -506,6 +526,7 @@ class Client(object):
             self.ws.closed = self._closed
             self.ws.received_message = self._received_message
             self.ws.connect()
+            log.info('websocket has connected')
 
             second_payload = {
                 'op': 2,
@@ -524,6 +545,8 @@ class Client(object):
 
             self.ws.send(json.dumps(second_payload))
             self._is_logged_in = True
+        else:
+            log.error(request_logging_format.format(name='login', response=response))
 
     def logout(self):
         """Logs out of Discord and closes all connections."""
@@ -531,6 +554,7 @@ class Client(object):
         self.ws.close()
         self._is_logged_in = False
         self.keep_alive.cancel()
+        log.debug(request_logging_format.format(name='logout', response=response))
 
     def logs_from(self, channel, limit=500):
         """A generator that obtains logs from a specified channel.
@@ -556,8 +580,11 @@ class Client(object):
         response = requests.get(url, params=params, headers=self.headers)
         if response.status_code == 200:
             messages = response.json()
+            log.info('logs_from: {0.url} was successful'.format(response))
             for message in messages:
                 yield Message(channel=channel, **message)
+        else:
+            log.error(request_logging_format.format(name='logs_from', response=response))
 
     def event(self, function):
         """A decorator that registers an event to listen to.
@@ -575,6 +602,7 @@ class Client(object):
             raise InvalidEventName('The function name {} is not a valid event name'.format(function.__name__))
 
         self.events[function.__name__] = function
+        log.info('{0.__name__} has successfully been registered as an event'.format(function))
         return function
 
     def create_channel(self, server, name, type='text'):
@@ -594,8 +622,12 @@ class Client(object):
         }
         response = requests.post(url, json=payload, headers=self.headers)
         if response.status_code == 200:
-            channel = Channel(server=server, **response.json())
+            data = response.json()
+            log.debug(request_success_log.format(name='create_channel', response=response, json=payload, data=data))
+            channel = Channel(server=server, **data)
             return channel
+        else:
+            log.error(request_logging_format.format(response=response, name='create_channel'))
 
     def delete_channel(self, channel):
         """Deletes a channel.
@@ -607,6 +639,7 @@ class Client(object):
         """
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='delete_channel'))
 
     def kick(self, server, user):
         """Kicks a :class:`User` from their respective :class:`Server`.
@@ -619,6 +652,7 @@ class Client(object):
 
         url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='kick'))
 
     def ban(self, server, user):
         """Bans a :class:`User` from their respective :class:`Server`.
@@ -631,6 +665,7 @@ class Client(object):
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.put(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='ban'))
 
     def unban(self, server, name):
         """Unbans a :class:`User` from their respective :class:`Server`.
@@ -643,6 +678,7 @@ class Client(object):
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='unban'))
 
     def edit_profile(self, password, **fields):
         """Edits the current profile of the client.
@@ -668,10 +704,13 @@ class Client(object):
 
         if response.status_code == 200:
             data = response.json()
+            log.debug(request_success_log.format(name='edit_profile', response=response, json=payload, data=data))
             self.token = data['token']
             self.email = data['email']
             self.headers['authorization'] = self.token
             self.user = User(**data)
+        else:
+            log.debug(request_logging_format.format(response=response, name='edit_profile'))
 
     def create_channel(self, server, name, type='text'):
         """Creates a :class:`Channel` in the specified :class:`Server`.
@@ -693,22 +732,12 @@ class Client(object):
         response = requests.post(url, headers=self.headers, json=payload)
         if response.status_code in (200, 201):
             data = response.json()
+            log.debug(request_success_log.format(name='create_channel', response=response, data=data, json=payload))
             channel = Channel(server=server, **data)
             # We don't append it to server.channels because CHANNEL_CREATE handles it for us.
             return channel
-
-        return None
-
-    def delete_channel(self, channel):
-        """Deletes a :class:`Channel` from its respective :class:`Server`.
-
-        Note that you need proper permissions to delete the channel.
-
-        :param channel: The :class:`Channel` to delete.
-        """
-
-        url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
-        requests.delete(url, headers=self.headers)
+        else:
+            log.debug(request_logging_format.format(response=response, name='create_channel'))
 
     def leave_server(self, server):
         """Leaves a :class:`Server`.
@@ -718,6 +747,7 @@ class Client(object):
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='leave_server'))
 
     def create_invite(self, destination, **options):
         """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
@@ -743,12 +773,13 @@ class Client(object):
         response = requests.post(url, headers=self.headers, json=payload)
         if response.status_code in (200, 201):
             data = response.json()
+            log.debug(request_success_log.format(name='create_invite', json=payload, response=response, data=data))
             data['server'] = self._get_server(data['guild']['id'])
             channel_id = data['channel']['id']
             data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
             return Invite(**data)
-
-        return None
+        else:
+            log.debug(request_logging_format.format(response=response, name='create_invite'))
 
     def accept_invite(self, invite):
         """Accepts an :class:`Invite`.
@@ -759,6 +790,7 @@ class Client(object):
 
         url = '{0}/invite/{1.id}'.format(endpoints.API_BASE, invite)
         response = requests.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='accept_invite'))
         return response.status_code in (200, 201)
 
     def edit_role(self, server, role):
@@ -789,6 +821,7 @@ class Client(object):
         }
 
         response = requests.patch(url, json=payload, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='edit_role'))
         return response.status_code == 204
 
     def delete_role(self, server, role):
@@ -803,4 +836,5 @@ class Client(object):
 
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
         response = requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='delete_role'))
         return response.status_code == 204
