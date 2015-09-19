@@ -36,7 +36,7 @@ from .invite import Invite
 import requests
 import json, re, time, copy
 from collections import deque
-from threading import Timer
+import threading
 from ws4py.client.threadedclient import WebSocketClient
 import sys
 import logging
@@ -48,20 +48,23 @@ request_success_log = '{name}: {response.url} with {json} received {data}'
 def _null_event(*args, **kwargs):
     pass
 
-def _keep_alive_handler(seconds, ws):
-    def wrapper():
-        _keep_alive_handler(seconds, ws)
-        payload = {
-            'op': 1,
-            'd': int(time.time())
-        }
+class KeepAliveHandler(threading.Thread):
+    def __init__(self, seconds, socket, **kwargs):
+        threading.Thread.__init__(self, **kwargs)
+        self.seconds = seconds
+        self.socket = socket
+        self.stop = threading.Event()
 
-        log.debug('Keeping websocket alive with timestamp {0}'.format(payload['d']))
-        ws.send(json.dumps(payload))
+    def run(self):
+        while not self.stop.wait(self.seconds):
+            payload = {
+                'op': 1,
+                'd': int(time.time())
+            }
 
-    t =  Timer(seconds, wrapper)
-    t.start()
-    return t
+            msg = 'Keeping websocket alive with timestamp {0}'
+            log.debug(msg.format(payload['d']))
+            self.socket.send(json.dumps(payload))
 
 class Client(object):
     """Represents a client connection that connects to Discord.
@@ -229,7 +232,8 @@ class Client(object):
 
             # set the keep alive interval..
             interval = data.get('heartbeat_interval') / 1000.0
-            self.keep_alive = _keep_alive_handler(interval, self.ws)
+            self.keep_alive = KeepAliveHandler(interval, self.ws)
+            self.keep_alive.start()
 
             # we're all ready
             self._invoke_event('on_ready')
@@ -553,7 +557,7 @@ class Client(object):
         response = requests.post(endpoints.LOGOUT)
         self.ws.close()
         self._is_logged_in = False
-        self.keep_alive.cancel()
+        self.keep_alive.stop.set()
         log.debug(request_logging_format.format(name='logout', response=response))
 
     def logs_from(self, channel, limit=500):
