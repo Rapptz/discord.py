@@ -762,13 +762,27 @@ class Client(object):
             log.debug(request_logging_format.format(response=response, name='create_invite'))
 
     def accept_invite(self, invite):
-        """Accepts an :class:`Invite`.
+        """Accepts an :class:`Invite` or a URL to an invite.
 
-        :param invite: The :class:`Invite` to accept.
+        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere"
+
+        :param invite: The :class:`Invite` or URL to an invite to accept.
         :returns: True if the invite was successfully accepted, False otherwise.
         """
 
-        url = '{0}/invite/{1.id}'.format(endpoints.API_BASE, invite)
+        destination = None
+        if isinstance(invite, Invite):
+            destination = invite.id
+        else:
+            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
+            m = re.match(rx, invite)
+            if m:
+                destination = m.group(1)
+
+        if destination is None:
+            return False
+
+        url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='accept_invite'))
         return response.status_code in (200, 201)
