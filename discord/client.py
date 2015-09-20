@@ -390,7 +390,7 @@ class Client(object):
         else:
             log.error(request_logging_format.format(name='start_private_message', response=r))
 
-    def send_message(self, destination, content, mentions=True):
+    def send_message(self, destination, content, mentions=True, tts=False):
         """Sends a message to the destination given with the content given.
 
         The destination could be a :class:`Channel` or a :class:`PrivateChannel`. For convenience
@@ -406,6 +406,7 @@ class Client(object):
         :param destination: The location to send the message.
         :param content: The content of the message to send.
         :param mentions: A list of :class:`User` to mention in the message or a boolean. Ignored for private messages.
+        :param tts: If ``True``, sends tries to send the message using text-to-speech.
         :return: The :class:`Message` sent or None if error occurred.
         """
 
@@ -435,6 +436,9 @@ class Client(object):
 
         if not is_private_message:
             payload['mentions'] = mentions
+
+        if tts:
+            payload['tts'] = True
 
         response = requests.post(url, json=payload, headers=self.headers)
         if response.status_code == 200:
