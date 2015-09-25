@@ -40,6 +40,9 @@ class Channel(object):
     .. attribute:: id
 
         The channel ID.
+    .. attribute:: topic
+
+        The channel's topic. None if it doesn't exist.
     .. attribute:: is_private
 
         ``True`` if the channel is a private channel (i.e. PM). ``False`` in this case.
@@ -59,6 +62,7 @@ class Channel(object):
         self.name = kwargs.get('name')
         self.server = kwargs.get('server')
         self.id = kwargs.get('id')
+        self.topic = kwargs.get('topic')
         self.is_private = False
         self.position = kwargs.get('position')
         self.type = kwargs.get('type')
