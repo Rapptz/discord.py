@@ -697,6 +697,37 @@ class Client(object):
         else:
             log.debug(request_logging_format.format(response=response, name='edit_profile'))
 
+    def edit_channel(self, channel, **options):
+        """Edits a :class:`Channel`.
+
+        You must have the proper permissions to edit the channel.
+
+        References pointed to the channel will be updated with the new information.
+
+        :param channel: The :class:`Channel` to update.
+        :param name: The new channel name.
+        :param position: The new channel's position in the GUI.
+        :param topic: The new channel's topic.
+        :returns: True if editing was successful, False otherwise.
+        """
+
+        url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
+        payload = {
+            'name': options.get('name', channel.name),
+            'topic': options.get('topic', channel.topic),
+            'position': options.get('position', channel.position)
+        }
+
+        response = requests.patch(url, headers=self.headers, json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            log.debug(request_success_log.format(name='edit_channel', response=response, json=payload, data=data))
+            channel.update(server=channel.server, **data)
+            return True
+        else:
+            log.debug(request_logging_format.format(response=response, name='edit_channel'))
+            return False
+
     def create_channel(self, server, name, type='text'):
         """Creates a :class:`Channel` in the specified :class:`Server`.
 
