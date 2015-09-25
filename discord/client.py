@@ -271,13 +271,18 @@ class Client(object):
             server = self._get_server(data.get('guild_id'))
             if server is not None:
                 status = data.get('status')
-                member_id = data['user']['id']
+                user = data['user']
+                member_id = user['id']
                 member = utils.find(lambda m: m.id == member_id, server.members)
                 if member is not None:
                     member.status = data.get('status')
                     member.game_id = data.get('game_id')
+                    member.name = user.get('username', member.name)
+                    member.avatar = user.get('avatar', member.avatar)
+
                     # call the event now
                     self._invoke_event('on_status', member)
+                    self._invoke_event('on_member_update', member)
         elif event == 'USER_UPDATE':
             self.user = User(**data)
         elif event == 'CHANNEL_DELETE':
