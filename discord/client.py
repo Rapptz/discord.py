@@ -451,15 +451,19 @@ class Client(object):
             log.error(request_logging_format.format(name='send_message', response=response))
 
     def delete_message(self, message):
-        """Deletes a :class:`Message`
+        """Deletes a :class:`Message`.
 
-        A fairly straightforward function.
+        Your own messages could be deleted without any proper permissions. However to
+        delete other people's messages, you need the proper permissions to do so.
 
         :param message: The :class:`Message` to delete.
+        :returns: True if the message was deleted successfully, False otherwise.
         """
+
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(name='delete_message', response=response))
+        return response.status_code == 200
 
     def edit_message(self, message, new_content, mentions=True):
         """Edits a :class:`Message` with the new message content.
@@ -469,7 +473,9 @@ class Client(object):
         :param message: The :class:`Message` to edit.
         :param new_content: The new content to replace the message with.
         :param mentions: The mentions for the user. Same as :meth:`send_message`.
-        :return: The new edited message or None if an error occurred."""
+        :return: The new edited message or None if an error occurred.
+        """
+
         channel = message.channel
         content = str(new_content)
 
@@ -620,10 +626,13 @@ class Client(object):
         in the server the channel belongs to.
 
         :param channel: The :class:`Channel` to delete.
+        :returns: True if channel was deleted successfully, False otherwise.
         """
+
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='delete_channel'))
+        return response.status_code == 200
 
     def kick(self, server, user):
         """Kicks a :class:`User` from their respective :class:`Server`.
@@ -632,11 +641,13 @@ class Client(object):
 
         :param server: The :class:`Server` to kick the member from.
         :param user: The :class:`User` to kick.
+        :returns: True if kick was successful, False otherwise.
         """
 
         url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='kick'))
+        return response.status_code == 200
 
     def ban(self, server, user):
         """Bans a :class:`User` from their respective :class:`Server`.
@@ -645,11 +656,13 @@ class Client(object):
 
         :param server: The :class:`Server` to ban the member from.
         :param user: The :class:`User` to ban.
+        :returns: True if ban was successful, False otherwise.
         """
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.put(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='ban'))
+        return response.status_code == 200
 
     def unban(self, server, name):
         """Unbans a :class:`User` from their respective :class:`Server`.
@@ -658,11 +671,13 @@ class Client(object):
 
         :param server: The :class:`Server` to unban the member from.
         :param user: The :class:`User` to unban.
+        :returns: True if unban was successful, False otherwise.
         """
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='unban'))
+        return response.status_code == 200
 
     def edit_profile(self, password, **fields):
         """Edits the current profile of the client.
@@ -727,11 +742,13 @@ class Client(object):
         """Leaves a :class:`Server`.
 
         :param server: The :class:`Server` to leave.
+        :returns: True if leaving was successful, False otherwise.
         """
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
-        requests.delete(url, headers=self.headers)
+        response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='leave_server'))
+        return response.status_code == 200
 
     def create_invite(self, destination, **options):
         """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
