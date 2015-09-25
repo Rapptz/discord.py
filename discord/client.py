@@ -114,6 +114,7 @@ class Client(object):
             'on_status': _null_event,
             'on_channel_delete': _null_event,
             'on_channel_create': _null_event,
+            'on_channel_update': _null_event,
             'on_member_join': _null_event,
             'on_member_remove': _null_event,
             'on_member_update': _null_event,
@@ -265,6 +266,13 @@ class Client(object):
                 channel = utils.find(lambda c: c.id == channel_id, server.channels)
                 server.channels.remove(channel)
                 self._invoke_event('on_channel_delete', channel)
+        elif event == 'CHANNEL_UPDATE':
+            server = self._get_server(data.get('guild_id'))
+            if server is not None:
+                channel_id = data.get('id')
+                channel = utils.find(lambda c: c.id == channel_id, server.channels)
+                channel.update(server=server, **data)
+                self._invoke_event('on_channel_update', channel)
         elif event == 'CHANNEL_CREATE':
             is_private = data.get('is_private', False)
             channel = None

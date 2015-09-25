@@ -86,6 +86,12 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
 
     :param channel: The :class:`Channel` that got added or deleted.
 
+.. function:: on_channel_update(channel)
+
+    Called whenever a channel is updated. e.g. changed name, topic, permissions.
+
+    :param channel: The :class:`Channel` that got updated.
+
 .. function:: on_member_join(member)
               on_member_remove(member)
 

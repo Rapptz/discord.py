@@ -59,6 +59,9 @@ class Channel(object):
     """
 
     def __init__(self, **kwargs):
+        self.update(**kwargs)
+
+    def update(self, **kwargs):
         self.name = kwargs.get('name')
         self.server = kwargs.get('server')
         self.id = kwargs.get('id')
