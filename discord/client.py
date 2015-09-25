@@ -168,6 +168,41 @@ class Client(object):
         server.channels = channels
         self.servers.append(server)
 
+    def _create_websocket(self, url, reconnect=False):
+        if url is None:
+            raise GatewayNotFound()
+        log.info('websocket gateway found')
+        self.ws = WebSocketClient(url, protocols=['http-only', 'chat'])
+
+        # this is kind of hacky, but it's to avoid deadlocks.
+        # i.e. python does not allow me to have the current thread running if it's self
+        # it throws a 'cannot join current thread' RuntimeError
+        # So instead of doing a basic inheritance scheme, we're overriding the member functions.
+
+        self.ws.opened = self._opened
+        self.ws.closed = self._closed
+        self.ws.received_message = self._received_message
+        self.ws.connect()
+        log.info('websocket has connected')
+
+        if reconnect == False:
+            second_payload = {
+                'op': 2,
+                'd': {
+                    'token': self.token,
+                    'properties': {
+                        '$os': sys.platform,
+                        '$browser': 'discord.py',
+                        '$device': 'discord.py',
+                        '$referrer': '',
+                        '$referring_domain': ''
+                    },
+                    'v': 2
+                }
+            }
+
+            self.ws.send(json.dumps(second_payload))
+
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
             return [user.id for user in mentions]
@@ -510,40 +545,7 @@ class Client(object):
             gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
             if gateway.status_code != 200:
                 raise GatewayNotFound()
-            gateway_js = gateway.json()
-            url = gateway_js.get('url')
-            if url is None:
-                raise GatewayNotFound()
-
-            log.info('websocket gateway has been found')
-            self.ws = WebSocketClient(url, protocols=['http-only', 'chat'])
-            # this is kind of hacky, but it's to avoid deadlocks.
-            # i.e. python does not allow me to have the current thread running if it's self
-            # it throws a 'cannot join current thread' RuntimeError
-            # So instead of doing a basic inheritance scheme, we're overriding the member functions.
-
-            self.ws.opened = self._opened
-            self.ws.closed = self._closed
-            self.ws.received_message = self._received_message
-            self.ws.connect()
-            log.info('websocket has connected')
-
-            second_payload = {
-                'op': 2,
-                'd': {
-                    'token': self.token,
-                    'properties': {
-                        '$os': sys.platform,
-                        '$browser': 'discord.py',
-                        '$device': 'discord.py',
-                        '$referrer': '',
-                        '$referring_domain': ''
-                    },
-                    'v': 2
-                }
-            }
-
-            self.ws.send(json.dumps(second_payload))
+            self._create_websocket(gateway.json().get('url'), reconnect=False)
             self._is_logged_in = True
         else:
             log.error(request_logging_format.format(name='login', response=response))
