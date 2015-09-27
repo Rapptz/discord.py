@@ -653,6 +653,43 @@ class Client(object):
         else:
             log.error(request_logging_format.format(name='login', response=r))
 
+    def register(self, username, invite, fingerprint=None):
+        """Register a new unclaimed account using an invite to a server.
+
+        After this function is called, the client will be logged in to the
+        user created and :attr:`is_logged_in` returns True if no errors
+        occur.
+
+        :param str username: The username to register as.
+        :param str invite: The invite to register with.
+        :param str fingerprint: Unkown API parameter, defaults to None
+        """
+
+        payload = {
+            'fingerprint': fingerprint,
+            'username': username,
+            'invite': invite
+        }
+
+        r = requests.post(endpoints.REGISTER, json=payload)
+
+        if r.status_code == 201:
+            log.info('register returned status code 200')
+            self.email = ''
+
+            body = r.json()
+            self.token = body['token']
+            self.headers['authorization'] = self.token
+
+            gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+            if gateway.status_code != 200:
+                raise GatewayNotFound()
+            self._create_websocket(gateway.json().get('url'), reconnect=False)
+            self._is_logged_in = True
+        else:
+            log.error(request_logging_format.format(name='register',
+                                                    response=r))
+
     def logout(self):
         """Logs out of Discord and closes all connections."""
         response = requests.post(endpoints.LOGOUT)
