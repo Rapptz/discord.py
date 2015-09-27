@@ -352,6 +352,8 @@ class Client(object):
 
     def __init__(self, **kwargs):
         self._is_logged_in = False
+        self._close = False
+        self.options = kwargs
         self.connection = ConnectionState(self.dispatch, **kwargs)
         self.dispatch_lock = threading.RLock()
         self.token = ''
@@ -466,6 +468,18 @@ class Client(object):
         """Runs the client and allows it to receive messages and events."""
         log.info('Client is being run')
         self.ws.run()
+
+        # The WebSocket is guaranteed to be terminated after ws.run().
+        # Check if we wanted it to close and reconnect if not.
+        while not self._close:
+            gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+            if gateway.status_code != 200:
+                raise GatewayNotFound()
+            self.connection = ConnectionState(self.dispatch, **self.options)
+            self._create_websocket(gateway.json().get('url'), reconnect=False)
+            self.ws.run()
+
+        log.info('Client exiting')
 
     @property
     def is_logged_in(self):
@@ -642,6 +656,7 @@ class Client(object):
     def logout(self):
         """Logs out of Discord and closes all connections."""
         response = requests.post(endpoints.LOGOUT)
+        self._close = True
         self.ws.close()
         self._is_logged_in = False
         log.debug(request_logging_format.format(name='logout', response=response))
