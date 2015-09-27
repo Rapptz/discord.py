@@ -353,6 +353,7 @@ class Client(object):
     def __init__(self, **kwargs):
         self._is_logged_in = False
         self.connection = ConnectionState(self.dispatch, **kwargs)
+        self.dispatch_lock = threading.RLock()
         self.token = ''
         self.events = {
             'on_ready': _null_event,
@@ -435,18 +436,19 @@ class Client(object):
             object.__setattr__(self, name, value)
 
     def dispatch(self, event, *args, **kwargs):
-        log.debug("Dispatching event {}".format(event))
-        handle_method = '_'.join(('handle', event))
-        event_method = '_'.join(('on', event))
-        getattr(self, handle_method, _null_event)(*args, **kwargs)
-        try:
-            getattr(self, event_method, _null_event)(*args, **kwargs)
-        except Exception as e:
-            getattr(self, 'on_error')(event_method, *args, **kwargs)
+        with self.dispatch_lock:
+            log.debug("Dispatching event {}".format(event))
+            handle_method = '_'.join(('handle', event))
+            event_method = '_'.join(('on', event))
+            getattr(self, handle_method, _null_event)(*args, **kwargs)
+            try:
+                getattr(self, event_method, _null_event)(*args, **kwargs)
+            except Exception as e:
+                getattr(self, 'on_error')(event_method, *args, **kwargs)
 
-        # Compatibility shim to old event system.
-        if event_method in self.events:
-            self._invoke_event(event_method, *args, **kwargs)
+            # Compatibility shim to old event system.
+            if event_method in self.events:
+                self._invoke_event(event_method, *args, **kwargs)
 
     def _invoke_event(self, event_name, *args, **kwargs):
         try:
