@@ -548,7 +548,7 @@ class Client(object):
             self._create_websocket(gateway.json().get('url'), reconnect=False)
             self._is_logged_in = True
         else:
-            log.error(request_logging_format.format(name='login', response=response))
+            log.error(request_logging_format.format(name='login', response=r))
 
     def logout(self):
         """Logs out of Discord and closes all connections."""
