@@ -216,6 +216,24 @@ class Client(object):
         else:
             return []
 
+    def on_error(self, event_method, *args, **kwargs):
+        msg = 'Caught exception in {} with args (*{}, **{})'
+        log.exception(msg.format(event_method, args, kwargs))
+
+    def dispatch(self, event, *args, **kwargs):
+        log.debug("Dispatching event {}".format(event))
+        handle_method = '_'.join(('handle', event))
+        event_method = '_'.join(('on', event))
+        getattr(self, handle_method, _null_event)(*args, **kwargs)
+        try:
+            getattr(self, event_method, _null_event)(*args, **kwargs)
+        except Exception as e:
+            getattr(self, 'on_error')(event_method, *args, **kwargs)
+
+        # Compatibility shim to old event system.
+        if event_method in self.events:
+            self._invoke_event(event_method, *args, **kwargs)
+
     def _invoke_event(self, event_name, *args, **kwargs):
         try:
             log.info('attempting to invoke event {}'.format(event_name))
@@ -230,7 +248,7 @@ class Client(object):
         if response.get('op') != 0:
             return
 
-        self._invoke_event('on_response', response)
+        self.dispatch('response', response)
         event = response.get('t')
         data = response.get('d')
 
@@ -250,18 +268,18 @@ class Client(object):
             self.keep_alive.start()
 
             # we're all ready
-            self._invoke_event('on_ready')
+            self.dispatch('ready')
         elif event == 'MESSAGE_CREATE':
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
-            self._invoke_event('on_message', message)
+            self.dispatch('message', message)
             self.messages.append(message)
         elif event == 'MESSAGE_DELETE':
             channel = self.get_channel(data.get('channel_id'))
             message_id = data.get('id')
             found = self._get_message(message_id)
             if found is not None:
-                self._invoke_event('on_message_delete', found)
+                self.dispatch('message_delete', found)
                 self.messages.remove(found)
         elif event == 'MESSAGE_UPDATE':
             older_message = self._get_message(data.get('id'))
@@ -277,7 +295,7 @@ class Client(object):
                         setattr(message, attr, utils.parse_time(value))
                     else:
                         setattr(message, attr, value)
-                self._invoke_event('on_message_edit', older_message, message)
+                self.dispatch('message_edit', older_message, message)
                 # update the older message
                 older_message = message
 
@@ -295,8 +313,8 @@ class Client(object):
                     member.avatar = user.get('avatar', member.avatar)
 
                     # call the event now
-                    self._invoke_event('on_status', member)
-                    self._invoke_event('on_member_update', member)
+                    self.dispatch('status', member)
+                    self.dispatch('member_update', member)
         elif event == 'USER_UPDATE':
             self.user = User(**data)
         elif event == 'CHANNEL_DELETE':
@@ -305,14 +323,14 @@ class Client(object):
                 channel_id = data.get('id')
                 channel = utils.find(lambda c: c.id == channel_id, server.channels)
                 server.channels.remove(channel)
-                self._invoke_event('on_channel_delete', channel)
+                self.dispatch('channel_delete', channel)
         elif event == 'CHANNEL_UPDATE':
             server = self._get_server(data.get('guild_id'))
             if server is not None:
                 channel_id = data.get('id')
                 channel = utils.find(lambda c: c.id == channel_id, server.channels)
                 channel.update(server=server, **data)
-                self._invoke_event('on_channel_update', channel)
+                self.dispatch('channel_update', channel)
         elif event == 'CHANNEL_CREATE':
             is_private = data.get('is_private', False)
             channel = None
@@ -327,18 +345,18 @@ class Client(object):
                     channel = Channel(server=server, **data)
                     server.channels.append(channel)
 
-            self._invoke_event('on_channel_create', channel)
+            self.dispatch('channel_create', channel)
         elif event == 'GUILD_MEMBER_ADD':
             server = self._get_server(data.get('guild_id'))
             member = Member(server=server, deaf=False, mute=False, **data)
             server.members.append(member)
-            self._invoke_event('on_member_join', member)
+            self.dispatch('member_join', member)
         elif event == 'GUILD_MEMBER_REMOVE':
             server = self._get_server(data.get('guild_id'))
             user_id = data['user']['id']
             member = utils.find(lambda m: m.id == user_id, server.members)
             server.members.remove(member)
-            self._invoke_event('on_member_remove', member)
+            self.dispatch('member_remove', member)
         elif event == 'GUILD_MEMBER_UPDATE':
             server = self._get_server(data.get('guild_id'))
             user_id = data['user']['id']
@@ -354,21 +372,21 @@ class Client(object):
                     if role.id in data['roles']:
                         member.roles.append(role)
 
-                self._invoke_event('on_member_update', member)
+                self.dispatch('member_update', member)
         elif event == 'GUILD_CREATE':
             self._add_server(data)
-            self._invoke_event('on_server_create', self.servers[-1])
+            self.dispatch('server_create', self.servers[-1])
         elif event == 'GUILD_DELETE':
             server = self._get_server(data.get('id'))
             self.servers.remove(server)
-            self._invoke_event('on_server_delete', server)
+            self.dispatch('server_delete', server)
 
     def _opened(self):
         log.info('Opened at {}'.format(int(time.time())))
 
     def _closed(self, code, reason=None):
         log.info('Closed with {} ("{}") at {}'.format(code, reason, int(time.time())))
-        self._invoke_event('on_disconnect')
+        self.dispatch('disconnect')
 
     def run(self):
         """Runs the client and allows it to receive messages and events."""
