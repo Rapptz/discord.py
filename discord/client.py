@@ -360,7 +360,7 @@ class Client(object):
         self.events = {
             'on_ready': _null_event,
             'on_disconnect': _null_event,
-            'on_error': _null_event,
+            'on_error': self.on_error,
             'on_response': _null_event,
             'on_message': _null_event,
             'on_message_delete': _null_event,
@@ -457,8 +457,7 @@ class Client(object):
             log.info('attempting to invoke event {}'.format(event_name))
             self.events[event_name](*args, **kwargs)
         except Exception as e:
-            log.error('an error ({}) occurred in event {} so on_error is invoked instead'.format(type(e).__name__, event_name))
-            self.events['on_error'](event_name, *sys.exc_info())
+            self.events['on_error'](event_name, *args, **kwargs)
 
     def handle_socket_update(self, event, data):
         method = '_'.join(('handle', event.lower()))

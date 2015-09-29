@@ -30,18 +30,28 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
 
     Called when the client disconnects for whatever reason. Be it error or manually.
 
-.. function:: on_error(event, type, value, traceback)
+.. function:: on_error(event, \*args, \*\*kwargs)
 
-    Usually when an event throws an uncaught exception, it is swallowed. If you want to handle
-    the uncaught exceptions for whatever reason, this event is called. If an exception is thrown
-    on this event then it propagates (i.e. it is not swallowed silently).
+    Usually when an event throws an uncaught exception, a traceback is
+    printed to stderr and the exception is ignored.  If you want to
+    change this behaviour and handle the uncaught exception for whatever
+    reason, this event can be overridden.  The default behaviour for
+    on_error is printing a traceback and then ignoring the exception,
+    but defining an on_error handler will supress this behaviour.
 
-    The parameters for this event are retrieved through the use of ``sys.exc_info()``.
+    If you want exception to propogate out of the :class:`Client` class
+    you can define an ``on_error`` handler consisting of a single empty
+    ``raise`` statement.  Exceptions raised by ``on_error`` will not be
+    handled in any way by :class:`Client`.
 
-    :param event: The event name that had the uncaught exception.
-    :param type: The type of exception that was swallowed.
-    :param value: The actual exception that was swallowed.
-    :param traceback: The traceback object representing the traceback of the exception swallowed.
+    The information of the exception rasied can be retreived with a
+    standard call to ``sys.exc_info()``.
+
+    :param event: The name of the event that raised the exception.
+    :param args: The positional arguments for the event that raised the
+        exception.
+    :param kwargs: The keyword arguments for the event that raised the
+        execption.
 
 .. function:: on_message(message)
 
