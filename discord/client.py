@@ -357,24 +357,6 @@ class Client(object):
         self.connection = ConnectionState(self.dispatch, **kwargs)
         self.dispatch_lock = threading.RLock()
         self.token = ''
-        self.events = {
-            'on_ready': _null_event,
-            'on_disconnect': _null_event,
-            'on_error': self.on_error,
-            'on_response': _null_event,
-            'on_message': _null_event,
-            'on_message_delete': _null_event,
-            'on_message_edit': _null_event,
-            'on_status': _null_event,
-            'on_channel_delete': _null_event,
-            'on_channel_create': _null_event,
-            'on_channel_update': _null_event,
-            'on_member_join': _null_event,
-            'on_member_remove': _null_event,
-            'on_member_update': _null_event,
-            'on_server_create': _null_event,
-            'on_server_delete': _null_event,
-        }
 
         # the actual headers for the request...
         # we only override 'authorization' since the rest could use the defaults.
@@ -447,17 +429,6 @@ class Client(object):
                 getattr(self, event_method, _null_event)(*args, **kwargs)
             except Exception as e:
                 getattr(self, 'on_error')(event_method, *args, **kwargs)
-
-            # Compatibility shim to old event system.
-            if event_method in self.events:
-                self._invoke_event(event_method, *args, **kwargs)
-
-    def _invoke_event(self, event_name, *args, **kwargs):
-        try:
-            log.info('attempting to invoke event {}'.format(event_name))
-            self.events[event_name](*args, **kwargs)
-        except Exception as e:
-            self.events['on_error'](event_name, *args, **kwargs)
 
     def handle_socket_update(self, event, data):
         method = '_'.join(('handle', event.lower()))
@@ -739,10 +710,7 @@ class Client(object):
                 print('Ready!')
         """
 
-        if function.__name__ not in self.events:
-            raise InvalidEventName('The function name {} is not a valid event name'.format(function.__name__))
-
-        self.events[function.__name__] = function
+        setattr(self, function.__name__, function)
         log.info('{0.__name__} has successfully been registered as an event'.format(function))
         return function
 
