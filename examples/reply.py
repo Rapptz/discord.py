@@ -3,6 +3,10 @@ import discord
 client = discord.Client()
 client.login('email', 'password')
 
+if not client.is_logged_in:
+    print('Logging in to Discord failed')
+    exit(1)
+
 @client.event
 def on_message(message):
     if message.content.startswith('!hello'):
