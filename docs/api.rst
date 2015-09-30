@@ -17,9 +17,18 @@ Client
 Event Reference
 ~~~~~~~~~~~~~~~~
 
-This page outlines the different types of events listened to by :meth:`Client.event`.
-All events are 'sandboxed', in that if an exception is thrown while the event is called then it is caught and propagated to :func:`on_error`.
+This page outlines the different types of events listened to by
+:meth:`Client.event`.
 
+If an event handler raises an exception, :func:`on_error` will be called
+to handle it, which defaults to log a traceback and ignore the exception.
+
+.. note::
+
+    If the Python logging module is not configured, the logs will not be
+    output anywhere. Meaning that exceptions in handlers will be
+    silently ignored. See :ref:`logging` for more information on how to
+    set up and use the logging module with discord.py.
 
 .. function:: on_ready()
 
@@ -32,20 +41,19 @@ All events are 'sandboxed', in that if an exception is thrown while the event is
 
 .. function:: on_error(event, \*args, \*\*kwargs)
 
-    Usually when an event throws an uncaught exception, a traceback is
-    printed to stderr and the exception is ignored.  If you want to
-    change this behaviour and handle the uncaught exception for whatever
-    reason, this event can be overridden.  The default behaviour for
-    on_error is printing a traceback and then ignoring the exception,
-    but defining an on_error handler will supress this behaviour.
+    Usually when an event raises an uncaught exception, a traceback is
+    logged and the exception is ignored. If you want to change this
+    behaviour and handle the exception for whatever reason yourself,
+    this event can be overridden. Which, when done, will supress the
+    default logging done.
+
+    The information of the exception rasied and the exception itself can
+    be retreived with a standard call to ``sys.exc_info()``.
 
     If you want exception to propogate out of the :class:`Client` class
     you can define an ``on_error`` handler consisting of a single empty
     ``raise`` statement.  Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
-
-    The information of the exception rasied can be retreived with a
-    standard call to ``sys.exc_info()``.
 
     :param event: The name of the event that raised the exception.
     :param args: The positional arguments for the event that raised the

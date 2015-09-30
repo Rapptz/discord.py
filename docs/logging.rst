@@ -1,11 +1,27 @@
 Setting Up Logging
 ===================
 
-Newer version of *discord.py* have the capability of logging certain events via the `logging`_ python module.
+*discord.py* logs errors, exceptions, and debug information via the
+`logging`_ python module. It is strongly recommended that the logging
+module is configured, as no errors or warnings will be output at all if
+it is not set up. Configuration of the ``logging`` module can be as
+simple as::
 
-This is helpful if you want to see certain issues in *discord.py* or want to listen to events yourself.
+    import logging
 
-Setting up logging is fairly simple: ::
+    logging.basicConfig(level=logging.INFO)
+
+Placed at the start of the application. This will output the logs from
+discord as well as other libraries that uses the ``logging`` module
+directly to the console.
+
+The optinal ``level`` argument specifies what level of events to log
+out and can any of ``CRITICAL``, ``ERROR``, ``WARNING``, ``INFO``, and
+``DEBUG`` and if not specified defaults to ``WARNING``.
+
+More advance setups are possible with the ``logging`` module.  To for
+example write the logs to a file called ``discord.log`` instead of
+outputting them to to the console the following snippet can be used::
 
     import discord
     import logging
@@ -16,9 +32,15 @@ Setting up logging is fairly simple: ::
     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
     logger.addHandler(handler)
 
-This would create a logger that writes to a file called ``discord.log``. This is recommended as there are a lot of events
-logged at a time and it would clog out the stdout of your program.
+This is recommended, especially at verbose levels such as ``INFO``,
+and ``DEBUG`` as there are a lot of events logged and it would clog the
+stdout of your program.
 
-For more information, check the documentation and tutorial of the `logging`_ module.
+.. note::
+
+    The logging facilities were added in version 0.6 of discord.py.
+
+For more information, check the documentation and tutorial of the
+`logging`_ module.
 
 .. _logging: https://docs.python.org/2/library/logging.html
