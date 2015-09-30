@@ -1,4 +1,8 @@
 import discord
+import logging
+
+# Set up the logging module to output diagnostic to the console.
+logging.basicConfig()
 
 client = discord.Client()
 client.login('email', 'password')
