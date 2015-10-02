@@ -325,7 +325,7 @@ class Client(object):
             self._invoke_event('on_channel_create', channel)
         elif event == 'GUILD_MEMBER_ADD':
             server = self._get_server(data.get('guild_id'))
-            member = Member(deaf=False, mute=False, **data)
+            member = Member(server=server, deaf=False, mute=False, **data)
             server.members.append(member)
             self._invoke_event('on_member_join', member)
         elif event == 'GUILD_MEMBER_REMOVE':
