@@ -48,6 +48,11 @@ request_success_log = '{name}: {response.url} with {json} received {data}'
 def _null_event(*args, **kwargs):
     pass
 
+def is_response_successful(response):
+    """Helper function for checking if the status code is in the 200 range"""
+    code = response.status_code
+    return code >= 200 and code < 300
+
 class KeepAliveHandler(threading.Thread):
     def __init__(self, seconds, socket, **kwargs):
         threading.Thread.__init__(self, **kwargs)
@@ -404,7 +409,7 @@ class Client(object):
         }
 
         r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
-        if r.status_code == 200:
+        if is_response_successful(r):
             data = r.json()
             log.debug(request_success_log.format(name='start_private_message', response=r, json=payload, data=data))
             self.private_channels.append(PrivateChannel(id=data['id'], user=user))
@@ -462,7 +467,7 @@ class Client(object):
             payload['tts'] = True
 
         response = requests.post(url, json=payload, headers=self.headers)
-        if response.status_code == 200:
+        if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='send_message', response=response, json=payload, data=data))
             channel = self.get_channel(data.get('channel_id'))
@@ -484,7 +489,7 @@ class Client(object):
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(name='delete_message', response=response))
-        return response.status_code == 200
+        return is_response_successful(response)
 
     def edit_message(self, message, new_content, mentions=True):
         """Edits a :class:`Message` with the new message content.
@@ -509,7 +514,7 @@ class Client(object):
             payload['mentions'] = self._resolve_mentions(content, mentions)
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        if response.status_code == 200:
+        if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='edit_message', response=response, json=payload, data=data))
             return Message(channel=channel, **data)
@@ -534,8 +539,8 @@ class Client(object):
 
         r = requests.post(endpoints.LOGIN, json=payload)
 
-        if r.status_code == 200:
-            log.info('logging in returned status code 200')
+        if is_response_successful(r):
+            log.info('logging in returned status code {}'.format(r.status_code))
             self.email = email
 
             body = r.json()
@@ -543,7 +548,7 @@ class Client(object):
             self.headers['authorization'] = self.token
 
             gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-            if gateway.status_code != 200:
+            if not is_response_successful(gateway):
                 raise GatewayNotFound()
             self._create_websocket(gateway.json().get('url'), reconnect=False)
             self._is_logged_in = True
@@ -580,7 +585,7 @@ class Client(object):
             'limit': limit
         }
         response = requests.get(url, params=params, headers=self.headers)
-        if response.status_code == 200:
+        if is_response_successful(response):
             messages = response.json()
             log.info('logs_from: {0.url} was successful'.format(response))
             for message in messages:
@@ -620,7 +625,7 @@ class Client(object):
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='delete_channel'))
-        return response.status_code == 200
+        return is_response_successful(response)
 
     def kick(self, server, user):
         """Kicks a :class:`User` from their respective :class:`Server`.
@@ -635,7 +640,7 @@ class Client(object):
         url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='kick'))
-        return response.status_code == 200
+        return is_response_successful(response)
 
     def ban(self, server, user):
         """Bans a :class:`User` from their respective :class:`Server`.
@@ -650,7 +655,7 @@ class Client(object):
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.put(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='ban'))
-        return response.status_code == 200
+        return is_response_successful(response)
 
     def unban(self, server, name):
         """Unbans a :class:`User` from their respective :class:`Server`.
@@ -665,7 +670,7 @@ class Client(object):
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='unban'))
-        return response.status_code == 200
+        return is_response_successful(response)
 
     def edit_profile(self, password, **fields):
         """Edits the current profile of the client.
@@ -689,7 +694,7 @@ class Client(object):
         url = '{0}/@me'.format(endpoints.USERS)
         response = requests.patch(url, headers=self.headers, json=payload)
 
-        if response.status_code == 200:
+        if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='edit_profile', response=response, json=payload, data=data))
             self.token = data['token']
@@ -721,7 +726,7 @@ class Client(object):
         }
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        if response.status_code == 200:
+        if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='edit_channel', response=response, json=payload, data=data))
             channel.update(server=channel.server, **data)
@@ -748,7 +753,7 @@ class Client(object):
 
         url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
         response = requests.post(url, headers=self.headers, json=payload)
-        if response.status_code in (200, 201):
+        if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='create_channel', response=response, data=data, json=payload))
             channel = Channel(server=server, **data)
@@ -767,7 +772,7 @@ class Client(object):
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='leave_server'))
-        return response.status_code == 200
+        return is_response_successful(response)
 
     def create_invite(self, destination, **options):
         """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
@@ -791,7 +796,7 @@ class Client(object):
 
         url = '{0}/{1.id}/invites'.format(endpoints.CHANNELS, destination)
         response = requests.post(url, headers=self.headers, json=payload)
-        if response.status_code in (200, 201):
+        if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='create_invite', json=payload, response=response, data=data))
             data['server'] = self._get_server(data['guild']['id'])
@@ -825,7 +830,7 @@ class Client(object):
         url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='accept_invite'))
-        return response.status_code in (200, 201)
+        return is_response_successful(response)
 
     def edit_role(self, server, role):
         """Edits the specified :class:`Role` for the entire :class:`Server`.
@@ -856,7 +861,7 @@ class Client(object):
 
         response = requests.patch(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='edit_role'))
-        return response.status_code == 204
+        return is_response_successful(response)
 
     def delete_role(self, server, role):
         """Deletes the specified :class:`Role` for the entire :class:`Server`.
@@ -871,4 +876,4 @@ class Client(object):
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='delete_role'))
-        return response.status_code == 204
+        return is_response_successful(response)
