@@ -406,7 +406,7 @@ class Client(object):
         r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
         if r.status_code == 200:
             data = r.json()
-            log.debug(request_success_log.format(name='start_private_message', response=response, json=payload, data=data))
+            log.debug(request_success_log.format(name='start_private_message', response=r, json=payload, data=data))
             self.private_channels.append(PrivateChannel(id=data['id'], user=user))
         else:
             log.error(request_logging_format.format(name='start_private_message', response=r))
