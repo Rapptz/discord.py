@@ -11,6 +11,7 @@ def on_ready():
 
 @client.event
 def on_message(message):
-    client.send_message(message.channel, message.content)
+    if message.author.id != client.user.id:
+        client.send_message(message.channel, message.content)
 
 client.run()
