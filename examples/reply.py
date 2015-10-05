@@ -6,7 +6,7 @@ client.login('email', 'password')
 @client.event
 def on_message(message):
     if message.content.startswith('!hello'):
-        client.send_message(message.channel, 'Hello was received!')
+        client.send_message(message.channel, 'Hello {}!'.format(message.author.mention()))
 
 @client.event
 def on_ready():
