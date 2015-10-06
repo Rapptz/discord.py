@@ -220,6 +220,9 @@ class Client(object):
         try:
             log.info('attempting to invoke event {}'.format(event_name))
             self.events[event_name](*args, **kwargs)
+        except KeyboardInterrupt:
+            log.info("Keyboard Interupt, Stopping...")
+            self.logout()
         except Exception as e:
             log.error('an error ({}) occurred in event {} so on_error is invoked instead'.format(type(e).__name__, event_name))
             self.events['on_error'](event_name, *sys.exc_info())
@@ -373,7 +376,11 @@ class Client(object):
     def run(self):
         """Runs the client and allows it to receive messages and events."""
         log.info('Client is being run')
-        self.ws.run_forever()
+        try:
+            self.ws.run_forever()
+        except KeyboardInterrupt:
+            log.info("Keyboard Interupt, Stopping...")
+            self.logout()
 
     @property
     def is_logged_in(self):
