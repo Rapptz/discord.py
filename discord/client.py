@@ -384,7 +384,7 @@ class Client(object):
                         '$referrer': '',
                         '$referring_domain': ''
                     },
-                    'v': 2
+                    'v': 3
                 }
             }
 
