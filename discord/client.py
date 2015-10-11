@@ -782,6 +782,7 @@ class Client(object):
         :param new_password: The new password you wish to change to.
         :param email: The new email you wish to change to.
         :param username: The new username you wish to change to.
+        :returns: True if profile edit was successful, False otherwise.
         """
 
         payload = {
@@ -802,8 +803,10 @@ class Client(object):
             self.email = data['email']
             self.headers['authorization'] = self.token
             self.user = User(**data)
+            return True
         else:
             log.debug(request_logging_format.format(response=response, name='edit_profile'))
+            return False
 
     def edit_channel(self, channel, **options):
         """Edits a :class:`Channel`.
