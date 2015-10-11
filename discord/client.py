@@ -404,8 +404,7 @@ class Client(object):
 
     # Compatibility shim
     def __getattr__(self, name):
-        if name in ('user', 'email', 'servers', 'private_channels', 'messages',
-                    'get_channel'):
+        if name in ('user', 'email', 'servers', 'private_channels', 'messages'):
             return getattr(self.connection, name)
         else:
             msg = "'{}' object has no attribute '{}'"
