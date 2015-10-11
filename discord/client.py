@@ -398,6 +398,16 @@ class Client(object):
         else:
             return []
 
+    def _resolve_invite(self, invite):
+        if isinstance(invite, Invite):
+            return invite.id
+        else:
+            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
+            m = re.match(rx, invite)
+            if m:
+                return m.group(1)
+        return None
+
     def on_error(self, event_method, *args, **kwargs):
         msg = 'Caught exception in {} with args (*{}, **{})'
         log.exception(msg.format(event_method, args, kwargs))
@@ -630,14 +640,14 @@ class Client(object):
         occur.
 
         :param str username: The username to register as.
-        :param str invite: The invite to register with.
+        :param invite: An invite URL or :class:`Invite` to register with.
         :param str fingerprint: Unkown API parameter, defaults to None
         """
 
         payload = {
             'fingerprint': fingerprint,
             'username': username,
-            'invite': invite
+            'invite': self._resolve_invite(invite)
         }
 
         r = requests.post(endpoints.REGISTER, json=payload)
@@ -919,14 +929,7 @@ class Client(object):
         :returns: True if the invite was successfully accepted, False otherwise.
         """
 
-        destination = None
-        if isinstance(invite, Invite):
-            destination = invite.id
-        else:
-            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
-            m = re.match(rx, invite)
-            if m:
-                destination = m.group(1)
+        destination = self._resolve_invite(invite)
 
         if destination is None:
             return False
