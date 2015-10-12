@@ -553,6 +553,46 @@ class Client(object):
         else:
             log.error(request_logging_format.format(name='send_message', response=response))
 
+    def send_file(self, destination, filename):
+        """Sends a message to the destination given with the file given.
+
+        The destination could be a :class:`Channel` or a :class:`PrivateChannel`. For convenience
+        it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel` then it
+        sends the message via private message, otherwise it sends the message to the channel.
+
+        :param destination: The location to send the message.
+        :param filename: The relative file path to the file to be sent. 
+        """
+
+        channel_id = ''
+        is_private_message = True
+        if isinstance(destination, Channel) or isinstance(destination, PrivateChannel):
+            channel_id = destination.id
+            is_private_message = destination.is_private
+        elif isinstance(destination, User):
+            found = utils.find(lambda pm: pm.user == destination, self.private_channels)
+            if found is None:
+                # Couldn't find the user, so start a PM with them first.
+                self.start_private_message(destination)
+                channel_id = self.private_channels[-1].id
+            else:
+                channel_id = found.id
+        else:
+            raise InvalidDestination('Destination must be Channel, PrivateChannel, or User')
+        
+        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+
+        response = requests.post(url, files={'file' : (filename, open(filename, 'rb'))}, headers=self.headers)
+            
+        if is_response_successful(response):
+            data = response.json()
+            log.debug(request_success_log.format(name='send_file', response=response, json=response.text, data=filename))
+            channel = self.get_channel(data.get('channel_id'))
+            message = Message(channel=channel, **data)
+            return message
+        else:
+            log.error(request_logging_format.format(name='send_file', response=response))
+
     def delete_message(self, message):
         """Deletes a :class:`Message`.
 
