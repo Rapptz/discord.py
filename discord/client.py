@@ -498,7 +498,8 @@ class Client(object):
 
         The destination could be a :class:`Channel` or a :class:`PrivateChannel`. For convenience
         it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel` then it
-        sends the message via private message, otherwise it sends the message to the channel.
+        sends the message via private message, otherwise it sends the message to the channel. If it's
+        a ``str`` instance, then it assumes it's a channel ID and uses that for its destination.
 
         The content must be a type that can convert to a string through ``str(content)``.
 
@@ -526,8 +527,10 @@ class Client(object):
                 channel_id = self.private_channels[-1].id
             else:
                 channel_id = found.id
+        elif isinstance(destination, str):
+            channel_id = destination
         else:
-            raise InvalidDestination('Destination must be Channel, PrivateChannel, or User')
+            raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
 
         content = str(content)
         mentions = self._resolve_mentions(content, mentions)
