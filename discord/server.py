@@ -42,12 +42,38 @@ class Role(object):
     .. attribute:: permissions
 
         A :class:`Permissions` that represents the role's permissions.
+    .. attribute:: color
+                   colour
+
+        A tuple of (r, g, b) associated with the role colour.
+    .. attribute:: hoist
+
+        A boolean representing if the role will be displayed separately from other members.
+    .. attribute:: position
+
+        The position of the role.
     """
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.permissions = Permissions(kwargs.get('permissions', 0))
+        self.position = kwargs.get('position', -1)
+        self.colour = kwargs.get('color', 0)
+        self.hoist = kwargs.get('hoist', False)
+        self._colour_to_tuple()
+
+    def _colour_to_tuple(self):
+        # first we turn this into a hex string
+        # the reason why we're using a hex string rather than just use bitwise
+        # ops is because we don't want to care too much about endianness.
+        hex_str = format(self.colour, '06x')
+        red = int(hex_str[0] + hex_str[1], base=16)
+        green = int(hex_str[2] + hex_str[3], base=16)
+        blue = int(hex_str[4] + hex_str[5], base=16)
+        self.colour = (red, green, blue)
+        self.color = self.colour
+
 
 class Member(User):
     """Represents a Discord member to a :class:`Server`.
