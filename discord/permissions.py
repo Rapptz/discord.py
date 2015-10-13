@@ -39,7 +39,7 @@ class Permissions(object):
     were regular bools. This allows you to edit permissions.
     """
 
-    def __init__(self, permissions):
+    def __init__(self, permissions, **kwargs):
         self.value = permissions
 
     def _bit(self, index):

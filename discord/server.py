@@ -44,10 +44,10 @@ class Role(object):
         A :class:`Permissions` that represents the role's permissions.
     """
 
-    def __init__(self, id, name, permissions):
-        self.id = id
-        self.name = name
-        self.permissions = Permissions(permissions)
+    def __init__(self, **kwargs):
+        self.id = kwargs.get('id')
+        self.name = kwargs.get('name')
+        self.permissions = Permissions(kwargs.get('permissions', 0))
 
 class Member(User):
     """Represents a Discord member to a :class:`Server`.
