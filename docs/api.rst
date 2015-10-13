@@ -17,27 +17,37 @@ Client
 Event Reference
 ~~~~~~~~~~~~~~~~
 
-This page outlines the different types of events listened to by
-:meth:`Client.event`.
+This page outlines the different types of events listened by :class:`Client`.
+
+There are two ways to register an event, the first way is through the use of
+:meth:`Client.event`. The second way is through subclassing :class:`Client` and
+overriding the specific events. For example: ::
+
+    import discord
+
+    class MyClient(discord.Client):
+        def on_message(self, message):
+            self.send_message(message.channel, 'Hello World!')
+
 
 If an event handler raises an exception, :func:`on_error` will be called
 to handle it, which defaults to log a traceback and ignore the exception.
+
+.. versionadded:: 0.7.0
+    Subclassing to listen to events.
 
 .. note::
 
     If the Python logging module is not configured, the logs will not be
     output anywhere. Meaning that exceptions in handlers will be
-    silently ignored. See :ref:`logging` for more information on how to
+    silently ignored. See :ref:`logging_setup` for more information on how to
     set up and use the logging module with discord.py.
+
 
 .. function:: on_ready()
 
     Called when the client is done preparing the data received from Discord. Usually after login is successful
     and the :attr:`Client.servers` and co. are filled up.
-
-.. function:: on_disconnect()
-
-    Called when the client disconnects for whatever reason. Be it error or manually.
 
 .. function:: on_error(event, \*args, \*\*kwargs)
 
@@ -67,7 +77,24 @@ to handle it, which defaults to log a traceback and ignore the exception.
 
     :param message: A :class:`Message` of the current message.
 
-.. function:: on_response(response)
+.. function:: on_socket_opened()
+
+    Called whenever the websocket is successfully opened. This is not the same thing as being ready.
+    For that, use :func:`on_ready`.
+
+.. function:: on_socket_closed()
+
+    Called whenever the websocket is closed, through an error or otherwise.
+
+.. function:: on_socket_update(event, data)
+
+    Called whenever a recognised websocket event is found. This function would normally be not be
+    called as there are higher level events in the library such as :func:`on_message`.
+
+    :param str event: The string of the event received. e.g. ``READY``.
+    :param data: The data associated with the socket event. Usually a ``dict``.
+
+.. function:: on_socket_response(response)
 
     Called whenever a message is received from the websocket. Used mainly for debugging purposes.
     The parameter passed is raw data that was parsed via ``json.loads``. Note that this is called

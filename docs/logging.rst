@@ -1,3 +1,6 @@
+.. versionadded:: 0.6.0
+.. _logging_setup:
+
 Setting Up Logging
 ===================
 
@@ -36,9 +39,7 @@ This is recommended, especially at verbose levels such as ``INFO``,
 and ``DEBUG`` as there are a lot of events logged and it would clog the
 stdout of your program.
 
-.. note::
 
-    The logging facilities were added in version 0.6 of discord.py.
 
 For more information, check the documentation and tutorial of the
 `logging`_ module.
