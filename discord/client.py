@@ -1006,7 +1006,9 @@ class Client(object):
 
         payload = {
             'name': role.name,
-            'permissions': role.permissions.value
+            'permissions': role.permissions.value,
+            'color': role.color,
+            'hoist': role.hoist
         }
 
         response = requests.patch(url, json=payload, headers=self.headers)
