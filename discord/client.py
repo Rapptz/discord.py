@@ -408,6 +408,24 @@ class Client(object):
                 return m.group(1)
         return None
 
+    def _resolve_destination(self, destination):
+        if isinstance(destination, Channel) or isinstance(destination, PrivateChannel):
+            return (destination.id, destination.is_private)
+        elif isinstance(destination, User):
+            found = utils.find(lambda pm: pm.user == destination, self.private_channels)
+            if found is None:
+                # Couldn't find the user, so start a PM with them first.
+                self.start_private_message(destination)
+                channel_id = self.private_channels[-1].id
+                return (channel_id, True)
+            else:
+                return (found.id, True)
+        elif isinstance(destination, str):
+            channel_id = destination
+            return (destination, True)
+        else:
+            raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
+
     def on_error(self, event_method, *args, **kwargs):
         msg = 'Caught exception in {} with args (*{}, **{})'
         log.exception(msg.format(event_method, args, kwargs))
@@ -514,23 +532,7 @@ class Client(object):
         :return: The :class:`Message` sent or None if error occurred.
         """
 
-        channel_id = ''
-        is_private_message = True
-        if isinstance(destination, Channel) or isinstance(destination, PrivateChannel):
-            channel_id = destination.id
-            is_private_message = destination.is_private
-        elif isinstance(destination, User):
-            found = utils.find(lambda pm: pm.user == destination, self.private_channels)
-            if found is None:
-                # Couldn't find the user, so start a PM with them first.
-                self.start_private_message(destination)
-                channel_id = self.private_channels[-1].id
-            else:
-                channel_id = found.id
-        elif isinstance(destination, str):
-            channel_id = destination
-        else:
-            raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
+        channel_id, is_private_message = self._resolve_destination(destination)
 
         content = str(content)
         mentions = self._resolve_mentions(content, mentions)
@@ -559,34 +561,26 @@ class Client(object):
     def send_file(self, destination, filename):
         """Sends a message to the destination given with the file given.
 
-        The destination could be a :class:`Channel` or a :class:`PrivateChannel`. For convenience
-        it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel` then it
-        sends the message via private message, otherwise it sends the message to the channel.
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        Note that this requires proper permissions in order to work.
 
         :param destination: The location to send the message.
-        :param filename: The relative file path to the file to be sent. 
+        :param filename: The file to send.
+        :return: The :class:`Message` sent or None if an error occurred.
         """
 
-        channel_id = ''
-        is_private_message = True
-        if isinstance(destination, Channel) or isinstance(destination, PrivateChannel):
-            channel_id = destination.id
-            is_private_message = destination.is_private
-        elif isinstance(destination, User):
-            found = utils.find(lambda pm: pm.user == destination, self.private_channels)
-            if found is None:
-                # Couldn't find the user, so start a PM with them first.
-                self.start_private_message(destination)
-                channel_id = self.private_channels[-1].id
-            else:
-                channel_id = found.id
-        else:
-            raise InvalidDestination('Destination must be Channel, PrivateChannel, or User')
-        
-        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+        channel_id, is_private_message = self._resolve_destination(destination)
 
-        response = requests.post(url, files={'file' : (filename, open(filename, 'rb'))}, headers=self.headers)
-            
+        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+        response = None
+
+        with open(filename, 'rb') as f:
+            files = {
+                'file': (filename, f)
+            }
+            response = requests.post(url, files=files, headers=self.headers)
+
         if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='send_file', response=response, json=response.text, data=filename))
