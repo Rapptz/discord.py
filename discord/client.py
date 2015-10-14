@@ -1023,3 +1023,33 @@ class Client(object):
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='delete_role'))
         return is_response_successful(response)
+
+    def change_status(self, game_id=None, idle=False):
+        """Changes the client's status.
+
+        The game_id parameter is a numeric ID (not a string) that represents
+        a game being played currently. The list of game_id to actual games changes
+        constantly and would thus be out of date pretty quickly. An old version of
+        the game_id database can be seen `here`_ to help you get started.
+
+        The idle parameter is a boolean parameter that indicates whether the
+        client should go idle or not.
+
+        .. _here: https://gist.github.com/Rapptz/a82b82381b70a60c281b
+
+        :param game_id: The numeric game ID being played. None if no game is being played.
+        :param idle: A boolean indicating if the client should go idle."""
+
+        idle_since = None if idle == False else int(time.time() * 1000)
+        payload = {
+            'op': 3,
+            'd': {
+                'game_id': game_id,
+                'idle_since': idle_since
+            }
+        }
+
+        sent = json.dumps(payload)
+        log.debug('Sending "{}" to change status'.format(sent))
+        self.ws.send(sent)
+
