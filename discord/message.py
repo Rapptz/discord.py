@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time
+from . import utils
 from .user import User
 
 class Message(object):
@@ -45,7 +45,8 @@ class Message(object):
         Checks the message has text-to-speech support.
     .. attribute:: author
 
-        A :class:`User` that sent the message.
+        A :class:`Member` that sent the message. If :attr:`channel` is a private channel,
+        then it is a :class:`User` instead.
     .. attribute:: content
 
         The actual contents of the message.
@@ -74,8 +75,8 @@ class Message(object):
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
         # sometimes the .%f modifier is missing
-        self.edited_timestamp = parse_time(kwargs.get('edited_timestamp'))
-        self.timestamp = parse_time(kwargs.get('timestamp'))
+        self.edited_timestamp = utils.parse_time(kwargs.get('edited_timestamp'))
+        self.timestamp = utils.parse_time(kwargs.get('timestamp'))
         self.tts = kwargs.get('tts')
         self.content = kwargs.get('content')
         self.mention_everyone = kwargs.get('mention_everyone')
@@ -85,4 +86,14 @@ class Message(object):
         self.author = User(**kwargs.get('author', {}))
         self.mentions = [User(**mention) for mention in kwargs.get('mentions', {})]
         self.attachments = kwargs.get('attachments')
+        self._upgrade_to_member()
+
+    def _upgrade_to_member(self):
+        assert self.channel is not None
+
+        if not self.channel.is_private:
+            found = utils.find(lambda m: m.id == self.author.id, self.channel.server.members)
+            if found is not None:
+                self.author = found
+
 
