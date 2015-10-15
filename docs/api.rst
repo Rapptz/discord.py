@@ -168,6 +168,12 @@ to handle it, which defaults to log a traceback and ignore the exception.
     :param server: The :class:`Server` that was created or deleted.
     :param role: The :class:`Role` that was created or deleted.
 
+.. function:: on_server_role_update(role)
+
+    Called when a :class:`Role` is changed server-wide.
+
+    :param role: The :class:`Role` that was updated.
+
 
 Utility Functions
 -----------------
