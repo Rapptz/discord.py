@@ -113,7 +113,8 @@ class WebSocket(WebSocketBaseClient):
                      'MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'USER_UPDATE',
                      'CHANNEL_DELETE', 'CHANNEL_UPDATE', 'CHANNEL_CREATE',
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
-                     'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE'):
+                     'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
+                     'GUILD_ROLE_CREATE'):
             self.dispatch('socket_update', event, data)
 
         else:
@@ -307,6 +308,12 @@ class ConnectionState(object):
         server = self._get_server(data.get('id'))
         self.servers.remove(server)
         self.dispatch('server_delete', server)
+
+    def handle_guild_role_create(self, data):
+        server = self._get_server(data.get('guild_id'))
+        role = Role(**data.get('role', {}))
+        server.roles.append(role)
+        self.dispatch('server_role_create', server, role)
 
     def get_channel(self, id):
         if id is None:
