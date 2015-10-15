@@ -115,7 +115,7 @@ class WebSocket(WebSocketBaseClient):
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
                      'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
                      'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 
-                     'GUILD_ROLE_UPDATE'):
+                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
             self.dispatch('socket_update', event, data)
 
         else:
@@ -136,6 +136,15 @@ class ConnectionState(object):
 
     def _get_server(self, guild_id):
         return utils.find(lambda g: g.id == guild_id, self.servers)
+
+    def _update_voice_state(self, server, data):
+        user_id = data.get('user_id')
+        member = utils.find(lambda m: m.id == user_id, server.members)
+        if member is not None:
+            ch_id = data.get('channel_id')
+            channel = utils.find(lambda c: c.id == ch_id, server.channels)
+            member.update_voice_state(voice_channel=channel, **data)
+        return member
 
     def _add_server(self, guild):
         guild['roles'] = [Role(**role) for role in guild['roles']]
@@ -170,6 +179,8 @@ class ConnectionState(object):
         channels = [Channel(server=server, **channel)
                     for channel in guild['channels']]
         server.channels = channels
+        for obj in guild.get('voice_states', []):
+            self._update_voice_state(server, obj)
         self.servers.append(server)
 
     def handle_ready(self, data):
@@ -331,6 +342,12 @@ class ConnectionState(object):
             role = utils.find(lambda r: r.id == role_id, server.roles)
             role.update(**data['role'])
             self.dispatch('server_role_update', role)
+
+    def handle_voice_state_update(self, data):
+        server = self._get_server(data.get('guild_id'))
+        if server is not None:
+            updated_member = self._update_voice_state(server, data)
+            self.dispatch('voice_state_update', updated_member)
 
     def get_channel(self, id):
         if id is None:

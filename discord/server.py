@@ -88,10 +88,23 @@ class Member(User):
 
     .. attribute:: deaf
 
-        Specifies if the member is currently deafened by the user.
+        A boolean that specifies if the member is currently deafened by the server.
     .. attribute:: mute
 
-        Specifies if the member is currently muted by the user.
+        A boolean that specifies if the member is currently muted by the server.
+    .. attribute:: self_mute
+
+        A boolean that specifies if the member is currently muted by their own accord.
+    .. attribute:: self_deaf
+
+        A boolean that specifies if the member is currently deafened by their own accord.
+    .. attribute:: is_afk
+
+        A boolean that specifies if the member is currently in the AFK channel in the server.
+    .. attribute:: voice_channel
+
+        A voice :class:`Channel` that the member is currently connected to. None if the member
+        is not currently in a voice channel.
     .. attribute:: roles
 
         An array of :class:`Role` that the member belongs to.
@@ -119,6 +132,15 @@ class Member(User):
         self.status = 'offline'
         self.game_id = kwargs.get('game_id', None)
         self.server = kwargs.get('server', None)
+        self.update_voice_state(mute=mute, deaf=deaf)
+
+    def update_voice_state(self, **kwargs):
+        self.self_mute = kwargs.get('self_mute', False)
+        self.self_deaf = kwargs.get('self_deaf', False)
+        self.is_afk = kwargs.get('suppress', False)
+        self.mute = kwargs.get('mute', False)
+        self.deaf = kwargs.get('deaf', False)
+        self.voice_channel = kwargs.get('voice_channel')
 
 class Server(object):
     """Represents a Discord server.

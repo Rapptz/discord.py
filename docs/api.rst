@@ -174,6 +174,18 @@ to handle it, which defaults to log a traceback and ignore the exception.
 
     :param role: The :class:`Role` that was updated.
 
+.. function:: on_voice_state_update(member)
+
+    Called when a :class:`Member` changes their voice state.
+
+    The following, but not limited to, examples illustrate when this event is called:
+
+    - A member joins a voice room.
+    - A member leaves a voice room.
+    - A member is muted or deafened by their own accord.
+    - A member is muted or deafened by a server administrator.
+
+    :param member: The :class:`Member` whose voice state changed.
 
 Utility Functions
 -----------------
