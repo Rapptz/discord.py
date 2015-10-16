@@ -69,7 +69,7 @@ class KeepAliveHandler(threading.Thread):
 
             msg = 'Keeping websocket alive with timestamp {0}'
             log.debug(msg.format(payload['d']))
-            self.socket.send(json.dumps(payload))
+            self.socket.send(json.dumps(payload, separators=(',', ':')))
 
 class WebSocket(WebSocketBaseClient):
     def __init__(self, dispatch, url):
@@ -393,7 +393,7 @@ class Client(object):
                 }
             }
 
-            self.ws.send(json.dumps(second_payload))
+            self.ws.send(json.dumps(second_payload, separators=(',', ':')))
 
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
