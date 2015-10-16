@@ -102,6 +102,43 @@ to handle it, which defaults to log a traceback and ignore the exception.
 
     :param response: The received message response after gone through ``json.loads``.
 
+.. function:: on_socket_raw_receive(msg)
+
+    Called whenever a message is received from the websocket, before
+    it's processed. Unlike ``on_socket_response`` this event is always
+    dispatched when a message is received and the passed data is not
+    processed in any way.
+
+    This is only really useful for grabing the websocket stream and
+    debugging purposes.
+
+    :param msg: The message passed on from the ws4py library. Can be an
+        instance of either ws4py.messaging.TextMessage, or
+        ws4py.messaging.BinaryMessage.
+
+.. function:: on_socket_raw_send(payload, binary=False)
+
+    Called whenever a send operation is done on the websocket before the
+    message is sent. The passed parameter is the message that is to
+    sent to the websocket.
+
+    This is only really useful for grabing the websocket stream and
+    debugging purposes.
+
+    .. note::
+
+        If the ``payload`` parameter is mutable, and modified during the
+        execution of this event, then the actual data sent out on the
+        websocket will be mangled. This is especially true if
+        ``payload`` is a generator, as reading them modifies their
+        state.
+
+    :param payload: The message that is about to be passed on to the
+        ws4py library. It can be any of a string, a bytearray, an
+        instance of ws4py.message.Message and a generator.
+    :param bool binary: True if the message being sent out is marked as
+        binary.
+
 .. function:: on_message_delete(message)
               on_message_edit(before, after)
 
