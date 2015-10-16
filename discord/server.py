@@ -89,7 +89,16 @@ class Member(User):
         self.is_afk = kwargs.get('suppress', False)
         self.mute = kwargs.get('mute', False)
         self.deaf = kwargs.get('deaf', False)
+        old_channel = getattr(self, 'voice_channel', None)
         self.voice_channel = kwargs.get('voice_channel')
+
+        if old_channel is None and self.voice_channel is not None:
+            # we joined a channel
+            self.voice_channel.voice_members.append(self)
+        elif old_channel is not None and self.voice_channel is None:
+            # we left a channel
+            old_channel.voice_members.remove(self)
+
 
 class Server(object):
     """Represents a Discord server.
