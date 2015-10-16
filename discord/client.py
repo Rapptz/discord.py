@@ -28,7 +28,8 @@ from . import endpoints
 from .errors import InvalidEventName, InvalidDestination, GatewayNotFound
 from .user import User
 from .channel import Channel, PrivateChannel
-from .server import Server, Member, Permissions, Role
+from .server import Server, Member
+from .role import Role, Permissions
 from .message import Message
 from . import utils
 from .invite import Invite

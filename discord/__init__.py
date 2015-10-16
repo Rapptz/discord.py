@@ -21,10 +21,11 @@ __build__ = 0x007000
 from .client import Client
 from .user import User
 from .channel import Channel, PrivateChannel
-from .server import Server, Member, Permissions, Role
+from .server import Server, Member
 from .message import Message
 from .errors import *
 from .permissions import Permissions
+from .role import Role, Colour, Color
 from .invite import Invite
 from . import utils
 

@@ -210,6 +210,9 @@ Some classes are just there to be data containers, this lists them. It should be
 .. autoclass:: Member
     :members:
 
+.. autoclass:: Colour
+    :members:
+
 .. autoclass:: Role
     :members:
 
