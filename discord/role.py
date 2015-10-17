@@ -198,6 +198,10 @@ class Role(object):
     .. attribute:: position
 
         The position of the role.
+    .. attribute:: managed
+
+        A boolean indicating if the role is managed by the server through some form of integration
+        such as Twitch.
     """
 
     def __init__(self, **kwargs):
@@ -210,4 +214,5 @@ class Role(object):
         self.position = kwargs.get('position', -1)
         self.colour = Colour(kwargs.get('color', 0))
         self.hoist = kwargs.get('hoist', False)
+        self.managed = kwargs.get('managed', False)
         self.color = self.colour
