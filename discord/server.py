@@ -95,9 +95,10 @@ class Member(User):
         if old_channel is None and self.voice_channel is not None:
             # we joined a channel
             self.voice_channel.voice_members.append(self)
-        elif old_channel is not None and self.voice_channel is None and self in old_channel:
-            # we left a channel
-            old_channel.voice_members.remove(self)
+        elif old_channel is not None and self.voice_channel is None:
+            if self in old_channel.voice_members:
+                # we left a channel
+                old_channel.voice_members.remove(self)
 
 
 class Server(object):
