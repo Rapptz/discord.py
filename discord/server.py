@@ -151,5 +151,5 @@ class Server(object):
     def get_default_role(self):
         """Gets the @everyone role that all members have by default."""
         for role in self.roles:
-            if role.name == '@everyone':
+            if role.is_everyone():
                 return role

@@ -197,7 +197,8 @@ class Role(object):
         A boolean representing if the role will be displayed separately from other members.
     .. attribute:: position
 
-        The position of the role.
+        The position of the role. This number is usually positive. A non-positive value indicates that
+        this is the `@everyone` role.
     .. attribute:: managed
 
         A boolean indicating if the role is managed by the server through some form of integration
@@ -211,8 +212,12 @@ class Role(object):
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.permissions = Permissions(kwargs.get('permissions', 0))
-        self.position = kwargs.get('position', -1)
+        self.position = kwargs.get('position', 0)
         self.colour = Colour(kwargs.get('color', 0))
         self.hoist = kwargs.get('hoist', False)
         self.managed = kwargs.get('managed', False)
         self.color = self.colour
+
+    def is_everyone(self):
+        """Checks if the role is the @everyone role."""
+        return self.position == -1
