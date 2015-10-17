@@ -37,6 +37,34 @@ def create_permission_masks(cls):
 class Permissions(object):
     """Wraps up the Discord permission value.
 
+    Class attributes:
+
+    .. attribute:: NONE
+
+        A :class:`Permission` with all permissions set to False.
+    .. attribute:: ALL
+
+        A :class:`Permission` with all permissions set to True.
+    .. attribute:: ALL_CHANNEL
+
+        A :class:`Permission` with all channel-specific permissions set to True
+        and the server-specific ones set to False. The server-specific permissions
+        are currently:
+
+        - can_manager_server
+        - can_kick_members
+        - can_ban_members
+
+    .. attribute:: GENERAL
+
+        A :class:`Permission` with all "General" permissions set to True.
+    .. attribute:: TEXT
+
+        A :class:`Permission` with all "Text" permissions set to True.
+    .. attribute:: VOICE
+
+        A :class:`Permission` with all "Voice" permissions set to True.
+
     Instance attributes:
 
     .. attribute:: value
@@ -49,7 +77,7 @@ class Permissions(object):
     were regular bools. This allows you to edit permissions.
     """
 
-    def __init__(self, permissions, **kwargs):
+    def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 
     def _bit(self, index):
