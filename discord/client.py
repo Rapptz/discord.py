@@ -1027,38 +1027,43 @@ class Client(object):
         log.debug(request_logging_format.format(response=response, name='accept_invite'))
         return is_response_successful(response)
 
-    def edit_role(self, server, role):
+    def edit_role(self, server, role, **fields):
         """Edits the specified :class:`Role` for the entire :class:`Server`.
 
-        To use this you have to edit the role yourself and then pass it
-        to this member function. For example: ::
-
-            server = message.channel.server
-            role = find(lambda r: r.name == 'My Cool Role', server.roles)
-            role.name = 'My Not So Cool Role'
-            role.permissions.can_kick_members = False
-            role.permissions.can_ban_members = False
-            client.edit_role(server, role)
-
-        Note that you cannot edit the name of the @everyone role as that role is special.
+        .. versionchanged:: 0.8.0
+            Editing now uses keyword arguments instead of editing the :class:`Role` object directly.
 
         :param server: The :class:`Server` the role belongs to.
         :param role: The :class:`Role` to edit.
-        :return: ``True`` if editing was successful, ``False`` otherwise.
+        :param name: The new role name to change to. (optional)
+        :param permissions: The new :class:`Permissions` to change to. (optional)
+        :param colour: The new :class:`Colour` to change to. (optional) (aliased to color as well)
+        :param hoist: A boolean indicating if the role should be shown separately. (optional)
+        :return: ``True`` if editing was successful, ``False`` otherwise. If editing is successful,
+                 the ``role`` parameter will be updated with the changes.
         """
 
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
+        color = fields.get('color')
+        if color is None:
+            color = fields.get('colour', role.colour)
 
         payload = {
-            'name': role.name,
-            'permissions': role.permissions.value,
-            'color': role.color,
-            'hoist': role.hoist
+            'name': fields.get('name', role.name),
+            'permissions': fields.get('permissions', role.permissions).value,
+            'color': color.value,
+            'hoist': fields.get('hoist', role.hoist)
         }
 
         response = requests.patch(url, json=payload, headers=self.headers)
+        if is_response_successful(response):
+            data = response.json()
+            log.debug(request_success_log.format(name='edit_role', json=payload, response=response, data=data))
+            role.update(**data)
+            return True
+
         log.debug(request_logging_format.format(response=response, name='edit_role'))
-        return is_response_successful(response)
+        return False
 
     def delete_role(self, server, role):
         """Deletes the specified :class:`Role` for the entire :class:`Server`.
