@@ -1080,6 +1080,28 @@ class Client(object):
         log.debug(request_logging_format.format(response=response, name='delete_role'))
         return is_response_successful(response)
 
+    def create_role(self, server, **fields):
+        """Creates a :class:`Role`.
+
+        The fields parameter is the same as :func:`edit_role`.
+
+        :return: The :class:`Role` if creation was successful, None otherwise.
+        """
+
+        url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
+        response = requests.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='create_role'))
+
+        if is_response_successful(response):
+            data = response.json()
+            role = Role(**data)
+            if self.edit_role(server, role, **fields):
+                # we have to call edit because you can't pass a payload to the
+                # http request currently.
+                return role
+
+        return None
+
     def change_status(self, game_id=None, idle=False):
         """Changes the client's status.
 
