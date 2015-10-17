@@ -25,6 +25,10 @@ DEALINGS IN THE SOFTWARE.
 
 from copy import deepcopy
 from . import utils
+from .permissions import Permissions
+from collections import namedtuple
+
+MemberOverwrite = namedtuple('MemberOverwrite', ['id', 'allow', 'deny'])
 
 class Channel(object):
     """Represents a Discord server channel.
@@ -75,7 +79,13 @@ class Channel(object):
         self.position = kwargs.get('position')
         self.type = kwargs.get('type')
         self.changed_roles = []
+        self._user_permissions = []
         for overridden in kwargs.get('permission_overwrites', []):
+            if overridden.get('type') == 'member':
+                del overridden['type']
+                self._user_permissions.append(MemberOverwrite(**overridden))
+                continue
+
             # this is pretty inefficient due to the deep nested loops unfortunately
             role = utils.find(lambda r: r.id == overridden['id'], self.server.roles)
             if role is None:
@@ -84,21 +94,76 @@ class Channel(object):
             denied = overridden.get('deny', 0)
             allowed = overridden.get('allow', 0)
             override = deepcopy(role)
-
-            # Basically this is what's happening here.
-            # We have an original bit array, e.g. 1010
-            # Then we have another bit array that is 'denied', e.g. 1111
-            # And then we have the last one which is 'allowed', e.g. 0101
-            # We want original OP denied to end up resulting in
-            # whatever is in denied to be set to 0.
-            # So 1010 OP 1111 -> 0000
-            # Then we take this value and look at the allowed values.
-            # And whatever is allowed is set to 1.
-            # So 0000 OP2 0101 -> 0101
-            # The OP is (base ^ denied) & ~denied.
-            # The OP2 is base | allowed.
-            override.permissions.value = ((override.permissions.value ^ denied) & ~denied) | allowed
+            override.permissions.handle_overwrite(allowed, denied)
             self.changed_roles.append(override)
+
+    def is_default_channel(self):
+        """Checks if this is the default channel for the :class:`Server` it belongs to."""
+        return self.server.id == self.id
+
+    def permissions_for(self, member):
+        """Handles permission resolution for the current :class:`Member`.
+
+        This function takes into consideration the following cases:
+
+        - Server owner
+        - Server roles
+        - Channel overrides
+        - Member overrides
+        - Whether the channel is the default channel.
+
+        :param member: The :class:`Member` to resolve permissions for.
+        :return: The resolved :class:`Permissions` for the :class:`Member`.
+        """
+
+        # The current cases can be explained as:
+        # Server owner get all permissions -- no questions asked. Otherwise...
+        # The @everyone role gets the first application.
+        # After that, the applied roles that the user has in the channel
+        # (or otherwise) are then OR'd together.
+        # After the role permissions are resolved, the member permissions
+        # have to take into effect.
+        # After all that is done.. you have to do the following:
+
+        # If manage permissions is True, then all permissions are set to
+        # True. If the channel is the default channel then everyone gets
+        # read permissions regardless.
+
+        # The operation first takes into consideration the denied
+        # and then the allowed.
+
+        if member.id == self.server.owner.id:
+            return Permissions.ALL
+
+        base = self.server.get_default_role().permissions
+
+        # Apply server roles that the member has.
+        for role in member.roles:
+            denied = ~role.permissions.value
+            base.handle_overwrite(allow=role.permissions.value, deny=denied)
+
+        # Server-wide Manage Roles -> True for everything
+        if base.can_manage_roles:
+            base = Permissions.ALL
+
+        # Apply channel specific permission overwrites
+        for role in self.changed_roles:
+            denied = ~role.permissions.value
+            base.handle_overwrite(allow=role.permissions.value, deny=denied)
+
+        # Apply member specific permission overwrites
+        for overwrite in self._user_permissions:
+            if overwrite.id == member.id:
+                base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
+
+        if base.can_manage_roles:
+            # This point is essentially Channel-specific Manage Roles.
+            base.value |= Permissions.ALL_CHANNEL.value
+
+        if self.is_default_channel():
+            base.can_read_messages = True
+
+        return base
 
 class PrivateChannel(object):
     """Represents a Discord private channel.
@@ -120,4 +185,28 @@ class PrivateChannel(object):
         self.user = user
         self.id = id
         self.is_private = True
+
+    def permissions_for(user):
+        """Handles permission resolution for a :class:`User`.
+
+        This function is there for compatibility with :class:`Channel`.
+
+        Actual private messages do not really have the concept of permissions.
+
+        This returns all the Text related permissions set to true except:
+
+        - can_send_tts_messages: You cannot send TTS messages in a PM.
+        - can_manage_messages: You cannot delete others messages in a PM.
+        - can_mention_everyone: There is no one to mention in a PM.
+
+        :param user: The :class:`User` to check permissions for.
+        :return: A :class:`Permission` with the resolved permission value.
+        """
+
+        base = Permissions.TEXT
+        base.can_send_tts_messages = False
+        base.can_manage_messages = False
+        base.can_mention_everyone = False
+        return base
+
 
