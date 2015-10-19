@@ -765,7 +765,7 @@ class Client(object):
         self._is_logged_in = False
         log.debug(request_logging_format.format(name='logout', response=response))
 
-    def logs_from(self, channel, limit=500):
+    def logs_from(self, channel, limit=100):
         """A generator that obtains logs from a specified channel.
 
         Yielding from the generator returns a :class:`Message` object with the message data.
