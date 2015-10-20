@@ -1001,7 +1001,7 @@ class Client(object):
         if is_response_successful(response):
             data = response.json()
             log.debug(request_success_log.format(name='create_invite', json=payload, response=response, data=data))
-            data['server'] = self._get_server(data['guild']['id'])
+            data['server'] = self.connection._get_server(data['guild']['id'])
             channel_id = data['channel']['id']
             data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
             return Invite(**data)
