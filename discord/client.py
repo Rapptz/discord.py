@@ -478,8 +478,7 @@ class Client(object):
             raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
 
     def on_error(self, event_method, *args, **kwargs):
-        msg = 'Caught exception in {} with args (*{}, **{})'
-        log.exception(msg.format(event_method, args, kwargs))
+        logging.exception('Ignoring exception in {}'.format(event_method))
 
     # Compatibility shim
     def __getattr__(self, name):

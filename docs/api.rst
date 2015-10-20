@@ -5,6 +5,14 @@ API Reference
 
 The following section outlines the API of discord.py.
 
+.. note::
+
+    This module uses the Python logging module to log diagnostic and errors
+    in an output independent way.  If the logging module is not configured,
+    these logs will not be output anywhere.  See :ref:`logging_setup` for
+    more information on how to set up and use the logging module with
+    discord.py.
+
 
 Client
 -------
@@ -36,13 +44,6 @@ to handle it, which defaults to log a traceback and ignore the exception.
 .. versionadded:: 0.7.0
     Subclassing to listen to events.
 
-.. note::
-
-    If the Python logging module is not configured, the logs will not be
-    output anywhere. Meaning that exceptions in handlers will be
-    silently ignored. See :ref:`logging_setup` for more information on how to
-    set up and use the logging module with discord.py.
-
 
 .. function:: on_ready()
 
@@ -56,6 +57,12 @@ to handle it, which defaults to log a traceback and ignore the exception.
     behaviour and handle the exception for whatever reason yourself,
     this event can be overridden. Which, when done, will supress the
     default logging done.
+
+    .. note::
+
+        The default ``on_error`` handler logs exception to the root logger
+        instead of a logger under the discord namespace.  This is to ensure
+        that exceptions are output somewhere if logging is not configured.
 
     The information of the exception rasied and the exception itself can
     be retreived with a standard call to ``sys.exc_info()``.
