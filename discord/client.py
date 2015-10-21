@@ -41,6 +41,8 @@ import threading
 from ws4py.client import WebSocketBaseClient
 import sys
 import logging
+import itertools
+
 
 log = logging.getLogger(__name__)
 request_logging_format = '{name}: {response.request.method} {response.url} has returned {response.status_code}'
@@ -1078,6 +1080,63 @@ class Client(object):
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='delete_role'))
         return is_response_successful(response)
+
+    def add_roles(self, member, *roles):
+        """Gives the specified :class:`Member` a number of :class:`Role`s.
+
+        You must have the proper permissions to use this function.
+
+        :param member: The :class:`Member` to give roles to.
+        :param roles: The :class:`Role`s to give the member.
+        :return: ``True`` if the operation was successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+        new_roles = [role.id for role in itertools.chain(member.roles, roles)]
+        payload = {
+            'roles': new_roles
+        }
+
+        response = requests.patch(url, headers=self.headers, json=payload)
+        log.debug(request_logging_format.format(response=response, name='add_roles'))
+        if is_response_successful(response):
+            member.roles = list(itertools.chain(member.roles, roles))
+            return True
+
+        return False
+
+    def remove_roles(self, member, *roles):
+        """Removes the :class:`Role`s from the :class:`Member`.
+
+        You must have the proper permissions to use this function.
+
+        :param member: The :class:`Member` to remove roles from.
+        :param roles: The :class:`Role`s to remove from the member.
+        :return: ``True`` if the operation was successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+
+        new_roles = [role.id for role in member.roles]
+        for role in roles:
+            if role.id in new_roles:
+                new_roles.remove(role.id)
+
+        payload = {
+            'roles': new_roles
+        }
+
+        response = requests.patch(url, headers=self.headers, json=payload)
+        log.debug(request_logging_format.format(response=response, name='remove_roles'))
+        if is_response_successful(response):
+            member.roles = []
+            for role in member.server.roles:
+                if role.id in new_roles:
+                    member.roles.append(role)
+
+            return True
+
+        return False
 
     def create_role(self, server, **fields):
         """Creates a :class:`Role`.
