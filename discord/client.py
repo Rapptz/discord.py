@@ -1086,8 +1086,10 @@ class Client(object):
 
         You must have the proper permissions to use this function.
 
+        This method **appends** a role to a member.
+
         :param member: The :class:`Member` to give roles to.
-        :param roles: The :class:`Role`s to give the member.
+        :param roles: An iterable of :class:`Role`s to give the member.
         :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
@@ -1111,7 +1113,7 @@ class Client(object):
         You must have the proper permissions to use this function.
 
         :param member: The :class:`Member` to remove roles from.
-        :param roles: The :class:`Role`s to remove from the member.
+        :param roles: An iterable of :class:`Role`s to remove from the member.
         :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
@@ -1134,6 +1136,35 @@ class Client(object):
                 if role.id in new_roles:
                     member.roles.append(role)
 
+            return True
+
+        return False
+
+    def replace_roles(self, member, *roles):
+        """Replaces the :class:`Member`'s roles.
+
+        You must have the proper permissions to use this function.
+
+        This function **replaces** all roles that the member has.
+        For example if the member has roles ``[a, b, c]`` and the
+        call is ``client.replace_roles(member, d, e, c)` then
+        the member has the roles ``[d, e, c]``.
+
+        :param member: The :class:`Member` to replace roles for.
+        :param roles: An iterable of :class:`Role`s to replace with.
+        :return: ``True`` if the operation was successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+
+        payload = {
+            'roles': [role.id for role in roles]
+        }
+
+        response = requests.patch(url, headers=self.headers, json=payload)
+        log.debug(request_logging_format.format(response=response, name='replace_roles'))
+        if is_response_successful(response):
+            member.roles = list(roles)
             return True
 
         return False
