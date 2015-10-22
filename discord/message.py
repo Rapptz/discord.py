@@ -42,7 +42,7 @@ class Message(object):
         A naive UTC datetime object containing the time the message was created.
     .. attribute:: tts
 
-        Checks the message has text-to-speech support.
+        A boolean specifying if the message was done with text-to-speech.
     .. attribute:: author
 
         A :class:`Member` that sent the message. If :attr:`channel` is a private channel,
@@ -52,7 +52,9 @@ class Message(object):
         The actual contents of the message.
     .. attribute:: embeds
 
-        An array of embedded objects.
+        A list of embedded objects. The elements are objects that meet oEmbed's specification_.
+
+        .. _specification: http://oembed.com/
     .. attribute:: channel
 
         The :class:`Channel` that the message was sent from. Could be a :class:`PrivateChannel` if it's a private message.
@@ -61,13 +63,13 @@ class Message(object):
         A boolean specifying if the message mentions everyone.
     .. attribute:: mentions
 
-        An array of :class:`User` that were mentioned.
+        A list of :class:`User` that were mentioned.
     .. attribute:: id
 
         The message ID.
     .. attribute:: attachments
 
-        An array of attachments given to a message.
+        A list of attachments given to a message.
     """
 
     def __init__(self, **kwargs):
