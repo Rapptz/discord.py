@@ -1036,6 +1036,13 @@ class Client(object):
         .. versionchanged:: 0.8.0
             Editing now uses keyword arguments instead of editing the :class:`Role` object directly.
 
+        .. note::
+
+            At the moment, the Discord API allows you to set the colour to any
+            RGB value. This will change in the future so it is recommended that
+            you use the constants in the :class:`Colour` instead such as
+            :attr:`Colour.NAVY_BLUE`.
+
         :param server: The :class:`Server` the role belongs to.
         :param role: The :class:`Role` to edit.
         :param name: The new role name to change to. (optional)
