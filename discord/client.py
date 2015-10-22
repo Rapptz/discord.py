@@ -158,7 +158,7 @@ class ConnectionState(object):
         return member
 
     def _add_server(self, guild):
-        guild['roles'] = [Role(**role) for role in guild['roles']]
+        guild['roles'] = [Role(everyone=(guild['id'] == role['id']), **role) for role in guild['roles']]
         members = guild['members']
         owner = guild['owner_id']
         for i, member in enumerate(members):
@@ -334,7 +334,9 @@ class ConnectionState(object):
 
     def handle_guild_role_create(self, data):
         server = self._get_server(data.get('guild_id'))
-        role = Role(**data.get('role', {}))
+        role_data = data.get('role', {})
+        everyone = server.id == role_data.get('id')
+        role = Role(everyone=everyone, **role_data)
         server.roles.append(role)
         self.dispatch('server_role_create', server, role)
 
@@ -1183,7 +1185,8 @@ class Client(object):
 
         if is_response_successful(response):
             data = response.json()
-            role = Role(**data)
+            everyone = server.id == data.get('id')
+            role = Role(everyone=everyone, **data)
             if self.edit_role(server, role, **fields):
                 # we have to call edit because you can't pass a payload to the
                 # http request currently.
