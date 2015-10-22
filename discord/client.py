@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import print_function
+
 from . import endpoints
 from .errors import InvalidEventName, InvalidDestination, GatewayNotFound
 from .user import User
@@ -34,6 +36,7 @@ from .message import Message
 from . import utils
 from .invite import Invite
 
+import traceback
 import requests
 import json, re, time, copy
 from collections import deque
@@ -482,7 +485,8 @@ class Client(object):
             raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
 
     def on_error(self, event_method, *args, **kwargs):
-        logging.exception('Ignoring exception in {}'.format(event_method))
+        print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
+        traceback.print_exc()
 
     # Compatibility shim
     def __getattr__(self, name):

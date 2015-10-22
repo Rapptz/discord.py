@@ -39,7 +39,7 @@ overriding the specific events. For example: ::
 
 
 If an event handler raises an exception, :func:`on_error` will be called
-to handle it, which defaults to log a traceback and ignore the exception.
+to handle it, which defaults to print a traceback and ignore the exception.
 
 .. versionadded:: 0.7.0
     Subclassing to listen to events.
@@ -53,16 +53,10 @@ to handle it, which defaults to log a traceback and ignore the exception.
 .. function:: on_error(event, \*args, \*\*kwargs)
 
     Usually when an event raises an uncaught exception, a traceback is
-    logged and the exception is ignored. If you want to change this
-    behaviour and handle the exception for whatever reason yourself,
-    this event can be overridden. Which, when done, will supress the
-    default logging done.
-
-    .. note::
-
-        The default ``on_error`` handler logs exception to the root logger
-        instead of a logger under the discord namespace.  This is to ensure
-        that exceptions are output somewhere if logging is not configured.
+    printed to stderr and the exception is ignored. If you want to
+    change this behaviour and handle the exception for whatever reason
+    yourself, this event can be overridden. Which, when done, will
+    supress the default action of printing the traceback.
 
     The information of the exception rasied and the exception itself can
     be retreived with a standard call to ``sys.exc_info()``.

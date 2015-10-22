@@ -4,11 +4,10 @@
 Setting Up Logging
 ===================
 
-*discord.py* logs errors, exceptions, and debug information via the
-`logging`_ python module. It is strongly recommended that the logging
-module is configured, as no errors or warnings will be output at all if
-it is not set up. Configuration of the ``logging`` module can be as
-simple as::
+*discord.py* logs errors and debug information via the `logging`_ python
+module. It is strongly recommended that the logging module is
+configured, as no errors or warnings will be output if it is not set up.
+Configuration of the ``logging`` module can be as simple as::
 
     import logging
 
