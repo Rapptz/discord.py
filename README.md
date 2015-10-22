@@ -14,6 +14,12 @@ pip install discord.py
 
 Will install the latest 'stable' version of the library.
 
+If you want to install the development version of the library, then do the following:
+
+```
+pip install git+https://github.com/Rapptz/discord.py@develop
+```
+
 ### This module is alpha!
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility.
