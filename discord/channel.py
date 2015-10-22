@@ -28,7 +28,7 @@ from . import utils
 from .permissions import Permissions
 from collections import namedtuple
 
-MemberOverwrite = namedtuple('MemberOverwrite', ['id', 'allow', 'deny'])
+Overwrites = namedtuple('Overwrites', 'id allow deny type')
 
 class Channel(object):
     """Represents a Discord server channel.
@@ -79,11 +79,11 @@ class Channel(object):
         self.position = kwargs.get('position')
         self.type = kwargs.get('type')
         self.changed_roles = []
-        self._user_permissions = []
+        self._permission_overwrites = []
         for overridden in kwargs.get('permission_overwrites', []):
+            self._permission_overwrites.append(Overwrites(**overridden))
+
             if overridden.get('type') == 'member':
-                del overridden['type']
-                self._user_permissions.append(MemberOverwrite(**overridden))
                 continue
 
             # this is pretty inefficient due to the deep nested loops unfortunately
@@ -135,25 +135,27 @@ class Channel(object):
         if member.id == self.server.owner.id:
             return Permissions.ALL
 
-        base = self.server.get_default_role().permissions
+        default = self.server.get_default_role()
+        base = deepcopy(default.permissions)
 
         # Apply server roles that the member has.
         for role in member.roles:
-            denied = ~role.permissions.value
-            base.handle_overwrite(allow=role.permissions.value, deny=denied)
+            base.value |= role.permissions.value
 
         # Server-wide Manage Roles -> True for everything
         if base.can_manage_roles:
             base = Permissions.ALL
 
-        # Apply channel specific permission overwrites
-        for role in self.changed_roles:
-            denied = ~role.permissions.value
-            base.handle_overwrite(allow=role.permissions.value, deny=denied)
+        member_role_ids = set(map(lambda r: r.id, member.roles))
+
+        # Apply channel specific role permission overwrites
+        for overwrite in self._permission_overwrites:
+            if overwrite.type == 'role' and overwrite.id in member_role_ids:
+                base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
         # Apply member specific permission overwrites
-        for overwrite in self._user_permissions:
-            if overwrite.id == member.id:
+        for overwrite in self._permission_overwrites:
+            if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
         if base.can_manage_roles:
