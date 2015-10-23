@@ -15,8 +15,8 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Rapptz'
-__version__ = '0.7.0'
-__build__ = 0x007000
+__version__ = '0.8.0'
+__build__ = 0x008000
 
 from .client import Client
 from .user import User
