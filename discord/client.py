@@ -1205,7 +1205,7 @@ class Client(object):
 
         return None
 
-    def set_channel_permissions(self, channel, target, allow=Permissions.none(), deny=Permissions.none()):
+    def set_channel_permissions(self, channel, target, allow=None, deny=None):
         """Sets the channel specific permission overwrites for a target in the
         specified :class:`Channel`.
 
@@ -1230,6 +1230,9 @@ class Client(object):
         """
 
         url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
+
+        allow = Permissions.none() if allow is None else allow
+        deny = Permissions.none() if deny is None else deny
 
         if not (isinstance(allow, Permissions) and isinstance(deny, Permissions)):
             raise TypeError('allow and deny parameters must be discord.Permissions')
