@@ -26,31 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 from .permissions import Permissions
 
-def create_colour_constants(cls):
-    cls.DEFAULT        = cls(0)
-    cls.CYAN           = cls(0x1abc9c)
-    cls.GREEN          = cls(0x2ecc71)
-    cls.BLUE           = cls(0x3498db)
-    cls.PURPLE         = cls(0x9b59b6)
-    cls.YELLOW         = cls(0xf1c40f)
-    cls.ORANGE         = cls(0xe67e22)
-    cls.RED            = cls(0xe74c3c)
-    cls.GREY           = cls(0x95a5a6)
-    cls.DARK_GREY      = cls(0x7f8c8d)
-    cls.NAVY_BLUE      = cls(0x34495e)
-    cls.DARK_CYAN      = cls(0x11806a)
-    cls.DARK_GREEN     = cls(0x1f8b4c)
-    cls.DARK_BLUE      = cls(0x206694)
-    cls.DARK_PURPLE    = cls(0x71368a)
-    cls.STRONG_ORANGE  = cls(0xc27c0e)
-    cls.DARK_ORANGE    = cls(0xa84300)
-    cls.DARK_RED       = cls(0x992d22)
-    cls.DARK_GREY_BLUE = cls(0x979c9f)
-    cls.LIGHT_GREY     = cls(0xbcc0c0)
-    cls.DARK_NAVY_BLUE = cls(0x2c3e50)
-    return cls
-
-@create_colour_constants
 class Colour(object):
     """Represents a Discord role colour. This class is similar
     to an (red, green, blue) tuple.
@@ -66,72 +41,6 @@ class Colour(object):
     +-----------+--------------------------------------+
     | x != y    | Checks if two colours are not equal. |
     +-----------+--------------------------------------+
-
-    Class attributes:
-
-    .. attribute:: DEFAULT
-
-        A constant representing the equivalent of ``Colour(0)``.
-    .. attribute:: CYAN
-
-        A constant representing the equivalent of ``Colour(0x1abc9c)``.
-    .. attribute:: GREEN
-
-        A constant representing the equivalent of ``Colour(0x2ecc71)``.
-    .. attribute:: BLUE
-
-        A constant representing the equivalent of ``Colour(0x3498db)``.
-    .. attribute:: PURPLE
-
-        A constant representing the equivalent of ``Colour(0x9b59b6)``.
-    .. attribute:: YELLOW
-
-        A constant representing the equivalent of ``Colour(0xf1c40f)``.
-    .. attribute:: ORANGE
-
-        A constant representing the equivalent of ``Colour(0xe67e22)``.
-    .. attribute:: RED
-
-        A constant representing the equivalent of ``Colour(0xe74c3c)``.
-    .. attribute:: GREY
-
-        A constant representing the equivalent of ``Colour(0x95a5a6)``.
-    .. attribute:: DARK_GREY
-
-        A constant representing the equivalent of ``Colour(0x7f8c8d)``.
-    .. attribute:: NAVY_BLUE
-
-        A constant representing the equivalent of ``Colour(0x34495e)``.
-    .. attribute:: DARK_CYAN
-
-        A constant representing the equivalent of ``Colour(0x11806a)``.
-    .. attribute:: DARK_GREEN
-
-        A constant representing the equivalent of ``Colour(0x1f8b4c)``.
-    .. attribute:: DARK_BLUE
-
-        A constant representing the equivalent of ``Colour(0x206694)``.
-    .. attribute:: DARK_PURPLE
-
-        A constant representing the equivalent of ``Colour(0x71368a)``.
-    .. attribute:: STRONG_ORANGE
-
-        A constant representing the equivalent of ``Colour(0xc27c0e)``.
-    .. attribute:: DARK_ORANGE
-
-        A constant representing the equivalent of ``Colour(0xa84300)``.
-    .. attribute:: DARK_RED
-
-        A constant representing the equivalent of ``Colour(0x992d22)``.
-    .. attribute:: DARK_GREY_BLUE
-
-        A constant representing the equivalent of ``Colour(0x979c9f)``.
-    .. attribute:: LIGHT_GREY
-
-        A constant representing the equivalent of ``Colour(0xbcc0c0)``.
-    .. attribute:: DARK_NAVY_BLUE
-
-        A constant representing the equivalent of ``Colour(0x2c3e50)``.
 
     Instance attributes:
 
@@ -153,23 +62,128 @@ class Colour(object):
         return isinstance(other, Colour) and self.value != other.value
 
     @property
-    def red(self):
+    def r(self):
         """Returns the red component of the colour."""
         return self._get_byte(2)
 
     @property
-    def green(self):
+    def g(self):
         """Returns the green component of the colour."""
         return self._get_byte(1)
 
     @property
-    def blue(self):
+    def b(self):
         """Returns the blue component of the colour."""
         return self._get_byte(0)
 
     def to_tuple(self):
         """Returns an (r, g, b) tuple representing the colour."""
-        return (self.red, self.green, self.blue)
+        return (self.r, self.g, self.b)
+
+    @classmethod
+    def default(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0."""
+        return cls(0)
+
+    @classmethod
+    def cyan(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x1abc9c."""
+        return cls(0x1abc9c)
+
+    @classmethod
+    def green(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x2ecc71."""
+        return cls(0x2ecc71)
+
+    @classmethod
+    def blue(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x3498db."""
+        return cls(0x3498db)
+
+    @classmethod
+    def purple(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x9b59b6."""
+        return cls(0x9b59b6)
+
+    @classmethod
+    def yellow(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0xf1c40f."""
+        return cls(0xf1c40f)
+
+    @classmethod
+    def orange(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0xe67e22."""
+        return cls(0xe67e22)
+
+    @classmethod
+    def red(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0xe74c3c."""
+        return cls(0xe74c3c)
+
+    @classmethod
+    def grey(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x95a5a6."""
+        return cls(0x95a5a6)
+
+    @classmethod
+    def dark_grey(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x7f8c8d."""
+        return cls(0x7f8c8d)
+
+    @classmethod
+    def navy_blue(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x34495e."""
+        return cls(0x34495e)
+
+    @classmethod
+    def dark_cyan(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x11806a."""
+        return cls(0x11806a)
+
+    @classmethod
+    def dark_green(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x1f8b4c."""
+        return cls(0x1f8b4c)
+
+    @classmethod
+    def dark_blue(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x206694."""
+        return cls(0x206694)
+
+    @classmethod
+    def dark_purple(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x71368a."""
+        return cls(0x71368a)
+
+    @classmethod
+    def strong_orange(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0xc27c0e."""
+        return cls(0xc27c0e)
+
+    @classmethod
+    def dark_orange(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0xa84300."""
+        return cls(0xa84300)
+
+    @classmethod
+    def dark_red(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x992d22."""
+        return cls(0x992d22)
+
+    @classmethod
+    def dark_grey_blue(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x979c9f."""
+        return cls(0x979c9f)
+
+    @classmethod
+    def light_grey(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0xbcc0c0."""
+        return cls(0xbcc0c0)
+
+    @classmethod
+    def dark_navy_blue(cls):
+        """A factory method that returns a :class:`Colour` with a value of 0x2c3e50."""
+        return cls(0x2c3e50)
 
 
 Color = Colour
