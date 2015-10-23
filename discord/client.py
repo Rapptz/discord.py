@@ -1095,14 +1095,14 @@ class Client(object):
         return is_response_successful(response)
 
     def add_roles(self, member, *roles):
-        """Gives the specified :class:`Member` a number of :class:`Role`s.
+        """Gives the specified :class:`Member` a number of :class:`Role` s.
 
         You must have the proper permissions to use this function.
 
         This method **appends** a role to a member.
 
         :param member: The :class:`Member` to give roles to.
-        :param roles: An iterable of :class:`Role`s to give the member.
+        :param roles: An iterable of :class:`Role` s to give the member.
         :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
@@ -1121,12 +1121,12 @@ class Client(object):
         return False
 
     def remove_roles(self, member, *roles):
-        """Removes the :class:`Role`s from the :class:`Member`.
+        """Removes the :class:`Role` s from the :class:`Member`.
 
         You must have the proper permissions to use this function.
 
         :param member: The :class:`Member` to remove roles from.
-        :param roles: An iterable of :class:`Role`s to remove from the member.
+        :param roles: An iterable of :class:`Role` s to remove from the member.
         :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
@@ -1160,11 +1160,11 @@ class Client(object):
 
         This function **replaces** all roles that the member has.
         For example if the member has roles ``[a, b, c]`` and the
-        call is ``client.replace_roles(member, d, e, c)` then
+        call is ``client.replace_roles(member, d, e, c)`` then
         the member has the roles ``[d, e, c]``.
 
         :param member: The :class:`Member` to replace roles for.
-        :param roles: An iterable of :class:`Role`s to replace with.
+        :param roles: An iterable of :class:`Role` s to replace with.
         :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
