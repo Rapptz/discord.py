@@ -1205,6 +1205,53 @@ class Client(object):
 
         return None
 
+    def set_channel_permissions(self, channel, target, allow=Permissions.none(), deny=Permissions.none()):
+        """Sets the channel specific permission overwrites for a target in the
+        specified :class:`Channel`.
+
+        The ``target`` parameter should either be a :class:`Member` or a
+        :class:`Role` that belongs to the channel's server.
+
+        Example code: ::
+
+            allow = discord.Permissions.none()
+            deny = discord.Permissions.none()
+            allow.can_mention_everyone = True
+            deny.can_manage_messages = True
+            client.set_channel_permissions(message.channel, message.author, allow, deny)
+
+        :param channel: The :class:`Channel` to give the specific permissions for.
+        :param target: The :class:`Member` or :class:`Role` to overwrite permissions for.
+        :param allow: A :class:`Permissions` object representing the permissions to explicitly allow. (optional)
+        :param deny: A :class:`Permissions` object representing the permissions to explicitly deny. (optional)
+        :return: ``True`` if setting is successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
+
+        if not (isinstance(allow, Permissions) and isinstance(deny, Permissions)):
+            raise TypeError('allow and deny parameters must be discord.Permissions')
+
+        deny =  deny.value
+        allow = allow.value
+
+        payload = {
+            'id': target.id,
+            'allow': allow,
+            'deny': deny
+        }
+
+        if isinstance(target, Member):
+            payload['type'] = 'member'
+        elif isinstance(target, Role):
+            payload['type'] = 'role'
+        else:
+            raise TypeError('target parameter must be either discord.Member or discord.Role')
+
+        response = requests.put(url, json=payload, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='set_channel_permissions'))
+        return is_response_successful(response)
+
     def change_status(self, game_id=None, idle=False):
         """Changes the client's status.
 
