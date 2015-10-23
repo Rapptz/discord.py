@@ -133,7 +133,7 @@ class Channel(object):
         # and then the allowed.
 
         if member.id == self.server.owner.id:
-            return Permissions.ALL
+            return Permissions.all()
 
         default = self.server.get_default_role()
         base = deepcopy(default.permissions)
@@ -144,7 +144,7 @@ class Channel(object):
 
         # Server-wide Manage Roles -> True for everything
         if base.can_manage_roles:
-            base = Permissions.ALL
+            base = Permissions.all()
 
         member_role_ids = set(map(lambda r: r.id, member.roles))
 
@@ -160,7 +160,8 @@ class Channel(object):
 
         if base.can_manage_roles:
             # This point is essentially Channel-specific Manage Roles.
-            base.value |= Permissions.ALL_CHANNEL.value
+            tmp = Permissions.all_channel()
+            base.value |= tmp.value
 
         if self.is_default_channel():
             base.can_read_messages = True

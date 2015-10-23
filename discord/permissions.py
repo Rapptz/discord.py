@@ -80,6 +80,49 @@ class Permissions(object):
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 
+    @classmethod
+    def none(cls):
+        """A factory method that creates a :class:`Permission` with all
+        permissions set to False."""
+        return cls(0)
+
+    @classmethod
+    def all(cls):
+        """A factory method that creates a :class:`Permission` with all
+        permissions set to True."""
+        return cls(0b00000011111100111111110000111111)
+
+    @classmethod
+    def all_channel(cls):
+        """A :class:`Permission` with all channel-specific permissions set to
+        True and the server-specific ones set to False. The server-specific
+        permissions are currently:
+
+        - can_manager_server
+        - can_kick_members
+        - can_ban_members
+        """
+        return cls(0b00000011111100111111110000011001)
+
+    @classmethod
+    def general(cls):
+        """A factory method that creates a :class:`Permission` with all
+        "General" permissions set to True."""
+        return cls(0b00000000000000000000000000111111)
+
+    @classmethod
+    def text(cls):
+        """A factory method that creates a :class:`Permission` with all
+        "Text" permissions set to True."""
+        return cls(0b00000000000000111111110000000000)
+
+    @classmethod
+    def voice(cls):
+        """A factory method that creates a :class:`Permission` with all
+        "Voice" permissions set to True."""
+        return cls(0b00000011111100000000000000000000)
+
+
     def _bit(self, index):
         return bool((self.value >> index) & 1)
 
