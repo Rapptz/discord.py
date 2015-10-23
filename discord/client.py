@@ -1212,6 +1212,8 @@ class Client(object):
         The ``target`` parameter should either be a :class:`Member` or a
         :class:`Role` that belongs to the channel's server.
 
+        You must have the proper permissions to do this.
+
         Example code: ::
 
             allow = discord.Permissions.none()
@@ -1250,6 +1252,24 @@ class Client(object):
 
         response = requests.put(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response, name='set_channel_permissions'))
+        return is_response_successful(response)
+
+    def delete_channel_permissions(self, channel, target):
+        """Removes a channel specific permission overwrites for a target
+        in the specified :class:`Channel`.
+
+        The target parameter follows the same rules as :meth:`set_channel_permissions`.
+
+        You must have the proper permissions to do this.
+
+        :param channel: The :class:`Channel` to give the specific permissions for.
+        :param target: The :class:`Member` or :class:`Role` to overwrite permissions for.
+        :return: ``True`` if deletion is successful, ``False`` otherwise.
+        """
+
+        url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
+        response = requests.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response, name='delete_channel_permissions'))
         return is_response_successful(response)
 
     def change_status(self, game_id=None, idle=False):
