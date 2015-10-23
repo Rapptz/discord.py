@@ -58,6 +58,9 @@ class Message(object):
     .. attribute:: channel
 
         The :class:`Channel` that the message was sent from. Could be a :class:`PrivateChannel` if it's a private message.
+    .. attribute:: server
+
+        The :class:`Server` that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
     .. attribute:: mention_everyone
 
         A boolean specifying if the message mentions everyone.
@@ -88,6 +91,7 @@ class Message(object):
         self.author = User(**kwargs.get('author', {}))
         self.mentions = [User(**mention) for mention in kwargs.get('mentions', {})]
         self.attachments = kwargs.get('attachments')
+        self.server = self.channel.server if not self.channel.is_private else None
         self._upgrade_to_member()
 
     def _upgrade_to_member(self):
