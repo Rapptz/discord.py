@@ -136,6 +136,13 @@ class Server(object):
     .. attribute:: owner
 
         The :class:`Member` who owns the server.
+    .. attribute:: unavailable
+
+        A boolean indicating if the server is unavailable. If this is ``True`` then the
+        reliability of other attributes outside of :meth:`Server.id` is slim and they might
+        all be None. It is best to not do anything with the server if it is unavailable.
+
+        Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
     """
 
     def __init__(self, **kwargs):
@@ -148,6 +155,7 @@ class Server(object):
         self.icon = kwargs.get('icon')
         self.id = kwargs.get('id')
         self.owner = kwargs.get('owner')
+        self.unavailable = kwargs.get('unavailable', False)
 
     def get_default_role(self):
         """Gets the @everyone role that all members have by default."""

@@ -212,6 +212,14 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param role: The :class:`Role` that was updated.
 
+.. function:: on_server_available(server)
+              on_server_unavailable(server)
+
+    Called when a server becomes available or unavailable. The server must have
+    existed in the :attr:`Client.servers` cache.
+
+    :param server: The :class:`Server` that has changed availability.
+
 .. function:: on_voice_state_update(member)
 
     Called when a :class:`Member` changes their voice state.

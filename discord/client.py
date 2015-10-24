@@ -202,6 +202,8 @@ class ConnectionState(object):
         guilds = data.get('guilds')
 
         for guild in guilds:
+            if guild.get('unavailable', False):
+                continue
             self._add_server(guild)
 
         for pm in data.get('private_channels'):
@@ -327,10 +329,33 @@ class ConnectionState(object):
             self.dispatch('member_update', member)
 
     def handle_guild_create(self, data):
+        if data.get('unavailable') is not None:
+            # GUILD_CREATE with unavailable in the response
+            # usually means that the server has become available
+            # and is therefore in the cache
+            server = self._get_server(data.get('id'))
+            if server is not None:
+                server.unavailable = False
+                self.dispatch('server_available', server)
+                return
+
+            # if we're at this point then it was probably
+            # unavailable during the READY event and is now
+            # available, so it isn't in the cache...
+
         self._add_server(data)
         self.dispatch('server_create', self.servers[-1])
 
     def handle_guild_delete(self, data):
+        if data.get('unavailable', False):
+            # GUILD_DELETE with unavailable being True means that the
+            # server that was available is now currently unavailable
+            server = self._get_server(data.get('id'))
+            if server is not None:
+                server.unavailable = True
+                self.dispatch('server_unavailable', server)
+                return
+
         server = self._get_server(data.get('id'))
         self.servers.remove(server)
         self.dispatch('server_delete', server)
