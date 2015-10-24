@@ -101,6 +101,10 @@ class Channel(object):
         """Checks if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
 
+    def mention(self):
+        """Returns a string that allows you to mention the channel."""
+        return '<#{0.id}>'.format(self)
+
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`Member`.
 
