@@ -1139,11 +1139,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response, name='add_roles'))
-        if is_response_successful(response):
-            member.roles = list(itertools.chain(member.roles, roles))
-            return True
-
-        return False
+        return is_response_successful(response)
 
     def remove_roles(self, member, *roles):
         """Removes the :class:`Role` s from the :class:`Member`.
@@ -1168,15 +1164,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response, name='remove_roles'))
-        if is_response_successful(response):
-            member.roles = []
-            for role in member.server.roles:
-                if role.id in new_roles:
-                    member.roles.append(role)
-
-            return True
-
-        return False
+        return is_response_successful(response)
 
     def replace_roles(self, member, *roles):
         """Replaces the :class:`Member`'s roles.
