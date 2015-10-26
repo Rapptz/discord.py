@@ -48,8 +48,8 @@ import itertools
 
 
 log = logging.getLogger(__name__)
-request_logging_format = '{name}: {response.request.method} {response.url} has returned {response.status_code}'
-request_success_log = '{name}: {response.url} with {json} received {data}'
+request_logging_format = '{response.request.method} {response.url} has returned {response.status_code}'
+request_success_log = '{response.url} with {json} received {data}'
 
 def _null_event(*args, **kwargs):
     pass
@@ -590,10 +590,10 @@ class Client(object):
         r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
         if is_response_successful(r):
             data = r.json()
-            log.debug(request_success_log.format(name='start_private_message', response=r, json=payload, data=data))
+            log.debug(request_success_log.format(response=r, json=payload, data=data))
             self.private_channels.append(PrivateChannel(id=data['id'], user=user))
         else:
-            log.error(request_logging_format.format(name='start_private_message', response=r))
+            log.error(request_logging_format.format(response=r))
 
     def send_message(self, destination, content, mentions=True, tts=False):
         """Sends a message to the destination given with the content given.
@@ -635,12 +635,12 @@ class Client(object):
         response = requests.post(url, json=payload, headers=self.headers)
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='send_message', response=response, json=payload, data=data))
+            log.debug(request_success_log.format(response=response, json=payload, data=data))
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
             return message
         else:
-            log.error(request_logging_format.format(name='send_message', response=response))
+            log.error(request_logging_format.format(response=response))
 
     def send_file(self, destination, filename):
         """Sends a message to the destination given with the file given.
@@ -667,12 +667,12 @@ class Client(object):
 
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='send_file', response=response, json=response.text, data=filename))
+            log.debug(request_success_log.format(response=response, json=response.text, data=filename))
             channel = self.get_channel(data.get('channel_id'))
             message = Message(channel=channel, **data)
             return message
         else:
-            log.error(request_logging_format.format(name='send_file', response=response))
+            log.error(request_logging_format.format(response=response))
 
     def delete_message(self, message):
         """Deletes a :class:`Message`.
@@ -686,7 +686,7 @@ class Client(object):
 
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(name='delete_message', response=response))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def edit_message(self, message, new_content, mentions=True):
@@ -714,10 +714,10 @@ class Client(object):
         response = requests.patch(url, headers=self.headers, json=payload)
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='edit_message', response=response, json=payload, data=data))
+            log.debug(request_success_log.format(response=response, json=payload, data=data))
             return Message(channel=channel, **data)
         else:
-            log.error(request_logging_format.format(name='edit_message', response=response))
+            log.error(request_logging_format.format(response=response))
 
     def login(self, email, password):
         """Logs in the user with the following credentials and initialises
@@ -751,7 +751,7 @@ class Client(object):
             self._create_websocket(gateway.json().get('url'), reconnect=False)
             self._is_logged_in = True
         else:
-            log.error(request_logging_format.format(name='login', response=r))
+            log.error(request_logging_format.format(response=r))
 
     def register(self, username, invite, fingerprint=None):
         """Register a new unclaimed account using an invite to a server.
@@ -787,8 +787,7 @@ class Client(object):
             self._create_websocket(gateway.json().get('url'), reconnect=False)
             self._is_logged_in = True
         else:
-            log.error(request_logging_format.format(name='register',
-                                                    response=r))
+            log.error(request_logging_format.format(response=r))
 
     def logout(self):
         """Logs out of Discord and closes all connections."""
@@ -796,7 +795,7 @@ class Client(object):
         self._close = True
         self.ws.close()
         self._is_logged_in = False
-        log.debug(request_logging_format.format(name='logout', response=response))
+        log.debug(request_logging_format.format(response=response))
 
     def logs_from(self, channel, limit=100):
         """A generator that obtains logs from a specified channel.
@@ -826,7 +825,7 @@ class Client(object):
             for message in messages:
                 yield Message(channel=channel, **message)
         else:
-            log.error(request_logging_format.format(name='logs_from', response=response))
+            log.error(request_logging_format.format(response=response))
 
     def event(self, function):
         """A decorator that registers an event to listen to.
@@ -856,7 +855,7 @@ class Client(object):
 
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='delete_channel'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def kick(self, server, user):
@@ -871,7 +870,7 @@ class Client(object):
 
         url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='kick'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def ban(self, server, user):
@@ -886,7 +885,7 @@ class Client(object):
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.put(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='ban'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def unban(self, server, name):
@@ -901,7 +900,7 @@ class Client(object):
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='unban'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def edit_profile(self, password, **fields):
@@ -929,14 +928,14 @@ class Client(object):
 
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='edit_profile', response=response, json=payload, data=data))
+            log.debug(request_success_log.format(response=response, json=payload, data=data))
             self.token = data['token']
             self.email = data['email']
             self.headers['authorization'] = self.token
             self.user = User(**data)
             return True
         else:
-            log.debug(request_logging_format.format(response=response, name='edit_profile'))
+            log.debug(request_logging_format.format(response=response))
             return False
 
     def edit_channel(self, channel, **options):
@@ -963,11 +962,11 @@ class Client(object):
         response = requests.patch(url, headers=self.headers, json=payload)
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='edit_channel', response=response, json=payload, data=data))
+            log.debug(request_success_log.format(response=response, json=payload, data=data))
             channel.update(server=channel.server, **data)
             return True
         else:
-            log.debug(request_logging_format.format(response=response, name='edit_channel'))
+            log.debug(request_logging_format.format(response=response))
             return False
 
     def create_channel(self, server, name, type='text'):
@@ -990,12 +989,12 @@ class Client(object):
         response = requests.post(url, headers=self.headers, json=payload)
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='create_channel', response=response, data=data, json=payload))
+            log.debug(request_success_log.format(response=response, data=data, json=payload))
             channel = Channel(server=server, **data)
             # We don't append it to server.channels because CHANNEL_CREATE handles it for us.
             return channel
         else:
-            log.debug(request_logging_format.format(response=response, name='create_channel'))
+            log.debug(request_logging_format.format(response=response))
 
     def leave_server(self, server):
         """Leaves a :class:`Server`.
@@ -1006,7 +1005,7 @@ class Client(object):
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='leave_server'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def create_invite(self, destination, **options):
@@ -1033,13 +1032,13 @@ class Client(object):
         response = requests.post(url, headers=self.headers, json=payload)
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='create_invite', json=payload, response=response, data=data))
+            log.debug(request_success_log.format(json=payload, response=response, data=data))
             data['server'] = self.connection._get_server(data['guild']['id'])
             channel_id = data['channel']['id']
             data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
             return Invite(**data)
         else:
-            log.debug(request_logging_format.format(response=response, name='create_invite'))
+            log.debug(request_logging_format.format(response=response))
 
     def accept_invite(self, invite):
         """Accepts an :class:`Invite` or a URL to an invite.
@@ -1057,7 +1056,7 @@ class Client(object):
 
         url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.post(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='accept_invite'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def edit_role(self, server, role, **fields):
@@ -1098,11 +1097,11 @@ class Client(object):
         response = requests.patch(url, json=payload, headers=self.headers)
         if is_response_successful(response):
             data = response.json()
-            log.debug(request_success_log.format(name='edit_role', json=payload, response=response, data=data))
+            log.debug(request_success_log.format(json=payload, response=response, data=data))
             role.update(**data)
             return True
 
-        log.debug(request_logging_format.format(response=response, name='edit_role'))
+        log.debug(request_logging_format.format(response=response))
         return False
 
     def delete_role(self, server, role):
@@ -1117,7 +1116,7 @@ class Client(object):
 
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='delete_role'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def add_roles(self, member, *roles):
@@ -1139,7 +1138,7 @@ class Client(object):
         }
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response, name='add_roles'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def remove_roles(self, member, *roles):
@@ -1164,7 +1163,7 @@ class Client(object):
         }
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response, name='remove_roles'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def replace_roles(self, member, *roles):
@@ -1189,7 +1188,7 @@ class Client(object):
         }
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response, name='replace_roles'))
+        log.debug(request_logging_format.format(response=response))
         if is_response_successful(response):
             member.roles = list(roles)
             return True
@@ -1206,7 +1205,7 @@ class Client(object):
 
         url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
         response = requests.post(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='create_role'))
+        log.debug(request_logging_format.format(response=response))
 
         if is_response_successful(response):
             data = response.json()
@@ -1268,7 +1267,7 @@ class Client(object):
             raise TypeError('target parameter must be either discord.Member or discord.Role')
 
         response = requests.put(url, json=payload, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='set_channel_permissions'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def delete_channel_permissions(self, channel, target):
@@ -1286,7 +1285,7 @@ class Client(object):
 
         url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
         response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response, name='delete_channel_permissions'))
+        log.debug(request_logging_format.format(response=response))
         return is_response_successful(response)
 
     def change_status(self, game_id=None, idle=False):
