@@ -29,13 +29,17 @@ class DiscordException(Exception):
 
     Ideally speaking, this could be caught to handle any exceptions thrown from this library.
     """
+    pass
 
 class ClientException(DiscordException):
     """Exception that's thrown when an operation in the :class:`Client` fails.
 
     These are usually for exceptions that happened due to user input.
     """
+    pass
 
 class GatewayNotFound(DiscordException):
     """Thrown when the gateway hub for the :class:`Client` websocket is not found."""
-    pass
+    def __init__(self):
+        message = 'The gateway to connect to discord was not found.'
+        super(GatewayNotFound, self).__init__(message)
