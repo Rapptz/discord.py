@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 from .user import User
+from .object import Object
 
 class Message(object):
     """Represents a message from Discord.
@@ -58,6 +59,7 @@ class Message(object):
     .. attribute:: channel
 
         The :class:`Channel` that the message was sent from. Could be a :class:`PrivateChannel` if it's a private message.
+        In :issue:`very rare cases <21>` this could be a :class:`Object` instead.
     .. attribute:: server
 
         The :class:`Server` that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
@@ -92,10 +94,13 @@ class Message(object):
         self.mentions = [User(**mention) for mention in kwargs.get('mentions', {})]
         self.attachments = kwargs.get('attachments')
         self.server = self.channel.server if not self.channel.is_private else None
-        self._upgrade_to_member()
+        self._handle_upgrades(kwargs.get('channel_id'))
 
-    def _upgrade_to_member(self):
-        assert self.channel is not None
+    def _handle_upgrades(self, channel_id):
+        if self.channel is None:
+            if channel_id is not None:
+                self.channel = Object(channel_id)
+            return
 
         if not self.channel.is_private:
             found = utils.find(lambda m: m.id == self.author.id, self.channel.server.members)
