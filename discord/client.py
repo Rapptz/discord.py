@@ -547,7 +547,10 @@ class Client(object):
         getattr(self.connection, method)(data)
 
     def run(self):
-        """Runs the client and allows it to receive messages and events."""
+        """Runs the client and allows it to receive messages and events.
+
+        This function can raise a :exc:`GatewayNotFound` exception while attempting
+        to reconnect."""
         log.info('Client is being run')
         self.ws.run()
 
@@ -613,7 +616,7 @@ class Client(object):
         ``mentions`` is ``True`` then all the users mentioned in the content are mentioned, otherwise
         no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
 
-        If the destination parameter is invalid, then this function raises :class:`ClientException`.
+        If the destination parameter is invalid, then this function raises :exc:`ClientException`.
 
         :param destination: The location to send the message.
         :param content: The content of the message to send.
@@ -730,6 +733,9 @@ class Client(object):
         After this function is called, :attr:`is_logged_in` returns True if no
         errors occur.
 
+        This function raises :exc:`GatewayNotFound` if it was unavailable to connect
+        to a websocket gateway.
+
         :param str email: The email used to login.
         :param str password: The password used to login.
         """
@@ -764,9 +770,12 @@ class Client(object):
         user created and :attr:`is_logged_in` returns True if no errors
         occur.
 
+        This function raises :exc:`GatewayNotFound` if the gateway to
+        connect the websocket is not found.
+
         :param str username: The username to register as.
         :param invite: An invite URL or :class:`Invite` to register with.
-        :param str fingerprint: Unkown API parameter, defaults to None
+        :param str fingerprint: Unknown API parameter, defaults to None
         """
 
         payload = {
