@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import print_function
 
 from . import endpoints
-from .errors import InvalidEventName, InvalidDestination, GatewayNotFound
+from .errors import *
 from .user import User
 from .channel import Channel, PrivateChannel
 from .server import Server

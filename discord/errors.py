@@ -24,10 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class InvalidEventName(Exception):
-    """Thrown when an event from :meth:`Client.event` has an invalid name."""
-    pass
-
 class InvalidDestination(Exception):
     """Thrown when the destination from :meth:`Client.send_message` is invalid."""
     pass

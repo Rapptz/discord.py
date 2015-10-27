@@ -282,10 +282,6 @@ Exceptions
 
 The following exceptions are thrown by the library.
 
-
-.. autoclass:: InvalidEventName
-    :members:
-
 .. autoclass:: InvalidDestination
     :members:
 
