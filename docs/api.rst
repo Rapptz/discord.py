@@ -284,7 +284,7 @@ The following exceptions are thrown by the library.
 
 .. autoclass:: DiscordException
 
-.. autoclass:: InvalidDestination
+.. autoclass:: ClientException
 
 .. autoclass:: GatewayNotFound
 

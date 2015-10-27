@@ -509,7 +509,7 @@ class Client(object):
         elif isinstance(destination, Object):
             return destination.id
         else:
-            raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
+            raise ClientException('Destination must be Channel, PrivateChannel, User, or Object')
 
     def on_error(self, event_method, *args, **kwargs):
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
@@ -612,6 +612,8 @@ class Client(object):
         The mentions must be either an array of :class:`User` to mention or a boolean. If
         ``mentions`` is ``True`` then all the users mentioned in the content are mentioned, otherwise
         no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
+
+        If the destination parameter is invalid, then this function raises :class:`ClientException`.
 
         :param destination: The location to send the message.
         :param content: The content of the message to send.

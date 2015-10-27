@@ -30,9 +30,11 @@ class DiscordException(Exception):
     Ideally speaking, this could be caught to handle any exceptions thrown from this library.
     """
 
-class InvalidDestination(DiscordException):
-    """Thrown when the destination from :meth:`Client.send_message` is invalid."""
-    pass
+class ClientException(DiscordException):
+    """Exception that's thrown when an operation in the :class:`Client` fails.
+
+    These are usually for exceptions that happened due to user input.
+    """
 
 class GatewayNotFound(DiscordException):
     """Thrown when the gateway hub for the :class:`Client` websocket is not found."""
