@@ -36,6 +36,7 @@ from .role import Role, Permissions
 from .message import Message
 from . import utils
 from .invite import Invite
+from .object import Object
 
 import traceback
 import requests
@@ -484,7 +485,7 @@ class Client(object):
             return []
 
     def _resolve_invite(self, invite):
-        if isinstance(invite, Invite):
+        if isinstance(invite, Invite) or isinstance(invite, Object):
             return invite.id
         else:
             rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
@@ -495,19 +496,18 @@ class Client(object):
 
     def _resolve_destination(self, destination):
         if isinstance(destination, Channel) or isinstance(destination, PrivateChannel):
-            return (destination.id, destination.is_private)
+            return destination.id
         elif isinstance(destination, User):
             found = utils.find(lambda pm: pm.user == destination, self.private_channels)
             if found is None:
                 # Couldn't find the user, so start a PM with them first.
                 self.start_private_message(destination)
                 channel_id = self.private_channels[-1].id
-                return (channel_id, True)
+                return channel_id
             else:
-                return (found.id, True)
-        elif isinstance(destination, str):
-            channel_id = destination
-            return (destination, True)
+                return found.id
+        elif isinstance(destination, Object):
+            return destination.id
         else:
             raise InvalidDestination('Destination must be Channel, PrivateChannel, User, or str')
 
@@ -601,8 +601,11 @@ class Client(object):
 
         The destination could be a :class:`Channel` or a :class:`PrivateChannel`. For convenience
         it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel` then it
-        sends the message via private message, otherwise it sends the message to the channel. If it's
-        a ``str`` instance, then it assumes it's a channel ID and uses that for its destination.
+        sends the message via private message, otherwise it sends the message to the channel. If it is
+        a :class:`Object` instance then it is assumed to be the destination ID.
+
+        .. versionchanged:: 0.9.0
+            ``str`` being allowed was removed and replaced with :class:`Object`.
 
         The content must be a type that can convert to a string through ``str(content)``.
 
@@ -617,7 +620,7 @@ class Client(object):
         :return: The :class:`Message` sent or None if error occurred.
         """
 
-        channel_id, is_private_message = self._resolve_destination(destination)
+        channel_id = self._resolve_destination(destination)
 
         content = str(content)
         mentions = self._resolve_mentions(content, mentions)
@@ -625,10 +628,8 @@ class Client(object):
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         payload = {
             'content': content,
+            'mentions': mentions
         }
-
-        if not is_private_message:
-            payload['mentions'] = mentions
 
         if tts:
             payload['tts'] = True
@@ -655,7 +656,7 @@ class Client(object):
         :return: The :class:`Message` sent or None if an error occurred.
         """
 
-        channel_id, is_private_message = self._resolve_destination(destination)
+        channel_id = self._resolve_destination(destination)
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         response = None
