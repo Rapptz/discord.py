@@ -282,9 +282,9 @@ Exceptions
 
 The following exceptions are thrown by the library.
 
+.. autoclass:: DiscordException
+
 .. autoclass:: InvalidDestination
-    :members:
 
 .. autoclass:: GatewayNotFound
-    :members:
 

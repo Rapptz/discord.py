@@ -24,10 +24,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class InvalidDestination(Exception):
+class DiscordException(Exception):
+    """Base exception class for discord.py
+
+    Ideally speaking, this could be caught to handle any exceptions thrown from this library.
+    """
+
+class InvalidDestination(DiscordException):
     """Thrown when the destination from :meth:`Client.send_message` is invalid."""
     pass
 
-class GatewayNotFound(Exception):
+class GatewayNotFound(DiscordException):
     """Thrown when the gateway hub for the :class:`Client` websocket is not found."""
     pass
