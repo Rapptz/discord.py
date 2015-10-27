@@ -29,6 +29,7 @@ from .permissions import Permissions
 from .role import Role
 from .colour import Color, Colour
 from .invite import Invite
+from .object import Object
 from . import utils
 
 import logging
