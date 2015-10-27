@@ -1,6 +1,6 @@
 from setuptools import setup
 import re
-
+#i am dank asf now danny
 requirements = []
 with open('requirements.txt') as f:
   requirements = f.read().splitlines()
