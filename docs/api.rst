@@ -244,6 +244,9 @@ Data Classes
 
 Some classes are just there to be data containers, this lists them. It should be assumed that *all* classes in this category are immutable and should not be modified.
 
+.. autoclass:: Object
+    :members:
+
 .. autoclass:: User
     :members:
 
