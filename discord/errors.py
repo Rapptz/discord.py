@@ -24,6 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+try:
+    import http.client as httplib
+except ImportError:
+    import httplib
+
 class DiscordException(Exception):
     """Base exception class for discord.py
 
@@ -39,7 +44,28 @@ class ClientException(DiscordException):
     pass
 
 class GatewayNotFound(DiscordException):
-    """Thrown when the gateway hub for the :class:`Client` websocket is not found."""
+    """An exception that is usually thrown when the gateway hub
+    for the :class:`Client` websocket is not found."""
     def __init__(self):
         message = 'The gateway to connect to discord was not found.'
         super(GatewayNotFound, self).__init__(message)
+
+class HTTPException(DiscordException):
+    """Exception that's thrown when an HTTP request operation fails.
+
+    .. attribute:: response
+
+        The response of the failed HTTP request. This is an
+        instance of `requests.Response`__.
+
+        __ http://docs.python-requests.org/en/latest/api/#requests.Response
+    """
+
+    def __init__(self, response, message=None):
+        self.response = response
+
+        if message is None:
+            message = httplib.responses.get(response.status_code, 'HTTP error')
+
+        message = '{0} (status code: {1.response.status_code}'.format(message, self)
+        super(HTTPException, self).__init__(message)

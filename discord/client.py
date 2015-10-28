@@ -56,10 +56,11 @@ request_success_log = '{response.url} with {json} received {data}'
 def _null_event(*args, **kwargs):
     pass
 
-def is_response_successful(response):
-    """Helper function for checking if the status code is in the 200 range"""
+def _verify_successful_response(response):
     code = response.status_code
-    return code >= 200 and code < 300
+    success = code >= 200 and code < 300
+    if not success:
+        raise HTTPException(response)
 
 class KeepAliveHandler(threading.Thread):
     def __init__(self, seconds, socket, **kwargs):
@@ -582,6 +583,8 @@ class Client(object):
 
         Note that this method should rarely be called as :meth:`send_message` does it automatically.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param user: A :class:`User` to start the private message with.
         """
         if not isinstance(user, User):
@@ -592,12 +595,11 @@ class Client(object):
         }
 
         r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
-        if is_response_successful(r):
-            data = r.json()
-            log.debug(request_success_log.format(response=r, json=payload, data=data))
-            self.private_channels.append(PrivateChannel(id=data['id'], user=user))
-        else:
-            log.error(request_logging_format.format(response=r))
+        log.debug(request_logging_format.format(response=r))
+        _verify_successful_response(r)
+        data = r.json()
+        log.debug(request_success_log.format(response=r, json=payload, data=data))
+        self.private_channels.append(PrivateChannel(id=data['id'], user=user))
 
     def send_message(self, destination, content, mentions=True, tts=False):
         """Sends a message to the destination given with the content given.
@@ -617,12 +619,13 @@ class Client(object):
         no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
 
         If the destination parameter is invalid, then this function raises :exc:`ClientException`.
+        This function raises :exc:`HTTPException` if the request failed.
 
         :param destination: The location to send the message.
         :param content: The content of the message to send.
         :param mentions: A list of :class:`User` to mention in the message or a boolean. Ignored for private messages.
         :param tts: If ``True``, sends tries to send the message using text-to-speech.
-        :return: The :class:`Message` sent or None if error occurred.
+        :return: The :class:`Message` sent.
         """
 
         channel_id = self._resolve_destination(destination)
@@ -640,14 +643,13 @@ class Client(object):
             payload['tts'] = True
 
         response = requests.post(url, json=payload, headers=self.headers)
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(response=response, json=payload, data=data))
-            channel = self.get_channel(data.get('channel_id'))
-            message = Message(channel=channel, **data)
-            return message
-        else:
-            log.error(request_logging_format.format(response=response))
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+        data = response.json()
+        log.debug(request_success_log.format(response=response, json=payload, data=data))
+        channel = self.get_channel(data.get('channel_id'))
+        message = Message(channel=channel, **data)
+        return message
 
     def send_file(self, destination, filename):
         """Sends a message to the destination given with the file given.
@@ -655,10 +657,11 @@ class Client(object):
         The destination parameter follows the same rules as :meth:`send_message`.
 
         Note that this requires proper permissions in order to work.
+        This function raises :exc:`HTTPException` if the request failed.
 
         :param destination: The location to send the message.
         :param filename: The file to send.
-        :return: The :class:`Message` sent or None if an error occurred.
+        :return: The :class:`Message` sent.
         """
 
         channel_id = self._resolve_destination(destination)
@@ -672,14 +675,13 @@ class Client(object):
             }
             response = requests.post(url, files=files, headers=self.headers)
 
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(response=response, json=response.text, data=filename))
-            channel = self.get_channel(data.get('channel_id'))
-            message = Message(channel=channel, **data)
-            return message
-        else:
-            log.error(request_logging_format.format(response=response))
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+        data = response.json()
+        log.debug(request_success_log.format(response=response, json=response.text, data=filename))
+        channel = self.get_channel(data.get('channel_id'))
+        message = Message(channel=channel, **data)
+        return message
 
     def delete_message(self, message):
         """Deletes a :class:`Message`.
@@ -687,24 +689,27 @@ class Client(object):
         Your own messages could be deleted without any proper permissions. However to
         delete other people's messages, you need the proper permissions to do so.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param message: The :class:`Message` to delete.
-        :returns: True if the message was deleted successfully, False otherwise.
         """
 
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def edit_message(self, message, new_content, mentions=True):
         """Edits a :class:`Message` with the new message content.
 
         The new_content must be able to be transformed into a string via ``str(new_content)``.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param message: The :class:`Message` to edit.
         :param new_content: The new content to replace the message with.
         :param mentions: The mentions for the user. Same as :meth:`send_message`.
-        :return: The new edited message or None if an error occurred.
+        :return: The new edited message.
         """
 
         channel = message.channel
@@ -719,12 +724,11 @@ class Client(object):
             payload['mentions'] = self._resolve_mentions(content, mentions)
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(response=response, json=payload, data=data))
-            return Message(channel=channel, **data)
-        else:
-            log.error(request_logging_format.format(response=response))
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+        data = response.json()
+        log.debug(request_success_log.format(response=response, json=payload, data=data))
+        return Message(channel=channel, **data)
 
     def login(self, email, password):
         """Logs in the user with the following credentials and initialises
@@ -746,22 +750,19 @@ class Client(object):
         }
 
         r = requests.post(endpoints.LOGIN, json=payload)
+        log.debug(request_logging_format.format(response=r))
+        _verify_successful_response(r)
 
-        if is_response_successful(r):
-            log.info('logging in returned status code {}'.format(r.status_code))
-            self.email = email
+        log.info('logging in returned status code {}'.format(r.status_code))
+        self.email = email
 
-            body = r.json()
-            self.token = body['token']
-            self.headers['authorization'] = self.token
+        body = r.json()
+        self.token = body['token']
+        self.headers['authorization'] = self.token
 
-            gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-            if not is_response_successful(gateway):
-                raise GatewayNotFound()
-            self._create_websocket(gateway.json().get('url'), reconnect=False)
-            self._is_logged_in = True
-        else:
-            log.error(request_logging_format.format(response=r))
+        gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+        self._create_websocket(gateway.json().get('url'), reconnect=False)
+        self._is_logged_in = True
 
     def register(self, username, invite, fingerprint=None):
         """Register a new unclaimed account using an invite to a server.
@@ -771,7 +772,8 @@ class Client(object):
         occur.
 
         This function raises :exc:`GatewayNotFound` if the gateway to
-        connect the websocket is not found.
+        connect the websocket is not found. It also raises :exc:`HTTPException`
+        if the request failed.
 
         :param str username: The username to register as.
         :param invite: An invite URL or :class:`Invite` to register with.
@@ -785,22 +787,21 @@ class Client(object):
         }
 
         r = requests.post(endpoints.REGISTER, json=payload)
+        log.debug(request_logging_format.format(response=r))
 
-        if r.status_code == 201:
-            log.info('register returned status code 200')
-            self.email = ''
+        _verify_successful_response(r)
+        log.info('register returned a successful status code')
+        self.email = ''
 
-            body = r.json()
-            self.token = body['token']
-            self.headers['authorization'] = self.token
+        body = r.json()
+        self.token = body['token']
+        self.headers['authorization'] = self.token
 
-            gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-            if gateway.status_code != 200:
-                raise GatewayNotFound()
-            self._create_websocket(gateway.json().get('url'), reconnect=False)
-            self._is_logged_in = True
-        else:
-            log.error(request_logging_format.format(response=r))
+        gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+        if gateway.status_code != 200:
+            raise GatewayNotFound()
+        self._create_websocket(gateway.json().get('url'), reconnect=False)
+        self._is_logged_in = True
 
     def logout(self):
         """Logs out of Discord and closes all connections."""
@@ -814,6 +815,8 @@ class Client(object):
         """A generator that obtains logs from a specified channel.
 
         Yielding from the generator returns a :class:`Message` object with the message data.
+
+        This function raises :exc:`HTTPException` if the request failed.
 
         Example: ::
 
@@ -832,13 +835,11 @@ class Client(object):
             'limit': limit
         }
         response = requests.get(url, params=params, headers=self.headers)
-        if is_response_successful(response):
-            messages = response.json()
-            log.info('logs_from: {0.url} was successful'.format(response))
-            for message in messages:
-                yield Message(channel=channel, **message)
-        else:
-            log.error(request_logging_format.format(response=response))
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+        messages = response.json()
+        for message in messages:
+            yield Message(channel=channel, **message)
 
     def event(self, function):
         """A decorator that registers an event to listen to.
@@ -862,49 +863,54 @@ class Client(object):
         In order to delete the channel, the client must have the proper permissions
         in the server the channel belongs to.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param channel: The :class:`Channel` to delete.
-        :returns: True if channel was deleted successfully, False otherwise.
         """
 
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def kick(self, server, user):
         """Kicks a :class:`User` from their respective :class:`Server`.
 
         You must have the proper permissions to kick a user in the server.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param server: The :class:`Server` to kick the member from.
         :param user: The :class:`User` to kick.
-        :returns: True if kick was successful, False otherwise.
         """
 
         url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def ban(self, server, user):
         """Bans a :class:`User` from their respective :class:`Server`.
 
         You must have the proper permissions to ban a user in the server.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param server: The :class:`Server` to ban the member from.
         :param user: The :class:`User` to ban.
-        :returns: True if ban was successful, False otherwise.
         """
 
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.put(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def unban(self, server, name):
         """Unbans a :class:`User` from their respective :class:`Server`.
 
         You must have the proper permissions to unban a user in the server.
+
+        This function raises :exc:`HTTPException` if the request failed.
 
         :param server: The :class:`Server` to unban the member from.
         :param user: The :class:`User` to unban.
@@ -914,18 +920,19 @@ class Client(object):
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def edit_profile(self, password, **fields):
         """Edits the current profile of the client.
 
         All fields except password are optional.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param password: The current password for the client's account.
         :param new_password: The new password you wish to change to.
         :param email: The new email you wish to change to.
         :param username: The new username you wish to change to.
-        :returns: True if profile edit was successful, False otherwise.
         """
 
         payload = {
@@ -938,18 +945,15 @@ class Client(object):
 
         url = '{0}/@me'.format(endpoints.USERS)
         response = requests.patch(url, headers=self.headers, json=payload)
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
 
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(response=response, json=payload, data=data))
-            self.token = data['token']
-            self.email = data['email']
-            self.headers['authorization'] = self.token
-            self.user = User(**data)
-            return True
-        else:
-            log.debug(request_logging_format.format(response=response))
-            return False
+        data = response.json()
+        log.debug(request_success_log.format(response=response, json=payload, data=data))
+        self.token = data['token']
+        self.email = data['email']
+        self.headers['authorization'] = self.token
+        self.user = User(**data)
 
     def edit_channel(self, channel, **options):
         """Edits a :class:`Channel`.
@@ -958,11 +962,12 @@ class Client(object):
 
         References pointed to the channel will be updated with the new information.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param channel: The :class:`Channel` to update.
         :param name: The new channel name.
         :param position: The new channel's position in the GUI.
         :param topic: The new channel's topic.
-        :returns: True if editing was successful, False otherwise.
         """
 
         url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
@@ -973,24 +978,24 @@ class Client(object):
         }
 
         response = requests.patch(url, headers=self.headers, json=payload)
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(response=response, json=payload, data=data))
-            channel.update(server=channel.server, **data)
-            return True
-        else:
-            log.debug(request_logging_format.format(response=response))
-            return False
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+
+        data = response.json()
+        log.debug(request_success_log.format(response=response, json=payload, data=data))
+        channel.update(server=channel.server, **data)
 
     def create_channel(self, server, name, type='text'):
         """Creates a :class:`Channel` in the specified :class:`Server`.
 
         Note that you need the proper permissions to create the channel.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param server: The :class:`Server` to create the channel in.
         :param name: The channel's name.
         :param type: The type of channel to create. 'text' or 'voice'.
-        :returns: The newly created :class:`Channel` if successful, else None.
+        :returns: The newly created :class:`Channel`.
         """
 
         payload = {
@@ -1000,29 +1005,32 @@ class Client(object):
 
         url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
         response = requests.post(url, headers=self.headers, json=payload)
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(response=response, data=data, json=payload))
-            channel = Channel(server=server, **data)
-            # We don't append it to server.channels because CHANNEL_CREATE handles it for us.
-            return channel
-        else:
-            log.debug(request_logging_format.format(response=response))
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+
+        data = response.json()
+        log.debug(request_success_log.format(response=response, data=data, json=payload))
+        channel = Channel(server=server, **data)
+        # We don't append it to server.channels because CHANNEL_CREATE handles it for us.
+        return channel
 
     def leave_server(self, server):
         """Leaves a :class:`Server`.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param server: The :class:`Server` to leave.
-        :returns: True if leaving was successful, False otherwise.
         """
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def create_invite(self, destination, **options):
         """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
+
+        This function raises :exc:`HTTPException` if the request failed.
 
         The available options are:
 
@@ -1031,7 +1039,7 @@ class Client(object):
         :param max_uses: How many uses the invite could be used for. If it's 0 then there are unlimited uses. Defaults to 0.
         :param temporary: A boolean to denote that the invite grants temporary membership (i.e. they get kicked after they disconnect). Defaults to False.
         :param xkcd: A boolean to indicate if the invite URL is human readable. Defaults to False.
-        :returns: The :class:`Invite` if creation is successful, None otherwise.
+        :returns: The :class:`Invite` if creation is successful.
         """
 
         payload = {
@@ -1043,37 +1051,41 @@ class Client(object):
 
         url = '{0}/{1.id}/invites'.format(endpoints.CHANNELS, destination)
         response = requests.post(url, headers=self.headers, json=payload)
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(json=payload, response=response, data=data))
-            data['server'] = self.connection._get_server(data['guild']['id'])
-            channel_id = data['channel']['id']
-            data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
-            return Invite(**data)
-        else:
-            log.debug(request_logging_format.format(response=response))
+        log.debug(request_logging_format.format(response=response))
+
+        _verify_successful_response(response)
+        data = response.json()
+        log.debug(request_success_log.format(json=payload, response=response, data=data))
+        data['server'] = self.connection._get_server(data['guild']['id'])
+        channel_id = data['channel']['id']
+        data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
+        return Invite(**data)
 
     def accept_invite(self, invite):
         """Accepts an :class:`Invite` or a URL to an invite.
 
         The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere"
 
+        This function raises :exc:`HTTPException` if the request failed. If
+        the invite is invalid, then :exc:`ClientException` is raised.
+
         :param invite: The :class:`Invite` or URL to an invite to accept.
-        :returns: True if the invite was successfully accepted, False otherwise.
         """
 
         destination = self._resolve_invite(invite)
 
         if destination is None:
-            return False
+            raise ClientException('The invite ({}) is invalid.'.format(invite))
 
         url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def edit_role(self, server, role, **fields):
         """Edits the specified :class:`Role` for the entire :class:`Server`.
+
+        This function raises :exc:`HTTPException` if the request failed.
 
         .. versionchanged:: 0.8.0
             Editing now uses keyword arguments instead of editing the :class:`Role` object directly.
@@ -1091,8 +1103,6 @@ class Client(object):
         :param permissions: The new :class:`Permissions` to change to. (optional)
         :param colour: The new :class:`Colour` to change to. (optional) (aliased to color as well)
         :param hoist: A boolean indicating if the role should be shown separately. (optional)
-        :return: ``True`` if editing was successful, ``False`` otherwise. If editing is successful,
-                 the ``role`` parameter will be updated with the changes.
         """
 
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
@@ -1108,40 +1118,38 @@ class Client(object):
         }
 
         response = requests.patch(url, json=payload, headers=self.headers)
-        if is_response_successful(response):
-            data = response.json()
-            log.debug(request_success_log.format(json=payload, response=response, data=data))
-            role.update(**data)
-            return True
-
         log.debug(request_logging_format.format(response=response))
-        return False
+        _verify_successful_response(response)
+
+        data = response.json()
+        log.debug(request_success_log.format(json=payload, response=response, data=data))
+        role.update(**data)
 
     def delete_role(self, server, role):
         """Deletes the specified :class:`Role` for the entire :class:`Server`.
 
         Works in a similar matter to :func:`edit_role`.
+        This function raises :exc:`HTTPException` if the request failed.
 
         :param server: The :class:`Server` the role belongs to.
         :param role: The :class:`Role` to delete.
-        :return: ``True`` if deleting was successful, ``False`` otherwise.
         """
 
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def add_roles(self, member, *roles):
         """Gives the specified :class:`Member` a number of :class:`Role` s.
 
         You must have the proper permissions to use this function.
+        This function raises :exc:`HTTPException` if the request failed.
 
         This method **appends** a role to a member.
 
         :param member: The :class:`Member` to give roles to.
         :param roles: An iterable of :class:`Role` s to give the member.
-        :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
         url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
@@ -1152,16 +1160,16 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def remove_roles(self, member, *roles):
         """Removes the :class:`Role` s from the :class:`Member`.
 
         You must have the proper permissions to use this function.
+        This function raises :exc:`HTTPException` if the request failed.
 
         :param member: The :class:`Member` to remove roles from.
         :param roles: An iterable of :class:`Role` s to remove from the member.
-        :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
         url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
@@ -1177,7 +1185,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def replace_roles(self, member, *roles):
         """Replaces the :class:`Member`'s roles.
@@ -1189,9 +1197,10 @@ class Client(object):
         call is ``client.replace_roles(member, d, e, c)`` then
         the member has the roles ``[d, e, c]``.
 
+        This function raises :exc:`HTTPException` if the request failed.
+
         :param member: The :class:`Member` to replace roles for.
         :param roles: An iterable of :class:`Role` s to replace with.
-        :return: ``True`` if the operation was successful, ``False`` otherwise.
         """
 
         url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
@@ -1202,34 +1211,32 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        if is_response_successful(response):
-            member.roles = list(roles)
-            return True
+        _verify_successful_response(response)
 
-        return False
+        member.roles = list(roles)
 
     def create_role(self, server, **fields):
         """Creates a :class:`Role`.
 
         The fields parameter is the same as :func:`edit_role`.
 
-        :return: The :class:`Role` if creation was successful, None otherwise.
+        This function raises :exc:`HTTPException` if the request failed.
+
+        :return: The :class:`Role` that was created.
         """
 
         url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
 
-        if is_response_successful(response):
-            data = response.json()
-            everyone = server.id == data.get('id')
-            role = Role(everyone=everyone, **data)
-            if self.edit_role(server, role, **fields):
-                # we have to call edit because you can't pass a payload to the
-                # http request currently.
-                return role
-
-        return None
+        data = response.json()
+        everyone = server.id == data.get('id')
+        role = Role(everyone=everyone, **data)
+        if self.edit_role(server, role, **fields):
+            # we have to call edit because you can't pass a payload to the
+            # http request currently.
+            return role
 
     def set_channel_permissions(self, channel, target, allow=None, deny=None):
         """Sets the channel specific permission overwrites for a target in the
@@ -1239,6 +1246,10 @@ class Client(object):
         :class:`Role` that belongs to the channel's server.
 
         You must have the proper permissions to do this.
+
+        This function raises :exc:`HTTPException` if the request failed.
+        This function also raises ``TypeError`` if invalid arguments are
+        passed to this function.
 
         Example code: ::
 
@@ -1252,7 +1263,6 @@ class Client(object):
         :param target: The :class:`Member` or :class:`Role` to overwrite permissions for.
         :param allow: A :class:`Permissions` object representing the permissions to explicitly allow. (optional)
         :param deny: A :class:`Permissions` object representing the permissions to explicitly deny. (optional)
-        :return: ``True`` if setting is successful, ``False`` otherwise.
         """
 
         url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
@@ -1281,7 +1291,7 @@ class Client(object):
 
         response = requests.put(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def delete_channel_permissions(self, channel, target):
         """Removes a channel specific permission overwrites for a target
@@ -1290,16 +1300,16 @@ class Client(object):
         The target parameter follows the same rules as :meth:`set_channel_permissions`.
 
         You must have the proper permissions to do this.
+        This function raises :exc:`HTTPException` if the request failed.
 
         :param channel: The :class:`Channel` to give the specific permissions for.
         :param target: The :class:`Member` or :class:`Role` to overwrite permissions for.
-        :return: ``True`` if deletion is successful, ``False`` otherwise.
         """
 
         url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        return is_response_successful(response)
+        _verify_successful_response(response)
 
     def change_status(self, game_id=None, idle=False):
         """Changes the client's status.
