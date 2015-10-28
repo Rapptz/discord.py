@@ -735,7 +735,8 @@ class Client(object):
         the connection to Discord.
 
         After this function is called, :attr:`is_logged_in` returns True if no
-        errors occur.
+        errors occur. If an error occurs during the login process, then
+        :exc:`HTTPException` is raised.
 
         This function raises :exc:`GatewayNotFound` if it was unavailable to connect
         to a websocket gateway.
