@@ -510,7 +510,7 @@ class Client(object):
         elif isinstance(destination, Object):
             return destination.id
         else:
-            raise ClientException('Destination must be Channel, PrivateChannel, User, or Object')
+            raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
 
     def on_error(self, event_method, *args, **kwargs):
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
@@ -618,7 +618,7 @@ class Client(object):
         ``mentions`` is ``True`` then all the users mentioned in the content are mentioned, otherwise
         no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
 
-        If the destination parameter is invalid, then this function raises :exc:`ClientException`.
+        If the destination parameter is invalid, then this function raises :exc:`InvalidArgument`.
         This function raises :exc:`HTTPException` if the request failed.
 
         :param destination: The location to send the message.
@@ -1067,7 +1067,7 @@ class Client(object):
         The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere"
 
         This function raises :exc:`HTTPException` if the request failed. If
-        the invite is invalid, then :exc:`ClientException` is raised.
+        the invite is invalid, then :exc:`InvalidArgument` is raised.
 
         :param invite: The :class:`Invite` or URL to an invite to accept.
         """
@@ -1075,7 +1075,7 @@ class Client(object):
         destination = self._resolve_invite(invite)
 
         if destination is None:
-            raise ClientException('The invite ({}) is invalid.'.format(invite))
+            raise InvalidArgument('The invite ({}) is invalid.'.format(invite))
 
         url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.post(url, headers=self.headers)
@@ -1248,7 +1248,7 @@ class Client(object):
         You must have the proper permissions to do this.
 
         This function raises :exc:`HTTPException` if the request failed.
-        This function also raises ``TypeError`` if invalid arguments are
+        This function also raises :exc:`InvalidArgument` if invalid arguments are
         passed to this function.
 
         Example code: ::
@@ -1271,7 +1271,7 @@ class Client(object):
         deny = Permissions.none() if deny is None else deny
 
         if not (isinstance(allow, Permissions) and isinstance(deny, Permissions)):
-            raise TypeError('allow and deny parameters must be discord.Permissions')
+            raise InvalidArgument('allow and deny parameters must be discord.Permissions')
 
         deny =  deny.value
         allow = allow.value
@@ -1287,7 +1287,7 @@ class Client(object):
         elif isinstance(target, Role):
             payload['type'] = 'role'
         else:
-            raise TypeError('target parameter must be either discord.Member or discord.Role')
+            raise InvalidArgument('target parameter must be either discord.Member or discord.Role')
 
         response = requests.put(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response))

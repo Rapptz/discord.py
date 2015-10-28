@@ -289,5 +289,7 @@ The following exceptions are thrown by the library.
 .. autoexception:: HTTPException
     :members:
 
+.. autoexception:: InvalidArgument
+
 .. autoexception:: GatewayNotFound
 

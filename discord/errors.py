@@ -69,3 +69,13 @@ class HTTPException(DiscordException):
 
         message = '{0} (status code: {1.response.status_code}'.format(message, self)
         super(HTTPException, self).__init__(message)
+
+class InvalidArgument(ClientException):
+    """Exception that's thrown when an argument to a function
+    is invalid some way (e.g. wrong value or wrong type).
+
+    This could be considered the analogous of ``ValueError`` and
+    ``TypeError`` except derived from :exc:`ClientException` and thus
+    :exc:`DiscordException`.
+    """
+    pass
