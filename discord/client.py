@@ -299,7 +299,7 @@ class ConnectionState(object):
         server = self._get_server(data.get('guild_id'))
         member = Member(server=server, deaf=False, mute=False, **data)
         server.members.append(member)
-        self.dispatch('member_join', member)
+        self.dispatch('member_join', server, member)
 
     def handle_guild_member_remove(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -307,7 +307,7 @@ class ConnectionState(object):
             user_id = data['user']['id']
             member = utils.find(lambda m: m.id == user_id, server.members)
             server.members.remove(member)
-            self.dispatch('member_remove', member)
+            self.dispatch('member_remove', server, member)
 
     def handle_guild_member_update(self, data):
         server = self._get_server(data.get('guild_id'))
