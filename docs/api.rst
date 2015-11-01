@@ -188,15 +188,28 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param member: The :class:`Member` that updated their profile with the updated info.
 
-.. function:: on_server_create(server)
-              on_server_delete(server)
+.. function:: on_server_join(server)
 
-    Called when a :class:`Server` is created or deleted.
+    Called when a :class:`Server` is either created by the :class:`Client` or when the
+    :class:`Client` joins a server.
 
-    Note that the server that is created must belong to the :class:`Client` and the server
-    that got deleted must have been part of the client's participating servers.
+    :param server: The class:`Server` that was joined.
 
-    :param server: The :class:`Server` that got created or deleted.
+.. function:: on_server_remove(server)
+
+    Called when a :class:`Server` is removed from the :class:`Client`.
+
+    This happens through, but not limited to, these circumstances:
+
+    - The client got banned.
+    - The client got kicked.
+    - The client left the server.
+    - The client or the server owner deleted the server.
+
+    In order for this event to be invoked then the :class:`Client` must have
+    been part of the server to begin with. (i.e. it is part of :attr:`Client.servers`)
+
+    :param server: The :class:`Server` that got removed.
 
 .. function:: on_server_role_create(server, role)
               on_server_role_delete(server, role)

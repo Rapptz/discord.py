@@ -348,7 +348,7 @@ class ConnectionState(object):
             # available, so it isn't in the cache...
 
         self._add_server(data)
-        self.dispatch('server_create', self.servers[-1])
+        self.dispatch('server_join', self.servers[-1])
 
     def handle_guild_delete(self, data):
         if data.get('unavailable', False):
@@ -362,7 +362,7 @@ class ConnectionState(object):
 
         server = self._get_server(data.get('id'))
         self.servers.remove(server)
-        self.dispatch('server_delete', server)
+        self.dispatch('server_remove', server)
 
     def handle_guild_role_create(self, data):
         server = self._get_server(data.get('guild_id'))
