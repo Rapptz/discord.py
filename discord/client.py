@@ -1234,10 +1234,11 @@ class Client(object):
         data = response.json()
         everyone = server.id == data.get('id')
         role = Role(everyone=everyone, **data)
-        if self.edit_role(server, role, **fields):
-            # we have to call edit because you can't pass a payload to the
-            # http request currently.
-            return role
+
+        # we have to call edit because you can't pass a payload to the
+        # http request currently.
+        self.edit_role(server, role, **fields)
+        return role
 
     def set_channel_permissions(self, channel, target, allow=None, deny=None):
         """Sets the channel specific permission overwrites for a target in the
