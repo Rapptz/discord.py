@@ -1150,7 +1150,7 @@ class Client(object):
         This method **appends** a role to a member.
 
         :param member: The :class:`Member` to give roles to.
-        :param roles: An iterable of :class:`Role` s to give the member.
+        :param roles: An argument list of :class:`Role` s to give the member.
         """
 
         url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
@@ -1170,7 +1170,7 @@ class Client(object):
         This function raises :exc:`HTTPException` if the request failed.
 
         :param member: The :class:`Member` to remove roles from.
-        :param roles: An iterable of :class:`Role` s to remove from the member.
+        :param roles: An argument list of :class:`Role` s to remove from the member.
         """
 
         url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
@@ -1201,7 +1201,7 @@ class Client(object):
         This function raises :exc:`HTTPException` if the request failed.
 
         :param member: The :class:`Member` to replace roles for.
-        :param roles: An iterable of :class:`Role` s to replace with.
+        :param roles: An argument list of :class:`Role` s to replace with.
         """
 
         url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
