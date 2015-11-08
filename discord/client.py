@@ -45,11 +45,22 @@ from ws4py.client import WebSocketBaseClient
 import sys
 import logging
 import itertools
-
+import socket
 
 log = logging.getLogger(__name__)
 request_logging_format = '{name}: {response.request.method} {response.url} has returned {response.status_code}'
 request_success_log = '{name}: {response.url} with {json} received {data}'
+
+voice_internals = { #Since the websocket event handler is in a different class than the client (and there are two events we need before we can start), I don't know how to hold these values
+	'session_id': None,
+	'token': None,
+	'server_id': None,
+	'channel_id': None,
+	'endpoint': None,
+}
+voice_channels = {
+	
+}
 
 def _null_event(*args, **kwargs):
     pass
@@ -58,6 +69,19 @@ def is_response_successful(response):
     """Helper function for checking if the status code is in the 200 range"""
     code = response.status_code
     return code >= 200 and code < 300
+
+def _join_voice_channel(voice_info):
+	session_id = voice_info['session_id']
+	token = voice_info['token']
+	server_id = voice_info['server_id']
+	endpoint = socket.gethostbyname(voice_info['endpoint'].replace(':80', ''))
+	
+	voice_channel = voice_channels[voice_info['channel_id']] = {}
+	voice_channel['endpoint'] = endpoint
+	voice_channel['ready'] = False
+	voice_channel['udp'] = {}
+	voice_channel['ws'] = {}
+	
 
 class KeepAliveHandler(threading.Thread):
     def __init__(self, seconds, socket, **kwargs):
@@ -129,7 +153,7 @@ class WebSocket(WebSocketBaseClient):
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
                      'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
                      'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE',
-                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
+                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'): #I totally know what I'm doing.
             self.dispatch('socket_update', event, data)
 
         else:
@@ -359,12 +383,25 @@ class ConnectionState(object):
             role.update(**data['role'])
             self.dispatch('server_role_update', role)
 
-    def handle_voice_state_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            updated_member = self._update_voice_state(server, data)
-            self.dispatch('voice_state_update', updated_member)
-
+	def handle_voice_state_update(self, data):
+		user_id = data.get('user_id')
+		session_id = data.get('session_id')
+		server = self._get_server(data.get('guild_id'))
+		
+		if server is not None:
+			
+			if user_id == self.user.id:
+				voice_internals['session_id'] = session_id
+				
+			updated_member = self._update_voice_state(server, data)
+			self.dispatch('voice_state_update', updated_member)
+	
+	def handle_voice_server_update(self, data):
+		voice_internals['token'] = data.get('token')
+		voice_internals['server_id'] = data.get('server_id')
+		voice_internals['endpoint'] = data.get('endpoint')
+		_join_voice_channel(voice_internals)
+	
     def get_channel(self, id):
         if id is None:
             return None
@@ -1304,3 +1341,19 @@ class Client(object):
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
 
+	def join_voice_channel(self, server_id=None, channel_id=None):
+		server = server_id
+		voice_internals['channel_id'] = channel_id
+		payload = {
+			'op': 4,
+			'd': {
+				'guild_id': server,
+				'channel_id': channel,
+				'self_mute': false,
+				'self_deaf': false
+			}
+		}
+		
+		sent = json.dumps(payload)
+		self.ws.send(sent)
+		
