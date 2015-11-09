@@ -154,8 +154,9 @@ class Channel(object):
 
         # Apply channel specific role permission overwrites
         for overwrite in self._permission_overwrites:
-            if overwrite.type == 'role' and overwrite.id in member_role_ids:
-                base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
+            if overwrite.type == 'role':
+                if overwrite.id in member_role_ids or overwrite.id == self.server.id:
+                    base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
         # Apply member specific permission overwrites
         for overwrite in self._permission_overwrites:
