@@ -73,4 +73,4 @@ class Role(object):
 
     def is_everyone(self):
         """Checks if the role is the @everyone role."""
-        return self.position == -1
+        return self._is_everyone
