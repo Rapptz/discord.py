@@ -547,6 +547,9 @@ class Client(object):
         method = '_'.join(('handle', event.lower()))
         getattr(self.connection, method)(data)
 
+    def run_in(self):
+        pass
+
     def run(self):
         """Runs the client and allows it to receive messages and events.
 
@@ -564,6 +567,7 @@ class Client(object):
             self.connection = ConnectionState(self.dispatch, **self.options)
             self._create_websocket(gateway.json().get('url'), reconnect=False)
             self.ws.run()
+            self.run_in()
 
         log.info('Client exiting')
 
