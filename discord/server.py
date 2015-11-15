@@ -85,7 +85,7 @@ class Server(object):
         return utils.find(lambda r: r.is_everyone(), self.roles)
     
     def get_default_channel(self):
-        """Gets the default class:`Channel` for the server."""
+        """Gets the default :class:`Channel` for the server."""
         return utils.find(lambda c: c.is_default_channel(), self.channels)
     
     def icon_url(self):
