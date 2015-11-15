@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from . import utils
+
 class Server(object):
     """Represents a Discord server.
 
@@ -82,6 +84,15 @@ class Server(object):
 
     def get_default_role(self):
         """Gets the @everyone role that all members have by default."""
-        for role in self.roles:
-            if role.is_everyone():
-                return role
+        return utils.find(lambda r: r.is_everyone(), self.roles)
+    
+    def get_default_channel(self):
+        """Gets the default :class:`Channel` for the server."""
+        return utils.find(lambda c: c.is_default_channel(), self.channels)
+    
+    def icon_url(self):
+        """Returns the URL version of the server's icon. Returns None if it has no icon."""
+        if self.icon is None:
+            return ''
+        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
+    
