@@ -333,7 +333,8 @@ class ConnectionState(object):
             self.dispatch('member_update', member)
 
     def handle_guild_create(self, data):
-        if data.get('unavailable') is not None:
+        unavailable = data.get('unavailable', False)
+        if unavailable == False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the server has become available
             # and is therefore in the cache
@@ -342,6 +343,10 @@ class ConnectionState(object):
                 server.unavailable = False
                 self.dispatch('server_available', server)
                 return
+
+        if unavailable == True:
+            # joined a server with unavailable == True so..
+            return
 
             # if we're at this point then it was probably
             # unavailable during the READY event and is now
