@@ -356,18 +356,17 @@ class ConnectionState(object):
         self.dispatch('server_join', self.servers[-1])
 
     def handle_guild_delete(self, data):
-        if data.get('unavailable', False):
+        server = self._get_server(data.get('id'))
+        if data.get('unavailable', False) and server is not None:
             # GUILD_DELETE with unavailable being True means that the
             # server that was available is now currently unavailable
-            server = self._get_server(data.get('id'))
-            if server is not None:
-                server.unavailable = True
-                self.dispatch('server_unavailable', server)
-                return
+            server.unavailable = True
+            self.dispatch('server_unavailable', server)
+            return
 
-        server = self._get_server(data.get('id'))
-        self.servers.remove(server)
-        self.dispatch('server_remove', server)
+        if server in self.servers:
+            self.servers.remove(server)
+            self.dispatch('server_remove', server)
 
     def handle_guild_role_create(self, data):
         server = self._get_server(data.get('guild_id'))
