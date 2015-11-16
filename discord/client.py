@@ -910,7 +910,7 @@ class Client(object):
         log.debug(request_logging_format.format(response=response))
         _verify_successful_response(response)
 
-    def unban(self, server, name):
+    def unban(self, server, user):
         """Unbans a :class:`User` from their respective :class:`Server`.
 
         You must have the proper permissions to unban a user in the server.
