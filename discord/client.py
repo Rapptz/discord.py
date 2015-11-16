@@ -333,7 +333,7 @@ class ConnectionState(object):
             self.dispatch('member_update', member)
 
     def handle_guild_create(self, data):
-        unavailable = data.get('unavailable', False)
+        unavailable = data.get('unavailable')
         if unavailable == False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the server has become available
