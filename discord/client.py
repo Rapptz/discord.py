@@ -816,10 +816,12 @@ class Client(object):
         self._is_logged_in = False
         log.debug(request_logging_format.format(response=response))
 
-    def logs_from(self, channel, limit=100):
+    def logs_from(self, channel, limit=100, before=None, after=None):
         """A generator that obtains logs from a specified channel.
 
         Yielding from the generator returns a :class:`Message` object with the message data.
+
+        Will return the newest messages within the specified range, up to `limit` messages.
 
         This function raises :exc:`HTTPException` if the request failed.
 
@@ -833,12 +835,19 @@ class Client(object):
 
         :param channel: The :class:`Channel` to obtain the logs from.
         :param limit: The number of messages to retrieve.
+        :param before: Message before which all returned messages must be.
+        :param after: Message after which all returned messages must be.
         """
 
         url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
         params = {
             'limit': limit
         }
+        if before:
+            params['before'] = before.id
+        if after:
+            params['after'] = after.id
+
         response = requests.get(url, params=params, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
         _verify_successful_response(response)
