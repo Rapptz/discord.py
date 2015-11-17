@@ -816,6 +816,38 @@ class Client(object):
         self._is_logged_in = False
         log.debug(request_logging_format.format(response=response))
 
+    def get_all_channels(self):
+        """Returns a generator with every :class:`Channel` the client can 'access'.
+
+        This is equivalent to: ::
+
+            for server in client.servers:
+                for channel in server.channels:
+                    yield channel
+
+        Note that just because you receive a :class:`Channel` does not mean that
+        you can communicate in said channel. :meth:`Channel.permissions_for` should
+        be used for that.
+        """
+
+        for server in self.servers:
+            for channel in server.channels:
+                yield channel
+
+    def get_all_members(self):
+        """Returns a generator with every :class:`Member` the client can see.
+
+        This is equivalent to: ::
+
+            for server in client.servers:
+                for member in server.members:
+                    yield member
+
+        """
+        for server in self.servers:
+            for member in server.members:
+                yield member
+
     def logs_from(self, channel, limit=100, before=None, after=None):
         """A generator that obtains logs from a specified channel.
 
