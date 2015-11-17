@@ -1304,3 +1304,17 @@ class Client(object):
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
 
+    def resolve_client_id(self,id):
+        for server in cself.servers:
+            for end_user in server.members:
+                if end_user.id==id:
+                    return(end_user)
+        return(None)
+
+    def resolve_channel_id(self,id):
+        for server in self.servers:
+            for end_channel in server.channels:
+                if end_channel.id==id:
+                    return(end_channel)
+        return(None)
+
