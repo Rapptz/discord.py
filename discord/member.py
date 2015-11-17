@@ -99,3 +99,7 @@ class Member(User):
             if self in old_channel.voice_members:
                 # we left a channel
                 old_channel.voice_members.remove(self)
+        elif old_channel is not None and self.voice_channel is not None:
+            if self in old_channel.voice_members:
+                old_channel.voice_members.remove(self)
+            self.voice_channel.voice_members.append(self)
