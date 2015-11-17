@@ -1305,8 +1305,11 @@ class Client(object):
         self.ws.send(sent)
 
     def resolve_client_id(self,id):
-        #resolves a client ID to a client object
-        #returns None if we can't find that user ID.
+        """
+        Resolves a :class:`Member` ID to a :class:`Member` object.
+        :param id: The :class:`Member`'s ID string to find :class:`Member`.
+        :return: :class:`Member` if we can find that user ID, otherwise ``None``.
+        """
         for server in cself.servers:
             for end_user in server.members:
                 if end_user.id==id:
@@ -1314,8 +1317,11 @@ class Client(object):
         return(None)
 
     def resolve_channel_id(self,id):
-        #resolves a channel ID to a channel object
-        #returns None if we can't find that channel ID.
+        """
+        Resolves a :class:`Channel` ID to a :class:`Channel` object.
+        :param id: The :class:`Channel`'s ID string to find :class:`Channel`.
+        :return: :class:`Channel` if we can find that user ID, otherwise ``None``.
+        """
         for server in self.servers:
             for end_channel in server.channels:
                 if end_channel.id==id:
