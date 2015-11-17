@@ -835,8 +835,8 @@ class Client(object):
 
         :param channel: The :class:`Channel` to obtain the logs from.
         :param limit: The number of messages to retrieve.
-        :param before: Message before which all returned messages must be.
-        :param after: Message after which all returned messages must be.
+        :param before: :class:`Message` before which all returned messages must be.
+        :param after: :class:`Message` after which all returned messages must be.
         """
 
         url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
