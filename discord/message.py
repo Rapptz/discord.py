@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 from .user import User
+from .member import Member
 from .object import Object
 
 class Message(object):
@@ -68,7 +69,8 @@ class Message(object):
         A boolean specifying if the message mentions everyone.
     .. attribute:: mentions
 
-        A list of :class:`User` that were mentioned.
+        A list of :class:`Member` that were mentioned. If the message is in a private message
+        then the list is always empty.
     .. attribute:: id
 
         The message ID.
@@ -91,10 +93,19 @@ class Message(object):
         self.id = kwargs.get('id')
         self.channel = kwargs.get('channel')
         self.author = User(**kwargs.get('author', {}))
-        self.mentions = [User(**mention) for mention in kwargs.get('mentions', {})]
         self.attachments = kwargs.get('attachments')
         self.server = self.channel.server if not self.channel.is_private else None
         self._handle_upgrades(kwargs.get('channel_id'))
+        self._handle_mentions(kwargs.get('mentions', []))
+
+    def _handle_mentions(self, mentions):
+        self.mentions = []
+        if self.channel is not None and not self.channel.is_private:
+            for mention in mentions:
+                id_search = mention.get('id')
+                member = utils.find(lambda m: m.id == id_search, self.server.members)
+                if member is not None:
+                    self.mentions.append(member)
 
     def _handle_upgrades(self, channel_id):
         if self.channel is None:
@@ -103,7 +114,7 @@ class Message(object):
             return
 
         if not self.channel.is_private:
-            found = utils.find(lambda m: m.id == self.author.id, self.channel.server.members)
+            found = utils.find(lambda m: m.id == self.author.id, self.server.members)
             if found is not None:
                 self.author = found
 
