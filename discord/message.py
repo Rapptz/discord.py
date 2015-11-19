@@ -94,8 +94,7 @@ class Message(object):
         self.channel = kwargs.get('channel')
         self.author = User(**kwargs.get('author', {}))
         self.attachments = kwargs.get('attachments')
-        self.server = self.channel.server if not self.channel.is_private else None
-        self._handle_upgrades(kwargs.get('channel_id'))
+        self._handle_upgrades_and_server(kwargs.get('channel_id'))
         self._handle_mentions(kwargs.get('mentions', []))
 
     def _handle_mentions(self, mentions):
@@ -107,15 +106,18 @@ class Message(object):
                 if member is not None:
                     self.mentions.append(member)
 
-    def _handle_upgrades(self, channel_id):
+    def _handle_upgrades_and_server(self, channel_id):
+        self.server = None
         if self.channel is None:
             if channel_id is not None:
                 self.channel = Object(channel_id)
             return
 
         if not self.channel.is_private:
+            self.server = self.channel.server
             found = utils.find(lambda m: m.id == self.author.id, self.server.members)
             if found is not None:
                 self.author = found
+
 
 
