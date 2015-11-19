@@ -655,6 +655,24 @@ class Client(object):
         message = Message(channel=channel, **data)
         return message
 
+    def send_typing(self, destination):
+        """Send a "typing" status to the destination.
+
+        "Typing" status will go away after 10 seconds, or after a message is sent.
+
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        :param destination: The location to send the typing update.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        url = '{base}/{id}/typing'.format(base=endpoints.CHANNELS, id=channel_id)
+
+        response = requests.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+
     def send_file(self, destination, filename):
         """Sends a message to the destination given with the file given.
 
