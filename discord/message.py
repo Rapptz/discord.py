@@ -99,7 +99,10 @@ class Message(object):
 
     def _handle_mentions(self, mentions):
         self.mentions = []
-        if self.channel is not None and not self.channel.is_private:
+        if getattr(self.channel, 'is_private', True):
+            return
+
+        if self.channel is not None:
             for mention in mentions:
                 id_search = mention.get('id')
                 member = utils.find(lambda m: m.id == id_search, self.server.members)
