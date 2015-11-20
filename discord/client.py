@@ -705,6 +705,38 @@ class Client(object):
         message = Message(channel=channel, **data)
         return message
 
+    def send_raw_file(self, destination, filename, file):
+        """Sends a message to the destination given with the file object given.
+
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        Note that this requires proper permissions in order to work.
+        This function raises :exc:`HTTPException` if the request failed.
+
+        :param destination: The location to send the message.
+        :param filename: The name of the file to send.
+        :param file: The file object to send.
+        :return: The :class:`Message` sent.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+        response = None
+
+        files = {
+            'file': (filename, file)
+        }
+        response = requests.post(url, files=files, headers=self.headers)
+
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+        data = response.json()
+        log.debug(request_success_log.format(response=response, json=response.text, data=filename))
+        channel = self.get_channel(data.get('channel_id'))
+        message = Message(channel=channel, **data)
+        return message
+
     def delete_message(self, message):
         """Deletes a :class:`Message`.
 
