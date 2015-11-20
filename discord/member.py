@@ -95,11 +95,14 @@ class Member(User):
         if old_channel is None and self.voice_channel is not None:
             # we joined a channel
             self.voice_channel.voice_members.append(self)
-        elif old_channel is not None and self.voice_channel is None:
-            if self in old_channel.voice_members:
-                # we left a channel
+        elif old_channel is not None:
+            try:
+                # we either left a channel or we switched channels
                 old_channel.voice_members.remove(self)
-        elif old_channel is not None and self.voice_channel is not None:
-            if self in old_channel.voice_members:
-                old_channel.voice_members.remove(self)
-            self.voice_channel.voice_members.append(self)
+            except ValueError:
+                pass
+            finally:
+                # we switched channels
+                if self.voice_channel is not None:
+                    self.voice_channel.voice_members.append(self)
+

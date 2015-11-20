@@ -311,8 +311,11 @@ class ConnectionState(object):
         if server is not None:
             user_id = data['user']['id']
             member = utils.find(lambda m: m.id == user_id, server.members)
-            if member in server.members:
+            try:
                 server.members.remove(member)
+            except ValueError:
+                return
+            else:
                 self.dispatch('member_remove', member)
 
     def handle_guild_member_update(self, data):
@@ -364,8 +367,11 @@ class ConnectionState(object):
             self.dispatch('server_unavailable', server)
             return
 
-        if server in self.servers:
+        try:
             self.servers.remove(server)
+        except ValueError:
+            return
+        else:
             self.dispatch('server_remove', server)
 
     def handle_guild_role_create(self, data):
