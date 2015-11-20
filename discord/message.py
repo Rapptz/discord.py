@@ -28,6 +28,7 @@ from . import utils
 from .user import User
 from .member import Member
 from .object import Object
+import re
 
 class Message(object):
     """Represents a message from Discord.
@@ -108,6 +109,24 @@ class Message(object):
                 member = utils.find(lambda m: m.id == id_search, self.server.members)
                 if member is not None:
                     self.mentions.append(member)
+
+    def get_raw_mentions(self):
+        """Returns an array of user IDs matched with the syntax of
+        <@user_id> in the message content.
+
+        This allows you receive the user IDs of mentioned users
+        even in a private message context.
+        """
+        return re.findall(r'<@(\d+)>', self.content)
+
+    def get_raw_channel_mentions(self):
+        """Returns an array of channel IDs matched with the syntax of
+        <#channel_id> in the message content.
+
+        This allows you receive the channel IDs of mentioned users
+        even in a private message context.
+        """
+        return re.findall(r'<#(\d+)>', self.content)
 
     def _handle_upgrades_and_server(self, channel_id):
         self.server = None
