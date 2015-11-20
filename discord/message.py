@@ -72,6 +72,10 @@ class Message(object):
 
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list is always empty.
+    .. attribute:: channel_mentions
+
+        A list of :class:`Channel` that were mentioned. If the message is in a private message
+        then the list is always empty.
     .. attribute:: id
 
         The message ID.
@@ -100,6 +104,7 @@ class Message(object):
 
     def _handle_mentions(self, mentions):
         self.mentions = []
+        self.channel_mentions = []
         if getattr(self.channel, 'is_private', True):
             return
 
@@ -109,6 +114,13 @@ class Message(object):
                 member = utils.find(lambda m: m.id == id_search, self.server.members)
                 if member is not None:
                     self.mentions.append(member)
+
+        if self.server is not None:
+            channel_mentions = self.get_raw_channel_mentions()
+            for mention in channel_mentions:
+                channel = utils.find(lambda m: m.id == mention, self.server.channels)
+                if channel is not None:
+                    self.channel_mentions.append(channel)
 
     def get_raw_mentions(self):
         """Returns an array of user IDs matched with the syntax of
