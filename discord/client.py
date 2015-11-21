@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+#IZY AUDIO MOD
+
 from __future__ import print_function
 
 from . import endpoints
@@ -44,14 +46,184 @@ import json, re, time, copy
 from collections import deque
 import threading
 from ws4py.client import WebSocketBaseClient
+from ws4py.client.threadedclient import WebSocketClient
 import sys
 import logging
 import itertools
+import socket
+import struct
+import opuslib
+import subprocess
+import time
 
-
+sys.setrecursionlimit(10000) #I dunno, just in case
 log = logging.getLogger(__name__)
 request_logging_format = '{response.request.method} {response.url} has returned {response.status_code}'
 request_success_log = '{response.url} with {json} received {data}'
+
+voice_internals = { #Since the websocket event handler is in a different class than the client (and there are two events we need before we can start), I don't know how else to hold these values
+	'session_id': None,
+	'token': None,
+	'user_id': None,
+	'server_id': None,
+	'channel_id': None,
+	'endpoint': None,
+}
+voice_channels = {}
+
+def VoicePacket(buff, sequence, timestamp, ssrc):
+	new_array = [0] * (len(buff) + 12)
+	new_array[0] = 0x80
+	new_array[1] = 0x78
+	
+	for i in range(0, len(buff)):
+		new_array[i + 12] = buff[i]
+	
+	b_array = bytearray(new_array)
+	struct.pack_into(">H", b_array, 2, sequence)
+	struct.pack_into(">I", b_array, 4, timestamp)
+	struct.pack_into(">I", b_array, 8, ssrc)
+	return b_array
+	
+def _join_voice_channel(voice_info):
+	user_id = voice_info['user_id']
+	session_id = voice_info['session_id']
+	token = voice_info['token']
+	server_id = voice_info['server_id']
+	channel_id = voice_info['channel_id']
+	endpoint = socket.gethostbyname(voice_info['endpoint'].replace(':80', ''))
+	
+	voice_channel = voice_channels[voice_info['channel_id']] = {}
+	voice_channel['endpoint'] = endpoint
+	voice_channel['ready'] = False
+	voice_channel['udp'] = {}
+	voice_channel['ws'] = {}
+
+	udp_socket = voice_channel['udp']['connection'] = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	voice_websocket = voice_channel['ws']['connection'] = voiceWebSocket("wss://" + endpoint)
+	
+	@voice_websocket.event
+	def received_message(msg):
+		print(msg)
+		res = json.loads(str(msg))
+		op = res.get('op')
+		data = res.get('d')
+
+		if op == 2:
+			if 'ssrc' in data:
+				client_ip = ""
+				client_port = None
+				
+				voice_channels[channel_id]['ssrc'] = data['ssrc']
+				voice_channels[channel_id]['port'] = data['port']
+				voice_channels[channel_id]['modes'] = data['modes']
+				voice_channels[channel_id]['selectedMode'] = data['modes'][0] #Plain
+				voice_channels[channel_id]['heartbeat_interval'] = data['heartbeat_interval']
+				
+				#Starting the keep alive for voice
+				def keep_alive():
+					kapayload = {
+						'op':3,
+						'd': int(time.time())
+					}
+					kapljson = json.dumps(kapayload)
+					voice_websocket.send(kapljson)
+				
+				voice_interval = (data['heartbeat_interval'] / 100.0) - 5
+				voice_keep_alive = VoiceKeepAliveHandler(voice_interval, keep_alive)
+				voice_keep_alive.start()
+				
+				#Sending UDP discovery message, receiving information on the same port
+				udp_arr = [0] * 70
+				udp_packet = bytearray(udp_arr)
+				struct.pack_into(">I", udp_packet, 0, data['ssrc'])
+				udp_socket.sendto(udp_packet, (endpoint, data['port']))
+				udp_recv = udp_socket.recv(65535)
+				
+				#Getting IP and Port from discovery message
+				for iip in range(4, len(udp_recv)):
+					if ord(udp_recv[iip]) == 0:
+						break
+					else:
+						client_ip += udp_recv[iip]
+				voice_channel['client_ip'] = client_ip
+				
+				p1 = ord(udp_recv[len(udp_recv) - 2])
+				p2 = ord(udp_recv[len(udp_recv) - 1])
+				client_port = p1 | p2 << 8
+				voice_channel['client_port'] = client_port
+				
+				#Send UDP information over voice websocket
+				udp_payload = {
+					'op': 1,
+					'd': {
+						'protocol': 'udp',
+						'data': {
+							'address': client_ip,
+							'port': client_port,
+							'mode': data['modes'][0] #Plain
+						}
+					}
+				}
+				udp_pljson = json.dumps(udp_payload)
+				voice_websocket.send(udp_pljson)
+				
+		if op == 4:
+			print("We are now ready to send things to " + endpoint + " on port " + str(voice_channel['port']))
+			
+			#Just my test, you'll probably need a way to get the data, if not using ffmpeg/avconv
+			OpusEncoder = opuslib.Encoder(48000, 1, 'audio')
+			speaking = {
+				"op":5,
+				"d":{
+					"speaking": True,
+					"delay":0
+				}
+			};
+			speakingjson = json.dumps(speaking)
+			
+			cmd = 'avconv -i pbs.mp3 -f s16le -ar 48000 -ac 1 pipe:1'
+			cmdargs = cmd.split()
+			p = subprocess.Popen(cmdargs, stdout=subprocess.PIPE)
+			voice_websocket.send(speakingjson)
+			
+			def sendAudioData(sequence, timestamp):
+				stdoutbuff = p.stdout.read(1920)
+				if len(stdoutbuff) == 1920:
+					if sequence + 10 < 65535:
+						sequence += 1
+					else:
+						sequence = 0
+						
+					if timestamp + 9600 < 4294967295:
+						timestamp += 960
+					else:
+						timestamp = 0
+
+					databytes = OpusEncoder.encode(stdoutbuff, 960)
+					audio_packet = VoicePacket(databytes, sequence, timestamp, voice_channel['ssrc'])
+					udp_socket.sendto(audio_packet, (endpoint, voice_channel['port']))
+					time.sleep(0.02)
+					sendAudioData(sequence, timestamp)
+				else:
+					return False
+				
+			sendAudioData(0, 0)
+			#stdoutbuff = p.stdout.read(1920)
+			
+	voice_websocket.connect()
+	#Send Init
+	init_payload = {
+		'op': 0,
+		'd': {
+			'server_id': server_id,
+			'user_id': user_id,
+			'session_id': session_id,
+			'token': token
+		}
+	}
+	pljson = json.dumps(init_payload)
+	voice_websocket.send(pljson)
 
 def _null_event(*args, **kwargs):
     pass
@@ -79,7 +251,19 @@ class KeepAliveHandler(threading.Thread):
             msg = 'Keeping websocket alive with timestamp {0}'
             log.debug(msg.format(payload['d']))
             self.socket.send(json.dumps(payload, separators=(',', ':')))
-
+			
+class VoiceKeepAliveHandler(threading.Thread):
+	def __init__(self, seconds, kAI, **kwargs):
+		self.kAI = kAI
+		threading.Thread.__init__(self, **kwargs)
+		self.seconds = seconds
+		self.socket = socket
+		self.stop = threading.Event()
+	
+	def run(self):
+		while not self.stop.wait(self.seconds):
+			self.kAI()
+	
 class WebSocket(WebSocketBaseClient):
     def __init__(self, dispatch, url):
         WebSocketBaseClient.__init__(self, url,
@@ -106,39 +290,51 @@ class WebSocket(WebSocketBaseClient):
         WebSocketBaseClient.send(self, payload, binary)
 
     def received_message(self, msg):
-        self.dispatch('socket_raw_receive', msg)
-        response = json.loads(str(msg))
-        log.debug('WebSocket Event: {}'.format(response))
-        self.dispatch('socket_response', response)
+		self.dispatch('socket_raw_receive', msg)
+		response = json.loads(str(msg))
+		log.debug('WebSocket Event: {}'.format(response))
+		self.dispatch('socket_response', response)
+		
+		op = response.get('op')
+		data = response.get('d')
+		
+		if op != 0:
+			log.info("Unhandled op {}".format(op))
+			return # What about op 7?
 
-        op = response.get('op')
-        data = response.get('d')
+		event = response.get('t')
 
-        if op != 0:
-            log.info("Unhandled op {}".format(op))
-            return # What about op 7?
+		if event == 'READY':
+			interval = data['heartbeat_interval'] / 1000.0
+			self.keep_alive = KeepAliveHandler(interval, self)
+			self.keep_alive.start()
 
-        event = response.get('t')
-
-        if event == 'READY':
-            interval = data['heartbeat_interval'] / 1000.0
-            self.keep_alive = KeepAliveHandler(interval, self)
-            self.keep_alive.start()
-
-
-        if event in ('READY', 'MESSAGE_CREATE', 'MESSAGE_DELETE',
+		if event in ('READY', 'MESSAGE_CREATE', 'MESSAGE_DELETE',
                      'MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'USER_UPDATE',
                      'CHANNEL_DELETE', 'CHANNEL_UPDATE', 'CHANNEL_CREATE',
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
                      'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
                      'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE',
-                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
-            self.dispatch('socket_update', event, data)
+                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'): #I totally know what I'm doing.
+			self.dispatch('socket_update', event, data)
 
-        else:
-            log.info("Unhandled event {}".format(event))
+		else:
+			log.info("Unhandled event {}".format(event))
 
 
+class voiceWebSocket(WebSocketClient):
+	#Sorry, had to create a new class, but you can fix it later. Your websocket class acts on titles, but the voice websocket doesn't use titles.
+	def opened(self):
+		print("Voice Websocket opened")
+	def closed(self, code, reason=None):
+		print("Voice Websocket closed")
+	def event(self, function):
+		#Copies straight from the Client class, because I suck :<
+		setattr(self, function.__name__, function)
+		log.info('{0.__name__} has successfully been registered as an event'.format(function))
+		return function
+	def send(self, payload, binary=False):
+		WebSocketClient.send(self, payload, binary)
 class ConnectionState(object):
     def __init__(self, dispatch, **kwargs):
         self.dispatch = dispatch
@@ -399,11 +595,24 @@ class ConnectionState(object):
             self.dispatch('server_role_update', role)
 
     def handle_voice_state_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            updated_member = self._update_voice_state(server, data)
-            self.dispatch('voice_state_update', updated_member)
-
+		user_id = data.get('user_id')
+		session_id = data.get('session_id')
+		server = self._get_server(data.get('guild_id'))
+		
+		if server is not None:
+			
+			if user_id == self.user.id:
+				voice_internals['session_id'] = session_id
+				
+			updated_member = self._update_voice_state(server, data)
+			self.dispatch('voice_state_update', updated_member)
+	
+    def handle_voice_server_update(self, data):
+		voice_internals['token'] = data.get('token')
+		voice_internals['server_id'] = data.get('guild_id')
+		voice_internals['endpoint'] = data.get('endpoint')
+		_join_voice_channel(voice_internals)
+	
     def get_channel(self, id):
         if id is None:
             return None
@@ -1440,3 +1649,20 @@ class Client(object):
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
 
+    def join_voice_channel(self, server_id=None, channel_id=None):
+		#This is going to mess up greately if someone chooses a wrong channel ID, but you can fix it for me :D
+		voice_internals['channel_id'] = channel_id
+		voice_internals['user_id'] = self.user.id
+		payload = {
+			'op': 4,
+			'd': {
+				'guild_id': server_id,
+				'channel_id': channel_id,
+				'self_mute': False,
+				'self_deaf': False
+			}
+		}
+		
+		sent = json.dumps(payload)
+		self.ws.send(sent)
+		
