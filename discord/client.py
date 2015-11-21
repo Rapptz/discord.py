@@ -679,16 +679,33 @@ class Client(object):
         log.debug(request_logging_format.format(response=response))
         _verify_successful_response(response)
 
-    def send_file(self, destination, filename):
+    def send_file(self, destination, fp, filename=None):
         """Sends a message to the destination given with the file given.
 
         The destination parameter follows the same rules as :meth:`send_message`.
 
+        The ``fp`` parameter should be either a string denoting the location for a
+        file or a *file-like object*. The *file-like object* passed is **not closed**
+        at the end of execution. You are responsible for closing it yourself.
+
+        .. note::
+
+            If the file-like object passed is opened via ``open`` then the modes
+            'rb' should be used.
+
+        The ``filename`` parameter is the filename of the file.
+        If this is not given then it defaults to ``fp.name`` or if ``fp`` is a string
+        then the ``filename`` will default to the string given. You can overwrite
+        this value by passing this in.
+
         Note that this requires proper permissions in order to work.
         This function raises :exc:`HTTPException` if the request failed.
+        It also raises :exc:`InvalidArgument` if ``fp.name`` is an invalid
+        default for ``filename``.
 
         :param destination: The location to send the message.
-        :param filename: The file to send.
+        :param fp: The *file-like object* or file path to send.
+        :param filename: The filename of the file. Defaults to ``fp.name`` if it's available.
         :return: The :class:`Message` sent.
         """
 
@@ -697,43 +714,23 @@ class Client(object):
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         response = None
 
-        with open(filename, 'rb') as f:
+        try:
+            # attempt to open the file and send the request
+            with open(fp, 'rb') as f:
+                files = {
+                    'file': (fp if filename is None else filename, f)
+                }
+                response = requests.post(url, files=files, headers=self.headers)
+        except TypeError:
+            # if we got a TypeError then this is probably a file-like object
+            fname = getattr(fp, 'name', None) if filename is None else filename
+            if fname is None:
+                raise InvalidArgument('file-like object has no name attribute and no filename was specified')
+
             files = {
-                'file': (filename, f)
+                'file': (fname, fp)
             }
             response = requests.post(url, files=files, headers=self.headers)
-
-        log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
-        data = response.json()
-        log.debug(request_success_log.format(response=response, json=response.text, data=filename))
-        channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
-        return message
-
-    def send_raw_file(self, destination, filename, file):
-        """Sends a message to the destination given with the file object given.
-
-        The destination parameter follows the same rules as :meth:`send_message`.
-
-        Note that this requires proper permissions in order to work.
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param destination: The location to send the message.
-        :param filename: The name of the file to send.
-        :param file: The file object to send.
-        :return: The :class:`Message` sent.
-        """
-
-        channel_id = self._resolve_destination(destination)
-
-        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
-        response = None
-
-        files = {
-            'file': (filename, file)
-        }
-        response = requests.post(url, files=files, headers=self.headers)
 
         log.debug(request_logging_format.format(response=response))
         _verify_successful_response(response)
