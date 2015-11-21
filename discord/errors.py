@@ -67,7 +67,7 @@ class HTTPException(DiscordException):
         if message is None:
             message = httplib.responses.get(response.status_code, 'HTTP error')
 
-        message = '{0} (status code: {1.response.status_code}'.format(message, self)
+        message = '{0} (status code: {1.response.status_code})'.format(message, self)
         super(HTTPException, self).__init__(message)
 
 class InvalidArgument(ClientException):
