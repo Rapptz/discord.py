@@ -246,6 +246,18 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param member: The :class:`Member` whose voice state changed.
 
+.. function:: on_typing(channel, user, when)
+
+    Called when someone begins typing a message.
+
+    The ``channel`` parameter could either be a :class:`PrivateChannel` or a
+    :class:`Channel`.
+
+    :param channel: The location where the typing originated from.
+    :param user: The :class:`Member` that started typing.
+    :param when: A ``datetime.datetime`` object representing when typing started.
+
+
 Utility Functions
 -----------------
 

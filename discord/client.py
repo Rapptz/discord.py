@@ -47,7 +47,7 @@ from ws4py.client import WebSocketBaseClient
 import sys
 import logging
 import itertools
-
+import datetime
 
 log = logging.getLogger(__name__)
 request_logging_format = '{response.request.method} {response.url} has returned {response.status_code}'
@@ -131,7 +131,7 @@ class WebSocket(WebSocketBaseClient):
                      'CHANNEL_DELETE', 'CHANNEL_UPDATE', 'CHANNEL_CREATE',
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
                      'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
-                     'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE',
+                     'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 'TYPING_START',
                      'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
             self.dispatch('socket_update', event, data)
 
@@ -403,6 +403,26 @@ class ConnectionState(object):
         if server is not None:
             updated_member = self._update_voice_state(server, data)
             self.dispatch('voice_state_update', updated_member)
+
+    def handle_typing_start(self, data):
+        channel = self.get_channel(data.get('channel_id'))
+        if channel is not None:
+            member = None
+            user_id = data.get('user_id')
+            if not getattr(channel, 'is_private', True):
+                members = channel.server.members
+                member = utils.find(lambda m: m.id == user_id, members)
+            else:
+                # At the moment we can make the assumption that if we are
+                # in a private channel then the user belongs to one of our
+                # already existing server member lists.
+                # This might change when we get friend lists.
+                gen = (m for s in self.servers for m in s.members)
+                member = utils.find(lambda m: m.id == user_id, gen)
+
+            if member is not None:
+                timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
+                self.dispatch('typing', channel, member, timestamp)
 
     def get_channel(self, id):
         if id is None:
