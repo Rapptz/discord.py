@@ -523,7 +523,7 @@ class Client(object):
             m = re.match(rx, invite)
             if m:
                 return m.group(1)
-        return None
+        return invite
 
     def _resolve_destination(self, destination):
         if isinstance(destination, Channel) or isinstance(destination, PrivateChannel):
@@ -854,7 +854,7 @@ class Client(object):
         if the request failed.
 
         :param str username: The username to register as.
-        :param invite: An invite URL or :class:`Invite` to register with.
+        :param invite: An invite URL, ID, or :class:`Invite` to register with.
         :param str fingerprint: Unknown API parameter, defaults to None
         """
 
@@ -1181,9 +1181,10 @@ class Client(object):
         return Invite(**data)
 
     def accept_invite(self, invite):
-        """Accepts an :class:`Invite` or a URL to an invite.
+        """Accepts an :class:`Invite`, URL or ID to an invite.
 
-        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere"
+        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere".
+        An ID for the invite is just the "codehere" portion of the invite URL.
 
         This function raises :exc:`HTTPException` if the request failed. If
         the invite is invalid, then :exc:`InvalidArgument` is raised.
