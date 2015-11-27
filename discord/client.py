@@ -793,11 +793,9 @@ class Client(object):
 
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, channel.id, message.id)
         payload = {
-            'content': content
+            'content': content,
+            'mentions': self._resolve_mentions(content, mentions)
         }
-
-        if not channel.is_private:
-            payload['mentions'] = self._resolve_mentions(content, mentions)
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
