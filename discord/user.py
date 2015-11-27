@@ -27,6 +27,18 @@ DEALINGS IN THE SOFTWARE.
 class User(object):
     """Represents a Discord user.
 
+    Supported Operations:
+
+    +-----------+------------------------------------+
+    | Operation |            Description             |
+    +===========+====================================+
+    | x == y    | Checks if two users are equal.     |
+    +-----------+------------------------------------+
+    | x != y    | Checks if two users are not equal. |
+    +-----------+------------------------------------+
+    | str(x)    | Returns the user's name.           |
+    +-----------+------------------------------------+
+
     Instance attributes:
 
     .. attribute:: name
