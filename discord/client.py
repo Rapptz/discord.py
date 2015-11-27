@@ -810,7 +810,7 @@ class Client(object):
 
         After this function is called, :attr:`is_logged_in` returns True if no
         errors occur. If an error occurs during the login process, then
-        :exc:`HTTPException` is raised.
+        :exc:`LoginFailure` or :exc:`HTTPException` is raised.
 
         This function raises :exc:`GatewayNotFound` if it was unavailable to connect
         to a websocket gateway.
@@ -826,7 +826,10 @@ class Client(object):
 
         r = requests.post(endpoints.LOGIN, json=payload)
         log.debug(request_logging_format.format(response=r))
-        utils._verify_successful_response(r)
+        if r.status_code == 400:
+            raise LoginFailure('Improper credentials have been passed.')
+        elif r.status_code != 200:
+            raise HTTPException(r)
 
         log.info('logging in returned status code {}'.format(r.status_code))
         self.email = email

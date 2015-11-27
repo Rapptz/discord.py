@@ -311,6 +311,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: ClientException
 
+.. autoexception:: LoginFailure
+
 .. autoexception:: HTTPException
     :members:
 
