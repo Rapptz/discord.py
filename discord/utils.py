@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
+from .errors import HTTPException
 import datetime
 
 
@@ -55,3 +56,12 @@ def find(predicate, seq):
         if predicate(element):
             return element
     return None
+
+def _null_event(*args, **kwargs):
+    pass
+
+def _verify_successful_response(response):
+    code = response.status_code
+    success = code >= 200 and code < 300
+    if not success:
+        raise HTTPException(response)

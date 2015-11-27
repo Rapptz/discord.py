@@ -53,15 +53,6 @@ log = logging.getLogger(__name__)
 request_logging_format = '{response.request.method} {response.url} has returned {response.status_code}'
 request_success_log = '{response.url} with {json} received {data}'
 
-def _null_event(*args, **kwargs):
-    pass
-
-def _verify_successful_response(response):
-    code = response.status_code
-    success = code >= 200 and code < 300
-    if not success:
-        raise HTTPException(response)
-
 class KeepAliveHandler(threading.Thread):
     def __init__(self, seconds, socket, **kwargs):
         threading.Thread.__init__(self, **kwargs)
@@ -567,9 +558,9 @@ class Client(object):
             log.debug("Dispatching event {}".format(event))
             handle_method = '_'.join(('handle', event))
             event_method = '_'.join(('on', event))
-            getattr(self, handle_method, _null_event)(*args, **kwargs)
+            getattr(self, handle_method, utils._null_event)(*args, **kwargs)
             try:
-                getattr(self, event_method, _null_event)(*args, **kwargs)
+                getattr(self, event_method, utils._null_event)(*args, **kwargs)
             except Exception as e:
                 getattr(self, 'on_error')(event_method, *args, **kwargs)
 
@@ -626,7 +617,7 @@ class Client(object):
 
         r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=r))
-        _verify_successful_response(r)
+        utils._verify_successful_response(r)
         data = r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         self.private_channels.append(PrivateChannel(id=data['id'], user=user))
@@ -674,7 +665,7 @@ class Client(object):
 
         response = requests.post(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
         data = response.json()
         log.debug(request_success_log.format(response=response, json=payload, data=data))
         channel = self.get_channel(data.get('channel_id'))
@@ -697,7 +688,7 @@ class Client(object):
 
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def send_file(self, destination, fp, filename=None):
         """Sends a message to the destination given with the file given.
@@ -753,7 +744,7 @@ class Client(object):
             response = requests.post(url, files=files, headers=self.headers)
 
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
         data = response.json()
         log.debug(request_success_log.format(response=response, json=response.text, data=filename))
         channel = self.get_channel(data.get('channel_id'))
@@ -774,7 +765,7 @@ class Client(object):
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def edit_message(self, message, new_content, mentions=True):
         """Edits a :class:`Message` with the new message content.
@@ -802,7 +793,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
         data = response.json()
         log.debug(request_success_log.format(response=response, json=payload, data=data))
         return Message(channel=channel, **data)
@@ -829,7 +820,7 @@ class Client(object):
 
         r = requests.post(endpoints.LOGIN, json=payload)
         log.debug(request_logging_format.format(response=r))
-        _verify_successful_response(r)
+        utils._verify_successful_response(r)
 
         log.info('logging in returned status code {}'.format(r.status_code))
         self.email = email
@@ -867,7 +858,7 @@ class Client(object):
         r = requests.post(endpoints.REGISTER, json=payload)
         log.debug(request_logging_format.format(response=r))
 
-        _verify_successful_response(r)
+        utils._verify_successful_response(r)
         log.info('register returned a successful status code')
         self.email = ''
 
@@ -955,7 +946,7 @@ class Client(object):
 
         response = requests.get(url, params=params, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
         messages = response.json()
         for message in messages:
             yield Message(channel=channel, **message)
@@ -990,7 +981,7 @@ class Client(object):
         url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def kick(self, server, user):
         """Kicks a :class:`User` from their respective :class:`Server`.
@@ -1006,7 +997,7 @@ class Client(object):
         url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def ban(self, server, user):
         """Bans a :class:`User` from their respective :class:`Server`.
@@ -1022,7 +1013,7 @@ class Client(object):
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.put(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def unban(self, server, user):
         """Unbans a :class:`User` from their respective :class:`Server`.
@@ -1039,7 +1030,7 @@ class Client(object):
         url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def edit_profile(self, password, **fields):
         """Edits the current profile of the client.
@@ -1065,7 +1056,7 @@ class Client(object):
         url = '{0}/@me'.format(endpoints.USERS)
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
         data = response.json()
         log.debug(request_success_log.format(response=response, json=payload, data=data))
@@ -1098,7 +1089,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
         data = response.json()
         log.debug(request_success_log.format(response=response, json=payload, data=data))
@@ -1125,7 +1116,7 @@ class Client(object):
         url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
         response = requests.post(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
         data = response.json()
         log.debug(request_success_log.format(response=response, data=data, json=payload))
@@ -1144,7 +1135,7 @@ class Client(object):
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def create_invite(self, destination, **options):
         """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
@@ -1172,7 +1163,7 @@ class Client(object):
         response = requests.post(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
 
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
         data = response.json()
         log.debug(request_success_log.format(json=payload, response=response, data=data))
         data['server'] = self.connection._get_server(data['guild']['id'])
@@ -1194,7 +1185,7 @@ class Client(object):
         rurl = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.get(rurl, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
         data = response.json()
         server = self.connection._get_server(data['guild']['id'])
         data['server'] = server
@@ -1223,7 +1214,7 @@ class Client(object):
         url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def edit_role(self, server, role, **fields):
         """Edits the specified :class:`Role` for the entire :class:`Server`.
@@ -1262,7 +1253,7 @@ class Client(object):
 
         response = requests.patch(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
         data = response.json()
         log.debug(request_success_log.format(json=payload, response=response, data=data))
@@ -1281,7 +1272,7 @@ class Client(object):
         url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def add_roles(self, member, *roles):
         """Gives the specified :class:`Member` a number of :class:`Role` s.
@@ -1303,7 +1294,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def remove_roles(self, member, *roles):
         """Removes the :class:`Role` s from the :class:`Member`.
@@ -1328,7 +1319,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def replace_roles(self, member, *roles):
         """Replaces the :class:`Member`'s roles.
@@ -1354,7 +1345,7 @@ class Client(object):
 
         response = requests.patch(url, headers=self.headers, json=payload)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
         member.roles = list(roles)
 
@@ -1371,7 +1362,7 @@ class Client(object):
         url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
         response = requests.post(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
         data = response.json()
         everyone = server.id == data.get('id')
@@ -1435,7 +1426,7 @@ class Client(object):
 
         response = requests.put(url, json=payload, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def delete_channel_permissions(self, channel, target):
         """Removes a channel specific permission overwrites for a target
@@ -1453,7 +1444,7 @@ class Client(object):
         url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
         response = requests.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(response=response))
-        _verify_successful_response(response)
+        utils._verify_successful_response(response)
 
     def change_status(self, game_id=None, idle=False):
         """Changes the client's status.
