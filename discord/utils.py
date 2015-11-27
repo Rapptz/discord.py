@@ -71,7 +71,5 @@ def _get_mime_type_for_image(data):
         return 'image/png'
     elif data.startswith(b'\xFF\xD8') and data.endswith(b'\xFF\xD9'):
         return 'image/jpeg'
-    elif data.startswith(b'GIF89a') or data.startswith(b'GIF87a'):
-        return 'image/gif'
     else:
         raise InvalidArgument('Unsupported image type given')
