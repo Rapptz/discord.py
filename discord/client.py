@@ -48,6 +48,7 @@ import sys
 import logging
 import itertools
 import datetime
+from base64 import b64encode
 
 log = logging.getLogger(__name__)
 request_logging_format = '{response.request.method} {response.url} has returned {response.status_code}'
@@ -1039,18 +1040,34 @@ class Client(object):
 
         This function raises :exc:`HTTPException` if the request failed.
 
+        To upload an avatar, a *bytes-like object* must be passed in that
+        represents the image being uploaded. If this is done through a file
+        then the file must be opened via ``open('some_filename', 'rb')`` and
+        the *bytes-like object* is given through the use of ``fp.read()``.
+
+        The only image formats supported for uploading is JPEG and PNG.
+
         :param password: The current password for the client's account.
         :param new_password: The new password you wish to change to.
         :param email: The new email you wish to change to.
         :param username: The new username you wish to change to.
+        :param avatar: A *bytes-like object* representing the image to upload.
         """
+
+        avatar_bytes = fields.get('avatar')
+        avatar = self.user.avatar
+        if avatar_bytes is not None:
+            fmt = 'data:{mime};base64,{data}'
+            mime = utils._get_mime_type_for_image(avatar_bytes)
+            b64 = b64encode(avatar_bytes).decode('ascii')
+            avatar = fmt.format(mime=mime, data=b64)
 
         payload = {
             'password': password,
             'new_password': fields.get('new_password'),
             'email': fields.get('email', self.email),
             'username': fields.get('username', self.user.name),
-            'avatar': self.user.avatar
+            'avatar': avatar
         }
 
         url = '{0}/@me'.format(endpoints.USERS)

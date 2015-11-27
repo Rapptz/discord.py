@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
-from .errors import HTTPException
+from .errors import HTTPException, InvalidArgument
 import datetime
 
 
@@ -65,3 +65,11 @@ def _verify_successful_response(response):
     success = code >= 200 and code < 300
     if not success:
         raise HTTPException(response)
+
+def _get_mime_type_for_image(data):
+    if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
+        return 'image/png'
+    elif data.startswith(b'\xFF\xD8') and data.endswith(b'\xFF\xD9'):
+        return 'image/jpeg'
+    else:
+        raise InvalidArgument('Unsupported image type given')
