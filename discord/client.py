@@ -573,7 +573,14 @@ class Client(object):
         """Runs the client and allows it to receive messages and events.
 
         This function can raise a :exc:`GatewayNotFound` exception while attempting
-        to reconnect."""
+        to reconnect.
+
+        .. note::
+
+            This function attempts to reconnect if the websocket got closed
+            without explicitly calling :meth:`logout`. When this reconnect is
+            triggered, the :func:`discord.on_ready` event is called again.
+        """
         log.info('Client is being run')
         self.ws.run()
 
