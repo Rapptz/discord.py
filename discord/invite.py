@@ -30,6 +30,9 @@ from .utils import parse_time
 class Invite(object):
     """Represents a Discord :class:`Server` or :class:`Channel` invite.
 
+    Depending on the way this object was created, some of the attributes can
+    have a value of ``None``.
+
     Instance attributes:
 
     .. attribute:: max_age
@@ -49,7 +52,8 @@ class Invite(object):
         A datetime object denoting the time the invite was created.
     .. attribute:: temporary
 
-        A boolean indicating that the invite grants temporary membership. If True, members who joined via this invite will be kicked upon disconnect.
+        A boolean indicating that the invite grants temporary membership.
+        If True, members who joined via this invite will be kicked upon disconnect.
     .. attribute:: uses
 
         How many times the invite has been used.
@@ -77,7 +81,9 @@ class Invite(object):
         self.uses = kwargs.get('uses')
         self.max_uses = kwargs.get('max_uses')
         self.xkcd = kwargs.get('xkcdpass')
-        self.inviter = User(**kwargs.get('inviter', {}))
+
+        inviter_data = kwargs.get('inviter')
+        self.inviter = None if inviter_data is None else User(**inviter_data)
         self.channel = kwargs.get('channel')
 
     @property

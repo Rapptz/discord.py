@@ -1180,6 +1180,29 @@ class Client(object):
         data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
         return Invite(**data)
 
+    def get_invite(self, url):
+        """Returns a :class:`Invite` object from the discord.gg invite URL or ID.
+
+        .. note::
+
+            If the server attribute of the returned invite is ``None`` then that means
+            that you have not joined the server.
+
+        """
+
+        destination = self._resolve_invite(url)
+        rurl = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
+        response = requests.get(rurl, headers=self.headers)
+        log.debug(request_logging_format.format(response=response))
+        _verify_successful_response(response)
+        data = response.json()
+        server = self.connection._get_server(data['guild']['id'])
+        data['server'] = server
+        ch_id = data['channel']['id']
+        channels = getattr(server, 'channels', [])
+        data['channel'] = utils.find(lambda c: c.id == ch_id, channels)
+        return Invite(**data)
+
     def accept_invite(self, invite):
         """Accepts an :class:`Invite`, URL or ID to an invite.
 
