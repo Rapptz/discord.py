@@ -251,10 +251,11 @@ to handle it, which defaults to print a traceback and ignore the exception.
     Called when someone begins typing a message.
 
     The ``channel`` parameter could either be a :class:`PrivateChannel` or a
-    :class:`Channel`.
+    :class:`Channel`. If ``channel`` is a :class:`PrivateChannel` then the
+    ``user`` parameter is a :class:`User`, otherwise it is a :class:`Member`.
 
     :param channel: The location where the typing originated from.
-    :param user: The :class:`Member` that started typing.
+    :param user: The user that started typing.
     :param when: A ``datetime.datetime`` object representing when typing started.
 
 

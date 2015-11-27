@@ -401,16 +401,15 @@ class ConnectionState(object):
         if channel is not None:
             member = None
             user_id = data.get('user_id')
-            if not getattr(channel, 'is_private', True):
+            is_private = getattr(channel, 'is_private', None)
+            if is_private == None:
+                return
+
+            if is_private:
+                member = channel.user
+            else:
                 members = channel.server.members
                 member = utils.find(lambda m: m.id == user_id, members)
-            else:
-                # At the moment we can make the assumption that if we are
-                # in a private channel then the user belongs to one of our
-                # already existing server member lists.
-                # This might change when we get friend lists.
-                gen = (m for s in self.servers for m in s.members)
-                member = utils.find(lambda m: m.id == user_id, gen)
 
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
