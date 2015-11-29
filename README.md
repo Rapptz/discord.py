@@ -1,5 +1,9 @@
 # discord.py
 
+[![PyPI](https://img.shields.io/pypi/v/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
+[![PyPI](https://img.shields.io/pypi/dm/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
+[![PyPI](https://img.shields.io/pypi/pyversions/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
+
 discord.py is an API wrapper for Discord written in Python.
 
 This was written to allow easier writing of bots or chat logs.
@@ -19,6 +23,8 @@ If you want to install the development version of the library, then do the follo
 ```
 pip install git+https://github.com/Rapptz/discord.py@develop
 ```
+
+Note that this requires `git` to be installed.
 
 ### This module is alpha!
 
