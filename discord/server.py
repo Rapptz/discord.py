@@ -25,6 +25,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import utils
+from .role import Role
+from .member import Member
+from .channel import Channel
 
 class Server(object):
     """Represents a Discord server.
@@ -71,28 +74,69 @@ class Server(object):
     """
 
     def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.roles = kwargs.get('roles')
-        self.region = kwargs.get('region')
-        self.afk_timeout = kwargs.get('afk_timeout')
-        self.afk_channel_id = kwargs.get('afk_channel_id')
-        self.members = kwargs.get('members')
-        self.icon = kwargs.get('icon')
-        self.id = kwargs.get('id')
-        self.owner = kwargs.get('owner')
-        self.unavailable = kwargs.get('unavailable', False)
+        self._from_data(kwargs)
+
+    def _update_voice_state(self, data):
+        user_id = data.get('user_id')
+        member = utils.find(lambda m: m.id == user_id, self.members)
+        if member is not None:
+            ch_id = data.get('channel_id')
+            channel = utils.find(lambda c: c.id == ch_id, self.channels)
+            member.update_voice_state(voice_channel=channel, **data)
+        return member
+
+    def _from_data(self, guild):
+        self.name = guild.get('name')
+        self.region = guild.get('region')
+        self.afk_timeout = guild.get('afk_timeout')
+        self.afk_channel_id = guild.get('afk_channel_id')
+        self.icon = guild.get('icon')
+        self.unavailable = guild.get('unavailable', False)
+        self.id = guild['id']
+        self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
+
+        self.members = []
+        self.owner = guild['owner_id']
+
+        for data in guild['members']:
+            roles = []
+            for role_id in data['roles']:
+                role = utils.find(lambda r: r.id == role_id, self.roles)
+                if role is not None:
+                    roles.append(role)
+
+            data['roles'] = roles
+            member = Member(**data)
+            member.server = self
+
+            if member.id == self.owner:
+                self.owner = member
+
+            self.members.append(member)
+
+        for presence in guild.get('presences', []):
+            user_id = presence['user']['id']
+            member = utils.find(lambda m: m.id == user_id, self.members)
+            if member is not None:
+                member.status = presence['status']
+                member.game_id = presence['game_id']
+
+        self.channels = [Channel(server=self, **c) for c in guild['channels']]
+
+        for obj in guild.get('voice_states', []):
+            self._update_voice_state(obj)
 
     def get_default_role(self):
         """Gets the @everyone role that all members have by default."""
         return utils.find(lambda r: r.is_everyone(), self.roles)
-    
+
     def get_default_channel(self):
         """Gets the default :class:`Channel` for the server."""
         return utils.find(lambda c: c.is_default_channel(), self.channels)
-    
+
     def icon_url(self):
         """Returns the URL version of the server's icon. Returns None if it has no icon."""
         if self.icon is None:
             return ''
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
-    
+

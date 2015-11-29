@@ -146,50 +146,8 @@ class ConnectionState(object):
     def _get_server(self, guild_id):
         return utils.find(lambda g: g.id == guild_id, self.servers)
 
-    def _update_voice_state(self, server, data):
-        user_id = data.get('user_id')
-        member = utils.find(lambda m: m.id == user_id, server.members)
-        if member is not None:
-            ch_id = data.get('channel_id')
-            channel = utils.find(lambda c: c.id == ch_id, server.channels)
-            member.update_voice_state(voice_channel=channel, **data)
-        return member
-
     def _add_server(self, guild):
-        guild['roles'] = [Role(everyone=(guild['id'] == role['id']), **role) for role in guild['roles']]
-        members = guild['members']
-        owner = guild['owner_id']
-        for i, member in enumerate(members):
-            roles = member['roles']
-            for j, roleid in enumerate(roles):
-                role = utils.find(lambda r: r.id == roleid, guild['roles'])
-                if role is not None:
-                    roles[j] = role
-            members[i] = Member(**member)
-
-            # found the member that owns the server
-            if members[i].id == owner:
-                owner = members[i]
-
-        for presence in guild['presences']:
-            user_id = presence['user']['id']
-            member = utils.find(lambda m: m.id == user_id, members)
-            if member is not None:
-                member.status = presence['status']
-                member.game_id = presence['game_id']
-
-
-        server = Server(owner=owner, **guild)
-
-        # give all the members their proper server
-        for member in server.members:
-            member.server = server
-
-        channels = [Channel(server=server, **channel)
-                    for channel in guild['channels']]
-        server.channels = channels
-        for obj in guild.get('voice_states', []):
-            self._update_voice_state(server, obj)
+        server = Server(**guild)
         self.servers.append(server)
 
     def handle_ready(self, data):
@@ -393,7 +351,7 @@ class ConnectionState(object):
     def handle_voice_state_update(self, data):
         server = self._get_server(data.get('guild_id'))
         if server is not None:
-            updated_member = self._update_voice_state(server, data)
+            updated_member = server._update_voice_state(data)
             self.dispatch('voice_state_update', updated_member)
 
     def handle_typing_start(self, data):
