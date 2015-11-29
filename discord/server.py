@@ -39,7 +39,7 @@ class Server(object):
         The server name.
     .. attribute:: roles
 
-        An array of :class:`Role` that the server has available.
+        A list of :class:`Role` that the server has available.
     .. attribute:: region
 
         The region the server belongs on.
@@ -51,10 +51,10 @@ class Server(object):
         The :class:`Channel` that denotes the AFK channel. None if it doesn't exist.
     .. attribute:: members
 
-        An array of :class:`Member` that are currently on the server.
+        A list of :class:`Member` that are currently on the server.
     .. attribute:: channels
 
-        An array of :class:`Channel` that are currently on the server.
+        A list of :class:`Channel` that are currently on the server.
     .. attribute:: icon
 
         The server's icon.

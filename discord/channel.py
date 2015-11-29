@@ -58,11 +58,11 @@ class Channel(object):
         The channel type. Usually ``'voice'`` or ``'text'``.
     .. attribute:: changed_roles
 
-        An array of :class:`Roles` that have been overridden from their default
+        A list of :class:`Roles` that have been overridden from their default
         values in the :attr:`Server.roles` attribute.
     .. attribute:: voice_members
 
-        An array of :class:`Members` that are currently inside this voice channel.
+        A list of :class:`Members` that are currently inside this voice channel.
         If :attr:`type` is not ``'voice'`` then this is always an empty array.
     """
 
