@@ -56,7 +56,8 @@ class Member(User):
         is not currently in a voice channel.
     .. attribute:: roles
 
-        An array of :class:`Role` that the member belongs to.
+        A list of :class:`Role` that the member belongs to. Note that the first element of this
+        list is always the default '@everyone' role.
     .. attribute:: joined_at
 
         A datetime object that specifies the date and time in UTC that the member joined the server for

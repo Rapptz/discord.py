@@ -139,7 +139,7 @@ class Channel(object):
         if member.id == self.server.owner.id:
             return Permissions.all()
 
-        default = self.server.get_default_role()
+        default = member.roles[0]
         base = deepcopy(default.permissions)
 
         # Apply server roles that the member has.
@@ -155,7 +155,7 @@ class Channel(object):
         # Apply channel specific role permission overwrites
         for overwrite in self._permission_overwrites:
             if overwrite.type == 'role':
-                if overwrite.id in member_role_ids or overwrite.id == self.server.id:
+                if overwrite.id in member_role_ids:
                     base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
         # Apply member specific permission overwrites

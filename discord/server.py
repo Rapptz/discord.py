@@ -94,12 +94,13 @@ class Server(object):
         self.unavailable = guild.get('unavailable', False)
         self.id = guild['id']
         self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
+        default_role = self.get_default_role()
 
         self.members = []
         self.owner = guild['owner_id']
 
         for data in guild['members']:
-            roles = []
+            roles = [default_role]
             for role_id in data['roles']:
                 role = utils.find(lambda r: r.id == role_id, self.roles)
                 if role is not None:
