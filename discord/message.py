@@ -68,6 +68,13 @@ class Message(object):
     .. attribute:: mention_everyone
 
         A boolean specifying if the message mentions everyone.
+
+        .. note::
+
+            This does not check if the ``@everyone`` text is in the message itself.
+            Rather this boolean indicates if the ``@everyone`` text is in the message
+            **and** it did end up mentioning everyone.
+
     .. attribute:: mentions
 
         A list of :class:`Member` that were mentioned. If the message is in a private message
