@@ -1459,3 +1459,25 @@ class Client(object):
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
 
+    def resolve_user_id(self,id):
+        """
+        Resolves a :class:`Member` ID to a :class:`Member` object.
+        :param id: The :class:`Member`'s ID string to find :class:`Member`.
+        :return: :class:`Member` if we can find that user ID, otherwise ``None``.
+        """
+        for end_user in self.get_all_members():
+            if end_user.id==id:
+                return(end_user)
+        return(None)
+
+    def resolve_channel_id(self,id):
+        """
+        Resolves a :class:`Channel` ID to a :class:`Channel` object.
+        :param id: The :class:`Channel`'s ID string to find :class:`Channel`.
+        :return: :class:`Channel` if we can find that user ID, otherwise ``None``.
+        """
+        for end_channel in self.get_all_channels():
+            if end_channel.id==id:
+                return(end_channel)
+        return(None)
+
