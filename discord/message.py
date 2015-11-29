@@ -72,6 +72,12 @@ class Message(object):
 
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list is always empty.
+
+        .. warning::
+
+            The order of the mentions list is not in any particular order so you should
+            not rely on it. This is a discord limitation, not one with the library.
+
     .. attribute:: channel_mentions
 
         A list of :class:`Channel` that were mentioned. If the message is in a private message
