@@ -46,9 +46,9 @@ class Server(object):
     .. attribute:: afk_timeout
 
         The timeout to get sent to the AFK channel.
-    .. attribute:: afk_channel_id
+    .. attribute:: afk_channel
 
-        The channel ID for the AFK channel. None if it doesn't exist.
+        The :class:`Channel` that denotes the AFK channel. None if it doesn't exist.
     .. attribute:: members
 
         An array of :class:`Member` that are currently on the server.
@@ -89,7 +89,6 @@ class Server(object):
         self.name = guild.get('name')
         self.region = guild.get('region')
         self.afk_timeout = guild.get('afk_timeout')
-        self.afk_channel_id = guild.get('afk_channel_id')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
         self.id = guild['id']
@@ -123,6 +122,8 @@ class Server(object):
                 member.game_id = presence['game_id']
 
         self.channels = [Channel(server=self, **c) for c in guild['channels']]
+        afk_id = guild.get('afk_channel_id')
+        self.afk_channel = utils.find(lambda c: c.id == afk_id, self.channels)
 
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj)
