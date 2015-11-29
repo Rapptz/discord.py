@@ -268,7 +268,21 @@ Utility Functions
 Data Classes
 --------------
 
-Some classes are just there to be data containers, this lists them. It should be assumed that *all* classes in this category are immutable and should not be modified.
+Some classes are just there to be data containers, this lists them.
+
+.. note::
+
+    With the exception of :class:`Object`, :class:`Colour`, and :class:`Permissions` the
+    data classes listed below are **not intended to be created by users** and are also
+    **read-only**.
+
+    For example, this means that you should not make your own :class:`User` instances
+    nor should you modify the :class:`User` instance yourself.
+
+    If you want to get one of these data classes instances they'd have to be through
+    the cache, and a common way of doing so is through the :func:`utils.find` function
+    or attributes of data classes that you receive from the events specified in the
+    :ref:`discord-api-events`.
 
 .. autoclass:: Object
     :members:
