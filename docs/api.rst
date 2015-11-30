@@ -184,11 +184,19 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param member: The :class:`Member` that joined or left.
 
-.. function:: on_member_update(member)
+.. function:: on_member_update(before, after)
 
     Called when a :class:`Member` updates their profile.
 
-    :param member: The :class:`Member` that updated their profile with the updated info.
+    This is called when one or more of the following things change:
+
+    - status
+    - game playing
+    - avatar
+    - nickname
+
+    :param before: The :class:`Member` that updated their profile with the old info.
+    :param after: The :class:`Member` that updated their profile with the updated info.
 
 .. function:: on_server_join(server)
 

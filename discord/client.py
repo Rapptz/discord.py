@@ -206,16 +206,15 @@ class ConnectionState(object):
             member_id = user['id']
             member = utils.find(lambda m: m.id == member_id, server.members)
             if member is not None:
-                old_status = copy.copy(member.status)
-                old_game_id = copy.copy(member.game_id)
+                old_member = copy.copy(member)
                 member.status = data.get('status')
                 member.game_id = data.get('game_id')
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 
                 # call the event now
-                self.dispatch('status', member, old_game_id, old_status)
-                self.dispatch('member_update', member)
+                self.dispatch('status', member, old_member.game_id, old_member.status)
+                self.dispatch('member_update', old_member, member)
 
     def handle_user_update(self, data):
         self.user = User(**data)
@@ -276,6 +275,7 @@ class ConnectionState(object):
         member = utils.find(lambda m: m.id == user_id, server.members)
         if member is not None:
             user = data['user']
+            old_member = copy.copy(member)
             member.name = user['username']
             member.discriminator = user['discriminator']
             member.avatar = user['avatar']
@@ -285,7 +285,7 @@ class ConnectionState(object):
                 if role.id in data['roles']:
                     member.roles.append(role)
 
-            self.dispatch('member_update', member)
+            self.dispatch('member_update', old_member, member)
 
     def handle_guild_create(self, data):
         unavailable = data.get('unavailable')
