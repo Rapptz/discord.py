@@ -184,7 +184,7 @@ class ConnectionState(object):
         older_message = self._get_message(data.get('id'))
         if older_message is not None:
             # create a copy of the new message
-            message = copy.deepcopy(older_message)
+            message = copy.copy(older_message)
             # update the new update
             for attr in data:
                 if attr == 'channel_id' or attr == 'author':
