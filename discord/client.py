@@ -1221,7 +1221,7 @@ class Client(object):
             At the moment, the Discord API allows you to set the colour to any
             RGB value. This will change in the future so it is recommended that
             you use the constants in the :class:`Colour` instead such as
-            :attr:`Colour.NAVY_BLUE`.
+            :meth:`Colour.green`.
 
         :param server: The :class:`Server` the role belongs to.
         :param role: The :class:`Role` to edit.

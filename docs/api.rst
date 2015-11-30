@@ -156,7 +156,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     Called whenever a :class:`Member` changes their status or game playing status.
 
-    :param server: The :class:`Member` who has had their status changed.
+    :param member: The :class:`Member` who has had their status changed.
 
 .. function:: on_channel_delete(channel)
               on_channel_create(channel)
