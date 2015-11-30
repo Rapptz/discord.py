@@ -224,8 +224,11 @@ class ConnectionState(object):
         if server is not None:
             channel_id = data.get('id')
             channel = utils.find(lambda c: c.id == channel_id, server.channels)
-            server.channels.remove(channel)
-            self.dispatch('channel_delete', channel)
+            try:
+                server.channels.remove(channel)
+                self.dispatch('channel_delete', channel)
+            except ValueError:
+                return
 
     def handle_channel_update(self, data):
         server = self._get_server(data.get('guild_id'))
