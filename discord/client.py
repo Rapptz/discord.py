@@ -1160,8 +1160,9 @@ class Client(object):
 
         .. note::
 
-            If the server attribute of the returned invite is ``None`` then that means
-            that you have not joined the server.
+            If the invite is for a server you have not joined, the server and channel
+            attributes of the returned invite will be :class:`Object` with the names
+            patched in.
 
         """
 
@@ -1172,10 +1173,17 @@ class Client(object):
         utils._verify_successful_response(response)
         data = response.json()
         server = self.connection._get_server(data['guild']['id'])
+        if server is not None:
+            ch_id = data['channel']['id']
+            channels = getattr(server, 'channels', [])
+            channel = utils.find(lambda c: c.id == ch_id, channels)
+        else:
+            server = Object(id=data['guild']['id'])
+            server.name = data['guild']['name']
+            channel = Object(id=data['channel']['id'])
+            channel.name = data['channel']['name']
         data['server'] = server
-        ch_id = data['channel']['id']
-        channels = getattr(server, 'channels', [])
-        data['channel'] = utils.find(lambda c: c.id == ch_id, channels)
+        data['channel'] = channel
         return Invite(**data)
 
     def accept_invite(self, invite):
@@ -1458,4 +1466,3 @@ class Client(object):
         sent = json.dumps(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
-
