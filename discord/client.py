@@ -206,13 +206,15 @@ class ConnectionState(object):
             member_id = user['id']
             member = utils.find(lambda m: m.id == member_id, server.members)
             if member is not None:
+                old_status = copy.copy(member.status)
+                old_game_id = copy.copy(member.game_id)
                 member.status = data.get('status')
                 member.game_id = data.get('game_id')
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 
                 # call the event now
-                self.dispatch('status', member)
+                self.dispatch('status', member, old_game_id, old_status)
                 self.dispatch('member_update', member)
 
     def handle_user_update(self, data):
