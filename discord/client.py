@@ -106,6 +106,8 @@ class Client:
         }
         self._closed = False
 
+    # internals
+
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
             return [user.id for user in mentions]
@@ -141,7 +143,6 @@ class Client:
         else:
             raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
 
-    # Compatibility shim
     def __getattr__(self, name):
         if name in ('user', 'email', 'servers', 'private_channels', 'messages'):
             return getattr(self.connection, name)
@@ -149,23 +150,12 @@ class Client:
             msg = "'{}' object has no attribute '{}'"
             raise AttributeError(msg.format(self.__class__, name))
 
-    # Compatibility shim
     def __setattr__(self, name, value):
         if name in ('user', 'email', 'servers', 'private_channels',
                     'messages'):
             return setattr(self.connection, name, value)
         else:
             object.__setattr__(self, name, value)
-
-    @property
-    def is_logged_in(self):
-        """bool: Indicates if the client has logged in successfully."""
-        return self._is_logged_in
-
-    @property
-    def is_closed(self):
-        """bool: Indicates if the websocket connection is closed."""
-        return self._closed
 
     @asyncio.coroutine
     def _get_gateway(self):
@@ -192,101 +182,6 @@ class Client:
 
         if hasattr(self, method):
             utils.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
-
-    def get_channel(self, id):
-        """Returns a :class:`Channel` or :class:`PrivateChannel` with the following ID. If not found, returns None."""
-        return self.connection.get_channel(id)
-
-    def get_all_channels(self):
-        """A generator that retrieves every :class:`Channel` the client can 'access'.
-
-        This is equivalent to: ::
-
-            for server in client.servers:
-                for channel in server.channels:
-                    yield channel
-
-        Note
-        -----
-        Just because you receive a :class:`Channel` does not mean that
-        you can communicate in said channel. :meth:`Channel.permissions_for` should
-        be used for that.
-        """
-
-        for server in self.servers:
-            for channel in server.channels:
-                yield channel
-
-    def get_all_members(self):
-        """Returns a generator with every :class:`Member` the client can see.
-
-        This is equivalent to: ::
-
-            for server in client.servers:
-                for member in server.members:
-                    yield member
-
-        """
-        for server in self.servers:
-            for member in server.members:
-                yield member
-
-    @asyncio.coroutine
-    def close(self):
-        """Closes the websocket connection.
-
-        To reconnect the websocket connection, :meth:`connect` must be used.
-        """
-        if self._closed:
-            return
-
-        yield from self.ws.close()
-        self.keep_alive.cancel()
-        self._closed = True
-
-    @asyncio.coroutine
-    def login(self, email, password):
-        """|coro|
-
-        Logs in the client with the specified credentials.
-
-        Parameters
-        ----------
-        email : str
-            The email used to login.
-        password : str
-            The password used to login.
-
-        Raises
-        ------
-        LoginFailure
-            The wrong credentials are passed.
-        HTTPException
-            An unknown HTTP related error occurred,
-            usually when it isn't 200 or the known incorrect credentials
-            passing status code.
-        """
-        payload = {
-            'email': email,
-            'password': password
-        }
-
-        data = to_json(payload)
-        resp = yield from self.session.post(endpoints.LOGIN, data=data, headers=self.headers)
-        log.debug(request_logging_format.format(method='POST', response=resp))
-        if resp.status == 400:
-            raise LoginFailure('Improper credentials have been passed.')
-        elif resp.status != 200:
-            data = yield from resp.json()
-            raise HTTPException(resp, data.get('message'))
-
-        log.info('logging in returned status code {}'.format(resp.status))
-        self.email = email
-
-        body = yield from resp.json()
-        self.token = body['token']
-        self.headers['authorization'] = self.token
-        self._is_logged_in = True
 
     @asyncio.coroutine
     def keep_alive_handler(self, interval):
@@ -371,6 +266,114 @@ class Client:
         yield from self.ws.send(to_json(payload))
         log.info('sent the initial payload to create the websocket')
 
+    # properties
+
+    @property
+    def is_logged_in(self):
+        """bool: Indicates if the client has logged in successfully."""
+        return self._is_logged_in
+
+    @property
+    def is_closed(self):
+        """bool: Indicates if the websocket connection is closed."""
+        return self._closed
+
+    # helpers/getters
+
+    def get_channel(self, id):
+        """Returns a :class:`Channel` or :class:`PrivateChannel` with the following ID. If not found, returns None."""
+        return self.connection.get_channel(id)
+
+    def get_all_channels(self):
+        """A generator that retrieves every :class:`Channel` the client can 'access'.
+
+        This is equivalent to: ::
+
+            for server in client.servers:
+                for channel in server.channels:
+                    yield channel
+
+        Note
+        -----
+        Just because you receive a :class:`Channel` does not mean that
+        you can communicate in said channel. :meth:`Channel.permissions_for` should
+        be used for that.
+        """
+
+        for server in self.servers:
+            for channel in server.channels:
+                yield channel
+
+    def get_all_members(self):
+        """Returns a generator with every :class:`Member` the client can see.
+
+        This is equivalent to: ::
+
+            for server in client.servers:
+                for member in server.members:
+                    yield member
+
+        """
+        for server in self.servers:
+            for member in server.members:
+                yield member
+
+    # login state management
+
+    @asyncio.coroutine
+    def login(self, email, password):
+        """|coro|
+
+        Logs in the client with the specified credentials.
+
+        Parameters
+        ----------
+        email : str
+            The email used to login.
+        password : str
+            The password used to login.
+
+        Raises
+        ------
+        LoginFailure
+            The wrong credentials are passed.
+        HTTPException
+            An unknown HTTP related error occurred,
+            usually when it isn't 200 or the known incorrect credentials
+            passing status code.
+        """
+        payload = {
+            'email': email,
+            'password': password
+        }
+
+        data = to_json(payload)
+        resp = yield from self.session.post(endpoints.LOGIN, data=data, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=resp))
+        if resp.status == 400:
+            raise LoginFailure('Improper credentials have been passed.')
+        elif resp.status != 200:
+            data = yield from resp.json()
+            raise HTTPException(resp, data.get('message'))
+
+        log.info('logging in returned status code {}'.format(resp.status))
+        self.email = email
+
+        body = yield from resp.json()
+        self.token = body['token']
+        self.headers['authorization'] = self.token
+        self._is_logged_in = True
+
+    @asyncio.coroutine
+    def logout(self):
+        """|coro|
+
+        Logs out of Discord and closes all connections."""
+        response = yield from self.session.post(endpoints.LOGOUT, headers=self.headers)
+        yield from self.close()
+        self._is_logged_in = False
+        log.debug(request_logging_format.format(method='POST', response=response))
+
     @asyncio.coroutine
     def connect(self):
         """|coro|
@@ -395,6 +398,21 @@ class Client:
                 break
 
             self.received_message(json.loads(msg))
+
+    @asyncio.coroutine
+    def close(self):
+        """Closes the websocket connection.
+
+        To reconnect the websocket connection, :meth:`connect` must be used.
+        """
+        if self._closed:
+            return
+
+        yield from self.ws.close()
+        self.keep_alive.cancel()
+        self._closed = True
+
+    # event registration
 
     def event(self, coro):
         """A decorator that registers an event to listen to.
@@ -434,6 +452,8 @@ class Client:
             coro = asyncio.coroutine(coro)
 
         return self.event(coro)
+
+    # Message sending/management
 
     @asyncio.coroutine
     def start_private_message(self, user):
@@ -674,7 +694,7 @@ class Client:
         yield from utils._verify_successful_response(response)
 
     @asyncio.coroutine
-    def edit_message(self, message, new_content, mentions=True):
+    def edit_message(self, message, new_content, *, mentions=True):
         """|coro|
 
         Edits a :class:`Message` with the new message content.
@@ -716,16 +736,6 @@ class Client:
         data = yield from response.json()
         log.debug(request_success_log.format(response=response, json=payload, data=data))
         return Message(channel=channel, **data)
-
-    @asyncio.coroutine
-    def logout(self):
-        """|coro|
-
-        Logs out of Discord and closes all connections."""
-        response = yield from self.session.post(endpoints.LOGOUT, headers=self.headers)
-        yield from self.close()
-        self._is_logged_in = False
-        log.debug(request_logging_format.format(method='POST', response=response))
 
     @asyncio.coroutine
     def logs_from(self, channel, limit=100, *, before=None, after=None):
@@ -789,3 +799,244 @@ class Client:
         yield from utils._verify_successful_response(response)
         messages = yield from response.json()
         return generator_wrapper(messages)
+
+    # Member management
+
+    @asyncio.coroutine
+    def kick(self, member):
+        """|coro|
+
+        Kicks a :class:`Member` from the server they belong to.
+
+        Warning
+        --------
+        This function kicks the :class:`Member` based on the server it
+        belongs to, which is accessed via :attr:`Member.server`. So you
+        must have the proper permissions in that server.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to kick from their server.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to kick.
+        HTTPException
+            Kicking failed.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def ban(self, member):
+        """|coro|
+
+        Bans a :class:`Member` from the server they belong to.
+
+        Warning
+        --------
+        This function bans the :class:`Member` based on the server it
+        belongs to, which is accessed via :attr:`Member.server`. So you
+        must have the proper permissions in that server.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to ban from their server.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to ban.
+        HTTPException
+            Banning failed.
+        """
+
+        url = '{0}/{1.server.id}/bans/{1.id}'.format(endpoints.SERVERS, member)
+        response = yield from self.session.put(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='PUT', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def unban(self, member):
+        """|coro|
+
+        Unbans a :class:`Member` from the server they belong to.
+
+        Warning
+        --------
+        This function unbans the :class:`Member` based on the server it
+        belongs to, which is accessed via :attr:`Member.server`. So you
+        must have the proper permissions in that server.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to unban from their server.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to unban.
+        HTTPException
+            Unbanning failed.
+        """
+
+        url = '{0}/{1.server.id}/bans/{1.id}'.format(endpoints.SERVERS, member)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def server_voice_state(self, member, *, mute=False, deafen=False):
+        """|coro|
+
+        Server mutes or deafens a specific :class:`Member`.
+
+        Warning
+        --------
+        This function mutes or un-deafens the :class:`Member` based on the
+        server it belongs to, which is accessed via :attr:`Member.server`.
+        So you must have the proper permissions in that server.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to unban from their server.
+        mute : bool
+            Indicates if the member should be server muted or un-muted.
+        deafen : bool
+            Indicates if the member should be server deafened or un-deafened.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to deafen or mute.
+        HTTPException
+            The operation failed.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+        payload = {
+            'mute': mute,
+            'deaf': deafen
+        }
+
+        response = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def edit_profile(self, password, **fields):
+        """|coro|
+
+        Edits the current profile of the client.
+
+        All fields except ``password`` are optional.
+
+        Note
+        -----
+        To upload an avatar, a *bytes-like object* must be passed in that
+        represents the image being uploaded. If this is done through a file
+        then the file must be opened via ``open('some_filename', 'rb')`` and
+        the *bytes-like object* is given through the use of ``fp.read()``.
+
+        The only image formats supported for uploading is JPEG and PNG.
+
+        Parameters
+        -----------
+        password : str
+            The current password for the client's account.
+        new_password : str
+            The new password you wish to change to.
+        email : str
+            The new email you wish to change to.
+        username :str
+            The new username you wish to change to.
+        avatar : bytes
+            A *bytes-like object* representing the image to upload.
+
+        Raises
+        ------
+        HTTPException
+            Editing your profile failed.
+        """
+
+        avatar_bytes = fields.get('avatar')
+        avatar = None
+        if avatar_bytes is not None:
+            fmt = 'data:{mime};base64,{data}'
+            mime = utils._get_mime_type_for_image(avatar_bytes)
+            b64 = b64encode(avatar_bytes).decode('ascii')
+            avatar = fmt.format(mime=mime, data=b64)
+
+        payload = {
+            'password': password,
+            'new_password': fields.get('new_password'),
+            'email': fields.get('email', self.email),
+            'username': fields.get('username', self.user.name),
+            'avatar': avatar
+        }
+
+        url = '{0}/@me'.format(endpoints.USERS)
+        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+        data = yield from r.json()
+        log.debug(request_success_log.format(response=r, json=payload, data=data))
+        self.token = data['token']
+        self.email = data['email']
+        self.headers['authorization'] = self.token
+
+    @asyncio.coroutine
+    def change_status(self, game_id=None, idle=False):
+        """|coro|
+
+        Changes the client's status.
+
+        The game_id parameter is a numeric ID (not a string) that represents
+        a game being played currently. The list of game_id to actual games changes
+        constantly and would thus be out of date pretty quickly. An old version of
+        the game_id database can be seen `here`_ to help you get started.
+
+        The idle parameter is a boolean parameter that indicates whether the
+        client should go idle or not.
+
+        .. _here: https://gist.github.com/Rapptz/a82b82381b70a60c281b
+
+        Parameters
+        ----------
+        game_id : Optional[int]
+            The game ID being played. None if no game is being played.
+        idle : bool
+            Indicates if the client should go idle.
+
+        Raises
+        ------
+        InvalidArgument
+            If the ``game_id`` parameter is convertible integer or None.
+        """
+
+        idle_since = None if idle == False else int(time.time() * 1000)
+        try:
+            game_id = None if game_id is None else int(game_id)
+        except:
+            raise InvalidArgument('game_id must be convertible to an integer or None')
+
+        payload = {
+            'op': 3,
+            'd': {
+                'game_id': game_id,
+                'idle_since': idle_since
+            }
+        }
+
+        sent = to_json(payload)
+        log.debug('Sending "{}" to change status'.format(sent))
+        yield from self.ws.send(sent)
