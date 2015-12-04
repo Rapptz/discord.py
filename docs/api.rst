@@ -358,6 +358,10 @@ The following exceptions are thrown by the library.
 .. autoexception:: HTTPException
     :members:
 
+.. autoexception:: Forbidden
+
+.. autoexception:: NotFound
+
 .. autoexception:: InvalidArgument
 
 .. autoexception:: GatewayNotFound

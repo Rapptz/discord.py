@@ -65,6 +65,21 @@ class HTTPException(DiscordException):
 
         super().__init__(fmt.format(self.response, message))
 
+class Forbidden(HTTPException):
+    """Exception that's thrown for when status code 403 occurs.
+
+    Subclass of :exc:`HTTPException`
+    """
+    pass
+
+class NotFound(HTTPException):
+    """Exception that's thrown for when status code 404 occurs.
+
+    Subclass of :exc:`HTTPException`
+    """
+    pass
+
+
 class InvalidArgument(ClientException):
     """Exception that's thrown when an argument to a function
     is invalid some way (e.g. wrong value or wrong type).

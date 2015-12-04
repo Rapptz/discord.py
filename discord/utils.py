@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
-from .errors import HTTPException, InvalidArgument
+from .errors import HTTPException, Forbidden, NotFound, InvalidArgument
 import datetime
 import asyncio
 
@@ -66,7 +66,12 @@ def _verify_successful_response(response):
     success = code >= 200 and code < 300
     if not success:
         data = yield from response.json()
-        raise HTTPException(response, data.get('message'))
+        message = data.get('message')
+        if code == 403:
+            raise Forbidden(response, message)
+        elif code == 404:
+            raise NotFound(response, message)
+        raise HTTPException(response, message)
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
