@@ -1040,3 +1040,124 @@ class Client:
         sent = to_json(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         yield from self.ws.send(sent)
+
+    # Channel management
+
+    @asyncio.coroutine
+    def edit_channel(self, channel, **options):
+        """|coro|
+
+        Edits a :class:`Channel`.
+
+        You must have the proper permissions to edit the channel.
+
+        Parameters
+        ----------
+        channel : :class:`Channel`
+            The channel to update.
+        name : str
+            The new channel name.
+        position : int
+            The new channel's position in the GUI.
+        topic : str
+            The new channel's topic.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to edit the channel.
+        HTTPException
+            Editing the channel failed.
+        """
+
+        url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
+        payload = {
+            'name': options.get('name', channel.name),
+            'topic': options.get('topic', channel.topic),
+            'position': options.get('position', channel.position)
+        }
+
+        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+        data = yield from r.json()
+        log.debug(request_success_log.format(response=r, json=payload, data=data))
+
+    @asyncio.coroutine
+    def create_channel(self, server, name, type='text'):
+        """|coro|
+
+        Creates a :class:`Channel` in the specified :class:`Server`.
+
+        Note that you need the proper permissions to create the channel.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server to create the channel in.
+        name : str
+            The channel's name.
+        type : str
+            The type of channel to create. 'text' or 'voice'.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to create the channel.
+        NotFound
+            The server specified was not found.
+        HTTPException
+            Creating the channel failed.
+
+        Returns
+        -------
+        :class:`Channel`
+            The channel that was just created. This channel is
+            different than the one that will be added in cache.
+        """
+
+        payload = {
+            'name': name,
+            'type': type
+        }
+
+        url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
+        response = yield from self.session.post(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+
+        data = yield from response.json()
+        log.debug(request_success_log.format(response=response, data=data, json=payload))
+        channel = Channel(server=server, **data)
+        return channel
+
+    @asyncio.coroutine
+    def delete_channel(self, channel):
+        """|coro|
+
+        Deletes a :class:`Channel`.
+
+        In order to delete the channel, the client must have the proper permissions
+        in the server the channel belongs to.
+
+        Parameters
+        ------------
+        channel : :class:`Channel`
+            The channel to delete.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to delete the channel.
+        NotFound
+            The specified channel was not found.
+        HTTPException
+            Deleting the channel failed.
+        """
+
+        url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
