@@ -17,7 +17,7 @@ The following section outlines the API of discord.py.
 Client
 -------
 
-.. autoclass:: Client
+.. autoclass:: discord.async_client.Client
     :members:
 
 .. _discord-api-events:
@@ -58,6 +58,11 @@ to handle it, which defaults to print a traceback and ignore the exception.
         @asyncio.coroutine
         def on_ready():
             pass
+
+    Since this can be a potentially common mistake, there is a helper
+    decorator, :meth:`Client.async_event` to convert a basic function
+    into a coroutine and an event at the same time. Note that it is
+    not necessary if you use ``async def``.
 
 .. versionadded:: 0.7.0
     Subclassing to listen to events.

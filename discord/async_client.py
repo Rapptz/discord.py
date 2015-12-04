@@ -55,11 +55,14 @@ class Client:
 
     A number of options can be passed to the :class:`Client`.
 
+    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
+    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
+
     Parameters
     ----------
     max_messages : Optional[int]
         The maximum number of messages to store in :attr:`messages`.
-        This defaults to 5000. Passing in `None` or a value of ``<= 0``
+        This defaults to 5000. Passing in `None` or a value less than 100
         will use the default instead of the passed in value.
     loop : Optional[event loop].
         The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
@@ -73,20 +76,18 @@ class Client:
         The servers that the connected client is a member of.
     private_channels : list of :class:`PrivateChannel`
         The private channels that the connected client is participating on.
-    messages : deque_ of :class:`Message`
+    messages
         A deque_ of :class:`Message` that the client has received from all
         servers and private messages. The number of messages stored in this
         deque is controlled by the ``max_messages`` parameter.
-    email : Optional[str]
+    email
         The email used to login. This is only set if login is successful,
         otherwise it's None.
-    gateway : Optional[str]
+    gateway
         The websocket gateway the client is currently connected to. Could be None.
     loop
         The `event loop`_ that the client uses for HTTP requests and websocket operations.
 
-    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
-    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
@@ -95,7 +96,7 @@ class Client:
         self.loop = asyncio.get_event_loop() if loop is None else loop
 
         max_messages = options.get('max_messages')
-        if max_messages is None or max_messages <= 0:
+        if max_messages is None or max_messages < 100:
             max_messages = 5000
 
         self.connection = ConnectionState(self.dispatch, max_messages)
@@ -161,6 +162,11 @@ class Client:
         """bool: Indicates if the client has logged in successfully."""
         return self._is_logged_in
 
+    @property
+    def is_closed(self):
+        """bool: Indicates if the websocket connection is closed."""
+        return self._closed
+
     @asyncio.coroutine
     def _get_gateway(self):
         resp = yield from self.session.get(endpoints.GATEWAY, headers=self.headers)
@@ -190,6 +196,53 @@ class Client:
     def get_channel(self, id):
         """Returns a :class:`Channel` or :class:`PrivateChannel` with the following ID. If not found, returns None."""
         return self.connection.get_channel(id)
+
+    def get_all_channels(self):
+        """A generator that retrieves every :class:`Channel` the client can 'access'.
+
+        This is equivalent to: ::
+
+            for server in client.servers:
+                for channel in server.channels:
+                    yield channel
+
+        Note
+        -----
+        Just because you receive a :class:`Channel` does not mean that
+        you can communicate in said channel. :meth:`Channel.permissions_for` should
+        be used for that.
+        """
+
+        for server in self.servers:
+            for channel in server.channels:
+                yield channel
+
+    def get_all_members(self):
+        """Returns a generator with every :class:`Member` the client can see.
+
+        This is equivalent to: ::
+
+            for server in client.servers:
+                for member in server.members:
+                    yield member
+
+        """
+        for server in self.servers:
+            for member in server.members:
+                yield member
+
+    @asyncio.coroutine
+    def close(self):
+        """Closes the websocket connection.
+
+        To reconnect the websocket connection, :meth:`connect` must be used.
+        """
+        if self._closed:
+            return
+
+        yield from self.ws.close()
+        self.keep_alive.cancel()
+        self._closed = True
 
     @asyncio.coroutine
     def login(self, email, password):
@@ -338,9 +391,7 @@ class Client:
         while not self._closed:
             msg = yield from self.ws.recv()
             if msg is None:
-                yield from self.ws.close()
-                self._closed = True
-                self.keep_alive.cancel()
+                yield from self.close()
                 break
 
             self.received_message(json.loads(msg))
@@ -352,12 +403,22 @@ class Client:
 
         The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
 
-        Example: ::
+        Examples
+        ---------
+
+        Using the basic :meth:`event` decorator: ::
 
             @client.event
             @asyncio.coroutine
             def on_ready():
                 print('Ready!')
+
+        Saving characters by using the :meth:`async_event` decorator: ::
+
+            @client.async_event
+            def on_ready():
+                print('Ready!')
+
         """
 
         if not asyncio.iscoroutinefunction(coro):
@@ -366,6 +427,13 @@ class Client:
         setattr(self, coro.__name__, coro)
         log.info('{0.__name__} has successfully been registered as an event'.format(coro))
         return coro
+
+    def async_event(self, coro):
+        """A shorthand decorator for ``asyncio.coroutine`` + :meth:`event`."""
+        if not asyncio.iscoroutinefunction(coro):
+            coro = asyncio.coroutine(coro)
+
+        return self.event(coro)
 
     @asyncio.coroutine
     def start_private_message(self, user):
@@ -388,19 +456,22 @@ class Client:
         ------
         HTTPException
             The request failed.
+        InvalidArgument
+            The user argument was not of :class:`User`.
         """
 
         if not isinstance(user, User):
-            raise TypeError('user argument must be a User')
+            raise InvalidArgument('user argument must be a User')
 
         payload = {
             'recipient_id': user.id
         }
 
-        r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
-        log.debug(request_logging_format.format(response=r))
-        utils._verify_successful_response(r)
-        data = r.json()
+        url = '{}/{}/channels'.format(endpoints.USERS, self.user.id)
+        r = yield from self.session.post(url, data=to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=r))
+        yield from utils._verify_successful_response(r)
+        data = yield from r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         self.private_channels.append(PrivateChannel(id=data['id'], user=user))
 
@@ -441,6 +512,10 @@ class Client:
         --------
         HTTPException
             Sending the message failed.
+        Forbidden
+            You do not have the proper permissions to send the message.
+        NotFound
+            The destination was not found and hence is invalid.
         InvalidArgument
             The destination parameter is invalid.
 
@@ -472,3 +547,245 @@ class Client:
         channel = self.get_channel(data.get('channel_id'))
         message = Message(channel=channel, **data)
         return message
+
+    @asyncio.coroutine
+    def send_typing(self, destination):
+        """|coro|
+
+        Send a *typing* status to the destination.
+
+        *Typing* status will go away after 10 seconds, or after a message is sent.
+
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        Parameters
+        ----------
+        destination
+            The location to send the typing update.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        url = '{base}/{id}/typing'.format(base=endpoints.CHANNELS, id=channel_id)
+
+        response = yield from self.session.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def send_file(self, destination, fp, filename=None):
+        """|coro|
+
+        Sends a message to the destination given with the file given.
+
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        The ``fp`` parameter should be either a string denoting the location for a
+        file or a *file-like object*. The *file-like object* passed is **not closed**
+        at the end of execution. You are responsible for closing it yourself.
+
+        .. note::
+
+            If the file-like object passed is opened via ``open`` then the modes
+            'rb' should be used.
+
+        The ``filename`` parameter is the filename of the file.
+        If this is not given then it defaults to ``fp.name`` or if ``fp`` is a string
+        then the ``filename`` will default to the string given. You can overwrite
+        this value by passing this in.
+
+        Parameters
+        ------------
+        destination
+            The location to send the message.
+        fp
+            The *file-like object* or file path to send.
+        filename : str
+            The filename of the file. Defaults to ``fp.name`` if it's available.
+
+        Raises
+        -------
+        InvalidArgument
+            If ``fp.name`` is an invalid default for ``filename``.
+        HTTPException
+            Sending the file failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The message sent.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+
+        try:
+            # attempt to open the file and send the request
+            with open(fp, 'rb') as f:
+                files = {
+                    'file': (fp if filename is None else filename, f)
+                }
+        except TypeError:
+            # if we got a TypeError then this is probably a file-like object
+            fname = getattr(fp, 'name', None) if filename is None else filename
+            if fname is None:
+                raise InvalidArgument('file-like object has no name attribute and no filename was specified')
+
+            files = {
+                'file': (fname, fp)
+            }
+
+        response = yield from self.session.post(url, files=files, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+        data = yield from response.json()
+        msg = 'POST {0.url} returned {0.status} with {1} response'
+        log.debug(msg.format(response, data))
+        channel = self.get_channel(data.get('channel_id'))
+        message = Message(channel=channel, **data)
+        return message
+
+    @asyncio.coroutine
+    def delete_message(self, message):
+        """|coro|
+
+        Deletes a :class:`Message`.
+
+        Your own messages could be deleted without any proper permissions. However to
+        delete other people's messages, you need the proper permissions to do so.
+
+        Parameters
+        -----------
+        message : :class:`Message`
+            The message to delete.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to delete the message.
+        HTTPException
+            Deleting the message failed.
+        """
+
+        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def edit_message(self, message, new_content, mentions=True):
+        """|coro|
+
+        Edits a :class:`Message` with the new message content.
+
+        The new_content must be able to be transformed into a string via ``str(new_content)``.
+
+        Parameters
+        -----------
+        message : :class:`Message`
+            The message to edit.
+        new_content
+            The new content to replace the message with.
+        mentions
+            The mentions for the user. Same as :meth:`send_message`.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The new edited message.
+        """
+
+        channel = message.channel
+        content = str(new_content)
+
+        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, channel.id, message.id)
+        payload = {
+            'content': content,
+            'mentions': self._resolve_mentions(content, mentions)
+        }
+
+        response = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=response))
+        yield from utils._verify_successful_response(response)
+        data = yield from response.json()
+        log.debug(request_success_log.format(response=response, json=payload, data=data))
+        return Message(channel=channel, **data)
+
+    @asyncio.coroutine
+    def logout(self):
+        """|coro|
+
+        Logs out of Discord and closes all connections."""
+        response = yield from self.session.post(endpoints.LOGOUT, headers=self.headers)
+        yield from self.close()
+        self._is_logged_in = False
+        log.debug(request_logging_format.format(method='POST', response=response))
+
+    @asyncio.coroutine
+    def logs_from(self, channel, limit=100, *, before=None, after=None):
+        """|coro|
+
+        This coroutine returns a generator that obtains logs from a specified channel.
+
+        Parameters
+        -----------
+        channel : :class:`Channel`
+            The channel to obtain the logs from.
+        limit : int
+            The number of messages to retrieve.
+        before : :class:`Message`
+            The message before which all returned messages must be.
+        after : :class:`Message`
+            The message after which all returned messages must be.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to get channel logs.
+        NotFound
+            The channel you are requesting for doesn't exist.
+        HTTPException
+            The request to get logs failed.
+
+        Yields
+        -------
+        :class:`Message`
+            The message with the message data parsed.
+
+        Examples
+        ---------
+
+        Basic logging: ::
+
+            logs = yield from client.logs_from(channel)
+            for message in logs:
+                if message.content.startswith('!hello'):
+                    if message.author == client.user:
+                        yield from client.edit_message(message, 'goodbye')
+        """
+
+        def generator_wrapper(data):
+            for message in data:
+                yield Message(channel=channel, **message)
+
+        url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
+        params = {
+            'limit': limit
+        }
+
+        if before:
+            params['before'] = before.id
+        if after:
+            params['after'] = after.id
+
+        response = yield from self.session.get(url, params=params, headers=self.headers)
+        log.debug(request_logging_format.format(method='GET', response=response))
+        yield from utils._verify_successful_response(response)
+        messages = yield from response.json()
+        return generator_wrapper(messages)
