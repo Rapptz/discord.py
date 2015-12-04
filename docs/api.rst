@@ -17,7 +17,7 @@ The following section outlines the API of discord.py.
 Client
 -------
 
-.. autoclass:: discord.async_client.Client
+.. autoclass:: Client
     :members:
 
 .. _discord-api-events:

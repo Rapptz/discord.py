@@ -24,443 +24,87 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from __future__ import print_function
-
 from . import endpoints
-from .errors import *
 from .user import User
 from .channel import Channel, PrivateChannel
 from .server import Server
-from .member import Member
-from .role import Role, Permissions
 from .message import Message
-from . import utils
 from .invite import Invite
 from .object import Object
+from .errors import *
+from .state import ConnectionState
+from . import utils
 
-import traceback
-import requests
-import json, re, time, copy
-from collections import deque
-import threading
-from ws4py.client import WebSocketBaseClient
-import sys
-import logging
-import itertools
-import datetime
-from base64 import b64encode
+import asyncio
+import aiohttp
+import websockets
+
+import logging, traceback
+import sys, time, re, json
 
 log = logging.getLogger(__name__)
-request_logging_format = '{response.request.method} {response.url} has returned {response.status_code}'
+request_logging_format = '{method} {response.url} has returned {response.status}'
 request_success_log = '{response.url} with {json} received {data}'
 
-class KeepAliveHandler(threading.Thread):
-    def __init__(self, seconds, socket, **kwargs):
-        threading.Thread.__init__(self, **kwargs)
-        self.seconds = seconds
-        self.socket = socket
-        self.stop = threading.Event()
+def to_json(obj):
+    return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
-    def run(self):
-        while not self.stop.wait(self.seconds):
-            payload = {
-                'op': 1,
-                'd': int(time.time())
-            }
-
-            msg = 'Keeping websocket alive with timestamp {0}'
-            log.debug(msg.format(payload['d']))
-            self.socket.send(json.dumps(payload, separators=(',', ':')))
-
-class WebSocket(WebSocketBaseClient):
-    def __init__(self, dispatch, url):
-        WebSocketBaseClient.__init__(self, url,
-                                     protocols=['http-only', 'chat'])
-        self.dispatch = dispatch
-        self.keep_alive = None
-
-    def opened(self):
-        log.info('Opened at {}'.format(int(time.time())))
-        self.dispatch('socket_opened')
-
-    def closed(self, code, reason=None):
-        if self.keep_alive is not None:
-            self.keep_alive.stop.set()
-        log.info('Closed with {} ("{}") at {}'.format(code, reason,
-                                                      int(time.time())))
-        self.dispatch('socket_closed')
-
-    def handshake_ok(self):
-        pass
-
-    def send(self, payload, binary=False):
-        self.dispatch('socket_raw_send', payload, binary)
-        WebSocketBaseClient.send(self, payload, binary)
-
-    def received_message(self, msg):
-        self.dispatch('socket_raw_receive', msg)
-        response = json.loads(str(msg))
-        log.debug('WebSocket Event: {}'.format(response))
-        self.dispatch('socket_response', response)
-
-        op = response.get('op')
-        data = response.get('d')
-
-        if op != 0:
-            log.info("Unhandled op {}".format(op))
-            return # What about op 7?
-
-        event = response.get('t')
-
-        if event == 'READY':
-            interval = data['heartbeat_interval'] / 1000.0
-            self.keep_alive = KeepAliveHandler(interval, self)
-            self.keep_alive.start()
-
-
-        if event in ('READY', 'MESSAGE_CREATE', 'MESSAGE_DELETE',
-                     'MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'USER_UPDATE',
-                     'CHANNEL_DELETE', 'CHANNEL_UPDATE', 'CHANNEL_CREATE',
-                     'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
-                     'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
-                     'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 'TYPING_START',
-                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
-            self.dispatch('socket_update', event, data)
-
-        else:
-            log.info("Unhandled event {}".format(event))
-
-
-class ConnectionState(object):
-    def __init__(self, dispatch, **kwargs):
-        self.dispatch = dispatch
-        self.user = None
-        self.email = None
-        self.servers = []
-        self.private_channels = []
-        self.messages = deque([], maxlen=kwargs.get('max_length', 5000))
-
-    def _get_message(self, msg_id):
-        return utils.find(lambda m: m.id == msg_id, self.messages)
-
-    def _get_server(self, guild_id):
-        return utils.find(lambda g: g.id == guild_id, self.servers)
-
-    def _add_server(self, guild):
-        server = Server(**guild)
-        self.servers.append(server)
-
-    def handle_ready(self, data):
-        self.user = User(**data['user'])
-        guilds = data.get('guilds')
-
-        for guild in guilds:
-            if guild.get('unavailable', False):
-                continue
-            self._add_server(guild)
-
-        for pm in data.get('private_channels'):
-            self.private_channels.append(PrivateChannel(id=pm['id'],
-                                         user=User(**pm['recipient'])))
-
-        # we're all ready
-        self.dispatch('ready')
-
-    def handle_message_create(self, data):
-        channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
-        self.dispatch('message', message)
-        self.messages.append(message)
-
-    def handle_message_delete(self, data):
-        channel = self.get_channel(data.get('channel_id'))
-        message_id = data.get('id')
-        found = self._get_message(message_id)
-        if found is not None:
-            self.dispatch('message_delete', found)
-            self.messages.remove(found)
-
-    def handle_message_update(self, data):
-        older_message = self._get_message(data.get('id'))
-        if older_message is not None:
-            # create a copy of the new message
-            message = copy.copy(older_message)
-            # update the new update
-            for attr in data:
-                if attr == 'channel_id' or attr == 'author':
-                    continue
-                value = data[attr]
-                if 'time' in attr:
-                    setattr(message, attr, utils.parse_time(value))
-                else:
-                    setattr(message, attr, value)
-            self.dispatch('message_edit', older_message, message)
-            # update the older message
-            older_message = message
-
-    def handle_presence_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            status = data.get('status')
-            user = data['user']
-            member_id = user['id']
-            member = utils.find(lambda m: m.id == member_id, server.members)
-            if member is not None:
-                old_member = copy.copy(member)
-                member.status = data.get('status')
-                member.game_id = data.get('game_id')
-                member.name = user.get('username', member.name)
-                member.avatar = user.get('avatar', member.avatar)
-
-                # call the event now
-                self.dispatch('status', member, old_member.game_id, old_member.status)
-                self.dispatch('member_update', old_member, member)
-
-    def handle_user_update(self, data):
-        self.user = User(**data)
-
-    def handle_channel_delete(self, data):
-        server =  self._get_server(data.get('guild_id'))
-        if server is not None:
-            channel_id = data.get('id')
-            channel = utils.find(lambda c: c.id == channel_id, server.channels)
-            try:
-                server.channels.remove(channel)
-            except ValueError:
-                return
-            else:
-                self.dispatch('channel_delete', channel)
-
-    def handle_channel_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            channel_id = data.get('id')
-            channel = utils.find(lambda c: c.id == channel_id, server.channels)
-            channel.update(server=server, **data)
-            self.dispatch('channel_update', channel)
-
-    def handle_channel_create(self, data):
-        is_private = data.get('is_private', False)
-        channel = None
-        if is_private:
-            recipient = User(**data.get('recipient'))
-            pm_id = data.get('id')
-            channel = PrivateChannel(id=pm_id, user=recipient)
-            self.private_channels.append(channel)
-        else:
-            server = self._get_server(data.get('guild_id'))
-            if server is not None:
-                channel = Channel(server=server, **data)
-                server.channels.append(channel)
-
-        self.dispatch('channel_create', channel)
-
-    def handle_guild_member_add(self, data):
-        server = self._get_server(data.get('guild_id'))
-        member = Member(server=server, deaf=False, mute=False, **data)
-        server.members.append(member)
-        self.dispatch('member_join', member)
-
-    def handle_guild_member_remove(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            user_id = data['user']['id']
-            member = utils.find(lambda m: m.id == user_id, server.members)
-            try:
-                server.members.remove(member)
-            except ValueError:
-                return
-            else:
-                self.dispatch('member_remove', member)
-
-    def handle_guild_member_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        user_id = data['user']['id']
-        member = utils.find(lambda m: m.id == user_id, server.members)
-        if member is not None:
-            user = data['user']
-            old_member = copy.copy(member)
-            member.name = user['username']
-            member.discriminator = user['discriminator']
-            member.avatar = user['avatar']
-            member.roles = []
-            # update the roles
-            for role in server.roles:
-                if role.id in data['roles']:
-                    member.roles.append(role)
-
-            self.dispatch('member_update', old_member, member)
-
-    def handle_guild_create(self, data):
-        unavailable = data.get('unavailable')
-        if unavailable == False:
-            # GUILD_CREATE with unavailable in the response
-            # usually means that the server has become available
-            # and is therefore in the cache
-            server = self._get_server(data.get('id'))
-            if server is not None:
-                server.unavailable = False
-                self.dispatch('server_available', server)
-                return
-
-        if unavailable == True:
-            # joined a server with unavailable == True so..
-            return
-
-            # if we're at this point then it was probably
-            # unavailable during the READY event and is now
-            # available, so it isn't in the cache...
-
-        self._add_server(data)
-        self.dispatch('server_join', self.servers[-1])
-
-    def handle_guild_delete(self, data):
-        server = self._get_server(data.get('id'))
-        if data.get('unavailable', False) and server is not None:
-            # GUILD_DELETE with unavailable being True means that the
-            # server that was available is now currently unavailable
-            server.unavailable = True
-            self.dispatch('server_unavailable', server)
-            return
-
-        try:
-            self.servers.remove(server)
-        except ValueError:
-            return
-        else:
-            self.dispatch('server_remove', server)
-
-    def handle_guild_role_create(self, data):
-        server = self._get_server(data.get('guild_id'))
-        role_data = data.get('role', {})
-        everyone = server.id == role_data.get('id')
-        role = Role(everyone=everyone, **role_data)
-        server.roles.append(role)
-        self.dispatch('server_role_create', server, role)
-
-    def handle_guild_role_delete(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            role_id = data.get('role_id')
-            role = utils.find(lambda r: r.id == role_id, server.roles)
-            server.roles.remove(role)
-            self.dispatch('server_role_delete', server, role)
-
-    def handle_guild_role_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            role_id = data['role']['id']
-            role = utils.find(lambda r: r.id == role_id, server.roles)
-            role.update(**data['role'])
-            self.dispatch('server_role_update', role)
-
-    def handle_voice_state_update(self, data):
-        server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            updated_member = server._update_voice_state(data)
-            self.dispatch('voice_state_update', updated_member)
-
-    def handle_typing_start(self, data):
-        channel = self.get_channel(data.get('channel_id'))
-        if channel is not None:
-            member = None
-            user_id = data.get('user_id')
-            is_private = getattr(channel, 'is_private', None)
-            if is_private == None:
-                return
-
-            if is_private:
-                member = channel.user
-            else:
-                members = channel.server.members
-                member = utils.find(lambda m: m.id == user_id, members)
-
-            if member is not None:
-                timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
-                self.dispatch('typing', channel, member, timestamp)
-
-    def get_channel(self, id):
-        if id is None:
-            return None
-
-        for server in self.servers:
-            for channel in server.channels:
-                if channel.id == id:
-                    return channel
-
-        for pm in self.private_channels:
-            if pm.id == id:
-                return pm
-
-
-class Client(object):
+class Client:
     """Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
-    A number of options can be passed to the :class:`Client` via keyword arguments.
-
-    :param int max_length: The maximum number of messages to store in :attr:`messages`. Defaults to 5000.
-
-    Instance attributes:
-
-     .. attribute:: user
-
-         A :class:`User` that represents the connected client. None if not logged in.
-     .. attribute:: servers
-
-         A list of :class:`Server` that the connected client has available.
-     .. attribute:: private_channels
-
-         A list of :class:`PrivateChannel` that the connected client is participating on.
-     .. attribute:: messages
-
-        A deque_ of :class:`Message` that the client has received from all servers and private messages.
-     .. attribute:: email
-
-        The email used to login. This is only set if login is successful, otherwise it's None.
+    A number of options can be passed to the :class:`Client`.
 
     .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
+    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
+
+    Parameters
+    ----------
+    max_messages : Optional[int]
+        The maximum number of messages to store in :attr:`messages`.
+        This defaults to 5000. Passing in `None` or a value less than 100
+        will use the default instead of the passed in value.
+    loop : Optional[event loop].
+        The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
+        in which case the default event loop is used via ``asyncio.get_event_loop()``.
+
+    Attributes
+    -----------
+    user : Optional[:class:`User`]
+        Represents the connected client. None if not logged in.
+    servers : list of :class:`Server`
+        The servers that the connected client is a member of.
+    private_channels : list of :class:`PrivateChannel`
+        The private channels that the connected client is participating on.
+    messages
+        A deque_ of :class:`Message` that the client has received from all
+        servers and private messages. The number of messages stored in this
+        deque is controlled by the ``max_messages`` parameter.
+    email
+        The email used to login. This is only set if login is successful,
+        otherwise it's None.
+    gateway
+        The websocket gateway the client is currently connected to. Could be None.
+    loop
+        The `event loop`_ that the client uses for HTTP requests and websocket operations.
+
     """
+    def __init__(self, *, loop=None, **options):
+        self.ws = None
+        self.token = None
+        self.gateway = None
+        self.loop = asyncio.get_event_loop() if loop is None else loop
 
-    def __init__(self, **kwargs):
-        self._is_logged_in = False
-        self._close = False
-        self.options = kwargs
-        self.connection = ConnectionState(self.dispatch, **kwargs)
-        self.dispatch_lock = threading.RLock()
-        self.token = ''
+        max_messages = options.get('max_messages')
+        if max_messages is None or max_messages < 100:
+            max_messages = 5000
 
-        # the actual headers for the request...
-        # we only override 'authorization' since the rest could use the defaults.
+        self.connection = ConnectionState(self.dispatch, max_messages)
+        self.session = aiohttp.ClientSession(loop=self.loop)
         self.headers = {
-            'authorization': self.token,
+            'content-type': 'application/json',
         }
-
-    def _create_websocket(self, url, reconnect=False):
-        if url is None:
-            raise GatewayNotFound()
-        log.info('websocket gateway found')
-        self.ws = WebSocket(self.dispatch, url)
-        self.ws.connect()
-        log.info('websocket has connected')
-
-        if reconnect == False:
-            second_payload = {
-                'op': 2,
-                'd': {
-                    'token': self.token,
-                    'properties': {
-                        '$os': sys.platform,
-                        '$browser': 'discord.py',
-                        '$device': 'discord.py',
-                        '$referrer': '',
-                        '$referring_domain': ''
-                    },
-                    'v': 3
-                }
-            }
-
-            self.ws.send(json.dumps(second_payload, separators=(',', ':')))
+        self._closed = False
 
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
@@ -497,10 +141,6 @@ class Client(object):
         else:
             raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
 
-    def on_error(self, event_method, *args, **kwargs):
-        print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
-        traceback.print_exc()
-
     # Compatibility shim
     def __getattr__(self, name):
         if name in ('user', 'email', 'servers', 'private_channels', 'messages'):
@@ -517,345 +157,48 @@ class Client(object):
         else:
             object.__setattr__(self, name, value)
 
-    def dispatch(self, event, *args, **kwargs):
-        with self.dispatch_lock:
-            log.debug("Dispatching event {}".format(event))
-            handle_method = '_'.join(('handle', event))
-            event_method = '_'.join(('on', event))
-            getattr(self, handle_method, utils._null_event)(*args, **kwargs)
-            try:
-                getattr(self, event_method, utils._null_event)(*args, **kwargs)
-            except Exception as e:
-                getattr(self, 'on_error')(event_method, *args, **kwargs)
-
-    def handle_socket_update(self, event, data):
-        method = '_'.join(('handle', event.lower()))
-        getattr(self.connection, method)(data)
-
-    def run(self):
-        """Runs the client and allows it to receive messages and events.
-
-        This function can raise a :exc:`GatewayNotFound` exception while attempting
-        to reconnect.
-
-        .. note::
-
-            This function attempts to reconnect if the websocket got closed
-            without explicitly calling :meth:`logout`. When this reconnect is
-            triggered, the :func:`discord.on_ready` event is called again.
-        """
-        log.info('Client is being run')
-        self.ws.run()
-
-        # The WebSocket is guaranteed to be terminated after ws.run().
-        # Check if we wanted it to close and reconnect if not.
-        while not self._close:
-            gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-            if gateway.status_code != 200:
-                raise GatewayNotFound()
-            self.connection = ConnectionState(self.dispatch, **self.options)
-            self._create_websocket(gateway.json().get('url'), reconnect=False)
-            self.ws.run()
-
-        log.info('Client exiting')
-
     @property
     def is_logged_in(self):
-        """Returns True if the client is successfully logged in. False otherwise."""
+        """bool: Indicates if the client has logged in successfully."""
         return self._is_logged_in
 
+    @property
+    def is_closed(self):
+        """bool: Indicates if the websocket connection is closed."""
+        return self._closed
+
+    @asyncio.coroutine
+    def _get_gateway(self):
+        resp = yield from self.session.get(endpoints.GATEWAY, headers=self.headers)
+        if resp.status != 200:
+            raise GatewayNotFound()
+        data = yield from resp.json()
+        return data.get('url')
+
+    @asyncio.coroutine
+    def _run_event(self, event, *args, **kwargs):
+        try:
+            yield from getattr(self, event)(*args, **kwargs)
+        except Exception as e:
+            yield from self.on_error(event, *args, **kwargs)
+
+    def dispatch(self, event, *args, **kwargs):
+        log.debug('Dispatching event {}'.format(event))
+        method = 'on_' + event
+        handler = 'handle_' + event
+
+        if hasattr(self, handler):
+            getattr(self, handler)(*args, **kwargs)
+
+        if hasattr(self, method):
+            utils.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
+
     def get_channel(self, id):
-        """Returns a :class:`Channel` or :class:`PrivateChannel` with the
-        following ID. If not found, returns None.
-        """
+        """Returns a :class:`Channel` or :class:`PrivateChannel` with the following ID. If not found, returns None."""
         return self.connection.get_channel(id)
 
-    def start_private_message(self, user):
-        """Starts a private message with the user. This allows you to :meth:`send_message` to it.
-
-        Note that this method should rarely be called as :meth:`send_message` does it automatically.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param user: A :class:`User` to start the private message with.
-        """
-        if not isinstance(user, User):
-            raise TypeError('user argument must be a User')
-
-        payload = {
-            'recipient_id': user.id
-        }
-
-        r = requests.post('{}/{}/channels'.format(endpoints.USERS, self.user.id), json=payload, headers=self.headers)
-        log.debug(request_logging_format.format(response=r))
-        utils._verify_successful_response(r)
-        data = r.json()
-        log.debug(request_success_log.format(response=r, json=payload, data=data))
-        self.private_channels.append(PrivateChannel(id=data['id'], user=user))
-
-    def send_message(self, destination, content, mentions=True, tts=False):
-        """Sends a message to the destination given with the content given.
-
-        The destination could be a :class:`Channel`, :class:`PrivateChannel` or :class:`Server`.
-        For convenience it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel`
-        then it sends the message via private message, otherwise it sends the message to the channel.
-        If the destination is a :class:`Server` then it's equivalent to calling
-        :meth:`Server.get_default_channel` and sending it there. If it is a :class:`Object`
-        instance then it is assumed to be the destination ID.
-
-        .. versionchanged:: 0.9.0
-            ``str`` being allowed was removed and replaced with :class:`Object`.
-
-        The content must be a type that can convert to a string through ``str(content)``.
-
-        The mentions must be either an array of :class:`User` to mention or a boolean. If
-        ``mentions`` is ``True`` then all the users mentioned in the content are mentioned, otherwise
-        no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
-
-        If the destination parameter is invalid, then this function raises :exc:`InvalidArgument`.
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param destination: The location to send the message.
-        :param content: The content of the message to send.
-        :param mentions: A list of :class:`User` to mention in the message or a boolean. Ignored for private messages.
-        :param tts: If ``True``, sends tries to send the message using text-to-speech.
-        :return: The :class:`Message` sent.
-        """
-
-        channel_id = self._resolve_destination(destination)
-
-        content = str(content)
-        mentions = self._resolve_mentions(content, mentions)
-
-        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
-        payload = {
-            'content': content,
-            'mentions': mentions
-        }
-
-        if tts:
-            payload['tts'] = True
-
-        response = requests.post(url, json=payload, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-        data = response.json()
-        log.debug(request_success_log.format(response=response, json=payload, data=data))
-        channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
-        return message
-
-    def send_typing(self, destination):
-        """Send a "typing" status to the destination.
-
-        "Typing" status will go away after 10 seconds, or after a message is sent.
-
-        The destination parameter follows the same rules as :meth:`send_message`.
-
-        :param destination: The location to send the typing update.
-        """
-
-        channel_id = self._resolve_destination(destination)
-
-        url = '{base}/{id}/typing'.format(base=endpoints.CHANNELS, id=channel_id)
-
-        response = requests.post(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def send_file(self, destination, fp, filename=None):
-        """Sends a message to the destination given with the file given.
-
-        The destination parameter follows the same rules as :meth:`send_message`.
-
-        The ``fp`` parameter should be either a string denoting the location for a
-        file or a *file-like object*. The *file-like object* passed is **not closed**
-        at the end of execution. You are responsible for closing it yourself.
-
-        .. note::
-
-            If the file-like object passed is opened via ``open`` then the modes
-            'rb' should be used.
-
-        The ``filename`` parameter is the filename of the file.
-        If this is not given then it defaults to ``fp.name`` or if ``fp`` is a string
-        then the ``filename`` will default to the string given. You can overwrite
-        this value by passing this in.
-
-        Note that this requires proper permissions in order to work.
-        This function raises :exc:`HTTPException` if the request failed.
-        It also raises :exc:`InvalidArgument` if ``fp.name`` is an invalid
-        default for ``filename``.
-
-        :param destination: The location to send the message.
-        :param fp: The *file-like object* or file path to send.
-        :param filename: The filename of the file. Defaults to ``fp.name`` if it's available.
-        :return: The :class:`Message` sent.
-        """
-
-        channel_id = self._resolve_destination(destination)
-
-        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
-        response = None
-
-        try:
-            # attempt to open the file and send the request
-            with open(fp, 'rb') as f:
-                files = {
-                    'file': (fp if filename is None else filename, f)
-                }
-                response = requests.post(url, files=files, headers=self.headers)
-        except TypeError:
-            # if we got a TypeError then this is probably a file-like object
-            fname = getattr(fp, 'name', None) if filename is None else filename
-            if fname is None:
-                raise InvalidArgument('file-like object has no name attribute and no filename was specified')
-
-            files = {
-                'file': (fname, fp)
-            }
-            response = requests.post(url, files=files, headers=self.headers)
-
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-        data = response.json()
-        log.debug(request_success_log.format(response=response, json=response.text, data=filename))
-        channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
-        return message
-
-    def delete_message(self, message):
-        """Deletes a :class:`Message`.
-
-        Your own messages could be deleted without any proper permissions. However to
-        delete other people's messages, you need the proper permissions to do so.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param message: The :class:`Message` to delete.
-        """
-
-        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def edit_message(self, message, new_content, mentions=True):
-        """Edits a :class:`Message` with the new message content.
-
-        The new_content must be able to be transformed into a string via ``str(new_content)``.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param message: The :class:`Message` to edit.
-        :param new_content: The new content to replace the message with.
-        :param mentions: The mentions for the user. Same as :meth:`send_message`.
-        :return: The new edited message.
-        """
-
-        channel = message.channel
-        content = str(new_content)
-
-        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, channel.id, message.id)
-        payload = {
-            'content': content,
-            'mentions': self._resolve_mentions(content, mentions)
-        }
-
-        response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-        data = response.json()
-        log.debug(request_success_log.format(response=response, json=payload, data=data))
-        return Message(channel=channel, **data)
-
-    def login(self, email, password):
-        """Logs in the user with the following credentials and initialises
-        the connection to Discord.
-
-        After this function is called, :attr:`is_logged_in` returns True if no
-        errors occur. If an error occurs during the login process, then
-        :exc:`LoginFailure` or :exc:`HTTPException` is raised.
-
-        This function raises :exc:`GatewayNotFound` if it was unavailable to connect
-        to a websocket gateway.
-
-        :param str email: The email used to login.
-        :param str password: The password used to login.
-        """
-
-        payload = {
-            'email': email,
-            'password': password
-        }
-
-        r = requests.post(endpoints.LOGIN, json=payload)
-        log.debug(request_logging_format.format(response=r))
-        if r.status_code == 400:
-            raise LoginFailure('Improper credentials have been passed.')
-        elif r.status_code != 200:
-            raise HTTPException(r)
-
-        log.info('logging in returned status code {}'.format(r.status_code))
-        self.email = email
-
-        body = r.json()
-        self.token = body['token']
-        self.headers['authorization'] = self.token
-
-        gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-        self._create_websocket(gateway.json().get('url'), reconnect=False)
-        self._is_logged_in = True
-
-    def register(self, username, invite, fingerprint=None):
-        """Register a new unclaimed account using an invite to a server.
-
-        After this function is called, the client will be logged in to the
-        user created and :attr:`is_logged_in` returns True if no errors
-        occur.
-
-        This function raises :exc:`GatewayNotFound` if the gateway to
-        connect the websocket is not found. It also raises :exc:`HTTPException`
-        if the request failed.
-
-        :param str username: The username to register as.
-        :param invite: An invite URL, ID, or :class:`Invite` to register with.
-        :param str fingerprint: Unknown API parameter, defaults to None
-        """
-
-        payload = {
-            'fingerprint': fingerprint,
-            'username': username,
-            'invite': self._resolve_invite(invite)
-        }
-
-        r = requests.post(endpoints.REGISTER, json=payload)
-        log.debug(request_logging_format.format(response=r))
-
-        utils._verify_successful_response(r)
-        log.info('register returned a successful status code')
-        self.email = ''
-
-        body = r.json()
-        self.token = body['token']
-        self.headers['authorization'] = self.token
-
-        gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-        if gateway.status_code != 200:
-            raise GatewayNotFound()
-        self._create_websocket(gateway.json().get('url'), reconnect=False)
-        self._is_logged_in = True
-
-    def logout(self):
-        """Logs out of Discord and closes all connections."""
-        response = requests.post(endpoints.LOGOUT)
-        self._close = True
-        self.ws.close()
-        self._is_logged_in = False
-        log.debug(request_logging_format.format(response=response))
-
     def get_all_channels(self):
-        """Returns a generator with every :class:`Channel` the client can 'access'.
+        """A generator that retrieves every :class:`Channel` the client can 'access'.
 
         This is equivalent to: ::
 
@@ -863,7 +206,9 @@ class Client(object):
                 for channel in server.channels:
                     yield channel
 
-        Note that just because you receive a :class:`Channel` does not mean that
+        Note
+        -----
+        Just because you receive a :class:`Channel` does not mean that
         you can communicate in said channel. :meth:`Channel.permissions_for` should
         be used for that.
         """
@@ -886,589 +231,561 @@ class Client(object):
             for member in server.members:
                 yield member
 
-    def logs_from(self, channel, limit=100, before=None, after=None):
-        """A generator that obtains logs from a specified channel.
+    @asyncio.coroutine
+    def close(self):
+        """Closes the websocket connection.
 
-        Yielding from the generator returns a :class:`Message` object with the message data.
+        To reconnect the websocket connection, :meth:`connect` must be used.
+        """
+        if self._closed:
+            return
 
-        Will return the newest messages within the specified range, up to `limit` messages.
+        yield from self.ws.close()
+        self.keep_alive.cancel()
+        self._closed = True
 
-        This function raises :exc:`HTTPException` if the request failed.
+    @asyncio.coroutine
+    def login(self, email, password):
+        """|coro|
 
-        Example: ::
+        Logs in the client with the specified credentials.
 
-            for message in client.logs_from(channel):
+        Parameters
+        ----------
+        email : str
+            The email used to login.
+        password : str
+            The password used to login.
+
+        Raises
+        ------
+        LoginFailure
+            The wrong credentials are passed.
+        HTTPException
+            An unknown HTTP related error occurred,
+            usually when it isn't 200 or the known incorrect credentials
+            passing status code.
+        """
+        payload = {
+            'email': email,
+            'password': password
+        }
+
+        data = to_json(payload)
+        resp = yield from self.session.post(endpoints.LOGIN, data=data, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=resp))
+        if resp.status == 400:
+            raise LoginFailure('Improper credentials have been passed.')
+        elif resp.status != 200:
+            data = yield from resp.json()
+            raise HTTPException(resp, data.get('message'))
+
+        log.info('logging in returned status code {}'.format(resp.status))
+        self.email = email
+
+        body = yield from resp.json()
+        self.token = body['token']
+        self.headers['authorization'] = self.token
+        self._is_logged_in = True
+
+    @asyncio.coroutine
+    def keep_alive_handler(self, interval):
+        while not self._closed:
+            payload = {
+                'op': 1,
+                'd': int(time.time())
+            }
+
+            msg = 'Keeping websocket alive with timestamp {}'
+            log.debug(msg.format(payload['d']))
+            yield from self.ws.send(to_json(payload))
+            yield from asyncio.sleep(interval)
+
+    @asyncio.coroutine
+    def on_error(self, event_method, *args, **kwargs):
+        """|coro|
+
+        The default error handler provided by the client.
+
+        By default this prints to ``sys.stderr`` however it could be
+        overridden to have a different implementation.
+        Check :func:`discord.on_error` for more details.
+        """
+        print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
+        traceback.print_exc()
+
+    def received_message(self, msg):
+        log.debug('WebSocket Event: {}'.format(msg))
+        self.dispatch('socket_response', msg)
+
+        op = msg.get('op')
+        data = msg.get('d')
+
+        if op != 0:
+            log.info('Unhandled op {}'.format(op))
+            return
+
+        event = msg.get('t')
+
+        if event == 'READY':
+            interval = data['heartbeat_interval'] / 1000.0
+            self.keep_alive = utils.create_task(self.keep_alive_handler(interval), loop=self.loop)
+
+        if event in ('READY', 'MESSAGE_CREATE', 'MESSAGE_DELETE',
+                     'MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'USER_UPDATE',
+                     'CHANNEL_DELETE', 'CHANNEL_UPDATE', 'CHANNEL_CREATE',
+                     'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
+                     'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
+                     'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 'TYPING_START',
+                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
+            parser = 'parse_' + event.lower()
+            if hasattr(self.connection, parser):
+                getattr(self.connection, parser)(data)
+        else:
+            log.info("Unhandled event {}".format(event))
+
+    @asyncio.coroutine
+    def _make_websocket(self):
+        if not self.is_logged_in:
+            raise ClientException('You must be logged in to connect')
+
+        self.gateway = yield from self._get_gateway()
+        self.ws = yield from websockets.connect(self.gateway)
+        self.ws.max_size = None
+        log.info('Created websocket connected to {0.gateway}'.format(self))
+        payload = {
+            'op': 2,
+            'd': {
+                'token': self.token,
+                'properties': {
+                    '$os': sys.platform,
+                    '$browser': 'discord.py',
+                    '$device': 'discord.py',
+                    '$referrer': '',
+                    '$referring_domain': ''
+                },
+                'v': 3
+            }
+        }
+
+        yield from self.ws.send(to_json(payload))
+        log.info('sent the initial payload to create the websocket')
+
+    @asyncio.coroutine
+    def connect(self):
+        """|coro|
+
+        Creates a websocket connection and connects to the websocket listen
+        to messages from discord.
+
+        This function is implemented using a while loop in the background.
+        If you need to run this event listening in another thread then
+        you should run it in an executor or schedule the coroutine to
+        be executed later using ``loop.create_task``.
+
+        This function throws :exc:`ClientException` if called before
+        logging in via :meth:`login`.
+        """
+        yield from self._make_websocket()
+
+        while not self._closed:
+            msg = yield from self.ws.recv()
+            if msg is None:
+                yield from self.close()
+                break
+
+            self.received_message(json.loads(msg))
+
+    def event(self, coro):
+        """A decorator that registers an event to listen to.
+
+        You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
+
+        The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
+
+        Examples
+        ---------
+
+        Using the basic :meth:`event` decorator: ::
+
+            @client.event
+            @asyncio.coroutine
+            def on_ready():
+                print('Ready!')
+
+        Saving characters by using the :meth:`async_event` decorator: ::
+
+            @client.async_event
+            def on_ready():
+                print('Ready!')
+
+        """
+
+        if not asyncio.iscoroutinefunction(coro):
+            raise ClientException('event registered must be a coroutine function')
+
+        setattr(self, coro.__name__, coro)
+        log.info('{0.__name__} has successfully been registered as an event'.format(coro))
+        return coro
+
+    def async_event(self, coro):
+        """A shorthand decorator for ``asyncio.coroutine`` + :meth:`event`."""
+        if not asyncio.iscoroutinefunction(coro):
+            coro = asyncio.coroutine(coro)
+
+        return self.event(coro)
+
+    @asyncio.coroutine
+    def start_private_message(self, user):
+        """|coro|
+
+        Starts a private message with the user. This allows you to
+        :meth:`send_message` to the user.
+
+        Note
+        -----
+        This method should rarely be called as :meth:`send_message`
+        does it automatically for you.
+
+        Parameters
+        -----------
+        user : :class:`User`
+            The user to start the private message with.
+
+        Raises
+        ------
+        HTTPException
+            The request failed.
+        InvalidArgument
+            The user argument was not of :class:`User`.
+        """
+
+        if not isinstance(user, User):
+            raise InvalidArgument('user argument must be a User')
+
+        payload = {
+            'recipient_id': user.id
+        }
+
+        url = '{}/{}/channels'.format(endpoints.USERS, self.user.id)
+        r = yield from self.session.post(url, data=to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=r))
+        yield from utils._verify_successful_response(r)
+        data = yield from r.json()
+        log.debug(request_success_log.format(response=r, json=payload, data=data))
+        self.private_channels.append(PrivateChannel(id=data['id'], user=user))
+
+    @asyncio.coroutine
+    def send_message(self, destination, content, *, mentions=True, tts=False):
+        """|coro|
+
+        Sends a message to the destination given with the content given.
+
+        The destination could be a :class:`Channel`, :class:`PrivateChannel` or :class:`Server`.
+        For convenience it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel`
+        then it sends the message via private message, otherwise it sends the message to the channel.
+        If the destination is a :class:`Server` then it's equivalent to calling
+        :meth:`Server.get_default_channel` and sending it there. If it is a :class:`Object`
+        instance then it is assumed to be the destination ID.
+
+        .. versionchanged:: 0.9.0
+            ``str`` being allowed was removed and replaced with :class:`Object`.
+
+        The content must be a type that can convert to a string through ``str(content)``.
+
+        The mentions must be either an array of :class:`User` to mention or a boolean. If
+        ``mentions`` is ``True`` then all the users mentioned in the content are mentioned, otherwise
+        no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
+
+        Parameters
+        ------------
+        destination
+            The location to send the message.
+        content
+            The content of the message to send.
+        mentions
+            A list of :class:`User` to mention in the message or a boolean. Ignored for private messages.
+        tts : bool
+            Indicates if the message should be sent using text-to-speech.
+
+        Raises
+        --------
+        HTTPException
+            Sending the message failed.
+        Forbidden
+            You do not have the proper permissions to send the message.
+        NotFound
+            The destination was not found and hence is invalid.
+        InvalidArgument
+            The destination parameter is invalid.
+
+        Returns
+        ---------
+        :class:`Message`
+            The message that was sent.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        content = str(content)
+        mentions = self._resolve_mentions(content, mentions)
+
+        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+        payload = {
+            'content': content,
+            'mentions': mentions
+        }
+
+        if tts:
+            payload['tts'] = True
+
+        resp = yield from self.session.post(url, data=to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=resp))
+        yield from utils._verify_successful_response(resp)
+        data = yield from resp.json()
+        log.debug(request_success_log.format(response=resp, json=payload, data=data))
+        channel = self.get_channel(data.get('channel_id'))
+        message = Message(channel=channel, **data)
+        return message
+
+    @asyncio.coroutine
+    def send_typing(self, destination):
+        """|coro|
+
+        Send a *typing* status to the destination.
+
+        *Typing* status will go away after 10 seconds, or after a message is sent.
+
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        Parameters
+        ----------
+        destination
+            The location to send the typing update.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        url = '{base}/{id}/typing'.format(base=endpoints.CHANNELS, id=channel_id)
+
+        response = yield from self.session.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def send_file(self, destination, fp, filename=None):
+        """|coro|
+
+        Sends a message to the destination given with the file given.
+
+        The destination parameter follows the same rules as :meth:`send_message`.
+
+        The ``fp`` parameter should be either a string denoting the location for a
+        file or a *file-like object*. The *file-like object* passed is **not closed**
+        at the end of execution. You are responsible for closing it yourself.
+
+        .. note::
+
+            If the file-like object passed is opened via ``open`` then the modes
+            'rb' should be used.
+
+        The ``filename`` parameter is the filename of the file.
+        If this is not given then it defaults to ``fp.name`` or if ``fp`` is a string
+        then the ``filename`` will default to the string given. You can overwrite
+        this value by passing this in.
+
+        Parameters
+        ------------
+        destination
+            The location to send the message.
+        fp
+            The *file-like object* or file path to send.
+        filename : str
+            The filename of the file. Defaults to ``fp.name`` if it's available.
+
+        Raises
+        -------
+        InvalidArgument
+            If ``fp.name`` is an invalid default for ``filename``.
+        HTTPException
+            Sending the file failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The message sent.
+        """
+
+        channel_id = self._resolve_destination(destination)
+
+        url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+
+        try:
+            # attempt to open the file and send the request
+            with open(fp, 'rb') as f:
+                files = {
+                    'file': (fp if filename is None else filename, f)
+                }
+        except TypeError:
+            # if we got a TypeError then this is probably a file-like object
+            fname = getattr(fp, 'name', None) if filename is None else filename
+            if fname is None:
+                raise InvalidArgument('file-like object has no name attribute and no filename was specified')
+
+            files = {
+                'file': (fname, fp)
+            }
+
+        response = yield from self.session.post(url, files=files, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+        data = yield from response.json()
+        msg = 'POST {0.url} returned {0.status} with {1} response'
+        log.debug(msg.format(response, data))
+        channel = self.get_channel(data.get('channel_id'))
+        message = Message(channel=channel, **data)
+        return message
+
+    @asyncio.coroutine
+    def delete_message(self, message):
+        """|coro|
+
+        Deletes a :class:`Message`.
+
+        Your own messages could be deleted without any proper permissions. However to
+        delete other people's messages, you need the proper permissions to do so.
+
+        Parameters
+        -----------
+        message : :class:`Message`
+            The message to delete.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to delete the message.
+        HTTPException
+            Deleting the message failed.
+        """
+
+        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def edit_message(self, message, new_content, mentions=True):
+        """|coro|
+
+        Edits a :class:`Message` with the new message content.
+
+        The new_content must be able to be transformed into a string via ``str(new_content)``.
+
+        Parameters
+        -----------
+        message : :class:`Message`
+            The message to edit.
+        new_content
+            The new content to replace the message with.
+        mentions
+            The mentions for the user. Same as :meth:`send_message`.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The new edited message.
+        """
+
+        channel = message.channel
+        content = str(new_content)
+
+        url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, channel.id, message.id)
+        payload = {
+            'content': content,
+            'mentions': self._resolve_mentions(content, mentions)
+        }
+
+        response = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=response))
+        yield from utils._verify_successful_response(response)
+        data = yield from response.json()
+        log.debug(request_success_log.format(response=response, json=payload, data=data))
+        return Message(channel=channel, **data)
+
+    @asyncio.coroutine
+    def logout(self):
+        """|coro|
+
+        Logs out of Discord and closes all connections."""
+        response = yield from self.session.post(endpoints.LOGOUT, headers=self.headers)
+        yield from self.close()
+        self._is_logged_in = False
+        log.debug(request_logging_format.format(method='POST', response=response))
+
+    @asyncio.coroutine
+    def logs_from(self, channel, limit=100, *, before=None, after=None):
+        """|coro|
+
+        This coroutine returns a generator that obtains logs from a specified channel.
+
+        Parameters
+        -----------
+        channel : :class:`Channel`
+            The channel to obtain the logs from.
+        limit : int
+            The number of messages to retrieve.
+        before : :class:`Message`
+            The message before which all returned messages must be.
+        after : :class:`Message`
+            The message after which all returned messages must be.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to get channel logs.
+        NotFound
+            The channel you are requesting for doesn't exist.
+        HTTPException
+            The request to get logs failed.
+
+        Yields
+        -------
+        :class:`Message`
+            The message with the message data parsed.
+
+        Examples
+        ---------
+
+        Basic logging: ::
+
+            logs = yield from client.logs_from(channel)
+            for message in logs:
                 if message.content.startswith('!hello'):
                     if message.author == client.user:
-                        client.edit_message(message, 'goodbye')
-
-
-        :param channel: The :class:`Channel` to obtain the logs from.
-        :param limit: The number of messages to retrieve.
-        :param before: :class:`Message` before which all returned messages must be.
-        :param after: :class:`Message` after which all returned messages must be.
+                        yield from client.edit_message(message, 'goodbye')
         """
+
+        def generator_wrapper(data):
+            for message in data:
+                yield Message(channel=channel, **message)
 
         url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
         params = {
             'limit': limit
         }
+
         if before:
             params['before'] = before.id
         if after:
             params['after'] = after.id
 
-        response = requests.get(url, params=params, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-        messages = response.json()
-        for message in messages:
-            yield Message(channel=channel, **message)
-
-    def event(self, function):
-        """A decorator that registers an event to listen to.
-
-        You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
-
-        Example: ::
-
-            @client.event
-            def on_ready():
-                print('Ready!')
-        """
-
-        setattr(self, function.__name__, function)
-        log.info('{0.__name__} has successfully been registered as an event'.format(function))
-        return function
-
-    def delete_channel(self, channel):
-        """Deletes a channel.
-
-        In order to delete the channel, the client must have the proper permissions
-        in the server the channel belongs to.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param channel: The :class:`Channel` to delete.
-        """
-
-        url = '{}/{}'.format(endpoints.CHANNELS, channel.id)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def kick(self, server, user):
-        """Kicks a :class:`User` from their respective :class:`Server`.
-
-        You must have the proper permissions to kick a user in the server.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param server: The :class:`Server` to kick the member from.
-        :param user: The :class:`User` to kick.
-        """
-
-        url = '{base}/{server}/members/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def ban(self, server, user):
-        """Bans a :class:`User` from their respective :class:`Server`.
-
-        You must have the proper permissions to ban a user in the server.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param server: The :class:`Server` to ban the member from.
-        :param user: The :class:`User` to ban.
-        """
-
-        url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
-        response = requests.put(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def unban(self, server, user):
-        """Unbans a :class:`User` from their respective :class:`Server`.
-
-        You must have the proper permissions to unban a user in the server.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param server: The :class:`Server` to unban the member from.
-        :param user: The :class:`User` to unban.
-        :returns: True if unban was successful, False otherwise.
-        """
-
-        url = '{base}/{server}/bans/{user}'.format(base=endpoints.SERVERS, server=server.id, user=user.id)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def edit_profile(self, password, **fields):
-        """Edits the current profile of the client.
-
-        All fields except password are optional.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        To upload an avatar, a *bytes-like object* must be passed in that
-        represents the image being uploaded. If this is done through a file
-        then the file must be opened via ``open('some_filename', 'rb')`` and
-        the *bytes-like object* is given through the use of ``fp.read()``.
-
-        The only image formats supported for uploading is JPEG and PNG.
-
-        :param password: The current password for the client's account.
-        :param new_password: The new password you wish to change to.
-        :param email: The new email you wish to change to.
-        :param username: The new username you wish to change to.
-        :param avatar: A *bytes-like object* representing the image to upload.
-        """
-
-        avatar_bytes = fields.get('avatar')
-        avatar = self.user.avatar
-        if avatar_bytes is not None:
-            fmt = 'data:{mime};base64,{data}'
-            mime = utils._get_mime_type_for_image(avatar_bytes)
-            b64 = b64encode(avatar_bytes).decode('ascii')
-            avatar = fmt.format(mime=mime, data=b64)
-
-        payload = {
-            'password': password,
-            'new_password': fields.get('new_password'),
-            'email': fields.get('email', self.email),
-            'username': fields.get('username', self.user.name),
-            'avatar': avatar
-        }
-
-        url = '{0}/@me'.format(endpoints.USERS)
-        response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-        data = response.json()
-        log.debug(request_success_log.format(response=response, json=payload, data=data))
-        self.token = data['token']
-        self.email = data['email']
-        self.headers['authorization'] = self.token
-        self.user = User(**data)
-
-    def edit_channel(self, channel, **options):
-        """Edits a :class:`Channel`.
-
-        You must have the proper permissions to edit the channel.
-
-        References pointed to the channel will be updated with the new information.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param channel: The :class:`Channel` to update.
-        :param name: The new channel name.
-        :param position: The new channel's position in the GUI.
-        :param topic: The new channel's topic.
-        """
-
-        url = '{0}/{1.id}'.format(endpoints.CHANNELS, channel)
-        payload = {
-            'name': options.get('name', channel.name),
-            'topic': options.get('topic', channel.topic),
-            'position': options.get('position', channel.position)
-        }
-
-        response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-        data = response.json()
-        log.debug(request_success_log.format(response=response, json=payload, data=data))
-        channel.update(server=channel.server, **data)
-
-    def create_channel(self, server, name, type='text'):
-        """Creates a :class:`Channel` in the specified :class:`Server`.
-
-        Note that you need the proper permissions to create the channel.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param server: The :class:`Server` to create the channel in.
-        :param name: The channel's name.
-        :param type: The type of channel to create. 'text' or 'voice'.
-        :returns: The newly created :class:`Channel`.
-        """
-
-        payload = {
-            'name': name,
-            'type': type
-        }
-
-        url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
-        response = requests.post(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-        data = response.json()
-        log.debug(request_success_log.format(response=response, data=data, json=payload))
-        channel = Channel(server=server, **data)
-        # We don't append it to server.channels because CHANNEL_CREATE handles it for us.
-        return channel
-
-    def leave_server(self, server):
-        """Leaves a :class:`Server`.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param server: The :class:`Server` to leave.
-        """
-
-        url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def create_invite(self, destination, **options):
-        """Creates an invite for the destination which could be either a :class:`Server` or :class:`Channel`.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        The available options are:
-
-        :param destination: The :class:`Server` or :class:`Channel` to create the invite to.
-        :param max_age: How long the invite should last. If it's 0 then the invite doesn't expire. Defaults to 0.
-        :param max_uses: How many uses the invite could be used for. If it's 0 then there are unlimited uses. Defaults to 0.
-        :param temporary: A boolean to denote that the invite grants temporary membership (i.e. they get kicked after they disconnect). Defaults to False.
-        :param xkcd: A boolean to indicate if the invite URL is human readable. Defaults to False.
-        :returns: The :class:`Invite` if creation is successful.
-        """
-
-        payload = {
-            'max_age': options.get('max_age', 0),
-            'max_uses': options.get('max_uses', 0),
-            'temporary': options.get('temporary', False),
-            'xkcdpass': options.get('xkcd', False)
-        }
-
-        url = '{0}/{1.id}/invites'.format(endpoints.CHANNELS, destination)
-        response = requests.post(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-
-        utils._verify_successful_response(response)
-        data = response.json()
-        log.debug(request_success_log.format(json=payload, response=response, data=data))
-        data['server'] = self.connection._get_server(data['guild']['id'])
-        channel_id = data['channel']['id']
-        data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
-        return Invite(**data)
-
-    def get_invite(self, url):
-        """Returns a :class:`Invite` object from the discord.gg invite URL or ID.
-
-        .. note::
-
-            If the invite is for a server you have not joined, the server and channel
-            attributes of the returned invite will be :class:`Object` with the names
-            patched in.
-
-        """
-
-        destination = self._resolve_invite(url)
-        rurl = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
-        response = requests.get(rurl, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-        data = response.json()
-        server = self.connection._get_server(data['guild']['id'])
-        if server is not None:
-            ch_id = data['channel']['id']
-            channels = getattr(server, 'channels', [])
-            channel = utils.find(lambda c: c.id == ch_id, channels)
-        else:
-            server = Object(id=data['guild']['id'])
-            server.name = data['guild']['name']
-            channel = Object(id=data['channel']['id'])
-            channel.name = data['channel']['name']
-        data['server'] = server
-        data['channel'] = channel
-        return Invite(**data)
-
-    def accept_invite(self, invite):
-        """Accepts an :class:`Invite`, URL or ID to an invite.
-
-        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere".
-        An ID for the invite is just the "codehere" portion of the invite URL.
-
-        This function raises :exc:`HTTPException` if the request failed. If
-        the invite is invalid, then :exc:`InvalidArgument` is raised.
-
-        :param invite: The :class:`Invite` or URL to an invite to accept.
-        """
-
-        destination = self._resolve_invite(invite)
-
-        if destination is None:
-            raise InvalidArgument('The invite ({}) is invalid.'.format(invite))
-
-        url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
-        response = requests.post(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def edit_role(self, server, role, **fields):
-        """Edits the specified :class:`Role` for the entire :class:`Server`.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        .. versionchanged:: 0.8.0
-            Editing now uses keyword arguments instead of editing the :class:`Role` object directly.
-
-        .. note::
-
-            At the moment, the Discord API allows you to set the colour to any
-            RGB value. This will change in the future so it is recommended that
-            you use the constants in the :class:`Colour` instead such as
-            :meth:`Colour.green`.
-
-        :param server: The :class:`Server` the role belongs to.
-        :param role: The :class:`Role` to edit.
-        :param name: The new role name to change to. (optional)
-        :param permissions: The new :class:`Permissions` to change to. (optional)
-        :param colour: The new :class:`Colour` to change to. (optional) (aliased to color as well)
-        :param hoist: A boolean indicating if the role should be shown separately. (optional)
-        """
-
-        url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
-        color = fields.get('color')
-        if color is None:
-            color = fields.get('colour', role.colour)
-
-        payload = {
-            'name': fields.get('name', role.name),
-            'permissions': fields.get('permissions', role.permissions).value,
-            'color': color.value,
-            'hoist': fields.get('hoist', role.hoist)
-        }
-
-        response = requests.patch(url, json=payload, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-        data = response.json()
-        log.debug(request_success_log.format(json=payload, response=response, data=data))
-        role.update(**data)
-
-    def delete_role(self, server, role):
-        """Deletes the specified :class:`Role` for the entire :class:`Server`.
-
-        Works in a similar matter to :func:`edit_role`.
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param server: The :class:`Server` the role belongs to.
-        :param role: The :class:`Role` to delete.
-        """
-
-        url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def add_roles(self, member, *roles):
-        """Gives the specified :class:`Member` a number of :class:`Role` s.
-
-        You must have the proper permissions to use this function.
-        This function raises :exc:`HTTPException` if the request failed.
-
-        This method **appends** a role to a member.
-
-        :param member: The :class:`Member` to give roles to.
-        :param roles: An argument list of :class:`Role` s to give the member.
-        """
-
-        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
-        new_roles = [role.id for role in itertools.chain(member.roles, roles)]
-        payload = {
-            'roles': new_roles
-        }
-
-        response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def remove_roles(self, member, *roles):
-        """Removes the :class:`Role` s from the :class:`Member`.
-
-        You must have the proper permissions to use this function.
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param member: The :class:`Member` to remove roles from.
-        :param roles: An argument list of :class:`Role` s to remove from the member.
-        """
-
-        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
-
-        new_roles = [role.id for role in member.roles]
-        for role in roles:
-            if role.id in new_roles:
-                new_roles.remove(role.id)
-
-        payload = {
-            'roles': new_roles
-        }
-
-        response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def replace_roles(self, member, *roles):
-        """Replaces the :class:`Member`'s roles.
-
-        You must have the proper permissions to use this function.
-
-        This function **replaces** all roles that the member has.
-        For example if the member has roles ``[a, b, c]`` and the
-        call is ``client.replace_roles(member, d, e, c)`` then
-        the member has the roles ``[d, e, c]``.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param member: The :class:`Member` to replace roles for.
-        :param roles: An argument list of :class:`Role` s to replace with.
-        """
-
-        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
-
-        payload = {
-            'roles': [role.id for role in roles]
-        }
-
-        response = requests.patch(url, headers=self.headers, json=payload)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-        member.roles = list(roles)
-
-    def create_role(self, server, **fields):
-        """Creates a :class:`Role`.
-
-        The fields parameter is the same as :func:`edit_role`.
-
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :return: The :class:`Role` that was created.
-        """
-
-        url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
-        response = requests.post(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-        data = response.json()
-        everyone = server.id == data.get('id')
-        role = Role(everyone=everyone, **data)
-
-        # we have to call edit because you can't pass a payload to the
-        # http request currently.
-        self.edit_role(server, role, **fields)
-        return role
-
-    def set_channel_permissions(self, channel, target, allow=None, deny=None):
-        """Sets the channel specific permission overwrites for a target in the
-        specified :class:`Channel`.
-
-        The ``target`` parameter should either be a :class:`Member` or a
-        :class:`Role` that belongs to the channel's server.
-
-        You must have the proper permissions to do this.
-
-        This function raises :exc:`HTTPException` if the request failed.
-        This function also raises :exc:`InvalidArgument` if invalid arguments are
-        passed to this function.
-
-        Example code: ::
-
-            allow = discord.Permissions.none()
-            deny = discord.Permissions.none()
-            allow.can_mention_everyone = True
-            deny.can_manage_messages = True
-            client.set_channel_permissions(message.channel, message.author, allow, deny)
-
-        :param channel: The :class:`Channel` to give the specific permissions for.
-        :param target: The :class:`Member` or :class:`Role` to overwrite permissions for.
-        :param allow: A :class:`Permissions` object representing the permissions to explicitly allow. (optional)
-        :param deny: A :class:`Permissions` object representing the permissions to explicitly deny. (optional)
-        """
-
-        url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
-
-        allow = Permissions.none() if allow is None else allow
-        deny = Permissions.none() if deny is None else deny
-
-        if not (isinstance(allow, Permissions) and isinstance(deny, Permissions)):
-            raise InvalidArgument('allow and deny parameters must be discord.Permissions')
-
-        deny =  deny.value
-        allow = allow.value
-
-        payload = {
-            'id': target.id,
-            'allow': allow,
-            'deny': deny
-        }
-
-        if isinstance(target, Member):
-            payload['type'] = 'member'
-        elif isinstance(target, Role):
-            payload['type'] = 'role'
-        else:
-            raise InvalidArgument('target parameter must be either discord.Member or discord.Role')
-
-        response = requests.put(url, json=payload, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def delete_channel_permissions(self, channel, target):
-        """Removes a channel specific permission overwrites for a target
-        in the specified :class:`Channel`.
-
-        The target parameter follows the same rules as :meth:`set_channel_permissions`.
-
-        You must have the proper permissions to do this.
-        This function raises :exc:`HTTPException` if the request failed.
-
-        :param channel: The :class:`Channel` to give the specific permissions for.
-        :param target: The :class:`Member` or :class:`Role` to overwrite permissions for.
-        """
-
-        url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
-        response = requests.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(response=response))
-        utils._verify_successful_response(response)
-
-    def change_status(self, game_id=None, idle=False):
-        """Changes the client's status.
-
-        The game_id parameter is a numeric ID (not a string) that represents
-        a game being played currently. The list of game_id to actual games changes
-        constantly and would thus be out of date pretty quickly. An old version of
-        the game_id database can be seen `here`_ to help you get started.
-
-        The idle parameter is a boolean parameter that indicates whether the
-        client should go idle or not.
-
-        .. _here: https://gist.github.com/Rapptz/a82b82381b70a60c281b
-
-        :param game_id: The numeric game ID being played. None if no game is being played.
-        :param idle: A boolean indicating if the client should go idle."""
-
-        idle_since = None if idle == False else int(time.time() * 1000)
-        payload = {
-            'op': 3,
-            'd': {
-                'game_id': game_id,
-                'idle_since': idle_since
-            }
-        }
-
-        sent = json.dumps(payload)
-        log.debug('Sending "{}" to change status'.format(sent))
-        self.ws.send(sent)
+        response = yield from self.session.get(url, params=params, headers=self.headers)
+        log.debug(request_logging_format.format(method='GET', response=response))
+        yield from utils._verify_successful_response(response)
+        messages = yield from response.json()
+        return generator_wrapper(messages)
