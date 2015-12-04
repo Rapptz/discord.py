@@ -34,6 +34,12 @@ If you want to install the development version of the library, then do the follo
 pip install git+https://github.com/Rapptz/discord.py@develop
 ```
 
+Installing the async beta is similar.
+
+```
+pip install git+https://github.com/Rapptz/discord.py@async
+```
+
 Note that this requires `git` to be installed.
 
 ## Quick Example
@@ -42,30 +48,45 @@ Note that this requires `git` to be installed.
 import discord
 
 client = discord.Client()
-client.login('email', 'password')
 
-@client.event
-def on_message(message):
-    if message.content.startswith('!hello'):
-        client.send_message(message.channel, 'Hello was received!')
-
-@client.event
+@client.async_event
 def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
     print('------')
 
-client.run()
+@client.async_event
+def on_message(message):
+    if message.content.startswith('!test'):
+        logs = yield from client.logs_from(message.channel, limit=100)
+        counter = 0
+        tmp = yield from client.send_message(message.channel, 'Calculating messages...')
+        for log in logs:
+            if log.author == message.author:
+                counter += 1
+
+        yield from client.edit_message(tmp, 'You have {} messages.'.format(counter))
+    elif message.content.startswith('!sleep'):
+        yield from asyncio.sleep(5)
+        yield from client.send_message(message.channel, 'Done sleeping')
+
+def main_task():
+    yield from client.login('email', 'password')
+    yield from client.connect()
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main_task())
+loop.close()
 ```
 
 You can find examples in the examples directory.
 
 ## Requirements
 
-- Python 2.7+ or Python 3.3+.
-- `ws4py` library
-- `requests` library
+- Python 3.4.2+
+- `aiohttp` library
+- `websockets` library
 
 Usually `pip` will handle these for you.
 
