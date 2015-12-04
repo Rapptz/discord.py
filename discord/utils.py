@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from re import split as re_split
 from .errors import HTTPException, InvalidArgument
 import datetime
-
+import asyncio
 
 def parse_time(timestamp):
     if timestamp:
@@ -60,11 +60,13 @@ def find(predicate, seq):
 def _null_event(*args, **kwargs):
     pass
 
+@asyncio.coroutine
 def _verify_successful_response(response):
-    code = response.status_code
+    code = response.status
     success = code >= 200 and code < 300
     if not success:
-        raise HTTPException(response)
+        data = yield from response.json()
+        raise HTTPException(response, data.get('message'))
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
@@ -73,3 +75,8 @@ def _get_mime_type_for_image(data):
         return 'image/jpeg'
     else:
         raise InvalidArgument('Unsupported image type given')
+
+try:
+    create_task = asyncio.ensure_future
+except AttributeError:
+    create_task = asyncio.async
