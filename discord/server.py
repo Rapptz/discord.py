@@ -65,6 +65,9 @@ class Server:
     """
 
     def __init__(self, **kwargs):
+        self.channels = []
+        self.owner = None
+        self.members = []
         self._from_data(kwargs)
 
     def _update_voice_state(self, data):
@@ -91,10 +94,9 @@ class Server:
         self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
         default_role = self.get_default_role()
 
-        self.members = []
-        self.owner = guild['owner_id']
+        owner_id = guild['owner_id']
 
-        for data in guild['members']:
+        for data in guild.get('members', []):
             roles = [default_role]
             for role_id in data['roles']:
                 role = utils.find(lambda r: r.id == role_id, self.roles)
@@ -105,7 +107,7 @@ class Server:
             member = Member(**data)
             member.server = self
 
-            if member.id == self.owner:
+            if member.id == owner_id:
                 self.owner = member
 
             self.members.append(member)
@@ -121,7 +123,10 @@ class Server:
                     pass
                 member.game_id = presence['game_id']
 
-        self.channels = [Channel(server=self, **c) for c in guild['channels']]
+        if 'channels' in guild:
+            channels = guild['channels']
+            self.channels = [Channel(server=self, **c) for c in channels]
+
         afk_id = guild.get('afk_channel_id')
         self.afk_channel = utils.find(lambda c: c.id == afk_id, self.channels)
 

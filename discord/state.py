@@ -222,6 +222,13 @@ class ConnectionState:
         self._add_server(data)
         self.dispatch('server_join', self.servers[-1])
 
+    def parse_guild_update(self, data):
+        server = self._get_server(data.get('id'))
+        if server is not None:
+            old_server = copy.copy(server)
+            server._from_data(data)
+            self.dispatch('server_update', old_server, server)
+
     def parse_guild_delete(self, data):
         server = self._get_server(data.get('id'))
         if data.get('unavailable', False) and server is not None:

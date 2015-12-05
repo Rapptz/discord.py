@@ -243,6 +243,18 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param server: The :class:`Server` that got removed.
 
+.. function:: on_server_update(before, after)
+
+    Called when a :class:`Server` updates, for example:
+
+    - Changed name
+    - Changed AFK channel
+    - Changed AFK timeout
+    - etc
+
+    :param before: The :class:`Server` prior to being updated.
+    :param after: The :class:`Server` after being updated.
+
 .. function:: on_server_role_create(server, role)
               on_server_role_delete(server, role)
 
