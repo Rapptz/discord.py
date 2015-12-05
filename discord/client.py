@@ -940,6 +940,8 @@ class Client:
 
         All fields except ``password`` are optional.
 
+        The profile is **not** edited in place.
+
         Note
         -----
         To upload an avatar, a *bytes-like object* must be passed in that
@@ -961,20 +963,25 @@ class Client:
             The new username you wish to change to.
         avatar : bytes
             A *bytes-like object* representing the image to upload.
+            Could be ``None`` to denote no avatar.
 
         Raises
         ------
         HTTPException
             Editing your profile failed.
+        InvalidArgument
+            Wrong image format passed for ``avatar``.
         """
 
-        avatar_bytes = fields.get('avatar')
-        avatar = None
-        if avatar_bytes is not None:
-            fmt = 'data:{mime};base64,{data}'
-            mime = utils._get_mime_type_for_image(avatar_bytes)
-            b64 = b64encode(avatar_bytes).decode('ascii')
-            avatar = fmt.format(mime=mime, data=b64)
+        try:
+            avatar_bytes = fields['avatar']
+        except KeyError:
+            avatar = self.user.avatar
+        else:
+            if avatar_bytes is not None:
+                avatar = utils._bytes_to_base64_data(avatar_bytes)
+            else:
+                avatar = None
 
         payload = {
             'password': password,
@@ -1051,6 +1058,8 @@ class Client:
         Edits a :class:`Channel`.
 
         You must have the proper permissions to edit the channel.
+
+        The channel is **not** edited in-place.
 
         Parameters
         ----------
@@ -1164,3 +1173,138 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+
+    # Server management
+
+    @asyncio.coroutine
+    def leave_server(self, server):
+        """|coro|
+
+        Leaves a :class:`Server`.
+
+        Warning
+        --------
+        If you are the owner of the server then it is deleted.
+
+        Parameters
+        ----------
+        server : :class:`Server`
+            The server to leave.
+
+        Raises
+        --------
+        HTTPException
+            If leaving the server failed.
+        """
+
+        url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def create_server(self, name, region=None, icon=None):
+        """|coro|
+
+        Creates a :class:`Server`.
+
+        Parameters
+        ----------
+        name : str
+            The name of the server.
+        region : :class:`ServerRegion`
+            The region for the voice communication server.
+            Defaults to :attr`ServerRegion.us_west`.
+        icon : bytes
+            The *bytes-like* object representing the icon. See :meth:`edit_profile`
+            for more details on what is expected.
+
+        Raises
+        ------
+        HTTPException
+            Server creation failed.
+        InvalidArgument
+            Invalid icon image format given. Must be PNG or JPG.
+
+        Returns
+        -------
+        :class:`Server`
+            The server created. This is not the same server that is
+            added to cache.
+        """
+        if icon is not None:
+            icon = utils._bytes_to_base64_data(icon)
+
+        r = yield from self.session.post(endpoints.SERVERS, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=r))
+        yield from utils._verify_successful_response(r)
+        data = yield from r.json()
+        log.debug(request_success_log.format(response=r, json=payload, data=data))
+        return Server(**data)
+
+    @asyncio.coroutine
+    def edit_server(self, server, **fields):
+        """|coro|
+
+        Edits a :class:`Server`.
+
+        You must have the proper permissions to edit the server.
+
+        The server is **not** edited in-place.
+
+        Parameters
+        ----------
+        server : :class:`Server`
+            The server to edit.
+        name : str
+            The new name of the server.
+        icon : bytes
+            A *bytes-like* object representing the icon. See :meth:`edit_profile`
+            for more details. Could be ``None`` to denote
+        region : :class:`ServerRegion`
+            The new region for the server's voice communication.
+        afk_channel : :class:`Channel`
+            The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
+        afk_timeout : int
+            The number of seconds until someone is moved to the AFK channel.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit the server.
+        NotFound
+            The server you are trying to edit does not exist.
+        HTTPException
+            Editing the server failed.
+        InvalidArgument
+            The image format passed in to ``icon`` is invalid. It must be
+            PNG or JPG.
+        """
+
+        try:
+            icon_bytes = fields['icon']
+        except KeyError:
+            icon = server.icon
+        else:
+            if icon_bytes is not None:
+                icon = utils._bytes_to_base64_data(icon_bytes)
+            else:
+                icon = None
+
+        payload = {
+            'region': str(fields.get('region', server.region)),
+            'afk_timeout': fields.get('afk_timeout', server.afk_timeout),
+            'icon': icon,
+            'name': fields.get('name', server.name),
+        }
+
+        afk_channel = fields.get('afk_channel')
+        if afk_channel is None:
+            afk_channel = server.afk_channel
+
+        payload['afk_channel'] = getattr(afk_channel, 'id', None)
+
+        url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
+        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)

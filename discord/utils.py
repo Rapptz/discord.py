@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from re import split as re_split
 from .errors import HTTPException, Forbidden, NotFound, InvalidArgument
 import datetime
+from base64 import b64encode
 import asyncio
 
 def parse_time(timestamp):
@@ -80,6 +81,12 @@ def _get_mime_type_for_image(data):
         return 'image/jpeg'
     else:
         raise InvalidArgument('Unsupported image type given')
+
+def _bytes_to_base64_data(data):
+    fmt = 'data:{mime};base64,{data}'
+    mime = _get_mime_type_for_image(data)
+    b64 = b64encode(data).decode('ascii')
+    return fmt.format(mime=mime, data=b64)
 
 try:
     create_task = asyncio.ensure_future
