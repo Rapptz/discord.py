@@ -1308,3 +1308,137 @@ class Client:
         r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
+
+    # Invite management
+
+    @asyncio.coroutine
+    def create_invite(self, destination, **options):
+        """|coro|
+
+        Creates an invite for the destination which could be either a
+        :class:`Server` or :class:`Channel`.
+
+        Parameters
+        ------------
+        destination
+            The :class:`Server` or :class:`Channel` to create the invite to.
+        max_age : int
+            How long the invite should last. If it's 0 then the invite
+            doesn't expire. Defaults to 0.
+        max_uses : int
+            How many uses the invite could be used for. If it's 0 then there
+            are unlimited uses. Defaults to 0.
+        temporary : bool
+            Denotes that the invite grants temporary membership
+            (i.e. they get kicked after they disconnect). Defaults to False.
+        xkcd : bool
+            Indicates if the invite URL is human readable. Defaults to False.
+
+        Raises
+        -------
+        HTTPException
+            Invite creation failed.
+
+        Returns
+        --------
+        :class:`Invite`
+            The invite that was created.
+        """
+
+        payload = {
+            'max_age': options.get('max_age', 0),
+            'max_uses': options.get('max_uses', 0),
+            'temporary': options.get('temporary', False),
+            'xkcdpass': options.get('xkcd', False)
+        }
+
+        url = '{0}/{1.id}/invites'.format(endpoints.CHANNELS, destination)
+        response = yield from self.session.post(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='POST', response=response))
+
+        yield from utils._verify_successful_response(response)
+        data = yield from response.json()
+        log.debug(request_success_log.format(json=payload, response=response, data=data))
+
+        data['server'] = self.connection._get_server(data['guild']['id'])
+        channel_id = data['channel']['id']
+        data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
+        return Invite(**data)
+
+    @asyncio.coroutine
+    def get_invite(self, url):
+        """|coro|
+
+        Gets a :class:`Invite` from a discord.gg URL or ID.
+
+        Note
+        ------
+        If the invite is for a server you have not joined, the server and channel
+        attributes of the returned invite will be :class:`Object` with the names
+        patched in.
+
+        Parameters
+        -----------
+        url : str
+            The discord invite ID or URL (must be a discord.gg URL).
+
+        Raises
+        -------
+        NotFound
+            The invite has expired.
+        HTTPException
+            Getting the invite failed.
+        InvalidArgument
+
+
+        Returns
+        --------
+        :class:`Invite`
+            The invite from the URL/ID.
+        """
+
+        destination = self._resolve_invite(url)
+        rurl = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
+        response = yield from self.session.get(rurl, headers=self.headers)
+        log.debug(request_logging_format.format(method='GET', response=response))
+        yield from utils._verify_successful_response(response)
+        data = yield from response.json()
+        server = self.connection._get_server(data['guild']['id'])
+        if server is not None:
+            ch_id = data['channel']['id']
+            channels = getattr(server, 'channels', [])
+            channel = utils.find(lambda c: c.id == ch_id, channels)
+        else:
+            server = Object(id=data['guild']['id'])
+            server.name = data['guild']['name']
+            channel = Object(id=data['channel']['id'])
+            channel.name = data['channel']['name']
+        data['server'] = server
+        data['channel'] = channel
+        return Invite(**data)
+
+    @asyncio.coroutine
+    def accept_invite(self, invite):
+        """|coro|
+
+        Accepts an :class:`Invite`, URL or ID to an invite.
+
+        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere".
+        An ID for the invite is just the "codehere" portion of the invite URL.
+
+        Parameters
+        -----------
+        invite
+            The :class:`Invite` or URL to an invite to accept.
+
+        Raises
+        -------
+        HTTPException
+            Accepting the invite failed.
+        """
+
+        destination = self._resolve_invite(invite)
+        url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
+        response = yield from self.session.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
