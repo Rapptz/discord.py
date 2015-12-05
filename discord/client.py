@@ -414,6 +414,28 @@ class Client:
         self.keep_alive.cancel()
         self._closed = True
 
+    @asyncio.coroutine
+    def start(self, email, password):
+        """|coro|
+
+        A shorthand coroutine for :meth:`login` + :meth:`connect`.
+        """
+        yield from self.login(email, password)
+        yield from self.connect()
+
+    def run(self, email, password):
+        """A blocking call that abstracts away the `event loop`_
+        initialisation from you.
+
+        Equivalent to: ::
+
+            loop.run_until_complete(start(email, password))
+            loop.close()
+        """
+
+        self.loop.run_until_complete(self.start(email, password))
+        self.loop.close()
+
     # event registration
 
     def event(self, coro):
