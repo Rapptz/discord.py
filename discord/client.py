@@ -388,8 +388,10 @@ class Client:
         you should run it in an executor or schedule the coroutine to
         be executed later using ``loop.create_task``.
 
-        This function throws :exc:`ClientException` if called before
-        logging in via :meth:`login`.
+        Raises
+        -------
+        ClientException
+            If this is called before :meth:`login` was invoked successfully.
         """
         yield from self._make_websocket()
 
