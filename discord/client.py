@@ -1718,7 +1718,7 @@ class Client:
         return role
 
     @asyncio.coroutine
-    def edit_channel_permissions(self, channel, target, allow=None, deny=None):
+    def edit_channel_permissions(self, channel, target, *, allow=None, deny=None):
         """|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -1738,7 +1738,7 @@ class Client:
             deny = discord.Permissions.none()
             allow.can_mention_everyone = True
             deny.can_manage_messages = True
-            yield from client.set_channel_permissions(message.channel, message.author, allow, deny)
+            yield from client.set_channel_permissions(message.channel, message.author, allow=allow, deny=deny)
 
         Parameters
         -----------
