@@ -33,42 +33,31 @@ class Invite(object):
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    Instance attributes:
-
-    .. attribute:: max_age
-
+    Attributes
+    -----------
+    max_age : int
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
-    .. attribute:: code
-
+    code : str
         The URL fragment used for the invite. :attr:`xkcd` is also a possible fragment.
-    .. attribute:: server
-
-        The :class:`Server` the invite is for.
-    .. attribute:: revoked
-
-        A boolean indicating if the invite has been revoked.
-    .. attribute:: created_at
-
+    server : :class:`Server`
+        The server the invite is for.
+    revoked : bool
+        Indicates if the invite has been revoked.
+    created_at : `datetime.datetime`
         A datetime object denoting the time the invite was created.
-    .. attribute:: temporary
-
-        A boolean indicating that the invite grants temporary membership.
+    temporary : bool
+        Indicates that the invite grants temporary membership.
         If True, members who joined via this invite will be kicked upon disconnect.
-    .. attribute:: uses
-
+    uses : int
         How many times the invite has been used.
-    .. attribute:: max_uses
-
+    max_uses : int
         How many times the invite can be used.
-    .. attribute:: xkcd
-
+    xkcd : str
         The URL fragment used for the invite if it is human readable.
-    .. attribute:: inviter
-
-        The :class:`User` who created the invite.
-    .. attribute:: channel
-
-        The :class:`Channel` the invite is for.
+    inviter : :class:`User`
+        The user who created the invite.
+    channel : :class:`Channel`
+        The channel the invite is for.
     """
 
     def __init__(self, **kwargs):

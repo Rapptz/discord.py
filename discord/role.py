@@ -30,31 +30,23 @@ from .colour import Colour
 class Role(object):
     """Represents a Discord role in a :class:`Server`.
 
-    Instance attributes:
-
-    .. attribute:: id
-
+    Attributes
+    ----------
+    id : str
         The ID for the role.
-    .. attribute:: name
-
+    name : str
         The name of the role.
-    .. attribute:: permissions
-
-        A :class:`Permissions` that represents the role's permissions.
-    .. attribute:: color
-                   colour
-
-        A :class:`Colour` representing the role colour.
-    .. attribute:: hoist
-
-        A boolean representing if the role will be displayed separately from other members.
-    .. attribute:: position
-
+    permissions : :class:`Permissions`
+        Represents the role's permissions.
+    color : :class:`Colour`
+        Represents the role colour.
+    hoist : bool
+         Indicates if the role will be displayed separately from other members.
+    position : int
         The position of the role. This number is usually positive.
-    .. attribute:: managed
-
-        A boolean indicating if the role is managed by the server through some form of integration
-        such as Twitch.
+    managed : bool
+        Indicates if the role is managed by the server through some form of
+        integrations such as Twitch.
     """
 
     def __init__(self, **kwargs):

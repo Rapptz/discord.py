@@ -37,8 +37,9 @@ class Object(object):
     receive this class rather than the actual data class. These cases are
     extremely rare.
 
-    .. attribute:: id
-
+    Attributes
+    -----------
+    id : str
         The ID of the object.
     """
 

@@ -40,10 +40,9 @@ class Colour(object):
     | x != y    | Checks if two colours are not equal. |
     +-----------+--------------------------------------+
 
-    Instance attributes:
-
-    .. attribute:: value
-
+    Attributes
+    ------------
+    value : int
         The raw integer colour value.
     """
 

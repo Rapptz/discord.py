@@ -39,19 +39,15 @@ class User(object):
     | str(x)    | Returns the user's name.           |
     +-----------+------------------------------------+
 
-    Instance attributes:
-
-    .. attribute:: name
-
+    Attributes
+    -----------
+    name : str
         The user's username.
-    .. attribute:: id
-
+    id : str
         The user's unique ID.
-    .. attribute:: discriminator
-
+    discriminator : str or int
         The user's discriminator. This is given when the username has conflicts.
-    .. attribute:: avatar
-
+    avatar : str
         The avatar hash the user has. Could be None.
     """
 
