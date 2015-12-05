@@ -297,6 +297,67 @@ Utility Functions
 .. autofunction:: discord.utils.find
 
 
+Enumerators
+------------
+
+The API provides some enumerators for certain types of strings to avoid the API
+from being stringly typed in case the strings change in the future.
+
+All enumerators are subclasses of `enum`_.
+
+.. _enum: https://docs.python.org/3/library/enum.html
+
+.. class:: ChannelType
+
+    Specifies the type of :class:`Channel`.
+
+    .. attribute:: text
+
+        A text channel.
+    .. attribute:: voice
+
+        A voice channel.
+
+.. class:: ServerRegion
+
+    Specifies the region a :class:`Server`'s voice server belongs to.
+
+    .. attribute:: us_west
+
+        The US West region.
+    .. attribute:: us_east
+
+        The US East region.
+    .. attribute:: singapore
+
+        The Singapore region.
+    .. attribute:: london
+
+        The London region.
+    .. attribute:: sydney
+
+        The Sydney region.
+    .. attribute:: amsterdam
+
+        The Amsterdam region.
+    .. attribute:: frankfurt
+
+        The Frankfurt region.
+
+.. class:: Status
+
+    Specifies a :class:`Member` 's status.
+
+    .. attribute:: online
+
+        The member is online.
+    .. attribute:: offline
+
+        The member is offline.
+    .. attribute:: idle
+
+        The member is idle.
+
 Data Classes
 --------------
 

@@ -26,44 +26,37 @@ DEALINGS IN THE SOFTWARE.
 from copy import deepcopy
 from . import utils
 from .permissions import Permissions
+from .enums import ChannelType
 from collections import namedtuple
 
 Overwrites = namedtuple('Overwrites', 'id allow deny type')
 
-class Channel(object):
+class Channel:
     """Represents a Discord server channel.
 
-    Instance attributes:
-
-    .. attribute:: name
-
+    Attributes
+    -----------
+    name : str
         The channel name.
-    .. attribute:: server
-
-        The :class:`Server` the channel belongs to.
-    .. attribute:: id
-
+    server : :class:`Server`
+        The server the channel belongs to.
+    id : str
         The channel ID.
-    .. attribute:: topic
-
+    topic : Optional[str]
         The channel's topic. None if it doesn't exist.
-    .. attribute:: is_private
-
+    is_private : bool
         ``True`` if the channel is a private channel (i.e. PM). ``False`` in this case.
-    .. attribute:: position
-
+    position : int
         The position in the channel list.
-    .. attribute:: type
-
-        The channel type. Usually ``'voice'`` or ``'text'``.
-    .. attribute:: changed_roles
-
+    type : :class:`ChannelType`
+        The channel type. There is a chance that the type will be ``str`` if
+        the channel type is not within the ones recognised by the enumerator.
+    changed_roles
         A list of :class:`Roles` that have been overridden from their default
         values in the :attr:`Server.roles` attribute.
-    .. attribute:: voice_members
-
+    voice_members
         A list of :class:`Members` that are currently inside this voice channel.
-        If :attr:`type` is not ``'voice'`` then this is always an empty array.
+        If :attr:`type` is not :attr:`ChannelType.voice` then this is always an empty array.
     """
 
     def __init__(self, **kwargs):
@@ -78,6 +71,11 @@ class Channel(object):
         self.is_private = False
         self.position = kwargs.get('position')
         self.type = kwargs.get('type')
+        try:
+            self.type = ChannelType(self.type)
+        except:
+            pass
+
         self.changed_roles = []
         self._permission_overwrites = []
         for overridden in kwargs.get('permission_overwrites', []):
@@ -98,11 +96,11 @@ class Channel(object):
             self.changed_roles.append(override)
 
     def is_default_channel(self):
-        """Checks if this is the default channel for the :class:`Server` it belongs to."""
+        """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
 
     def mention(self):
-        """Returns a string that allows you to mention the channel."""
+        """str : The string that allows you to mention the channel."""
         return '<#{0.id}>'.format(self)
 
     def permissions_for(self, member):
@@ -116,8 +114,15 @@ class Channel(object):
         - Member overrides
         - Whether the channel is the default channel.
 
-        :param member: The :class:`Member` to resolve permissions for.
-        :return: The resolved :class:`Permissions` for the :class:`Member`.
+        Parameters
+        ----------
+        member : :class:`Member`
+            The member to resolve permissions for.
+
+        Returns
+        -------
+        :class:`Permissions`
+            The resolved permissions for the member.
         """
 
         # The current cases can be explained as:
@@ -173,19 +178,16 @@ class Channel(object):
 
         return base
 
-class PrivateChannel(object):
+class PrivateChannel:
     """Represents a Discord private channel.
 
-    Instance attributes:
-
-    .. attribute:: user
-
-        The :class:`User` in the private channel.
-    .. attribute:: id
-
+    Attributes
+    ----------
+    user : :class:`User`
+        The user you are participating with in the private channel.
+    id : str
         The private channel ID.
-    .. attribute:: is_private
-
+    is_private : bool
         ``True`` if the channel is a private channel (i.e. PM). ``True`` in this case.
     """
 
@@ -207,8 +209,15 @@ class PrivateChannel(object):
         - can_manage_messages: You cannot delete others messages in a PM.
         - can_mention_everyone: There is no one to mention in a PM.
 
-        :param user: The :class:`User` to check permissions for.
-        :return: A :class:`Permission` with the resolved permission value.
+        Parameters
+        -----------
+        user : :class:`User`
+            The user to check permissions for.
+
+        Returns
+        --------
+        :class:`Permission`
+            The resolved permissions for the user.
         """
 
         base = Permissions.TEXT

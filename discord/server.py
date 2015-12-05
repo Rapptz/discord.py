@@ -28,45 +28,36 @@ from . import utils
 from .role import Role
 from .member import Member
 from .channel import Channel
+from .enums import ServerRegion, Status
 
-class Server(object):
+class Server:
     """Represents a Discord server.
 
-    Instance attributes:
-
-    .. attribute:: name
-
+    Attributes
+    ----------
+    name : str
         The server name.
-    .. attribute:: roles
-
+    roles
         A list of :class:`Role` that the server has available.
-    .. attribute:: region
-
-        The region the server belongs on.
-    .. attribute:: afk_timeout
-
+    region : :class:`ServerRegion`
+        The region the server belongs on. There is a chance that the region
+        will be a ``str`` if the value is not recognised by the enumerator.
+    afk_timeout : int
         The timeout to get sent to the AFK channel.
-    .. attribute:: afk_channel
-
-        The :class:`Channel` that denotes the AFK channel. None if it doesn't exist.
-    .. attribute:: members
-
+    afk_channel : :class:`Channel`
+        The channel that denotes the AFK channel. None if it doesn't exist.
+    members
         A list of :class:`Member` that are currently on the server.
-    .. attribute:: channels
-
+    channels
         A list of :class:`Channel` that are currently on the server.
-    .. attribute:: icon
-
+    icon : str
         The server's icon.
-    .. attribute:: id
-
+    id : str
         The server's ID.
-    .. attribute:: owner
-
-        The :class:`Member` who owns the server.
-    .. attribute:: unavailable
-
-        A boolean indicating if the server is unavailable. If this is ``True`` then the
+    owner : :class:`Member`
+        The member who owns the server.
+    unavailable : bool
+        Indicates if the server is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Server.id` is slim and they might
         all be None. It is best to not do anything with the server if it is unavailable.
 
@@ -88,6 +79,11 @@ class Server(object):
     def _from_data(self, guild):
         self.name = guild.get('name')
         self.region = guild.get('region')
+        try:
+            self.region = ServerRegion(self.region)
+        except:
+            pass
+
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
@@ -119,6 +115,10 @@ class Server(object):
             member = utils.find(lambda m: m.id == user_id, self.members)
             if member is not None:
                 member.status = presence['status']
+                try:
+                    member.status = Status(member.status)
+                except:
+                    pass
                 member.game_id = presence['game_id']
 
         self.channels = [Channel(server=self, **c) for c in guild['channels']]
@@ -137,7 +137,7 @@ class Server(object):
         return utils.find(lambda c: c.is_default_channel(), self.channels)
 
     def icon_url(self):
-        """Returns the URL version of the server's icon. Returns None if it has no icon."""
+        """Returns the URL version of the server's icon. Returns an empty string if it has no icon."""
         if self.icon is None:
             return ''
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)

@@ -34,6 +34,7 @@ from .object import Object
 from .errors import *
 from .state import ConnectionState
 from . import utils
+from .enums import ChannelType, ServerRegion
 
 import asyncio
 import aiohttp
@@ -1085,7 +1086,7 @@ class Client:
         log.debug(request_success_log.format(response=r, json=payload, data=data))
 
     @asyncio.coroutine
-    def create_channel(self, server, name, type='text'):
+    def create_channel(self, server, name, type=None):
         """|coro|
 
         Creates a :class:`Channel` in the specified :class:`Server`.
@@ -1098,8 +1099,8 @@ class Client:
             The server to create the channel in.
         name : str
             The channel's name.
-        type : str
-            The type of channel to create. 'text' or 'voice'.
+        type : :class:`ChannelType`
+            The type of channel to create. Defaults to :attr:`ChannelType.text`.
 
         Raises
         -------
@@ -1117,9 +1118,12 @@ class Client:
             different than the one that will be added in cache.
         """
 
+        if type is None:
+            type = ChannelType.text
+
         payload = {
             'name': name,
-            'type': type
+            'type': str(type)
         }
 
         url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
@@ -1160,4 +1164,3 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
-

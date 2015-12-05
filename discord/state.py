@@ -31,6 +31,7 @@ from .channel import Channel, PrivateChannel
 from .member import Member
 from .role import Role
 from . import utils
+from .enums import Status
 
 from collections import deque
 import copy
@@ -113,6 +114,10 @@ class ConnectionState:
             if member is not None:
                 old_member = copy.copy(member)
                 member.status = data.get('status')
+                try:
+                    member.status = Status(member.status)
+                except:
+                    pass
                 member.game_id = data.get('game_id')
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)

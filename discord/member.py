@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .utils import parse_time
+from .enums import Status
 
 class Member(User):
     """Represents a Discord member to a :class:`Server`.
@@ -33,44 +34,34 @@ class Member(User):
     This is a subclass of :class:`User` that extends more functionality
     that server members have such as roles and permissions.
 
-    Instance attributes:
-
-    .. attribute:: deaf
-
-        A boolean that specifies if the member is currently deafened by the server.
-    .. attribute:: mute
-
-        A boolean that specifies if the member is currently muted by the server.
-    .. attribute:: self_mute
-
-        A boolean that specifies if the member is currently muted by their own accord.
-    .. attribute:: self_deaf
-
-        A boolean that specifies if the member is currently deafened by their own accord.
-    .. attribute:: is_afk
-
-        A boolean that specifies if the member is currently in the AFK channel in the server.
-    .. attribute:: voice_channel
-
-        A voice :class:`Channel` that the member is currently connected to. None if the member
+    Attributes
+    ----------
+    deaf : bool
+        Indicates if the member is currently deafened by the server.
+    mute : bool
+        Indicates if the member is currently muted by the server.
+    self_mute : bool
+        Indicates if the member is currently muted by their own accord.
+    self_deaf : bool
+        Indicates if the member is currently deafened by their own accord.
+    is_afk : bool
+        Indicates if the member is currently in the AFK channel in the server.
+    voice_channel : :class:`Channel`
+        The voice channel that the member is currently connected to. None if the member
         is not currently in a voice channel.
-    .. attribute:: roles
-
+    roles
         A list of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role.
-    .. attribute:: joined_at
-
+    joined_at : `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the server for
         the first time.
-    .. attribute:: status
-
-        A string that denotes the user's status. Can be 'online', 'offline' or 'idle'.
-    .. attribute:: game_id
-
+    status : :class:`Status`
+        The member's status. There is a chance that the status will be a ``str``
+        if it is a value that is not recognised by the enumerator.
+    game_id : int
         The game ID that the user is currently playing. Could be None if no game is being played.
-    .. attribute:: server
-
-        The :class:`Server` that the member belongs to.
+    server : :class:`Server`
+        The server that the member belongs to.
     """
 
     def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
@@ -79,7 +70,7 @@ class Member(User):
         self.mute = mute
         self.joined_at = parse_time(joined_at)
         self.roles = roles
-        self.status = 'offline'
+        self.status = Status.offline
         self.game_id = kwargs.get('game_id', None)
         self.server = kwargs.get('server', None)
         self.update_voice_state(mute=mute, deaf=deaf)
