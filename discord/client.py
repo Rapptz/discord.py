@@ -1495,3 +1495,331 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+
+
+    # Role management
+
+    @asyncio.coroutine
+    def edit_role(self, server, role, **fields):
+        """|coro|
+
+        Edits the specified :class:`Role` for the entire :class:`Server`.
+
+        This does **not** edit the role in place.
+
+        All fields except ``server`` and ``role`` are optional.
+
+        .. versionchanged:: 0.8.0
+            Editing now uses keyword arguments instead of editing the :class:`Role` object directly.
+
+        Note
+        -----
+        At the moment, the Discord API allows you to set the colour to any
+        RGB value. This might change in the future so it is recommended that
+        you use the constants in the :class:`Colour` instead such as
+        :meth:`Colour.green`.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server the role belongs to.
+        role : :class:`Role`
+            The role to edit.
+        name : str
+            The new role name to change to.
+        permissions : :class:`Permissions`
+            The new permissions to change to.
+        colour : :class:`Colour`
+            The new colour to change to. (aliased to color as well)
+        hoist : bool
+            Indicates if the role should be shown separately in the online list.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to change the role.
+        HTTPException
+            Editing the role failed.
+        """
+
+        url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
+        color = fields.get('color')
+        if color is None:
+            color = fields.get('colour', role.colour)
+
+        payload = {
+            'name': fields.get('name', role.name),
+            'permissions': fields.get('permissions', role.permissions).value,
+            'color': color.value,
+            'hoist': fields.get('hoist', role.hoist)
+        }
+
+        r = yield from self.session.patch(url, data=to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+        data = yield from r.json()
+        log.debug(request_success_log.format(json=payload, response=r, data=data))
+
+    @asyncio.coroutine
+    def delete_role(self, server, role):
+        """|coro|
+
+        Deletes the specified :class:`Role` for the entire :class:`Server`.
+
+        Works in a similar matter to :func:`edit_role`.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server the role belongs to.
+        role : :class:`Role`
+            The role to delete.
+
+        Raises
+        --------
+        Forbidden
+            You do not have permissions to delete the role.
+        HTTPException
+            Deleting the role failed.
+        """
+
+        url = '{0}/{1.id}/roles/{2.id}'.format(endpoints.SERVERS, server, role)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def add_roles(self, member, *roles):
+        """|coro|
+
+        Gives the specified :class:`Member` a number of :class:`Role` s.
+
+        You must have the proper permissions to use this function.
+
+        This method **appends** a role to a member but does **not** do it
+        in-place.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to give roles to.
+        *roles
+            An argument list of :class:`Role` s to give the member.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add roles.
+        HTTPException
+            Adding roles failed.
+        """
+
+        new_roles = [role.id for role in itertools.chain(member.roles, roles)]
+        yield from self.replace_roles(member, *new_roles)
+
+    @asyncio.coroutine
+    def remove_roles(self, member, *roles):
+        """|coro|
+
+        Removes the :class:`Role` s from the :class:`Member`.
+
+        You must have the proper permissions to use this function.
+
+        This method does **not** do edit the member in-place.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to revoke roles from.
+        *roles
+            An argument list of :class:`Role` s to revoke the member.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to revoke roles.
+        HTTPException
+            Removing roles failed.
+        """
+        new_roles = {role.id for role in member.roles}
+        new_roles = new_roles.difference(roles)
+        yield from self.replace_roles(member, *new_roles)
+
+    @asyncio.coroutine
+    def replace_roles(self, member, *roles):
+        """|coro|
+
+        Replaces the :class:`Member`'s roles.
+
+        You must have the proper permissions to use this function.
+
+        This function **replaces** all roles that the member has.
+        For example if the member has roles ``[a, b, c]`` and the
+        call is ``client.replace_roles(member, d, e, c)`` then
+        the member has the roles ``[d, e, c]``.
+
+        This method does **not** do edit the member in-place.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to replace roles from.
+        *roles
+            An argument list of :class:`Role` s to replace the roles with.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to revoke roles.
+        HTTPException
+            Removing roles failed.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+
+        payload = {
+            'roles': [role.id for role in roles]
+        }
+
+        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+    @asyncio.coroutine
+    def create_role(self, server, **fields):
+        """|coro|
+
+        Creates a :class:`Role`.
+
+        This function is similar to :class:`edit_role` in both
+        the fields taken and exceptions thrown.
+
+        Returns
+        --------
+        :class:`Role`
+            The newly created role. This not the same role that
+            is stored in cache.
+        """
+
+        url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
+        r = yield from self.session.post(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='POST', response=r))
+        yield from utils._verify_successful_response(r)
+
+        data = yield from r.json()
+        everyone = server.id == data.get('id')
+        role = Role(everyone=everyone, **data)
+
+        # we have to call edit because you can't pass a payload to the
+        # http request currently.
+        yield from self.edit_role(server, role, **fields)
+        return role
+
+    @asyncio.coroutine
+    def edit_channel_permissions(self, channel, target, allow=None, deny=None):
+        """|coro|
+
+        Sets the channel specific permission overwrites for a target in the
+        specified :class:`Channel`.
+
+        The ``target`` parameter should either be a :class:`Member` or a
+        :class:`Role` that belongs to the channel's server.
+
+        You must have the proper permissions to do this.
+
+        Examples
+        ----------
+
+        Setting allow and deny: ::
+
+            allow = discord.Permissions.none()
+            deny = discord.Permissions.none()
+            allow.can_mention_everyone = True
+            deny.can_manage_messages = True
+            client.set_channel_permissions(message.channel, message.author, allow, deny)
+
+        Parameters
+        -----------
+        channel : :class:`Channel`
+            The channel to give the specific permissions for.
+        target
+            The :class:`Member` or :class:`Role` to overwrite permissions for.
+        allow : :class:`Permissions`
+            The permissions to explicitly allow. (optional)
+        deny : :class:`Permissions`
+            The permissions to explicitly deny. (optional)
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit channel specific permissions.
+        NotFound
+            The channel specified was not found.
+        HTTPException
+            Editing channel specific permissions failed.
+        InvalidArgument
+            The allow or deny arguments were not of type :class:`Permissions`
+            or the target type was not :class:`Role` or :class:`Member`.
+        """
+
+        url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
+
+        allow = Permissions.none() if allow is None else allow
+        deny = Permissions.none() if deny is None else deny
+
+        if not (isinstance(allow, Permissions) and isinstance(deny, Permissions)):
+            raise InvalidArgument('allow and deny parameters must be discord.Permissions')
+
+        deny =  deny.value
+        allow = allow.value
+
+        payload = {
+            'id': target.id,
+            'allow': allow,
+            'deny': deny
+        }
+
+        if isinstance(target, Member):
+            payload['type'] = 'member'
+        elif isinstance(target, Role):
+            payload['type'] = 'role'
+        else:
+            raise InvalidArgument('target parameter must be either discord.Member or discord.Role')
+
+        r = yield from self.session.put(url, data=to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='PUT', response=r))
+        yield from utils._verify_successful_response(r)
+
+    @asyncio.coroutine
+    def delete_channel_permissions(self, channel, target):
+        """|coro|
+
+        Removes a channel specific permission overwrites for a target
+        in the specified :class:`Channel`.
+
+        The target parameter follows the same rules as :meth:`set_channel_permissions`.
+
+        You must have the proper permissions to do this.
+
+        Parameters
+        ----------
+        channel : :class:`Channel`
+            The channel to give the specific permissions for.
+        target
+            The :class:`Member` or :class:`Role` to overwrite permissions for.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to delete channel specific permissions.
+        NotFound
+            The channel specified was not found.
+        HTTPException
+            Deleting channel specific permissions failed.
+        """
+
+        url = '{0}/{1.id}/permissions/{2.id}'.format(endpoints.CHANNELS, channel, target)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
