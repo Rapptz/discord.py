@@ -1408,11 +1408,9 @@ class Client:
         Raises
         -------
         NotFound
-            The invite has expired.
+            The invite has expired or is invalid.
         HTTPException
             Getting the invite failed.
-        InvalidArgument
-
 
         Returns
         --------
@@ -1458,10 +1456,42 @@ class Client:
         -------
         HTTPException
             Accepting the invite failed.
+        NotFound
+            The invite is invalid or expired.
         """
 
         destination = self._resolve_invite(invite)
         url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
         response = yield from self.session.post(url, headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+
+    @asyncio.coroutine
+    def delete_invite(self, invite):
+        """|coro|
+
+        Revokes an :class:`Invite`, URL, or ID to an invite.
+
+        The ``invite`` parameter follows the same rules as
+        :meth:`accept_invite`.
+
+        Parameters
+        ----------
+        invite
+            The invite to revoke.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to revoke invites.
+        NotFound
+            The invite is invalid or expired.
+        HTTPException
+            Revoking the invite failed.
+        """
+
+        destination = self._resolve_invite(invite)
+        url = '{0}/invite/{1}'.format(endpoints.API_BASE, destination)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
