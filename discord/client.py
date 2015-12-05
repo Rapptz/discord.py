@@ -106,6 +106,7 @@ class Client:
             'content-type': 'application/json',
         }
         self._closed = False
+        self._is_logged_in = False
 
     # internals
 
