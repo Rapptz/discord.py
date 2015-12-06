@@ -512,7 +512,7 @@ class Client:
             'recipient_id': user.id
         }
 
-        url = '{}/{}/channels'.format(endpoints.USERS, self.user.id)
+        url = '{}/@me/channels'.format(endpoints.USERS)
         r = yield from self.session.post(url, data=to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=r))
         yield from utils._verify_successful_response(r)
