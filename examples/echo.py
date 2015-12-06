@@ -1,17 +1,16 @@
 import discord
 
 client = discord.Client()
-client.login('email', 'password')
 
-@client.event
+@client.async_event
 def on_ready():
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
 
-@client.event
+@client.async_event
 def on_message(message):
     if message.author.id != client.user.id:
-        client.send_message(message.channel, message.content)
+        yield from client.send_message(message.channel, message.content)
 
-client.run()
+client.run('email', 'password')
