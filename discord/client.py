@@ -204,7 +204,7 @@ class ConnectionState(object):
             status = data.get('status')
             user = data['user']
             member_id = user['id']
-            member = utils.find(lambda m: m.id == member_id, server.members)
+            member = server.get_member(member_id)
             if member is not None:
                 old_member = copy.copy(member)
                 member.status = data.get('status')
@@ -258,25 +258,22 @@ class ConnectionState(object):
     def handle_guild_member_add(self, data):
         server = self._get_server(data.get('guild_id'))
         member = Member(server=server, deaf=False, mute=False, **data)
-        server.members.append(member)
+        server.add_member(member)
         self.dispatch('member_join', member)
 
     def handle_guild_member_remove(self, data):
         server = self._get_server(data.get('guild_id'))
         if server is not None:
             user_id = data['user']['id']
-            member = utils.find(lambda m: m.id == user_id, server.members)
-            try:
-                server.members.remove(member)
-            except ValueError:
-                return
-            else:
+            member = server.get_member(user_id)
+            if member is not None:
+                server.remove_member(member)
                 self.dispatch('member_remove', member)
 
     def handle_guild_member_update(self, data):
         server = self._get_server(data.get('guild_id'))
         user_id = data['user']['id']
-        member = utils.find(lambda m: m.id == user_id, server.members)
+        member = server.get_member(user_id)
         if member is not None:
             user = data['user']
             old_member = copy.copy(member)
@@ -372,8 +369,7 @@ class ConnectionState(object):
             if is_private:
                 member = channel.user
             else:
-                members = channel.server.members
-                member = utils.find(lambda m: m.id == user_id, members)
+                member = channel.server.get_member(user_id)
 
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))

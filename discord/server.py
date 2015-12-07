@@ -51,7 +51,9 @@ class Server(object):
         The :class:`Channel` that denotes the AFK channel. None if it doesn't exist.
     .. attribute:: members
 
-        A list of :class:`Member` that are currently on the server.
+        A list of :class:`Member` that are currently on the server. Note that
+        internally members are stored in a dict so that they can be looked
+        up by their :attr:`User.id`. See the :meth:`~Server.get_member` method.
     .. attribute:: channels
 
         A list of :class:`Channel` that are currently on the server.
@@ -78,7 +80,7 @@ class Server(object):
 
     def _update_voice_state(self, data):
         user_id = data.get('user_id')
-        member = utils.find(lambda m: m.id == user_id, self.members)
+        member = self.get_member(user_id)
         if member is not None:
             ch_id = data.get('channel_id')
             channel = utils.find(lambda c: c.id == ch_id, self.channels)
@@ -95,7 +97,7 @@ class Server(object):
         self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
         default_role = self.get_default_role()
 
-        self.members = []
+        self._members = {}
         self.owner = guild['owner_id']
 
         for data in guild['members']:
@@ -112,11 +114,11 @@ class Server(object):
             if member.id == self.owner:
                 self.owner = member
 
-            self.members.append(member)
+            self.add_member(member)
 
         for presence in guild.get('presences', []):
             user_id = presence['user']['id']
-            member = utils.find(lambda m: m.id == user_id, self.members)
+            member = self.get_member(user_id)
             if member is not None:
                 member.status = presence['status']
                 member.game_id = presence['game_id']
@@ -127,6 +129,21 @@ class Server(object):
 
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj)
+
+    @property
+    def members(self):
+        return self._members.values()
+
+    def get_member(self, user_id):
+        """Gets a specific :class:`Member` for the given :attr:`User.id` efficiently."""
+        return self._members.get(user_id)
+
+    def add_member(self, member):
+        self._members[member.id] = member
+
+    def remove_member(self, member):
+        if member.id in self._members:
+            del self._members[member.id]
 
     def get_default_role(self):
         """Gets the @everyone role that all members have by default."""
