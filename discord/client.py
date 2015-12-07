@@ -35,6 +35,7 @@ from .errors import *
 from .state import ConnectionState
 from . import utils
 from .enums import ChannelType, ServerRegion
+from .voice_client import VoiceClient
 
 import asyncio
 import aiohttp
@@ -46,9 +47,6 @@ import sys, time, re, json
 log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
 request_success_log = '{response.url} with {json} received {data}'
-
-def to_json(obj):
-    return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
 class Client:
     """Represents a client connection that connects to Discord.
@@ -107,6 +105,15 @@ class Client:
         }
         self._closed = False
         self._is_logged_in = False
+
+        # this is shared state between Client and VoiceClient
+        # could this lead to issues? Not sure. I want to say no.
+        self._is_voice_connected = asyncio.Event(loop=self.loop)
+
+        # These two events correspond to the two events necessary
+        # for a connection to be made
+        self._voice_data_found = asyncio.Event(loop=self.loop)
+        self._session_id_found = asyncio.Event(loop=self.loop)
 
     # internals
 
@@ -195,7 +202,7 @@ class Client:
 
             msg = 'Keeping websocket alive with timestamp {}'
             log.debug(msg.format(payload['d']))
-            yield from self.ws.send(to_json(payload))
+            yield from self.ws.send(utils.to_json(payload))
             yield from asyncio.sleep(interval)
 
     @asyncio.coroutine
@@ -227,6 +234,16 @@ class Client:
         if event == 'READY':
             interval = data['heartbeat_interval'] / 1000.0
             self.keep_alive = utils.create_task(self.keep_alive_handler(interval), loop=self.loop)
+
+        if event == 'VOICE_STATE_UPDATE':
+            user_id = data.get('user_id')
+            if user_id == self.user.id:
+                self.session_id = data.get('session_id')
+                self._session_id_found.set()
+
+        if event == 'VOICE_SERVER_UPDATE':
+            self._voice_data_found.data = data
+            self._voice_data_found.set()
 
         if event in ('READY', 'MESSAGE_CREATE', 'MESSAGE_DELETE',
                      'MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'USER_UPDATE',
@@ -264,7 +281,7 @@ class Client:
             }
         }
 
-        yield from self.ws.send(to_json(payload))
+        yield from self.ws.send(utils.to_json(payload))
         log.info('sent the initial payload to create the websocket')
 
     # properties
@@ -348,7 +365,7 @@ class Client:
             'password': password
         }
 
-        data = to_json(payload)
+        data = utils.to_json(payload)
         resp = yield from self.session.post(endpoints.LOGIN, data=data, headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=resp))
         if resp.status == 400:
@@ -513,7 +530,7 @@ class Client:
         }
 
         url = '{}/@me/channels'.format(endpoints.USERS)
-        r = yield from self.session.post(url, data=to_json(payload), headers=self.headers)
+        r = yield from self.session.post(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=r))
         yield from utils._verify_successful_response(r)
         data = yield from r.json()
@@ -584,7 +601,7 @@ class Client:
         if tts:
             payload['tts'] = True
 
-        resp = yield from self.session.post(url, data=to_json(payload), headers=self.headers)
+        resp = yield from self.session.post(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=resp))
         yield from utils._verify_successful_response(resp)
         data = yield from resp.json()
@@ -755,7 +772,7 @@ class Client:
             'mentions': self._resolve_mentions(content, mentions)
         }
 
-        response = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        response = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
@@ -952,7 +969,7 @@ class Client:
             'deaf': deafen
         }
 
-        response = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        response = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
 
@@ -1016,7 +1033,7 @@ class Client:
         }
 
         url = '{0}/@me'.format(endpoints.USERS)
-        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        r = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
@@ -1069,7 +1086,7 @@ class Client:
             }
         }
 
-        sent = to_json(payload)
+        sent = utils.to_json(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         yield from self.ws.send(sent)
 
@@ -1111,7 +1128,7 @@ class Client:
             'position': options.get('position', channel.position)
         }
 
-        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        r = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
@@ -1160,7 +1177,7 @@ class Client:
         }
 
         url = '{0}/{1.id}/channels'.format(endpoints.SERVERS, server)
-        response = yield from self.session.post(url, headers=self.headers, data=to_json(payload))
+        response = yield from self.session.post(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
 
@@ -1329,7 +1346,7 @@ class Client:
         payload['afk_channel'] = getattr(afk_channel, 'id', None)
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
-        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        r = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
@@ -1377,7 +1394,7 @@ class Client:
         }
 
         url = '{0}/{1.id}/invites'.format(endpoints.CHANNELS, destination)
-        response = yield from self.session.post(url, headers=self.headers, data=to_json(payload))
+        response = yield from self.session.post(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='POST', response=response))
 
         yield from utils._verify_successful_response(response)
@@ -1497,7 +1514,6 @@ class Client:
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
 
-
     # Role management
 
     @asyncio.coroutine
@@ -1555,7 +1571,7 @@ class Client:
             'hoist': fields.get('hoist', role.hoist)
         }
 
-        r = yield from self.session.patch(url, data=to_json(payload), headers=self.headers)
+        r = yield from self.session.patch(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
@@ -1683,7 +1699,7 @@ class Client:
             'roles': [role.id for role in roles]
         }
 
-        r = yield from self.session.patch(url, headers=self.headers, data=to_json(payload))
+        r = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
@@ -1788,7 +1804,7 @@ class Client:
         else:
             raise InvalidArgument('target parameter must be either discord.Member or discord.Role')
 
-        r = yield from self.session.put(url, data=to_json(payload), headers=self.headers)
+        r = yield from self.session.put(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='PUT', response=r))
         yield from utils._verify_successful_response(r)
 
@@ -1824,3 +1840,72 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+
+
+    # Voice management
+
+    @asyncio.coroutine
+    def join_voice_channel(self, channel):
+        """|coro|
+
+        Joins a voice channel and creates a :class:`VoiceClient` to
+        establish your connection to the voice server.
+
+        Parameters
+        ----------
+        channel : :class:`Channel`
+            The voice channel to join to.
+
+        Raises
+        -------
+        InvalidArgument
+            The channel was not a voice channel.
+        asyncio.TimeoutError
+            Could not connect to the voice channel in time.
+        ClientException
+            You are already connected to a voice channel.
+
+        Returns
+        -------
+        :class:`VoiceClient`
+            A voice client that is fully connected to the voice server.
+        """
+
+        if self._is_voice_connected.is_set():
+            raise ClientException('Already connected to a voice channel')
+
+        if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
+            raise InvalidArgument('Channel passed must be a voice channel')
+
+        self.voice_channel = channel
+        log.info('attempting to join voice channel {0.name}'.format(channel))
+
+        payload = {
+            'op': 4,
+            'd': {
+                'guild_id': self.voice_channel.server.id,
+                'channel_id': self.voice_channel.id,
+                'self_mute': False,
+                'self_deaf': False
+            }
+        }
+
+        yield from self.ws.send(utils.to_json(payload))
+        yield from asyncio.wait_for(self._session_id_found.wait(), timeout=5.0, loop=self.loop)
+        yield from asyncio.wait_for(self._voice_data_found.wait(), timeout=5.0, loop=self.loop)
+
+        self._session_id_found.clear()
+        self._voice_data_found.clear()
+
+        kwargs = {
+            'user': self.user,
+            'connected': self._is_voice_connected,
+            'channel': self.voice_channel,
+            'data': self._voice_data_found.data,
+            'loop': self.loop,
+            'session_id': self.session_id
+        }
+
+        result = VoiceClient(**kwargs)
+        yield from result.connect()
+        return result

@@ -29,6 +29,7 @@ from .errors import HTTPException, Forbidden, NotFound, InvalidArgument
 import datetime
 from base64 import b64encode
 import asyncio
+import json
 
 def parse_time(timestamp):
     if timestamp:
@@ -87,6 +88,9 @@ def _bytes_to_base64_data(data):
     mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
+
+def to_json(obj):
+    return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
 try:
     create_task = asyncio.ensure_future
