@@ -167,6 +167,7 @@ class ConnectionState:
     def parse_guild_member_add(self, data):
         server = self._get_server(data.get('guild_id'))
         member = Member(server=server, deaf=False, mute=False, **data)
+        member.roles.append(server.get_default_role())
         server.members.append(member)
         self.dispatch('member_join', member)
 
@@ -191,7 +192,7 @@ class ConnectionState:
             member.name = user['username']
             member.discriminator = user['discriminator']
             member.avatar = user['avatar']
-            member.roles = []
+            member.roles = [server.get_default_role()]
             # update the roles
             for role in server.roles:
                 if role.id in data['roles']:
