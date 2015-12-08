@@ -457,3 +457,4 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: GatewayNotFound
 
+.. autoexception:: OpusError

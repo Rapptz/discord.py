@@ -80,25 +80,33 @@ def load_opus(name):
     """Loads the libopus shared library for use with voice.
 
     If this function is not called then the library uses the function
-    ``ctypes.util.find_library`` and then loads that one if available.
+    `ctypes.util.find_library <find_library>` and then loads that one
+    if available.
+
+    .. find_library: https://docs.python.org/3.5/library/ctypes.html#finding-shared-libraries
 
     Not loading a library leads to voice not working.
 
     This function propagates the exceptions thrown.
 
-    .. warning::
+    Warning
+    --------
+    The bitness of the library must match the bitness of your python
+    interpreter. If the library is 64-bit then your python interpreter
+    must be 64-bit as well. Usually if there's a mismatch in bitness then
+    the load will throw an exception.
 
-        The bitness of the library must match the bitness of your python
-        interpreter. If the library is 64-bit then your python interpreter
-        must be 64-bit as well. Usually if there's a mismatch in bitness then
-        the load will throw an exception.
+    Note
+    ----
+    On Windows, the .dll extension is not necessary. However, on Linux
+    the full extension is required to load the library, e.g. ``libopus.so.1``.
+    On Linux however, `find_library`_ will usually find the library automatically
+    without you having to call this.
 
-    .. note::
-
-        On Windows, the .dll extension is not necessary. However, on Linux
-        the full extension is required to load the library, e.g. ``libopus.so.1``.
-
-    :param name: The filename of the shared library.
+    Parameters
+    ----------
+    name: str
+        The filename of the shared library.
     """
     global _lib
     _lib = libopus_loader(name)
