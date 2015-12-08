@@ -32,6 +32,7 @@ from .invite import Invite
 from .object import Object
 from . import utils
 from . import opus
+from .voice_client import VoiceClient
 
 import logging
 

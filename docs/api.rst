@@ -20,6 +20,19 @@ Client
 .. autoclass:: Client
     :members:
 
+
+Voice
+-----
+
+.. autoclass:: VoiceClient
+    :members:
+
+
+Opus Library
+~~~~~~~~~~~~~
+
+.. autofunction:: opus.load_opus
+
 .. _discord-api-events:
 
 Event Reference

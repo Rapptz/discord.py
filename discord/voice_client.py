@@ -99,6 +99,14 @@ class VoiceClient:
     This client is created solely through :meth:`Client.join_voice_channel`
     and its only purpose is to transmit voice.
 
+    Warning
+    --------
+    In order to play audio, you must have loaded the opus library
+    through :func:`opus.load_opus`.
+
+    If you don't do this then the library will not be able to
+    transmit audio.
+
     Attributes
     -----------
     session_id : str
@@ -391,6 +399,11 @@ class VoiceClient:
         +------------------+--------------------------------------------------+
         | player.is_done() | Returns a bool indicating if the stream is done. |
         +------------------+--------------------------------------------------+
+
+        The stream must have the same sampling rate as the encoder and the same
+        number of channels. The defaults are 48000 Mhz and 2 channels. You
+        could change the encoder options by using :meth:`encoder_options`
+        but this must be called **before** this function.
 
         Parameters
         -----------
