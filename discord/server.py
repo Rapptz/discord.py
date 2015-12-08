@@ -28,6 +28,7 @@ from . import utils
 from .role import Role
 from .member import Member
 from .channel import Channel
+from collections import OrderedDict
 
 class Server(object):
     """Represents a Discord server.
@@ -97,7 +98,7 @@ class Server(object):
         self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
         default_role = self.get_default_role()
 
-        self._members = {}
+        self._members = OrderedDict()
         self.owner = guild['owner_id']
 
         for data in guild['members']:
@@ -132,7 +133,7 @@ class Server(object):
 
     @property
     def members(self):
-        return self._members.values()
+        return list(self._members.values())
 
     def get_member(self, user_id):
         """Gets a specific :class:`Member` for the given :attr:`User.id` efficiently."""
