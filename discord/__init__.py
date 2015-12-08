@@ -31,6 +31,7 @@ from .colour import Color, Colour
 from .invite import Invite
 from .object import Object
 from . import utils
+from . import opus
 
 import logging
 

@@ -1903,7 +1903,8 @@ class Client:
             'channel': self.voice_channel,
             'data': self._voice_data_found.data,
             'loop': self.loop,
-            'session_id': self.session_id
+            'session_id': self.session_id,
+            'main_ws': self.ws
         }
 
         result = VoiceClient(**kwargs)
