@@ -346,8 +346,8 @@ class VoiceClient:
         cmd = cmd.format(command, filename, self.encoder.sampling_rate, self.encoder.channels)
         try:
             process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
-        except:
-            raise ClientException('Popen failed: {}'.format(str(e)))
+        except Exception as e:
+            raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e)))
 
         return StreamPlayer(process.stdout, self.encoder, self._connected, self.play_audio, after)
 
