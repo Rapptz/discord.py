@@ -1879,6 +1879,8 @@ class Client:
             Could not connect to the voice channel in time.
         ClientException
             You are already connected to a voice channel.
+        OpusNotLoaded
+            The opus library has not been loaded.
 
         Returns
         -------

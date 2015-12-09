@@ -33,6 +33,8 @@ Opus Library
 
 .. autofunction:: opus.load_opus
 
+.. autofunction:: opus.is_loaded
+
 .. _discord-api-events:
 
 Event Reference
@@ -457,4 +459,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: GatewayNotFound
 
-.. autoexception:: OpusError
+.. autoexception:: opus.OpusError
+
+.. autoexception:: opus.OpusNotLoaded

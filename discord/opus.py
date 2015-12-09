@@ -111,13 +111,37 @@ def load_opus(name):
     global _lib
     _lib = libopus_loader(name)
 
+def is_loaded():
+    """Function to check if opus lib is successfully loaded either
+    via the ``ctypes.util.find_library`` call of :func:`load_opus`.
+
+    This must return ``True`` for voice to work.
+
+    Returns
+    -------
+    bool
+        Indicates if the opus library has been loaded.
+    """
+    global _lib
+    return _lib is not None
+
 class OpusError(DiscordException):
-    """An exception that is thrown for libopus related errors."""
+    """An exception that is thrown for libopus related errors.
+
+    Attributes
+    ----------
+    code : int
+        The error code returned.
+    """
     def __init__(self, code):
         self.code = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
         log.info('"{}" has happened'.format(msg))
-        super(DiscordException, self).__init__(msg)
+        super().__init__(msg)
+
+class OpusNotLoaded(DiscordException):
+    """An exception that is thrown for when libopus is not loaded."""
+    pass
 
 
 # Some constants...
@@ -136,6 +160,9 @@ class Encoder:
         self.sample_size = 2 * self.channels # (bit_rate / 8) but bit_rate == 16
         self.samples_per_frame = int(self.sampling_rate / 1000 * self.frame_length)
         self.frame_size = self.samples_per_frame * self.sample_size
+
+        if not is_loaded():
+            raise OpusNotLoaded()
 
         self._state = self._create_state()
 
