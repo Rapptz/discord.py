@@ -59,39 +59,54 @@ class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
         threading.Thread.__init__(self, **kwargs)
         self.buff = stream
-        self.encoder = encoder
+        self.frame_size = encoder.frame_size
         self.player = player
-        self._event = threading.Event()
+        self._end = threading.Event()
+        self._paused = threading.Event()
         self._connected = connected
         self.after = after
-        self.delay = self.encoder.frame_length / 1000.0
+        self.delay = encoder.frame_length / 1000.0
 
     def run(self):
         self.loops = 0
-        start = time.time()
+        self._start = time.time()
         while not self.is_done():
+            if self._paused.is_set():
+                continue
+
             self.loops += 1
-            data = self.buff.read(self.encoder.frame_size)
-            log.info('received {} bytes (out of {})'.format(len(data), self.encoder.frame_size))
-            if len(data) != self.encoder.frame_size:
+            data = self.buff.read(self.frame_size)
+            log.info('received {} bytes (out of {})'.format(len(data), self.frame_size))
+            if len(data) != self.frame_size:
                 self.stop()
                 break
 
             self.player(data)
-            next_time = start + self.delay * self.loops
+            next_time = self._start + self.delay * self.loops
             delay = max(0, self.delay + (next_time - time.time()))
             time.sleep(delay)
 
     def stop(self):
-        self._event.set()
+        self._end.set()
         if callable(self.after):
             try:
                 self.after()
             except:
                 pass
 
+    def pause(self):
+        self._paused.set()
+
+    def resume(self):
+        self.loops = 0
+        self._start = time.time()
+        self._paused.clear()
+
+    def is_playing(self):
+        return not self._paused.is_set() and not self.is_done()
+
     def is_done(self):
-        return not self._connected.is_set() or self._event.is_set()
+        return not self._connected.is_set() or self._end.is_set()
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -395,15 +410,21 @@ class VoiceClient:
 
         The following operations are valid on the ``StreamPlayer`` object:
 
-        +------------------+--------------------------------------------------+
-        |    Operation     |                   Description                    |
-        +==================+==================================================+
-        | player.start()   | Starts the audio stream.                         |
-        +------------------+--------------------------------------------------+
-        | player.stop()    | Stops the audio stream.                          |
-        +------------------+--------------------------------------------------+
-        | player.is_done() | Returns a bool indicating if the stream is done. |
-        +------------------+--------------------------------------------------+
+        +---------------------+-----------------------------------------------------+
+        |      Operation      |                     Description                     |
+        +=====================+=====================================================+
+        | player.start()      | Starts the audio stream.                            |
+        +---------------------+-----------------------------------------------------+
+        | player.stop()       | Stops the audio stream.                             |
+        +---------------------+-----------------------------------------------------+
+        | player.is_done()    | Returns a bool indicating if the stream is done.    |
+        +---------------------+-----------------------------------------------------+
+        | player.is_playing() | Returns a bool indicating if the stream is playing. |
+        +---------------------+-----------------------------------------------------+
+        | player.pause()      | Pauses the audio stream.                            |
+        +---------------------+-----------------------------------------------------+
+        | player.resume()     | Resumes the audio stream.                           |
+        +---------------------+-----------------------------------------------------+
 
         The stream must have the same sampling rate as the encoder and the same
         number of channels. The defaults are 48000 Mhz and 2 channels. You
