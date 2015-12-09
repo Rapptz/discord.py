@@ -683,8 +683,11 @@ class Client:
         For convenience it could also be a :class:`User`. If it's a :class:`User` or :class:`PrivateChannel`
         then it sends the message via private message, otherwise it sends the message to the channel.
         If the destination is a :class:`Server` then it's equivalent to calling
-        :meth:`Server.get_default_channel` and sending it there. If it is a :class:`Object`
-        instance then it is assumed to be the destination ID.
+        :meth:`Server.get_default_channel` and sending it there.
+
+        If it is a :class:`Object` instance then it is assumed to be the
+        destination ID. The destination ID is a *channel* so passing in a user
+        ID will not be a valid destination.
 
         .. versionchanged:: 0.9.0
             ``str`` being allowed was removed and replaced with :class:`Object`.
