@@ -349,7 +349,12 @@ class VoiceClient:
         except Exception as e:
             raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e)))
 
-        return StreamPlayer(process.stdout, self.encoder, self._connected, self.play_audio, after)
+        def killer():
+            process.kill()
+            if callable(after):
+                after()
+
+        return StreamPlayer(process.stdout, self.encoder, self._connected, self.play_audio, killer)
 
     def encoder_options(self, *, sample_rate, channels=2):
         """Sets the encoder options for the OpusEncoder.
