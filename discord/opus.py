@@ -80,10 +80,11 @@ def load_opus(name):
     """Loads the libopus shared library for use with voice.
 
     If this function is not called then the library uses the function
-    `ctypes.util.find_library <find_library>` and then loads that one
+    `ctypes.util.find_library`__ and then loads that one
     if available.
 
-    .. find_library: https://docs.python.org/3.5/library/ctypes.html#finding-shared-libraries
+    .. _find library: https://docs.python.org/3.5/library/ctypes.html#finding-shared-libraries
+    __ `find library`_
 
     Not loading a library leads to voice not working.
 
@@ -100,7 +101,7 @@ def load_opus(name):
     ----
     On Windows, the .dll extension is not necessary. However, on Linux
     the full extension is required to load the library, e.g. ``libopus.so.1``.
-    On Linux however, `find_library`_ will usually find the library automatically
+    On Linux however, `find library`_ will usually find the library automatically
     without you having to call this.
 
     Parameters
