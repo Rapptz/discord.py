@@ -633,6 +633,7 @@ class Client:
         response = yield from self.session.post(url, headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def send_file(self, destination, fp, filename=None):
@@ -734,6 +735,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def edit_message(self, message, new_content, *, mentions=True):
@@ -873,6 +875,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def ban(self, member):
@@ -903,6 +906,7 @@ class Client:
         response = yield from self.session.put(url, headers=self.headers)
         log.debug(request_logging_format.format(method='PUT', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def unban(self, member):
@@ -933,6 +937,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def server_voice_state(self, member, *, mute=False, deafen=False):
@@ -972,6 +977,7 @@ class Client:
         response = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def edit_profile(self, password, **fields):
@@ -1214,6 +1220,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     # Server management
 
@@ -1242,6 +1249,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def create_server(self, name, region=None, icon=None):
@@ -1349,6 +1357,7 @@ class Client:
         r = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
+        yield from r.release()
 
     # Invite management
 
@@ -1483,6 +1492,7 @@ class Client:
         response = yield from self.session.post(url, headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def delete_invite(self, invite):
@@ -1513,6 +1523,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     # Role management
 
@@ -1605,6 +1616,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
     @asyncio.coroutine
     def add_roles(self, member, *roles):
@@ -1702,6 +1714,7 @@ class Client:
         r = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
+        yield from r.release()
 
     @asyncio.coroutine
     def create_role(self, server, **fields):
@@ -1807,6 +1820,7 @@ class Client:
         r = yield from self.session.put(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='PUT', response=r))
         yield from utils._verify_successful_response(r)
+        yield from r.release()
 
     @asyncio.coroutine
     def delete_channel_permissions(self, channel, target):
@@ -1840,6 +1854,7 @@ class Client:
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
+        yield from response.release()
 
 
     # Voice management
