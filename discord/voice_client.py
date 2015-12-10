@@ -134,14 +134,16 @@ class VoiceClient:
         The endpoint we are connecting to.
     channel : :class:`Channel`
         The voice channel connected to.
+    loop
+        The event loop that the voice client is running on.
     """
-    def __init__(self, user, connected, main_ws, session_id, channel, data, loop):
+    def __init__(self, user, main_ws, session_id, channel, data, loop):
         self.user = user
-        self._connected = connected
         self.main_ws = main_ws
         self.channel = channel
         self.session_id = session_id
         self.loop = loop
+        self._connected = asyncio.Event(loop=self.loop)
         self.token = data.get('token')
         self.guild_id = data.get('guild_id')
         self.endpoint = data.get('endpoint')
@@ -295,6 +297,10 @@ class VoiceClient:
         }
 
         yield from self.main_ws.send(utils.to_json(payload))
+
+    def is_connected(self):
+        """bool : Indicates if the voice client is connected to voice."""
+        return self._connected.is_set()
 
     # audio related
 
