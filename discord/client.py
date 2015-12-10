@@ -107,7 +107,9 @@ class Client:
 
         self.connection = ConnectionState(self.dispatch, max_messages)
         self.session = aiohttp.ClientSession(loop=self.loop)
-        user_agent = 'discord.py/{0} Python/{1[0]}.{1[1]} aiohttp/{2}'
+
+        # Blame React for this
+        user_agent = 'DiscordBot discord.py/{0} Python/{1[0]}.{1[1]} aiohttp/{2}'
 
         self.headers = {
             'content-type': 'application/json',
