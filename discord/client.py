@@ -109,7 +109,7 @@ class Client:
         self.session = aiohttp.ClientSession(loop=self.loop)
 
         # Blame React for this
-        user_agent = 'DiscordBot discord.py/{0} Python/{1[0]}.{1[1]} aiohttp/{2}'
+        user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
 
         self.headers = {
             'content-type': 'application/json',
