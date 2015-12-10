@@ -145,9 +145,9 @@ class Permissions(object):
         # Then we take this value and look at the allowed values.
         # And whatever is allowed is set to 1.
         # So 0000 OP2 0101 -> 0101
-        # The OP is (base ^ denied) & ~denied.
+        # The OP is base  & ~denied.
         # The OP2 is base | allowed.
-        self.value = ((self.value ^ deny) & ~deny) | allow
+        self.value = (self.value & ~deny) | allow
 
     @property
     def can_create_instant_invite(self):
