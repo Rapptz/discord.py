@@ -422,35 +422,69 @@ Some classes are just there to be data containers, this lists them.
     or attributes of data classes that you receive from the events specified in the
     :ref:`discord-api-events`.
 
+
+Object
+~~~~~~~
+
 .. autoclass:: Object
     :members:
+
+User
+~~~~~
 
 .. autoclass:: User
     :members:
 
+Message
+~~~~~~~
+
 .. autoclass:: Message
     :members:
+
+Server
+~~~~~~
 
 .. autoclass:: Server
     :members:
 
+Member
+~~~~~~
+
 .. autoclass:: Member
     :members:
+
+Colour
+~~~~~~
 
 .. autoclass:: Colour
     :members:
 
+Role
+~~~~~
+
 .. autoclass:: Role
     :members:
+
+Permissions
+~~~~~~~~~~~~
 
 .. autoclass:: Permissions
     :members:
 
+Channel
+~~~~~~~~
+
 .. autoclass:: Channel
     :members:
 
+PrivateChannel
+~~~~~~~~~~~~~~~
+
 .. autoclass:: PrivateChannel
     :members:
+
+Invite
+~~~~~~~
 
 .. autoclass:: Invite
     :members:
