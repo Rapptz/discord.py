@@ -32,6 +32,7 @@ from .server import Server
 from .message import Message
 from .invite import Invite
 from .object import Object
+from .role import Role
 from .errors import *
 from .state import ConnectionState
 from . import utils
