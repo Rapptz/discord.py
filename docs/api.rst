@@ -13,6 +13,24 @@ The following section outlines the API of discord.py.
     more information on how to set up and use the logging module with
     discord.py.
 
+Version Related Info
+---------------------
+
+There are two main ways to query version information about the library.
+
+.. data:: version_info
+
+    A named tuple that is similar to `sys.version_info`_.
+
+    Just like `sys.version_info`_ the valid values for ``releaselevel`` are
+    'alpha', 'beta', 'candidate' and 'final'.
+
+    .. _sys.version_info: https://docs.python.org/3.5/library/sys.html#sys.version_info
+
+.. data:: __version__
+
+    A string representation of the version. e.g. ``'0.10.0-alpha0'``.
+
 
 Client
 -------
