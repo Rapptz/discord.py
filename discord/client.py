@@ -125,6 +125,10 @@ class Client:
         self._voice_data_found = asyncio.Event(loop=self.loop)
         self._session_id_found = asyncio.Event(loop=self.loop)
 
+    def __del__(self):
+        if hasattr(self, 'session'):
+            self.session.close()
+
     # internals
 
     def handle_message(self, message):
