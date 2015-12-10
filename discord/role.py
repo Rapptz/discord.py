@@ -50,6 +50,7 @@ class Role(object):
     """
 
     def __init__(self, **kwargs):
+        self._is_everyone = kwargs.get('everyone', False)
         self.update(**kwargs)
 
     def update(self, **kwargs):
@@ -61,7 +62,8 @@ class Role(object):
         self.hoist = kwargs.get('hoist', False)
         self.managed = kwargs.get('managed', False)
         self.color = self.colour
-        self._is_everyone = kwargs.get('everyone', False)
+        if 'everyone' in kwargs:
+            self._is_everyone = kwargs['everyone']
 
     def is_everyone(self):
         """Checks if the role is the @everyone role."""
