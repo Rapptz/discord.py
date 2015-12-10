@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from . import __version__ as library_version
 from . import endpoints
 from .user import User
 from .channel import Channel, PrivateChannel
@@ -101,9 +102,13 @@ class Client:
 
         self.connection = ConnectionState(self.dispatch, max_messages)
         self.session = aiohttp.ClientSession(loop=self.loop)
+        user_agent = 'discord.py/{0} Python/{1[0]}.{1[1]} aiohttp/{2}'
+
         self.headers = {
             'content-type': 'application/json',
+            'user-agent': user_agent.format(library_version, sys.version_info, aiohttp.__version__)
         }
+
         self._closed = False
         self._is_logged_in = False
 

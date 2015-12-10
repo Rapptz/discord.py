@@ -15,8 +15,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Rapptz'
-__version__ = '0.9.0'
-__build__ = 0x009000
+__version__ = '0.10.0-alpha'
 
 from .client import Client
 from .user import User
@@ -34,8 +33,13 @@ from . import utils
 from . import opus
 from .voice_client import VoiceClient
 from .enums import ChannelType, ServerRegion, Status
+from collections import namedtuple
 
 import logging
+
+VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
+
+version_info = VersionInfo(major=0, minor=10, micro=0, releaselevel='alpha', serial=0)
 
 try:
     from logging import NullHandler
