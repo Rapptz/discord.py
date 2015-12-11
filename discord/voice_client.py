@@ -451,6 +451,7 @@ class VoiceClient:
         StreamPlayer
             A stream player with the operations noted above.
         """
+        return StreamPlayer(stream, self.encoder, self._connected, self.play_audio, after)
 
     def play_audio(self, data):
         """Sends an audio packet composed of the data.
