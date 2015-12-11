@@ -70,9 +70,13 @@ class StreamPlayer(threading.Thread):
     def run(self):
         self.loops = 0
         self._start = time.time()
-        while not self.is_done():
+        while not self._end.is_set():
             if self._paused.is_set():
                 continue
+
+            if not self._connected.is_set():
+                self.stop()
+                break
 
             self.loops += 1
             data = self.buff.read(self.frame_size)
@@ -107,6 +111,16 @@ class StreamPlayer(threading.Thread):
 
     def is_done(self):
         return not self._connected.is_set() or self._end.is_set()
+
+class ProcessPlayer(StreamPlayer):
+    def __init__(self, process, client, after, **kwargs):
+        super().__init__(process.stdout, client.encoder,
+                         client._connected, client.play_audio, after, **kwargs)
+        self.process = process
+
+    def stop(self):
+        self.process.kill()
+        super().stop()
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -318,7 +332,7 @@ class VoiceClient:
         struct.pack_into('>I', buff, 8, self.ssrc)
         return buff
 
-    def create_ffmpeg_player(self, filename, *, use_avconv=False, after=None):
+    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, after=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
         audio.
 
@@ -342,11 +356,17 @@ class VoiceClient:
 
         Parameters
         -----------
-        filename : str
+        filename
             The filename that ffmpeg will take and convert to PCM bytes.
-            This is passed to the ``-i`` flag that ffmpeg takes.
+            If ``pipe`` is True then this is a file-like object that is
+            passed to the stdin of ``ffmpeg``.
         use_avconv: bool
             Use ``avconv`` instead of ``ffmpeg``.
+        pipe : bool
+            If true, denotes that ``filename`` parameter will be passed
+            to the stdin of ffmpeg.
+        options: str
+            Extra command line flags to pass to ``ffmpeg``.
         after : callable
             The finalizer that is called after the stream is done being
             played. All exceptions the finalizer throws are silently discarded.
@@ -363,17 +383,21 @@ class VoiceClient:
             See :meth:`create_stream_player`.
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
-        cmd = '{} -i "{}" -f s16le -ar {} -ac {} -loglevel warning pipe:1'
-        cmd = cmd.format(command, filename, self.encoder.sampling_rate, self.encoder.channels)
+        input_name = '-' if pipe else shlex.quote(filename)
+        cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel warning pipe:1'
+        cmd = cmd.format(input_name, self.encoder.sampling_rate, self.encoder.channels)
+
+        if isinstance(options, str):
+            cmd = cmd + ' ' + options
+
+        stdin = None if not pipe else filename
+        args = shlex.split(cmd)
         try:
-            process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
-        except Exception as e:
+            p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
+            return ProcessPlayer(p, self, after)
+        except subprocess.SubprocessError as e:
             raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e)))
 
-        def killer():
-            process.kill()
-            if callable(after):
-                after()
 
         return StreamPlayer(process.stdout, self.encoder, self._connected, self.play_audio, killer)
 
