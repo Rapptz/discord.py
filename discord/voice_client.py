@@ -295,7 +295,6 @@ class VoiceClient:
             return
 
         self.keep_alive.cancel()
-        self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         self._connected.clear()
         yield from self.ws.close()
