@@ -399,7 +399,72 @@ class VoiceClient:
             raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e)))
 
 
-        return StreamPlayer(process.stdout, self.encoder, self._connected, self.play_audio, killer)
+    def create_ytdl_player(self, url, *, options=None, use_avconv=False, after=None):
+        """Creates a stream player for youtube or other services that launches
+        in a separate thread to play the audio.
+
+        The player uses the ``youtube_dl`` python library to get the information
+        required to get audio from the URL. Since this uses an external library,
+        you must install it yourself. You can do so by calling
+        ``pip install youtube_dl``.
+
+        You must have the ffmpeg or avconv executable in your path environment
+        variable in order for this to work.
+
+        The operations that can be done on the player are the same as those in
+        :meth:`create_stream_player`.
+
+        .. _here: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L117-L265
+
+        Examples
+        ----------
+
+        Basic usage: ::
+
+            voice = yield from client.join_voice_channel(channel)
+            player = voice.create_ytdl_player('https://www.youtube.com/watch?v=d62TYemN6MQ')
+            player.start()
+
+        Parameters
+        -----------
+        url : str
+            The URL that ``youtube_dl`` will take and download audio to pass
+            to ``ffmpeg`` or ``avconv`` to convert to PCM bytes.
+        options : dict
+            A dictionary of options to pass into the ``YoutubeDL`` instance.
+            See `here`_ for more details.
+        use_avconv: bool
+            Use ``avconv`` instead of ``ffmpeg``. Passes the appropriate
+            flags to ``youtube-dl`` as well.
+        after : callable
+            The finalizer that is called after the stream is done being
+            played. All exceptions the finalizer throws are silently discarded.
+
+        Raises
+        -------
+        ClientException
+            Popen failure from either ``ffmpeg``/``avconv``.
+
+        Returns
+        --------
+        StreamPlayer
+            A stream player with specific operations.
+            See :meth:`create_stream_player`.
+        """
+        import youtube_dl
+
+        opts = {
+            'format': 'webm[abr>0]' if 'youtube' in url else 'best',
+            'prefer_ffmpeg': not use_avconv
+        }
+
+        if options is not None and isinstance(options, dict):
+            opts.update(options)
+
+        ydl = youtube_dl.YoutubeDL(opts)
+        info = ydl.extract_info(url, download=False)
+        log.info('playing URL {}'.format(url))
+        return self.create_ffmpeg_player(info['url'], use_avconv=use_avconv, after=after)
 
     def encoder_options(self, *, sample_rate, channels=2):
         """Sets the encoder options for the OpusEncoder.
