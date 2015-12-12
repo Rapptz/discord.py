@@ -521,8 +521,7 @@ class Client:
         if resp.status == 400:
             raise LoginFailure('Improper credentials have been passed.')
         elif resp.status != 200:
-            data = yield from resp.json()
-            raise HTTPException(resp, data.get('message'))
+            raise HTTPException(resp, None)
 
         log.info('logging in returned status code {}'.format(resp.status))
         self.email = email
