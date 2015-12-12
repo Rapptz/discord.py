@@ -298,7 +298,7 @@ class Client:
             raise ClientException('You must be logged in to connect')
 
         self.gateway = yield from self._get_gateway()
-        self.ws = yield from websockets.connect(self.gateway)
+        self.ws = yield from websockets.connect(self.gateway, loop=self.loop)
         self.ws.max_size = None
         log.info('Created websocket connected to {0.gateway}'.format(self))
         payload = {
