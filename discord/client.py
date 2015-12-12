@@ -838,8 +838,6 @@ class Client:
 
         Raises
         -------
-        InvalidArgument
-            If ``fp.name`` is an invalid default for ``filename``.
         HTTPException
             Sending the file failed.
 
@@ -852,24 +850,22 @@ class Client:
         channel_id = self._resolve_destination(destination)
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
+        files = aiohttp.FormData()
+
+        # we don't want the content-type json in this request
+        headers = {
+            'authorization': self.token
+        }
 
         try:
             # attempt to open the file and send the request
             with open(fp, 'rb') as f:
-                files = {
-                    'file': (fp if filename is None else filename, f)
-                }
+                files.add_field('file', f, filename=filename)
+                response = yield from self.session.post(url, data=files, headers=headers)
         except TypeError:
-            # if we got a TypeError then this is probably a file-like object
-            fname = getattr(fp, 'name', None) if filename is None else filename
-            if fname is None:
-                raise InvalidArgument('file-like object has no name attribute and no filename was specified')
+            files.add_field('file', fp, filename=filename)
+            response = yield from self.session.post(url, data=files, headers=headers)
 
-            files = {
-                'file': (fname, fp)
-            }
-
-        response = yield from self.session.post(url, data=files, headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
