@@ -692,6 +692,20 @@ class Client:
         self.private_channels.append(PrivateChannel(id=data['id'], user=user))
 
     @asyncio.coroutine
+    def _rate_limit_helper(self, name, method, url, data):
+        resp = yield from self.session.request(method, url, data=data, headers=self.headers)
+        tmp = request_logging_format.format(method=method, response=resp)
+        log_fmt = 'In {}, {}'.format(name, tmp)
+        log.debug(log_fmt)
+        if resp.status == 429:
+            retry = resp.headers['Retry-After'] / 1000.0
+            yield from resp.release()
+            yield from asyncio.sleep(retry)
+            return (yield from self._rate_limit_helper(name, method, data))
+
+        return resp
+
+    @asyncio.coroutine
     def send_message(self, destination, content, *, mentions=True, tts=False):
         """|coro|
 
@@ -758,8 +772,7 @@ class Client:
         if tts:
             payload['tts'] = True
 
-        resp = yield from self.session.post(url, data=utils.to_json(payload), headers=self.headers)
-        log.debug(request_logging_format.format(method='POST', response=resp))
+        resp = yield from self._rate_limit_helper('send_message', 'POST', url, utils.to_json(payload))
         yield from utils._verify_successful_response(resp)
         data = yield from resp.json()
         log.debug(request_success_log.format(response=resp, json=payload, data=data))
@@ -931,7 +944,7 @@ class Client:
             'mentions': self._resolve_mentions(content, mentions)
         }
 
-        response = yield from self.session.patch(url, headers=self.headers, data=utils.to_json(payload))
+        response = yield from self._rate_limit_helper('edit_message', 'PATCH', url, utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
@@ -1012,7 +1025,6 @@ class Client:
             before = Object(id=data[-1]['id'])
 
         return generator(result)
-
 
     # Member management
 
