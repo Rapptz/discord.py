@@ -183,9 +183,8 @@ class Client:
             found = utils.find(lambda pm: pm.user == destination, self.private_channels)
             if found is None:
                 # Couldn't find the user, so start a PM with them first.
-                yield from self.start_private_message(destination)
-                channel_id = self.private_channels[-1].id
-                return channel_id
+                channel = yield from self.start_private_message(destination)
+                return channel.id
             else:
                 return found.id
         elif isinstance(destination, Object):
@@ -732,7 +731,9 @@ class Client:
         yield from utils._verify_successful_response(r)
         data = yield from r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
-        self.private_channels.append(PrivateChannel(id=data['id'], user=user))
+        channel = PrivateChannel(id=data['id'], user=user)
+        self.private_channels.append(channel)
+        return channel
 
     @asyncio.coroutine
     def _rate_limit_helper(self, name, method, url, data):

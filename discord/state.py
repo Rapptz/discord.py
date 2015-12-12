@@ -55,6 +55,7 @@ class ConnectionState:
     def _add_server(self, guild):
         server = Server(**guild)
         self.servers.append(server)
+        return server
 
     def parse_ready(self, data):
         self.user = User(**data['user'])
@@ -220,8 +221,8 @@ class ConnectionState:
             # unavailable during the READY event and is now
             # available, so it isn't in the cache...
 
-        self._add_server(data)
-        self.dispatch('server_join', self.servers[-1])
+        server = self._add_server(data)
+        self.dispatch('server_join', server)
 
     def parse_guild_update(self, data):
         server = self._get_server(data.get('id'))
