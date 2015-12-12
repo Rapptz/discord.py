@@ -170,6 +170,7 @@ class Client:
                 return m.group(1)
         return invite
 
+    @asyncio.coroutine
     def _resolve_destination(self, destination):
         if isinstance(destination, (Channel, PrivateChannel, Server)):
             return destination.id
@@ -177,7 +178,7 @@ class Client:
             found = utils.find(lambda pm: pm.user == destination, self.private_channels)
             if found is None:
                 # Couldn't find the user, so start a PM with them first.
-                self.start_private_message(destination)
+                yield from self.start_private_message(destination)
                 channel_id = self.private_channels[-1].id
                 return channel_id
             else:
@@ -758,7 +759,7 @@ class Client:
             The message that was sent.
         """
 
-        channel_id = self._resolve_destination(destination)
+        channel_id = yield from self._resolve_destination(destination)
 
         content = str(content)
         mentions = self._resolve_mentions(content, mentions)
@@ -796,7 +797,7 @@ class Client:
             The location to send the typing update.
         """
 
-        channel_id = self._resolve_destination(destination)
+        channel_id = yield from self._resolve_destination(destination)
 
         url = '{base}/{id}/typing'.format(base=endpoints.CHANNELS, id=channel_id)
 
@@ -847,7 +848,7 @@ class Client:
             The message sent.
         """
 
-        channel_id = self._resolve_destination(destination)
+        channel_id = yield from self._resolve_destination(destination)
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         files = aiohttp.FormData()
