@@ -869,7 +869,7 @@ class Client:
                 'file': (fname, fp)
             }
 
-        response = yield from self.session.post(url, files=files, headers=self.headers)
+        response = yield from self.session.post(url, data=files, headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
