@@ -939,6 +939,24 @@ class Client:
         return Message(channel=channel, **data)
 
     @asyncio.coroutine
+    def _logs_from(self, channel, limit=100, before=None, after=None):
+        url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
+        params = {
+            'limit': limit
+        }
+
+        if before:
+            params['before'] = before.id
+        if after:
+            params['after'] = after.id
+
+        response = yield from self.session.get(url, params=params, headers=self.headers)
+        log.debug(request_logging_format.format(method='GET', response=response))
+        yield from utils._verify_successful_response(response)
+        messages = yield from response.json()
+        return messages
+
+    @asyncio.coroutine
     def logs_from(self, channel, limit=100, *, before=None, after=None):
         """|coro|
 
@@ -981,25 +999,20 @@ class Client:
                         yield from client.edit_message(message, 'goodbye')
         """
 
-        def generator_wrapper(data):
+        def generator(data):
             for message in data:
                 yield Message(channel=channel, **message)
 
-        url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
-        params = {
-            'limit': limit
-        }
+        result = []
+        while limit > 0:
+            retrieve = limit if limit <= 100 else 100
+            data = yield from self._logs_from(channel, retrieve, before, after)
+            limit -= retrieve
+            result.extend(data)
+            before = Object(id=data[-1]['id'])
 
-        if before:
-            params['before'] = before.id
-        if after:
-            params['after'] = after.id
+        return generator(result)
 
-        response = yield from self.session.get(url, params=params, headers=self.headers)
-        log.debug(request_logging_format.format(method='GET', response=response))
-        yield from utils._verify_successful_response(response)
-        messages = yield from response.json()
-        return generator_wrapper(messages)
 
     # Member management
 
