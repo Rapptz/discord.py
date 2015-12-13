@@ -59,6 +59,52 @@ def find(predicate, seq):
             return element
     return None
 
+def get(iterable, **attrs):
+    """A helper that returns the first element in the iterable that meets
+    all the traits passed in ``attrs``. This is an alternative for
+    :func:`discord.utils.find`.
+
+    When multiple attributes are specified, they are checked using
+    logical AND, not logical OR. Meaning they have to meet every
+    attribute passed in and not one of them.
+
+    If nothing is found that matches the attributes passed, then
+    ``None`` is returned.
+
+    Examples
+    ---------
+
+    Basic usage:
+
+    .. code-block:: python
+
+        member = discord.utils.get(message.server.members, name='Foo')
+
+    Multiple attribute matching:
+
+    .. code-block:: python
+
+        channel = discord.utils.get(server.channels, name='Foo', type=ChannelType.voice)
+
+    Parameters
+    -----------
+    iterable
+        An iterable to search through.
+    **attrs
+        Keyword arguments that denote attributes to search with.
+    """
+
+    def predicate(elem):
+        for attr, val in attrs.items():
+            if not hasattr(elem, attr):
+                return False
+            if getattr(elem, attr) != val:
+                return False
+        return True
+
+    return find(predicate, iterable)
+
+
 def _null_event(*args, **kwargs):
     pass
 
