@@ -584,6 +584,7 @@ class Client:
 
         Logs out of Discord and closes all connections."""
         response = yield from self.session.post(endpoints.LOGOUT, headers=self.headers)
+        yield from response.release()
         yield from self.close()
         self._is_logged_in = False
         log.debug(request_logging_format.format(method='POST', response=response))
