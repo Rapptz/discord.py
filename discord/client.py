@@ -136,6 +136,50 @@ class Client:
         filename = hashlib.md5(email.encode('utf-8')).hexdigest()
         return os.path.join(tempfile.gettempdir(), 'discord_py', filename)
 
+    @asyncio.coroutine
+    def _login_via_cache(self, email, password):
+        try:
+            log.info('attempting to login via cache')
+            cache_file = self._get_cache_filename(email)
+            with open(cache_file, 'r') as f:
+                log.info('login cache file found')
+                self.token = f.read()
+                self.headers['authorization'] = self.token
+
+            check = yield from aiohttp.get(endpoints.GATEWAY, headers=self.headers, loop=self.loop)
+            if check.status == 200:
+                log.info('login cache token check succeeded')
+                data = yield from check.json()
+                self.gateway = data.get('url')
+                self._is_logged_in = True
+                return
+            else:
+                # failed auth check
+                yield from check.release()
+                if check.status != 401:
+                    # This is unrelated to the auth check so it's
+                    # an error on discord's end
+                    raise GatewayNotFound()
+
+            # at this point our check failed
+            # so we have to login and get the proper token and then
+            # redo the cache
+        except OSError as e:
+            log.info('a problem occurred while opening login cache')
+            pass # file not found et al
+
+    def _update_cache(self, email, password):
+        try:
+            cache_file = self._get_cache_filename(email)
+            os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+            with open(cache_file, 'w') as f:
+                log.info('updating login cache')
+                f.write(self.token)
+        except OSError:
+            log.info('a problem occurred while updating the login cache')
+            pass
+
+
     def handle_message(self, message):
         removed = []
         for i, (condition, future) in enumerate(self._listeners):
@@ -518,35 +562,9 @@ class Client:
 
         # attempt to read the token from cache
         if self.cache_auth:
-            try:
-                log.info('attempting to login via cache')
-                cache_file = self._get_cache_filename(email)
-                with open(cache_file, 'r') as f:
-                    log.info('login cache file found')
-                    self.token = f.read()
-                    self.headers['authorization'] = self.token
-
-                check = yield from aiohttp.get(endpoints.GATEWAY, headers=self.headers, loop=self.loop)
-                if check.status == 200:
-                    log.info('login cache token check succeeded')
-                    data = yield from check.json()
-                    self.gateway = data.get('url')
-                    self._is_logged_in = True
-                    return
-                else:
-                    # failed auth check
-                    yield from check.release()
-                    if check.status != 401:
-                        # This is unrelated to the auth check so it's
-                        # an error on discord's end
-                        raise GatewayNotFound()
-
-                # at this point our check failed
-                # so we have to login and get the proper token and then
-                # redo the cache
-            except OSError as e:
-                log.info('a problem occurred while opening login cache')
-                pass # file not found et al
+            yield from self._login_via_cache(email, password)
+            if self._is_logged_in:
+                return
 
         payload = {
             'email': email,
@@ -573,14 +591,7 @@ class Client:
         # since we went through all this trouble
         # let's make sure we don't have to do it again
         if self.cache_auth:
-            try:
-                os.makedirs(os.path.dirname(cache_file), exist_ok=True)
-                with open(cache_file, 'w') as f:
-                    log.info('updating login cache')
-                    f.write(self.token)
-            except OSError:
-                log.info('a problem occurred while updating the login cache')
-                pass
+            self._update_cache(email, password)
 
     @asyncio.coroutine
     def logout(self):
@@ -1279,6 +1290,9 @@ class Client:
         self.token = data['token']
         self.email = data['email']
         self.headers['authorization'] = self.token
+
+        if self.cache_auth:
+            self._update_cache(self.email, password)
 
     @asyncio.coroutine
     def change_status(self, game_id=None, idle=False):
