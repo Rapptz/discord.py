@@ -302,7 +302,6 @@ class Client:
         if not self.is_logged_in:
             raise ClientException('You must be logged in to connect')
 
-        self.gateway = yield from self._get_gateway()
         self.ws = yield from websockets.connect(self.gateway, loop=self.loop)
         self.ws.max_size = None
         log.info('Created websocket connected to {0.gateway}'.format(self))
@@ -513,6 +512,8 @@ class Client:
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
+        GatewayNotFound
+            The gateway to connect to discord was not found.
         """
 
         # attempt to read the token from cache
@@ -525,12 +526,20 @@ class Client:
                     self.token = f.read()
                     self.headers['authorization'] = self.token
 
-                check = yield from aiohttp.get(endpoints.ME, headers=self.headers, loop=self.loop)
+                check = yield from aiohttp.get(endpoints.GATEWAY, headers=self.headers, loop=self.loop)
                 if check.status == 200:
                     log.info('login cache token check succeeded')
-                    yield from check.release()
+                    data = yield from check.json()
+                    self.gateway = data.get('url')
                     self._is_logged_in = True
                     return
+                else:
+                    # failed auth check
+                    yield from check.release()
+                    if check.status != 401:
+                        # This is unrelated to the auth check so it's
+                        # an error on discord's end
+                        raise GatewayNotFound()
 
                 # at this point our check failed
                 # so we have to login and get the proper token and then
@@ -559,6 +568,7 @@ class Client:
         self.token = body['token']
         self.headers['authorization'] = self.token
         self._is_logged_in = True
+        self.gateway = yield from self._get_gateway()
 
         # since we went through all this trouble
         # let's make sure we don't have to do it again
