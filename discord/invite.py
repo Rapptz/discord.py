@@ -26,12 +26,25 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .utils import parse_time
+from .mixins import EqualityComparable
 
-class Invite(object):
+class Invite(EqualityComparable):
     """Represents a Discord :class:`Server` or :class:`Channel` invite.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
+
+    Supported Operations:
+
+    +-----------+--------------------------------------+
+    | Operation |             Description              |
+    +===========+======================================+
+    | x == y    | Checks if two invites are equal.     |
+    +-----------+--------------------------------------+
+    | x != y    | Checks if two invites are not equal. |
+    +-----------+--------------------------------------+
+    | str(x)    | Returns the invite's URL.            |
+    +-----------+--------------------------------------+
 
     Attributes
     -----------
@@ -74,6 +87,9 @@ class Invite(object):
         inviter_data = kwargs.get('inviter')
         self.inviter = None if inviter_data is None else User(**inviter_data)
         self.channel = kwargs.get('channel')
+
+    def __str__(self):
+        return self.url
 
     @property
     def id(self):

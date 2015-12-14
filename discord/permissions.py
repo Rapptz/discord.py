@@ -37,6 +37,16 @@ def create_permission_masks(cls):
 class Permissions(object):
     """Wraps up the Discord permission value.
 
+    Supported operations:
+
+    +-----------+------------------------------------------+
+    | Operation |               Description                |
+    +===========+==========================================+
+    | x == y    | Checks if two permissions are equal.     |
+    +-----------+------------------------------------------+
+    | x != y    | Checks if two permissions are not equal. |
+    +-----------+------------------------------------------+
+
     Class attributes:
 
     .. attribute:: NONE
@@ -79,6 +89,12 @@ class Permissions(object):
 
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
+
+    def __eq__(self, other):
+        return isinstance(other, Permissions) and self.value == other.value
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @classmethod
     def none(cls):

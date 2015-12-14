@@ -28,11 +28,24 @@ from . import utils
 from .permissions import Permissions
 from .enums import ChannelType
 from collections import namedtuple
+from .mixins import EqualityComparable
 
 Overwrites = namedtuple('Overwrites', 'id allow deny type')
 
-class Channel:
+class Channel(EqualityComparable):
     """Represents a Discord server channel.
+
+    Supported Operations:
+
+    +-----------+---------------------------------------+
+    | Operation |              Description              |
+    +===========+=======================================+
+    | x == y    | Checks if two channels are equal.     |
+    +-----------+---------------------------------------+
+    | x != y    | Checks if two channels are not equal. |
+    +-----------+---------------------------------------+
+    | str(x)    | Returns the channel's name.           |
+    +-----------+---------------------------------------+
 
     Attributes
     -----------
@@ -62,6 +75,9 @@ class Channel:
     def __init__(self, **kwargs):
         self.update(**kwargs)
         self.voice_members = []
+
+    def __str__(self):
+        return self.name
 
     def update(self, **kwargs):
         self.name = kwargs.get('name')
@@ -179,8 +195,20 @@ class Channel:
 
         return base
 
-class PrivateChannel:
+class PrivateChannel(EqualityComparable):
     """Represents a Discord private channel.
+
+    Supported Operations:
+
+    +-----------+-------------------------------------------------+
+    | Operation |                   Description                   |
+    +===========+=================================================+
+    | x == y    | Checks if two channels are equal.               |
+    +-----------+-------------------------------------------------+
+    | x != y    | Checks if two channels are not equal.           |
+    +-----------+-------------------------------------------------+
+    | str(x)    | Returns the string "Direct Message with <User>" |
+    +-----------+-------------------------------------------------+
 
     Attributes
     ----------
@@ -196,6 +224,9 @@ class PrivateChannel:
         self.user = user
         self.id = id
         self.is_private = True
+
+    def __str__(self):
+        return 'Direct Message with {0.name}'.format(self.user)
 
     def permissions_for(user):
         """Handles permission resolution for a :class:`User`.

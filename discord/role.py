@@ -26,9 +26,22 @@ DEALINGS IN THE SOFTWARE.
 
 from .permissions import Permissions
 from .colour import Colour
+from .mixins import EqualityComparable
 
-class Role(object):
+class Role(EqualityComparable):
     """Represents a Discord role in a :class:`Server`.
+
+    Supported Operations:
+
+    +-----------+------------------------------------+
+    | Operation |            Description             |
+    +===========+====================================+
+    | x == y    | Checks if two roles are equal.     |
+    +-----------+------------------------------------+
+    | x != y    | Checks if two roles are not equal. |
+    +-----------+------------------------------------+
+    | str(x)    | Returns the role's name.           |
+    +-----------+------------------------------------+
 
     Attributes
     ----------
@@ -52,6 +65,9 @@ class Role(object):
     def __init__(self, **kwargs):
         self._is_everyone = kwargs.get('everyone', False)
         self.update(**kwargs)
+
+    def __str__(self):
+        return self.name
 
     def update(self, **kwargs):
         self.id = kwargs.get('id')

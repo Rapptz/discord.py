@@ -32,13 +32,15 @@ class Colour(object):
 
     Supported operations:
 
-    +-----------+--------------------------------------+
-    | Operation |             Description              |
-    +===========+======================================+
-    | x == y    | Checks if two colours are equal.     |
-    +-----------+--------------------------------------+
-    | x != y    | Checks if two colours are not equal. |
-    +-----------+--------------------------------------+
+    +-----------+----------------------------------------+
+    | Operation |              Description               |
+    +===========+========================================+
+    | x == y    | Checks if two colours are equal.       |
+    +-----------+----------------------------------------+
+    | x != y    | Checks if two colours are not equal.   |
+    +-----------+----------------------------------------+
+    | str(x)    | Returns the hex format for the colour. |
+    +-----------+----------------------------------------+
 
     Attributes
     ------------
@@ -53,10 +55,13 @@ class Colour(object):
         return (self.value >> (8 * byte)) & 0xff
 
     def __eq__(self, other):
-        return self.value == getattr(other, 'value', None)
+        return isinstance(other, Colour) and self.value == other.value
 
     def __ne__(self, other):
-        return isinstance(other, Colour) and self.value != other.value
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return '#' + format(self.value, 'x')
 
     @property
     def r(self):

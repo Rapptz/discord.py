@@ -64,9 +64,7 @@ class User(object):
         return isinstance(other, User) and other.id == self.id
 
     def __ne__(self, other):
-        if isinstance(other, User):
-            return other.id != self.id
-        return False
+        return not self.__eq__(other)
 
     @property
     def avatar_url(self):
