@@ -262,8 +262,13 @@ class Client:
     def _run_event(self, event, *args, **kwargs):
         try:
             yield from getattr(self, event)(*args, **kwargs)
-        except Exception as e:
-            yield from self.on_error(event, *args, **kwargs)
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            try:
+                yield from self.on_error(event, *args, **kwargs)
+            except asyncio.CancelledError:
+                pass
 
     def dispatch(self, event, *args, **kwargs):
         log.debug('Dispatching event {}'.format(event))
@@ -278,16 +283,19 @@ class Client:
 
     @asyncio.coroutine
     def keep_alive_handler(self, interval):
-        while not self._closed:
-            payload = {
-                'op': 1,
-                'd': int(time.time())
-            }
+        try:
+            while not self._closed:
+                payload = {
+                    'op': 1,
+                    'd': int(time.time())
+                }
 
-            msg = 'Keeping websocket alive with timestamp {}'
-            log.debug(msg.format(payload['d']))
-            yield from self.ws.send(utils.to_json(payload))
-            yield from asyncio.sleep(interval)
+                msg = 'Keeping websocket alive with timestamp {}'
+                log.debug(msg.format(payload['d']))
+                yield from self.ws.send(utils.to_json(payload))
+                yield from asyncio.sleep(interval)
+        except asyncio.CancelledError:
+            pass
 
     @asyncio.coroutine
     def on_error(self, event_method, *args, **kwargs):
@@ -662,14 +670,34 @@ class Client:
         """A blocking call that abstracts away the `event loop`_
         initialisation from you.
 
-        Equivalent to: ::
+        If you want more control over the event loop then this
+        function should not be used. Use :meth:`start` coroutine
+        or :meth:`connect` + :meth:`login`.
 
-            loop.run_until_complete(start(email, password))
-            loop.close()
+        Roughly Equivalent to: ::
+
+            try:
+                loop.run_until_complete(start(email, password))
+            except KeyboardInterrupt:
+                loop.run_until_complete(logout())
+                # cancel all tasks lingering
+            finally:
+                loop.close()
         """
-
-        self.loop.run_until_complete(self.start(email, password))
-        self.loop.close()
+        try:
+            self.loop.run_until_complete(self.start(email, password))
+        except KeyboardInterrupt:
+            self.loop.run_until_complete(self.logout())
+            pending = asyncio.Task.all_tasks()
+            gathered = asyncio.gather(*pending)
+            try:
+                gathered.cancel()
+                self.loop.run_forever()
+                gathered.exception()
+            except:
+                pass
+        finally:
+            self.loop.close()
 
     # event registration
 

@@ -175,16 +175,19 @@ class VoiceClient:
 
     @asyncio.coroutine
     def keep_alive_handler(self, delay):
-        while True:
-            payload = {
-                'op': 3,
-                'd': int(time.time())
-            }
+        try:
+            while True:
+                payload = {
+                    'op': 3,
+                    'd': int(time.time())
+                }
 
-            msg = 'Keeping voice websocket alive with timestamp {}'
-            log.debug(msg.format(payload['d']))
-            yield from self.ws.send(utils.to_json(payload))
-            yield from asyncio.sleep(delay)
+                msg = 'Keeping voice websocket alive with timestamp {}'
+                log.debug(msg.format(payload['d']))
+                yield from self.ws.send(utils.to_json(payload))
+                yield from asyncio.sleep(delay)
+        except asyncio.CancelledError:
+            pass
 
     @asyncio.coroutine
     def received_message(self, msg):
