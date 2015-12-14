@@ -99,6 +99,7 @@ class Channel:
         """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
 
+    @property
     def mention(self):
         """str : The string that allows you to mention the channel."""
         return '<#{0.id}>'.format(self)

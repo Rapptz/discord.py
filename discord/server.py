@@ -141,6 +141,7 @@ class Server:
         """Gets the default :class:`Channel` for the server."""
         return utils.find(lambda c: c.is_default_channel(), self.channels)
 
+    @property
     def icon_url(self):
         """Returns the URL version of the server's icon. Returns an empty string if it has no icon."""
         if self.icon is None:

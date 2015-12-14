@@ -68,6 +68,7 @@ class User(object):
             return other.id != self.id
         return False
 
+    @property
     def avatar_url(self):
         """Returns a friendly URL version of the avatar variable the user has. An empty string if
         the user has no avatar."""
@@ -75,6 +76,7 @@ class User(object):
             return ''
         return 'https://discordapp.com/api/users/{0.id}/avatars/{0.avatar}.jpg'.format(self)
 
+    @property
     def mention(self):
         """Returns a string that allows you to mention the given user."""
         return '<@{0.id}>'.format(self)
