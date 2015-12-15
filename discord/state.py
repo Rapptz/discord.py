@@ -137,9 +137,10 @@ class ConnectionState:
             channel = utils.find(lambda c: c.id == channel_id, server.channels)
             try:
                 server.channels.remove(channel)
-                self.dispatch('channel_delete', channel)
             except ValueError:
                 return
+            else:
+                self.dispatch('channel_delete', channel)
 
     def parse_channel_update(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -179,9 +180,10 @@ class ConnectionState:
             member = utils.find(lambda m: m.id == user_id, server.members)
             try:
                 server.members.remove(member)
-                self.dispatch('member_remove', member)
             except ValueError:
                 return
+            else:
+                self.dispatch('member_remove', member)
 
     def parse_guild_member_update(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -242,9 +244,10 @@ class ConnectionState:
 
         try:
             self.servers.remove(server)
-            self.dispatch('server_remove', server)
         except ValueError:
             return
+        else:
+            self.dispatch('server_remove', server)
 
     def parse_guild_role_create(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -259,8 +262,12 @@ class ConnectionState:
         if server is not None:
             role_id = data.get('role_id')
             role = utils.find(lambda r: r.id == role_id, server.roles)
-            server.roles.remove(role)
-            self.dispatch('server_role_delete', server, role)
+            try:
+                server.roles.remove(role)
+            except ValueError:
+                return
+            else:
+                self.dispatch('server_role_delete', server, role)
 
     def parse_guild_role_update(self, data):
         server = self._get_server(data.get('guild_id'))
