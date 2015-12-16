@@ -46,6 +46,7 @@ import websockets
 import logging, traceback
 import sys, time, re, json
 import tempfile, os, hashlib
+import itertools
 
 log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
