@@ -1632,6 +1632,40 @@ class Client:
         yield from utils._verify_successful_response(r)
         yield from r.release()
 
+    @asyncio.coroutine
+    def get_bans(self, server):
+        """|coro|
+
+        Retrieves all the :class:`User`s that are banned from the specified
+        server.
+
+        You must have proper permissions to get this information.
+
+        Parameters
+        ----------
+        server : :class:`Server`
+            The server to get ban information from.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to get the information.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        --------
+        list
+            A list of :class:`User` that have been banned.
+        """
+
+        url = '{0}/{1.id}/bans'.format(endpoints.SERVERS, server)
+        resp = yield from aiohttp.get(url, headers=self.headers, loop=self.loop)
+        log.debug(request_logging_format.format(method='GET', response=resp))
+        yield from utils._verify_successful_response(resp)
+        data = yield from resp.json()
+        return [User(**user['user']) for user in data]
+
     # Invite management
 
     @asyncio.coroutine
