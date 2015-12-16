@@ -1968,6 +1968,19 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
+    def _replace_roles(self, member, *roles):
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+
+        payload = {
+            'roles': list(roles)
+        }
+
+        r = yield from aiohttp.patch(url, headers=self.headers, data=utils.to_json(payload), loop=self.loop)
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+        yield from r.release()
+
+    @asyncio.coroutine
     def add_roles(self, member, *roles):
         """|coro|
 
@@ -1994,7 +2007,7 @@ class Client:
         """
 
         new_roles = [role.id for role in itertools.chain(member.roles, roles)]
-        yield from self.replace_roles(member, *new_roles)
+        yield from self._replace_roles(member, *new_roles)
 
     @asyncio.coroutine
     def remove_roles(self, member, *roles):
@@ -2022,7 +2035,7 @@ class Client:
         """
         new_roles = {role.id for role in member.roles}
         new_roles = new_roles.difference(roles)
-        yield from self.replace_roles(member, *new_roles)
+        yield from self._replace_roles(member, *new_roles)
 
     @asyncio.coroutine
     def replace_roles(self, member, *roles):
@@ -2054,16 +2067,8 @@ class Client:
             Removing roles failed.
         """
 
-        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
-
-        payload = {
-            'roles': [role.id for role in roles]
-        }
-
-        r = yield from aiohttp.patch(url, headers=self.headers, data=utils.to_json(payload), loop=self.loop)
-        log.debug(request_logging_format.format(method='PATCH', response=r))
-        yield from utils._verify_successful_response(r)
-        yield from r.release()
+        new_roles = [role.id for role in roles]
+        yield from self._replace_roles(member, *new_roles)
 
     @asyncio.coroutine
     def create_role(self, server, **fields):
