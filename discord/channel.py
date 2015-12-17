@@ -28,11 +28,11 @@ from . import utils
 from .permissions import Permissions
 from .enums import ChannelType
 from collections import namedtuple
-from .mixins import EqualityComparable
+from .mixins import Hashable
 
 Overwrites = namedtuple('Overwrites', 'id allow deny type')
 
-class Channel(EqualityComparable):
+class Channel(Hashable):
     """Represents a Discord server channel.
 
     Supported Operations:
@@ -43,6 +43,8 @@ class Channel(EqualityComparable):
     | x == y    | Checks if two channels are equal.     |
     +-----------+---------------------------------------+
     | x != y    | Checks if two channels are not equal. |
+    +-----------+---------------------------------------+
+    | hash(x)   | Returns the channel's hash.           |
     +-----------+---------------------------------------+
     | str(x)    | Returns the channel's name.           |
     +-----------+---------------------------------------+
@@ -196,7 +198,7 @@ class Channel(EqualityComparable):
 
         return base
 
-class PrivateChannel(EqualityComparable):
+class PrivateChannel(Hashable):
     """Represents a Discord private channel.
 
     Supported Operations:
@@ -207,6 +209,8 @@ class PrivateChannel(EqualityComparable):
     | x == y    | Checks if two channels are equal.               |
     +-----------+-------------------------------------------------+
     | x != y    | Checks if two channels are not equal.           |
+    +-----------+-------------------------------------------------+
+    | hash(x)   | Returns the channel's hash.                     |
     +-----------+-------------------------------------------------+
     | str(x)    | Returns the string "Direct Message with <User>" |
     +-----------+-------------------------------------------------+

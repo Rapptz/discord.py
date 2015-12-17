@@ -36,6 +36,8 @@ class Permissions(object):
     +-----------+------------------------------------------+
     | x != y    | Checks if two permissions are not equal. |
     +-----------+------------------------------------------+
+    | hash(x)   | Return the permission's hash.            |
+    +-----------+------------------------------------------+
 
     Attributes
     -----------
@@ -56,6 +58,9 @@ class Permissions(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.value)
 
     @classmethod
     def none(cls):

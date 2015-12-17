@@ -39,6 +39,8 @@ class Colour(object):
     +-----------+----------------------------------------+
     | x != y    | Checks if two colours are not equal.   |
     +-----------+----------------------------------------+
+    | hash(x)   | Return the colour's hash.              |
+    +-----------+----------------------------------------+
     | str(x)    | Returns the hex format for the colour. |
     +-----------+----------------------------------------+
 
@@ -62,6 +64,9 @@ class Colour(object):
 
     def __str__(self):
         return '#' + format(self.value, 'x')
+
+    def __hash__(self):
+        return hash(self.value)
 
     @property
     def r(self):

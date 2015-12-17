@@ -26,9 +26,9 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .utils import parse_time
-from .mixins import EqualityComparable
+from .mixins import Hashable
 
-class Invite(EqualityComparable):
+class Invite(Hashable):
     """Represents a Discord :class:`Server` or :class:`Channel` invite.
 
     Depending on the way this object was created, some of the attributes can
@@ -42,6 +42,8 @@ class Invite(EqualityComparable):
     | x == y    | Checks if two invites are equal.     |
     +-----------+--------------------------------------+
     | x != y    | Checks if two invites are not equal. |
+    +-----------+--------------------------------------+
+    | hash(x)   | Return the invite's hash.            |
     +-----------+--------------------------------------+
     | str(x)    | Returns the invite's URL.            |
     +-----------+--------------------------------------+

@@ -29,9 +29,9 @@ from .role import Role
 from .member import Member
 from .channel import Channel
 from .enums import ServerRegion, Status
-from .mixins import EqualityComparable
+from .mixins import Hashable
 
-class Server(EqualityComparable):
+class Server(Hashable):
     """Represents a Discord server.
 
     Supported Operations:
@@ -42,6 +42,8 @@ class Server(EqualityComparable):
     | x == y    | Checks if two servers are equal.     |
     +-----------+--------------------------------------+
     | x != y    | Checks if two servers are not equal. |
+    +-----------+--------------------------------------+
+    | hash(x)   | Returns the server's hash.           |
     +-----------+--------------------------------------+
     | str(x)    | Returns the server's name.           |
     +-----------+--------------------------------------+
