@@ -1181,21 +1181,17 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
-    def unban(self, member):
+    def unban(self, server, user):
         """|coro|
 
-        Unbans a :class:`Member` from the server they belong to.
-
-        Warning
-        --------
-        This function unbans the :class:`Member` based on the server it
-        belongs to, which is accessed via :attr:`Member.server`. So you
-        must have the proper permissions in that server.
+        Unbans a :class:`User` from the server they are banned from.
 
         Parameters
         -----------
-        member : :class:`Member`
-            The member to unban from their server.
+        server : :class:`Server`
+            The server to unban the user from.
+        user : :class:`User`
+            The user to unban.
 
         Raises
         -------
@@ -1205,7 +1201,7 @@ class Client:
             Unbanning failed.
         """
 
-        url = '{0}/{1.server.id}/bans/{1.id}'.format(endpoints.SERVERS, member)
+        url = '{0}/{1.id}/bans/{2.id}'.format(endpoints.SERVERS, server, user)
         response = yield from aiohttp.delete(url, headers=self.headers, loop=self.loop)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
