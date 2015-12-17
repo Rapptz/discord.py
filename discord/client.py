@@ -1153,7 +1153,7 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
-    def ban(self, member):
+    def ban(self, member, delete_message_days=1):
         """|coro|
 
         Bans a :class:`Member` from the server they belong to.
@@ -1168,6 +1168,9 @@ class Client:
         -----------
         member : :class:`Member`
             The member to ban from their server.
+        delete_message_days : int
+            The number of days worth of messages to delete from the user
+            in the server. The minimum is 0 and the maximum is 7.
 
         Raises
         -------
@@ -1177,8 +1180,12 @@ class Client:
             Banning failed.
         """
 
+        params = {
+            'delete-message-days': delete_message_days
+        }
+
         url = '{0}/{1.server.id}/bans/{1.id}'.format(endpoints.SERVERS, member)
-        response = yield from aiohttp.put(url, headers=self.headers, loop=self.loop)
+        response = yield from aiohttp.put(url, params=params, headers=self.headers, loop=self.loop)
         log.debug(request_logging_format.format(method='PUT', response=response))
         yield from utils._verify_successful_response(response)
         yield from response.release()
