@@ -111,7 +111,8 @@ class Channel(EqualityComparable):
             override.permissions.handle_overwrite(allowed, denied)
             self.changed_roles.append(override)
 
-    def is_default_channel(self):
+    @property
+    def is_default(self):
         """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
 
