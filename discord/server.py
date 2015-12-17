@@ -50,6 +50,9 @@ class Server(EqualityComparable):
     ----------
     name : str
         The server name.
+    me : :class:`Member`
+        Similar to :attr:`Client.user` except an instance of :class:`Member`.
+        This is essentially used to get the member version of yourself.
     roles
         A list of :class:`Role` that the server has available.
     region : :class:`ServerRegion`

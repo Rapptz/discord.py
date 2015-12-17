@@ -54,6 +54,7 @@ class ConnectionState:
 
     def _add_server(self, guild):
         server = Server(**guild)
+        server.me = utils.get(server.members, id=self.user.id)
         self.servers.append(server)
         return server
 
