@@ -59,7 +59,7 @@ for easier registration. For example:
 
 
 Be aware however, that this is still a coroutine and your other functions that are coroutines must
-be decorated with `` @asyncio.coroutine`` or be ``async def``.
+be decorated with ``@asyncio.coroutine`` or be ``async def``.
 
 .. _migrating_event_changes:
 
@@ -164,25 +164,25 @@ The following functions were changed into properties:
 +----------------------------------------+--------------------------------------+
 |                 Before                 |                After                 |
 +----------------------------------------+--------------------------------------+
-| ``user.avatar_url()``                  | :attr:`User.avatar_url`              |
+| ``User.avatar_url()``                  | :attr:`User.avatar_url`              |
 +----------------------------------------+--------------------------------------+
-| ``user.mention()``                     | :attr:`User.mention`                 |
+| ``User.mention()``                     | :attr:`User.mention`                 |
 +----------------------------------------+--------------------------------------+
-| ``channel.mention()``                  | :attr:`Channel.mention`              |
+| ``Channel.mention()``                  | :attr:`Channel.mention`              |
 +----------------------------------------+--------------------------------------+
-| ``channel.is_default_channel()``       | :attr:`Channel.is_default`           |
+| ``Channel.is_default_channel()``       | :attr:`Channel.is_default`           |
 +----------------------------------------+--------------------------------------+
-| ``role.is_everyone()``                 | :attr:`Role.is_everyone`             |
+| ``Role.is_everyone()``                 | :attr:`Role.is_everyone`             |
 +----------------------------------------+--------------------------------------+
-| ``server.get_default_role()``          | :attr:`Server.default_role`          |
+| ``Server.get_default_role()``          | :attr:`Server.default_role`          |
 +----------------------------------------+--------------------------------------+
-| ``server.icon_url()``                  | :attr:`Server.icon_url`              |
+| ``Server.icon_url()``                  | :attr:`Server.icon_url`              |
 +----------------------------------------+--------------------------------------+
-| ``server.get_default_channel()``       | :attr:`Server.default_channel`       |
+| ``Server.get_default_channel()``       | :attr:`Server.default_channel`       |
 +----------------------------------------+--------------------------------------+
-| ``message.get_raw_mentions()``         | :attr:`Message.raw_mentions`         |
+| ``Message.get_raw_mentions()``         | :attr:`Message.raw_mentions`         |
 +----------------------------------------+--------------------------------------+
-| ``message.get_raw_channel_mentions()`` | :attr:`Message.raw_channel_mentions` |
+| ``Message.get_raw_channel_mentions()`` | :attr:`Message.raw_channel_mentions` |
 +----------------------------------------+--------------------------------------+
 
 .. _migrating-running:
