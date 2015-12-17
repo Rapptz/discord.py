@@ -344,7 +344,8 @@ class Client:
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE', 'GUILD_UPDATE'
                      'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
                      'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 'TYPING_START',
-                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
+                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE',
+                     'GUILD_BAN_ADD', 'GUILD_BAN_REMOVE'):
             parser = 'parse_' + event.lower()
             getattr(self.connection, parser)(data)
         else:

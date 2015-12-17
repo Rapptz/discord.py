@@ -319,6 +319,21 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: The :class:`Member` whose voice state changed prior to the changes.
     :param after: The :class:`Member` whose voice state changed after the changes.
 
+.. function:: on_member_ban(member)
+
+    Called when a :class:`Member` gets banned from a :class:`Server`.
+
+    You can access the server that the member got banned from via :attr:`Member.server`.
+
+    :param member: The member that got banned.
+
+.. function:: on_member_unban(server, user)
+
+    Called when a :class:`User` gets unbanned from a :class:`Server`.
+
+    :param server: The server the user got unbanned from.
+    :param user: The user that got unbanned.
+
 .. function:: on_typing(channel, user, when)
 
     Called when someone begins typing a message.

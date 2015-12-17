@@ -251,6 +251,26 @@ class ConnectionState:
         else:
             self.dispatch('server_remove', server)
 
+    def parse_guild_ban_add(self, data):
+        # we make the assumption that GUILD_BAN_ADD is done
+        # before GUILD_MEMBER_REMOVE is called
+        # hence we don't remove it from cache or do anything
+        # strange with it, the main purpose of this event
+        # is mainly to dispatch to another event worth listening to for logging
+        server = self._get_server(data.get('guild_id'))
+        if server is not None:
+            user_id = data.get('user', {}).get('id')
+            member = utils.get(server.members, id=user_id)
+            if member is not None:
+                self.dispatch('member_ban', member)
+
+    def parse_guild_ban_remove(self, data):
+        server = self._get_server(data.get('guild_id'))
+        if server is not None:
+            if 'user' in data:
+                user = User(**data['user'])
+                self.dispatch('member_unban', server, user)
+
     def parse_guild_role_create(self, data):
         server = self._get_server(data.get('guild_id'))
         role_data = data.get('role', {})
