@@ -120,12 +120,11 @@ class ConnectionState:
                     member.status = Status(member.status)
                 except:
                     pass
+
                 member.game_id = data.get('game_id')
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 
-                # call the event now
-                self.dispatch('status', member, old_member.game_id, old_member.status)
                 self.dispatch('member_update', old_member, member)
 
     def parse_user_update(self, data):
