@@ -331,6 +331,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param user: The user that started typing.
     :param when: A ``datetime.datetime`` object representing when typing started.
 
+.. _discord-api-utils:
 
 Utility Functions
 -----------------
@@ -338,6 +339,8 @@ Utility Functions
 .. autofunction:: discord.utils.find
 
 .. autofunction:: discord.utils.get
+
+.. _discord-api-enums:
 
 Enumerators
 ------------
@@ -399,6 +402,8 @@ All enumerators are subclasses of `enum`_.
     .. attribute:: idle
 
         The member is idle.
+
+.. _discord_api_data:
 
 Data Classes
 --------------
