@@ -132,7 +132,7 @@ class Message(object):
         This allows you receive the user IDs of mentioned users
         even in a private message context.
         """
-        return re.findall(r'<@(\d+)>', self.content)
+        return re.findall(r'<@([0-9]+)>', self.content)
 
     @utils.cached_property
     def raw_channel_mentions(self):
@@ -142,7 +142,7 @@ class Message(object):
         This allows you receive the channel IDs of mentioned users
         even in a private message context.
         """
-        return re.findall(r'<#(\d+)>', self.content)
+        return re.findall(r'<#([0-9]+)>', self.content)
 
     def _handle_upgrades(self, channel_id):
         self.server = None

@@ -206,7 +206,7 @@ class Client:
         if isinstance(mentions, list):
             return [user.id for user in mentions]
         elif mentions == True:
-            return re.findall(r'<@(\d+)>', content)
+            return re.findall(r'<@([0-9]+)>', content)
         else:
             return []
 
