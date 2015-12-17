@@ -1110,9 +1110,12 @@ class Client:
         while limit > 0:
             retrieve = limit if limit <= 100 else 100
             data = yield from self._logs_from(channel, retrieve, before, after)
-            limit -= retrieve
-            result.extend(data)
-            before = Object(id=data[-1]['id'])
+            if len(data):
+                limit -= retrieve
+                result.extend(data)
+                before = Object(id=data[-1]['id'])
+            else:
+                break
 
         return generator(result)
 
