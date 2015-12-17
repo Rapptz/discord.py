@@ -164,7 +164,7 @@ class Channel(Hashable):
         if member.id == self.server.owner.id:
             return Permissions.all()
 
-        default = member.roles[0]
+        default = self.server.default_role
         base = deepcopy(default.permissions)
 
         # Apply server roles that the member has.
@@ -193,7 +193,7 @@ class Channel(Hashable):
             tmp = Permissions.all_channel()
             base.value |= tmp.value
 
-        if self.is_default_channel():
+        if self.is_default:
             base.can_read_messages = True
 
         return base
