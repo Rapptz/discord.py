@@ -24,16 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-def create_permission_masks(cls):
-    cls.NONE = cls(0)
-    cls.ALL = cls(0b00000011111100111111110000111111)
-    cls.ALL_CHANNEL = cls(0b00000011111100111111110000011001)
-    cls.GENERAL = cls(0b00000000000000000000000000111111)
-    cls.TEXT = cls(0b00000000000000111111110000000000)
-    cls.VOICE = cls(0b00000011111100000000000000000000)
-    return cls
-
-@create_permission_masks
 class Permissions(object):
     """Wraps up the Discord permission value.
 
@@ -47,41 +37,12 @@ class Permissions(object):
     | x != y    | Checks if two permissions are not equal. |
     +-----------+------------------------------------------+
 
-    Class attributes:
-
-    .. attribute:: NONE
-
-        A :class:`Permission` with all permissions set to False.
-    .. attribute:: ALL
-
-        A :class:`Permission` with all permissions set to True.
-    .. attribute:: ALL_CHANNEL
-
-        A :class:`Permission` with all channel-specific permissions set to True
-        and the server-specific ones set to False. The server-specific permissions
-        are currently:
-
-        - can_manager_server
-        - can_kick_members
-        - can_ban_members
-
-    .. attribute:: GENERAL
-
-        A :class:`Permission` with all "General" permissions set to True.
-    .. attribute:: TEXT
-
-        A :class:`Permission` with all "Text" permissions set to True.
-    .. attribute:: VOICE
-
-        A :class:`Permission` with all "Voice" permissions set to True.
-
-    Instance attributes:
-
-    .. attribute:: value
-
-        The raw value. This value is a bit array field of a 32-bit integer representing the
-        currently available permissions. You should query permissions via the properties provided rather
-        than using this raw value.
+    Attributes
+    -----------
+    value
+        The raw value. This value is a bit array field of a 32-bit integer
+        representing the currently available permissions. You should query
+        permissions via the properties rather than using this raw value.
 
     The properties provided are two way. You can set and retrieve individual bits using the properties as if they
     were regular bools. This allows you to edit permissions.
