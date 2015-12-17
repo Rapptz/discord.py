@@ -108,12 +108,11 @@ class Server(EqualityComparable):
         self.unavailable = guild.get('unavailable', False)
         self.id = guild['id']
         self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
-        default_role = self.get_default_role()
 
         owner_id = guild['owner_id']
 
         for data in guild.get('members', []):
-            roles = [default_role]
+            roles = [self.default_role]
             for role_id in data['roles']:
                 role = utils.find(lambda r: r.id == role_id, self.roles)
                 if role is not None:
@@ -149,13 +148,15 @@ class Server(EqualityComparable):
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj)
 
-    def get_default_role(self):
+    @utils.cached_property
+    def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_everyone(), self.roles)
+        return utils.find(lambda r: r.is_everyone, self.roles)
 
-    def get_default_channel(self):
+    @utils.cached_property
+    def default_channel(self):
         """Gets the default :class:`Channel` for the server."""
-        return utils.find(lambda c: c.is_default_channel(), self.channels)
+        return utils.find(lambda c: c.is_default, self.channels)
 
     @property
     def icon_url(self):

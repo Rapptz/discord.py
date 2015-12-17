@@ -81,6 +81,7 @@ class Role(EqualityComparable):
         if 'everyone' in kwargs:
             self._is_everyone = kwargs['everyone']
 
+    @property
     def is_everyone(self):
         """Checks if the role is the @everyone role."""
         return self._is_everyone

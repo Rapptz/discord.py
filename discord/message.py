@@ -131,24 +131,25 @@ class Message(object):
                     self.mentions.append(member)
 
         if self.server is not None:
-            channel_mentions = self.get_raw_channel_mentions()
-            for mention in channel_mentions:
+            for mention in self.raw_channel_mentions:
                 channel = utils.find(lambda m: m.id == mention, self.server.channels)
                 if channel is not None:
                     self.channel_mentions.append(channel)
 
-    def get_raw_mentions(self):
-        """Returns an array of user IDs matched with the syntax of
-        <@user_id> in the message content.
+    @utils.cached_property
+    def raw_mentions(self):
+        """A property that returns an array of user IDs matched with
+        the syntax of <@user_id> in the message content.
 
         This allows you receive the user IDs of mentioned users
         even in a private message context.
         """
         return re.findall(r'<@(\d+)>', self.content)
 
-    def get_raw_channel_mentions(self):
-        """Returns an array of channel IDs matched with the syntax of
-        <#channel_id> in the message content.
+    @utils.cached_property
+    def raw_channel_mentions(self):
+        """A property that returns an array of channel IDs matched with
+        the syntax of <#channel_id> in the message content.
 
         This allows you receive the channel IDs of mentioned users
         even in a private message context.
@@ -168,6 +169,3 @@ class Message(object):
             found = utils.find(lambda m: m.id == self.author.id, self.server.members)
             if found is not None:
                 self.author = found
-
-
-
