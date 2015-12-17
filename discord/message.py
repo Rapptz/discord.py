@@ -35,41 +35,33 @@ class Message(object):
 
     There should be no need to create one of these manually.
 
-    Instance attributes:
-
-    .. attribute:: edited_timestamp
-
-        A naive UTC datetime object containing the edited time of the message. Could be None.
-    .. attribute:: timestamp
-
+    Attributes
+    -----------
+    edited_timestamp : Optional[datetime.datetime]
+        A naive UTC datetime object containing the edited time of the message.
+    timestamp : datetime.datetime
         A naive UTC datetime object containing the time the message was created.
-    .. attribute:: tts
-
-        A boolean specifying if the message was done with text-to-speech.
-    .. attribute:: author
-
-        A :class:`Member` that sent the message. If :attr:`channel` is a private channel,
-        then it is a :class:`User` instead.
-    .. attribute:: content
-
+    tts : bool
+        Specifies if the message was done with text-to-speech.
+    author
+        A :class:`Member` that sent the message. If :attr:`channel` is a
+        private channel, then it is a :class:`User` instead.
+    content : str
         The actual contents of the message.
-    .. attribute:: embeds
-
+    embeds : list
         A list of embedded objects. The elements are objects that meet oEmbed's specification_.
 
         .. _specification: http://oembed.com/
-    .. attribute:: channel
-
-        The :class:`Channel` that the message was sent from. Could be a :class:`PrivateChannel` if it's a private message.
+    channel
+        The :class:`Channel` that the message was sent from.
+        Could be a :class:`PrivateChannel` if it's a private message.
         In :issue:`very rare cases <21>` this could be a :class:`Object` instead.
 
         For the sake of convenience, this :class:`Object` instance has an attribute ``is_private`` set to ``True``.
-    .. attribute:: server
-
-        The :class:`Server` that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
-    .. attribute:: mention_everyone
-
-        A boolean specifying if the message mentions everyone.
+    server : Optional[:class:`Server`]
+        The server that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
+    mention_everyone : bool
+        Specifies if the message mentions everyone.
 
         .. note::
 
@@ -77,8 +69,7 @@ class Message(object):
             Rather this boolean indicates if the ``@everyone`` text is in the message
             **and** it did end up mentioning everyone.
 
-    .. attribute:: mentions
-
+    mentions : list
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list is always empty.
 
@@ -87,15 +78,12 @@ class Message(object):
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a discord limitation, not one with the library.
 
-    .. attribute:: channel_mentions
-
+    channel_mentions : list
         A list of :class:`Channel` that were mentioned. If the message is in a private message
         then the list is always empty.
-    .. attribute:: id
-
+    id : str
         The message ID.
-    .. attribute:: attachments
-
+    attachments : list
         A list of attachments given to a message.
     """
 
@@ -114,7 +102,7 @@ class Message(object):
         self.channel = kwargs.get('channel')
         self.author = User(**kwargs.get('author', {}))
         self.attachments = kwargs.get('attachments')
-        self._handle_upgrades_and_server(kwargs.get('channel_id'))
+        self._handle_upgrades(kwargs.get('channel_id'))
         self._handle_mentions(kwargs.get('mentions', []))
 
     def _handle_mentions(self, mentions):
@@ -156,7 +144,7 @@ class Message(object):
         """
         return re.findall(r'<#(\d+)>', self.content)
 
-    def _handle_upgrades_and_server(self, channel_id):
+    def _handle_upgrades(self, channel_id):
         self.server = None
         if self.channel is None:
             if channel_id is not None:

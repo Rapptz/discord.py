@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class Object(object):
+class Object:
     """Represents a generic Discord object.
 
     The purpose of this class is to allow you to create 'miniature'
