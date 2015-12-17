@@ -148,8 +148,10 @@ class ConnectionState:
         if server is not None:
             channel_id = data.get('id')
             channel = utils.find(lambda c: c.id == channel_id, server.channels)
-            channel.update(server=server, **data)
-            self.dispatch('channel_update', channel)
+            if channel is not None:
+                old_channel = copy.copy(channel)
+                channel.update(server=server, **data)
+                self.dispatch('channel_update', old_channel, channel)
 
     def parse_channel_create(self, data):
         is_private = data.get('is_private', False)
@@ -275,14 +277,16 @@ class ConnectionState:
         if server is not None:
             role_id = data['role']['id']
             role = utils.find(lambda r: r.id == role_id, server.roles)
-            role.update(**data['role'])
-            self.dispatch('server_role_update', role)
+            if role is not None:
+                old_role = copy.copy(role)
+                role.update(**data['role'])
+                self.dispatch('server_role_update', old_role, role)
 
     def parse_voice_state_update(self, data):
         server = self._get_server(data.get('guild_id'))
         if server is not None:
-            updated_member = server._update_voice_state(data)
-            self.dispatch('voice_state_update', updated_member)
+            updated_members = server._update_voice_state(data)
+            self.dispatch('voice_state_update', *updated_members)
 
     def parse_typing_start(self, data):
         channel = self.get_channel(data.get('channel_id'))

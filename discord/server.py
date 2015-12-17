@@ -30,6 +30,7 @@ from .member import Member
 from .channel import Channel
 from .enums import ServerRegion, Status
 from .mixins import Hashable
+import copy
 
 class Server(Hashable):
     """Represents a Discord server.
@@ -94,11 +95,12 @@ class Server(Hashable):
     def _update_voice_state(self, data):
         user_id = data.get('user_id')
         member = utils.find(lambda m: m.id == user_id, self.members)
+        before = copy.copy(member)
         if member is not None:
             ch_id = data.get('channel_id')
             channel = utils.find(lambda c: c.id == ch_id, self.channels)
             member.update_voice_state(voice_channel=channel, **data)
-        return member
+        return before, member
 
     def _from_data(self, guild):
         self.name = guild.get('name')

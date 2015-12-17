@@ -226,11 +226,12 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param channel: The :class:`Channel` that got added or deleted.
 
-.. function:: on_channel_update(channel)
+.. function:: on_channel_update(before, after)
 
     Called whenever a channel is updated. e.g. changed name, topic, permissions.
 
-    :param channel: The :class:`Channel` that got updated.
+    :param before: The :class:`Channel` that got updated with the old info.
+    :param after: The :class:`Channel` that got updated with the updated info.
 
 .. function:: on_member_join(member)
               on_member_remove(member)
@@ -296,11 +297,12 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param server: The :class:`Server` that was created or deleted.
     :param role: The :class:`Role` that was created or deleted.
 
-.. function:: on_server_role_update(role)
+.. function:: on_server_role_update(before, after)
 
     Called when a :class:`Role` is changed server-wide.
 
-    :param role: The :class:`Role` that was updated.
+    :param before: The :class:`Role` that updated with the old info.
+    :param after: The :class:`Role` that updated with the updated info
 
 .. function:: on_server_available(server)
               on_server_unavailable(server)
@@ -310,7 +312,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param server: The :class:`Server` that has changed availability.
 
-.. function:: on_voice_state_update(member)
+.. function:: on_voice_state_update(before, after)
 
     Called when a :class:`Member` changes their voice state.
 
@@ -321,7 +323,8 @@ to handle it, which defaults to print a traceback and ignore the exception.
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a server administrator.
 
-    :param member: The :class:`Member` whose voice state changed.
+    :param before: The :class:`Member` whose voice state changed prior to the changes.
+    :param after: The :class:`Member` whose voice state changed after the changes.
 
 .. function:: on_typing(channel, user, when)
 
@@ -341,6 +344,7 @@ Utility Functions
 
 .. autofunction:: discord.utils.find
 
+.. autofunction:: discord.utils.get
 
 Enumerators
 ------------
