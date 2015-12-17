@@ -416,7 +416,7 @@ class VoiceClient:
         The operations that can be done on the player are the same as those in
         :meth:`create_stream_player`.
 
-        .. _here: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L117-L265
+        .. _ytdl: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L117-L265
 
         Examples
         ----------
@@ -434,7 +434,7 @@ class VoiceClient:
             to ``ffmpeg`` or ``avconv`` to convert to PCM bytes.
         options : dict
             A dictionary of options to pass into the ``YoutubeDL`` instance.
-            See `here`_ for more details.
+            See `the documentation <ydl>`_ for more details.
         use_avconv: bool
             Use ``avconv`` instead of ``ffmpeg``. Passes the appropriate
             flags to ``youtube-dl`` as well.

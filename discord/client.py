@@ -1331,12 +1331,12 @@ class Client:
         The game_id parameter is a numeric ID (not a string) that represents
         a game being played currently. The list of game_id to actual games changes
         constantly and would thus be out of date pretty quickly. An old version of
-        the game_id database can be seen `here`_ to help you get started.
+        the game_id database can be seen `here <game_list>`_ to help you get started.
 
         The idle parameter is a boolean parameter that indicates whether the
         client should go idle or not.
 
-        .. _here: https://gist.github.com/Rapptz/a82b82381b70a60c281b
+        .. _game_list: https://gist.github.com/Rapptz/a82b82381b70a60c281b
 
         Parameters
         ----------
@@ -1636,7 +1636,7 @@ class Client:
     def get_bans(self, server):
         """|coro|
 
-        Retrieves all the :class:`User`s that are banned from the specified
+        Retrieves all the :class:`User` s that are banned from the specified
         server.
 
         You must have proper permissions to get this information.
