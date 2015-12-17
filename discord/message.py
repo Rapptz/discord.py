@@ -144,6 +144,32 @@ class Message(object):
         """
         return re.findall(r'<#([0-9]+)>', self.content)
 
+    @utils.cached_property
+    def clean_content(self):
+        """A property that returns the content in a "cleaned up"
+        manner. This basically means that mentions are transformed
+        into the way the client shows it. e.g. ``<#id>`` will transform
+        into ``#name``.
+        """
+
+        transformations = {
+            re.escape('<#{0.id}>'.format(channel)): '#' + channel.name
+            for channel in self.channel_mentions
+        }
+
+        mention_transforms = {
+            re.escape('<@{0.id}>'.format(member)): '@' + member.name
+            for member in self.mentions
+        }
+
+        transformations.update(mention_transforms)
+
+        def repl(obj):
+            return transformations.get(re.escape(obj.group(0)), '')
+
+        pattern = re.compile('|'.join(transformations.keys()))
+        return pattern.sub(repl, self.content)
+
     def _handle_upgrades(self, channel_id):
         self.server = None
         if self.channel is None:
