@@ -43,7 +43,8 @@ class ConnectionState:
         self.email = None
         self.servers = []
         self.private_channels = []
-        self.messages = deque(maxlen=max_messages)
+        self.max_messages = max_messages
+        self.messages = deque(maxlen=self.max_messages)
         self.dispatch = dispatch
 
     def _get_message(self, msg_id):
@@ -236,6 +237,9 @@ class ConnectionState:
 
     def parse_guild_delete(self, data):
         server = self._get_server(data.get('id'))
+        if server is None:
+            return
+
         if data.get('unavailable', False) and server is not None:
             # GUILD_DELETE with unavailable being True means that the
             # server that was available is now currently unavailable
@@ -243,12 +247,16 @@ class ConnectionState:
             self.dispatch('server_unavailable', server)
             return
 
+        # do a cleanup of the messages cache
+        self.messages = deque((msg for msg in self.messages if msg.server != server), maxlen=self.max_messages)
+
         try:
             self.servers.remove(server)
         except ValueError:
             return
         else:
             self.dispatch('server_remove', server)
+
 
     def parse_guild_ban_add(self, data):
         # we make the assumption that GUILD_BAN_ADD is done
