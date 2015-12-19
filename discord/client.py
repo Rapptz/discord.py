@@ -125,6 +125,7 @@ class Client:
 
         self._closed = asyncio.Event(loop=self.loop)
         self._is_logged_in = asyncio.Event(loop=self.loop)
+        self._is_ready = asyncio.Event(loop=self.loop)
 
         # These two events correspond to the two events necessary
         # for a connection to be made
@@ -200,6 +201,9 @@ class Client:
 
         for idx in reversed(removed):
             del self._listeners[idx]
+
+    def handle_ready(self):
+        self._is_ready.set()
 
     def _resolve_mentions(self, content, mentions):
         if isinstance(mentions, list):
@@ -471,6 +475,28 @@ class Client:
             for member in server.members:
                 yield member
 
+    # listeners/waiters
+
+    @asyncio.coroutine
+    def wait_for_ready(self):
+        """|coro|
+
+        This coroutine waits until the client is all ready. This could be considered
+        another way of asking for :func:`discord.on_ready` except meant for your own
+        background tasks.
+        """
+        yield from self._is_ready.wait()
+
+    @asyncio.coroutine
+    def wait_for_login(self):
+        """|coro|
+
+        This coroutine waits until the client is logged on successfully. This
+        is different from waiting until the client's state is all ready. For
+        that check :func:`discord.on_ready` and :meth:`wait_for_ready`.
+        """
+        yield from self._is_logged_in.wait()
+
     @asyncio.coroutine
     def wait_for_message(self, timeout=None, *, author=None, channel=None, content=None, check=None):
         """|coro|
@@ -706,6 +732,7 @@ class Client:
 
         self.keep_alive.cancel()
         self._closed.set()
+        self._is_ready.clear()
 
     @asyncio.coroutine
     def start(self, email, password):
