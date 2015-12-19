@@ -625,10 +625,12 @@ class Client:
         data = utils.to_json(payload)
         resp = yield from aiohttp.post(endpoints.LOGIN, data=data, headers=self.headers, loop=self.loop)
         log.debug(request_logging_format.format(method='POST', response=resp))
-        if resp.status == 400:
-            raise LoginFailure('Improper credentials have been passed.')
-        elif resp.status != 200:
-            raise HTTPException(resp, None)
+        if resp.status != 200:
+            yield from resp.release()
+            if resp.status == 400:
+                raise LoginFailure('Improper credentials have been passed.')
+            else:
+                raise HTTPException(resp, None)
 
         log.info('logging in returned status code {}'.format(resp.status))
         self.email = email
