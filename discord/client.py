@@ -123,8 +123,8 @@ class Client:
             'user-agent': user_agent.format(library_version, sys.version_info, aiohttp.__version__)
         }
 
-        self._closed = False
-        self._is_logged_in = False
+        self._closed = asyncio.Event(loop=self.loop)
+        self._is_logged_in = asyncio.Event(loop=self.loop)
 
         # These two events correspond to the two events necessary
         # for a connection to be made
@@ -152,7 +152,7 @@ class Client:
                 log.info('login cache token check succeeded')
                 data = yield from check.json()
                 self.gateway = data.get('url')
-                self._is_logged_in = True
+                self._is_logged_in.set()
                 return
             else:
                 # failed auth check
@@ -283,7 +283,7 @@ class Client:
     @asyncio.coroutine
     def keep_alive_handler(self, interval):
         try:
-            while not self._closed:
+            while not self.is_closed:
                 payload = {
                     'op': 1,
                     'd': int(time.time())
@@ -424,12 +424,12 @@ class Client:
     @property
     def is_logged_in(self):
         """bool: Indicates if the client has logged in successfully."""
-        return self._is_logged_in
+        return self._is_logged_in.is_set()
 
     @property
     def is_closed(self):
         """bool: Indicates if the websocket connection is closed."""
-        return self._closed
+        return self._closed.is_set()
 
     # helpers/getters
 
@@ -614,7 +614,7 @@ class Client:
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
-            if self._is_logged_in:
+            if self.is_logged_in:
                 return
 
         payload = {
@@ -638,7 +638,7 @@ class Client:
         body = yield from resp.json()
         self.token = body['token']
         self.headers['authorization'] = self.token
-        self._is_logged_in = True
+        self._is_logged_in.set()
         self.gateway = yield from self._get_gateway()
 
         # since we went through all this trouble
@@ -654,7 +654,7 @@ class Client:
         response = yield from aiohttp.post(endpoints.LOGOUT, headers=self.headers, loop=self.loop)
         yield from response.release()
         yield from self.close()
-        self._is_logged_in = False
+        self._is_logged_in.clear()
         log.debug(request_logging_format.format(method='POST', response=response))
 
     @asyncio.coroutine
@@ -676,7 +676,7 @@ class Client:
         """
         yield from self._make_websocket()
 
-        while not self._closed:
+        while not self.is_closed:
             msg = yield from self.ws.recv()
             if msg is None:
                 if self.ws.close_code == 1012:
@@ -694,7 +694,7 @@ class Client:
 
         To reconnect the websocket connection, :meth:`connect` must be used.
         """
-        if self._closed:
+        if self.is_closed:
             return
 
         if self.is_voice_connected():
@@ -705,7 +705,7 @@ class Client:
             yield from self.ws.close()
 
         self.keep_alive.cancel()
-        self._closed = True
+        self._closed.set()
 
     @asyncio.coroutine
     def start(self, email, password):
