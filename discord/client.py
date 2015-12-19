@@ -237,15 +237,14 @@ class Client:
             raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
 
     def __getattr__(self, name):
-        if name in ('user', 'email', 'servers', 'private_channels', 'messages'):
+        if name in ('user', 'servers', 'private_channels', 'messages'):
             return getattr(self.connection, name)
         else:
             msg = "'{}' object has no attribute '{}'"
             raise AttributeError(msg.format(self.__class__, name))
 
     def __setattr__(self, name, value):
-        if name in ('user', 'email', 'servers', 'private_channels',
-                    'messages'):
+        if name in ('user', 'servers', 'private_channels', 'messages'):
             return setattr(self.connection, name, value)
         else:
             object.__setattr__(self, name, value)
