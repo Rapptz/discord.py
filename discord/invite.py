@@ -75,6 +75,10 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
+
+    __slots__ = [ 'max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
+                  'temporary', 'max_uses', 'xkcd', 'inviter', 'channel' ]
+
     def __init__(self, **kwargs):
         self.max_age = kwargs.get('max_age')
         self.code = kwargs.get('code')

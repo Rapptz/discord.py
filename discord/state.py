@@ -81,7 +81,6 @@ class ConnectionState:
         self.messages.append(message)
 
     def parse_message_delete(self, data):
-        channel = self.get_channel(data.get('channel_id'))
         message_id = data.get('id')
         found = self._get_message(message_id)
         if found is not None:

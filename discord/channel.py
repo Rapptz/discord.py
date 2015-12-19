@@ -225,6 +225,8 @@ class PrivateChannel(Hashable):
         ``True`` if the channel is a private channel (i.e. PM). ``True`` in this case.
     """
 
+    __slots__ = ['user', 'id', 'is_private']
+
     def __init__(self, user, id, **kwargs):
         self.user = user
         self.id = id

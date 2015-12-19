@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class Permissions(object):
+class Permissions:
     """Wraps up the Discord permission value.
 
     Supported operations:
@@ -50,6 +50,7 @@ class Permissions(object):
     were regular bools. This allows you to edit permissions.
     """
 
+    __slots__ = [ 'value' ]
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 

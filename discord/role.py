@@ -53,8 +53,8 @@ class Role(Hashable):
         The name of the role.
     permissions : :class:`Permissions`
         Represents the role's permissions.
-    color : :class:`Colour`
-        Represents the role colour.
+    colour : :class:`Colour`
+        Represents the role colour. An alias exists under ``color``.
     hoist : bool
          Indicates if the role will be displayed separately from other members.
     position : int
@@ -63,6 +63,9 @@ class Role(Hashable):
         Indicates if the role is managed by the server through some form of
         integrations such as Twitch.
     """
+
+    __slots__ = ['id', 'name', 'permissions', 'color', 'colour', 'position',
+                 'managed', '_is_everyone', 'hoist' ]
 
     def __init__(self, **kwargs):
         self._is_everyone = kwargs.get('everyone', False)

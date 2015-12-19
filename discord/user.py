@@ -53,11 +53,13 @@ class User:
         The avatar hash the user has. Could be None.
     """
 
-    def __init__(self, username, id, discriminator, avatar, **kwargs):
-        self.name = username
-        self.id = id
-        self.discriminator = discriminator
-        self.avatar = avatar
+    __slots__ = ['name', 'id', 'discriminator', 'avatar']
+
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('username')
+        self.id = kwargs.get('id')
+        self.discriminator = kwargs.get('discriminator')
+        self.avatar = kwargs.get('avatar')
 
     def __str__(self):
         return self.name

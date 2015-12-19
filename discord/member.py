@@ -64,8 +64,12 @@ class Member(User):
         The server that the member belongs to.
     """
 
+    __slots__ = [ 'deaf', 'mute', 'self_mute', 'self_deaf', 'is_afk',
+                  'voice_channel', 'roles', 'joined_at', 'status', 'game_id',
+                  'server' ]
+
     def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
-        super(Member, self).__init__(**user)
+        super().__init__(**user)
         self.deaf = deaf
         self.mute = mute
         self.joined_at = parse_time(joined_at)

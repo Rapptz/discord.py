@@ -30,7 +30,7 @@ from .member import Member
 from .object import Object
 import re
 
-class Message(object):
+class Message:
     """Represents a message from Discord.
 
     There should be no need to create one of these manually.
