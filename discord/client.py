@@ -472,7 +472,6 @@ class Client:
             for member in server.members:
                 yield member
 
-
     @asyncio.coroutine
     def wait_for_message(self, timeout=None, *, author=None, channel=None, content=None, check=None):
         """|coro|
@@ -2089,7 +2088,7 @@ class Client:
             Removing roles failed.
         """
         new_roles = {role.id for role in member.roles}
-        new_roles = new_roles.difference(roles)
+        new_roles = new_roles.difference(role.id for role in roles)
         yield from self._replace_roles(member, *new_roles)
 
     @asyncio.coroutine
@@ -2265,7 +2264,6 @@ class Client:
         yield from utils._verify_successful_response(response)
         yield from response.release()
 
-
     # Voice management
 
     @asyncio.coroutine
@@ -2338,7 +2336,6 @@ class Client:
         self.voice = VoiceClient(**kwargs)
         yield from self.voice.connect()
         return self.voice
-
 
     def is_voice_connected(self):
         """bool : Indicates if we are currently connected to a voice channel."""
