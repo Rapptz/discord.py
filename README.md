@@ -46,6 +46,7 @@ Note that this requires `git` to be installed.
 
 ```py
 import discord
+import asyncio
 
 client = discord.Client()
 
@@ -76,8 +77,12 @@ def main_task():
     yield from client.connect()
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main_task())
-loop.close()
+try:
+    loop.run_until_complete(main_task())
+except Exception:
+    loop.run_until_complete(client.close())
+finally:
+    loop.close()
 ```
 
 You can find examples in the examples directory.
