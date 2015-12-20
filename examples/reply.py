@@ -9,8 +9,8 @@ def on_message(message):
         return
 
     if message.content.startswith('!hello'):
-        msg = 'Hello {}!'.format(message.author.mention()
-        yield from client.send_message(message.channel, msg))
+        msg = 'Hello {0.author.mention}'.format(message)
+        yield from client.send_message(message.channel, msg)
 
 @client.async_event
 def on_ready():
