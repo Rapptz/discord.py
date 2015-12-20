@@ -35,6 +35,7 @@ from .object import Object
 from .role import Role
 from .errors import *
 from .state import ConnectionState
+from .permissions import Permissions
 from . import utils
 from .enums import ChannelType, ServerRegion
 from .voice_client import VoiceClient
@@ -2203,7 +2204,7 @@ class Client:
             deny = discord.Permissions.none()
             allow.can_mention_everyone = True
             deny.can_manage_messages = True
-            yield from client.set_channel_permissions(message.channel, message.author, allow=allow, deny=deny)
+            yield from client.edit_channel_permissions(message.channel, message.author, allow=allow, deny=deny)
 
         Parameters
         -----------
@@ -2265,7 +2266,7 @@ class Client:
         Removes a channel specific permission overwrites for a target
         in the specified :class:`Channel`.
 
-        The target parameter follows the same rules as :meth:`set_channel_permissions`.
+        The target parameter follows the same rules as :meth:`edit_channel_permissions`.
 
         You must have the proper permissions to do this.
 
