@@ -590,7 +590,10 @@ class Client:
         """
 
         def predicate(message):
-            result = message.author == author
+            result = True
+            if author is not None:
+                result = result and message.author == author
+
             if content is not None:
                 result = result and message.content == content
 
