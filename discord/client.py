@@ -1464,7 +1464,7 @@ class Client(object):
         payload = {
             'op': 3,
             'd': {
-                'game': game and game.__dict__,
+                'game': game and {'name': game.name},
                 'idle_since': idle_since
             }
         }

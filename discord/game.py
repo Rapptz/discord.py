@@ -35,5 +35,19 @@ class Game(object):
         The game name
     """
 
+    __slots__ = ['name']
+
     def __init__(self, **kwargs):
-        self.name = kwargs.get('name', None)
+        self.name = kwargs.get('name')
+
+    def __str__(self):
+        return self.name
+
+    def __eq__(self, other):
+        return isinstance(other, Game) and other.name == self.name
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.name)
