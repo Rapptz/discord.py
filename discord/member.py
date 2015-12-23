@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .utils import parse_time
+from .game import Game
 
 class Member(User):
     """Represents a Discord member to a :class:`Server`.
@@ -65,9 +66,9 @@ class Member(User):
     .. attribute:: status
 
         A string that denotes the user's status. Can be 'online', 'offline' or 'idle'.
-    .. attribute:: game_id
+    .. attribute:: game
 
-        The game ID that the user is currently playing. Could be None if no game is being played.
+        A dictionary representing the game that the user is currently playing. None if no game is being played.
     .. attribute:: server
 
         The :class:`Server` that the member belongs to.
@@ -80,7 +81,8 @@ class Member(User):
         self.joined_at = parse_time(joined_at)
         self.roles = roles
         self.status = 'offline'
-        self.game_id = kwargs.get('game_id', None)
+        game = kwargs.get('game', None)
+        self.game = game and Game(**game)
         self.server = kwargs.get('server', None)
         self.update_voice_state(mute=mute, deaf=deaf)
 
