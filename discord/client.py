@@ -37,6 +37,7 @@ from .message import Message
 from . import utils
 from .invite import Invite
 from .object import Object
+from .game import Game
 
 import traceback
 import requests
@@ -208,12 +209,13 @@ class ConnectionState(object):
             if member is not None:
                 old_member = copy.copy(member)
                 member.status = data.get('status')
-                member.game_id = data.get('game_id')
+                game = data.get('game')
+                member.game = game and Game(**game)
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 
                 # call the event now
-                self.dispatch('status', member, old_member.game_id, old_member.status)
+                self.dispatch('status', member, old_member.game, old_member.status)
                 self.dispatch('member_update', old_member, member)
 
     def handle_user_update(self, data):
@@ -1444,27 +1446,25 @@ class Client(object):
         log.debug(request_logging_format.format(response=response))
         utils._verify_successful_response(response)
 
-    def change_status(self, game_id=None, idle=False):
+    def change_status(self, game=None, idle=False):
         """Changes the client's status.
 
-        The game_id parameter is a numeric ID (not a string) that represents
-        a game being played currently. The list of game_id to actual games changes
-        constantly and would thus be out of date pretty quickly. An old version of
-        the game_id database can be seen `here`_ to help you get started.
+        The game parameter is a Game object that represents a game being played
+        currently. May be None if no game is being played.
 
         The idle parameter is a boolean parameter that indicates whether the
         client should go idle or not.
 
         .. _here: https://gist.github.com/Rapptz/a82b82381b70a60c281b
 
-        :param game_id: The numeric game ID being played. None if no game is being played.
+        :param game: A Game object representing the game being played. None if no game is being played.
         :param idle: A boolean indicating if the client should go idle."""
 
         idle_since = None if idle == False else int(time.time() * 1000)
         payload = {
             'op': 3,
             'd': {
-                'game_id': game_id,
+                'game': game and {'name': game.name},
                 'idle_since': idle_since
             }
         }

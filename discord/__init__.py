@@ -20,6 +20,7 @@ __build__ = 0x009000
 
 from .client import Client
 from .user import User
+from .game import Game
 from .channel import Channel, PrivateChannel
 from .server import Server
 from .member import Member
