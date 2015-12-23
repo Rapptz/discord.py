@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from . import __version__ as library_version
 from . import endpoints
 from .user import User
+from .game import Game
 from .channel import Channel, PrivateChannel
 from .server import Server
 from .message import Message
@@ -1391,15 +1392,13 @@ class Client:
             self._update_cache(self.email, password)
 
     @asyncio.coroutine
-    def change_status(self, game_id=None, idle=False):
+    def change_status(self, game=None, idle=False):
         """|coro|
 
         Changes the client's status.
 
-        The game_id parameter is a numeric ID (not a string) that represents
-        a game being played currently. The list of game_id to actual games changes
-        constantly and would thus be out of date pretty quickly. An old version of
-        the game_id database can be seen `here <game_list>`_ to help you get started.
+        The game parameter is a Game object (not a string) that represents
+        a game being played currently.
 
         The idle parameter is a boolean parameter that indicates whether the
         client should go idle or not.
@@ -1408,27 +1407,27 @@ class Client:
 
         Parameters
         ----------
-        game_id : Optional[int]
-            The game ID being played. None if no game is being played.
+        game : Optional[:class:`Game`]
+            The game being played. None if no game is being played.
         idle : bool
             Indicates if the client should go idle.
 
         Raises
         ------
         InvalidArgument
-            If the ``game_id`` parameter is convertible integer or None.
+            If the ``game`` parameter is not :class:`Game` or None.
         """
 
+        if game is not None and not isinstance(game, Game):
+            raise InvalidArgument('game must be of Game or None')
+
         idle_since = None if idle == False else int(time.time() * 1000)
-        try:
-            game_id = None if game_id is None else int(game_id)
-        except:
-            raise InvalidArgument('game_id must be convertible to an integer or None')
+        game = game and {'name': game.name}
 
         payload = {
             'op': 3,
             'd': {
-                'game_id': game_id,
+                'game': game,
                 'idle_since': idle_since
             }
         }

@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from . import utils
 from .role import Role
 from .member import Member
+from .game import Game
 from .channel import Channel
 from .enums import ServerRegion, Status
 from .mixins import Hashable
@@ -143,7 +144,8 @@ class Server(Hashable):
                     member.status = Status(member.status)
                 except:
                     pass
-                member.game_id = presence['game_id']
+                game = presence.get('game')
+                member.game = game and Game(**game)
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -171,4 +173,3 @@ class Server(Hashable):
         if self.icon is None:
             return ''
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
-

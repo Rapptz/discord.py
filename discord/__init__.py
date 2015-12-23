@@ -19,6 +19,7 @@ __version__ = '0.10.0-alpha'
 
 from .client import Client
 from .user import User
+from .game import Game
 from .channel import Channel, PrivateChannel
 from .server import Server
 from .member import Member

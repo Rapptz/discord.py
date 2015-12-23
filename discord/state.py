@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .server import Server
 from .user import User
+from .game import Game
 from .message import Message
 from .channel import Channel, PrivateChannel
 from .member import Member
@@ -121,7 +122,8 @@ class ConnectionState:
                 except:
                     pass
 
-                member.game_id = data.get('game_id')
+                game = data.get('game')
+                member.game = game and Game(**game)
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 

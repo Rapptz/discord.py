@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .user import User
+from .game import Game
 from .utils import parse_time
 from .enums import Status
 
@@ -58,14 +59,14 @@ class Member(User):
     status : :class:`Status`
         The member's status. There is a chance that the status will be a ``str``
         if it is a value that is not recognised by the enumerator.
-    game_id : int
-        The game ID that the user is currently playing. Could be None if no game is being played.
+    game : :class:`Game`
+        The game that the user is currently playing. Could be None if no game is being played.
     server : :class:`Server`
         The server that the member belongs to.
     """
 
     __slots__ = [ 'deaf', 'mute', 'self_mute', 'self_deaf', 'is_afk',
-                  'voice_channel', 'roles', 'joined_at', 'status', 'game_id',
+                  'voice_channel', 'roles', 'joined_at', 'status', 'game',
                   'server' ]
 
     def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
@@ -75,7 +76,8 @@ class Member(User):
         self.joined_at = parse_time(joined_at)
         self.roles = roles
         self.status = Status.offline
-        self.game_id = kwargs.get('game_id', None)
+        game = kwargs.get('game')
+        self.game = game and Game(**game)
         self.server = kwargs.get('server', None)
         self.update_voice_state(mute=mute, deaf=deaf)
 
@@ -101,4 +103,3 @@ class Member(User):
                 # we switched channels
                 if self.voice_channel is not None:
                     self.voice_channel.voice_members.append(self)
-
