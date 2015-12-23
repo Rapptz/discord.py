@@ -386,11 +386,13 @@ class VoiceClient:
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
         input_name = '-' if pipe else shlex.quote(filename)
-        cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel warning pipe:1'
+        cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel warning'
         cmd = cmd.format(input_name, self.encoder.sampling_rate, self.encoder.channels)
 
         if isinstance(options, str):
             cmd = cmd + ' ' + options
+
+        cmd += ' pipe:1'
 
         stdin = None if not pipe else filename
         args = shlex.split(cmd)
@@ -567,4 +569,3 @@ class VoiceClient:
         packet = self._get_voice_packet(encoded_data)
         sent = self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
         self.checked_add('timestamp', self.encoder.samples_per_frame, 4294967295)
-
