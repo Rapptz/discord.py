@@ -142,21 +142,21 @@ class Permissions:
         self._set(0, value)
 
     @property
-    def can_ban_members(self):
-        """Returns True if the user can ban users from the server."""
-        return self._bit(1)
-
-    @can_ban_members.setter
-    def can_ban_members(self, value):
-        self._set(1, value)
-
-    @property
     def can_kick_members(self):
-        """Returns True if a user can kick users from the server."""
-        return self._bit(2)
+        """Returns True if the user can kick users from the server."""
+        return self._bit(1)
 
     @can_kick_members.setter
     def can_kick_members(self, value):
+        self._set(1, value)
+
+    @property
+    def can_ban_members(self):
+        """Returns True if a user can ban users from the server."""
+        return self._bit(2)
+
+    @can_ban_members.setter
+    def can_ban_members(self, value):
         self._set(2, value)
 
     @property
