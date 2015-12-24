@@ -37,6 +37,7 @@ from .message import Message
 from . import utils
 from .invite import Invite
 from .object import Object
+from .game import Game
 
 import traceback
 import requests
@@ -184,7 +185,7 @@ class ConnectionState(object):
         older_message = self._get_message(data.get('id'))
         if older_message is not None:
             # create a copy of the new message
-            message = copy.deepcopy(older_message)
+            message = copy.copy(older_message)
             # update the new update
             for attr in data:
                 if attr == 'channel_id' or attr == 'author':
@@ -206,14 +207,16 @@ class ConnectionState(object):
             member_id = user['id']
             member = utils.find(lambda m: m.id == member_id, server.members)
             if member is not None:
+                old_member = copy.copy(member)
                 member.status = data.get('status')
-                member.game_id = data.get('game_id')
+                game = data.get('game')
+                member.game = game and Game(**game)
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 
                 # call the event now
-                self.dispatch('status', member)
-                self.dispatch('member_update', member)
+                self.dispatch('status', member, old_member.game, old_member.status)
+                self.dispatch('member_update', old_member, member)
 
     def handle_user_update(self, data):
         self.user = User(**data)
@@ -223,8 +226,12 @@ class ConnectionState(object):
         if server is not None:
             channel_id = data.get('id')
             channel = utils.find(lambda c: c.id == channel_id, server.channels)
-            server.channels.remove(channel)
-            self.dispatch('channel_delete', channel)
+            try:
+                server.channels.remove(channel)
+            except ValueError:
+                return
+            else:
+                self.dispatch('channel_delete', channel)
 
     def handle_channel_update(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -274,6 +281,7 @@ class ConnectionState(object):
         member = utils.find(lambda m: m.id == user_id, server.members)
         if member is not None:
             user = data['user']
+            old_member = copy.copy(member)
             member.name = user['username']
             member.discriminator = user['discriminator']
             member.avatar = user['avatar']
@@ -283,7 +291,7 @@ class ConnectionState(object):
                 if role.id in data['roles']:
                     member.roles.append(role)
 
-            self.dispatch('member_update', member)
+            self.dispatch('member_update', old_member, member)
 
     def handle_guild_create(self, data):
         unavailable = data.get('unavailable')
@@ -1160,8 +1168,9 @@ class Client(object):
 
         .. note::
 
-            If the server attribute of the returned invite is ``None`` then that means
-            that you have not joined the server.
+            If the invite is for a server you have not joined, the server and channel
+            attributes of the returned invite will be :class:`Object` with the names
+            patched in.
 
         """
 
@@ -1172,10 +1181,17 @@ class Client(object):
         utils._verify_successful_response(response)
         data = response.json()
         server = self.connection._get_server(data['guild']['id'])
+        if server is not None:
+            ch_id = data['channel']['id']
+            channels = getattr(server, 'channels', [])
+            channel = utils.find(lambda c: c.id == ch_id, channels)
+        else:
+            server = Object(id=data['guild']['id'])
+            server.name = data['guild']['name']
+            channel = Object(id=data['channel']['id'])
+            channel.name = data['channel']['name']
         data['server'] = server
-        ch_id = data['channel']['id']
-        channels = getattr(server, 'channels', [])
-        data['channel'] = utils.find(lambda c: c.id == ch_id, channels)
+        data['channel'] = channel
         return Invite(**data)
 
     def accept_invite(self, invite):
@@ -1213,7 +1229,7 @@ class Client(object):
             At the moment, the Discord API allows you to set the colour to any
             RGB value. This will change in the future so it is recommended that
             you use the constants in the :class:`Colour` instead such as
-            :attr:`Colour.NAVY_BLUE`.
+            :meth:`Colour.green`.
 
         :param server: The :class:`Server` the role belongs to.
         :param role: The :class:`Role` to edit.
@@ -1430,27 +1446,25 @@ class Client(object):
         log.debug(request_logging_format.format(response=response))
         utils._verify_successful_response(response)
 
-    def change_status(self, game_id=None, idle=False):
+    def change_status(self, game=None, idle=False):
         """Changes the client's status.
 
-        The game_id parameter is a numeric ID (not a string) that represents
-        a game being played currently. The list of game_id to actual games changes
-        constantly and would thus be out of date pretty quickly. An old version of
-        the game_id database can be seen `here`_ to help you get started.
+        The game parameter is a Game object that represents a game being played
+        currently. May be None if no game is being played.
 
         The idle parameter is a boolean parameter that indicates whether the
         client should go idle or not.
 
         .. _here: https://gist.github.com/Rapptz/a82b82381b70a60c281b
 
-        :param game_id: The numeric game ID being played. None if no game is being played.
+        :param game: A Game object representing the game being played. None if no game is being played.
         :param idle: A boolean indicating if the client should go idle."""
 
         idle_since = None if idle == False else int(time.time() * 1000)
         payload = {
             'op': 3,
             'd': {
-                'game_id': game_id,
+                'game': game and {'name': game.name},
                 'idle_since': idle_since
             }
         }
@@ -1458,4 +1472,3 @@ class Client(object):
         sent = json.dumps(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
-

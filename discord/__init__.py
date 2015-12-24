@@ -15,11 +15,12 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Rapptz'
-__version__ = '0.9.0'
-__build__ = 0x009000
+__version__ = '0.9.1'
+__build__ = 0x009010
 
 from .client import Client
 from .user import User
+from .game import Game
 from .channel import Channel, PrivateChannel
 from .server import Server
 from .member import Member
