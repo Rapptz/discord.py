@@ -206,14 +206,6 @@ class Client:
     def handle_ready(self):
         self._is_ready.set()
 
-    def _resolve_mentions(self, content, mentions):
-        if isinstance(mentions, list):
-            return [user.id for user in mentions]
-        elif mentions == True:
-            return re.findall(r'<@([0-9]+)>', content)
-        else:
-            return []
-
     def _resolve_invite(self, invite):
         if isinstance(invite, Invite) or isinstance(invite, Object):
             return invite.id
@@ -880,7 +872,7 @@ class Client:
         return resp
 
     @asyncio.coroutine
-    def send_message(self, destination, content, *, mentions=True, tts=False):
+    def send_message(self, destination, content, *, tts=False):
         """|coro|
 
         Sends a message to the destination given with the content given.
@@ -900,18 +892,12 @@ class Client:
 
         The content must be a type that can convert to a string through ``str(content)``.
 
-        The mentions must be either an array of :class:`User` to mention or a boolean. If
-        ``mentions`` is ``True`` then all the users mentioned in the content are mentioned, otherwise
-        no one is mentioned. Note that to mention someone in the content, you should use :meth:`User.mention`.
-
         Parameters
         ------------
         destination
             The location to send the message.
         content
             The content of the message to send.
-        mentions
-            A list of :class:`User` to mention in the message or a boolean. Ignored for private messages.
         tts : bool
             Indicates if the message should be sent using text-to-speech.
 
@@ -935,12 +921,10 @@ class Client:
         channel_id = yield from self._resolve_destination(destination)
 
         content = str(content)
-        mentions = self._resolve_mentions(content, mentions)
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         payload = {
-            'content': content,
-            'mentions': mentions
+            'content': content
         }
 
         if tts:
@@ -1078,7 +1062,7 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
-    def edit_message(self, message, new_content, *, mentions=True):
+    def edit_message(self, message, new_content):
         """|coro|
 
         Edits a :class:`Message` with the new message content.
@@ -1091,8 +1075,6 @@ class Client:
             The message to edit.
         new_content
             The new content to replace the message with.
-        mentions
-            The mentions for the user. Same as :meth:`send_message`.
 
         Raises
         -------
@@ -1110,8 +1092,7 @@ class Client:
 
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, channel.id, message.id)
         payload = {
-            'content': content,
-            'mentions': self._resolve_mentions(content, mentions)
+            'content': content
         }
 
         response = yield from self._rate_limit_helper('edit_message', 'PATCH', url, utils.to_json(payload))
