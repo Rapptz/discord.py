@@ -215,7 +215,7 @@ class ConnectionState(object):
                 member.avatar = user.get('avatar', member.avatar)
 
                 # call the event now
-                self.dispatch('status', member, old_member.game_id, old_member.status)
+                self.dispatch('status', member, old_member.game, old_member.status)
                 self.dispatch('member_update', old_member, member)
 
     def handle_user_update(self, data):
