@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from . import __version__ as library_version
 from . import endpoints
 from .user import User
+from .member import Member
 from .game import Game
 from .channel import Channel, PrivateChannel
 from .server import Server
