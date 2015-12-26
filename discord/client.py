@@ -869,7 +869,7 @@ class Client:
             retry = float(resp.headers['Retry-After']) / 1000.0
             yield from resp.release()
             yield from asyncio.sleep(retry)
-            return (yield from self._rate_limit_helper(name, method, data))
+            return (yield from self._rate_limit_helper(name, method, url, data))
 
         return resp
 
