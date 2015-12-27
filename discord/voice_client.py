@@ -211,16 +211,16 @@ class VoiceClient:
         self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
         recv = yield from self.loop.sock_recv(self.socket, 70)
         log.debug('received packet in initial_connection: {}'.format(recv))
-        ip = []
 
-        for x in range(4, len(recv)):
-            val = recv[x]
-            if val == 0:
-                break
-            ip.append(chr(val))
+        # the ip is ascii starting at the 4th byte and ending at the first null
+        ip_start = 4
+        ip_end = recv.index(0, ip_start)
+        self.ip = recv[ip_start:ip_end].decode('ascii')
 
-        self.ip = ''.join(ip)
-        self.port = recv[len(recv) - 2] | recv[len(recv) - 1] << 8
+        # the port is a little endian unsigned short in the last two bytes
+        # yes, this is different endianness from everything else
+        self.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
+
         log.debug('detected ip: {} port: {}'.format(self.ip, self.port))
 
         payload = {
