@@ -210,16 +210,18 @@ class VoiceClient:
         struct.pack_into('>I', packet, 0, self.ssrc)
         self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
         recv = yield from self.loop.sock_recv(self.socket, 70)
-        self.ip = []
+        log.debug('received packet in initial_connection: {}'.format(recv))
+        ip = []
 
         for x in range(4, len(recv)):
             val = recv[x]
             if val == 0:
                 break
-            self.ip.append(str(val))
+            ip.append(chr(val))
 
-        self.ip = '.'.join(self.ip)
-        self.port = recv[len(recv) - 2] << 0 | recv[len(recv) - 1] << 1
+        self.ip = ''.join(ip)
+        self.port = recv[len(recv) - 2] | recv[len(recv) - 1] << 8
+        log.debug('detected ip: {} port: {}'.format(self.ip, self.port))
 
         payload = {
             'op': 1,
