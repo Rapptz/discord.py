@@ -1610,7 +1610,7 @@ class Client:
             The name of the server.
         region : :class:`ServerRegion`
             The region for the voice communication server.
-            Defaults to :attr`ServerRegion.us_west`.
+            Defaults to :attr:`ServerRegion.us_west`.
         icon : bytes
             The *bytes-like* object representing the icon. See :meth:`edit_profile`
             for more details on what is expected.
