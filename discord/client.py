@@ -146,6 +146,7 @@ class Client:
         try:
             log.info('attempting to login via cache')
             cache_file = self._get_cache_filename(email)
+            self.email = email
             with open(cache_file, 'r') as f:
                 log.info('login cache file found')
                 self.token = f.read()
