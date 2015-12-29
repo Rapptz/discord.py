@@ -40,13 +40,15 @@ import datetime
 
 class ConnectionState:
     def __init__(self, dispatch, max_messages):
+        self.max_messages = max_messages
+        self.dispatch = dispatch
+        self.clear()
+
+    def clear(self):
         self.user = None
-        self.email = None
         self.servers = []
         self.private_channels = []
-        self.max_messages = max_messages
         self.messages = deque(maxlen=self.max_messages)
-        self.dispatch = dispatch
 
     def _get_message(self, msg_id):
         return utils.find(lambda m: m.id == msg_id, self.messages)

@@ -109,15 +109,16 @@ class Client:
         self.gateway = None
         self.voice = None
         self.session_id = None
-        self.connection = None
         self.sequence = 0
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
 
-        self.max_messages = options.get('max_messages')
-        if self.max_messages is None or self.max_messages < 100:
-            self.max_messages = 5000
+        max_messages = options.get('max_messages')
+        if max_messages is None or max_messages < 100:
+            max_messages = 5000
+
+        self.connection = ConnectionState(self.dispatch, max_messages)
 
         # Blame React for this
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -134,7 +135,7 @@ class Client:
         # These two events correspond to the two events necessary
         # for a connection to be made
         self._voice_data_found = asyncio.Event(loop=self.loop)
-        self._session_id_found = asyncio.Event(loop=self.loop)
+                self._session_id_found = asyncio.Event(loop=self.loop)
 
     # internals
 
@@ -334,7 +335,7 @@ class Client:
         event = msg.get('t')
 
         if event == 'READY':
-            self.connection = ConnectionState(self.dispatch, self.max_messages)
+            self.connection.clear()
             self.session_id = data['session_id']
 
         if event == 'READY' or event == 'RESUMED':
@@ -706,12 +707,11 @@ class Client:
         while not self.is_closed:
             msg = yield from self.ws.recv()
             if msg is None:
-                if self.connection is None:
-                    raise ClientException('Unexpected websocket closure received')
-
                 if self.ws.close_code == 1012:
                     yield from self.redirect_websocket(self.gateway)
                     continue
+                elif not self._is_ready.is_set():
+                    raise ClientException('Unexpected websocket closure received')
                 else:
                     yield from self.close()
                     break
@@ -1743,9 +1743,7 @@ class Client:
     # Invite management
 
     def _fill_invite_data(self, data):
-        server = None
-        if self.connection is not None:
-            server = self.connection._get_server(data['guild']['id'])
+        server = self.connection._get_server(data['guild']['id'])
         if server is not None:
             ch_id = data['channel']['id']
             channels = getattr(server, 'channels', [])
