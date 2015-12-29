@@ -154,25 +154,10 @@ class Client:
                 self.token = f.read()
                 self.headers['authorization'] = self.token
 
-            check = yield from aiohttp.get(endpoints.GATEWAY, headers=self.headers, loop=self.loop)
-            if check.status == 200:
-                log.info('login cache token check succeeded')
-                data = yield from check.json()
-                self.gateway = data.get('url')
-                self._is_logged_in.set()
-                return
-            else:
-                # failed auth check
-                yield from check.release()
-                if check.status != 401:
-                    # This is unrelated to the auth check so it's
-                    # an error on discord's end
-                    raise GatewayNotFound()
-
             # at this point our check failed
             # so we have to login and get the proper token and then
             # redo the cache
-        except OSError as e:
+        except OSError:
             log.info('a problem occurred while opening login cache')
             pass # file not found et al
 
@@ -628,8 +613,6 @@ class Client:
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
-        GatewayNotFound
-            The gateway to connect to discord was not found.
         """
 
         # attempt to read the token from cache
@@ -660,7 +643,6 @@ class Client:
         self.token = body['token']
         self.headers['authorization'] = self.token
         self._is_logged_in.set()
-        self.gateway = yield from self._get_gateway()
 
         # since we went through all this trouble
         # let's make sure we don't have to do it again
@@ -695,7 +677,11 @@ class Client:
         ClientException
             If this is called before :meth:`login` was invoked successfully
             or when an unexpected closure of the websocket occurs.
+        GatewayNotFound
+            If the gateway to connect to discord is not found. Usually if this
+            is thrown then there is a discord API outage.
         """
+        self.gateway = yield from self._get_gateway()
         yield from self._make_websocket()
 
         while not self.is_closed:
