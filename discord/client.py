@@ -1738,6 +1738,22 @@ class Client:
 
     # Invite management
 
+    def _fill_invite_data(self, data):
+        server = None
+        if self.connection is not None:
+            server = self.connection._get_server(data['guild']['id'])
+        if server is not None:
+            ch_id = data['channel']['id']
+            channels = getattr(server, 'channels', [])
+            channel = utils.find(lambda c: c.id == ch_id, channels)
+        else:
+            server = Object(id=data['guild']['id'])
+            server.name = data['guild']['name']
+            channel = Object(id=data['channel']['id'])
+            channel.name = data['channel']['name']
+        data['server'] = server
+        data['channel'] = channel
+
     @asyncio.coroutine
     def create_invite(self, destination, **options):
         """|coro|
@@ -1786,10 +1802,7 @@ class Client:
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
         log.debug(request_success_log.format(json=payload, response=response, data=data))
-
-        data['server'] = self.connection._get_server(data['guild']['id'])
-        channel_id = data['channel']['id']
-        data['channel'] = utils.find(lambda ch: ch.id == channel_id, data['server'].channels)
+        self._fill_invite_data(data)
         return Invite(**data)
 
     @asyncio.coroutine
@@ -1828,20 +1841,7 @@ class Client:
         log.debug(request_logging_format.format(method='GET', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
-        server = None
-        if self.connection is not None:
-            server = self.connection._get_server(data['guild']['id'])
-        if server is not None:
-            ch_id = data['channel']['id']
-            channels = getattr(server, 'channels', [])
-            channel = utils.find(lambda c: c.id == ch_id, channels)
-        else:
-            server = Object(id=data['guild']['id'])
-            server.name = data['guild']['name']
-            channel = Object(id=data['channel']['id'])
-            channel.name = data['channel']['name']
-        data['server'] = server
-        data['channel'] = channel
+        self._fill_invite_data(data)
         return Invite(**data)
 
     @asyncio.coroutine
