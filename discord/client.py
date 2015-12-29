@@ -135,7 +135,7 @@ class Client:
         # These two events correspond to the two events necessary
         # for a connection to be made
         self._voice_data_found = asyncio.Event(loop=self.loop)
-                self._session_id_found = asyncio.Event(loop=self.loop)
+        self._session_id_found = asyncio.Event(loop=self.loop)
 
     # internals
 
