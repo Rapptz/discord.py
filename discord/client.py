@@ -2280,6 +2280,49 @@ class Client:
     # Voice management
 
     @asyncio.coroutine
+    def move_member(self, member, channel):
+        """|coro|
+
+        Moves a :class:`Member` to a different voice channel.
+
+        You must have proper permissions to do this.
+
+        Note
+        -----
+        You cannot pass in a :class:`Object` in place of a :class:`Channel`
+        object in this function.
+
+        Parameters
+        -----------
+        member : :class:`Member`
+            The member to move to another voice channel.
+        channel : :class:`Channel`
+            The voice channel to move the member to.
+
+        Raises
+        -------
+        InvalidArgument
+            The channel provided is not a voice channel.
+        HTTPException
+            Moving the member failed.
+        Forbidden
+            You do not have permissions to move the member.
+        """
+
+        url = '{0}/{1.server.id}/members/{2.id}'.format(endpoints.SERVERS, member)
+
+        if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
+            raise InvalidArgument('The channel provided must be a voice channel.')
+
+        payload = utils.to_json({
+            'channel_id': channel.id
+        })
+        response = yield from aiohttp.patch(url, data=payload, headers=self.headers, loop=self.loop)
+        log.debug(request_logging_format.format(method='PATCH', response=response))
+        yield from utils._verify_successful_response(response)
+        yield from response.release()
+
+    @asyncio.coroutine
     def join_voice_channel(self, channel):
         """|coro|
 
