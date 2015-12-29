@@ -698,13 +698,17 @@ class Client:
         Raises
         -------
         ClientException
-            If this is called before :meth:`login` was invoked successfully.
+            If this is called before :meth:`login` was invoked successfully
+            or when an unexpected closure of the websocket occurs.
         """
         yield from self._make_websocket()
 
         while not self.is_closed:
             msg = yield from self.ws.recv()
             if msg is None:
+                if self.connection is None:
+                    raise ClientException('Unexpected websocket closure received')
+
                 if self.ws.close_code == 1012:
                     yield from self.redirect_websocket(self.gateway)
                     continue
