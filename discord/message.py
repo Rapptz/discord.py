@@ -172,6 +172,9 @@ class Message:
 
     def _handle_upgrades(self, channel_id):
         self.server = None
+        if isinstance(self.channel, Object):
+            return
+
         if self.channel is None:
             if channel_id is not None:
                 self.channel = Object(id=channel_id)
