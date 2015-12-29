@@ -2314,6 +2314,9 @@ class Client:
         if self.is_voice_connected():
             raise ClientException('Already connected to a voice channel')
 
+        if isinstance(channel, Object):
+            channel = self.get_channel(channel.id)
+
         if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
             raise InvalidArgument('Channel passed must be a voice channel')
 
