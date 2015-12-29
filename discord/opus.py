@@ -40,16 +40,35 @@ class EncoderStruct(ctypes.Structure):
 
 EncoderStructPtr = ctypes.POINTER(EncoderStruct)
 
+class DecoderStruct(ctypes.Structure):
+    pass
+
+DecoderStructPtr = ctypes.POINTER(DecoderStruct)
+
 # A list of exported functions.
 # The first argument is obviously the name.
 # The second one are the types of arguments it takes.
 # The third is the result type.
 exported_functions = [
     ('opus_strerror', [ctypes.c_int], ctypes.c_char_p),
+
+    # Encoder functions
     ('opus_encoder_get_size', [ctypes.c_int], ctypes.c_int),
     ('opus_encoder_create', [ctypes.c_int, ctypes.c_int, ctypes.c_int, c_int_ptr], EncoderStructPtr),
     ('opus_encode', [EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int32),
-    ('opus_encoder_destroy', [EncoderStructPtr], None)
+    ('opus_encoder_destroy', [EncoderStructPtr], None),
+
+    # Decoder functions
+    ('opus_decoder_get_size', [ctypes.c_int], ctypes.c_int),
+    ('opus_decoder_create', [ctypes.c_int, ctypes.c_int, c_int_ptr], DecoderStructPtr),
+    ('opus_packet_get_bandwidth', [ctypes.c_char_p], ctypes.c_int),
+    ('opus_packet_get_nb_channels', [ctypes.c_char_p], ctypes.c_int),
+    ('opus_packet_get_nb_frames', [ctypes.c_char_p, ctypes.c_int], ctypes.c_int),
+    ('opus_packet_get_samples_per_frame', [ctypes.c_char_p, ctypes.c_int], ctypes.c_int),
+    ('opus_decoder_get_nb_samples', [DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int),
+    ('opus_decode', [DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32, c_int16_ptr, ctypes.c_int, ctypes.c_int], ctypes.c_int),
+    ('opus_decode_float', [DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32, c_float_ptr, ctypes.c_int, ctypes.c_int], ctypes.c_int),
+    ('opus_decoder_destroy', [DecoderStructPtr], None)
 ]
 
 def libopus_loader(name):
@@ -177,7 +196,7 @@ class Encoder:
         result = _lib.opus_encoder_create(self.sampling_rate, self.channels, self.application, ctypes.byref(ret))
 
         if ret.value != 0:
-            log.info('error has happened in state creation')
+            log.info('error has happened in encoder state creation')
             raise OpusError(ret.value)
 
         return result
@@ -193,3 +212,93 @@ class Encoder:
             raise OpusError(ret)
 
         return array.array('b', data[:ret]).tobytes()
+
+class Decoder:
+    def __init__(self, sampling=48000, channels=2):
+        self.sampling_rate = sampling
+        self.channels = channels
+
+        self._state = self._create_state()
+
+    def __del__(self):
+        if hasattr(self, '_state'):
+            _lib.opus_decoder_destroy(self._state)
+            self._state = None
+
+    def _create_state(self):
+        ret = ctypes.c_int()
+        result = _lib.opus_decoder_create(self.sampling_rate, self.channels, ctypes.byref(ret))
+
+        if ret.value != 0:
+            log.info('error has happened in decoder state creation')
+            raise OpusError(ret.value)
+
+        return result
+
+    @classmethod
+    def _packet_get_nb_frames(cls, data):
+        """Gets the number of frames in an Opus packet"""
+        result = _lib.opus_packet_get_nb_frames(data, len(data))
+        if result < 0:
+            log.info('error has happened in packet_get_nb_frames')
+            raise OpusError(result)
+
+        return result
+
+    @classmethod
+    def _packet_get_nb_channels(cls, data):
+        """Gets the number of channels in an Opus packet"""
+        result = _lib.opus_packet_get_nb_channels(data)
+        if result < 0:
+            log.info('error has happened in packet_get_nb_channels')
+            raise OpusError(result)
+
+        return result
+
+    def _packet_get_samples_per_frame(self, data):
+        """Gets the number of samples per frame from an Opus packet"""
+        result = _lib.opus_packet_get_samples_per_frame(data, self.sampling_rate)
+        if result < 0:
+            log.info('error has happened in packet_get_samples_per_frame')
+            raise OpusError(result)
+
+        return result
+
+    def _decode(self, data, frame_size, decode_fec, decode_func, decode_ctype, arr_type):
+        if frame_size is None:
+            frames = self._packet_get_nb_frames(data)
+            samples_per_frame = self._packet_get_samples_per_frame(data)
+            # note: channels could be different from self.channels
+            # this doesn't actually get used in frame_size, but we get
+            # the value for debugging
+            channels = self._packet_get_nb_channels(data)
+            frame_size = frames * samples_per_frame
+            log.debug('detected frame_size {} ({} frames, {} samples per frame, {} channels)'.format(frame_size, frames, samples_per_frame, channels))
+
+        # note: python-opus also multiplies this value by
+        # ctypes.sizeof(decode_ctype) but that appears to be wrong
+        pcm_size = frame_size * self.channels
+        pcm = (decode_ctype * pcm_size)()
+        pcm_ptr = ctypes.cast(pcm, ctypes.POINTER(decode_ctype))
+
+        decode_fec = int(bool(decode_fec))
+
+        result = decode_func(self._state, data, len(data), pcm_ptr, frame_size, decode_fec)
+        if result < 0:
+            log.info('error happened in decode')
+            raise OpusError(result)
+
+        # note: I'm not sure exactly how to interpret result. It appears to be
+        # the number of samples decoded, but if the packet was only 1 channel
+        # and the decoder was created with 2 channels, the actual output
+        # appears to be 2 * result samples (same audio on each channel).
+        # Regardless, the way we've created the pcm buffer, it should be
+        # completely filled.
+        log.debug('opus decode result: {} (total buf size: {})'.format(result, len(pcm)))
+        return array.array(arr_type, pcm).tobytes()
+
+    def decode(self, data, frame_size=None, decode_fec=False):
+        return self._decode(data, frame_size, decode_fec, _lib.opus_decode, ctypes.c_int16, 'h')
+
+    def decode_float(self, data, frame_size=None, decode_fec=False):
+        return self._decode(data, frame_size, decode_fec, _lib.opus_decode_float, ctypes.c_float, 'f')

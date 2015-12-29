@@ -96,3 +96,9 @@ class LoginFailure(ClientException):
     failure.
     """
     pass
+
+class InvalidVoicePacket(DiscordException):
+    """Exception that's thrown when a raw UDP packet cannot be parsed
+    as a valid :class:`VoicePacket`.
+    """
+    pass

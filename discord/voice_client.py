@@ -52,8 +52,8 @@ import shlex
 log = logging.getLogger(__name__)
 
 from . import utils
-from .errors import ClientException, InvalidArgument
-from .opus import Encoder as OpusEncoder
+from .errors import ClientException, InvalidArgument, InvalidVoicePacket
+from .opus import Encoder as OpusEncoder, Decoder as OpusDecoder
 
 class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
@@ -122,6 +122,67 @@ class ProcessPlayer(StreamPlayer):
         self.process.kill()
         super().stop()
 
+class VoicePacket:
+    """Represents a packet of voice data.
+
+    You should not construct these yourself, they will be constructed from
+    incoming UDP packets on the socket used for voice data.
+
+    Attributes
+    ----------
+    sequence : int
+        The sequence id for the packet. Must be between 0 and 65535. Each
+        packet has a value of 1 greater than the previous packet from the
+        same source. After the sequence reaches the maximum value (65535),
+        the next packet has a sequence value of 0.
+    timestamp : int
+        The timestamp for the packet.
+    ssrc : int
+        The id of the user (or source) of this voice packet.
+    buff : bytes
+        The Opus packet (as bytes).
+    """
+    # struct format of the packet metadata
+    _FORMAT = '>HHII'
+    # packets should start with b'\x80\x78', or 32888 as a big endian ushort
+    _CHECK = 32888
+
+    def __init__(self, sequence=None, timestamp=None, ssrc=None, buff=None):
+        self.sequence = sequence
+        self.timestamp = timestamp
+        self.ssrc = ssrc
+        self.buff = buff
+
+    @classmethod
+    def unpack(cls, packet):
+        # this probably isn't quite right, but for now we assume that the voice
+        # data must be at least one byte (it probably needs at least a few
+        # bytes of data to be a valid Opus frame)
+        if len(packet) < 13:
+            raise InvalidVoicePacket('packet is too small: {}'.format(packet))
+
+        check, seq, ts, ssrc = struct.unpack_from(cls._FORMAT, packet)
+        buff = packet[12:]
+
+        if check != cls._CHECK:
+            fmt = 'packet has invalid check bytes: {}'
+            raise InvalidVoicePacket(fmt.format(packet))
+
+        return cls(seq, ts, ssrc, buff)
+
+    def pack(self):
+        packet = bytearray(12 + len(self.buff))
+        pack_args = [self._CHECK, self.sequence, self.timestamp, self.ssrc]
+
+        struct.pack_into(self._FORMAT, packet, 0, *pack_args)
+        packet[12:] = self.buff
+
+        return packet
+
+    def __str__(self):
+        fmt = '<VoicePacket sequence={0.sequence}, timestamp={0.timestamp}, ssrc={0.ssrc}, buff=bytes({1})>'
+        return fmt.format(self, len(self.buff))
+
 class VoiceClient:
     """Represents a Discord voice connection.
 
@@ -151,7 +212,7 @@ class VoiceClient:
     loop
         The event loop that the voice client is running on.
     """
-    def __init__(self, user, main_ws, session_id, channel, data, loop):
+    def __init__(self, user, main_ws, session_id, channel, data, loop, debug=False):
         self.user = user
         self.main_ws = main_ws
         self.channel = channel
@@ -164,6 +225,9 @@ class VoiceClient:
         self.sequence = 0
         self.timestamp = 0
         self.encoder = OpusEncoder(48000, 2)
+        self.decoders = {}
+        self.listener = None
+        self.debug = debug
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
     def checked_add(self, attr, value, limit):
@@ -186,6 +250,35 @@ class VoiceClient:
                 log.debug(msg.format(payload['d']))
                 yield from self.ws.send(utils.to_json(payload))
                 yield from asyncio.sleep(delay)
+        except asyncio.CancelledError:
+            pass
+
+    @asyncio.coroutine
+    def listen_handler(self):
+        try:
+            while self.is_connected():
+                packet = yield from self.loop.sock_recv(self.socket, 65536)
+                log.debug('Received Voice Packet of {} bytes'.format(len(packet)))
+                vp = VoicePacket.unpack(packet)
+                log.debug('Decoded Voice Packet: {}'.format(vp))
+                if vp.ssrc not in self.decoders:
+                    # create a new decoder for this ssrc
+                    self.decoders[vp.ssrc] = OpusDecoder()
+                # TODO: check vp.sequence and make sure we don't have dupes or
+                # missing packets
+                # also figure out how to handle time gaps (will need to use
+                # vp.timestamp to detect gaps -- there can be time gaps even
+                # when there are no gaps in sequence)
+                # the timestamp will probably need to be used to sync multiple
+                # users transmitting at the same time
+                pcm = self.decoders[vp.ssrc].decode(vp.buff)
+                log.debug('Opus decoded {} bytes of pcm data'.format(len(pcm)))
+                # TODO: send the decoded pcm data somewhere. for now we just write
+                # to files if debug is enabled
+                if self.debug:
+                    fname = 'debug-{}-{}.pcm'.format(self.channel.name, vp.ssrc)
+                    with open(fname, 'a+b') as f:
+                        f.write(pcm)
         except asyncio.CancelledError:
             pass
 
@@ -252,6 +345,7 @@ class VoiceClient:
 
         yield from self.ws.send(utils.to_json(speaking))
         self._connected.set()
+        self.listener = utils.create_task(self.listen_handler(), loop=self.loop)
 
     # connection related
 
@@ -300,6 +394,10 @@ class VoiceClient:
             return
 
         self.keep_alive.cancel()
+        if self.listener is not None:
+            self.listener.cancel()
+            self.listener = None
+        self.decoders.clear()
         self.socket.close()
         self._connected.clear()
         yield from self.ws.close()
