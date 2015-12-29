@@ -109,6 +109,7 @@ class Client:
         self.gateway = None
         self.voice = None
         self.session_id = None
+        self.connection = None
         self.sequence = 0
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
@@ -1827,7 +1828,9 @@ class Client:
         log.debug(request_logging_format.format(method='GET', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
-        server = self.connection._get_server(data['guild']['id'])
+        server = None
+        if self.connection is not None:
+            server = self.connection._get_server(data['guild']['id'])
         if server is not None:
             ch_id = data['channel']['id']
             channels = getattr(server, 'channels', [])
