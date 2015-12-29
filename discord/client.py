@@ -2320,14 +2320,13 @@ class Client:
         if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
             raise InvalidArgument('Channel passed must be a voice channel')
 
-        self.voice_channel = channel
         log.info('attempting to join voice channel {0.name}'.format(channel))
 
         payload = {
             'op': 4,
             'd': {
-                'guild_id': self.voice_channel.server.id,
-                'channel_id': self.voice_channel.id,
+                'guild_id': channel.server.id,
+                'channel_id': channel.id,
                 'self_mute': False,
                 'self_deaf': False
             }
@@ -2342,7 +2341,7 @@ class Client:
 
         kwargs = {
             'user': self.user,
-            'channel': self.voice_channel,
+            'channel': channel,
             'data': self._voice_data_found.data,
             'loop': self.loop,
             'session_id': self.session_id,
