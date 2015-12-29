@@ -351,16 +351,10 @@ class Client:
         if event == 'VOICE_SERVER_UPDATE':
             self._voice_data_found.data = data
             self._voice_data_found.set()
+            return
 
-        if event in ('READY', 'MESSAGE_CREATE', 'MESSAGE_DELETE',
-                     'MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'USER_UPDATE',
-                     'CHANNEL_DELETE', 'CHANNEL_UPDATE', 'CHANNEL_CREATE',
-                     'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE', 'GUILD_UPDATE',
-                     'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
-                     'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 'TYPING_START',
-                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE',
-                     'GUILD_BAN_ADD', 'GUILD_BAN_REMOVE'):
-            parser = 'parse_' + event.lower()
+        parser = 'parse_' + event.lower()
+        if hasattr(self.connection, parser):
             getattr(self.connection, parser)(data)
         else:
             log.info("Unhandled event {}".format(event))
