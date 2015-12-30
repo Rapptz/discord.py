@@ -88,6 +88,9 @@ def get(iterable, **attrs):
     logical AND, not logical OR. Meaning they have to meet every
     attribute passed in and not one of them.
 
+    To have a nested attribute search (i.e. search by ``x.y``) then
+    pass in ``x__y`` as the keyword argument.
+
     If nothing is found that matches the attributes passed, then
     ``None`` is returned.
 
@@ -106,6 +109,12 @@ def get(iterable, **attrs):
 
         channel = discord.utils.get(server.channels, name='Foo', type=ChannelType.voice)
 
+    Nested attribute matching:
+
+    .. code-block:: python
+
+        channel = discord.utils.get(client.get_all_channels(), server__name='Cool', name='general')
+
     Parameters
     -----------
     iterable
@@ -116,9 +125,12 @@ def get(iterable, **attrs):
 
     def predicate(elem):
         for attr, val in attrs.items():
-            if not hasattr(elem, attr):
-                return False
-            if getattr(elem, attr) != val:
+            nested = attr.split('__')
+            obj = elem
+            for attribute in nested:
+                obj = getattr(obj, attribute)
+
+            if obj != val:
                 return False
         return True
 
