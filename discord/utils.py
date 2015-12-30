@@ -137,6 +137,11 @@ def get(iterable, **attrs):
     return find(predicate, iterable)
 
 
+def _unique(iterable):
+    seen = set()
+    adder = seen.add
+    return [x for x in iterable if not (x in seen or adder(x))]
+
 def _null_event(*args, **kwargs):
     pass
 
