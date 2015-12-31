@@ -2061,7 +2061,7 @@ class Client:
             Adding roles failed.
         """
 
-        new_roles = utils._unique(itertools.chain(member.roles, roles))
+        new_roles = utils._unique(role.id for role in itertools.chain(member.roles, roles))
         yield from self._replace_roles(member, new_roles)
 
     @asyncio.coroutine
@@ -2129,7 +2129,7 @@ class Client:
             Removing roles failed.
         """
 
-        new_roles = utils._unique(roles)
+        new_roles = utils._unique(role.id for role in roles)
         yield from self._replace_roles(member, new_roles)
 
     @asyncio.coroutine
