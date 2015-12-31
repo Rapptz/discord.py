@@ -331,10 +331,12 @@ class Client:
             user_id = data.get('user_id')
             if user_id == self.user.id:
                 self.session_id = data.get('session_id')
+                log.debug('Session ID found: {}'.format(self.session_id))
                 self._session_id_found.set()
 
         if event == 'VOICE_SERVER_UPDATE':
             self._voice_data_found.data = data
+            log.debug('Voice connection data found: {}'.format(data))
             self._voice_data_found.set()
             return
 
