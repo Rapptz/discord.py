@@ -1613,7 +1613,18 @@ class Client:
         if icon is not None:
             icon = utils._bytes_to_base64_data(icon)
 
-        r = yield from aiohttp.post(endpoints.SERVERS, headers=self.headers, loop=self.loop)
+        if region is None:
+            region = ServerRegion.us_west.name
+        else:
+            region = region.name
+
+        payload = {
+            'icon': icon,
+            'name': name,
+            'region': region
+        }
+
+        r = yield from aiohttp.post(endpoints.SERVERS, data=utils.to_json(payload), headers=self.headers, loop=self.loop)
         log.debug(request_logging_format.format(method='POST', response=r))
         yield from utils._verify_successful_response(r)
         data = yield from r.json()
