@@ -122,13 +122,13 @@ class Message:
         if self.channel is not None:
             for mention in mentions:
                 id_search = mention.get('id')
-                member = utils.find(lambda m: m.id == id_search, self.server.members)
+                member = self.server.get_member(id_search)
                 if member is not None:
                     self.mentions.append(member)
 
         if self.server is not None:
             for mention in self.raw_channel_mentions:
-                channel = utils.find(lambda m: m.id == mention, self.server.channels)
+                channel = self.server.get_channel(mention)
                 if channel is not None:
                     self.channel_mentions.append(channel)
 
@@ -191,6 +191,6 @@ class Message:
 
         if not self.channel.is_private:
             self.server = self.channel.server
-            found = utils.find(lambda m: m.id == self.author.id, self.server.members)
+            found = self.server.get_member(self.author.id)
             if found is not None:
                 self.author = found

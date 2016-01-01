@@ -213,7 +213,7 @@ class Client:
         if isinstance(destination, (Channel, PrivateChannel, Server)):
             return destination.id
         elif isinstance(destination, User):
-            found = utils.find(lambda pm: pm.user == destination, self.private_channels)
+            found = self.connection.get_private_channel_by_user(destination.id)
             if found is None:
                 # Couldn't find the user, so start a PM with them first.
                 channel = yield from self.start_private_message(destination)
@@ -853,7 +853,7 @@ class Client:
         data = yield from r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         channel = PrivateChannel(id=data['id'], user=user)
-        self.private_channels.append(channel)
+        self.connection.add_private_channel(channel)
         return channel
 
     @asyncio.coroutine
@@ -1746,11 +1746,10 @@ class Client:
     # Invite management
 
     def _fill_invite_data(self, data):
-        server = self.connection._get_server(data['guild']['id'])
+        server = self.connection.get_server(data['guild']['id'])
         if server is not None:
             ch_id = data['channel']['id']
-            channels = getattr(server, 'channels', [])
-            channel = utils.find(lambda c: c.id == ch_id, channels)
+            channel = server.get_channel(ch_id)
         else:
             server = Object(id=data['guild']['id'])
             server.name = data['guild']['name']
@@ -1878,7 +1877,7 @@ class Client:
 
         def generator(data):
             for invite in data:
-                channel = utils.get(server.channels, id=invite['channel']['id'])
+                channel = server.get_channel(invite['channel']['id'])
                 invite['channel'] = channel
                 invite['server'] = server
                 yield Invite(**invite)

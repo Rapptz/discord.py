@@ -89,21 +89,47 @@ class Server(Hashable):
                   '_default_role', '_default_channel', 'roles' ]
 
     def __init__(self, **kwargs):
-        self.channels = []
+        self._channels = {}
         self.owner = None
-        self.members = []
+        self._members = {}
         self._from_data(kwargs)
+
+    @property
+    def channels(self):
+        return self._channels.values()
+
+    def get_channel(self, channel_id):
+        return self._channels.get(channel_id)
+
+    def add_channel(self, channel):
+        self._channels[channel.id] = channel
+
+    def remove_channel(self, channel):
+        self._channels.pop(channel.id, None)
+
+    @property
+    def members(self):
+        return self._members.values()
+
+    def get_member(self, user_id):
+        return self._members.get(user_id)
+
+    def add_member(self, member):
+        self._members[member.id] = member
+
+    def remove_member(self, member):
+        self._members.pop(member.id, None)
 
     def __str__(self):
         return self.name
 
     def _update_voice_state(self, data):
         user_id = data.get('user_id')
-        member = utils.find(lambda m: m.id == user_id, self.members)
+        member = self.get_member(user_id)
         before = copy.copy(member)
         if member is not None:
             ch_id = data.get('channel_id')
-            channel = utils.find(lambda c: c.id == ch_id, self.channels)
+            channel = self.get_channel(ch_id)
             member.update_voice_state(voice_channel=channel, **data)
         return before, member
 
@@ -137,11 +163,11 @@ class Server(Hashable):
             if member.id == owner_id:
                 self.owner = member
 
-            self.members.append(member)
+            self.add_member(member)
 
         for presence in guild.get('presences', []):
             user_id = presence['user']['id']
-            member = utils.find(lambda m: m.id == user_id, self.members)
+            member = self.get_member(user_id)
             if member is not None:
                 member.status = presence['status']
                 try:
@@ -153,10 +179,12 @@ class Server(Hashable):
 
         if 'channels' in guild:
             channels = guild['channels']
-            self.channels = [Channel(server=self, **c) for c in channels]
+            for c in channels:
+                channel = Channel(server=self, **c)
+                self.add_channel(channel)
 
         afk_id = guild.get('afk_channel_id')
-        self.afk_channel = utils.find(lambda c: c.id == afk_id, self.channels)
+        self.afk_channel = self.get_channel(afk_id)
 
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj)
