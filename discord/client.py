@@ -300,7 +300,6 @@ class Client:
     @asyncio.coroutine
     def received_message(self, msg):
         if isinstance(msg, bytes):
-            print('compressed')
             msg = zlib.decompress(msg, 15, 10490000) # This is 10 MiB
             msg = msg.decode('utf-8')
 
