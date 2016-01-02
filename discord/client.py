@@ -49,6 +49,7 @@ import sys
 import logging
 import itertools
 import datetime
+import zlib
 from base64 import b64encode
 
 log = logging.getLogger(__name__)
@@ -100,6 +101,10 @@ class WebSocket(WebSocketBaseClient):
 
     def received_message(self, msg):
         self.dispatch('socket_raw_receive', msg)
+        if msg.is_binary:
+            msg = zlib.decompress(msg.data, 15, 10490000)
+            msg = msg.decode('utf-8')
+
         response = json.loads(str(msg))
         log.debug('WebSocket Event: {}'.format(response))
         self.dispatch('socket_response', response)
@@ -451,6 +456,7 @@ class Client(object):
                 'op': 2,
                 'd': {
                     'token': self.token,
+                    'compress': True,
                     'properties': {
                         '$os': sys.platform,
                         '$browser': 'discord.py',
