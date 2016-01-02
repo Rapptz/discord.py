@@ -50,6 +50,7 @@ import logging, traceback
 import sys, time, re, json
 import tempfile, os, hashlib
 import itertools
+import zlib
 
 log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
@@ -298,6 +299,13 @@ class Client:
 
     @asyncio.coroutine
     def received_message(self, msg):
+        if isinstance(msg, bytes):
+            print('compressed')
+            msg = zlib.decompress(msg, 15, 10490000) # This is 10 MiB
+            msg = msg.decode('utf-8')
+
+        msg = json.loads(msg)
+
         log.debug('WebSocket Event: {}'.format(msg))
         self.dispatch('socket_response', msg)
 
@@ -367,6 +375,7 @@ class Client:
                         '$referrer': '',
                         '$referring_domain': ''
                     },
+                    'compress': True,
                     'v': 3
                 }
             }
@@ -698,7 +707,7 @@ class Client:
                     yield from self.close()
                     break
 
-            yield from self.received_message(json.loads(msg))
+            yield from self.received_message(msg)
 
     @asyncio.coroutine
     def close(self):
