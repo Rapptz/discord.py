@@ -185,6 +185,58 @@ The following functions were changed into properties:
 | ``Message.get_raw_channel_mentions()`` | :attr:`Message.raw_channel_mentions` |
 +----------------------------------------+--------------------------------------+
 
+.. _migrating-member:
+
+Member Management
+-------------------
+
+Functions that involved banning and kicking were changed.
+
++--------------------------------+--------------------------+
+| Before                         | After                    |
++--------------------------------+--------------------------+
+| ``Client.ban(server, user)``   | ``Client.ban(member)``   |
++--------------------------------+--------------------------+
+| ``Client.kick(server, user)``  | ``Client.kick(member)``  |
++--------------------------------+--------------------------+
+
+.. migrating-renames:
+
+Renamed Functions
+-------------------
+
+Functions have been renamed.
+
++------------------------------------+-------------------------------------------+
+| Before                             | After                                     |
++------------------------------------+-------------------------------------------+
+| ``Client.set_channel_permissions`` | :meth:`Client.edit_channel_permissions`   |
++------------------------------------+-------------------------------------------+
+
+.. _migrating-kwargs:
+
+Forced Keyword Arguments
+-------------------------
+
+Since 3.0+ of Python, we can now force questions to take in forced keyword arguments. A keyword argument is when you
+explicitly specify the name of the variable and assign to it, for example: ``foo(name='test')``. Due to this support,
+some functions in the library were changed to force things to take said keyword arguments. This is to reduce errors of
+knowing the argument order and the issues that could arise from them.
+
+The following parameters are now exclusively keyword arguments:
+
+- :meth:`Client.send_message`
+    - ``tts``
+- :meth:`Client.logs_from`
+    - ``before``
+    - ``after``
+- :meth:`Client.edit_channel_permissions`
+    - ``allow``
+    - ``deny``
+
+In the documentation you can tell if a function parameter is a forced keyword argument if it is after ``*, ``
+in the function signature.
+
 .. _migrating-running:
 
 Running the Client
