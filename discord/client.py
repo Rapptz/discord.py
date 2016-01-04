@@ -2200,8 +2200,8 @@ class Client:
 
             allow = discord.Permissions.none()
             deny = discord.Permissions.none()
-            allow.can_mention_everyone = True
-            deny.can_manage_messages = True
+            allow.mention_everyone = True
+            deny.manage_messages = True
             yield from client.edit_channel_permissions(message.channel, message.author, allow=allow, deny=deny)
 
         Parameters

@@ -172,7 +172,7 @@ class Channel(Hashable):
             base.value |= role.permissions.value
 
         # Server-wide Manage Roles -> True for everything
-        if base.can_manage_roles:
+        if base.manage_roles:
             base = Permissions.all()
 
         member_role_ids = set(map(lambda r: r.id, member.roles))
@@ -188,13 +188,13 @@ class Channel(Hashable):
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
-        if base.can_manage_roles:
+        if base.manage_roles:
             # This point is essentially Channel-specific Manage Roles.
             tmp = Permissions.all_channel()
             base.value |= tmp.value
 
         if self.is_default:
-            base.can_read_messages = True
+            base.read_messages = True
 
         return base
 
@@ -244,9 +244,9 @@ class PrivateChannel(Hashable):
 
         This returns all the Text related permissions set to true except:
 
-        - can_send_tts_messages: You cannot send TTS messages in a PM.
-        - can_manage_messages: You cannot delete others messages in a PM.
-        - can_mention_everyone: There is no one to mention in a PM.
+        - send_tts_messages: You cannot send TTS messages in a PM.
+        - manage_messages: You cannot delete others messages in a PM.
+        - mention_everyone: There is no one to mention in a PM.
 
         Parameters
         -----------
@@ -259,10 +259,10 @@ class PrivateChannel(Hashable):
             The resolved permissions for the user.
         """
 
-        base = Permissions.TEXT
-        base.can_send_tts_messages = False
-        base.can_manage_messages = False
-        base.can_mention_everyone = False
+        base = Permissions.text()
+        base.send_tts_messages = False
+        base.manage_messages = False
+        base.mention_everyone = False
         return base
 
 
