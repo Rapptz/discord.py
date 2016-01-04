@@ -56,6 +56,7 @@ class User:
     __slots__ = ['name', 'id', 'discriminator', 'avatar']
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.name = kwargs.get('username')
         self.id = kwargs.get('id')
         self.discriminator = kwargs.get('discriminator')
