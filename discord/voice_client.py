@@ -177,14 +177,17 @@ class VoiceClient:
     def keep_alive_handler(self, delay):
         try:
             while True:
-                payload = {
-                    'op': 3,
-                    'd': int(time.time())
-                }
-
-                msg = 'Keeping voice websocket alive with timestamp {}'
-                log.debug(msg.format(payload['d']))
-                yield from self.ws.send(utils.to_json(payload))
+                if self.ws.state_name=="OPEN":
+                    payload = {
+                        'op': 3,
+                        'd': int(time.time())
+                    }
+    
+                    msg = 'Keeping voice websocket alive with timestamp {}'
+                    log.debug(msg.format(payload['d']))
+                    yield from self.ws.send(utils.to_json(payload))
+                elif self.ws.state_name=="CLOSING" or self.ws.state_name=="CLOSED":
+                    log.info('Disconnected from voice.')
                 yield from asyncio.sleep(delay)
         except asyncio.CancelledError:
             pass
