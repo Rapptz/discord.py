@@ -8,6 +8,14 @@ discord.py is an API wrapper for Discord written in Python.
 
 This was written to allow easier writing of bots or chat logs.
 
+## Requirements
+
+- Python 2.7+ or Python 3.3+.
+- `ws4py` library
+- `requests` library
+
+Usually `pip` will handle these for you.
+
 ## Installing
 
 Installing is pretty easy.
@@ -18,10 +26,10 @@ pip install discord.py
 
 Will install the latest 'stable' version of the library.
 
-If you want to install the development version of the library, then do the following:
+If you want to install this version of the library, then do the following:
 
 ```
-pip install git+https://github.com/Rapptz/discord.py@develop
+pip install git+https://github.com/Rapptz/discord.py@legacy
 ```
 
 Note that this requires `git` to be installed.
@@ -58,14 +66,6 @@ client.run()
 ```
 
 You can find examples in the examples directory.
-
-## Requirements
-
-- Python 2.7+ or Python 3.3+.
-- `ws4py` library
-- `requests` library
-
-Usually `pip` will handle these for you.
 
 ## Related Projects
 
