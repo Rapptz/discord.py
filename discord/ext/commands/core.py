@@ -260,6 +260,25 @@ class GroupMixin:
                 raise discord.ClientException('The alias {} is already an existing command or alias.'.format(alias))
             self.commands[alias] = command
 
+    def remove_command(self, name):
+        """Remove a :class:`Command` or subclasses from the internal list
+        of commands.
+
+        This could also be used as a way to remove aliases.
+
+        Parameters
+        -----------
+        name : str
+            The name of the command to remove.
+
+        Returns
+        --------
+        Command or subclass
+            The command that was removed. If the name is not valid then
+            `None` is returned instead.
+        """
+        return self.commands.pop(name, None)
+
     def command(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`command` and adds it to
         the internal command list via :meth:`add_command`.
