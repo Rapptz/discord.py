@@ -334,7 +334,6 @@ class Group(GroupMixin, Command):
         if ctx.invoked_subcommand:
             yield from ctx.invoked_subcommand.invoke(ctx)
 
-
 # Decorators
 
 def command(name=None, cls=None, **attrs):

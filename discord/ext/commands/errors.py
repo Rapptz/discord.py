@@ -27,7 +27,7 @@ from discord.errors import DiscordException
 
 
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'NoPrivateMessage', 'CheckFailure' ]
+           'NoPrivateMessage', 'CheckFailure', 'CommandNotFound' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -39,6 +39,14 @@ class CommandError(DiscordException):
     from :class:`Bot`\, :func:`on_command_error`.
     """
     pass
+
+class CommandNotFound(CommandError):
+    """Exception raised when a command is attempted to be invoked
+    but no command under that name is found.
+
+    This is not raised for invalid subcommands, rather just the
+    initial main command that is attempted to be invoked.
+    """
 
 class MissingRequiredArgument(CommandError):
     """Exception raised when parsing a command and a parameter

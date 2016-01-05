@@ -31,6 +31,7 @@ import inspect
 from .core import GroupMixin
 from .view import StringView
 from .context import Context
+from .errors import CommandNotFound
 
 class Bot(GroupMixin, discord.Client):
     """Represents a discord bot.
@@ -203,18 +204,21 @@ class Bot(GroupMixin, discord.Client):
 
         view.skip_ws()
         invoker = view.get_word()
+        tmp = {
+            'bot': self,
+            'invoked_with': invoker,
+            'message': message,
+            'view': view,
+        }
+        ctx = Context(**tmp)
+        del tmp
         if invoker in self.commands:
             command = self.commands[invoker]
-            tmp = {
-                'bot': self,
-                'invoked_with': invoker,
-                'message': message,
-                'view': view,
-                'command': command
-            }
-            ctx = Context(**tmp)
-            del tmp
+            ctx.command = command
             yield from command.invoke(ctx)
+        else:
+            exc = CommandNotFound('Command "{}" is not found'.format(invoker))
+            self.dispatch('command_error', exc, ctx)
 
     @asyncio.coroutine
     def on_message(self, message):
