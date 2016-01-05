@@ -44,5 +44,4 @@ class Object:
     """
 
     def __init__(self, id):
-        super().__init__(id)
         self.id = id
