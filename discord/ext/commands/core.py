@@ -402,6 +402,36 @@ def check(predicate):
     -----------
     predicate
         The predicate to check if the command should be invoked.
+
+    Examples
+    ---------
+
+    Creating a basic check to see if the command invoker is you.
+
+    .. code-block:: python
+
+        def check_if_it_is_me(ctx):
+            return ctx.message.author.id == 'my-user-id'
+
+        @bot.command()
+        @commands.check(check_if_it_is_me)
+        async def only_for_me():
+            await bot.say('I know you!')
+
+    Transforming common checks into its own decorator:
+
+    .. code-block:: python
+
+        def is_me():
+            def predicate(ctx):
+                return ctx.message.author.id == 'my-user-id'
+            return commands.check(predicate)
+
+        @bot.command()
+        @is_me()
+        async def only_me():
+            await bot.say('Only you!')
+
     """
 
     def decorator(func):
@@ -461,7 +491,7 @@ def has_any_role(*names):
     .. code-block:: python
 
         @bot.command()
-        @has_any_role('Library Devs', 'Moderators')
+        @commands.has_any_role('Library Devs', 'Moderators')
         async def cool():
             await bot.say('You are cool indeed')
     """
@@ -493,7 +523,7 @@ def has_permissions(**perms):
     .. code-block:: python
 
         @bot.command()
-        @has_permissions(manage_messages=True)
+        @commands.has_permissions(manage_messages=True)
         async def test():
             await bot.say('You can manage messages.')
 
