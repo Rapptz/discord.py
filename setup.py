@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import re
 
 requirements = []
@@ -20,7 +20,7 @@ setup(name='discord.py',
       author='Rapptz',
       url='https://github.com/Rapptz/discord.py',
       version=version,
-      packages=['discord'],
+      packages=find_packages(),
       license='MIT',
       description='A python wrapper for the Discord API',
       long_description=readme,
