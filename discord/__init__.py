@@ -6,7 +6,7 @@ Discord API Wrapper
 
 A basic wrapper for the Discord API.
 
-:copyright: (c) 2015 Rapptz
+:copyright: (c) 2015-2016 Rapptz
 :license: MIT, see LICENSE for more details.
 
 """
@@ -14,7 +14,7 @@ A basic wrapper for the Discord API.
 __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2015 Rapptz'
+__copyright__ = 'Copyright 2015-2016 Rapptz'
 __version__ = '0.10.0-alpha'
 
 from .client import Client
