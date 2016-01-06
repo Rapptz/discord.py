@@ -115,9 +115,9 @@ class Server(Hashable):
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
         self.id = guild['id']
-        self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild['roles']]
+        self.roles = [Role(everyone=(self.id == r['id']), **r) for r in guild.get('roles', [])]
 
-        owner_id = guild['owner_id']
+        owner_id = guild.get('owner_id')
 
         for data in guild.get('members', []):
             roles = [self.default_role]

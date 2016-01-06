@@ -67,8 +67,6 @@ class ConnectionState:
         guilds = data.get('guilds')
 
         for guild in guilds:
-            if guild.get('unavailable', False):
-                continue
             self._add_server(guild)
 
         for pm in data.get('private_channels'):
