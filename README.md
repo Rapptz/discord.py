@@ -50,40 +50,32 @@ import asyncio
 
 client = discord.Client()
 
-@client.async_event
-def on_ready():
+@client.event
+async def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
     print('------')
 
-@client.async_event
-def on_message(message):
+@client.event
+async def on_message(message):
     if message.content.startswith('!test'):
-        logs = yield from client.logs_from(message.channel, limit=100)
+        logs = await client.logs_from(message.channel, limit=100)
         counter = 0
-        tmp = yield from client.send_message(message.channel, 'Calculating messages...')
+        tmp = await client.send_message(message.channel, 'Calculating messages...')
         for log in logs:
             if log.author == message.author:
                 counter += 1
 
-        yield from client.edit_message(tmp, 'You have {} messages.'.format(counter))
+        await client.edit_message(tmp, 'You have {} messages.'.format(counter))
     elif message.content.startswith('!sleep'):
-        yield from asyncio.sleep(5)
-        yield from client.send_message(message.channel, 'Done sleeping')
+        await asyncio.sleep(5)
+        await client.send_message(message.channel, 'Done sleeping')
 
-def main_task():
-    yield from client.login('email', 'password')
-    yield from client.connect()
-
-loop = asyncio.get_event_loop()
-try:
-    loop.run_until_complete(main_task())
-except Exception:
-    loop.run_until_complete(client.close())
-finally:
-    loop.close()
+client.run('email', 'password')
 ```
+
+Note that in Python 3.4 you use `@asyncio.coroutine` instead of `async def` and `yield from` instead of `await`.
 
 You can find examples in the examples directory.
 
