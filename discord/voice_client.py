@@ -80,7 +80,6 @@ class StreamPlayer(threading.Thread):
 
             self.loops += 1
             data = self.buff.read(self.frame_size)
-            log.info('received {} bytes (out of {})'.format(len(data), self.frame_size))
             if len(data) != self.frame_size:
                 self.stop()
                 break
@@ -323,7 +322,6 @@ class VoiceClient:
     # audio related
 
     def _get_voice_packet(self, data):
-        log.info('creating a voice packet')
         buff = bytearray(len(data) + 12)
         buff[0] = 0x80
         buff[1] = 0x78
