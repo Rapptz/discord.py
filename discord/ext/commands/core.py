@@ -137,7 +137,7 @@ class Command:
 
         if converter is param.empty:
             if not required:
-                converter = type(param.default)
+                converter = str if param.default is None else type(param.default)
             else:
                 converter = str
         elif not inspect.isclass(type(converter)):
