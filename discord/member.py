@@ -103,3 +103,19 @@ class Member(User):
                 # we switched channels
                 if self.voice_channel is not None:
                     self.voice_channel.voice_members.append(self)
+
+    def permissions_in(self, channel):
+        """An alias for :meth:`Channel.permissions_for`.
+
+        Basically equivalent to:
+
+        .. code-block:: python
+
+            channel.permissions_for(self)
+
+        Parameters
+        -----------
+        channel
+            The channel to check your permissions for.
+        """
+        return channel.permissions_for(self)
