@@ -2,14 +2,14 @@ import discord
 
 client = discord.Client()
 
-@client.async_event
-def on_member_join(member):
+@client.event
+async def on_member_join(member):
     server = member.server
     fmt = 'Welcome {0.mention} to {1.name}!'
-    yield from client.send_message(server, fmt.format(member, server))
+    await client.send_message(server, fmt.format(member, server))
 
-@client.async_event
-def on_ready():
+@client.event
+async def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)

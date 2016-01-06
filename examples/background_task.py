@@ -3,18 +3,17 @@ import asyncio
 
 client = discord.Client()
 
-@asyncio.coroutine
-def my_background_task():
-    yield from client.wait_until_ready()
+async def my_background_task():
+    await client.wait_until_ready()
     counter = 0
     channel = discord.Object(id='channel_id_here')
     while not client.is_closed:
         counter += 1
-        yield from client.send_message(channel, counter)
-        yield from asyncio.sleep(60) # task runs every 60 seconds
+        await client.send_message(channel, counter)
+        await asyncio.sleep(60) # task runs every 60 seconds
 
-@client.async_event
-def on_ready():
+@client.event
+async def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)

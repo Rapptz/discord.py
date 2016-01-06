@@ -5,7 +5,7 @@ if not discord.opus.is_loaded():
     # the 'opus' library here is opus.dll on windows
     # or libopus.so on linux in the current directory
     # you should replace this with the location the
-    # opus library is located in.
+    # opus library is located in and with the proper filename.
     discord.opus.load_opus('opus')
 
 class VoiceEntry:
@@ -32,69 +32,67 @@ class Bot(discord.Client):
     def is_playing(self):
         return self.player is not None and self.player.is_playing()
 
-    @asyncio.coroutine
-    def on_message(self, message):
+    async def on_message(self, message):
         if message.author == self.user:
             return
 
         if message.channel.is_private:
-            yield from self.send_message(message.channel, 'You cannot use this bot in private messages.')
+            await self.send_message(message.channel, 'You cannot use this bot in private messages.')
 
         if message.content.startswith('$join'):
             if self.is_voice_connected():
-                yield from self.send_message(message.channel, 'Already connected to a voice channel')
+                await self.send_message(message.channel, 'Already connected to a voice channel')
             channel_name = message.content[5:].strip()
             check = lambda c: c.name == channel_name and c.type == discord.ChannelType.voice
 
             channel = discord.utils.find(check, message.server.channels)
             if channel is None:
-                yield from self.send_message(message.channel, 'Cannot find a voice channel by that name.')
+                await self.send_message(message.channel, 'Cannot find a voice channel by that name.')
 
-            yield from self.join_voice_channel(channel)
+            await self.join_voice_channel(channel)
             self.starter = message.author
 
         elif message.content.startswith('$leave'):
             if not self.can_control_song(message.author):
                 return
             self.starter = None
-            yield from self.voice.disconnect()
+            await self.voice.disconnect()
         elif message.content.startswith('$pause'):
             if not self.can_control_song(message.author):
                 fmt = 'Only the requester ({0.current.requester}) can control this song'
-                yield from self.send_message(message.channel, fmt.format(self))
+                await self.send_message(message.channel, fmt.format(self))
 
             if self.player.is_playing():
                 self.player.pause()
         elif message.content.startswith('$resume'):
             if not self.can_control_song(message.author):
                 fmt = 'Only the requester ({0.current.requester}) can control this song'
-                yield from self.send_message(message.channel, fmt.format(self))
+                await self.send_message(message.channel, fmt.format(self))
 
             if self.player is not None and not self.is_playing():
                 self.player.resume()
         elif message.content.startswith('$next'):
             filename = message.content[5:].strip()
-            yield from self.songs.put(VoiceEntry(message, filename))
-            yield from self.send_message(message.channel, 'Successfully registered {}'.format(filename))
+            await self.songs.put(VoiceEntry(message, filename))
+            await self.send_message(message.channel, 'Successfully registered {}'.format(filename))
         elif message.content.startswith('$play'):
             if self.player is not None and self.player.is_playing():
-                yield from self.send_message(message.channel, 'Already playing a song')
+                await self.send_message(message.channel, 'Already playing a song')
                 return
             while True:
                 if not self.is_voice_connected():
-                    yield from self.send_message(message.channel, 'Not connected to a voice channel')
+                    await self.send_message(message.channel, 'Not connected to a voice channel')
                     return
 
                 self.play_next_song.clear()
-                self.current = yield from self.songs.get()
+                self.current = await self.songs.get()
                 self.player = self.voice.create_ffmpeg_player(self.current.song, after=self.toggle_next_song)
                 self.player.start()
                 fmt = 'Playing song "{0.song}" from {0.requester}'
-                yield from self.send_message(self.current.channel, fmt.format(self.current))
-                yield from self.play_next_song.wait()
+                await self.send_message(self.current.channel, fmt.format(self.current))
+                await self.play_next_song.wait()
 
-    @asyncio.coroutine
-    def on_ready(self):
+    async def on_ready(self):
         print('Logged in as')
         print(self.user.name)
         print(self.user.id)
