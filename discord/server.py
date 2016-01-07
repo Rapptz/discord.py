@@ -86,7 +86,7 @@ class Server(Hashable):
 
     __slots__ = [ 'afk_timeout', 'afk_channel', 'members', 'channels', 'icon',
                   'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
-                  '_default_role', '_default_channel' ]
+                  '_default_role', '_default_channel', 'roles' ]
 
     def __init__(self, **kwargs):
         self.channels = []
