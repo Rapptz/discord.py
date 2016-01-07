@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 from .user import User
-from .member import Member
 from .object import Object
 import re
 
@@ -48,6 +47,9 @@ class Message:
         private channel, then it is a :class:`User` instead.
     content : str
         The actual contents of the message.
+    nonce
+        The value used by the discord server and the client to verify that the message is successfully sent.
+        This is typically non-important.
     embeds : list
         A list of embedded objects. The elements are objects that meet oEmbed's specification_.
 
@@ -90,7 +92,7 @@ class Message:
     __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  '_clean_content', '_raw_channel_mentions' ]
+                  '_clean_content', '_raw_channel_mentions', 'nonce' ]
 
     def __init__(self, **kwargs):
         # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
@@ -106,6 +108,7 @@ class Message:
         self.id = kwargs.get('id')
         self.channel = kwargs.get('channel')
         self.author = User(**kwargs.get('author', {}))
+        self.nonce = kwargs.get('nonce')
         self.attachments = kwargs.get('attachments')
         self._handle_upgrades(kwargs.get('channel_id'))
         self._handle_mentions(kwargs.get('mentions', []))

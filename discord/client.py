@@ -51,6 +51,7 @@ import sys, time, re, json
 import tempfile, os, hashlib
 import itertools
 import zlib
+from random import randint as random_integer
 
 log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
@@ -922,7 +923,8 @@ class Client:
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
         payload = {
-            'content': content
+            'content': content,
+            'nonce': random_integer(-2**63, 2**63 - 1)
         }
 
         if tts:
