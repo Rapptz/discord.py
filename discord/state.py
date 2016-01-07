@@ -92,17 +92,7 @@ class ConnectionState:
     def parse_message_update(self, data):
         older_message = self._get_message(data.get('id'))
         if older_message is not None:
-            # create a copy of the new message
-            message = copy.copy(older_message)
-            # update the new update
-            for attr in data:
-                if attr == 'channel_id' or attr == 'author':
-                    continue
-                value = data[attr]
-                if 'time' in attr:
-                    setattr(message, attr, utils.parse_time(value))
-                else:
-                    setattr(message, attr, value)
+            message = Message(channel=older_message.channel, **data)
             self.dispatch('message_edit', older_message, message)
             # update the older message
             older_message = message
