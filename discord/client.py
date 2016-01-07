@@ -2069,7 +2069,7 @@ class Client:
         -----------
         member : :class:`Member`
             The member to give roles to.
-        *roles
+        \*roles
             An argument list of :class:`Role` s to give the member.
 
         Raises
@@ -2097,7 +2097,7 @@ class Client:
         -----------
         member : :class:`Member`
             The member to revoke roles from.
-        *roles
+        \*roles
             An argument list of :class:`Role` s to revoke the member.
 
         Raises
@@ -2137,7 +2137,7 @@ class Client:
         -----------
         member : :class:`Member`
             The member to replace roles from.
-        *roles
+        \*roles
             An argument list of :class:`Role` s to replace the roles with.
 
         Raises

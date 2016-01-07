@@ -141,7 +141,7 @@ def get(iterable, **attrs):
     -----------
     iterable
         An iterable to search through.
-    **attrs
+    \*\*attrs
         Keyword arguments that denote attributes to search with.
     """
 

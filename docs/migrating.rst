@@ -237,7 +237,7 @@ The following parameters are now exclusively keyword arguments:
     - ``allow``
     - ``deny``
 
-In the documentation you can tell if a function parameter is a forced keyword argument if it is after ``*, ``
+In the documentation you can tell if a function parameter is a forced keyword argument if it is after ``\*,``
 in the function signature.
 
 .. _migrating-running:
