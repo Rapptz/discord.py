@@ -202,7 +202,6 @@ class Bot(GroupMixin, discord.Client):
         if not view.skip_string(prefix):
             return
 
-        view.skip_ws()
         invoker = view.get_word()
         tmp = {
             'bot': self,
@@ -212,6 +211,7 @@ class Bot(GroupMixin, discord.Client):
         }
         ctx = Context(**tmp)
         del tmp
+
         if invoker in self.commands:
             command = self.commands[invoker]
             ctx.command = command
