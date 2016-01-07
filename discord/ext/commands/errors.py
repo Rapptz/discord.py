@@ -27,7 +27,8 @@ from discord.errors import DiscordException
 
 
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'NoPrivateMessage', 'CheckFailure', 'CommandNotFound' ]
+           'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
+           'DisabledCommand' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -68,4 +69,8 @@ class NoPrivateMessage(CommandError):
 
 class CheckFailure(CommandError):
     """Exception raised when the predicates in :attr:`Command.checks` have failed."""
+    pass
+
+class DisabledCommand(CommandError):
+    """Exception raised when the command being invoked is disabled."""
     pass

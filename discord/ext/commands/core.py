@@ -66,6 +66,11 @@ class Command:
     pass_context : bool
         A boolean that indicates that the current :class:`Context` should
         be passed as the **first parameter**. Defaults to `False`.
+    enabled : bool
+        A boolean that indicates if the command is currently enabled.
+        If the command is invoked while it is disabled, then
+        :exc:`DisabledCommand` is raised to the :func:`on_command_error`
+        event. Defaults to ``True``.
     checks
         A list of predicates that verifies if the command could be executed
         with the given :class:`Context` as the sole parameter. If an exception
@@ -77,6 +82,7 @@ class Command:
     def __init__(self, name, callback, **kwargs):
         self.name = name
         self.callback = callback
+        self.enabled = kwargs.get('enabled', True)
         self.help = kwargs.get('help')
         self.brief = kwargs.get('brief')
         self.aliases = kwargs.get('aliases', [])
@@ -206,15 +212,18 @@ class Command:
         return True
 
     def _verify_checks(self, ctx):
-        predicates = self.checks
-        if predicates:
-            try:
+        try:
+            if not self.enabled:
+                raise DisabledCommand('{0.name} command is disabled'.format(self))
+
+            predicates = self.checks
+            if predicates:
                 check = all(predicate(ctx) for predicate in predicates)
                 if not check:
                     raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
-            except CommandError as exc:
-                ctx.bot.dispatch('command_error', exc, ctx)
-                return False
+        except CommandError as exc:
+            ctx.bot.dispatch('command_error', exc, ctx)
+            return False
 
         return True
 
@@ -290,6 +299,24 @@ class GroupMixin:
             `None` is returned instead.
         """
         return self.commands.pop(name, None)
+
+    def get_command(self, name):
+        """Get a :class:`Command` or subclasses from the internal list
+        of commands.
+
+        This could also be used as a way to get aliases.
+
+        Parameters
+        -----------
+        name : str
+            The name of the command to get.
+
+        Returns
+        --------
+        Command or subclass
+            The command that was requested. If not found, returns ``None``.
+        """
+        return self.commands.get(name, None)
 
     def command(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`command` and adds it to
