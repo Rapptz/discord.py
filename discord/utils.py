@@ -46,6 +46,28 @@ class cached_property:
 
         return value
 
+class CachedSlotProperty:
+    def __init__(self, name, function):
+        self.name = name
+        self.function = function
+        self.__doc__ = getattr(function, '__doc__')
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        try:
+            return getattr(instance, self.name)
+        except AttributeError:
+            value = self.function(instance)
+            setattr(instance, self.name, value)
+            return value
+
+def cached_slot_property(name):
+    def decorator(func):
+        return CachedSlotProperty(name, func)
+    return decorator
+
 def parse_time(timestamp):
     if timestamp:
         return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))

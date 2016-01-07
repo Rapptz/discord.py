@@ -84,6 +84,10 @@ class Server(Hashable):
         Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
     """
 
+    __slots__ = [ 'afk_timeout', 'afk_channel', 'members', 'channels', 'icon',
+                  'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
+                  '_default_role', '_default_channel' ]
+
     def __init__(self, **kwargs):
         self.channels = []
         self.owner = None
@@ -157,12 +161,12 @@ class Server(Hashable):
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj)
 
-    @utils.cached_property
+    @utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
         return utils.find(lambda r: r.is_everyone, self.roles)
 
-    @utils.cached_property
+    @utils.cached_slot_property('_default_channel')
     def default_channel(self):
         """Gets the default :class:`Channel` for the server."""
         return utils.find(lambda c: c.is_default, self.channels)
