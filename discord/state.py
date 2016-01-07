@@ -92,7 +92,12 @@ class ConnectionState:
     def parse_message_update(self, data):
         older_message = self._get_message(data.get('id'))
         if older_message is not None:
-            message = Message(channel=older_message.channel, **data)
+            if 'content' not in data:
+                # embed only edit
+                message = copy.copy(older_message)
+                message.embeds = data['embeds']
+            else:
+                message = Message(channel=older_message.channel, **data)
             self.dispatch('message_edit', older_message, message)
             # update the older message
             older_message = message
