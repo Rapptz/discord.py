@@ -46,6 +46,8 @@ class Context:
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
         :func:`on_command_error` event then this dict could be incomplete.
+    prefix : str
+        The prefix that was used to invoke the command.
     command
         The command (i.e. :class:`Command` or its superclasses) that is being
         invoked currently.
@@ -63,13 +65,15 @@ class Context:
         subcommand then this is set to `None`.
     """
     __slots__ = ['message', 'bot', 'args', 'kwargs', 'command', 'view',
-                 'invoked_with', 'invoked_subcommand', 'subcommand_passed']
+                 'invoked_with', 'invoked_subcommand', 'subcommand_passed',
+                 'prefix' ]
 
     def __init__(self, **attrs):
         self.message = attrs.pop('message', None)
         self.bot = attrs.pop('bot', None)
         self.args = attrs.pop('args', [])
         self.kwargs = attrs.pop('kwargs', {})
+        self.prefix = attrs.pop('prefix')
         self.command = attrs.pop('command', None)
         self.view = attrs.pop('view', None)
         self.invoked_with = attrs.pop('invoked_with', None)

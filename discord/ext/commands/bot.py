@@ -43,7 +43,7 @@ class Bot(GroupMixin, discord.Client):
     This class also subclasses :class:`GroupMixin` to provide the functionality
     to manage commands.
 
-    Parameters
+    Attributes
     -----------
     command_prefix
         The command prefix is what the message content must contain initially
@@ -51,6 +51,11 @@ class Bot(GroupMixin, discord.Client):
         indicate what the prefix should be, or a callable that takes in a
         :class:`discord.Message` as its first parameter and returns the prefix.
         This is to facilitate "dynamic" command prefixes.
+
+        The command prefix could also be a list or a tuple indicating that
+        multiple checks for the prefix should be used and the first one to
+        match will be the invocation prefix. You can get this prefix via
+        :attr:`Context.prefix`.
     """
     def __init__(self, command_prefix, **options):
         super().__init__(**options)
@@ -199,8 +204,16 @@ class Bot(GroupMixin, discord.Client):
             return
 
         prefix = self._get_prefix(message)
-        if not view.skip_string(prefix):
-            return
+        invoked_prefix = prefix
+
+        if not isinstance(prefix, (tuple, list)):
+            if not view.skip_string(prefix):
+                return
+        else:
+            invoked_prefix = discord.utils.find(view.skip_string, prefix)
+            if invoked_prefix is None:
+                return
+
 
         invoker = view.get_word()
         tmp = {
@@ -208,6 +221,7 @@ class Bot(GroupMixin, discord.Client):
             'invoked_with': invoker,
             'message': message,
             'view': view,
+            'prefix': invoked_prefix
         }
         ctx = Context(**tmp)
         del tmp
