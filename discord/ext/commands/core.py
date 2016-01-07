@@ -36,6 +36,15 @@ from .view import quoted_word
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check' ]
 
+def _convert_to_bool(argument):
+    lowered = argument.lower()
+    if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+        return True
+    elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+        return False
+    else:
+        raise BadArgument(lowered + ' is not a recognised boolean option')
+
 class Command:
     """A class that implements the protocol for a bot text command.
 
@@ -90,6 +99,9 @@ class Command:
         return result
 
     def do_conversion(self, bot, message, converter, argument):
+        if converter is bool:
+            return _convert_to_bool(argument)
+
         if converter.__module__.split('.')[0] != 'discord':
             return converter(argument)
 
