@@ -486,6 +486,12 @@ Colour
 .. autoclass:: Colour
     :members:
 
+Game
+~~~~
+
+.. autoclass:: Game
+    :members:
+
 Role
 ~~~~~
 
