@@ -116,16 +116,14 @@ class VoiceWebSocket(WebSocketBaseClient):
 
             # the ip is ascii starting at the 4th byte and ending at the first null
             ip_start = 4
-            ip_end = recv[0:4]
-            self.ip = ip_end.decode('ascii')
-            print("recv: "+self.ip)
+            ip_end = recv.index("\x00",ip_start)
+            self.ip = recv[ip_start:ip_end].decode('ascii')
 
             # the port is a little endian unsigned short in the last two bytes
             # yes, this is different endianness from everything else
             self.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
 
             log.debug('detected ip: {} port: {}'.format(self.ip, self.port))
-
             payload = {
                 'op': 1,
                 'd': {
@@ -165,7 +163,7 @@ class VoiceWebSocket(WebSocketBaseClient):
 
         
         
-        return(msg)
+        #return(msg)
 
 class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
@@ -279,7 +277,8 @@ class VoiceClient:
 
     def run_ws(self, ws):
         while True:
-            ws.run()
+            if self.vws_thread.isAlive==True:
+                ws.run()
             time.sleep(.01)
 
     def checked_add(self, attr, value, limit):
@@ -288,18 +287,6 @@ class VoiceClient:
             setattr(self, attr, 0)
         else:
             setattr(self, attr, val + value)
-
-    def received_message(self, msg):
-        log.debug('Voice websocket frame received: {}'.format(msg))
-        op = msg.get('op')
-        data = msg.get('d')
-
-        if op == 2:
-            delay = (data['heartbeat_interval'] / 100.0) - 5
-            self.keep_alive = utils.create_task(self.keep_alive_handler(delay), loop=self.loop)
-            self.initial_connection(data)
-        elif op == 4:
-            self.connection_ready(data)
 
 
     # connection related
@@ -353,6 +340,8 @@ class VoiceClient:
         self.socket.close()
         self._connected = False
         self.ws.close()
+        if self.vws_thread.isAlive==True:
+            self.vws_thread.join()
 
         payload = {
             'op': 4,
@@ -618,5 +607,5 @@ class VoiceClient:
         self.checked_add('sequence', 1, 65535)
         encoded_data = self.encoder.encode(data, self.encoder.samples_per_frame)
         packet = self._get_voice_packet(encoded_data)
-        sent = self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+        sent = self.socket.sendto(packet, (self.endpoint_ip, self.ws.voice_port))
         self.checked_add('timestamp', self.encoder.samples_per_frame, 4294967295)
