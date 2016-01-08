@@ -50,6 +50,9 @@ import shlex
 import pipes
 import time
 
+import sys
+import traceback
+
 log = logging.getLogger(__name__)
 
 from . import utils
@@ -57,20 +60,20 @@ from .errors import ClientException, InvalidArgument
 from .opus import Encoder as OpusEncoder
 
 class VoiceWebSocket(WebSocketBaseClient):
-    def __init__(self, url, socket, endpoint_ip):
+    def __init__(self, url, endpoint_ip):
         WebSocketBaseClient.__init__(self, url)
-        self.socket = socket
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setblocking(False)
         self.endpoint_ip = endpoint_ip
         self._connected = False
         self.keep_alive = None
         
 
     def opened(self):
-        print("Opened vWS")
         pass
 
     def closed(self, code, reason=None):
-        print("Closed vWS")
+        self._connected = False
         if self.keep_alive is not None:
             self.keep_alive.join()
 
@@ -78,18 +81,16 @@ class VoiceWebSocket(WebSocketBaseClient):
         pass
 
     def send(self, payload):
-        print("vWS: Sending data")
         WebSocketBaseClient.send(self, payload)
 
     def received_message(self, msg):
-        print("vWS: Recieving data")
+        msg = json.loads(msg.data)
         log.debug('Voice websocket frame received: {}'.format(msg))
         #print("\n\n\n\n"+str(dir(msg))+"\n\n\n\n\n")
-        msg = json.loads(msg.data)
         op = msg.get('op')
         data = msg.get('d')
         
-        def keep_alive_handler(delay):
+        def keep_alive_handler(self,delay):
             try:
                 while True:
                     payload = {
@@ -99,7 +100,7 @@ class VoiceWebSocket(WebSocketBaseClient):
 
                     msg = 'Keeping voice websocket alive with timestamp {}'
                     log.debug(msg.format(payload['d']))
-                    self.ws.send(utils.to_json(payload))
+                    self.send(utils.to_json(payload))
                     time.sleep(delay)
             except Exception as e:
                 pass
@@ -110,8 +111,12 @@ class VoiceWebSocket(WebSocketBaseClient):
             packet = bytearray(70)
             struct.pack_into('>I', packet, 0, self.ssrc)
             self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
-            print(self.socket.getsockname())
-            recv = self.socket.recv(70)
+            recv = None
+            while recv == None:
+                try:
+                    recv = self.socket.recv(70)
+                except:
+                    pass
             log.debug('received packet in initial_connection: {}'.format(recv))
 
             # the ip is ascii starting at the 4th byte and ending at the first null
@@ -152,10 +157,11 @@ class VoiceWebSocket(WebSocketBaseClient):
 
             self.send(utils.to_json(speaking))
             self._connected = True
-
+        
+        
         if op == 2:
             delay = (data['heartbeat_interval'] / 100.0) - 5
-            self.keep_alive = threading.Thread(None,keep_alive_handler,None,(delay,))
+            self.keep_alive = threading.Thread(None,keep_alive_handler,None,(self,delay,))
             self.keep_alive.start()
             initial_connection(self,data)
         elif op == 4:
@@ -171,8 +177,8 @@ class StreamPlayer(threading.Thread):
         self.buff = stream
         self.frame_size = encoder.frame_size
         self.player = player
-        self._end = threading.Event()
-        self._paused = threading.Event()
+        self._end = False
+        self._paused = False
         self._connected = connected
         self.after = after
         self.delay = encoder.frame_length / 1000.0
@@ -180,13 +186,12 @@ class StreamPlayer(threading.Thread):
     def run(self):
         self.loops = 0
         self._start = time.time()
-        while not self._end.is_set():
-            if self._paused.is_set():
+        while not self._end==True:
+            if self._paused==True:
                 continue
 
-            if not self._connected:
-                self.stop()
-                break
+            while not self._connected==True:
+                time.sleep(.01)
 
             self.loops += 1
             data = self.buff.read(self.frame_size)
@@ -200,7 +205,7 @@ class StreamPlayer(threading.Thread):
             time.sleep(delay)
 
     def stop(self):
-        self._end.set()
+        self._end = True
         if callable(self.after):
             try:
                 self.after()
@@ -208,23 +213,23 @@ class StreamPlayer(threading.Thread):
                 pass
 
     def pause(self):
-        self._paused.set()
+        self._paused = True
 
     def resume(self):
         self.loops = 0
         self._start = time.time()
-        self._paused.clear()
+        self._paused=False
 
     def is_playing(self):
-        return not self._paused.is_set() and not self.is_done()
+        return not self._paused==True and not self.is_done()
 
     def is_done(self):
-        return not self._connected.is_set() or self._end.is_set()
+        return not self._connected==True or self._end==True
 
 class ProcessPlayer(StreamPlayer):
     def __init__(self, process, client, after, **kwargs):
         super(ProcessPlayer, self).__init__(process.stdout, client.encoder,
-                         client._connected, client.play_audio, after, **kwargs)
+                         client.ws._connected, client.play_audio, after, **kwargs)
         self.process = process
 
     def stop(self):
@@ -275,10 +280,19 @@ class VoiceClient:
         self.encoder = OpusEncoder(48000, 2)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
-    def run_ws(self, ws):
+    def run_ws(self):
         while True:
-            if self.vws_thread.isAlive==True:
-                ws.run()
+            #if self.ws._connected == True:
+            try:
+                self.ws.run()
+            except Exception as e:
+                type_, value_, traceback_ = sys.exc_info()
+                ex = traceback.format_exception(type_, value_, traceback_)
+                trace = ""
+                for data in ex:
+                    trace = str(trace+data)
+                print(trace)
+                exit()
             time.sleep(.01)
 
     def checked_add(self, attr, value, limit):
@@ -295,14 +309,13 @@ class VoiceClient:
         log.info('voice connection is connecting...')
         self.endpoint = self.endpoint.replace(':80', '')
         self.endpoint_ip = socket.gethostbyname(self.endpoint)
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #self.socket.setblocking(True)
+        
 
         log.info('Voice endpoint found {0.endpoint} (IP: {0.endpoint_ip})'.format(self))
-        self.ws = VoiceWebSocket('wss://' + self.endpoint, self.socket, self.endpoint_ip)
+        self.ws = VoiceWebSocket('wss://' + self.endpoint, self.endpoint_ip)
         self.ws.max_size = None
         self.ws.connect()
-        self.vws_thread = threading.Thread(None,self.run_ws,None,(self.ws,))
+        self.vws_thread = threading.Thread(None,self.run_ws,None,())
         self.vws_thread.start()
 
         payload = {
@@ -317,13 +330,12 @@ class VoiceClient:
 
         self.ws.send(utils.to_json(payload))
 
-        #while not self.ws._connected == True:
-        #    msg = self.ws.received_message()
-        #    if msg is None:
-        #        self.disconnect()
-        #        raise ClientException('Unexpected websocket close on voice websocket')
-#
-        #    self.received_message(json.loads(msg))
+        # while not self.ws._connected == True:
+            # msg = self.ws.received_message()
+            # if msg is None:
+                # self.disconnect()
+                # raise ClientException('Unexpected websocket close on voice websocket')
+            # self.ws.received_message(json.loads(msg))
 
     def disconnect(self):
         """
@@ -333,10 +345,10 @@ class VoiceClient:
         In order to reconnect, you must create another voice client
         using :meth:`Client.join_voice_channel`.
         """
-        if not self._connected:
+        if not self.ws._connected:
             return
 
-        self.keep_alive.cancel()
+        self.ws.keep_alive.join()
         self.socket.close()
         self._connected = False
         self.ws.close()
@@ -363,15 +375,15 @@ class VoiceClient:
 
     def _get_voice_packet(self, data):
         buff = bytearray(len(data) + 12)
-        buff[0] = 0x80
-        buff[1] = 0x78
+        buff[0] = chr(0x80)
+        buff[1] = chr(0x78)
 
         for i in range(0, len(data)):
             buff[i + 12] = data[i]
 
         struct.pack_into('>H', buff, 2, self.sequence)
         struct.pack_into('>I', buff, 4, self.timestamp)
-        struct.pack_into('>I', buff, 8, self.ssrc)
+        struct.pack_into('>I', buff, 8, self.ws.ssrc)
         return buff
 
     def create_ffmpeg_player(self, filename, use_avconv=False, pipe=False, options=None, after=None):
@@ -584,7 +596,7 @@ class VoiceClient:
         StreamPlayer
             A stream player with the operations noted above.
         """
-        return StreamPlayer(stream, self.encoder, self._connected, self.play_audio, after)
+        return StreamPlayer(stream, self.encoder, self.ws, self.play_audio, after)
 
     def play_audio(self, data):
         """Sends an audio packet composed of the data.
@@ -607,5 +619,6 @@ class VoiceClient:
         self.checked_add('sequence', 1, 65535)
         encoded_data = self.encoder.encode(data, self.encoder.samples_per_frame)
         packet = self._get_voice_packet(encoded_data)
-        sent = self.socket.sendto(packet, (self.endpoint_ip, self.ws.voice_port))
+        sent = self.ws.socket.sendto(packet, (self.endpoint_ip, self.ws.voice_port))
         self.checked_add('timestamp', self.encoder.samples_per_frame, 4294967295)
+

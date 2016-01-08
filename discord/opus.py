@@ -192,4 +192,4 @@ class Encoder:
             log.info('error has happened in encode')
             raise OpusError(ret)
 
-        return array.array('b', data[:ret]).tobytes()
+        return array.array('b', data[:ret]).tostring()

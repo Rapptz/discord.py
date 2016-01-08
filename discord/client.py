@@ -1521,8 +1521,8 @@ class Client(object):
         #self._voice_data_found.clear()
         
         while self.connection.voice_data==None or self.connection.voice_session_id==None:
-            print("waiting for voice data")
-            time.sleep(1)
+            #print("waiting for voice data")
+            time.sleep(0.01)
 
         kwargs = {
             'user': self.user,
