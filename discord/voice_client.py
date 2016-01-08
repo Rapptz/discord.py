@@ -57,9 +57,13 @@ from .errors import ClientException, InvalidArgument
 from .opus import Encoder as OpusEncoder
 
 class VoiceWebSocket(WebSocketBaseClient):
-    def __init__(self, url):
+    def __init__(self, url, socket, endpoint_ip):
         WebSocketBaseClient.__init__(self, url)
+        self.socket = socket
+        self.endpoint_ip = endpoint_ip
         self._connected = False
+        self.keep_alive = None
+        
 
     def opened(self):
         print("Opened vWS")
@@ -68,15 +72,99 @@ class VoiceWebSocket(WebSocketBaseClient):
     def closed(self, code, reason=None):
         print("Closed vWS")
         if self.keep_alive is not None:
-            self.keep_alive.stop.set()
+            self.keep_alive.join()
 
     def handshake_ok(self):
-        self._connected = True
+        pass
 
     def send(self, payload):
+        print("vWS: Sending data")
         WebSocketBaseClient.send(self, payload)
 
-    def recv(self, msg):
+    def received_message(self, msg):
+        print("vWS: Recieving data")
+        log.debug('Voice websocket frame received: {}'.format(msg))
+        #print("\n\n\n\n"+str(dir(msg))+"\n\n\n\n\n")
+        msg = json.loads(msg.data)
+        op = msg.get('op')
+        data = msg.get('d')
+        
+        def keep_alive_handler(delay):
+            try:
+                while True:
+                    payload = {
+                        'op': 3,
+                        'd': int(time.time())
+                    }
+
+                    msg = 'Keeping voice websocket alive with timestamp {}'
+                    log.debug(msg.format(payload['d']))
+                    self.ws.send(utils.to_json(payload))
+                    time.sleep(delay)
+            except Exception as e:
+                pass
+        
+        def initial_connection(self,data):
+            self.ssrc = data.get('ssrc')
+            self.voice_port = data.get('port')
+            packet = bytearray(70)
+            struct.pack_into('>I', packet, 0, self.ssrc)
+            self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+            print(self.socket.getsockname())
+            recv = self.socket.recv(70)
+            log.debug('received packet in initial_connection: {}'.format(recv))
+
+            # the ip is ascii starting at the 4th byte and ending at the first null
+            ip_start = 4
+            ip_end = recv[0:4]
+            self.ip = ip_end.decode('ascii')
+            print("recv: "+self.ip)
+
+            # the port is a little endian unsigned short in the last two bytes
+            # yes, this is different endianness from everything else
+            self.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
+
+            log.debug('detected ip: {} port: {}'.format(self.ip, self.port))
+
+            payload = {
+                'op': 1,
+                'd': {
+                    'protocol': 'udp',
+                    'data': {
+                        'address': self.ip,
+                        'port': self.port,
+                        'mode': 'plain'
+                    }
+                }
+            }
+
+            self.send(utils.to_json(payload))
+            log.debug('sent {} to initialize voice connection'.format(payload))
+            log.info('initial voice connection is done')
+        
+        def connection_ready(self, data):
+            log.info('voice connection is now ready')
+            speaking = {
+                'op': 5,
+                'd': {
+                    'speaking': True,
+                    'delay': 0
+                }
+            }
+
+            self.send(utils.to_json(speaking))
+            self._connected = True
+
+        if op == 2:
+            delay = (data['heartbeat_interval'] / 100.0) - 5
+            self.keep_alive = threading.Thread(None,keep_alive_handler,None,(delay,))
+            self.keep_alive.start()
+            initial_connection(self,data)
+        elif op == 4:
+            connection_ready(self,data)
+
+        
+        
         return(msg)
 
 class StreamPlayer(threading.Thread):
@@ -177,6 +265,7 @@ class VoiceClient:
     def __init__(self, user, main_ws, session_id, channel, data):
         self.user = user
         self.main_ws = main_ws
+        self.vws_thread = None
         self.channel = channel
         self.session_id = session_id
         self._connected = None
@@ -188,27 +277,17 @@ class VoiceClient:
         self.encoder = OpusEncoder(48000, 2)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
+    def run_ws(self, ws):
+        while True:
+            ws.run()
+            time.sleep(.01)
+
     def checked_add(self, attr, value, limit):
         val = getattr(self, attr)
         if val + value > limit:
             setattr(self, attr, 0)
         else:
             setattr(self, attr, val + value)
-
-    def keep_alive_handler(self, delay):
-        try:
-            while True:
-                payload = {
-                    'op': 3,
-                    'd': int(time.time())
-                }
-
-                msg = 'Keeping voice websocket alive with timestamp {}'
-                log.debug(msg.format(payload['d']))
-                self.ws.send(utils.to_json(payload))
-                asyncio.sleep(delay)
-        except asyncio.CancelledError:
-            pass
 
     def received_message(self, msg):
         log.debug('Voice websocket frame received: {}'.format(msg))
@@ -222,55 +301,6 @@ class VoiceClient:
         elif op == 4:
             self.connection_ready(data)
 
-    def initial_connection(self, data):
-        self.ssrc = data.get('ssrc')
-        self.voice_port = data.get('port')
-        packet = bytearray(70)
-        struct.pack_into('>I', packet, 0, self.ssrc)
-        self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
-        print(self.socket.getsockname())
-        recv = self.socket.recv(self.socket, 70)
-        log.debug('received packet in initial_connection: {}'.format(recv))
-
-        # the ip is ascii starting at the 4th byte and ending at the first null
-        ip_start = 4
-        ip_end = recv.index(0, ip_start)
-        self.ip = recv[ip_start:ip_end].decode('ascii')
-
-        # the port is a little endian unsigned short in the last two bytes
-        # yes, this is different endianness from everything else
-        self.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
-
-        log.debug('detected ip: {} port: {}'.format(self.ip, self.port))
-
-        payload = {
-            'op': 1,
-            'd': {
-                'protocol': 'udp',
-                'data': {
-                    'address': self.ip,
-                    'port': self.port,
-                    'mode': 'plain'
-                }
-            }
-        }
-
-        self.ws.send(utils.to_json(payload))
-        log.debug('sent {} to initialize voice connection'.format(payload))
-        log.info('initial voice connection is done')
-
-    def connection_ready(self, data):
-        log.info('voice connection is now ready')
-        speaking = {
-            'op': 5,
-            'd': {
-                'speaking': True,
-                'delay': 0
-            }
-        }
-
-        self.ws.send(utils.to_json(speaking))
-        self._connected.set()
 
     # connection related
 
@@ -279,12 +309,14 @@ class VoiceClient:
         self.endpoint = self.endpoint.replace(':80', '')
         self.endpoint_ip = socket.gethostbyname(self.endpoint)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.setblocking(True)
+        #self.socket.setblocking(True)
 
         log.info('Voice endpoint found {0.endpoint} (IP: {0.endpoint_ip})'.format(self))
-        self.ws = VoiceWebSocket('wss://' + self.endpoint)
+        self.ws = VoiceWebSocket('wss://' + self.endpoint, self.socket, self.endpoint_ip)
         self.ws.max_size = None
         self.ws.connect()
+        self.vws_thread = threading.Thread(None,self.run_ws,None,(self.ws,))
+        self.vws_thread.start()
 
         payload = {
             'op': 0,
@@ -298,13 +330,13 @@ class VoiceClient:
 
         self.ws.send(utils.to_json(payload))
 
-        while not self.ws._connected == True:
-            msg = self.ws.recv()
-            if msg is None:
-                self.disconnect()
-                raise ClientException('Unexpected websocket close on voice websocket')
-
-            self.received_message(json.loads(msg))
+        #while not self.ws._connected == True:
+        #    msg = self.ws.received_message()
+        #    if msg is None:
+        #        self.disconnect()
+        #        raise ClientException('Unexpected websocket close on voice websocket')
+#
+        #    self.received_message(json.loads(msg))
 
     def disconnect(self):
         """
