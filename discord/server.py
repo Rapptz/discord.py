@@ -67,9 +67,9 @@ class Server(Hashable):
     afk_channel : :class:`Channel`
         The channel that denotes the AFK channel. None if it doesn't exist.
     members
-        A list of :class:`Member` that are currently on the server.
+        An iterable of :class:`Member` that are currently on the server.
     channels
-        A list of :class:`Channel` that are currently on the server.
+        An iterable of :class:`Channel` that are currently on the server.
     icon : str
         The server's icon.
     id : str

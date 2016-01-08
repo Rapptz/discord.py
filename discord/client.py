@@ -88,9 +88,9 @@ class Client:
         Represents the current voice connection. None if you are not connected
         to a voice channel. To connect to voice use :meth:`join_voice_channel`.
         To query the voice connection state use :meth:`is_voice_connected`.
-    servers : list of :class:`Server`
+    servers : iterable of :class:`Server`
         The servers that the connected client is a member of.
-    private_channels : list of :class:`PrivateChannel`
+    private_channels : iterable of :class:`PrivateChannel`
         The private channels that the connected client is participating on.
     messages
         A deque_ of :class:`Message` that the client has received from all
