@@ -213,7 +213,7 @@ class Client:
         if isinstance(destination, (Channel, PrivateChannel, Server)):
             return destination.id
         elif isinstance(destination, User):
-            found = self.connection.get_private_channel_by_user(destination.id)
+            found = self.connection._get_private_channel_by_user(destination.id)
             if found is None:
                 # Couldn't find the user, so start a PM with them first.
                 channel = yield from self.start_private_message(destination)
@@ -428,6 +428,10 @@ class Client:
     def get_channel(self, id):
         """Returns a :class:`Channel` or :class:`PrivateChannel` with the following ID. If not found, returns None."""
         return self.connection.get_channel(id)
+
+    def get_server(self, id):
+        """Returns a :class:`Server` with the given ID. If not found, returns None."""
+        return self.connection._get_server(id)
 
     def get_all_channels(self):
         """A generator that retrieves every :class:`Channel` the client can 'access'.
@@ -853,7 +857,7 @@ class Client:
         data = yield from r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         channel = PrivateChannel(id=data['id'], user=user)
-        self.connection.add_private_channel(channel)
+        self.connection._add_private_channel(channel)
         return channel
 
     @asyncio.coroutine
@@ -1746,7 +1750,7 @@ class Client:
     # Invite management
 
     def _fill_invite_data(self, data):
-        server = self.connection.get_server(data['guild']['id'])
+        server = self.connection._get_server(data['guild']['id'])
         if server is not None:
             ch_id = data['channel']['id']
             channel = server.get_channel(ch_id)
