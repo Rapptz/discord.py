@@ -84,7 +84,7 @@ class Server(Hashable):
         Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
     """
 
-    __slots__ = [ 'afk_timeout', 'afk_channel', 'members', 'channels', 'icon',
+    __slots__ = [ 'afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                   'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
                   '_default_role', '_default_channel', 'roles' ]
 
