@@ -262,6 +262,13 @@ After:
 
     client.run('email', 'password')
 
+.. warning::
+
+    Like in the older ``Client.run`` function, the newer one must be the one of
+    the last functions to call. This is because the function is **blocking**. Registering
+    events or doing anything after :meth:`Client.run` will not execute until the function
+    returns.
+
 This is a utility function that abstracts the event loop for you. There's no need for
 the run call to be blocking and out of your control. Indeed, if you want control of the
 event loop then doing so is quite straightforward:

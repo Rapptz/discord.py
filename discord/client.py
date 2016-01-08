@@ -759,7 +759,14 @@ class Client:
                 # cancel all tasks lingering
             finally:
                 loop.close()
+
+        Warning
+        --------
+        This function must be the last function to call due to the fact that it
+        is blocking. That means that registration of events or anything being
+        called after this function call will not execute until it returns.
         """
+
         try:
             self.loop.run_until_complete(self.start(email, password))
         except KeyboardInterrupt:
