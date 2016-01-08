@@ -373,7 +373,6 @@ class ConnectionState(object):
             self.dispatch('voice_state_update', updated_member)
     
     def handle_voice_server_update(self, data):
-        print("Voice state update happened")
         self.voice_data = data
         self.dispatch('voice_server_update', data)
 

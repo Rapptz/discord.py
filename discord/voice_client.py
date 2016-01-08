@@ -47,6 +47,7 @@ import struct
 import threading
 import subprocess
 import shlex
+import time
 
 log = logging.getLogger(__name__)
 
@@ -56,20 +57,20 @@ from .opus import Encoder as OpusEncoder
 
 class VoiceWebSocket(WebSocketBaseClient):
     def __init__(self, url):
-        WebSocketBaseClient.__init__(self, url,
-                                     protocols=['http-only', 'chat'])
-        self.keep_alive = None
+        WebSocketBaseClient.__init__(self, url)
+        self._connected = False
 
     def opened(self):
+        print("Opened vWS")
         pass
 
     def closed(self, code, reason=None):
-        #if self.keep_alive is not None:
-        #    self.keep_alive.stop.set()
-        pass
+        print("Closed vWS")
+        if self.keep_alive is not None:
+            self.keep_alive.stop.set()
 
     def handshake_ok(self):
-        pass
+        self._connected = True
 
     def send(self, payload):
         WebSocketBaseClient.send(self, payload)
@@ -226,6 +227,7 @@ class VoiceClient:
         packet = bytearray(70)
         struct.pack_into('>I', packet, 0, self.ssrc)
         self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+        print(self.socket.getsockname())
         recv = self.socket.recv(self.socket, 70)
         log.debug('received packet in initial_connection: {}'.format(recv))
 
@@ -276,11 +278,12 @@ class VoiceClient:
         self.endpoint = self.endpoint.replace(':80', '')
         self.endpoint_ip = socket.gethostbyname(self.endpoint)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.setblocking(False)
+        self.socket.setblocking(True)
 
         log.info('Voice endpoint found {0.endpoint} (IP: {0.endpoint_ip})'.format(self))
         self.ws = VoiceWebSocket('wss://' + self.endpoint)
         self.ws.max_size = None
+        self.ws.connect()
 
         payload = {
             'op': 0,
@@ -294,7 +297,7 @@ class VoiceClient:
 
         self.ws.send(utils.to_json(payload))
 
-        while not self._connected.is_set():
+        while not self.ws._connected == True:
             msg = self.ws.recv()
             if msg is None:
                 self.disconnect()
@@ -332,7 +335,7 @@ class VoiceClient:
 
     def is_connected(self):
         """bool : Indicates if the voice client is connected to voice."""
-        return self._connected.is_set()
+        return self.ws._connected
 
     # audio related
 
