@@ -99,12 +99,13 @@ class Server(Hashable):
         return self._channels.values()
 
     def get_channel(self, channel_id):
+        """Returns a :class:`Channel` with the given ID. If not found, returns None."""
         return self._channels.get(channel_id)
 
-    def add_channel(self, channel):
+    def _add_channel(self, channel):
         self._channels[channel.id] = channel
 
-    def remove_channel(self, channel):
+    def _remove_channel(self, channel):
         self._channels.pop(channel.id, None)
 
     @property
@@ -112,12 +113,13 @@ class Server(Hashable):
         return self._members.values()
 
     def get_member(self, user_id):
+        """Returns a :class:`Member` with the given ID. If not found, returns None."""
         return self._members.get(user_id)
 
-    def add_member(self, member):
+    def _add_member(self, member):
         self._members[member.id] = member
 
-    def remove_member(self, member):
+    def _remove_member(self, member):
         self._members.pop(member.id, None)
 
     def __str__(self):
@@ -163,7 +165,7 @@ class Server(Hashable):
             if member.id == owner_id:
                 self.owner = member
 
-            self.add_member(member)
+            self._add_member(member)
 
         for presence in guild.get('presences', []):
             user_id = presence['user']['id']
@@ -181,7 +183,7 @@ class Server(Hashable):
             channels = guild['channels']
             for c in channels:
                 channel = Channel(server=self, **c)
-                self.add_channel(channel)
+                self._add_channel(channel)
 
         afk_id = guild.get('afk_channel_id')
         self.afk_channel = self.get_channel(afk_id)

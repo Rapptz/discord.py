@@ -56,40 +56,40 @@ class ConnectionState:
     def servers(self):
         return self._servers.values()
 
-    def get_server(self, server_id):
+    def _get_server(self, server_id):
         return self._servers.get(server_id)
 
-    def add_server(self, server):
+    def _add_server(self, server):
         self._servers[server.id] = server
 
-    def remove_server(self, server):
+    def _remove_server(self, server):
         self._servers.pop(server.id, None)
 
     @property
     def private_channels(self):
         return self._private_channels.values()
 
-    def get_private_channel(self, channel_id):
+    def _get_private_channel(self, channel_id):
         return self._private_channels.get(channel_id)
 
-    def get_private_channel_by_user(self, user_id):
+    def _get_private_channel_by_user(self, user_id):
         return self._private_channels_by_user.get(user_id)
 
-    def add_private_channel(self, channel):
+    def _add_private_channel(self, channel):
         self._private_channels[channel.id] = channel
         self._private_channels_by_user[channel.user.id] = channel
 
-    def remove_private_channel(self, channel):
+    def _remove_private_channel(self, channel):
         self._private_channels.pop(channel.id, None)
         self._private_channels_by_user.pop(channel.user.id, None)
 
     def _get_message(self, msg_id):
         return utils.find(lambda m: m.id == msg_id, self.messages)
 
-    def _add_server(self, guild):
+    def _add_server_from_data(self, guild):
         server = Server(**guild)
         server.me = server.get_member(self.user.id)
-        self.add_server(server)
+        self._add_server(server)
         return server
 
     def parse_ready(self, data):
@@ -97,10 +97,10 @@ class ConnectionState:
         guilds = data.get('guilds')
 
         for guild in guilds:
-            self._add_server(guild)
+            self._add_server_from_data(guild)
 
         for pm in data.get('private_channels'):
-            self.add_private_channel(PrivateChannel(id=pm['id'],
+            self._add_private_channel(PrivateChannel(id=pm['id'],
                                      user=User(**pm['recipient'])))
 
         # we're all ready
@@ -133,7 +133,7 @@ class ConnectionState:
             older_message = message
 
     def parse_presence_update(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             status = data.get('status')
             user = data['user']
@@ -158,16 +158,16 @@ class ConnectionState:
         self.user = User(**data)
 
     def parse_channel_delete(self, data):
-        server =  self.get_server(data.get('guild_id'))
+        server =  self._get_server(data.get('guild_id'))
         if server is not None:
             channel_id = data.get('id')
             channel = server.get_channel(channel_id)
             if channel is not None:
-                server.remove_channel(channel)
+                server._remove_channel(channel)
                 self.dispatch('channel_delete', channel)
 
     def parse_channel_update(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             channel_id = data.get('id')
             channel = server.get_channel(channel_id)
@@ -183,33 +183,33 @@ class ConnectionState:
             recipient = User(**data.get('recipient'))
             pm_id = data.get('id')
             channel = PrivateChannel(id=pm_id, user=recipient)
-            self.add_private_channel(channel)
+            self._add_private_channel(channel)
         else:
-            server = self.get_server(data.get('guild_id'))
+            server = self._get_server(data.get('guild_id'))
             if server is not None:
                 channel = Channel(server=server, **data)
-                server.add_channel(channel)
+                server._add_channel(channel)
 
         self.dispatch('channel_create', channel)
 
     def parse_guild_member_add(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         member = Member(server=server, deaf=False, mute=False, **data)
         member.roles.append(server.default_role)
-        server.add_member(member)
+        server._add_member(member)
         self.dispatch('member_join', member)
 
     def parse_guild_member_remove(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             user_id = data['user']['id']
             member = server.get_member(user_id)
             if member is not None:
-                server.remove_member(member)
+                server._remove_member(member)
                 self.dispatch('member_remove', member)
 
     def parse_guild_member_update(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         user_id = data['user']['id']
         member = server.get_member(user_id)
         if member is not None:
@@ -232,7 +232,7 @@ class ConnectionState:
             # GUILD_CREATE with unavailable in the response
             # usually means that the server has become available
             # and is therefore in the cache
-            server = self.get_server(data.get('id'))
+            server = self._get_server(data.get('id'))
             if server is not None:
                 server.unavailable = False
                 self.dispatch('server_available', server)
@@ -246,18 +246,18 @@ class ConnectionState:
             # unavailable during the READY event and is now
             # available, so it isn't in the cache...
 
-        server = self._add_server(data)
+        server = self._add_server_from_data(data)
         self.dispatch('server_join', server)
 
     def parse_guild_update(self, data):
-        server = self.get_server(data.get('id'))
+        server = self._get_server(data.get('id'))
         if server is not None:
             old_server = copy.copy(server)
             server._from_data(data)
             self.dispatch('server_update', old_server, server)
 
     def parse_guild_delete(self, data):
-        server = self.get_server(data.get('id'))
+        server = self._get_server(data.get('id'))
         if server is None:
             return
 
@@ -271,7 +271,7 @@ class ConnectionState:
         # do a cleanup of the messages cache
         self.messages = deque((msg for msg in self.messages if msg.server != server), maxlen=self.max_messages)
 
-        self.remove_server(server)
+        self._remove_server(server)
         self.dispatch('server_remove', server)
 
 
@@ -281,7 +281,7 @@ class ConnectionState:
         # hence we don't remove it from cache or do anything
         # strange with it, the main purpose of this event
         # is mainly to dispatch to another event worth listening to for logging
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             user_id = data.get('user', {}).get('id')
             member = utils.get(server.members, id=user_id)
@@ -289,14 +289,14 @@ class ConnectionState:
                 self.dispatch('member_ban', member)
 
     def parse_guild_ban_remove(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             if 'user' in data:
                 user = User(**data['user'])
                 self.dispatch('member_unban', server, user)
 
     def parse_guild_role_create(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         role_data = data.get('role', {})
         everyone = server.id == role_data.get('id')
         role = Role(everyone=everyone, **role_data)
@@ -304,7 +304,7 @@ class ConnectionState:
         self.dispatch('server_role_create', server, role)
 
     def parse_guild_role_delete(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             role_id = data.get('role_id')
             role = utils.find(lambda r: r.id == role_id, server.roles)
@@ -316,7 +316,7 @@ class ConnectionState:
                 self.dispatch('server_role_delete', server, role)
 
     def parse_guild_role_update(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             role_id = data['role']['id']
             role = utils.find(lambda r: r.id == role_id, server.roles)
@@ -326,7 +326,7 @@ class ConnectionState:
                 self.dispatch('server_role_update', old_role, role)
 
     def parse_voice_state_update(self, data):
-        server = self.get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             updated_members = server._update_voice_state(data)
             self.dispatch('voice_state_update', *updated_members)
@@ -358,6 +358,6 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-        pm = self.get_private_channel(id)
+        pm = self._get_private_channel(id)
         if pm is not None:
             return pm
