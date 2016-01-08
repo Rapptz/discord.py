@@ -47,6 +47,7 @@ import struct
 import threading
 import subprocess
 import shlex
+import pipes
 import time
 
 log = logging.getLogger(__name__)
@@ -97,7 +98,7 @@ class StreamPlayer(threading.Thread):
             if self._paused.is_set():
                 continue
 
-            if not self._connected.is_set():
+            if not self._connected:
                 self.stop()
                 break
 
@@ -136,13 +137,13 @@ class StreamPlayer(threading.Thread):
 
 class ProcessPlayer(StreamPlayer):
     def __init__(self, process, client, after, **kwargs):
-        super().__init__(process.stdout, client.encoder,
+        super(ProcessPlayer, self).__init__(process.stdout, client.encoder,
                          client._connected, client.play_audio, after, **kwargs)
         self.process = process
 
     def stop(self):
         self.process.kill()
-        super().stop()
+        super(ProcessPlayer, self).stop()
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -313,12 +314,12 @@ class VoiceClient:
         In order to reconnect, you must create another voice client
         using :meth:`Client.join_voice_channel`.
         """
-        if not self._connected.is_set():
+        if not self._connected:
             return
 
         self.keep_alive.cancel()
         self.socket.close()
-        self._connected.clear()
+        self._connected = False
         self.ws.close()
 
         payload = {
@@ -403,7 +404,7 @@ class VoiceClient:
             See :meth:`create_stream_player`.
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
-        input_name = '-' if pipe else shlex.quote(filename)
+        input_name = '-' if pipe else pipes.quote(filename)
         cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel warning'
         cmd = cmd.format(input_name, self.encoder.sampling_rate, self.encoder.channels)
 
@@ -417,8 +418,8 @@ class VoiceClient:
         try:
             p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
             return ProcessPlayer(p, self, after)
-        except subprocess.SubprocessError as e:
-            raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e)))
+        except Exception as e:
+            raise e
 
 
     def create_ytdl_player(self, url, options=None, use_avconv=False, after=None):
