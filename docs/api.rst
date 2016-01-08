@@ -152,11 +152,13 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
-.. function:: on_status(member)
+.. function:: on_status(member, old_game, old_status)
 
     Called whenever a :class:`Member` changes their status or game playing status.
 
-    :param server: The :class:`Member` who has had their status changed.
+    :param member: The :class:`Member` who has had their status changed.
+    :param old_game_id: The :class:`Game` the member had before it changed.
+    :param old_status: The status the member had before it changed.
 
 .. function:: on_channel_delete(channel)
               on_channel_create(channel)
@@ -182,11 +184,19 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param member: The :class:`Member` that joined or left.
 
-.. function:: on_member_update(member)
+.. function:: on_member_update(before, after)
 
     Called when a :class:`Member` updates their profile.
 
-    :param member: The :class:`Member` that updated their profile with the updated info.
+    This is called when one or more of the following things change:
+
+    - status
+    - game playing
+    - avatar
+    - nickname
+
+    :param before: The :class:`Member` that updated their profile with the old info.
+    :param after: The :class:`Member` that updated their profile with the updated info.
 
 .. function:: on_server_join(server)
 

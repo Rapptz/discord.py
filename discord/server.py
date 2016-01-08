@@ -28,6 +28,7 @@ from . import utils
 from .role import Role
 from .member import Member
 from .channel import Channel
+from .game import Game
 
 class Server(object):
     """Represents a Discord server.
@@ -119,7 +120,8 @@ class Server(object):
             member = utils.find(lambda m: m.id == user_id, self.members)
             if member is not None:
                 member.status = presence['status']
-                member.game_id = presence['game_id']
+                game = presence['game']
+                member.game = game and Game(**game)
 
         self.channels = [Channel(server=self, **c) for c in guild['channels']]
         afk_id = guild.get('afk_channel_id')
