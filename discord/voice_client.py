@@ -58,7 +58,6 @@ class VoiceWebSocket(WebSocketBaseClient):
     def __init__(self, url):
         WebSocketBaseClient.__init__(self, url,
                                      protocols=['http-only', 'chat'])
-        self.dispatch = dispatch
         self.keep_alive = None
 
     def opened(self):
