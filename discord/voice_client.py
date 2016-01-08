@@ -67,7 +67,9 @@ class VoiceWebSocket(WebSocketBaseClient):
         self.endpoint_ip = endpoint_ip
         self._connected = False
         self.keep_alive = None
-        
+    
+    def keep_alive_join(self):
+        self.keep_alive.join()
 
     def opened(self):
         pass
@@ -86,13 +88,12 @@ class VoiceWebSocket(WebSocketBaseClient):
     def received_message(self, msg):
         msg = json.loads(msg.data)
         log.debug('Voice websocket frame received: {}'.format(msg))
-        #print("\n\n\n\n"+str(dir(msg))+"\n\n\n\n\n")
         op = msg.get('op')
         data = msg.get('d')
         
         def keep_alive_handler(self,delay):
             try:
-                while True:
+                while self._connected==True:
                     payload = {
                         'op': 3,
                         'd': int(time.time())
@@ -102,6 +103,7 @@ class VoiceWebSocket(WebSocketBaseClient):
                     log.debug(msg.format(payload['d']))
                     self.send(utils.to_json(payload))
                     time.sleep(delay)
+                exit()
             except Exception as e:
                 pass
         
@@ -233,7 +235,7 @@ class ProcessPlayer(StreamPlayer):
         self.process = process
 
     def stop(self):
-        self.process.kill()
+        self.process.terminate()
         super(ProcessPlayer, self).stop()
 
 class VoiceClient:
@@ -269,6 +271,8 @@ class VoiceClient:
         self.user = user
         self.main_ws = main_ws
         self.vws_thread = None
+        self.disconnect_called = False
+        self.current_player = None
         self.channel = channel
         self.session_id = session_id
         self._connected = None
@@ -281,19 +285,14 @@ class VoiceClient:
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
     def run_ws(self):
-        while True:
+        while not self.disconnect_called==True:
             #if self.ws._connected == True:
             try:
                 self.ws.run()
             except Exception as e:
-                type_, value_, traceback_ = sys.exc_info()
-                ex = traceback.format_exception(type_, value_, traceback_)
-                trace = ""
-                for data in ex:
-                    trace = str(trace+data)
-                print(trace)
                 exit()
             time.sleep(.01)
+        exit()
 
     def checked_add(self, attr, value, limit):
         val = getattr(self, attr)
@@ -315,6 +314,7 @@ class VoiceClient:
         self.ws = VoiceWebSocket('wss://' + self.endpoint, self.endpoint_ip)
         self.ws.max_size = None
         self.ws.connect()
+        self._connected = self.ws._connected
         self.vws_thread = threading.Thread(None,self.run_ws,None,())
         self.vws_thread.start()
 
@@ -345,16 +345,10 @@ class VoiceClient:
         In order to reconnect, you must create another voice client
         using :meth:`Client.join_voice_channel`.
         """
+        self._connected = self.ws._connected
         if not self.ws._connected:
             return
-
-        self.ws.keep_alive.join()
-        self.socket.close()
-        self._connected = False
-        self.ws.close()
-        if self.vws_thread.isAlive==True:
-            self.vws_thread.join()
-
+        
         payload = {
             'op': 4,
             'd': {
@@ -364,8 +358,19 @@ class VoiceClient:
                 'self_deaf': False
             }
         }
-
         self.main_ws.send(utils.to_json(payload))
+        self.disconnect_called = True
+        time.sleep(0.2)
+        def manager_thread(self):
+            if not self.current_player == None:
+                self.current_player.stop()
+            self.ws.keep_alive_join()
+            self.ws.close()
+            self.vws_thread.join()
+        threading.Thread(None,manager_thread,None,(self,)).start()
+
+        self.ws.socket.close()
+        self.ws._connected = False
 
     def is_connected(self):
         """bool : Indicates if the voice client is connected to voice."""
@@ -438,7 +443,7 @@ class VoiceClient:
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
         input_name = '-' if pipe else pipes.quote(filename)
-        cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel warning'
+        cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel quiet'
         cmd = cmd.format(input_name, self.encoder.sampling_rate, self.encoder.channels)
 
         if isinstance(options, str):
@@ -449,8 +454,9 @@ class VoiceClient:
         stdin = None if not pipe else filename
         args = shlex.split(cmd)
         try:
-            p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
-            return ProcessPlayer(p, self, after)
+            p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=None)
+            self.current_player = ProcessPlayer(p, self, after)
+            return(self.current_player)
         except Exception as e:
             raise e
 
