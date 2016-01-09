@@ -97,6 +97,17 @@ class Command:
         self.instance = None
         self.parent = None
 
+    def handle_local_error(self, error, ctx):
+        try:
+            coro = self.on_error
+        except AttributeError:
+            return
+
+        if self.instance is not None:
+            discord.utils.create_task(coro(self.instance, error, ctx), loop=ctx.bot.loop)
+        else:
+            discord.utils.create_task(coro(error, ctx), loop=ctx.bot.loop)
+
     def _receive_item(self, message, argument, regex, receiver, generator):
         match = re.match(regex, argument)
         result = None
@@ -224,6 +235,7 @@ class Command:
                         except StopIteration:
                             break
         except CommandError as e:
+            self.handle_local_error(e, ctx)
             ctx.bot.dispatch('command_error', e, ctx)
             return False
         return True
@@ -239,6 +251,7 @@ class Command:
                 if not check:
                     raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
         except CommandError as exc:
+            self.handle_local_error(exc, ctx)
             ctx.bot.dispatch('command_error', exc, ctx)
             return False
 
@@ -251,6 +264,30 @@ class Command:
 
         if self._parse_arguments(ctx):
             yield from self.callback(*ctx.args, **ctx.kwargs)
+
+    def error(self, coro):
+        """A decorator that registers a coroutine as a local error handler.
+
+        A local error handler is an :func:`on_command_error` event limited to
+        a single command. However, the :func:`on_command_error` is still
+        invoked afterwards as the catch-all.
+
+        Parameters
+        -----------
+        coro
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        discord.ClientException
+            The coroutine is not actually a coroutine.
+        """
+
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The error handler must be a coroutine.')
+
+        self.on_error = coro
+        return coro
 
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
