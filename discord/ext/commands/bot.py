@@ -33,6 +33,11 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound
 
+def when_mentioned(bot, msg):
+    """A callable that implements a command prefix equivalent
+    to being mentioned, e.g. ``@bot ``."""
+    return '{0.user.mention} '.format(bot)
+
 class Bot(GroupMixin, discord.Client):
     """Represents a discord bot.
 
@@ -48,9 +53,10 @@ class Bot(GroupMixin, discord.Client):
     command_prefix
         The command prefix is what the message content must contain initially
         to have a command invoked. This prefix could either be a string to
-        indicate what the prefix should be, or a callable that takes in a
-        :class:`discord.Message` as its first parameter and returns the prefix.
-        This is to facilitate "dynamic" command prefixes.
+        indicate what the prefix should be, or a callable that takes in the bot
+        as its first parameter and :class:`discord.Message` as its second
+        parameter and returns the prefix. This is to facilitate "dynamic"
+        command prefixes.
 
         The command prefix could also be a list or a tuple indicating that
         multiple checks for the prefix should be used and the first one to
@@ -71,7 +77,7 @@ class Bot(GroupMixin, discord.Client):
     def _get_prefix(self, message):
         prefix = self.command_prefix
         if callable(prefix):
-            return prefix(message)
+            return prefix(self, message)
         else:
             return prefix
 

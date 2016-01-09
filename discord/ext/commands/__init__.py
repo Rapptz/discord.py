@@ -10,7 +10,7 @@ An extension module to facilitate creation of bot commands.
 :license: MIT, see LICENSE for more details.
 """
 
-from .bot import Bot
+from .bot import Bot, when_mentioned
 from .context import Context
 from .core import *
 from .errors import *
