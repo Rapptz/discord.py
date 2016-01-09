@@ -391,6 +391,7 @@ class Group(GroupMixin, Command):
         yield from self.callback(*ctx.args, **ctx.kwargs)
 
         if ctx.invoked_subcommand:
+            ctx.invoked_with = trigger
             yield from ctx.invoked_subcommand.invoke(ctx)
 
 # Decorators
