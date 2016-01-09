@@ -8,7 +8,7 @@ discord.py is an API wrapper for Discord written in Python.
 
 This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the [documentation][doc].
 
-[doc]: http://rapptz.github.io/discord.py/
+[doc]: http://discordpy.rtfd.org/en/latest
 
 ### Breaking Changes
 
@@ -20,21 +20,7 @@ I recommend that you follow the discussion in the [unofficial Discord API discor
 
 ## Installing
 
-Installing is pretty easy.
-
-```
-pip install discord.py
-```
-
-Will install the latest 'stable' version of the library.
-
-If you want to install the development version of the library, then do the following:
-
-```
-pip install git+https://github.com/Rapptz/discord.py@develop
-```
-
-Installing the async beta is similar.
+Installing the async beta is easy:
 
 ```
 pip install git+https://github.com/Rapptz/discord.py@async
