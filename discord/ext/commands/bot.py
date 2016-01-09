@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import discord
 import inspect
+import importlib
+import sys
 
 from .core import GroupMixin, Command
 from .view import StringView
@@ -78,6 +80,7 @@ class Bot(GroupMixin, discord.Client):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self.cogs = {}
+        self.extensions = {}
 
     # internal helpers
 
@@ -262,7 +265,6 @@ class Bot(GroupMixin, discord.Client):
             except ValueError:
                 pass
 
-
     def listen(self, name=None):
         """A decorator that registers another function as an external
         event listener. Basically this allows you to listen to multiple
@@ -374,6 +376,55 @@ class Bot(GroupMixin, discord.Client):
             # remove event listeners the cog has
             if name.startswith('on_'):
                 self.remove_listener(member)
+
+    # extensions
+
+    def load_extension(self, name):
+        if name in self.extensions:
+            return
+
+        lib = importlib.import_module(name)
+        try:
+            lib.setup(self)
+        except AttributeError:
+            raise discord.ClientException('extension does not have a setup function')
+
+        self.extensions[name] = lib
+
+    def unload_extension(self, name):
+        lib = self.extensions.get(name)
+        if lib is None:
+            return
+
+        # find all references to the module
+
+        # remove the cogs registered from the module
+        for cogname, cog in self.cogs.copy().items():
+            if cog.__module__ is lib:
+                self.remove_cog(cogname)
+
+        # first remove all the commands from the module
+        for command in self.commands.copy().values():
+            if command.module is lib:
+                command.module = None
+                if isinstance(command, GroupMixin):
+                    command.recursively_remove_all_commands()
+                self.remove_command(command.name)
+
+        # then remove all the listeners from the module
+        for event_list in self.extra_events.copy().values():
+            remove = []
+            for index, event in enumerate(event_list):
+                if inspect.getmodule(event) is lib:
+                    remove.append(index)
+
+            for index in reversed(remove):
+                del event_list[index]
+
+        # finally remove the import..
+        del lib
+        del self.extensions[name]
+        del sys.modules[name]
 
     # command processing
 

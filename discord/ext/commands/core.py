@@ -316,6 +316,12 @@ class GroupMixin:
         self.commands = {}
         super().__init__(**kwargs)
 
+    def recursively_remove_all_commands(self):
+        for command in self.commands.copy().values():
+            if isinstance(command, GroupMixin):
+                command.recursively_remove_all_commands()
+            self.remove_command(command.name)
+
     def add_command(self, command):
         """Adds a :class:`Command` or its superclasses into the internal list
         of commands.
