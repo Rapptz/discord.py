@@ -66,6 +66,9 @@ class Bot(GroupMixin, discord.Client):
     def __init__(self, command_prefix, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
+        self.extra_events = {}
+
+    # internal helpers
 
     def _get_variable(self, name):
         stack = inspect.stack()
@@ -80,6 +83,28 @@ class Bot(GroupMixin, discord.Client):
             return prefix(self, message)
         else:
             return prefix
+
+    @asyncio.coroutine
+    def _run_extra(self, coro, event_name, *args, **kwargs):
+        try:
+            yield from coro(*args, **kwargs)
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            try:
+                yield from self.on_error(event_name, *args, **kwargs)
+            except asyncio.CancelledError:
+                pass
+
+    def dispatch(self, event_name, *args, **kwargs):
+        super().dispatch(event_name, *args, **kwargs)
+        ev = 'on_' + event_name
+        if ev in self.extra_events:
+            for event in self.extra_events[ev]:
+                coro = self._run_extra(event, event_name, *args, **kwargs)
+                discord.utils.create_task(coro, loop=self.loop)
+
+    # utility "send_*" functions
 
     @asyncio.coroutine
     def say(self, content):
@@ -178,6 +203,74 @@ class Bot(GroupMixin, discord.Client):
         """
         destination = self._get_variable('_internal_channel')
         yield from self.send_typing(destination)
+
+    # listener registration
+
+    def add_listener(self, func, name=None):
+        """The non decorator alternative to :meth:`listen`.
+
+        Parameters
+        -----------
+        func : coroutine
+            The extra event to listen to.
+        name : Optional[str]
+            The name of the command to use. Defaults to ``func.__name__``.
+
+        Examples
+        ---------
+
+        .. code-block:: python
+
+            async def on_ready(): pass
+            async def my_message(message): pass
+
+            bot.add_listener(on_ready)
+            bot.add_listener(my_message, 'on_message')
+
+        """
+        name = func.__name__ if name is None else name
+
+        if not asyncio.iscoroutinefunction(func):
+            func = asyncio.coroutine(func)
+
+        if name in self.extra_events:
+            self.extra_events[name].append(func)
+        else:
+            self.extra_events[name] = [func]
+
+    def listen(self, name=None):
+        """A decorator that registers another function as an external
+        event listener. Basically this allows you to listen to multiple
+        events from different places e.g. such as :func:`discord.on_ready`
+
+        If the function being listened to is not a coroutine, it makes it into
+        a coroutine a la :meth:`Client.async_event`.
+
+        Examples
+        ---------
+
+        .. code-block:: python
+
+            @bot.listen
+            async def on_message(message):
+                print('one')
+
+            # in some other file...
+
+            @bot.listen('on_message')
+            async def my_message(message):
+                print('two')
+
+        Would print one and two in an unspecified order.
+        """
+
+        def decorator(func):
+            self.add_listener(func, name)
+            return func
+
+        return decorator
+
+    # command processing
 
     @asyncio.coroutine
     def process_commands(self, message):
