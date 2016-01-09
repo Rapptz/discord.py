@@ -71,6 +71,9 @@ class Command:
         If the command is invoked while it is disabled, then
         :exc:`DisabledCommand` is raised to the :func:`on_command_error`
         event. Defaults to ``True``.
+    parent : Optional[command]
+        The parent command that this command belongs to. ``None`` is there
+        isn't one.
     checks
         A list of predicates that verifies if the command could be executed
         with the given :class:`Context` as the sole parameter. If an exception
@@ -90,6 +93,9 @@ class Command:
         signature = inspect.signature(callback)
         self.params = signature.parameters.copy()
         self.checks = kwargs.get('checks', [])
+        self.module = inspect.getmodule(callback)
+        self.instance = None
+        self.parent = None
 
     def _receive_item(self, message, argument, regex, receiver, generator):
         match = re.match(regex, argument)
@@ -181,14 +187,25 @@ class Command:
 
     def _parse_arguments(self, ctx):
         try:
-            ctx.args = []
+            ctx.args = [] if self.instance is None else [self.instance]
             ctx.kwargs = {}
             args = ctx.args
             kwargs = ctx.kwargs
 
             first = True
             view = ctx.view
-            for name, param in self.params.items():
+            iterator = iter(self.params.items())
+
+            if self.instance is not None:
+                # we have 'self' as the first parameter so just advance
+                # the iterator and resume parsing
+                try:
+                    next(iterator)
+                except StopIteration:
+                    fmt = 'Callback for {0.name} command is missing "self" parameter.'
+                    raise discord.ClientException(fmt.format(self))
+
+            for name, param in iterator:
                 if first and self.pass_context:
                     args.append(ctx)
                     first = False
@@ -271,6 +288,9 @@ class GroupMixin:
 
         if not isinstance(command, Command):
             raise TypeError('The command passed must be a subclass of Command')
+
+        if isinstance(self, Command):
+            command.parent = self
 
         if command.name in self.commands:
             raise discord.ClientException('Command {0.name} is already registered.'.format(command))

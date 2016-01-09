@@ -28,7 +28,7 @@ import asyncio
 import discord
 import inspect
 
-from .core import GroupMixin
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound
@@ -67,6 +67,7 @@ class Bot(GroupMixin, discord.Client):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
+        self.cogs = {}
 
     # internal helpers
 
@@ -231,20 +232,40 @@ class Bot(GroupMixin, discord.Client):
         name = func.__name__ if name is None else name
 
         if not asyncio.iscoroutinefunction(func):
-            func = asyncio.coroutine(func)
+            raise discord.ClientException('Listeners must be coroutines')
 
         if name in self.extra_events:
             self.extra_events[name].append(func)
         else:
             self.extra_events[name] = [func]
 
+    def remove_listener(self, func, name=None):
+        """Removes a listener from the pool of listeners.
+
+        Parameters
+        -----------
+        func
+            The function that was used as a listener to remove.
+        name
+            The name of the event we want to remove. Defaults to
+            ``func.__name__``.
+        """
+
+        name = func.__name__ if name is None else name
+
+        if name in self.extra_events:
+            try:
+                self.extra_events[name].remove(func)
+            except ValueError:
+                pass
+
+
     def listen(self, name=None):
         """A decorator that registers another function as an external
         event listener. Basically this allows you to listen to multiple
         events from different places e.g. such as :func:`discord.on_ready`
 
-        If the function being listened to is not a coroutine, it makes it into
-        a coroutine a la :meth:`Client.async_event`.
+        The functions being listened to must be a coroutine.
 
         Examples
         ---------
@@ -262,6 +283,11 @@ class Bot(GroupMixin, discord.Client):
                 print('two')
 
         Would print one and two in an unspecified order.
+
+        Raises
+        -------
+        discord.ClientException
+            The function being listened to is not a coroutine.
         """
 
         def decorator(func):
@@ -269,6 +295,82 @@ class Bot(GroupMixin, discord.Client):
             return func
 
         return decorator
+
+    # cogs
+
+    def add_cog(self, cog):
+        """Adds a "cog" to the bot.
+
+        A cog is a class that has its own event listeners and commands.
+
+        They are meant as a way to organize multiple relevant commands
+        into a singular class that shares some state or no state at all.
+
+        More information will be documented soon.
+
+        Parameters
+        -----------
+        cog
+            The cog to register to the bot.
+        """
+
+        self.cogs[type(cog).__name__] = cog
+        members = inspect.getmembers(cog)
+        for name, member in members:
+            # register commands the cog has
+            if isinstance(member, Command):
+                member.instance = cog
+                if member.parent is None:
+                    self.add_command(member)
+                continue
+
+            # register event listeners the cog has
+            if name.startswith('on_'):
+                self.add_listener(member)
+
+    def get_cog(self, name):
+        """Gets the cog instance requested.
+
+        If the cog is not found, ``None`` is returned instead.
+
+        Parameters
+        -----------
+        name : str
+            The name of the cog you are requesting.
+        """
+        return self.cogs.get(name)
+
+    def remove_cog(self, name):
+        """Removes a cog the bot.
+
+        All registered commands and event listeners that the
+        cog has registered will be removed as well.
+
+        If no cog is found then ``None`` is returned, otherwise
+        the cog instance that is being removed is returned.
+
+        Parameters
+        -----------
+        name : str
+            The name of the cog to remove.
+        """
+
+        cog = self.cogs.pop(name, None)
+        if cog is None:
+            return cog
+
+        members = inspect.getmembers(cog)
+        for name, member in members:
+            # remove commands the cog has
+            if isinstance(member, Command):
+                member.instance = None
+                if member.parent is None:
+                    self.remove_command(member.name)
+                continue
+
+            # remove event listeners the cog has
+            if name.startswith('on_'):
+                self.remove_listener(member)
 
     # command processing
 
