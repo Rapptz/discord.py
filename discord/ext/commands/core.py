@@ -28,13 +28,24 @@ import asyncio
 import inspect
 import re
 import discord
-from functools import partial
+import functools
 
 from .errors import *
 from .view import quoted_word
 
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check' ]
+
+def inject_context(ctx, coro):
+    @functools.wraps(coro)
+    @asyncio.coroutine
+    def wrapped(*args, **kwargs):
+        _internal_channel = ctx.message.channel
+        _internal_author = ctx.message.author
+
+        ret = yield from coro(*args, **kwargs)
+        return ret
+    return wrapped
 
 def _convert_to_bool(argument):
     lowered = argument.lower()
@@ -103,10 +114,11 @@ class Command:
         except AttributeError:
             return
 
+        injected = inject_context(ctx, coro)
         if self.instance is not None:
-            discord.utils.create_task(coro(self.instance, error, ctx), loop=ctx.bot.loop)
+            discord.utils.create_task(injected(self.instance, error, ctx), loop=ctx.bot.loop)
         else:
-            discord.utils.create_task(coro(error, ctx), loop=ctx.bot.loop)
+            discord.utils.create_task(injected(error, ctx), loop=ctx.bot.loop)
 
     def _receive_item(self, message, argument, regex, receiver, generator):
         match = re.match(regex, argument)
@@ -263,7 +275,8 @@ class Command:
             return
 
         if self._parse_arguments(ctx):
-            yield from self.callback(*ctx.args, **ctx.kwargs)
+            injected = inject_context(ctx, self.callback)
+            yield from injected(*ctx.args, **ctx.kwargs)
 
     def error(self, coro):
         """A decorator that registers a coroutine as a local error handler.
@@ -425,7 +438,8 @@ class Group(GroupMixin, Command):
             if trigger in self.commands:
                 ctx.invoked_subcommand = self.commands[trigger]
 
-        yield from self.callback(*ctx.args, **ctx.kwargs)
+        injected = inject_context(ctx, self.callback)
+        yield from injected(*ctx.args, **ctx.kwargs)
 
         if ctx.invoked_subcommand:
             ctx.invoked_with = trigger
@@ -616,7 +630,7 @@ def has_any_role(*names):
         if ch.is_private:
             return False
 
-        getter = partial(discord.utils.get, msg.author.roles)
+        getter = functools.partial(discord.utils.get, msg.author.roles)
         return any(getter(name=name) is not None for name in names)
     return check(predicate)
 

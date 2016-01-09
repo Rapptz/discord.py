@@ -33,6 +33,16 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound
 
+def _get_variable(name):
+    stack = inspect.stack()
+    try:
+        for frames in stack:
+            current_locals = frames[0].f_locals
+            if name in current_locals:
+                return current_locals[name]
+    finally:
+        del stack
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent
     to being mentioned, e.g. ``@bot ``."""
@@ -70,13 +80,6 @@ class Bot(GroupMixin, discord.Client):
         self.cogs = {}
 
     # internal helpers
-
-    def _get_variable(self, name):
-        stack = inspect.stack()
-        for frames in stack:
-            current_locals = frames[0].f_locals
-            if name in current_locals:
-                return current_locals[name]
 
     def _get_prefix(self, message):
         prefix = self.command_prefix
@@ -122,7 +125,7 @@ class Bot(GroupMixin, discord.Client):
         content : str
             The content to pass to :class:`Client.send_message`
         """
-        destination = self._get_variable('_internal_channel')
+        destination = _get_variable('_internal_channel')
         result = yield from self.send_message(destination, content)
         return result
 
@@ -141,7 +144,7 @@ class Bot(GroupMixin, discord.Client):
         content : str
             The content to pass to :class:`Client.send_message`
         """
-        destination = self._get_variable('_internal_author')
+        destination = _get_variable('_internal_author')
         result = yield from self.send_message(destination, content)
         return result
 
@@ -161,8 +164,8 @@ class Bot(GroupMixin, discord.Client):
         content : str
             The content to pass to :class:`Client.send_message`
         """
-        author = self._get_variable('_internal_author')
-        destination = self._get_variable('_internal_channel')
+        author = _get_variable('_internal_author')
+        destination = _get_variable('_internal_channel')
         fmt = '{0.mention}, {1}'.format(author, str(content))
         result = yield from self.send_message(destination, fmt)
         return result
@@ -184,7 +187,7 @@ class Bot(GroupMixin, discord.Client):
         name
             The second parameter to pass to :meth:`Client.send_file`
         """
-        destination = self._get_variable('_internal_channel')
+        destination = _get_variable('_internal_channel')
         result = yield from self.send_file(destination, fp, name)
         return result
 
@@ -202,7 +205,7 @@ class Bot(GroupMixin, discord.Client):
         ---------
         The :meth:`Client.send_typing` function.
         """
-        destination = self._get_variable('_internal_channel')
+        destination = _get_variable('_internal_channel')
         yield from self.send_typing(destination)
 
     # listener registration
