@@ -35,6 +35,8 @@ extensions = [
     'sphinx.ext.napoleon',
 ]
 
+autodoc_member_order = 'bysource'
+
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
 }

@@ -411,7 +411,184 @@ class Client:
         log.info('sending reconnection frame to websocket {}'.format(payload))
         yield from self.ws.send(utils.to_json(payload))
 
-    # properties
+    # login state management
+
+    @asyncio.coroutine
+    def login(self, email, password):
+        """|coro|
+
+        Logs in the client with the specified credentials.
+
+        Parameters
+        ----------
+        email : str
+            The email used to login.
+        password : str
+            The password used to login.
+
+        Raises
+        ------
+        LoginFailure
+            The wrong credentials are passed.
+        HTTPException
+            An unknown HTTP related error occurred,
+            usually when it isn't 200 or the known incorrect credentials
+            passing status code.
+        """
+
+        # attempt to read the token from cache
+        if self.cache_auth:
+            yield from self._login_via_cache(email, password)
+            if self.is_logged_in:
+                return
+
+        payload = {
+            'email': email,
+            'password': password
+        }
+
+        data = utils.to_json(payload)
+        resp = yield from aiohttp.post(endpoints.LOGIN, data=data, headers=self.headers, loop=self.loop)
+        log.debug(request_logging_format.format(method='POST', response=resp))
+        if resp.status != 200:
+            yield from resp.release()
+            if resp.status == 400:
+                raise LoginFailure('Improper credentials have been passed.')
+            else:
+                raise HTTPException(resp, None)
+
+        log.info('logging in returned status code {}'.format(resp.status))
+        self.email = email
+
+        body = yield from resp.json()
+        self.token = body['token']
+        self.headers['authorization'] = self.token
+        self._is_logged_in.set()
+
+        # since we went through all this trouble
+        # let's make sure we don't have to do it again
+        if self.cache_auth:
+            self._update_cache(email, password)
+
+    @asyncio.coroutine
+    def logout(self):
+        """|coro|
+
+        Logs out of Discord and closes all connections."""
+        response = yield from aiohttp.post(endpoints.LOGOUT, headers=self.headers, loop=self.loop)
+        yield from response.release()
+        yield from self.close()
+        self._is_logged_in.clear()
+        log.debug(request_logging_format.format(method='POST', response=response))
+
+    @asyncio.coroutine
+    def connect(self):
+        """|coro|
+
+        Creates a websocket connection and connects to the websocket listen
+        to messages from discord.
+
+        This function is implemented using a while loop in the background.
+        If you need to run this event listening in another thread then
+        you should run it in an executor or schedule the coroutine to
+        be executed later using ``loop.create_task``.
+
+        Raises
+        -------
+        ClientException
+            If this is called before :meth:`login` was invoked successfully
+            or when an unexpected closure of the websocket occurs.
+        GatewayNotFound
+            If the gateway to connect to discord is not found. Usually if this
+            is thrown then there is a discord API outage.
+        """
+        self.gateway = yield from self._get_gateway()
+        yield from self._make_websocket()
+
+        while not self.is_closed:
+            msg = yield from self.ws.recv()
+            if msg is None:
+                if self.ws.close_code == 1012:
+                    yield from self.redirect_websocket(self.gateway)
+                    continue
+                elif not self._is_ready.is_set():
+                    raise ClientException('Unexpected websocket closure received')
+                else:
+                    yield from self.close()
+                    break
+
+            yield from self.received_message(msg)
+
+    @asyncio.coroutine
+    def close(self):
+        """Closes the websocket connection.
+
+        To reconnect the websocket connection, :meth:`connect` must be used.
+        """
+        if self.is_closed:
+            return
+
+        if self.is_voice_connected():
+            yield from self.voice.disconnect()
+            self.voice = None
+
+        if self.ws.open:
+            yield from self.ws.close()
+
+        self.keep_alive.cancel()
+        self._closed.set()
+        self._is_ready.clear()
+
+    @asyncio.coroutine
+    def start(self, email, password):
+        """|coro|
+
+        A shorthand coroutine for :meth:`login` + :meth:`connect`.
+        """
+        yield from self.login(email, password)
+        yield from self.connect()
+
+    def run(self, email, password):
+        """A blocking call that abstracts away the `event loop`_
+        initialisation from you.
+
+        If you want more control over the event loop then this
+        function should not be used. Use :meth:`start` coroutine
+        or :meth:`connect` + :meth:`login`.
+
+        Roughly Equivalent to: ::
+
+            try:
+                loop.run_until_complete(start(email, password))
+            except KeyboardInterrupt:
+                loop.run_until_complete(logout())
+                # cancel all tasks lingering
+            finally:
+                loop.close()
+
+        Warning
+        --------
+        This function must be the last function to call due to the fact that it
+        is blocking. That means that registration of events or anything being
+        called after this function call will not execute until it returns.
+        """
+
+        try:
+            self.loop.run_until_complete(self.start(email, password))
+        except KeyboardInterrupt:
+            self.loop.run_until_complete(self.logout())
+            pending = asyncio.Task.all_tasks()
+            gathered = asyncio.gather(*pending)
+            try:
+                gathered.cancel()
+                self.loop.run_forever()
+                gathered.exception()
+            except:
+                pass
+        finally:
+            self.loop.close()
+
+        # properties
 
     @property
     def is_logged_in(self):
@@ -604,183 +781,6 @@ class Client:
         except asyncio.TimeoutError:
             message = None
         return message
-
-    # login state management
-
-    @asyncio.coroutine
-    def login(self, email, password):
-        """|coro|
-
-        Logs in the client with the specified credentials.
-
-        Parameters
-        ----------
-        email : str
-            The email used to login.
-        password : str
-            The password used to login.
-
-        Raises
-        ------
-        LoginFailure
-            The wrong credentials are passed.
-        HTTPException
-            An unknown HTTP related error occurred,
-            usually when it isn't 200 or the known incorrect credentials
-            passing status code.
-        """
-
-        # attempt to read the token from cache
-        if self.cache_auth:
-            yield from self._login_via_cache(email, password)
-            if self.is_logged_in:
-                return
-
-        payload = {
-            'email': email,
-            'password': password
-        }
-
-        data = utils.to_json(payload)
-        resp = yield from aiohttp.post(endpoints.LOGIN, data=data, headers=self.headers, loop=self.loop)
-        log.debug(request_logging_format.format(method='POST', response=resp))
-        if resp.status != 200:
-            yield from resp.release()
-            if resp.status == 400:
-                raise LoginFailure('Improper credentials have been passed.')
-            else:
-                raise HTTPException(resp, None)
-
-        log.info('logging in returned status code {}'.format(resp.status))
-        self.email = email
-
-        body = yield from resp.json()
-        self.token = body['token']
-        self.headers['authorization'] = self.token
-        self._is_logged_in.set()
-
-        # since we went through all this trouble
-        # let's make sure we don't have to do it again
-        if self.cache_auth:
-            self._update_cache(email, password)
-
-    @asyncio.coroutine
-    def logout(self):
-        """|coro|
-
-        Logs out of Discord and closes all connections."""
-        response = yield from aiohttp.post(endpoints.LOGOUT, headers=self.headers, loop=self.loop)
-        yield from response.release()
-        yield from self.close()
-        self._is_logged_in.clear()
-        log.debug(request_logging_format.format(method='POST', response=response))
-
-    @asyncio.coroutine
-    def connect(self):
-        """|coro|
-
-        Creates a websocket connection and connects to the websocket listen
-        to messages from discord.
-
-        This function is implemented using a while loop in the background.
-        If you need to run this event listening in another thread then
-        you should run it in an executor or schedule the coroutine to
-        be executed later using ``loop.create_task``.
-
-        Raises
-        -------
-        ClientException
-            If this is called before :meth:`login` was invoked successfully
-            or when an unexpected closure of the websocket occurs.
-        GatewayNotFound
-            If the gateway to connect to discord is not found. Usually if this
-            is thrown then there is a discord API outage.
-        """
-        self.gateway = yield from self._get_gateway()
-        yield from self._make_websocket()
-
-        while not self.is_closed:
-            msg = yield from self.ws.recv()
-            if msg is None:
-                if self.ws.close_code == 1012:
-                    yield from self.redirect_websocket(self.gateway)
-                    continue
-                elif not self._is_ready.is_set():
-                    raise ClientException('Unexpected websocket closure received')
-                else:
-                    yield from self.close()
-                    break
-
-            yield from self.received_message(msg)
-
-    @asyncio.coroutine
-    def close(self):
-        """Closes the websocket connection.
-
-        To reconnect the websocket connection, :meth:`connect` must be used.
-        """
-        if self.is_closed:
-            return
-
-        if self.is_voice_connected():
-            yield from self.voice.disconnect()
-            self.voice = None
-
-        if self.ws.open:
-            yield from self.ws.close()
-
-        self.keep_alive.cancel()
-        self._closed.set()
-        self._is_ready.clear()
-
-    @asyncio.coroutine
-    def start(self, email, password):
-        """|coro|
-
-        A shorthand coroutine for :meth:`login` + :meth:`connect`.
-        """
-        yield from self.login(email, password)
-        yield from self.connect()
-
-    def run(self, email, password):
-        """A blocking call that abstracts away the `event loop`_
-        initialisation from you.
-
-        If you want more control over the event loop then this
-        function should not be used. Use :meth:`start` coroutine
-        or :meth:`connect` + :meth:`login`.
-
-        Roughly Equivalent to: ::
-
-            try:
-                loop.run_until_complete(start(email, password))
-            except KeyboardInterrupt:
-                loop.run_until_complete(logout())
-                # cancel all tasks lingering
-            finally:
-                loop.close()
-
-        Warning
-        --------
-        This function must be the last function to call due to the fact that it
-        is blocking. That means that registration of events or anything being
-        called after this function call will not execute until it returns.
-        """
-
-        try:
-            self.loop.run_until_complete(self.start(email, password))
-        except KeyboardInterrupt:
-            self.loop.run_until_complete(self.logout())
-            pending = asyncio.Task.all_tasks()
-            gathered = asyncio.gather(*pending)
-            try:
-                gathered.cancel()
-                self.loop.run_forever()
-                gathered.exception()
-            except:
-                pass
-        finally:
-            self.loop.close()
 
     # event registration
 
