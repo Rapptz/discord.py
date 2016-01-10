@@ -377,6 +377,8 @@ class Bot(GroupMixin, discord.Client):
             if name.startswith('on_'):
                 self.remove_listener(member)
 
+        del cog
+
     # extensions
 
     def load_extension(self, name):
@@ -400,7 +402,7 @@ class Bot(GroupMixin, discord.Client):
 
         # remove the cogs registered from the module
         for cogname, cog in self.cogs.copy().items():
-            if cog.__module__ is lib:
+            if inspect.getmodule(cog) is lib:
                 self.remove_cog(cogname)
 
         # first remove all the commands from the module
