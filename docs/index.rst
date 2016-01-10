@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    logging
+   whats_new
    migrating
    api
 
