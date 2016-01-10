@@ -422,20 +422,33 @@ class Group(GroupMixin, Command):
 
     This class is a subclass of :class:`Command` and thus all options
     valid in :class:`Command` are valid in here as well.
+
+    Attributes
+    -----------
+    invoke_without_command : bool
+        Indicates if the group callback should begin parsing and
+        invocation only if no subcommand was found. Useful for
+        making it an error handling function to tell the user that
+        no subcommand was found or to have different functionality
+        in case no subcommand was found. If this is ``False``, then
+        the group callback will always be invoked first. This means
+        that the checks and the parsing dictated by its parameters
+        will be executed. Defaults to ``False``.
     """
     def __init__(self, **attrs):
+        self.invoke_without_command = attrs.pop('invoke_without_command', False)
         super().__init__(**attrs)
 
     @asyncio.coroutine
     def invoke(self, ctx):
-        if not self._verify_checks(ctx):
-            return
-
-        if not self._parse_arguments(ctx):
-            return
+        early_invoke = not self.invoke_without_command
+        if early_invoke:
+            valid = self._verify_checks(ctx) and self._parse_arguments(ctx)
+            if not valid:
+                return
 
         view = ctx.view
-
+        previous = view.index
         view.skip_ws()
         trigger = view.get_word()
 
@@ -444,17 +457,28 @@ class Group(GroupMixin, Command):
             if trigger in self.commands:
                 ctx.invoked_subcommand = self.commands[trigger]
 
-        injected = inject_context(ctx, self.callback)
-        yield from injected(*ctx.args, **ctx.kwargs)
+        if early_invoke:
+            injected = inject_context(ctx, self.callback)
+            yield from injected(*ctx.args, **ctx.kwargs)
 
         if ctx.invoked_subcommand:
             ctx.invoked_with = trigger
             yield from ctx.invoked_subcommand.invoke(ctx)
+        elif not early_invoke:
+            # undo the trigger parsing
+            view.index = previous
+            view.previous = previous
+            valid = self._verify_checks(ctx) and self._parse_arguments(ctx)
+            if not valid:
+                return
+            injected = inject_context(ctx, self.callback)
+            yield from injected(*ctx.args, **ctx.kwargs)
 
 # Decorators
 
 def command(name=None, cls=None, **attrs):
-    """A decorator that transforms a function into a :class:`Command`.
+    """A decorator that transforms a function into a :class:`Command`
+    or if called with :func:`group`, :class:`Group`.
 
     By default the ``help`` attribute is received automatically from the
     docstring of the function and is cleaned up with the use of
@@ -474,7 +498,8 @@ def command(name=None, cls=None, **attrs):
         The class to construct with. By default this is :class:`Command`.
         You usually do not change this.
     attrs
-        Keyword arguments to pass into the construction of :class:`Command`.
+        Keyword arguments to pass into the construction of the class denoted
+        by ``cls``.
 
     Raises
     -------
