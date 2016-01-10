@@ -2121,9 +2121,12 @@ class Client:
         """
         new_roles = [x.id for x in member.roles]
         remove = []
-        for index, role in enumerate(roles):
-            if role.id in new_roles:
+        for role in roles:
+            try:
+                index = new_roles.index(role.id)
                 remove.append(index)
+            except ValueError:
+                continue
 
         for index in reversed(remove):
             del new_roles[index]
