@@ -121,6 +121,7 @@ class Command:
             discord.utils.create_task(injected(error, ctx), loop=ctx.bot.loop)
 
     def _receive_item(self, message, argument, regex, receiver, generator):
+        argument = argument.strip()
         match = re.match(regex, argument)
         result = None
         private = message.channel.is_private
@@ -165,15 +166,15 @@ class Command:
             if message.channel.is_private:
                 raise NoPrivateMessage()
 
-            role = discord.utils.get(message.server.roles, name=argument)
+            role = discord.utils.get(message.server.roles, name=argument.strip())
             if role is None:
                 raise BadArgument('Role not found')
             return role
         elif converter is discord.Game:
-            return discord.Game(name=argument)
+            return discord.Game(name=argument.strip())
         elif converter is discord.Invite:
             try:
-                return bot.get_invite(argument)
+                return bot.get_invite(argument.strip())
             except:
                 raise BadArgument('Invite is invalid')
 
