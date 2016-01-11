@@ -375,7 +375,15 @@ class GroupMixin:
             The command that was removed. If the name is not valid then
             `None` is returned instead.
         """
-        return self.commands.pop(name, None)
+        command = self.commands.pop(name, None)
+        if name in command.aliases:
+            # we're removing an alias so we don't want to remove the rest
+            return command
+
+        # we're not removing the alias so let's delete the rest of them.
+        for alias in command.aliases:
+            self.commands.pop(alias, None)
+        return command
 
     def get_command(self, name):
         """Get a :class:`Command` or subclasses from the internal list
