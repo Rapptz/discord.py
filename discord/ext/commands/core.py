@@ -209,6 +209,24 @@ class Command:
         except Exception:
             raise BadArgument('Converting to "{0.__name__}" failed.'.format(converter))
 
+    @property
+    def clean_params(self):
+        """Retrieves the parameter OrderedDict without the context or self parameters.
+
+        Useful for inspecting signature.
+        """
+        result = self.params.copy()
+        if self.instance is not None:
+            # first parameter is self
+            result.popitem(last=False)
+
+        if self.pass_context:
+            # first/second parameter is context
+            result.popitem(last=False)
+
+        return result
+
+
     def _parse_arguments(self, ctx):
         try:
             ctx.args = [] if self.instance is None else [self.instance]
