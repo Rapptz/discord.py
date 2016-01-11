@@ -71,7 +71,8 @@ class Command:
     help : str
         The long help text for the command.
     brief : str
-        The short help text for the command.
+        The short help text for the command. If this is not specified
+        then the first line of the long help text is used instead.
     aliases : list
         The list of aliases the command can be invoked under.
     pass_context : bool
@@ -320,6 +321,11 @@ class Command:
 
         self.on_error = coro
         return coro
+
+    @property
+    def cog_name(self):
+        """The name of the cog this command belongs to. None otherwise."""
+        return type(self.instance).__name__ if self.instance is not None else None
 
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
