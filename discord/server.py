@@ -132,7 +132,7 @@ class Server(Hashable):
         if member is not None:
             ch_id = data.get('channel_id')
             channel = self.get_channel(ch_id)
-            member.update_voice_state(voice_channel=channel, **data)
+            member._update_voice_state(voice_channel=channel, **data)
         return before, member
 
     def _from_data(self, guild):

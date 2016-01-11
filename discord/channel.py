@@ -75,13 +75,13 @@ class Channel(Hashable):
     """
 
     def __init__(self, **kwargs):
-        self.update(**kwargs)
+        self._update(**kwargs)
         self.voice_members = []
 
     def __str__(self):
         return self.name
 
-    def update(self, **kwargs):
+    def _update(self, **kwargs):
         self.name = kwargs.get('name')
         self.server = kwargs.get('server')
         self.id = kwargs.get('id')

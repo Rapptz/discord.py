@@ -173,7 +173,7 @@ class ConnectionState:
             channel = server.get_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                channel.update(server=server, **data)
+                channel._update(server=server, **data)
                 self.dispatch('channel_update', old_channel, channel)
 
     def parse_channel_create(self, data):
@@ -322,7 +322,7 @@ class ConnectionState:
             role = utils.find(lambda r: r.id == role_id, server.roles)
             if role is not None:
                 old_role = copy.copy(role)
-                role.update(**data['role'])
+                role._update(**data['role'])
                 self.dispatch('server_role_update', old_role, role)
 
     def parse_voice_state_update(self, data):

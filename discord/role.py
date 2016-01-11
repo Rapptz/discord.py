@@ -69,12 +69,12 @@ class Role(Hashable):
 
     def __init__(self, **kwargs):
         self._is_everyone = kwargs.get('everyone', False)
-        self.update(**kwargs)
+        self._update(**kwargs)
 
     def __str__(self):
         return self.name
 
-    def update(self, **kwargs):
+    def _update(self, **kwargs):
         self.id = kwargs.get('id')
         self.name = kwargs.get('name')
         self.permissions = Permissions(kwargs.get('permissions', 0))

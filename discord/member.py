@@ -79,9 +79,9 @@ class Member(User):
         game = kwargs.get('game')
         self.game = game and Game(**game)
         self.server = kwargs.get('server', None)
-        self.update_voice_state(mute=mute, deaf=deaf)
+        self._update_voice_state(mute=mute, deaf=deaf)
 
-    def update_voice_state(self, **kwargs):
+    def _update_voice_state(self, **kwargs):
         self.self_mute = kwargs.get('self_mute', False)
         self.self_deaf = kwargs.get('self_deaf', False)
         self.is_afk = kwargs.get('suppress', False)
