@@ -93,7 +93,7 @@ class VoiceWebSocket(WebSocketBaseClient):
         
         def keep_alive_handler(self,delay):
             try:
-                while self._connected==True:
+                while True:
                     payload = {
                         'op': 3,
                         'd': int(time.time())
@@ -103,9 +103,9 @@ class VoiceWebSocket(WebSocketBaseClient):
                     log.debug(msg.format(payload['d']))
                     self.send(utils.to_json(payload))
                     time.sleep(delay)
+                exit()
             except Exception as e:
                 pass
-            exit()
         
         def initial_connection(self,data):
             self.ssrc = data.get('ssrc')
@@ -213,6 +213,9 @@ class StreamPlayer(threading.Thread):
                 self.after()
             except:
                 pass
+    
+    def _force_stop(self):
+        self._end = True
 
     def pause(self):
         self._paused = True
@@ -290,7 +293,7 @@ class VoiceClient:
             try:
                 self.ws.run()
             except Exception as e:
-                exit()
+                pass
             time.sleep(.01)
         exit()
 
@@ -360,10 +363,9 @@ class VoiceClient:
         }
         self.main_ws.send(utils.to_json(payload))
         self.disconnect_called = True
-        time.sleep(0.2)
         def manager_thread(self):
             if not self.current_player == None:
-                self.current_player.stop()
+                self.current_player._force_stop()
             self.ws.keep_alive_join()
             self.ws.close()
             self.vws_thread.join()
