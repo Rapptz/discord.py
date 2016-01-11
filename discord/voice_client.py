@@ -238,7 +238,7 @@ class ProcessPlayer(StreamPlayer):
         self.process = process
 
     def stop(self):
-        self.process.terminate()
+        self.process.kill()
         super(ProcessPlayer, self).stop()
 
 class VoiceClient:
@@ -370,7 +370,7 @@ class VoiceClient:
             self.ws.close()
             self.vws_thread.join()
         threading.Thread(None,manager_thread,None,(self,)).start()
-
+        time.sleep(.5)
         self.ws.socket.close()
         self.ws._connected = False
 
