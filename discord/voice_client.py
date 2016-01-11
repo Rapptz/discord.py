@@ -103,9 +103,9 @@ class VoiceWebSocket(WebSocketBaseClient):
                     log.debug(msg.format(payload['d']))
                     self.send(utils.to_json(payload))
                     time.sleep(delay)
-                exit()
             except Exception as e:
                 pass
+            exit()
         
         def initial_connection(self,data):
             self.ssrc = data.get('ssrc')
