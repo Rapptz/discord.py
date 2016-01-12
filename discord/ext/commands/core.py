@@ -186,19 +186,22 @@ class Command:
             except:
                 raise BadArgument('Invite is invalid')
 
-    def transform(self, ctx, param):
-        required = param.default is param.empty
+    def _get_converter(self, param):
         converter = param.annotation
-        view = ctx.view
-
         if converter is param.empty:
-            if not required:
+            if param.default is not param.empty:
                 converter = str if param.default is None else type(param.default)
             else:
                 converter = str
         elif not inspect.isclass(type(converter)):
             raise discord.ClientException('Function annotation must be a type')
 
+        return converter
+
+    def transform(self, ctx, param):
+        required = param.default is param.empty
+        converter = self._get_converter(param)
+        view = ctx.view
         view.skip_ws()
 
         if view.eof:
@@ -265,7 +268,9 @@ class Command:
                     args.append(self.transform(ctx, param))
                 elif param.kind == param.KEYWORD_ONLY:
                     # kwarg only param denotes "consume rest" semantics
-                    kwargs[name] = view.read_rest()
+                    converter = self._get_converter(param)
+                    argument = view.read_rest()
+                    kwargs[name] = self.do_conversion(ctx.bot, ctx.message, converter, argument)
                     break
                 elif param.kind == param.VAR_POSITIONAL:
                     while not view.eof:
