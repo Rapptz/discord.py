@@ -147,8 +147,8 @@ class ConnectionState:
                 except:
                     pass
 
-                game = data.get('game')
-                member.game = game and Game(**game)
+                game = data.get('game', {})
+                member.game = Game(**game) if game else None
                 member.name = user.get('username', member.name)
                 member.avatar = user.get('avatar', member.avatar)
 

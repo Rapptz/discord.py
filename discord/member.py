@@ -76,8 +76,8 @@ class Member(User):
         self.joined_at = parse_time(joined_at)
         self.roles = roles
         self.status = Status.offline
-        game = kwargs.get('game')
-        self.game = game and Game(**game)
+        game = kwargs.get('game', {})
+        self.game = Game(**game) if game else None
         self.server = kwargs.get('server', None)
         self._update_voice_state(mute=mute, deaf=deaf)
 

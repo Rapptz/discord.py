@@ -176,8 +176,8 @@ class Server(Hashable):
                     member.status = Status(member.status)
                 except:
                     pass
-                game = presence.get('game')
-                member.game = game and Game(**game)
+                game = presence.get('game', {})
+                member.game = Game(**game) if game else None
 
         if 'channels' in guild:
             channels = guild['channels']
