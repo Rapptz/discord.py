@@ -69,17 +69,17 @@ class Member(User):
                   'voice_channel', 'roles', 'joined_at', 'status', 'game',
                   'server' ]
 
-    def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
-        super().__init__(**user)
-        self.deaf = deaf
-        self.mute = mute
-        self.joined_at = parse_time(joined_at)
-        self.roles = roles
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs.get('user'))
+        self.deaf = kwargs.get('deaf')
+        self.mute = kwargs.get('mute')
+        self.joined_at = parse_time(kwargs.get('joined_at'))
+        self.roles = kwargs.get('roles')
         self.status = Status.offline
         game = kwargs.get('game', {})
         self.game = Game(**game) if game else None
         self.server = kwargs.get('server', None)
-        self._update_voice_state(mute=mute, deaf=deaf)
+        self._update_voice_state(mute=self.mute, deaf=self.deaf)
 
     def _update_voice_state(self, **kwargs):
         self.self_mute = kwargs.get('self_mute', False)
