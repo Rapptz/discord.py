@@ -29,7 +29,6 @@ import discord
 import inspect
 import importlib
 import sys
-import functools
 
 from .core import GroupMixin, Command, command
 from .view import StringView
@@ -58,6 +57,7 @@ def _default_help_command(ctx, *commands : str):
     """Shows this message."""
     bot = ctx.bot
     destination = ctx.message.channel if not bot.pm_help else ctx.message.author
+
     # help by itself just lists our own commands.
     if len(commands) == 0:
         pages = bot.formatter.format_help_for(ctx, bot)
@@ -75,11 +75,21 @@ def _default_help_command(ctx, *commands : str):
 
         pages = bot.formatter.format_help_for(ctx, command)
     else:
-        try:
-            command = functools.reduce(dict.__getitem__, commands, bot.commands)
-        except KeyError as e:
-            yield from bot.send_message(destination, 'No command called "{}" found.'.format(e))
+        name = commands[0]
+        command = bot.commands.get(name)
+        if command is None:
+            yield from bot.send_message(destination, 'No command called "{}" found.'.format(name))
             return
+
+        for key in commands[1:]:
+            try:
+                command = command.commands.get(key)
+                if command is None:
+                    yield from bot.send_message(destination, 'No command called "{}" found.'.format(key))
+                    return
+            except AttributeError:
+                yield from bot.send_message(destination, 'Command "{0.name}" has no subcommands.'.format(command))
+                return
 
         pages = bot.formatter.format_help_for(ctx, command)
 
