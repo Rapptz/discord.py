@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import textwrap
 import itertools
+import inspect
 
 from .core import GroupMixin, Command
 
@@ -84,6 +85,10 @@ class HelpFormatter:
         """bool : Specifies if the command being formatted is the bot itself."""
         return self.command is self.context.bot
 
+    def is_cog(self):
+        """bool : Specifies if the command being formatted is actually a cog."""
+        return not self.is_bot() and not isinstance(self.command, Command)
+
     def shorten(self, text):
         """Shortens text to fit into the :attr:`width`."""
         tmp = self.wrapper.max_lines
@@ -98,7 +103,8 @@ class HelpFormatter:
         """int : Returns the largest name length of a command or if it has subcommands
         the largest subcommand name."""
         try:
-            return max(map(lambda c: len(c.name), self.command.commands.values()))
+            commands = self.command.commands if not self.is_cog() else self.context.bot.commands
+            return max(map(lambda c: len(c.name), commands.values()))
         except AttributeError:
             return len(self.command.name)
 
@@ -143,7 +149,8 @@ class HelpFormatter:
 
     def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
-        provided, :attr:`show_check_faiure` and :attr:`show_hidden`.
+        provided, :attr:`show_check_faiure` and :attr:`show_hidden`. Also
+        filters based on if :meth:`is_cog` is valid.
 
         Returns
         --------
@@ -153,6 +160,11 @@ class HelpFormatter:
         """
         def predicate(tuple):
             cmd = tuple[1]
+            if self.is_cog():
+                # filter commands that don't exist to this cog.
+                if cmd.instance is not self.command:
+                    return False
+
             if cmd.hidden and not self.show_hidden:
                 return False
 
@@ -160,9 +172,11 @@ class HelpFormatter:
                 # we don't wanna bother doing the checks if the user does not
                 # care about them, so just return true.
                 return True
+
             return cmd.can_run(self.context)
 
-        return filter(predicate, self.command.commands.items())
+        iterator = self.command.commands.items() if not self.is_cog() else self.context.bot.commands.items()
+        return filter(predicate, iterator)
 
     def _check_new_page(self):
         # be a little on the safe side
@@ -222,13 +236,15 @@ class HelpFormatter:
 
         # we need a padding of ~80 or so
 
-        if self.command.description:
-            # <description> portion
-            self._current_page.append(self.command.description)
-            self._current_page.append('')
-            self._count += len(self.command.description)
+        description = self.command.description if not self.is_cog() else inspect.getdoc(self.command)
 
-        if not self.is_bot():
+        if description:
+            # <description> portion
+            self._current_page.append(description)
+            self._current_page.append('')
+            self._count += len(description)
+
+        if isinstance(self.command, Command):
             # <signature portion>
             signature = self.get_command_signature()
             self._count += 2 + len(signature) # '\n' sig '\n'
@@ -242,10 +258,12 @@ class HelpFormatter:
                 self._current_page.append('')
                 self._check_new_page()
 
-        if not self.has_subcommands():
-            self._current_page.append('```')
-            self._pages.append('\n'.join(self._current_page))
-            return self._pages
+            # end it here if it's just a regular command
+            if not self.has_subcommands():
+                self._current_page.append('```')
+                self._pages.append('\n'.join(self._current_page))
+                return self._pages
+
 
         max_width = self.max_name_size
 

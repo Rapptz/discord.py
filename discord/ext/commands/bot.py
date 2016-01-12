@@ -61,11 +61,24 @@ def _default_help_command(ctx, *commands : str):
     # help by itself just lists our own commands.
     if len(commands) == 0:
         pages = bot.formatter.format_help_for(ctx, bot)
+    elif len(commands) == 1:
+        # try to see if it is a cog name
+        name = commands[0]
+        command = None
+        if name in bot.cogs:
+            command = bot.cogs[name]
+        else:
+            command = bot.commands.get(name)
+            if command is None:
+                yield from bot.send_message(destination, 'No command called "{}" found.'.format(name))
+                return
+
+        pages = bot.formatter.format_help_for(ctx, command)
     else:
         try:
             command = functools.reduce(dict.__getitem__, commands, bot.commands)
         except KeyError as e:
-            yield from bot.send_message(destination, 'No command called {} found.'.format(e))
+            yield from bot.send_message(destination, 'No command called "{}" found.'.format(e))
             return
 
         pages = bot.formatter.format_help_for(ctx, command)
