@@ -14,3 +14,4 @@ from .bot import Bot, when_mentioned
 from .context import Context
 from .core import *
 from .errors import *
+from .formatter import HelpFormatter

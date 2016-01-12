@@ -29,11 +29,13 @@ import discord
 import inspect
 import importlib
 import sys
+import functools
 
-from .core import GroupMixin, Command
+from .core import GroupMixin, Command, command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound
+from .formatter import HelpFormatter
 
 def _get_variable(name):
     stack = inspect.stack()
@@ -49,6 +51,28 @@ def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent
     to being mentioned, e.g. ``@bot ``."""
     return '{0.user.mention} '.format(bot)
+
+@command(pass_context=True, name='help')
+@asyncio.coroutine
+def _default_help_command(ctx, *commands : str):
+    """Shows this message."""
+    bot = ctx.bot
+    destination = ctx.message.channel if not bot.pm_help else ctx.message.author
+    # help by itself just lists our own commands.
+    if len(commands) == 0:
+        pages = bot.formatter.format_help_for(ctx, bot)
+    else:
+        try:
+            command = functools.reduce(dict.__getitem__, commands, bot.commands)
+        except KeyError as e:
+            yield from bot.send_message(destination, 'No command called {} found.'.format(e))
+            return
+
+        pages = bot.formatter.format_help_for(ctx, command)
+
+    for page in pages:
+        yield from bot.send_message(destination, page)
+
 
 class Bot(GroupMixin, discord.Client):
     """Represents a discord bot.
@@ -74,13 +98,34 @@ class Bot(GroupMixin, discord.Client):
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
         :attr:`Context.prefix`.
+    description : str
+        The content prefixed into the default help message.
+    formatter : :class:`HelpFormatter`
+        The formatter used to format the help message. By default, it uses a
+        the :class:`HelpFormatter`. Check it for more info on how to override it.
+        If you want to change the help command completely (add aliases, etc) then
+        a call to :meth:`remove_command` with 'help' as the argument would do the
+        trick.
+    pm_help : bool
+        A boolean that indicates if the help command should PM the user instead of
+        sending it to the channel it received it from. Defaults to ``False``.
     """
-    def __init__(self, command_prefix, **options):
+    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
         self.cogs = {}
         self.extensions = {}
+        self.description = description
+        self.pm_help = pm_help
+        if formatter is not None:
+            if not isinstance(formatter, HelpFormatter):
+                raise discord.ClientException('Formatter must be a subclass of HelpFormatter')
+            self.formatter = formatter
+        else:
+            self.formatter = HelpFormatter()
+
+        self.add_command(_default_help_command)
 
     # internal helpers
 

@@ -93,6 +93,11 @@ class Command:
         :exc:`CommandError` should be used. Note that if the checks fail then
         :exc:`CheckFailure` exception is raised to the :func:`on_command_error`
         event.
+    description : str
+        The message prefixed into the default help command.
+    hidden : bool
+        If ``True``, the default help command does not show this in the
+        help output.
     """
     def __init__(self, name, callback, **kwargs):
         self.name = name
@@ -102,6 +107,8 @@ class Command:
         self.brief = kwargs.get('brief')
         self.aliases = kwargs.get('aliases', [])
         self.pass_context = kwargs.get('pass_context', False)
+        self.description = kwargs.get('description')
+        self.hidden = kwargs.get('hidden', False)
         signature = inspect.signature(callback)
         self.params = signature.parameters.copy()
         self.checks = kwargs.get('checks', [])
@@ -276,12 +283,8 @@ class Command:
         try:
             if not self.enabled:
                 raise DisabledCommand('{0.name} command is disabled'.format(self))
-
-            predicates = self.checks
-            if predicates:
-                check = all(predicate(ctx) for predicate in predicates)
-                if not check:
-                    raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
+            if not self.can_run(ctx):
+                raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
         except CommandError as exc:
             self.handle_local_error(exc, ctx)
             ctx.bot.dispatch('command_error', exc, ctx)
@@ -326,6 +329,41 @@ class Command:
     def cog_name(self):
         """The name of the cog this command belongs to. None otherwise."""
         return type(self.instance).__name__ if self.instance is not None else None
+
+    @property
+    def short_doc(self):
+        """Gets the "short" documentation of a command.
+
+        By default, this is the :attr:`brief` attribute.
+        If that lookup leads to an empty string then the first line of the
+        :attr:`help` attribute is used instead.
+        """
+        if self.brief:
+            return self.brief
+        if self.help:
+            return self.help.split('\n', 1)[0]
+        return ''
+
+    def can_run(self, context):
+        """Checks if the command can be executed by checking all the predicates
+        inside the :attr:`checks` attribute.
+
+        Parameters
+        -----------
+        context : :class:`Context`
+            The context of the command currently being invoked.
+
+        Returns
+        --------
+        bool
+            A boolean indicating if the command can be invoked.
+        """
+
+        predicates = self.checks
+        if not predicates:
+            # since we have no checks, then we just return True.
+            return True
+        return all(predicate(context) for predicate in predicates)
 
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
