@@ -264,7 +264,7 @@ class ConnectionState(object):
 
     def handle_guild_member_add(self, data):
         server = self._get_server(data.get('guild_id'))
-        member = Member(server=server, deaf=False, mute=False, **data)
+        member = Member(server=server, **data)
         server.members.append(member)
         self.dispatch('member_join', member)
 

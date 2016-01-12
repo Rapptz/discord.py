@@ -74,17 +74,17 @@ class Member(User):
         The :class:`Server` that the member belongs to.
     """
 
-    def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
-        super(Member, self).__init__(**user)
-        self.deaf = deaf
-        self.mute = mute
-        self.joined_at = parse_time(joined_at)
-        self.roles = roles
+    def __init__(self, **kwargs):
+        super(Member, self).__init__(**kwargs.get('user'))
+        self.deaf = kwargs.get('deaf')
+        self.mute = kwargs.get('mute')
+        self.joined_at = parse_time(kwargs.get('joined_at'))
+        self.roles = kwargs.get('roles')
         self.status = 'offline'
         game = kwargs.get('game', None)
         self.game = game and Game(**game)
         self.server = kwargs.get('server', None)
-        self.update_voice_state(mute=mute, deaf=deaf)
+        self.update_voice_state(mute=self.mute, deaf=self.deaf)
 
     def update_voice_state(self, **kwargs):
         self.self_mute = kwargs.get('self_mute', False)
