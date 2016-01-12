@@ -34,6 +34,16 @@ from .object import Object
 from . import utils
 
 import logging
+import warnings
+
+
+warnings.warn(
+"""
+The next version of discord.py(v0.10.0) will have major breaking changes
+that will require updating/changing your code.
+http://discordpy.readthedocs.org/en/latest/migrating.html
+It is stongly recommended to make the switch as soon as possible.
+""", Warning)
 
 try:
     from logging import NullHandler
