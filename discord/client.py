@@ -41,6 +41,7 @@ from .permissions import Permissions
 from . import utils
 from .enums import ChannelType, ServerRegion
 from .voice_client import VoiceClient
+from .iterators import LogsFromIterator
 
 import asyncio
 import aiohttp
@@ -53,6 +54,7 @@ import itertools
 import zlib
 from random import randint as random_integer
 
+PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
 request_success_log = '{response.url} with {json} received {data}'
@@ -1115,24 +1117,6 @@ class Client:
 
     @asyncio.coroutine
     def _logs_from(self, channel, limit=100, before=None, after=None):
-        url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
-        params = {
-            'limit': limit
-        }
-
-        if before:
-            params['before'] = before.id
-        if after:
-            params['after'] = after.id
-
-        response = yield from aiohttp.get(url, params=params, headers=self.headers, loop=self.loop)
-        log.debug(request_logging_format.format(method='GET', response=response))
-        yield from utils._verify_successful_response(response)
-        messages = yield from response.json()
-        return messages
-
-    @asyncio.coroutine
-    def logs_from(self, channel, limit=100, *, before=None, after=None):
         """|coro|
 
         This coroutine returns a generator that obtains logs from a specified channel.
@@ -1172,24 +1156,54 @@ class Client:
                 if message.content.startswith('!hello'):
                     if message.author == client.user:
                         yield from client.edit_message(message, 'goodbye')
+
+        Python 3.5 Usage ::
+
+            counter = 0
+            async for message in client.logs_from(channel, limit=500):
+                if message.author == client.user:
+                    counter += 1
         """
+        url = '{}/{}/messages'.format(endpoints.CHANNELS, channel.id)
+        params = {
+            'limit': limit
+        }
 
-        def generator(data):
-            for message in data:
-                yield Message(channel=channel, **message)
+        if before:
+            params['before'] = before.id
+        if after:
+            params['after'] = after.id
 
-        result = []
-        while limit > 0:
-            retrieve = limit if limit <= 100 else 100
-            data = yield from self._logs_from(channel, retrieve, before, after)
-            if len(data):
-                limit -= retrieve
-                result.extend(data)
-                before = Object(id=data[-1]['id'])
-            else:
-                break
+        response = yield from aiohttp.get(url, params=params, headers=self.headers, loop=self.loop)
+        log.debug(request_logging_format.format(method='GET', response=response))
+        yield from utils._verify_successful_response(response)
+        messages = yield from response.json()
+        return messages
 
-        return generator(result)
+    if PY35:
+        def logs_from(self, channel, limit=100, *, before=None, after=None):
+            return LogsFromIterator(self, channel, limit, before, after)
+    else:
+        @asyncio.coroutine
+        def logs_from(self, channel, limit=100, *, before=None, after=None):
+            def generator(data):
+                for message in data:
+                    yield Message(channel=channel, **message)
+
+            result = []
+            while limit > 0:
+                retrieve = limit if limit <= 100 else 100
+                data = yield from self._logs_from(channel, retrieve, before, after)
+                if len(data):
+                    limit -= retrieve
+                    result.extend(data)
+                    before = Object(id=data[-1]['id'])
+                else:
+                    break
+
+            return generator(result)
+
+    logs_from.__doc__ = _logs_from.__doc__
 
     # Member management
 
