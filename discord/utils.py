@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from re import split as re_split
 from .errors import HTTPException, InvalidArgument
 import datetime
+import json
 
 
 def parse_time(timestamp):
@@ -73,3 +74,6 @@ def _get_mime_type_for_image(data):
         return 'image/jpeg'
     else:
         raise InvalidArgument('Unsupported image type given')
+
+def to_json(obj):
+    return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
