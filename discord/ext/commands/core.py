@@ -107,7 +107,7 @@ class Command:
         self.brief = kwargs.get('brief')
         self.aliases = kwargs.get('aliases', [])
         self.pass_context = kwargs.get('pass_context', False)
-        self.description = kwargs.get('description')
+        self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
         signature = inspect.signature(callback)
         self.params = signature.parameters.copy()

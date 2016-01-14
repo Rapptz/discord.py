@@ -139,7 +139,7 @@ class Bot(GroupMixin, discord.Client):
         self.extra_events = {}
         self.cogs = {}
         self.extensions = {}
-        self.description = description
+        self.description = inspect.cleandoc(description)
         self.pm_help = pm_help
         if formatter is not None:
             if not isinstance(formatter, HelpFormatter):
