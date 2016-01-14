@@ -1877,8 +1877,7 @@ class Client:
     def invites_from(self, server):
         """|coro|
 
-        Returns a generator that yields all active instant invites from
-        a :class:`Server`.
+        Returns a list of all active instant invites from a :class:`Server`.
 
         You must have proper permissions to get this information.
 
@@ -1894,25 +1893,25 @@ class Client:
         HTTPException
             An error occurred while fetching the information.
 
-        Yields
+        Returns
         -------
-        :class:`Invite`
-            The invite with the message data parsed.
+        list of :class:`Invite`
+            The list of invites that are currently active.
         """
-
-        def generator(data):
-            for invite in data:
-                channel = server.get_channel(invite['channel']['id'])
-                invite['channel'] = channel
-                invite['server'] = server
-                yield Invite(**invite)
 
         url = '{0}/{1.id}/invites'.format(endpoints.SERVERS, server)
         resp = yield from aiohttp.get(url, headers=self.headers, loop=self.loop)
         log.debug(request_logging_format.format(method='GET', response=resp))
         yield from utils._verify_successful_response(resp)
         data = yield from resp.json()
-        return generator(data)
+        result = []
+        for invite in data:
+            channel = server.get_channel(invite['channel']['id'])
+            invite['channel'] = channel
+            invite['server'] = server
+            result.append(Invite(**invite))
+
+        return result
 
     @asyncio.coroutine
     def accept_invite(self, invite):
