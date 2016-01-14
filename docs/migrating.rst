@@ -250,7 +250,7 @@ Functions have been renamed.
 | ``Client.set_channel_permissions`` | :meth:`Client.edit_channel_permissions`   |
 +------------------------------------+-------------------------------------------+
 
-All the :class:`Permission` related attributes have been renamed and the `can_` prefix has been
+All the :class:`Permissions` related attributes have been renamed and the `can_` prefix has been
 dropped. So for example, ``can_manage_messages`` has become ``manage_messages``.
 
 .. _migrating-kwargs:

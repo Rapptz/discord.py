@@ -39,15 +39,15 @@ class Permissions:
     | hash(x)   | Return the permission's hash.            |
     +-----------+------------------------------------------+
 
+    The properties provided are two way. You can set and retrieve individual bits using the properties as if they
+    were regular bools. This allows you to edit permissions.
+
     Attributes
     -----------
     value
         The raw value. This value is a bit array field of a 32-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
-
-    The properties provided are two way. You can set and retrieve individual bits using the properties as if they
-    were regular bools. This allows you to edit permissions.
     """
 
     __slots__ = [ 'value' ]
@@ -65,19 +65,19 @@ class Permissions:
 
     @classmethod
     def none(cls):
-        """A factory method that creates a :class:`Permission` with all
+        """A factory method that creates a :class:`Permissions` with all
         permissions set to False."""
         return cls(0)
 
     @classmethod
     def all(cls):
-        """A factory method that creates a :class:`Permission` with all
+        """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
         return cls(0b00000011111100111111110000111111)
 
     @classmethod
     def all_channel(cls):
-        """A :class:`Permission` with all channel-specific permissions set to
+        """A :class:`Permissions` with all channel-specific permissions set to
         True and the server-specific ones set to False. The server-specific
         permissions are currently:
 
@@ -89,19 +89,19 @@ class Permissions:
 
     @classmethod
     def general(cls):
-        """A factory method that creates a :class:`Permission` with all
+        """A factory method that creates a :class:`Permissions` with all
         "General" permissions set to True."""
         return cls(0b00000000000000000000000000111111)
 
     @classmethod
     def text(cls):
-        """A factory method that creates a :class:`Permission` with all
+        """A factory method that creates a :class:`Permissions` with all
         "Text" permissions set to True."""
         return cls(0b00000000000000111111110000000000)
 
     @classmethod
     def voice(cls):
-        """A factory method that creates a :class:`Permission` with all
+        """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions set to True."""
         return cls(0b00000011111100000000000000000000)
 

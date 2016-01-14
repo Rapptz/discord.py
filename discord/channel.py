@@ -255,7 +255,7 @@ class PrivateChannel(Hashable):
 
         Returns
         --------
-        :class:`Permission`
+        :class:`Permissions`
             The resolved permissions for the user.
         """
 
