@@ -183,8 +183,8 @@ class Command:
         elif converter is discord.Invite:
             try:
                 return bot.get_invite(argument.strip())
-            except:
-                raise BadArgument('Invite is invalid')
+            except Exception as e:
+                raise BadArgument('Invite is invalid') from e
 
     def _get_converter(self, param):
         converter = param.annotation
@@ -217,8 +217,8 @@ class Command:
             return self.do_conversion(ctx.bot, ctx.message, converter, argument)
         except CommandError as e:
             raise e
-        except Exception:
-            raise BadArgument('Converting to "{0.__name__}" failed.'.format(converter))
+        except Exception as e:
+            raise BadArgument('Converting to "{0.__name__}" failed.'.format(converter)) from e
 
     @property
     def clean_params(self):

@@ -400,7 +400,7 @@ class VoiceClient:
             p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
             return ProcessPlayer(p, self, after)
         except subprocess.SubprocessError as e:
-            raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e)))
+            raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e))) from e
 
 
     def create_ytdl_player(self, url, *, options=None, use_avconv=False, after=None):

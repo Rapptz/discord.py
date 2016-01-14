@@ -456,8 +456,8 @@ class Bot(GroupMixin, discord.Client):
         lib = importlib.import_module(name)
         try:
             lib.setup(self)
-        except AttributeError:
-            raise discord.ClientException('extension does not have a setup function')
+        except AttributeError as e:
+            raise discord.ClientException('extension does not have a setup function') from e
 
         self.extensions[name] = lib
 
