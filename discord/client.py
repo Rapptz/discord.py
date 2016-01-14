@@ -103,9 +103,14 @@ class WebSocket(WebSocketBaseClient):
         self.dispatch('socket_raw_receive', msg)
         if msg.is_binary:
             msg = zlib.decompress(msg.data, 15, 10490000)
-            msg = msg.decode('utf-8')
+            if sys.version_info[0] == 2:
+                msg = str(msg).decode('utf-8')
+            else:
+                msg = msg.decode('utf-8')
+            response = json.loads(msg)
+        else:
+            response = json.loads(str(msg))
 
-        response = json.loads(str(msg))
         log.debug('WebSocket Event: {}'.format(response))
         self.dispatch('socket_response', response)
 
