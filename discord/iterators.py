@@ -39,7 +39,7 @@ class LogsFromIterator:
         self.limit = limit
         self.before = before
         self.after = after
-        self.messages = asyncio.LifoQueue()
+        self.messages = asyncio.Queue()
 
     @asyncio.coroutine
     def fill_messages(self):
