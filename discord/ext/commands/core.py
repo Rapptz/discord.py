@@ -782,8 +782,44 @@ def has_permissions(**perms):
     def predicate(ctx):
         msg = ctx.message
         ch = msg.channel
-        me = msg.server.me if not ch.is_private else ctx.bot.user
-        permissions = ch.permissions_for(me)
+        permissions = ch.permissions_for(msg.author)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
 
+    return check(predicate)
+
+def bot_has_role(name):
+     """Similar to :func:`has_role` except checks if the bot itself has the
+     role.
+    """
+    def predicate(ctx):
+        ch = ctx.message.channel
+        if ch.is_private:
+            return False
+        me = ch.server.me
+        role = discord.utils.get(me.roles, name=name)
+        return role is not None
+    return check(predicate)
+
+def bot_has_any_role(*names):
+    """Similar to :func:`has_any_role` except checks if the bot itself has
+    any of the roles listed.
+    """
+    def predicate(ctx):
+        ch = ctx.message.channel
+        if ch.is_private:
+            return False
+        me = ch.server.me
+        getter = functools.partial(discord.utils.get, me.roles)
+        return any(getter(name=name) is not None for name in names)
+    return check(predicate)
+
+def bot_has_permissions(**perms):
+    """Similar to :func:`has_permissions` except checks if the bot itself has
+    the permissions listed.
+    """
+    def predicate(ctx):
+        ch = ctx.message.channel
+        me = msg.server.me if not ch.is_private else ctx.bot.user
+        permissions = ch.permissions_for(msg.author)
+        return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
