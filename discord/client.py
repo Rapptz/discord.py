@@ -2351,7 +2351,7 @@ class Client:
             You do not have permissions to move the member.
         """
 
-        url = '{0}/{1.server.id}/members/{2.id}'.format(endpoints.SERVERS, member)
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
 
         if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
             raise InvalidArgument('The channel provided must be a voice channel.')
