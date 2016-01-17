@@ -399,6 +399,8 @@ class VoiceClient:
         try:
             p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
             return ProcessPlayer(p, self, after)
+        except FileNotFoundError as e:
+            raise ClientException('ffmpeg/avconv was not found in your PATH environment variable') from e
         except subprocess.SubprocessError as e:
             raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e))) from e
 
