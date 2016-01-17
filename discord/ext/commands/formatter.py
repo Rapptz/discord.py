@@ -118,17 +118,33 @@ class HelpFormatter:
         # odd one.
         return self.context.prefix.replace(user.mention, '@' + user.name)
 
+    def get_qualified_command_name(self):
+        """Retrieves the fully qualified command name, i.e. the base command name
+        required to execute it. This does not contain the command name itself.
+        """
+        entries = []
+        command = self.command
+        while command.parent is not None:
+            command = command.parent
+            entries.append(command.name)
+
+        return ' '.join(reversed(entries))
+
     def get_command_signature(self):
         """Retrieves the signature portion of the help page."""
         result = []
         prefix = self.clean_prefix
+        qualified = self.get_qualified_command_name()
         cmd = self.command
         if len(cmd.aliases) > 0:
             aliases = '|'.join(cmd.aliases)
-            name = '{0}[{1.name}|{2}]'.format(prefix, cmd, aliases)
-            result.append(name)
+            fmt = '{0}[{1.name}|{2}]'
+            if qualified:
+                fmt = '{0}{3} [{1.name}|{2}]'
+            result.append(fmt.format(prefix, cmd, aliases, qualified))
         else:
-            result.append(prefix + cmd.name)
+            name = prefix + cmd.name if not qualified else prefix + qualified + ' ' + cmd.name
+            result.append(name)
 
         params = cmd.clean_params
         if len(params) > 0:
