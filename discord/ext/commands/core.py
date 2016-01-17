@@ -788,9 +788,10 @@ def has_permissions(**perms):
     return check(predicate)
 
 def bot_has_role(name):
-     """Similar to :func:`has_role` except checks if the bot itself has the
-     role.
+    """Similar to :func:`has_role` except checks if the bot itself has the
+    role.
     """
+
     def predicate(ctx):
         ch = ctx.message.channel
         if ch.is_private:
