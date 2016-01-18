@@ -482,7 +482,7 @@ class VoiceClient:
         Parameters
         ----------
         sample_rate : int
-            Sets the sample rate of the OpusEncoder.
+            Sets the sample rate of the OpusEncoder. The unit is in Hz.
         channels : int
             Sets the number of channels for the OpusEncoder.
             2 for stereo, 1 for mono.
@@ -528,7 +528,7 @@ class VoiceClient:
         +---------------------+-----------------------------------------------------+
 
         The stream must have the same sampling rate as the encoder and the same
-        number of channels. The defaults are 48000 Mhz and 2 channels. You
+        number of channels. The defaults are 48000 Hz and 2 channels. You
         could change the encoder options by using :meth:`encoder_options`
         but this must be called **before** this function.
 
