@@ -235,6 +235,7 @@ class ConnectionState:
             server = self._get_server(data.get('id'))
             if server is not None:
                 server.unavailable = False
+                server._from_data(data)
                 self.dispatch('server_available', server)
                 return
 
@@ -242,9 +243,9 @@ class ConnectionState:
             # joined a server with unavailable == True so..
             return
 
-            # if we're at this point then it was probably
-            # unavailable during the READY event and is now
-            # available, so it isn't in the cache...
+        # if we're at this point then it was probably
+        # unavailable during the READY event and is now
+        # available, so it isn't in the cache...
 
         server = self._add_server_from_data(data)
         self.dispatch('server_join', server)
