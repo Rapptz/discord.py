@@ -235,7 +235,7 @@ class PrivateChannel(Hashable):
     def __str__(self):
         return 'Direct Message with {0.name}'.format(self.user)
 
-    def permissions_for(user):
+    def permissions_for(self, user):
         """Handles permission resolution for a :class:`User`.
 
         This function is there for compatibility with :class:`Channel`.
