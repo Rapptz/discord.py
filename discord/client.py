@@ -1695,6 +1695,9 @@ class Client:
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout : int
             The number of seconds until someone is moved to the AFK channel.
+        owner : :class:`Member`
+            The new owner of the server to transfer ownership to. Note that you must
+            be owner of the server to do this.
 
         Raises
         -------
@@ -1706,7 +1709,8 @@ class Client:
             Editing the server failed.
         InvalidArgument
             The image format passed in to ``icon`` is invalid. It must be
-            PNG or JPG.
+            PNG or JPG. This is also raised if you are not the owner of the
+            server and request an ownership transfer.
         """
 
         try:
@@ -1731,6 +1735,12 @@ class Client:
             afk_channel = server.afk_channel
 
         payload['afk_channel'] = getattr(afk_channel, 'id', None)
+
+        if 'owner' in fields:
+            if server.owner != server.me:
+                raise InvalidArgument('To transfer ownership you must be the owner of the server.')
+
+            payload['owner_id'] = fields['owner'].id
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         r = yield from aiohttp.patch(url, headers=self.headers, data=utils.to_json(payload), loop=self.loop)
