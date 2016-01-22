@@ -98,6 +98,11 @@ class Command:
     hidden : bool
         If ``True``, the default help command does not show this in the
         help output.
+    no_pm : bool
+        If ``True``, then the command is not allowed to be executed in
+        private messages. Defaults to ``False``. Note that if it is executed
+        in private messages, then :func:`on_command_error` and local error handlers
+        are called with the :exc:`NoPrivateMessage` error.
     rest_is_raw : bool
         If ``False`` and a keyword-only argument is provided then the keyword
         only argument is stripped and handled as if it was a regular argument
@@ -121,6 +126,7 @@ class Command:
         self.params = signature.parameters.copy()
         self.checks = kwargs.get('checks', [])
         self.module = inspect.getmodule(callback)
+        self.no_pm = kwargs.get('no_pm', False)
         self.instance = None
         self.parent = None
 
@@ -303,6 +309,10 @@ class Command:
         try:
             if not self.enabled:
                 raise DisabledCommand('{0.name} command is disabled'.format(self))
+
+            if self.no_pm and ctx.message.channel.is_private:
+                raise NoPrivateMessage('This command cannot be used in private messages.')
+
             if not self.can_run(ctx):
                 raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
         except CommandError as exc:
