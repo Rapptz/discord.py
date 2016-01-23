@@ -69,7 +69,7 @@ def _default_help_command(ctx, *commands : str):
         else:
             command = bot.commands.get(name)
             if command is None:
-                yield from bot.send_message(destination, 'No command called "{}" found.'.format(name))
+                yield from bot.send_message(destination, bot.command_not_found.format(name))
                 return
 
         pages = bot.formatter.format_help_for(ctx, command)
@@ -77,17 +77,17 @@ def _default_help_command(ctx, *commands : str):
         name = commands[0]
         command = bot.commands.get(name)
         if command is None:
-            yield from bot.send_message(destination, 'No command called "{}" found.'.format(name))
+            yield from bot.send_message(destination, bot.command_not_found.format(name))
             return
 
         for key in commands[1:]:
             try:
                 command = command.commands.get(key)
                 if command is None:
-                    yield from bot.send_message(destination, 'No command called "{}" found.'.format(key))
+                    yield from bot.send_message(destination, bot.command_not_found.format(key))
                     return
             except AttributeError:
-                yield from bot.send_message(destination, 'Command "{0.name}" has no subcommands.'.format(command))
+                yield from bot.send_message(destination, bot.command_has_no_subcommands.format(command, key))
                 return
 
         pages = bot.formatter.format_help_for(ctx, command)
@@ -147,6 +147,15 @@ class Bot(GroupMixin, discord.Client):
         the implementation of the command. The attributes will be the same as the
         ones passed in the :class:`Command` constructor. Note that ``pass_context``
         will always be set to ``True`` regardless of what you pass in.
+    command_not_found : str
+        The format string used when the help command is invoked with a command that
+        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
+        The only format argument is the name of the command passed.
+    command_has_no_subcommands : str
+        The format string used when the help command is invoked with requests for a
+        subcommand but the command does not have any subcommands. Defaults to
+        ``"Command {0.name} has no subcommands."``. The first format argument is the
+        :class:`Command` attempted to get a subcommand and the second is the name.
     """
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
@@ -156,6 +165,8 @@ class Bot(GroupMixin, discord.Client):
         self.extensions = {}
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+        self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
+        self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
         self.help_attrs = options.pop('help_attrs', {})
         self.help_attrs['pass_context'] = True
