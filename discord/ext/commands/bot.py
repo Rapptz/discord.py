@@ -56,7 +56,7 @@ def when_mentioned(bot, msg):
 def _default_help_command(ctx, *commands : str):
     """Shows this message."""
     bot = ctx.bot
-    destination = ctx.message.channel if not bot.pm_help else ctx.message.author
+    destination = ctx.message.author if bot.pm_help else ctx.message.channel
 
     # help by itself just lists our own commands.
     if len(commands) == 0:
@@ -92,6 +92,12 @@ def _default_help_command(ctx, *commands : str):
                 return
 
         pages = bot.formatter.format_help_for(ctx, command)
+
+    if bot.pm_help is None:
+        characters = sum(map(lambda l: len(l), pages))
+        # modify destination based on length of pages.
+        if characters > 1000:
+            destination = ctx.message.author
 
     for page in pages:
         yield from bot.send_message(destination, page)
@@ -129,9 +135,13 @@ class Bot(GroupMixin, discord.Client):
         If you want to change the help command completely (add aliases, etc) then
         a call to :meth:`remove_command` with 'help' as the argument would do the
         trick.
-    pm_help : bool
-        A boolean that indicates if the help command should PM the user instead of
-        sending it to the channel it received it from. Defaults to ``False``.
+    pm_help : Optional[bool]
+        A tribool that indicates if the help command should PM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is PM'd. If ``False``, none of the help
+        output is PM'd. If ``None``, then the bot will only PM when the help
+        message becomes too long (dictated by more than 1000 characters).
+        Defaults to ``False``.
     """
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
