@@ -51,7 +51,6 @@ def when_mentioned(bot, msg):
     to being mentioned, e.g. ``@bot ``."""
     return '{0.user.mention} '.format(bot)
 
-@command(pass_context=True, name='help')
 @asyncio.coroutine
 def _default_help_command(ctx, *commands : str):
     """Shows this message."""
@@ -142,6 +141,12 @@ class Bot(GroupMixin, discord.Client):
         output is PM'd. If ``None``, then the bot will only PM when the help
         message becomes too long (dictated by more than 1000 characters).
         Defaults to ``False``.
+    help_attrs : dict
+        A dictionary of options to pass in for the construction of the help command.
+        This allows you to change the command behaviour without actually changing
+        the implementation of the command. The attributes will be the same as the
+        ones passed in the :class:`Command` constructor. Note that ``pass_context``
+        will always be set to ``True`` regardless of what you pass in.
     """
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
@@ -151,6 +156,13 @@ class Bot(GroupMixin, discord.Client):
         self.extensions = {}
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+
+        self.help_attrs = options.pop('help_attrs', {})
+        self.help_attrs['pass_context'] = True
+
+        if 'name' not in self.help_attrs:
+            self.help_attrs['name'] = 'help'
+
         if formatter is not None:
             if not isinstance(formatter, HelpFormatter):
                 raise discord.ClientException('Formatter must be a subclass of HelpFormatter')
@@ -158,7 +170,8 @@ class Bot(GroupMixin, discord.Client):
         else:
             self.formatter = HelpFormatter()
 
-        self.add_command(_default_help_command)
+        # pay no mind to this ugliness.
+        self.command(**self.help_attrs)(_default_help_command)
 
     # internal helpers
 

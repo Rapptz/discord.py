@@ -160,8 +160,9 @@ class HelpFormatter:
         return ' '.join(result)
 
     def get_ending_note(self):
-        return "Type {0}help command for more info on a command.\n" \
-               "You can also type {0}help category for more info on a category.".format(self.clean_prefix)
+        command_name = self.context.invoked_with
+        return "Type {0}{1} command for more info on a command.\n" \
+               "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
 
     def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
