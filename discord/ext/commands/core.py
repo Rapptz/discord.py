@@ -156,6 +156,7 @@ class Command:
             result = discord.utils.get(iterable, id=match.group(1))
         return result
 
+    @asyncio.coroutine
     def do_conversion(self, bot, message, converter, argument):
         if converter is bool:
             return _convert_to_bool(argument)
@@ -196,9 +197,10 @@ class Command:
             return discord.Game(name=argument)
         elif converter is discord.Invite:
             try:
-                return bot.get_invite(argument)
+                invite = yield from bot.get_invite(argument)
+                return invite
             except Exception as e:
-                raise BadArgument('Invite is invalid') from e
+                raise BadArgument('Invite is invalid or expired') from e
 
     def _get_converter(self, param):
         converter = param.annotation
@@ -212,6 +214,7 @@ class Command:
 
         return converter
 
+    @asyncio.coroutine
     def transform(self, ctx, param):
         required = param.default is param.empty
         converter = self._get_converter(param)
@@ -232,7 +235,7 @@ class Command:
             argument = quoted_word(view)
 
         try:
-            return self.do_conversion(ctx.bot, ctx.message, converter, argument)
+            return (yield from self.do_conversion(ctx.bot, ctx.message, converter, argument))
         except CommandError as e:
             raise e
         except Exception as e:
@@ -256,6 +259,7 @@ class Command:
         return result
 
 
+    @asyncio.coroutine
     def _parse_arguments(self, ctx):
         try:
             ctx.args = [] if self.instance is None else [self.instance]
@@ -283,20 +287,22 @@ class Command:
                     continue
 
                 if param.kind == param.POSITIONAL_OR_KEYWORD:
-                    args.append(self.transform(ctx, param))
+                    transformed = yield from self.transform(ctx, param)
+                    args.append(transformed)
                 elif param.kind == param.KEYWORD_ONLY:
                     # kwarg only param denotes "consume rest" semantics
                     if self.rest_is_raw:
                         converter = self._get_converter(param)
                         argument = view.read_rest()
-                        kwargs[name] = self.do_conversion(ctx.bot, ctx.message, converter, argument)
+                        kwargs[name] = yield from self.do_conversion(ctx.bot, ctx.message, converter, argument)
                     else:
-                        kwargs[name] = self.transform(ctx, param)
+                        kwargs[name] = yield from self.transform(ctx, param)
                     break
                 elif param.kind == param.VAR_POSITIONAL:
                     while not view.eof:
                         try:
-                            args.append(self.transform(ctx, param))
+                            transformed = yield from self.transform(ctx, param)
+                            args.append(transformed)
                         except StopIteration:
                             break
         except CommandError as e:
@@ -327,7 +333,7 @@ class Command:
         if not self._verify_checks(ctx):
             return
 
-        if self._parse_arguments(ctx):
+        if (yield from self._parse_arguments(ctx)):
             injected = inject_context(ctx, self.callback)
             yield from injected(*ctx.args, **ctx.kwargs)
 
@@ -544,7 +550,7 @@ class Group(GroupMixin, Command):
     def invoke(self, ctx):
         early_invoke = not self.invoke_without_command
         if early_invoke:
-            valid = self._verify_checks(ctx) and self._parse_arguments(ctx)
+            valid = self._verify_checks(ctx) and (yield from self._parse_arguments(ctx))
             if not valid:
                 return
 
@@ -569,7 +575,7 @@ class Group(GroupMixin, Command):
             # undo the trigger parsing
             view.index = previous
             view.previous = previous
-            valid = self._verify_checks(ctx) and self._parse_arguments(ctx)
+            valid = self._verify_checks(ctx) and (yield from self._parse_arguments(ctx))
             if not valid:
                 return
             injected = inject_context(ctx, self.callback)
