@@ -79,6 +79,7 @@ Before:
     def on_status(member): pass
     def on_server_role_update(role): pass
     def on_voice_state_update(member): pass
+    def on_socket_raw_send(payload, is_binary): pass
 
 
 After:
@@ -89,9 +90,10 @@ After:
     def on_member_update(before, after): pass
     def on_server_role_update(before, after): pass
     def on_voice_state_update(before, after): pass
+    def on_socket_raw_send(payload): pass
 
 Note that ``on_status`` was removed. If you want its functionality, use :func:`on_member_update`.
-See :ref:`discord-api-events` for more information.
+See :ref:`discord-api-events` for more information. Other removed events include ``on_socket_closed``, ``on_socket_receive``, and ``on_socket_opened``.
 
 
 .. _migrating-coroutines:

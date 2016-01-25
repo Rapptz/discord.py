@@ -148,6 +148,11 @@ class Client:
         return os.path.join(tempfile.gettempdir(), 'discord_py', filename)
 
     @asyncio.coroutine
+    def _send_ws(self, data):
+        self.dispatch('socket_raw_send', data)
+        yield from self.ws.send(data)
+
+    @asyncio.coroutine
     def _login_via_cache(self, email, password):
         try:
             log.info('attempting to login via cache')
@@ -282,7 +287,7 @@ class Client:
 
                 msg = 'Keeping websocket alive with timestamp {}'
                 log.debug(msg.format(payload['d']))
-                yield from self.ws.send(utils.to_json(payload))
+                yield from self._send_ws(utils.to_json(payload))
                 yield from asyncio.sleep(interval)
         except asyncio.CancelledError:
             pass
@@ -302,6 +307,8 @@ class Client:
 
     @asyncio.coroutine
     def received_message(self, msg):
+        self.dispatch('socket_raw_receive', msg)
+
         if isinstance(msg, bytes):
             msg = zlib.decompress(msg, 15, 10490000) # This is 10 MiB
             msg = msg.decode('utf-8')
@@ -386,7 +393,7 @@ class Client:
                 }
             }
 
-            yield from self.ws.send(utils.to_json(payload))
+            yield from self._send_ws(utils.to_json(payload))
             log.info('sent the initial payload to create the websocket')
 
     @asyncio.coroutine
@@ -415,7 +422,7 @@ class Client:
         }
 
         log.info('sending reconnection frame to websocket {}'.format(payload))
-        yield from self.ws.send(utils.to_json(payload))
+        yield from self._send_ws(utils.to_json(payload))
 
     # login state management
 
@@ -1462,7 +1469,7 @@ class Client:
 
         sent = utils.to_json(payload)
         log.debug('Sending "{}" to change status'.format(sent))
-        yield from self.ws.send(sent)
+        yield from self._send_ws(sent)
 
     # Channel management
 
@@ -2431,7 +2438,7 @@ class Client:
             }
         }
 
-        yield from self.ws.send(utils.to_json(payload))
+        yield from self._send_ws(utils.to_json(payload))
         yield from asyncio.wait_for(self._session_id_found.wait(), timeout=5.0, loop=self.loop)
         yield from asyncio.wait_for(self._voice_data_found.wait(), timeout=5.0, loop=self.loop)
 
