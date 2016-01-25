@@ -54,10 +54,15 @@ class HTTPException(DiscordException):
         instance of `aiohttp.ClientResponse`__.
 
         __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
+
+    .. attribute:: text
+
+        The text of the response if it wasn't JSON. Could be None.
     """
 
-    def __init__(self, response, message=None):
+    def __init__(self, response, message=None, text=None):
         self.response = response
+        self.text = text
 
         fmt = '{0.reason} (status code: {0.status})'
         if message:
