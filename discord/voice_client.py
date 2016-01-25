@@ -334,7 +334,7 @@ class VoiceClient:
         struct.pack_into('>I', buff, 8, self.ssrc)
         return buff
 
-    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, after=None):
+    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, headers=None, after=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
         audio.
 
@@ -369,6 +369,8 @@ class VoiceClient:
             to the stdin of ffmpeg.
         options: str
             Extra command line flags to pass to ``ffmpeg``.
+        headers: dict
+            HTTP headers dictionary to pass to ``-headers`` command line option
         after : callable
             The finalizer that is called after the stream is done being
             played. All exceptions the finalizer throws are silently discarded.
@@ -386,8 +388,13 @@ class VoiceClient:
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
         input_name = '-' if pipe else shlex.quote(filename)
-        cmd = command + ' -i {} -f s16le -ar {} -ac {} -loglevel warning'
-        cmd = cmd.format(input_name, self.encoder.sampling_rate, self.encoder.channels)
+        headers_arg = ""
+        if isinstance(headers, dict):
+            for key, value in headers.items():
+                headers_arg += "{}: {}\r\n".format(key, value)
+            headers_arg = ' -headers ' + shlex.quote(headers_arg)
+        cmd = command + '{} -i {} -f s16le -ar {} -ac {} -loglevel warning'
+        cmd = cmd.format(headers_arg, input_name, self.encoder.sampling_rate, self.encoder.channels)
 
         if isinstance(options, str):
             cmd = cmd + ' ' + options
