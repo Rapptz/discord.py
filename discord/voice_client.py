@@ -369,7 +369,7 @@ class VoiceClient:
             to the stdin of ffmpeg.
         options: str
             Extra command line flags to pass to ``ffmpeg``.
-        options: str
+        headers: dict
             HTTP headers dictionary to pass to ``-headers`` command line option
         after : callable
             The finalizer that is called after the stream is done being
@@ -390,9 +390,9 @@ class VoiceClient:
         input_name = '-' if pipe else shlex.quote(filename)
         headers_arg = ""
         if isinstance(headers, dict):
-		    for key, value in headers.items():
-			    headers_arg += "{}: {}\r\n".format(key, value)
-			headers_arg = ' -headers ' + shlex.quote(headers_arg)
+            for key, value in headers.items():
+                headers_arg += "{}: {}\r\n".format(key, value)
+            headers_arg = ' -headers ' + shlex.quote(headers_arg)
         cmd = command + '{} -i {} -f s16le -ar {} -ac {} -loglevel warning'
         cmd = cmd.format(headers_arg, input_name, self.encoder.sampling_rate, self.encoder.channels)
 
