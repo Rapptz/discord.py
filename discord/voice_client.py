@@ -62,7 +62,8 @@ class StreamPlayer(threading.Thread):
         self.frame_size = encoder.frame_size
         self.player = player
         self._end = threading.Event()
-        self._paused = threading.Event()
+        self._resumed = threading.Event()
+        self._resumed.set() # we are not paused
         self._connected = connected
         self.after = after
         self.delay = encoder.frame_length / 1000.0
@@ -71,8 +72,10 @@ class StreamPlayer(threading.Thread):
         self.loops = 0
         self._start = time.time()
         while not self._end.is_set():
-            if self._paused.is_set():
-                continue
+            # are we paused?
+            if not self._resumed.is_set():
+                # wait until we aren't
+                self._resumed.wait()
 
             if not self._connected.is_set():
                 self.stop()
@@ -98,15 +101,15 @@ class StreamPlayer(threading.Thread):
                 pass
 
     def pause(self):
-        self._paused.set()
+        self._resumed.clear()
 
     def resume(self):
         self.loops = 0
         self._start = time.time()
-        self._paused.clear()
+        self._resumed.set()
 
     def is_playing(self):
-        return not self._paused.is_set() and not self.is_done()
+        return self._resumed.is_set() and not self.is_done()
 
     def is_done(self):
         return not self._connected.is_set() or self._end.is_set()
