@@ -65,17 +65,17 @@ class HelpFormatter:
     show_hidden : bool
         Dictates if hidden commands should be shown in the output.
         Defaults to ``False``.
-    show_check_faiure : bool
+    show_check_failure : bool
         Dictates if commands that have their :attr:`Command.checks` failed
         shown. Defaults to ``False``.
     width : int
         The maximum number of characters that fit in a line.
         Defaults to 80.
     """
-    def __init__(self, show_hidden=False, show_check_faiure=False, width=80):
+    def __init__(self, show_hidden=False, show_check_failure=False, width=80):
         self.wrapper = textwrap.TextWrapper(width=width)
         self.show_hidden = show_hidden
-        self.show_check_faiure = show_check_faiure
+        self.show_check_failure = show_check_failure
 
     def has_subcommands(self):
         """bool : Specifies if the command has subcommands."""
@@ -166,7 +166,7 @@ class HelpFormatter:
 
     def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
-        provided, :attr:`show_check_faiure` and :attr:`show_hidden`. Also
+        provided, :attr:`show_check_failure` and :attr:`show_hidden`. Also
         filters based on if :meth:`is_cog` is valid.
 
         Returns
@@ -185,7 +185,7 @@ class HelpFormatter:
             if cmd.hidden and not self.show_hidden:
                 return False
 
-            if self.show_check_faiure:
+            if self.show_check_failure:
                 # we don't wanna bother doing the checks if the user does not
                 # care about them, so just return true.
                 return True
