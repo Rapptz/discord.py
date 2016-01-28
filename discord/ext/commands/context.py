@@ -81,8 +81,36 @@ class Context:
         self.subcommand_passed = attrs.pop('subcommand_passed', None)
 
     @asyncio.coroutine
-    def invoke(self, command, **kwargs):
-        if len(kwargs) == 0:
-            yield from command.invoke(self)
-        else:
-            yield from command.callback(**kwargs)
+    def invoke(self, command, *args, **kwargs):
+        """|coro|
+
+        Calls a command with the arguments given.
+
+        This is useful if you want to just call the callback that a
+        :class:`Command` holds internally.
+
+        Note
+        ------
+        You do not pass in the context as it is done for you.
+
+        Parameters
+        -----------
+        command : :class:`Command`
+            A command or superclass of a command that is going to be called.
+        \*args
+            The arguments to to use.
+        \*\*kwargs
+            The keyword arguments to use.
+        """
+
+        arguments = []
+        if command.instance is not None:
+            arguments.append(command.instance)
+
+        if command.pass_context:
+            arguments.append(self)
+
+        arguments.extend(args)
+
+        yield from command.callback(*arguments, **kwargs)
+
