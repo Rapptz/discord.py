@@ -112,5 +112,6 @@ class Context:
 
         arguments.extend(args)
 
-        yield from command.callback(*arguments, **kwargs)
+        ret = yield from command.callback(*arguments, **kwargs)
+        return ret
 
