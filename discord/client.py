@@ -1042,10 +1042,10 @@ class Client:
         try:
             # attempt to open the file and send the request
             with open(fp, 'rb') as f:
-                files.add_field('file', f, filename=filename)
+                files.add_field('file', f, filename=filename, content_type='application/octet-stream')
                 response = yield from aiohttp.post(url, data=files, headers=headers, loop=self.loop)
         except TypeError:
-            files.add_field('file', fp, filename=filename)
+            files.add_field('file', fp, filename=filename, content_type='application/octet-stream')
             response = yield from aiohttp.post(url, data=files, headers=headers, loop=self.loop)
 
         log.debug(request_logging_format.format(method='POST', response=response))
