@@ -158,6 +158,8 @@ class Message:
         manner. This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
         into ``#name``.
+
+        This will also transform @everyone mentions into non-mentions.
         """
 
         transformations = {
@@ -171,6 +173,7 @@ class Message:
         }
 
         transformations.update(mention_transforms)
+        transformations[re.escape('@everyone')] = '@\u200beveryone'
 
         def repl(obj):
             return transformations.get(re.escape(obj.group(0)), '')
