@@ -39,7 +39,7 @@ from .errors import *
 from .state import ConnectionState
 from .permissions import Permissions
 from . import utils
-from .enums import ChannelType, ServerRegion
+from .enums import ChannelType, ServerRegion, Status
 from .voice_client import VoiceClient
 from .iterators import LogsFromIterator
 
@@ -1457,12 +1457,12 @@ class Client:
             raise InvalidArgument('game must be of Game or None')
 
         idle_since = None if idle == False else int(time.time() * 1000)
-        game = game and {'name': game.name}
+        sent_game = game and {'name': game.name}
 
         payload = {
             'op': 3,
             'd': {
-                'game': game,
+                'game': sent_game,
                 'idle_since': idle_since
             }
         }
@@ -1470,6 +1470,10 @@ class Client:
         sent = utils.to_json(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         yield from self._send_ws(sent)
+        for server in self.servers:
+            server.me.game = game
+            status = Status.idle if idle_since else Status.online
+            server.me.status = status
 
     # Channel management
 
