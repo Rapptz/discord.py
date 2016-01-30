@@ -113,6 +113,9 @@ class Command:
     """
     def __init__(self, name, callback, **kwargs):
         self.name = name
+        if not isinstance(name, str):
+            raise TypeError('Name of a command must be a string.')
+
         self.callback = callback
         self.enabled = kwargs.get('enabled', True)
         self.help = kwargs.get('help')
