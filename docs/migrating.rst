@@ -163,11 +163,11 @@ In order to get the old behaviour you should explicitly cast it to a list.
 
 .. _migrating-enums:
 
-Enumerators
+Enumerations
 ------------
 
 Due to dropping support for versions lower than Python 3.4.2, the library can now use
-`enumerators <https://docs.python.org/3/library/enum.html>`_ in places where it makes sense.
+`enumerations <https://docs.python.org/3/library/enum.html>`_ in places where it makes sense.
 
 The common places where this was changed was in the server region, member status, and channel type.
 
@@ -187,7 +187,7 @@ After:
     member.status = discord.Status.online
     channel.type == discord.ChannelType.text
 
-The main reason for this change was to reduce the use of finnicky strings in the API as this
+The main reason for this change was to reduce the use of finicky strings in the API as this
 could give users a false sense of power. More information can be found in the :ref:`discord-api-enums` page.
 
 .. _migrating-properties:

@@ -331,13 +331,13 @@ Utility Functions
 
 .. _discord-api-enums:
 
-Enumerators
-------------
+Enumerations
+-------------
 
-The API provides some enumerators for certain types of strings to avoid the API
+The API provides some enumerations for certain types of strings to avoid the API
 from being stringly typed in case the strings change in the future.
 
-All enumerators are subclasses of `enum`_.
+All enumerations are subclasses of `enum`_.
 
 .. _enum: https://docs.python.org/3/library/enum.html
 
