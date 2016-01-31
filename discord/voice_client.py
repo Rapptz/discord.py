@@ -124,6 +124,7 @@ class ProcessPlayer(StreamPlayer):
         self.process.kill()
         super().stop()
 
+
 class VoiceClient:
     """Represents a Discord voice connection.
 
@@ -415,7 +416,7 @@ class VoiceClient:
             raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e))) from e
 
 
-    def create_ytdl_player(self, url, *, options=None, use_avconv=False, after=None):
+    def create_ytdl_player(self, url, *, ytdl_options=None, **kwargs):
         """Creates a stream player for youtube or other services that launches
         in a separate thread to play the audio.
 
@@ -446,15 +447,12 @@ class VoiceClient:
         url : str
             The URL that ``youtube_dl`` will take and download audio to pass
             to ``ffmpeg`` or ``avconv`` to convert to PCM bytes.
-        options : dict
+        ytdl_options : dict
             A dictionary of options to pass into the ``YoutubeDL`` instance.
             See `the documentation <ydl>`_ for more details.
-        use_avconv: bool
-            Use ``avconv`` instead of ``ffmpeg``. Passes the appropriate
-            flags to ``youtube-dl`` as well.
-        after : callable
-            The finalizer that is called after the stream is done being
-            played. All exceptions the finalizer throws are silently discarded.
+        \*\*kwargs
+            The rest of the keyword arguments are forwarded to
+            :func:`create_ffmpeg_player`.
 
         Raises
         -------
@@ -469,18 +467,19 @@ class VoiceClient:
         """
         import youtube_dl
 
+        use_avconv = kwargs.get('use_avconv', False)
         opts = {
             'format': 'webm[abr>0]' if 'youtube' in url else 'best',
             'prefer_ffmpeg': not use_avconv
         }
 
-        if options is not None and isinstance(options, dict):
-            opts.update(options)
+        if ytdl_options is not None and isinstance(ytdl_options, dict):
+            opts.update(ytdl_options)
 
         ydl = youtube_dl.YoutubeDL(opts)
         info = ydl.extract_info(url, download=False)
         log.info('playing URL {}'.format(url))
-        return self.create_ffmpeg_player(info['url'], use_avconv=use_avconv, after=after)
+        return self.create_ffmpeg_player(info['url'], **kwargs)
 
     def encoder_options(self, *, sample_rate, channels=2):
         """Sets the encoder options for the OpusEncoder.
