@@ -104,7 +104,9 @@ class HelpFormatter:
         the largest subcommand name."""
         try:
             commands = self.command.commands if not self.is_cog() else self.context.bot.commands
-            return max(map(lambda c: len(c.name), commands.values()))
+            if commands:
+                return max(map(lambda c: len(c.name), commands.values()))
+            return 0
         except AttributeError:
             return len(self.command.name)
 
