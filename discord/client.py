@@ -895,7 +895,7 @@ class Client:
         return resp
 
     @asyncio.coroutine
-    def send_message(self, destination, content, *, tts=False):
+    def send_message(self, destination, content, tts=False):
         """|coro|
 
         Sends a message to the destination given with the content given.
