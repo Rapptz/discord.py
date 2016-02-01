@@ -194,8 +194,15 @@ class ConnectionState:
 
     def parse_guild_member_add(self, data):
         server = self._get_server(data.get('guild_id'))
+
+        roles = [server.default_role]
+        for roleid in data.get('roles', []):
+            role = utils.get(server.roles, id=roleid)
+            if role is not None:
+                roles.append(role)
+
+        data['roles'] = roles
         member = Member(server=server, **data)
-        member.roles.append(server.default_role)
         server._add_member(member)
         self.dispatch('member_join', member)
 
