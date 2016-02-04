@@ -36,6 +36,8 @@ class ChannelType(Enum):
 class ServerRegion(Enum):
     us_west = 'us-west'
     us_east = 'us-east'
+    us_south = 'us-south'
+    us_central = 'us-central'
     singapore = 'singapore'
     london = 'london'
     sydney = 'sydney'
