@@ -227,7 +227,7 @@ class Command:
 
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
-                raise StopIteration() # break the loop
+                raise RuntimeError() # break the loop
             if required:
                 raise MissingRequiredArgument('{0.name} is a required argument that is missing.'.format(param))
             return param.default
@@ -306,8 +306,9 @@ class Command:
                         try:
                             transformed = yield from self.transform(ctx, param)
                             args.append(transformed)
-                        except StopIteration:
+                        except RuntimeError:
                             break
+
         except CommandError as e:
             self.handle_local_error(e, ctx)
             ctx.bot.dispatch('command_error', e, ctx)
