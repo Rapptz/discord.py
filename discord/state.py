@@ -134,25 +134,32 @@ class ConnectionState:
 
     def parse_presence_update(self, data):
         server = self._get_server(data.get('guild_id'))
-        if server is not None:
-            status = data.get('status')
-            user = data['user']
-            member_id = user['id']
-            member = server.get_member(member_id)
-            if member is not None:
-                old_member = copy.copy(member)
-                member.status = data.get('status')
-                try:
-                    member.status = Status(member.status)
-                except:
-                    pass
+        if server is None:
+            return
 
-                game = data.get('game', {})
-                member.game = Game(**game) if game else None
-                member.name = user.get('username', member.name)
-                member.avatar = user.get('avatar', member.avatar)
+        status = data.get('status')
+        user = data['user']
+        member_id = user['id']
+        member = server.get_member(member_id)
+        if member is None:
+            # if the member is not in cache then it's being "lazily"
+            # loaded due to large_threshold so we need to add it into
+            # the cache and then update that instead.
+            member = self._add_member(server, data)
 
-                self.dispatch('member_update', old_member, member)
+        old_member = copy.copy(member)
+        member.status = data.get('status')
+        try:
+            member.status = Status(member.status)
+        except:
+            pass
+
+        game = data.get('game', {})
+        member.game = Game(**game) if game else None
+        member.name = user.get('username', member.name)
+        member.avatar = user.get('avatar', member.avatar)
+
+        self.dispatch('member_update', old_member, member)
 
     def parse_user_update(self, data):
         self.user = User(**data)
@@ -192,9 +199,7 @@ class ConnectionState:
 
         self.dispatch('channel_create', channel)
 
-    def parse_guild_member_add(self, data):
-        server = self._get_server(data.get('guild_id'))
-
+    def _add_member(self, server, data):
         roles = [server.default_role]
         for roleid in data.get('roles', []):
             role = utils.get(server.roles, id=roleid)
@@ -204,6 +209,11 @@ class ConnectionState:
         data['roles'] = roles
         member = Member(server=server, **data)
         server._add_member(member)
+        return member
+
+    def parse_guild_member_add(self, data):
+        server = self._get_server(data.get('guild_id'))
+        self._add_member(server, data)
         server._member_count += 1
         self.dispatch('member_join', member)
 
