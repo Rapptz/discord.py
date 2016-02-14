@@ -86,7 +86,7 @@ class Server(Hashable):
 
     __slots__ = [ 'afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                   'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
-                  '_default_role', '_default_channel', 'roles' ]
+                  '_default_role', '_default_channel', 'roles', '_member_count']
 
     def __init__(self, **kwargs):
         self._channels = {}
@@ -136,6 +136,8 @@ class Server(Hashable):
         return before, member
 
     def _from_data(self, guild):
+        # according to Stan, this is always available even if the guild is unavailable
+        self._member_count = guild['member_count']
         self.name = guild.get('name')
         self.region = guild.get('region')
         try:
@@ -204,3 +206,8 @@ class Server(Hashable):
         if self.icon is None:
             return ''
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
+
+    @property
+    def member_count(self):
+        """Returns the true member count regardless of it being loaded fully or not."""
+        return self._member_count

@@ -204,6 +204,7 @@ class ConnectionState:
         data['roles'] = roles
         member = Member(server=server, **data)
         server._add_member(member)
+        server._member_count += 1
         self.dispatch('member_join', member)
 
     def parse_guild_member_remove(self, data):
@@ -213,6 +214,7 @@ class ConnectionState:
             member = server.get_member(user_id)
             if member is not None:
                 server._remove_member(member)
+                server._member_count -= 1
                 self.dispatch('member_remove', member)
 
     def parse_guild_member_update(self, data):
