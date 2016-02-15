@@ -384,6 +384,10 @@ class ConnectionState:
         for member in members:
             self._add_member(server, member)
 
+        # if the owner is offline, server.owner is potentially None
+        # therefore we should check if this chunk makes it point to a valid
+        # member.
+        server.owner = server.get_member(server.owner_id)
         log.info('processed a chunk for {} members.'.format(len(members)))
         self.process_listeners(ListenerType.chunk, server, len(members))
 

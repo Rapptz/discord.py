@@ -87,7 +87,7 @@ class Server(Hashable):
     __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
-                 'large' ]
+                 'large', 'owner_id' ]
 
     def __init__(self, **kwargs):
         self._channels = {}
@@ -166,7 +166,8 @@ class Server(Hashable):
             self._add_member(member)
 
         if 'owner_id' in guild:
-            self.owner = self.get_member(guild['owner_id'])
+            self.owner_id = guild['owner_id']
+            self.owner = self.get_member(self.owner_id)
 
         for presence in guild.get('presences', []):
             user_id = presence['user']['id']
