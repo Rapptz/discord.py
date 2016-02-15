@@ -84,9 +84,10 @@ class Server(Hashable):
         Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
     """
 
-    __slots__ = [ 'afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                  'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
-                  '_default_role', '_default_channel', 'roles', '_member_count']
+    __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
+                 'name', 'id', 'owner', 'unavailable', 'name', 'me', 'region',
+                 '_default_role', '_default_channel', 'roles', '_member_count',
+                 'large' ]
 
     def __init__(self, **kwargs):
         self._channels = {}
@@ -139,6 +140,7 @@ class Server(Hashable):
         # according to Stan, this is always available even if the guild is unavailable
         self._member_count = guild['member_count']
         self.name = guild.get('name')
+        self.large = guild.get('large', self._member_count > 250)
         self.region = guild.get('region')
         try:
             self.region = ServerRegion(self.region)

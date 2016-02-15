@@ -51,7 +51,7 @@ import logging, traceback
 import sys, time, re, json
 import tempfile, os, hashlib
 import itertools
-import zlib
+import zlib, math
 from random import randint as random_integer
 
 PY35 = sys.version_info >= (3, 5)
@@ -81,6 +81,10 @@ class Client:
         Indicates if :meth:`login` should cache the authentication tokens. Defaults
         to ``True``. The method in which the cache is written is done by writing to
         disk to a temporary directory.
+    request_offline : Optional[bool]
+        Indicates if the client should request the offline members of every server.
+        If this is False, then member lists will not store offline members if the
+        number of members in the server is greater than 250. Defaults to ``True``.
 
     Attributes
     -----------
@@ -117,12 +121,13 @@ class Client:
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
+        self.request_offline = options.get('request_offline', True)
 
         max_messages = options.get('max_messages')
         if max_messages is None or max_messages < 100:
             max_messages = 5000
 
-        self.connection = ConnectionState(self.dispatch, max_messages)
+        self.connection = ConnectionState(self.dispatch, max_messages, loop=self.loop)
 
         # Blame React for this
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -142,6 +147,25 @@ class Client:
         self._session_id_found = asyncio.Event(loop=self.loop)
 
     # internals
+
+    def _get_all_chunks(self):
+        # a chunk has a maximum of 1000 members.
+        # we need to find out how many futures we're actually waiting for
+        large_servers = filter(lambda s: s.large, self.servers)
+        futures = []
+        for server in large_servers:
+            chunks_needed = math.ceil(server._member_count / 1000)
+            for chunk in range(chunks_needed):
+                futures.append(self.connection.receive_chunk(server.id))
+
+        return futures
+
+    @asyncio.coroutine
+    def _fill_offline(self):
+        yield from self.request_offline_members(filter(lambda s: s.large, self.servers))
+        chunks = self._get_all_chunks()
+        yield from asyncio.wait(chunks)
+        self.dispatch('ready')
 
     def _get_cache_filename(self, email):
         filename = hashlib.md5(email.encode('utf-8')).hexdigest()
@@ -335,12 +359,13 @@ class Client:
             return
 
         event = msg.get('t')
+        is_ready = event == 'READY'
 
-        if event == 'READY':
+        if is_ready:
             self.connection.clear()
             self.session_id = data['session_id']
 
-        if event == 'READY' or event == 'RESUMED':
+        if is_ready or event == 'RESUMED':
             interval = data['heartbeat_interval'] / 1000.0
             self.keep_alive = utils.create_task(self.keep_alive_handler(interval), loop=self.loop)
 
@@ -362,10 +387,19 @@ class Client:
             return
 
         parser = 'parse_' + event.lower()
-        if hasattr(self.connection, parser):
-            getattr(self.connection, parser)(data)
+
+        try:
+            func = getattr(self.connection, parser)
+        except AttributeError:
+            log.info('Unhandled event {}'.format(event))
         else:
-            log.info("Unhandled event {}".format(event))
+            func(data)
+
+        if is_ready:
+            if self.request_offline:
+                utils.create_task(self._fill_offline(), loop=self.loop)
+            else:
+                self.dispatch('ready')
 
     @asyncio.coroutine
     def _make_websocket(self, initial=True):
@@ -389,6 +423,7 @@ class Client:
                         '$referring_domain': ''
                     },
                     'compress': True,
+                    'large_threshold': 250,
                     'v': 3
                 }
             }
@@ -1217,6 +1252,44 @@ class Client:
     logs_from.__doc__ = _logs_from.__doc__
 
     # Member management
+
+    @asyncio.coroutine
+    def request_offline_members(self, server):
+        """|coro|
+
+        Requests previously offline members from the server to be filled up
+        into the :attr:`Server.members` cache. If the client was initialised
+        with ``request_offline`` as ``True`` then calling this function would
+        not do anything.
+
+        When the client logs on and connects to the websocket, Discord does
+        not provide the library with offline members if the number of members
+        in the server is larger than 250. You can check if a server is large
+        if :attr:`Server.large` is ``True``.
+
+        Parameters
+        -----------
+        server : :class:`Server` or iterable
+            The server to request offline members for. If this parameter is a
+            iterable then it is interpreted as an iterator of servers to
+            request offline members for.
+        """
+
+        if hasattr(server, 'id'):
+            guild_id = server.id
+        else:
+            guild_id = [s.id for s in server]
+
+        payload = {
+            'op': 8,
+            'd': {
+                'guild_id': guild_id,
+                'query': '',
+                'limit': 0
+            }
+        }
+
+        yield from self._send_ws(utils.to_json(payload))
 
     @asyncio.coroutine
     def kick(self, member):
