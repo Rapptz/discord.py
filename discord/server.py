@@ -138,7 +138,11 @@ class Server(Hashable):
 
     def _from_data(self, guild):
         # according to Stan, this is always available even if the guild is unavailable
-        self._member_count = guild['member_count']
+        # I don't have this guarantee when someone updates the server.
+        member_count = guild.get('member_count', None)
+        if member_count:
+            self._member_count = member_count
+
         self.name = guild.get('name')
         self.large = guild.get('large', self._member_count > 250)
         self.region = guild.get('region')

@@ -175,10 +175,7 @@ class ConnectionState:
         member_id = user['id']
         member = server.get_member(member_id)
         if member is None:
-            # if the member is not in cache then it's being "lazily"
-            # loaded due to large_threshold so we need to add it into
-            # the cache and then update that instead.
-            member = self._add_member(server, data)
+            member = self._make_member(server, data)
 
         old_member = copy.copy(member)
         member.status = data.get('status')
@@ -232,7 +229,7 @@ class ConnectionState:
 
         self.dispatch('channel_create', channel)
 
-    def _add_member(self, server, data):
+    def _make_member(self, server, data):
         roles = [server.default_role]
         for roleid in data.get('roles', []):
             role = utils.get(server.roles, id=roleid)
@@ -240,13 +237,12 @@ class ConnectionState:
                 roles.append(role)
 
         data['roles'] = roles
-        member = Member(server=server, **data)
-        server._add_member(member)
-        return member
+        return Member(server=server, **data)
 
     def parse_guild_member_add(self, data):
         server = self._get_server(data.get('guild_id'))
-        member = self._add_member(server, data)
+        member = self._make_member(server, data)
+        server._add_member(member)
         server._member_count += 1
         self.dispatch('member_join', member)
 
@@ -382,7 +378,8 @@ class ConnectionState:
         server = self._get_server(data.get('guild_id'))
         members = data.get('members', [])
         for member in members:
-            self._add_member(server, member)
+            m = self._make_member(server, member)
+            server._add_member(m)
 
         # if the owner is offline, server.owner is potentially None
         # therefore we should check if this chunk makes it point to a valid

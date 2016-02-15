@@ -105,6 +105,10 @@ to handle it, which defaults to print a traceback and ignore the exception.
     Called when the client is done preparing the data received from Discord. Usually after login is successful
     and the :attr:`Client.servers` and co. are filled up.
 
+    .. warning::
+
+        This function is not guaranteed to be the first event called.
+
 .. function:: on_error(event, \*args, \*\*kwargs)
 
     Usually when an event raises an uncaught exception, a traceback is

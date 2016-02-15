@@ -81,10 +81,6 @@ class Client:
         Indicates if :meth:`login` should cache the authentication tokens. Defaults
         to ``True``. The method in which the cache is written is done by writing to
         disk to a temporary directory.
-    request_offline : Optional[bool]
-        Indicates if the client should request the offline members of every server.
-        If this is False, then member lists will not store offline members if the
-        number of members in the server is greater than 250. Defaults to ``True``.
 
     Attributes
     -----------
@@ -121,7 +117,6 @@ class Client:
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
-        self.request_offline = options.get('request_offline', True)
 
         max_messages = options.get('max_messages')
         if max_messages is None or max_messages < 100:
@@ -396,10 +391,7 @@ class Client:
             func(data)
 
         if is_ready:
-            if self.request_offline:
-                utils.create_task(self._fill_offline(), loop=self.loop)
-            else:
-                self.dispatch('ready')
+            utils.create_task(self._fill_offline(), loop=self.loop)
 
     @asyncio.coroutine
     def _make_websocket(self, initial=True):
@@ -1258,9 +1250,8 @@ class Client:
         """|coro|
 
         Requests previously offline members from the server to be filled up
-        into the :attr:`Server.members` cache. If the client was initialised
-        with ``request_offline`` as ``True`` then calling this function would
-        not do anything.
+        into the :attr:`Server.members` cache. This function is usually not
+        called.
 
         When the client logs on and connects to the websocket, Discord does
         not provide the library with offline members if the number of members
