@@ -159,7 +159,10 @@ class Client:
     def _fill_offline(self):
         yield from self.request_offline_members(filter(lambda s: s.large, self.servers))
         chunks = self._get_all_chunks()
-        yield from asyncio.wait(chunks)
+
+        if chunks:
+            yield from asyncio.wait(chunks)
+
         self.dispatch('ready')
 
     def _get_cache_filename(self, email):
