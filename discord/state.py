@@ -379,7 +379,8 @@ class ConnectionState:
         members = data.get('members', [])
         for member in members:
             m = self._make_member(server, member)
-            server._add_member(m)
+            if m.id not in server._members:
+                server._add_member(m)
 
         # if the owner is offline, server.owner is potentially None
         # therefore we should check if this chunk makes it point to a valid
