@@ -198,7 +198,7 @@ class Client:
         try:
             cache_file = self._get_cache_filename(email)
             os.makedirs(os.path.dirname(cache_file), exist_ok=True)
-            with open(cache_file, 'w') as f:
+            with os.fdopen(os.open(cache_file, os.O_WRONLY | os.O_CREAT, 0o0600), 'w') as f:
                 log.info('updating login cache')
                 f.write(self.token)
         except OSError:
