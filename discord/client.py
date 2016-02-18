@@ -1064,10 +1064,8 @@ class Client:
         files = aiohttp.FormData()
 
         # we don't want the content-type json in this request
-        headers = {
-            'authorization': self.token,
-            'user-agent': user_agent.format(library_version, sys.version_info, aiohttp.__version__)
-        }
+        headers = self.headers.copy()
+        headers.pop('content-type', None)
 
         try:
             # attempt to open the file and send the request
