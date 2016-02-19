@@ -1017,7 +1017,7 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
-    def send_file(self, destination, fp, filename=None):
+    def send_file(self, destination, fp, *, filename=None, content=None, tts=False):
         """|coro|
 
         Sends a message to the destination given with the file given.
@@ -1046,6 +1046,11 @@ class Client:
             The *file-like object* or file path to send.
         filename : str
             The filename of the file. Defaults to ``fp.name`` if it's available.
+        content
+            The content of the message to send along with the file. This is
+            forced into a string by a ``str(content)`` call.
+        tts : bool
+            If the content of the message should be sent with TTS enabled.
 
         Raises
         -------
@@ -1061,7 +1066,12 @@ class Client:
         channel_id = yield from self._resolve_destination(destination)
 
         url = '{base}/{id}/messages'.format(base=endpoints.CHANNELS, id=channel_id)
-        files = aiohttp.FormData()
+        form = aiohttp.FormData()
+
+        if content is not None:
+            form.add_field('content', str(content))
+
+        form.add_field('tts', 'true' if tts else 'false')
 
         # we don't want the content-type json in this request
         headers = self.headers.copy()
@@ -1070,11 +1080,11 @@ class Client:
         try:
             # attempt to open the file and send the request
             with open(fp, 'rb') as f:
-                files.add_field('file', f, filename=filename, content_type='application/octet-stream')
-                response = yield from self.session.post(url, data=files, headers=headers)
+                form.add_field('file', f, filename=filename, content_type='application/octet-stream')
+                response = yield from self.session.post(url, data=form, headers=headers)
         except TypeError:
-            files.add_field('file', fp, filename=filename, content_type='application/octet-stream')
-            response = yield from self.session.post(url, data=files, headers=headers)
+            form.add_field('file', fp, filename=filename, content_type='application/octet-stream')
+            response = yield from self.session.post(url, data=form, headers=headers)
 
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
