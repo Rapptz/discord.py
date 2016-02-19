@@ -216,45 +216,43 @@ class Bot(GroupMixin, discord.Client):
     # utility "send_*" functions
 
     @asyncio.coroutine
-    def say(self, content):
+    def say(self, *args, **kwargs):
         """|coro|
 
         A helper function that is equivalent to doing
 
         .. code-block:: python
 
-            self.send_message(message.channel, content)
+            self.send_message(message.channel, *args, **kwargs)
 
-        Parameters
-        ----------
-        content : str
-            The content to pass to :class:`Client.send_message`
+        See Also
+        ---------
+        :meth:`Client.send_message`
         """
         destination = _get_variable('_internal_channel')
-        result = yield from self.send_message(destination, content)
+        result = yield from self.send_message(destination, *args, **kwargs)
         return result
 
     @asyncio.coroutine
-    def whisper(self, content):
+    def whisper(self, *args, **kwargs):
         """|coro|
 
         A helper function that is equivalent to doing
 
         .. code-block:: python
 
-            self.send_message(message.author, content)
+            self.send_message(message.author, *args, **kwargs)
 
-        Parameters
-        ----------
-        content : str
-            The content to pass to :class:`Client.send_message`
+        See Also
+        ---------
+        :meth:`Client.send_message`
         """
         destination = _get_variable('_internal_author')
-        result = yield from self.send_message(destination, content)
+        result = yield from self.send_message(destination, *args, **kwargs)
         return result
 
     @asyncio.coroutine
-    def reply(self, content):
+    def reply(self, content, *args, **kwargs):
         """|coro|
 
         A helper function that is equivalent to doing
@@ -262,38 +260,34 @@ class Bot(GroupMixin, discord.Client):
         .. code-block:: python
 
             msg = '{0.mention}, {1}'.format(message.author, content)
-            self.send_message(message.channel, msg)
+            self.send_message(message.channel, msg, *args, **kwargs)
 
-        Parameters
-        ----------
-        content : str
-            The content to pass to :class:`Client.send_message`
+        See Also
+        ---------
+        :meth:`Client.send_message`
         """
         author = _get_variable('_internal_author')
         destination = _get_variable('_internal_channel')
         fmt = '{0.mention}, {1}'.format(author, str(content))
-        result = yield from self.send_message(destination, fmt)
+        result = yield from self.send_message(destination, fmt, *args, **kwargs)
         return result
 
     @asyncio.coroutine
-    def upload(self, fp, name=None):
+    def upload(self, *args, **kwargs):
         """|coro|
 
         A helper function that is equivalent to doing
 
         .. code-block:: python
 
-            self.send_file(message.channel, fp, name)
+            self.send_file(message.channel, *args, **kwargs)
 
-        Parameters
-        ----------
-        fp
-            The first parameter to pass to :meth:`Client.send_file`
-        name
-            The second parameter to pass to :meth:`Client.send_file`
+        See Also
+        ---------
+        :meth:`Client.sned_file`
         """
         destination = _get_variable('_internal_channel')
-        result = yield from self.send_file(destination, fp, name)
+        result = yield from self.send_file(destination, *args, **kwargs)
         return result
 
     @asyncio.coroutine
