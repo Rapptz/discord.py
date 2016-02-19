@@ -66,6 +66,8 @@ class Channel(Hashable):
     type : :class:`ChannelType`
         The channel type. There is a chance that the type will be ``str`` if
         the channel type is not within the ones recognised by the enumerator.
+    bitrate : int
+        The channel's preferred audio bitrate in bits per second.
     changed_roles
         A list of :class:`Roles` that have been overridden from their default
         values in the :attr:`Server.roles` attribute.
@@ -88,6 +90,7 @@ class Channel(Hashable):
         self.topic = kwargs.get('topic')
         self.is_private = False
         self.position = kwargs.get('position')
+        self.bitrate = kwargs.get('bitrate')
         self.type = kwargs.get('type')
         try:
             self.type = ChannelType(self.type)
