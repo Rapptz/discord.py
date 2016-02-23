@@ -1684,9 +1684,10 @@ class Client:
 
         Leaves a :class:`Server`.
 
-        Warning
+        Note
         --------
-        If you are the owner of the server then it is deleted.
+        You cannot leave the server that you own, you must delete it instead
+        via :meth:`delete_server`.
 
         Parameters
         ----------
@@ -1700,6 +1701,32 @@ class Client:
         """
 
         url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
+        response = yield from self.session.delete(url, headers=self.headers)
+        log.debug(request_logging_format.format(method='DELETE', response=response))
+        yield from utils._verify_successful_response(response)
+        yield from response.release()
+
+    @asyncio.coroutine
+    def delete_server(self, server):
+        """|coro|
+
+        Deletes a :class:`Server`. You must be the server owner to delete the
+        server.
+
+        Parameters
+        ----------
+        server : :class:`Server`
+            The server to delete.
+
+        Raises
+        --------
+        HTTPException
+            If deleting the server failed.
+        Forbidden
+            You do not have permissions to delete the server.
+        """
+
+        url = '{}/@me/guilds/{.id}'.format(endpoints.USERS, server)
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
