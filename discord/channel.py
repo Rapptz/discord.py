@@ -99,14 +99,26 @@ class Channel(Hashable):
 
         self.changed_roles = []
         self._permission_overwrites = []
-        for overridden in kwargs.get('permission_overwrites', []):
+        everyone_index = 0
+        everyone_id = self.server.default_role.id
+
+        for index, overridden in enumerate(kwargs.get('permission_overwrites', [])):
+            overridden_id = overridden['id']
             self._permission_overwrites.append(Overwrites(**overridden))
 
             if overridden.get('type') == 'member':
                 continue
 
+            if overridden_id == everyone_id:
+                # the @everyone role is not guaranteed to be the first one
+                # in the list of permission overwrites, however the permission
+                # resolution code kind of requires that it is the first one in
+                # the list since it is special. So we need the index so we can
+                # swap it to be the first one.
+                everyone_index = index
+
             # this is pretty inefficient due to the deep nested loops unfortunately
-            role = utils.find(lambda r: r.id == overridden['id'], self.server.roles)
+            role = utils.find(lambda r: r.id == overridden_id, self.server.roles)
             if role is None:
                 continue
 
@@ -115,6 +127,11 @@ class Channel(Hashable):
             override = deepcopy(role)
             override.permissions.handle_overwrite(allowed, denied)
             self.changed_roles.append(override)
+
+        # do the swap
+        tmp = self._permission_overwrites
+        if tmp:
+            tmp[everyone_index], tmp[0] = tmp[0], tmp[everyone_index]
 
     @property
     def is_default(self):
