@@ -1700,7 +1700,7 @@ class Client:
             If leaving the server failed.
         """
 
-        url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
+        url = '{}/@me/guilds/{.id}'.format(endpoints.USERS, server)
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
@@ -1726,7 +1726,7 @@ class Client:
             You do not have permissions to delete the server.
         """
 
-        url = '{}/@me/guilds/{.id}'.format(endpoints.USERS, server)
+        url = '{0}/{1.id}'.format(endpoints.SERVERS, server)
         response = yield from self.session.delete(url, headers=self.headers)
         log.debug(request_logging_format.format(method='DELETE', response=response))
         yield from utils._verify_successful_response(response)
