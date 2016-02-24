@@ -482,11 +482,10 @@ class Bot(GroupMixin, discord.Client):
             return
 
         lib = importlib.import_module(name)
-        try:
-            lib.setup(self)
-        except AttributeError as e:
-            raise discord.ClientException('extension does not have a setup function') from e
+        if not hasattr(lib, 'setup'):
+            raise discord.ClientException('extension does not have a setup function')
 
+        lib.setup(self)
         self.extensions[name] = lib
 
     def unload_extension(self, name):
