@@ -124,6 +124,8 @@ class ProcessPlayer(StreamPlayer):
 
     def stop(self):
         self.process.kill()
+        if self.process.poll() is None:
+            self.process.communicate(timeout=0.100)
         super().stop()
 
 class VoiceClient:
