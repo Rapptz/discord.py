@@ -284,7 +284,7 @@ class Bot(GroupMixin, discord.Client):
 
         See Also
         ---------
-        :meth:`Client.sned_file`
+        :meth:`Client.send_file`
         """
         destination = _get_variable('_internal_channel')
         result = yield from self.send_file(destination, *args, **kwargs)
