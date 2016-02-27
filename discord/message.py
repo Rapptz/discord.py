@@ -173,13 +173,14 @@ class Message:
         }
 
         transformations.update(mention_transforms)
-        transformations[re.escape('@everyone')] = '@\u200beveryone'
 
         def repl(obj):
             return transformations.get(re.escape(obj.group(0)), '')
 
         pattern = re.compile('|'.join(transformations.keys()))
-        return pattern.sub(repl, self.content)
+
+        first_pass = pattern.sub(repl, self.content)
+        return re.sub('@everyone', '@\u200beveryone', first_pass)
 
     def _handle_upgrades(self, channel_id):
         self.server = None
