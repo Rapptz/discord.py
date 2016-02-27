@@ -173,7 +173,7 @@ class Message:
         }
 
         transformations.update(mention_transforms)
-        transformations[re.escape('@everyone')] = '@\u200beveryone'
+        transformations[re.escape('@')] = '@\u200b'
 
         def repl(obj):
             return transformations.get(re.escape(obj.group(0)), '')
