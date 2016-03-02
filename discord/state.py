@@ -124,7 +124,7 @@ class ConnectionState:
 
     def _add_server_from_data(self, guild):
         server = Server(**guild)
-        server.me = server.get_member(self.user.id)
+        Server.me = property(lambda s: s.get_member(self.user.id))
         self._add_server(server)
         return server
 
