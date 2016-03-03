@@ -840,7 +840,7 @@ def bot_has_permissions(**perms):
     """
     def predicate(ctx):
         ch = ctx.message.channel
-        me = msg.server.me if not ch.is_private else ctx.bot.user
+        me = ch.server.me if not ch.is_private else ctx.bot.user
         permissions = ch.permissions_for(me)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
