@@ -14,7 +14,7 @@ This was written to allow easier writing of bots or chat logs. Make sure to fami
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before `v1.0.0`.
 
-I recommend that you follow the discussion in the [unofficial Discord API discord channel][ch] and update your installation periodically through `pip install --upgrade discord.py`. I will attempt to make note of breaking changes in the API channel.
+I recommend that you follow the discussion in the [unofficial Discord API discord channel][ch] and update your installation periodically through `pip3 install --upgrade discord.py`. I will attempt to make note of breaking changes in the API channel.
 
 [ch]: https://discord.gg/0SBTUU1wZTUzBx2q
 
@@ -23,7 +23,7 @@ I recommend that you follow the discussion in the [unofficial Discord API discor
 Installing the async beta is easy:
 
 ```
-pip install git+https://github.com/Rapptz/discord.py@async
+pip3 install git+https://github.com/Rapptz/discord.py@async
 ```
 
 Note that this requires `git` to be installed.
