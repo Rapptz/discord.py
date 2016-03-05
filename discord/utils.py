@@ -31,6 +31,7 @@ from base64 import b64encode
 import asyncio
 import json
 
+DISCORD_EPOCH = 1420070400000
 
 class cached_property:
     def __init__(self, function):
@@ -72,6 +73,12 @@ def parse_time(timestamp):
     if timestamp:
         return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
+
+def snowflake_time(id):
+    '''
+    Returns the creation date of a discord id.
+    '''
+    return datetime.datetime.utcfromtimestamp(((int(id) >> 22) + DISCORD_EPOCH) / 1000)
 
 def find(predicate, seq):
     """A helper to return the first element found in the sequence
