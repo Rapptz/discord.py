@@ -313,7 +313,7 @@ class VoiceClient:
         payload = {
             'op': 4,
             'd': {
-                'guild_id': None,
+                'guild_id': self.guild_id,
                 'channel_id': None,
                 'self_mute': True,
                 'self_deaf': False
