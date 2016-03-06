@@ -133,20 +133,9 @@ class ConnectionState:
             yield self.receive_chunk(server.id)
 
     @asyncio.coroutine
-    def parse_ready(self, data):
-        self.user = User(**data['user'])
-        guilds = data.get('guilds')
-
-        for guild in guilds:
-            self._add_server_from_data(guild)
-
-        for pm in data.get('private_channels'):
-            self._add_private_channel(PrivateChannel(id=pm['id'],
-                                     user=User(**pm['recipient'])))
-
+    def _fill_offline(self):
         # a chunk has a maximum of 1000 members.
         # we need to find out how many futures we're actually waiting for
-
         large_servers = [s for s in self.servers if s.large]
         yield from self.chunker(large_servers)
 
@@ -158,6 +147,19 @@ class ConnectionState:
             yield from asyncio.wait(chunks)
 
         self.dispatch('ready')
+
+    def parse_ready(self, data):
+        self.user = User(**data['user'])
+        guilds = data.get('guilds')
+
+        for guild in guilds:
+            self._add_server_from_data(guild)
+
+        for pm in data.get('private_channels'):
+            self._add_private_channel(PrivateChannel(id=pm['id'],
+                                     user=User(**pm['recipient'])))
+
+        utils.create_task(self._fill_offline(), loop=self.loop)
 
     def parse_message_create(self, data):
         channel = self.get_channel(data.get('channel_id'))
