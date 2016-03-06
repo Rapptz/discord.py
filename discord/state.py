@@ -128,6 +128,10 @@ class ConnectionState:
         self._add_server(server)
         return server
 
+    def chunks_needed(self, server):
+        for chunk in range(math.ceil(server._member_count / 1000)):
+            yield self.receive_chunk(server.id)
+
     @asyncio.coroutine
     def parse_ready(self, data):
         self.user = User(**data['user'])
@@ -148,9 +152,7 @@ class ConnectionState:
 
         chunks = []
         for server in large_servers:
-            chunks_needed = math.ceil(server._member_count / 1000)
-            for chunk in range(chunks_needed):
-                chunks.append(self.receive_chunk(server.id))
+            chunks.extend(self.chunks_needed(server))
 
         if chunks:
             yield from asyncio.wait(chunks)
@@ -292,6 +294,7 @@ class ConnectionState:
 
             self.dispatch('member_update', old_member, member)
 
+    @asyncio.coroutine
     def parse_guild_create(self, data):
         unavailable = data.get('unavailable')
         if unavailable == False:
@@ -314,6 +317,14 @@ class ConnectionState:
         # available, so it isn't in the cache...
 
         server = self._add_server_from_data(data)
+
+        # check if it requires chunking
+        if server.large:
+            yield from self.chunker(server)
+            chunks = list(self.chunks_needed(server))
+            if chunks:
+                yield from asyncio.wait(chunks)
+
         self.dispatch('server_join', server)
 
     def parse_guild_update(self, data):
