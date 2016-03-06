@@ -370,10 +370,10 @@ class Client:
             func = getattr(self.connection, parser)
         except AttributeError:
             log.info('Unhandled event {}'.format(event))
-
-        result = func(data)
-        if asyncio.iscoroutine(result):
-            utils.create_task(result, loop=self.loop)
+        else:
+            result = func(data)
+            if asyncio.iscoroutine(result):
+                utils.create_task(result, loop=self.loop)
 
     @asyncio.coroutine
     def _make_websocket(self, initial=True):
