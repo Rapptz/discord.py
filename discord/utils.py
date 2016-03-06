@@ -75,9 +75,7 @@ def parse_time(timestamp):
     return None
 
 def snowflake_time(id):
-    '''
-    Returns the creation date of a discord id.
-    '''
+    """Returns the creation date in UTC of a discord id."""
     return datetime.datetime.utcfromtimestamp(((int(id) >> 22) + DISCORD_EPOCH) / 1000)
 
 def find(predicate, seq):

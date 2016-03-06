@@ -333,6 +333,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.get
 
+.. autofunction:: discord.utils.snowflake_time
+
 .. _discord-api-enums:
 
 Enumerations
