@@ -218,3 +218,8 @@ class Server(Hashable):
     def member_count(self):
         """Returns the true member count regardless of it being loaded fully or not."""
         return self._member_count
+
+    @property
+    def created_at(self):
+        """Returns the server's creation time in UTC."""
+        return utils.snowflake_time(self.id)

@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .utils import snowflake_time
+
 class User:
     """Represents a Discord user.
 
@@ -101,4 +103,11 @@ class User:
             The channel to check your permissions for.
         """
         return channel.permissions_for(self)
+
+    @property
+    def created_at(self):
+        """Returns the user's creation time in UTC.
+
+        This is when the user's discord account was created."""
+        return snowflake_time(self.id)
 
