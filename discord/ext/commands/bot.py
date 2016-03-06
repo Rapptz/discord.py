@@ -51,6 +51,27 @@ def when_mentioned(bot, msg):
     to being mentioned, e.g. ``@bot ``."""
     return '{0.user.mention} '.format(bot)
 
+def when_mentioned_or(*prefixes):
+    """A callable that implements when mentioned or other prefixes provided.
+
+    Examples
+    ---------
+
+    .. code-block:: python
+
+        bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'))
+
+    See Also
+    ----------
+    :func:`when_mentioned`
+    """
+    def inner(bot, msg):
+        r = list(prefixes)
+        r.append('{0.user.mention} '.format(bot))
+        return r
+
+    return inner
+
 @asyncio.coroutine
 def _default_help_command(ctx, *commands : str):
     """Shows this message."""
