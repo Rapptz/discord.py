@@ -36,10 +36,9 @@ from .enums import Status
 
 
 from collections import deque, namedtuple
-import copy
+import copy, enum, math
 import datetime
 import asyncio
-import enum
 import logging
 
 class ListenerType(enum.Enum):
@@ -49,10 +48,11 @@ Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
 log = logging.getLogger(__name__)
 
 class ConnectionState:
-    def __init__(self, dispatch, max_messages, *, loop):
+    def __init__(self, dispatch, chunker, max_messages, *, loop):
         self.loop = loop
         self.max_messages = max_messages
         self.dispatch = dispatch
+        self.chunker = chunker
         self._listeners = []
         self.clear()
 
@@ -128,6 +128,7 @@ class ConnectionState:
         self._add_server(server)
         return server
 
+    @asyncio.coroutine
     def parse_ready(self, data):
         self.user = User(**data['user'])
         guilds = data.get('guilds')
@@ -138,6 +139,23 @@ class ConnectionState:
         for pm in data.get('private_channels'):
             self._add_private_channel(PrivateChannel(id=pm['id'],
                                      user=User(**pm['recipient'])))
+
+        # a chunk has a maximum of 1000 members.
+        # we need to find out how many futures we're actually waiting for
+
+        large_servers = [s for s in self.servers if s.large]
+        yield from self.chunker(large_servers)
+
+        chunks = []
+        for server in large_servers:
+            chunks_needed = math.ceil(server._member_count / 1000)
+            for chunk in range(chunks_needed):
+                chunks.append(self.receive_chunk(server.id))
+
+        if chunks:
+            yield from asyncio.wait(chunks)
+
+        self.dispatch('ready')
 
     def parse_message_create(self, data):
         channel = self.get_channel(data.get('channel_id'))

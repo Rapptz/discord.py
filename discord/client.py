@@ -51,7 +51,7 @@ import logging, traceback
 import sys, time, re, json
 import tempfile, os, hashlib
 import itertools
-import zlib, math
+import zlib
 from random import randint as random_integer
 
 PY35 = sys.version_info >= (3, 5)
@@ -122,7 +122,7 @@ class Client:
         if max_messages is None or max_messages < 100:
             max_messages = 5000
 
-        self.connection = ConnectionState(self.dispatch, max_messages, loop=self.loop)
+        self.connection = ConnectionState(self.dispatch, self.request_offline_members, max_messages, loop=self.loop)
 
         # Blame Jake for this
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -144,28 +144,6 @@ class Client:
         self._session_id_found = asyncio.Event(loop=self.loop)
 
     # internals
-
-    def _get_all_chunks(self):
-        # a chunk has a maximum of 1000 members.
-        # we need to find out how many futures we're actually waiting for
-        large_servers = filter(lambda s: s.large, self.servers)
-        futures = []
-        for server in large_servers:
-            chunks_needed = math.ceil(server._member_count / 1000)
-            for chunk in range(chunks_needed):
-                futures.append(self.connection.receive_chunk(server.id))
-
-        return futures
-
-    @asyncio.coroutine
-    def _fill_offline(self):
-        yield from self.request_offline_members(filter(lambda s: s.large, self.servers))
-        chunks = self._get_all_chunks()
-
-        if chunks:
-            yield from asyncio.wait(chunks)
-
-        self.dispatch('ready')
 
     def _get_cache_filename(self, email):
         filename = hashlib.md5(email.encode('utf-8')).hexdigest()
@@ -392,11 +370,10 @@ class Client:
             func = getattr(self.connection, parser)
         except AttributeError:
             log.info('Unhandled event {}'.format(event))
-        else:
-            func(data)
 
-        if is_ready:
-            utils.create_task(self._fill_offline(), loop=self.loop)
+        result = func(data)
+        if asyncio.iscoroutine(result):
+            utils.create_task(result, loop=self.loop)
 
     @asyncio.coroutine
     def _make_websocket(self, initial=True):
