@@ -67,6 +67,8 @@ class Client:
 
     .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
     .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
+    .. _connector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#connectors
+    .. _ProxyConnector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#proxyconnector
 
     Parameters
     ----------
@@ -81,6 +83,9 @@ class Client:
         Indicates if :meth:`login` should cache the authentication tokens. Defaults
         to ``True``. The method in which the cache is written is done by writing to
         disk to a temporary directory.
+    connector : aiohttp.BaseConnector
+        The `connector`_ to use for connection pooling. Useful for proxies, e.g.
+        with a `ProxyConnector`_.
 
     Attributes
     -----------
@@ -132,7 +137,8 @@ class Client:
             'user-agent': user_agent.format(library_version, sys.version_info, aiohttp.__version__)
         }
 
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        connector = options.pop('connector', None)
+        self.session = aiohttp.ClientSession(loop=self.loop, connector=connector)
 
         self._closed = asyncio.Event(loop=self.loop)
         self._is_logged_in = asyncio.Event(loop=self.loop)
