@@ -516,6 +516,9 @@ class VoiceClient:
         ydl = youtube_dl.YoutubeDL(opts)
         func = functools.partial(ydl.extract_info, url, download=False)
         info = yield from self.loop.run_in_executor(None, func)
+        if "entries" in info:
+            info = info['entries'][0]
+
         log.info('playing URL {}'.format(url))
         download_url = info['url']
         player = self.create_ffmpeg_player(download_url, **kwargs)
