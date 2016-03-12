@@ -34,7 +34,8 @@ from .errors import *
 from .view import quoted_word
 
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
-            'has_role', 'has_permissions', 'has_any_role', 'check' ]
+            'has_role', 'has_permissions', 'has_any_role', 'check',
+            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role' ]
 
 def inject_context(ctx, coro):
     @functools.wraps(coro)
