@@ -230,9 +230,7 @@ class Bot(GroupMixin, discord.Client):
         super().dispatch(event_name, *args, **kwargs)
         ev = 'on_' + event_name
         if not hasattr(self,ev):
-            discord.utils.create_task(
-                self.process_events(*args,event=ev,**kwargs))
-            )
+            discord.utils.create_task(self.process_events(*args,event=ev,**kwargs)))
 
     # utility "send_*" functions
 
