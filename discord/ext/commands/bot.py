@@ -622,4 +622,5 @@ class Bot(GroupMixin, discord.Client):
     @asyncio.coroutine
     def on_message(self, message):
         yield from self.process_commands(message)
-        yield from self.process_events(message)
+        if self.override_event_control:
+            yield from self.process_events(message)
