@@ -228,11 +228,11 @@ class Bot(GroupMixin, discord.Client):
 
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
-        ev = 'on_'+event_name
-        if ev in self.extra_events:
-            for event in self.extra_events[ev]:
-                coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.utils.create_task(coro, loop=self.loop)
+        ev = 'on_' + event_name
+        if not hasattr(self,ev):
+            discord.utils.create_task(
+                self.process_events(*args,event=ev,**kwargs))
+            )
 
     # utility "send_*" functions
 
@@ -610,15 +610,16 @@ class Bot(GroupMixin, discord.Client):
             exc = CommandNotFound('Command "{}" is not found'.format(invoker))
             self.dispatch('command_error', exc, ctx)
 
-    async def process_events(self,*args,**kwargs):
-        ev = inspect.stack()[1][3]
-        #ev = 'on_' + event_name
-        print(ev)
-        '''if ev in self.extra_events:
-            for event in self.extra_events[ev]:
-                coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.utils.create_task(coro, loop=self.loop)'''
+    async def process_events(self,*args,event=None,**kwargs):
+        if event is None:
+            event = inspect.stack()[1][3]
+        #event = 'on_' + event_name
+        if event in self.extra_events:
+            for event_listener in self.extra_events[event]:
+                coro = self._run_extra(event_listener, event, *args, **kwargs)
+                discord.utils.create_task(coro, loop=self.loop)
 
     @asyncio.coroutine
     def on_message(self, message):
         yield from self.process_commands(message)
+        await self.process_events(message)
