@@ -228,7 +228,6 @@ class Bot(GroupMixin, discord.Client):
 
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
-        ev = 'on_' + event_name
         if ev in self.extra_events:
             for event in self.extra_events[ev]:
                 coro = self._run_extra(event, event_name, *args, **kwargs)
@@ -609,6 +608,15 @@ class Bot(GroupMixin, discord.Client):
         else:
             exc = CommandNotFound('Command "{}" is not found'.format(invoker))
             self.dispatch('command_error', exc, ctx)
+
+    async def process_events(self,*args,**kwargs):
+        ev = inspect.stack()[1][3]
+        #ev = 'on_' + event_name
+        print(ev)
+        '''if ev in self.extra_events:
+            for event in self.extra_events[ev]:
+                coro = self._run_extra(event, event_name, *args, **kwargs)
+                discord.utils.create_task(coro, loop=self.loop)'''
 
     @asyncio.coroutine
     def on_message(self, message):
