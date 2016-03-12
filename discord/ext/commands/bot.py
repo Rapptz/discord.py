@@ -228,6 +228,7 @@ class Bot(GroupMixin, discord.Client):
 
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
+        ev = 'on_'+event_name
         if ev in self.extra_events:
             for event in self.extra_events[ev]:
                 coro = self._run_extra(event, event_name, *args, **kwargs)
