@@ -176,7 +176,7 @@ class Client:
             # redo the cache
         except OSError:
             log.info('a problem occurred while opening login cache')
-            pass # file not found et al
+            pass # file not found at all.
 
     def _update_cache(self, email, password):
         try:
@@ -442,6 +442,30 @@ class Client:
     # login state management
 
     @asyncio.coroutine
+    def Bot_Account_Token_Login(self, token):
+        self.token = token
+        if self.token is None:
+            raise LoginFailure('No Token Specified.')
+            yield from self.close()
+        else:
+            self.headers['authorization'] = token
+            self._is_logged_in.set()
+            try:
+                self.loop.run_until_complete(self.connect())
+            except KeyboardInterrupt:
+                self.loop.run_until_complete(self.logout())
+                pending = asyncio.Task.all_tasks()
+                gathered = asyncio.gather(*pending)
+                try:
+                    gathered.cancel()
+                    self.loop.run_forever()
+                    gathered.exception()
+                except:
+                    pass
+            finally:
+                self.loop.close()
+
+    @asyncio.coroutine
     def login(self, email, password):
         """|coro|
 
@@ -457,13 +481,12 @@ class Client:
         Raises
         ------
         LoginFailure
-            The wrong credentials are passed.
+            The wrong credentials are passed. Also is raised when bot is set to True and Token is set to None.
         HTTPException
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
         """
-
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
@@ -490,6 +513,7 @@ class Client:
 
         body = yield from resp.json()
         self.token = body['token']
+
         self.headers['authorization'] = self.token
         self._is_logged_in.set()
 
