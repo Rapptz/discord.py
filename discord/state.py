@@ -281,7 +281,10 @@ class ConnectionState:
     def parse_guild_member_update(self, data):
         server = self._get_server(data.get('guild_id'))
         user_id = data['user']['id']
-        member = server.get_member(user_id)
+        try:
+            member = server.get_member(user_id)
+        except AttributeError:
+            return
         if member is not None:
             user = data['user']
             old_member = copy.copy(member)
