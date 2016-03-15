@@ -487,6 +487,7 @@ class Client:
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
         """
+
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
