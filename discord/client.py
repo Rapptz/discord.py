@@ -442,30 +442,6 @@ class Client:
     # login state management
 
     @asyncio.coroutine
-    def login_with_token(self, token):
-        self.token = token
-        if self.token is None:
-            raise LoginFailure('No Token Specified.')
-            yield from self.close()
-        else:
-            self.headers['authorization'] = token
-            self._is_logged_in.set()
-            try:
-                self.loop.run_until_complete(self.connect())
-            except KeyboardInterrupt:
-                self.loop.run_until_complete(self.logout())
-                pending = asyncio.Task.all_tasks()
-                gathered = asyncio.gather(*pending)
-                try:
-                    gathered.cancel()
-                    self.loop.run_forever()
-                    gathered.exception()
-                except:
-                    pass
-            finally:
-                self.loop.close()
-
-    @asyncio.coroutine
     def login(self, email, password):
         """|coro|
 
@@ -597,7 +573,7 @@ class Client:
         yield from self.login(email, password)
         yield from self.connect()
 
-    def run(self, email, password):
+    def run(self, email, password, token):
         """A blocking call that abstracts away the `event loop`_
         initialisation from you.
 
@@ -621,21 +597,39 @@ class Client:
         is blocking. That means that registration of events or anything being
         called after this function call will not execute until it returns.
         """
-
-        try:
-            self.loop.run_until_complete(self.start(email, password))
-        except KeyboardInterrupt:
-            self.loop.run_until_complete(self.logout())
-            pending = asyncio.Task.all_tasks()
-            gathered = asyncio.gather(*pending)
+        self.token = token
+        if self.token is None:
             try:
-                gathered.cancel()
-                self.loop.run_forever()
-                gathered.exception()
-            except:
-                pass
-        finally:
-            self.loop.close()
+                self.loop.run_until_complete(self.start(email, password))
+            except KeyboardInterrupt:
+                self.loop.run_until_complete(self.logout())
+                pending = asyncio.Task.all_tasks()
+                gathered = asyncio.gather(*pending)
+                try:
+                    gathered.cancel()
+                    self.loop.run_forever()
+                    gathered.exception()
+                except:
+                    pass
+            finally:
+                self.loop.close()
+        else:
+            self.headers['authorization'] = token
+            self._is_logged_in.set()
+            try:
+                self.loop.run_until_complete(self.connect())
+            except KeyboardInterrupt:
+                self.loop.run_until_complete(self.logout())
+                pending = asyncio.Task.all_tasks()
+                gathered = asyncio.gather(*pending)
+                try:
+                    gathered.cancel()
+                    self.loop.run_forever()
+                    gathered.exception()
+                except:
+                    pass
+            finally:
+                self.loop.close()
 
         # properties
 
