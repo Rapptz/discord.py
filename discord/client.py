@@ -176,7 +176,7 @@ class Client:
             # redo the cache
         except OSError:
             log.info('a problem occurred while opening login cache')
-            pass # file not found et all.
+            pass # file not found et al
 
     def _update_cache(self, email, password):
         try:
