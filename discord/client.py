@@ -481,7 +481,7 @@ class Client:
         Raises
         ------
         LoginFailure
-            The wrong credentials are passed. Also is raised when bot is set to True and Token is set to None.
+            The wrong credentials are passed.
         HTTPException
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
@@ -513,7 +513,6 @@ class Client:
 
         body = yield from resp.json()
         self.token = body['token']
-
         self.headers['authorization'] = self.token
         self._is_logged_in.set()
 
