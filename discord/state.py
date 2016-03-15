@@ -281,20 +281,21 @@ class ConnectionState:
     def parse_guild_member_update(self, data):
         server = self._get_server(data.get('guild_id'))
         user_id = data['user']['id']
-        member = server.get_member(user_id)
-        if member is not None:
-            user = data['user']
-            old_member = copy.copy(member)
-            member.name = user['username']
-            member.discriminator = user['discriminator']
-            member.avatar = user['avatar']
-            member.roles = [server.default_role]
-            # update the roles
-            for role in server.roles:
-                if role.id in data['roles']:
-                    member.roles.append(role)
+        if server is not None:
+            member = server.get_member(user_id)
+            if member is not None:
+                user = data['user']
+                old_member = copy.copy(member)
+                member.name = user['username']
+                member.discriminator = user['discriminator']
+                member.avatar = user['avatar']
+                member.roles = [server.default_role]
+                # update the roles
+                for role in server.roles:
+                    if role.id in data['roles']:
+                        member.roles.append(role)
 
-            self.dispatch('member_update', old_member, member)
+                self.dispatch('member_update', old_member, member)
 
     @asyncio.coroutine
     def parse_guild_create(self, data):
