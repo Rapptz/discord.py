@@ -442,7 +442,7 @@ class Client:
     # login state management
 
     @asyncio.coroutine
-    def Bot_Account_Token_Login(self, token):
+    def login_with_token(self, token):
         self.token = token
         if self.token is None:
             raise LoginFailure('No Token Specified.')
