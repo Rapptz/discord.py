@@ -395,6 +395,7 @@ class VoiceClient:
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
         input_name = '-' if pipe else shlex.quote(filename)
+        before_input = ''
         if isinstance(optBefore, str):
             before_input = ' ' + optBefore
         headers_arg = ""
