@@ -405,7 +405,8 @@ class VoiceClient:
         if isinstance(optBefore, str):
             before_input = optBefore
         cmd = command + '{} {} -i {} -f s16le -ar {} -ac {} -loglevel warning'
-        cmd = cmd.format(headers_arg, before_input, input_name, self.encoder.sampling_rate, self.encoder.channels)
+        cmd = cmd.format(headers_arg, before_input, input_name,
+                         self.encoder.sampling_rate, self.encoder.channels)
 
         if isinstance(options, str):
             cmd = cmd + ' ' + options
