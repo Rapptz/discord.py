@@ -169,10 +169,6 @@ class Bot(GroupMixin, discord.Client):
         bot will respond to commands sent in private messages (unless otherwise 
         prevented by user code). If ``None``, the bot will not respond to commands 
         nor will it give a response to the sender when they try.
-
-        It is worth noting that this does not mean the bot cannot send private 
-        messages, only that the bot cannot respond to commands sent in private
-        messages.
         Defaults to ``True``
     help_attrs : dict
         A dictionary of options to pass in for the construction of the help command.
