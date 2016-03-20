@@ -347,9 +347,9 @@ class VoiceClient:
         for i in range(0, len(header)):
             nonce[i] = header[i]
         
-		#Encrypt the Opus data with the nonce
-		#This weird lib also prepends the nonce to the data
-		#So we extract the data after the 24th spot
+        #Encrypt the Opus data with the nonce
+        #This weird lib also prepends the nonce to the data
+        #So we extract the data after the 24th spot
         encrypted = box.encrypt(bytes(data), bytes(nonce))
         encrypted_ba = bytearray(encrypted[24:])
         return header + encrypted_ba
