@@ -376,6 +376,8 @@ class VoiceClient:
             to the stdin of ffmpeg.
         options: str
             Extra command line flags to pass to ``ffmpeg``.
+        optBefore: str
+            Extra command line flags to pass to ``ffmpeg`` before the ``-i`` flag is called.
         headers: dict
             HTTP headers dictionary to pass to ``-headers`` command line option
         after : callable
