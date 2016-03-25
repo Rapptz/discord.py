@@ -590,7 +590,7 @@ class VoiceClient:
         self.encoder = OpusEncoder(sample_rate, channels)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
-    def create_stream_player(self, stream, after=None):
+    def create_stream_player(self, stream, *, after=None):
         """Creates a stream player that launches in a separate thread to
         play audio.
 
@@ -626,7 +626,7 @@ class VoiceClient:
         -----------
         stream
             The stream object to read from.
-        after:
+        after
             The finalizer that is called after the stream is exhausted.
             All exceptions it throws are silently discarded. It is called
             without parameters.
@@ -638,15 +638,17 @@ class VoiceClient:
         """
         return StreamPlayer(stream, self.encoder, self._connected, self.play_audio, after)
 
-    def play_audio(self, data):
+    def play_audio(self, data, *, encode=True):
         """Sends an audio packet composed of the data.
 
         You must be connected to play audio.
 
         Parameters
         ----------
-        data
-            The *bytes-like object* denoting PCM voice data.
+        data : bytes
+            The *bytes-like object* denoting PCM or Opus voice data.
+        encode : bool
+            Indicates if ``data`` should be encoded into Opus.
 
         Raises
         -------
@@ -657,7 +659,10 @@ class VoiceClient:
         """
 
         self.checked_add('sequence', 1, 65535)
-        encoded_data = self.encoder.encode(data, self.encoder.samples_per_frame)
+        if encode:
+            encoded_data = self.encoder.encode(data, self.encoder.samples_per_frame)
+        else:
+            encoded_data = data
         packet = self._get_voice_packet(encoded_data)
         sent = self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
         self.checked_add('timestamp', self.encoder.samples_per_frame, 4294967295)
