@@ -122,11 +122,13 @@ class ProcessPlayer(StreamPlayer):
                          client._connected, client.play_audio, after, **kwargs)
         self.process = process
 
-    def stop(self):
+    def run(self):
+        super().run()
+
         self.process.kill()
         if self.process.poll() is None:
-            self.process.communicate(timeout=0.100)
-        super().stop()
+            self.process.communicate()
+
 
 class VoiceClient:
     """Represents a Discord voice connection.
