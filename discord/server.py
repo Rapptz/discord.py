@@ -212,7 +212,7 @@ class Server(Hashable):
         """Returns the URL version of the server's icon. Returns an empty string if it has no icon."""
         if self.icon is None:
             return ''
-        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
+        return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.jpg'.format(self)
 
     @property
     def member_count(self):
