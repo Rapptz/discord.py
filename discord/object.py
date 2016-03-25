@@ -23,6 +23,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .utils import snowflake_time
+
 class Object:
     """Represents a generic Discord object.
 
@@ -45,3 +47,8 @@ class Object:
 
     def __init__(self, id):
         self.id = id
+
+    @property
+    def created_at(self):
+        """Returns the private channel's creation time in UTC."""
+        return utils.snowflake_time(self.id)

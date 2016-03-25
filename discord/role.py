@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
+from .utils import snowflake_time
 
 class Role(Hashable):
     """Represents a Discord role in a :class:`Server`.
@@ -90,3 +91,8 @@ class Role(Hashable):
     def is_everyone(self):
         """Checks if the role is the @everyone role."""
         return self._is_everyone
+
+    @property
+    def created_at(self):
+        """Returns the role's creation time in UTC."""
+        return utils.snowflake_time(self.id)

@@ -143,6 +143,11 @@ class Channel(Hashable):
         """str : The string that allows you to mention the channel."""
         return '<#{0.id}>'.format(self)
 
+    @property
+    def created_at(self):
+        """Returns the channel's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`Member`.
 
@@ -254,6 +259,11 @@ class PrivateChannel(Hashable):
 
     def __str__(self):
         return 'Direct Message with {0.name}'.format(self.user)
+
+    @property
+    def created_at(self):
+        """Returns the private channel's creation time in UTC."""
+        return utils.snowflake_time(self.id)
 
     def permissions_for(self, user):
         """Handles permission resolution for a :class:`User`.
