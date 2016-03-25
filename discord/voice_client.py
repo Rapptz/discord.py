@@ -343,7 +343,7 @@ class VoiceClient:
         struct.pack_into('>I', buff, 8, self.ssrc)
         return buff
 
-    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, headers=None, after=None):
+    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, before_options=None, headers=None, after=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
         audio.
 
@@ -376,8 +376,10 @@ class VoiceClient:
         pipe : bool
             If true, denotes that ``filename`` parameter will be passed
             to the stdin of ffmpeg.
-        options: str
-            Extra command line flags to pass to ``ffmpeg``.
+        options : str
+            Extra command line flags to pass to ``ffmpeg`` after the ``-i`` flag.
+        before_options : str
+            Command line flags to pass to ``ffmpeg`` before the ``-i`` flag.
         headers: dict
             HTTP headers dictionary to pass to ``-headers`` command line option
         after : callable
@@ -397,13 +399,17 @@ class VoiceClient:
         """
         command = 'ffmpeg' if not use_avconv else 'avconv'
         input_name = '-' if pipe else shlex.quote(filename)
-        headers_arg = ""
+        before_args = ""
         if isinstance(headers, dict):
             for key, value in headers.items():
-                headers_arg += "{}: {}\r\n".format(key, value)
-            headers_arg = ' -headers ' + shlex.quote(headers_arg)
+                before_args += "{}: {}\r\n".format(key, value)
+            before_args = ' -headers ' + shlex.quote(before_args)
+
+        if isinstance(before_options, str):
+            before_args += ' ' + before_options
+
         cmd = command + '{} -i {} -f s16le -ar {} -ac {} -loglevel warning'
-        cmd = cmd.format(headers_arg, input_name, self.encoder.sampling_rate, self.encoder.channels)
+        cmd = cmd.format(before_args, input_name, self.encoder.sampling_rate, self.encoder.channels)
 
         if isinstance(options, str):
             cmd = cmd + ' ' + options
