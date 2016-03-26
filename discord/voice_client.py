@@ -335,24 +335,20 @@ class VoiceClient:
         header = bytearray(12)
         nonce = bytearray(24)
         box = nacl.secret.SecretBox(bytes(self.secret_key))
-        
+
         # Formulate header
         header[0] = 0x80
         header[1] = 0x78
         struct.pack_into('>H', header, 2, self.sequence)
         struct.pack_into('>I', header, 4, self.timestamp)
         struct.pack_into('>I', header, 8, self.ssrc)
-        
+
         # Copy header to nonce's first 12 bytes
         for i in range(0, len(header)):
             nonce[i] = header[i]
-        
-        # Encrypt the Opus data with the nonce
-        # This weird lib also prepends the nonce to the data
-        # So we extract the data after the 24th spot
-        encrypted = box.encrypt(bytes(data), bytes(nonce))
-        encrypted_ba = bytearray(encrypted[24:])
-        return header + encrypted_ba
+
+        # Encrypt and return the data
+        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
 
     def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, headers=None, after=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
