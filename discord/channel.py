@@ -62,7 +62,10 @@ class Channel(Hashable):
     is_private : bool
         ``True`` if the channel is a private channel (i.e. PM). ``False`` in this case.
     position : int
-        The position in the channel list.
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0. The position varies depending on being a voice channel
+        or a text channel, so a 0 position voice channel is on top of the voice channel
+        list.
     type : :class:`ChannelType`
         The channel type. There is a chance that the type will be ``str`` if
         the channel type is not within the ones recognised by the enumerator.
