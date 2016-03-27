@@ -28,6 +28,7 @@ from .user import User
 from .game import Game
 from .utils import parse_time
 from .enums import Status
+from .colour import Colour
 
 class Member(User):
     """Represents a Discord member to a :class:`Server`.
@@ -74,7 +75,7 @@ class Member(User):
         self.deaf = kwargs.get('deaf')
         self.mute = kwargs.get('mute')
         self.joined_at = parse_time(kwargs.get('joined_at'))
-        self.roles = kwargs.get('roles')
+        self.roles = kwargs.get('roles', [])
         self.status = Status.offline
         game = kwargs.get('game', {})
         self.game = Game(**game) if game else None
@@ -103,3 +104,21 @@ class Member(User):
                 # we switched channels
                 if self.voice_channel is not None:
                     self.voice_channel.voice_members.append(self)
+
+    @property
+    def colour(self):
+        """A property that returns a :class:`Colour` denoting the rendered colour
+        for the member. If the default colour is the one rendered then an instance
+        of :meth:`Colour.default` is returned.
+
+        There is an alias for this under ``color``.
+        """
+
+        # highest order of the colour is the one that gets rendered.
+        if self.roles:
+            role = max(self.roles, key=lambda r: r.position)
+            return role.colour
+        else:
+            return Colour.default()
+
+    color = colour
