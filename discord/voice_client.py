@@ -344,8 +344,7 @@ class VoiceClient:
         struct.pack_into('>I', header, 8, self.ssrc)
 
         # Copy header to nonce's first 12 bytes
-        for i in range(0, len(header)):
-            nonce[i] = header[i]
+        nonce[:12] = header
 
         # Encrypt and return the data
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
