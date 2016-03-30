@@ -573,7 +573,7 @@ class Group(GroupMixin, Command):
             injected = inject_context(ctx, self.callback)
             yield from injected(*ctx.args, **ctx.kwargs)
 
-        if ctx.invoked_subcommand:
+        if trigger and ctx.invoked_subcommand:
             ctx.invoked_with = trigger
             yield from ctx.invoked_subcommand.invoke(ctx)
         elif not early_invoke:
