@@ -544,9 +544,9 @@ class Client:
 
     @asyncio.coroutine
     def close(self):
-        """Closes the websocket connection.
+        """|coro|
 
-        To reconnect the websocket connection, :meth:`connect` must be used.
+        Closes the connection to discord.
         """
         if self.is_closed:
             return
