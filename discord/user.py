@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .utils import snowflake_time
+from .enums import DefaultAvatar
 
 class User:
     """Represents a Discord user.
@@ -82,6 +83,16 @@ class User:
         if self.avatar is None:
             return ''
         return 'https://discordapp.com/api/users/{0.id}/avatars/{0.avatar}.jpg'.format(self)
+
+    @property
+    def default_avatar(self):
+        """Returns the default avatar for a given user. This is calculated by the user's descriminator"""
+        return DefaultAvatar(int(self.discriminator) % len(DefaultAvatar))
+
+    @property
+    def default_avatar_url(self):
+        """Returns a URL for a user's default avatar."""
+        return 'https://discordapp.com/assets/{0.url}.png'.format(self.default_avatar)
 
     @property
     def mention(self):
