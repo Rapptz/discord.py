@@ -146,19 +146,83 @@ class Command:
         else:
             discord.utils.create_task(injected(error, ctx), loop=ctx.bot.loop)
 
-    def _receive_item(self, message, argument, regex, receiver, generator):
-        argument = argument.strip()
-        match = re.match(regex, argument)
+    def _get_from_servers(self, bot, getter, argument):
         result = None
-        private = message.channel.is_private
-        receiver = getattr(message.server, receiver, ())
-        if match is None:
-            if not private:
-                result = discord.utils.get(receiver, name=argument)
-        else:
-            iterable = receiver if not private else generator
-            result = discord.utils.get(iterable, id=match.group(1))
+        for server in bot.servers:
+            result = getattr(server, getter)(argument)
+            if result:
+                return result
         return result
+
+    def _convert_member(self, bot, message, argument):
+        match = re.match(r'<@([0-9]+)>', argument)
+        server = message.server
+        result = None
+        if match is None:
+            # not a mention...
+            if server:
+                result = server.get_member_named(argument)
+            else:
+                result = self._get_from_servers(bot, 'get_member_named', argument)
+        else:
+            user_id = match.group(1)
+            if server:
+                result = server.get_member(user_id)
+            else:
+                result = self._get_from_servers(bot, 'get_member', user_id)
+
+        if result is None:
+            raise BadArgument('Member "{}" not found'.format(argument))
+
+        return result
+
+    _convert_user = _convert_member
+
+    def _convert_channel(self, bot, message, argument):
+        match = re.match(r'<#([0-9]+)>', argument)
+        result = None
+        server = message.server
+        if match is None:
+            # not a mention
+            if server:
+                result = discord.utils.get(server.channels, name=argument)
+            else:
+                result = discord.utils.get(bot.get_all_channels(), name=argument)
+        else:
+            channel_id = match.group(1)
+            if server:
+                result = server.get_channel(channel_id)
+            else:
+                result = self._get_from_servers(bot, 'get_channel', channel_id)
+
+        if result is None:
+            raise BadArgument('Channel "{}" not found.'.format(argument))
+
+        return result
+
+    def _convert_colour(self, bot, message, argument):
+        arg = argument.replace('0x', '').lower()
+        try:
+            value = int(arg, base=16)
+            return discord.Colour(value=value)
+        except ValueError:
+            method = getattr(discord.Colour, arg, None)
+            if method is None or not inspect.ismethod(method):
+                raise BadArgument('Colour "{}" is invalid.'.format(arg))
+            return method()
+
+    def _convert_role(self, bot, message, argument):
+        server = message.server
+        if not server:
+            raise NoPrivateMessage()
+
+        result = discord.utils.get(server.roles, name=argument)
+        if result is None:
+            raise BadArgument('Role "{}" not found.'.format(argument))
+        return result
+
+    def _convert_game(self, bot, message, argument):
+        return discord.Game(name=argument)
 
     @asyncio.coroutine
     def do_conversion(self, bot, message, converter, argument):
@@ -169,42 +233,15 @@ class Command:
             return converter(argument)
 
         # special handling for discord.py related classes
-        if converter is discord.User or converter is discord.Member:
-            member = self._receive_item(message, argument, r'<@([0-9]+)>', 'members', bot.get_all_members())
-            if member is None:
-                raise BadArgument('User/Member not found.')
-            return member
-        elif converter is discord.Channel:
-            channel = self._receive_item(message, argument, r'<#([0-9]+)>', 'channels', bot.get_all_channels())
-            if channel is None:
-                raise BadArgument('Channel not found.')
-            return channel
-        elif converter is discord.Colour:
-            arg = argument.replace('0x', '').lower()
-            try:
-                value = int(arg, base=16)
-                return discord.Colour(value=value)
-            except ValueError:
-                method = getattr(discord.Colour, arg, None)
-                if method is None or not inspect.ismethod(method):
-                    raise BadArgument('Colour passed is invalid.')
-                return method()
-        elif converter is discord.Role:
-            if message.channel.is_private:
-                raise NoPrivateMessage()
-
-            role = discord.utils.get(message.server.roles, name=argument)
-            if role is None:
-                raise BadArgument('Role not found')
-            return role
-        elif converter is discord.Game:
-            return discord.Game(name=argument)
-        elif converter is discord.Invite:
+        if converter is discord.Invite:
             try:
                 invite = yield from bot.get_invite(argument)
                 return invite
             except Exception as e:
                 raise BadArgument('Invite is invalid or expired') from e
+
+        new_converter = getattr(self, '_convert_{}'.format(converter.__name__.lower()))
+        return new_converter(bot, message, argument)
 
     def _get_converter(self, param):
         converter = param.annotation
