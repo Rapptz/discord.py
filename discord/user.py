@@ -32,17 +32,17 @@ class User:
 
     Supported Operations:
 
-    +-----------+------------------------------------+
-    | Operation |            Description             |
-    +===========+====================================+
-    | x == y    | Checks if two users are equal.     |
-    +-----------+------------------------------------+
-    | x != y    | Checks if two users are not equal. |
-    +-----------+------------------------------------+
-    | hash(x)   | Return the user's hash.            |
-    +-----------+------------------------------------+
-    | str(x)    | Returns the user's name.           |
-    +-----------+------------------------------------+
+    +-----------+---------------------------------------------+
+    | Operation |                 Description                 |
+    +===========+=============================================+
+    | x == y    | Checks if two users are equal.              |
+    +-----------+---------------------------------------------+
+    | x != y    | Checks if two users are not equal.          |
+    +-----------+---------------------------------------------+
+    | hash(x)   | Return the user's hash.                     |
+    +-----------+---------------------------------------------+
+    | str(x)    | Returns the user's name with discriminator. |
+    +-----------+---------------------------------------------+
 
     Attributes
     -----------
@@ -65,7 +65,7 @@ class User:
         self.avatar = kwargs.get('avatar')
 
     def __str__(self):
-        return self.name
+        return '{0.name}#{0.discriminator}'.format(self)
 
     def __eq__(self, other):
         return isinstance(other, User) and other.id == self.id
