@@ -69,6 +69,9 @@ You can find examples in the examples directory.
 - Python 3.4.2+
 - `aiohttp` library
 - `websockets` library
+- `PyNaCl` library
+    - On Linux systems this requires the `libffi` library. You can install in
+      debian based systems by doing `sudo apt-get install libffi-dev`.
 
 Usually `pip` will handle these for you.
 
