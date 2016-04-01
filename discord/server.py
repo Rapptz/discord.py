@@ -223,3 +223,41 @@ class Server(Hashable):
     def created_at(self):
         """Returns the server's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    def get_member_named(self, name):
+        """Returns the first member found that matches the name provided.
+
+        The name can have an optional discriminator argument, e.g. "Jake#0001"
+        or "Jake" will both do the lookup. However the former will give a more
+        precise result. Note that the discriminator must have all 4 digits
+        for this to work.
+
+        If no member is found, ``None`` is returned.
+
+        Parameters
+        -----------
+        name : str
+            The name of the member to lookup with an optional discriminator.
+
+        Returns
+        --------
+        :class:`Member`
+            The member in this server with the associated name. If not found
+            then ``None`` is returned.
+        """
+
+        result = None
+        members = self.members
+        if len(name) > 5 and name[-5] == '#':
+            # The 5 length is checking to see if #0000 is in the string,
+            # as a#0000 has a length of 6, the minimum for a potential
+            # discriminator lookup.
+            potential_discriminator = name[-4:]
+
+            # do the actual lookup and return if found
+            # if it isn't found then we'll do a full name lookup below.
+            result = utils.get(members, name=name[:-5], discriminator=potential_discriminator)
+            if result is not None:
+                return result
+
+        return utils.get(members, name=name)
