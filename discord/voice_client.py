@@ -50,6 +50,7 @@ import subprocess
 import shlex
 import functools
 import datetime
+import nacl.secret
 
 log = logging.getLogger(__name__)
 
@@ -172,6 +173,7 @@ class VoiceClient:
         self.sequence = 0
         self.timestamp = 0
         self.encoder = OpusEncoder(48000, 2)
+        self.secret_key = []
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
     def checked_add(self, attr, value, limit):
@@ -238,7 +240,7 @@ class VoiceClient:
                 'data': {
                     'address': self.ip,
                     'port': self.port,
-                    'mode': 'plain'
+                    'mode': 'xsalsa20_poly1305'
                 }
             }
         }
@@ -250,6 +252,7 @@ class VoiceClient:
     @asyncio.coroutine
     def connection_ready(self, data):
         log.info('voice connection is now ready')
+        self.secret_key = data.get('secret_key')
         speaking = {
             'op': 5,
             'd': {
@@ -331,17 +334,22 @@ class VoiceClient:
     # audio related
 
     def _get_voice_packet(self, data):
-        buff = bytearray(len(data) + 12)
-        buff[0] = 0x80
-        buff[1] = 0x78
+        header = bytearray(12)
+        nonce = bytearray(24)
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
 
-        for i in range(0, len(data)):
-            buff[i + 12] = data[i]
+        # Formulate header
+        header[0] = 0x80
+        header[1] = 0x78
+        struct.pack_into('>H', header, 2, self.sequence)
+        struct.pack_into('>I', header, 4, self.timestamp)
+        struct.pack_into('>I', header, 8, self.ssrc)
 
-        struct.pack_into('>H', buff, 2, self.sequence)
-        struct.pack_into('>I', buff, 4, self.timestamp)
-        struct.pack_into('>I', buff, 8, self.ssrc)
-        return buff
+        # Copy header to nonce's first 12 bytes
+        nonce[:12] = header
+
+        # Encrypt and return the data
+        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
 
     def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, before_options=None, headers=None, after=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
