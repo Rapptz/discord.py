@@ -672,5 +672,9 @@ class VoiceClient:
         else:
             encoded_data = data
         packet = self._get_voice_packet(encoded_data)
-        sent = self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+        try:
+            sent = self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+        except BlockingIOError:
+            log.warning('A packet has been dropped (seq: {0.sequence}, timestamp: {0.timestamp})'.format(self))
+
         self.checked_add('timestamp', self.encoder.samples_per_frame, 4294967295)
