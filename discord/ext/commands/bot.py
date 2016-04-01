@@ -236,7 +236,6 @@ class Bot(GroupMixin, discord.Client):
 
     # utility "send_*" functions
 
-    @asyncio.coroutine
     def say(self, *args, **kwargs):
         """|coro|
 
@@ -251,10 +250,8 @@ class Bot(GroupMixin, discord.Client):
         :meth:`Client.send_message`
         """
         destination = _get_variable('_internal_channel')
-        result = yield from self.send_message(destination, *args, **kwargs)
-        return result
+        return self.send_message(destination, *args, **kwargs)
 
-    @asyncio.coroutine
     def whisper(self, *args, **kwargs):
         """|coro|
 
@@ -269,10 +266,8 @@ class Bot(GroupMixin, discord.Client):
         :meth:`Client.send_message`
         """
         destination = _get_variable('_internal_author')
-        result = yield from self.send_message(destination, *args, **kwargs)
-        return result
+        return self.send_message(destination, *args, **kwargs)
 
-    @asyncio.coroutine
     def reply(self, content, *args, **kwargs):
         """|coro|
 
@@ -290,10 +285,8 @@ class Bot(GroupMixin, discord.Client):
         author = _get_variable('_internal_author')
         destination = _get_variable('_internal_channel')
         fmt = '{0.mention}, {1}'.format(author, str(content))
-        result = yield from self.send_message(destination, fmt, *args, **kwargs)
-        return result
+        return self.send_message(destination, fmt, *args, **kwargs)
 
-    @asyncio.coroutine
     def upload(self, *args, **kwargs):
         """|coro|
 
@@ -308,10 +301,8 @@ class Bot(GroupMixin, discord.Client):
         :meth:`Client.send_file`
         """
         destination = _get_variable('_internal_channel')
-        result = yield from self.send_file(destination, *args, **kwargs)
-        return result
+        return self.send_file(destination, *args, **kwargs)
 
-    @asyncio.coroutine
     def type(self):
         """|coro|
 
@@ -326,7 +317,7 @@ class Bot(GroupMixin, discord.Client):
         The :meth:`Client.send_typing` function.
         """
         destination = _get_variable('_internal_channel')
-        yield from self.send_typing(destination)
+        return self.send_typing(destination)
 
     # listener registration
 
