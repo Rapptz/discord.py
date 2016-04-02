@@ -24,7 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import textwrap
 import itertools
 import inspect
 
@@ -73,7 +72,7 @@ class HelpFormatter:
         Defaults to 80.
     """
     def __init__(self, show_hidden=False, show_check_failure=False, width=80):
-        self.wrapper = textwrap.TextWrapper(width=width)
+        self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
 
@@ -91,12 +90,9 @@ class HelpFormatter:
 
     def shorten(self, text):
         """Shortens text to fit into the :attr:`width`."""
-        tmp = self.wrapper.max_lines
-        self.wrapper.max_lines = 1
-        res = self.wrapper.fill(text)
-        self.wrapper.max_lines = tmp
-        del tmp
-        return res
+        if len(text) > self.width:
+            return text[:self.width - 3] + '...'
+        return text
 
     @property
     def max_name_size(self):
@@ -204,12 +200,15 @@ class HelpFormatter:
 
     def _check_new_page(self):
         # be a little on the safe side
-        if self._count > 1920:
+        # we're adding 1 extra newline per page
+        if self._count + len(self._current_page) >= 1980:
             # add the page
             self._current_page.append('```')
             self._pages.append('\n'.join(self._current_page))
             self._current_page = ['```']
             self._count = 4
+            return True
+        return False
 
     def _add_subcommands_to_page(self, max_width, commands):
         for name, command in commands:
@@ -220,7 +219,8 @@ class HelpFormatter:
             entry = '  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width)
             shortened = self.shorten(entry)
             self._count += len(shortened)
-            self._check_new_page()
+            if self._check_new_page():
+                self._count += len(shortened)
             self._current_page.append(shortened)
 
     def format_help_for(self, context, command_or_bot):
