@@ -197,7 +197,7 @@ class ConnectionState:
         member_id = user['id']
         member = server.get_member(member_id)
         if member is None:
-            member = self._make_member(server, data)
+            return
 
         old_member = copy.copy(member)
         member.status = data.get('status')
