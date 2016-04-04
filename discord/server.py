@@ -144,7 +144,7 @@ class Server(Hashable):
             self._member_count = member_count
 
         self.name = guild.get('name')
-        self.large = guild.get('large', self._member_count > 250)
+        self.large = guild.get('large', None if member_count is None else self._member_count > 250)
         self.region = guild.get('region')
         try:
             self.region = ServerRegion(self.region)
