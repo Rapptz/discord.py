@@ -462,6 +462,10 @@ class Bot(GroupMixin, discord.Client):
         If no cog is found then ``None`` is returned, otherwise
         the cog instance that is being removed is returned.
 
+        If the cog defines a special member function named ``__unload``
+        then it is called when removal has completed. This function
+        **cannot** be a coroutine. It must be a regular function.
+
         Parameters
         -----------
         name : str
@@ -484,6 +488,12 @@ class Bot(GroupMixin, discord.Client):
             # remove event listeners the cog has
             if name.startswith('on_'):
                 self.remove_listener(member)
+
+        unloader_name = '_{0.__class__.__name__}__unload'.format(cog)
+        try:
+            getattr(cog, unloader_name)()
+        except AttributeError:
+            pass
 
         del cog
 
