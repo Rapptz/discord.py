@@ -464,6 +464,24 @@ class Client:
             passing status code.
         """
 
+        if email == "token":
+            log.info('logging in using static token')
+            self.token = password
+            self.headers['authorization'] = 'Bot {}'.format(self.token)
+            resp = yield from self.session.get(endpoints.ME, headers=self.headers)
+            log.debug(request_logging_format.format(method='GET', response=resp))
+
+            if resp.status != 200:
+                yield from resp.release()
+                if resp.status == 400:
+                    raise LoginFailure('Improper token has been passed.')
+                else:
+                    raise HTTPException(resp, None)
+
+            log.info('token auth returned status code {}'.format(resp.status))
+            self._is_logged_in.set()
+            return
+
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
