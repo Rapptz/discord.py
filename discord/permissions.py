@@ -161,7 +161,9 @@ class Permissions:
 
     @property
     def manage_roles(self):
-        """Returns True if a user can manage server roles. This role overrides all other permissions."""
+        """Returns True if a user can manage server roles. This role overrides all other permissions.
+
+        This also corresponds to the "manage permissions" channel-specific override."""
         return self._bit(3)
 
     @manage_roles.setter
@@ -170,7 +172,9 @@ class Permissions:
 
     @property
     def manage_channels(self):
-        """Returns True if a user can edit, delete, or create channels in the server."""
+        """Returns True if a user can edit, delete, or create channels in the server.
+
+        This also corresponds to the "manage channel" channel-specific override."""
         return self._bit(4)
 
     @manage_channels.setter
