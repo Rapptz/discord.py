@@ -92,7 +92,7 @@ class Message:
     __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  'clean_content', '_raw_channel_mentions', 'nonce' ]
+                  '_clean_content', '_raw_channel_mentions', 'nonce' ]
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -115,7 +115,11 @@ class Message:
         self.attachments = data.get('attachments')
         self._handle_upgrades(data.get('channel_id'))
         self._handle_mentions(data.get('mentions', []))
-        self.clean_content = self._clean_content()
+
+        # clear the cached slot cache
+        del self._raw_mentions
+        del self._raw_channel_mentions
+        del self._clean_content
 
     def _handle_mentions(self, mentions):
         self.mentions = []
@@ -156,7 +160,8 @@ class Message:
         """
         return re.findall(r'<#([0-9]+)>', self.content)
 
-    def _clean_content(self):
+    @utils.cached_slot_property('_clean_content')
+    def clean_content(self):
         """A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
