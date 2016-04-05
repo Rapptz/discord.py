@@ -117,9 +117,20 @@ class Message:
         self._handle_mentions(data.get('mentions', []))
 
         # clear the cached slot cache
-        del self._raw_mentions
-        del self._raw_channel_mentions
-        del self._clean_content
+        try:
+            del self._raw_mentions
+        except AttributeError:
+            pass
+
+        try:
+            del self._raw_channel_mentions
+        except AttributeError:
+            pass
+        try:
+            del self._clean_content
+        except AttributeError:
+            pass
+
 
     def _handle_mentions(self, mentions):
         self.mentions = []
