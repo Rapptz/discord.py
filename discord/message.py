@@ -92,26 +92,30 @@ class Message:
     __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  '_clean_content', '_raw_channel_mentions', 'nonce' ]
+                  'clean_content', '_raw_channel_mentions', 'nonce' ]
 
     def __init__(self, **kwargs):
+        self._update(**kwargs)
+
+    def _update(self, **data):
         # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
         # sometimes the .%f modifier is missing
-        self.edited_timestamp = utils.parse_time(kwargs.get('edited_timestamp'))
-        self.timestamp = utils.parse_time(kwargs.get('timestamp'))
-        self.tts = kwargs.get('tts')
-        self.content = kwargs.get('content')
-        self.mention_everyone = kwargs.get('mention_everyone')
-        self.embeds = kwargs.get('embeds')
-        self.id = kwargs.get('id')
-        self.channel = kwargs.get('channel')
-        self.author = User(**kwargs.get('author', {}))
-        self.nonce = kwargs.get('nonce')
-        self.attachments = kwargs.get('attachments')
-        self._handle_upgrades(kwargs.get('channel_id'))
-        self._handle_mentions(kwargs.get('mentions', []))
+        self.edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
+        self.timestamp = utils.parse_time(data.get('timestamp'))
+        self.tts = data.get('tts')
+        self.content = data.get('content')
+        self.mention_everyone = data.get('mention_everyone')
+        self.embeds = data.get('embeds')
+        self.id = data.get('id')
+        self.channel = data.get('channel')
+        self.author = User(**data.get('author', {}))
+        self.nonce = data.get('nonce')
+        self.attachments = data.get('attachments')
+        self._handle_upgrades(data.get('channel_id'))
+        self._handle_mentions(data.get('mentions', []))
+        self.clean_content = self._clean_content()
 
     def _handle_mentions(self, mentions):
         self.mentions = []
@@ -152,8 +156,7 @@ class Message:
         """
         return re.findall(r'<#([0-9]+)>', self.content)
 
-    @utils.cached_slot_property('_clean_content')
-    def clean_content(self):
+    def _clean_content(self):
         """A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
