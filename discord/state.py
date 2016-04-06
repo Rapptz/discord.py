@@ -295,14 +295,8 @@ class ConnectionState:
 
             self.dispatch('member_update', old_member, member)
 
-    @asyncio.coroutine
-    def parse_guild_create(self, data):
-        unavailable = data.get('unavailable')
-        if unavailable == True:
-            # joined a server with unavailable == True so..
-            return
-
-        if unavailable == False:
+    def _get_create_server(self, data):
+        if data.get("unavailable") == False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the server has become available
             # and is therefore in the cache
@@ -310,11 +304,18 @@ class ConnectionState:
             if server is not None:
                 server.unavailable = False
                 server._from_data(data)
+                return server
 
-        # If server isn't in the cache, it is brand new, or
-        # we previously joined while it was unavailable
-        if server is None:
-            server = self._add_server_from_data(data)
+        return self._add_server_from_data(data)
+
+    @asyncio.coroutine
+    def parse_guild_create(self, data):
+        unavailable = data.get('unavailable')
+        if unavailable == True:
+            # joined a server with unavailable == True so..
+            return
+
+        server = self._get_create_server(data)
 
         # check if it requires chunking
         if server.large:
