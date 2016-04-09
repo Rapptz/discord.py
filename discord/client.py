@@ -444,6 +444,8 @@ class Client:
     @asyncio.coroutine
     def _login_1(self, token):
         log.info('logging in using static token')
+        self.is_bot_account = True
+        self.cache_auth = False
         self.token = token
         self.headers['authorization'] = 'Bot {}'.format(self.token)
         resp = yield from self.session.get(endpoints.ME, headers=self.headers)
@@ -461,6 +463,7 @@ class Client:
 
     @asyncio.coroutine
     def _login_2(self, email, password):
+        self.is_bot_account = False
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
@@ -1448,12 +1451,14 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
-    def edit_profile(self, password, **fields):
+    def edit_profile(self, **fields):
         """|coro|
 
         Edits the current profile of the client.
 
-        All fields except ``password`` are optional.
+        For a user account, all fields except ``password`` are optional.
+        For a bot account, ``password``, ``email`` and ``new_password`` are
+        useless.
 
         The profile is **not** edited in place.
 
@@ -1486,6 +1491,8 @@ class Client:
             Editing your profile failed.
         InvalidArgument
             Wrong image format passed for ``avatar``.
+        KeyError
+            Missing ``password`` argument.
         """
 
         try:
@@ -1498,13 +1505,24 @@ class Client:
             else:
                 avatar = None
 
-        payload = {
-            'password': password,
-            'new_password': fields.get('new_password'),
-            'email': fields.get('email', self.email),
-            'username': fields.get('username', self.user.name),
-            'avatar': avatar
-        }
+        if self.is_bot_account:
+            payload = {
+                'username': fields.get('username', self.user.name),
+                'avatar': avatar
+            }
+        else:
+            try:
+                password = fields['password']
+            except KeyError:
+                raise(KeyError("Missing password argument."))
+
+            payload = {
+                'password': fields.get('password'),
+                'new_password': fields.get('new_password'),
+                'email': fields.get('email', self.email),
+                'username': fields.get('username', self.user.name),
+                'avatar': avatar
+            }
 
         r = yield from self.session.patch(endpoints.ME, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='PATCH', response=r))
@@ -1513,11 +1531,11 @@ class Client:
         data = yield from r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         self.token = data['token']
-        self.email = data['email']
+        self.email = data.get('email')
         self.headers['authorization'] = self.token
 
         if self.cache_auth:
-            self._update_cache(self.email, password)
+            self._update_cache(self.email, fields['password'])
 
     @asyncio.coroutine
     def change_status(self, game=None, idle=False):
