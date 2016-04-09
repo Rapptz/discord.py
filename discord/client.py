@@ -1514,7 +1514,7 @@ class Client:
             try:
                 password = fields['password']
             except KeyError:
-                raise("Missing password argument.")
+                raise(KeyError("Missing password argument."))
 
             payload = {
                 'password': fields.get('password'),
