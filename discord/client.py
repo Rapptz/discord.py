@@ -442,47 +442,25 @@ class Client:
     # login state management
 
     @asyncio.coroutine
-    def login(self, email, password):
-        """|coro|
+    def _login_1(self, token):
+        log.info('logging in using static token')
+        self.token = token
+        self.headers['authorization'] = 'Bot {}'.format(self.token)
+        resp = yield from self.session.get(endpoints.ME, headers=self.headers)
+        yield from resp.release()
+        log.debug(request_logging_format.format(method='GET', response=resp))
 
-        Logs in the client with the specified credentials.
+        if resp.status != 200:
+            if resp.status == 400:
+                raise LoginFailure('Improper token has been passed.')
+            else:
+                raise HTTPException(resp, None)
 
-        Parameters
-        ----------
-        email : str
-            The email used to login. The string 'token' if using
-            the Bot OAuth2 Token flow.
-        password : str
-            The password or token used to login.
+        log.info('token auth returned status code {}'.format(resp.status))
+        self._is_logged_in.set()
 
-        Raises
-        ------
-        LoginFailure
-            The wrong credentials are passed.
-        HTTPException
-            An unknown HTTP related error occurred,
-            usually when it isn't 200 or the known incorrect credentials
-            passing status code.
-        """
-
-        if email == "token":
-            log.info('logging in using static token')
-            self.token = password
-            self.headers['authorization'] = 'Bot {}'.format(self.token)
-            resp = yield from self.session.get(endpoints.ME, headers=self.headers)
-            yield from resp.release()
-            log.debug(request_logging_format.format(method='GET', response=resp))
-
-            if resp.status != 200:
-                if resp.status == 400:
-                    raise LoginFailure('Improper token has been passed.')
-                else:
-                    raise HTTPException(resp, None)
-
-            log.info('token auth returned status code {}'.format(resp.status))
-            self._is_logged_in.set()
-            return
-
+    @asyncio.coroutine
+    def _login_2(self, email, password):
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
@@ -516,6 +494,44 @@ class Client:
         # let's make sure we don't have to do it again
         if self.cache_auth:
             self._update_cache(email, password)
+
+    @asyncio.coroutine
+    def login(self, *args):
+        """|coro|
+
+        Logs in the client with the specified credentials.
+
+        This function can be used in two different ways.
+
+        .. code-block:: python
+
+            await client.login('email', 'password')
+
+            # or
+
+            await client.login('token')
+
+        More than 2 parameters or less than 1 parameter raises a
+        :exc:`TypeError`.
+
+        Raises
+        ------
+        LoginFailure
+            The wrong credentials are passed.
+        HTTPException
+            An unknown HTTP related error occurred,
+            usually when it isn't 200 or the known incorrect credentials
+            passing status code.
+        TypeError
+            The incorrect number of parameters is passed.
+        """
+
+        n = len(args)
+        if n in (2, 1):
+            yield from getattr(self, '_login_' + str(n))(*args)
+        else:
+            raise TypeError('login() takes 1 or 2 positional arguments but {} were given'.format(n))
+
 
     @asyncio.coroutine
     def logout(self):
@@ -584,15 +600,15 @@ class Client:
         self._is_ready.clear()
 
     @asyncio.coroutine
-    def start(self, email, password):
+    def start(self, *args):
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
         """
-        yield from self.login(email, password)
+        yield from self.login(*args)
         yield from self.connect()
 
-    def run(self, email, password):
+    def run(self, *args):
         """A blocking call that abstracts away the `event loop`_
         initialisation from you.
 
@@ -603,7 +619,7 @@ class Client:
         Roughly Equivalent to: ::
 
             try:
-                loop.run_until_complete(start(email, password))
+                loop.run_until_complete(start(*args))
             except KeyboardInterrupt:
                 loop.run_until_complete(logout())
                 # cancel all tasks lingering
@@ -618,7 +634,7 @@ class Client:
         """
 
         try:
-            self.loop.run_until_complete(self.start(email, password))
+            self.loop.run_until_complete(self.start(*args))
         except KeyboardInterrupt:
             self.loop.run_until_complete(self.logout())
             pending = asyncio.Task.all_tasks()
