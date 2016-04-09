@@ -292,14 +292,14 @@ Basically, before:
 
 .. code-block:: python
 
-    client.login('email', 'password')
+    client.login('token')
     client.run()
 
 After:
 
 .. code-block:: python
 
-    client.run('email', 'password')
+    client.run('token')
 
 .. warning::
 
@@ -321,7 +321,7 @@ event loop then doing so is quite straightforward:
 
     @asyncio.coroutine
     def main_task():
-        yield from client.login('email', 'password')
+        yield from client.login('token')
         yield from client.connect()
 
     loop = asyncio.get_event_loop()

@@ -21,4 +21,4 @@ async def on_message_edit(before, after):
     fmt = '**{0.author}** edited their message:\n{1.content}'
     await client.send_message(after.channel, fmt.format(after, before))
 
-client.run('email', 'password')
+client.run('token')

@@ -34,4 +34,4 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-client.run('email', 'password')
+client.run('token')

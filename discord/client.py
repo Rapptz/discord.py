@@ -505,7 +505,7 @@ class Client:
 
         .. code-block:: python
 
-            await client.login('email', 'password')
+            await client.login('token')
 
             # or
 

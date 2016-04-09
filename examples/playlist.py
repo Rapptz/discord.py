@@ -100,4 +100,4 @@ class Bot(discord.Client):
 
 
 bot = Bot()
-bot.run('email', 'password')
+bot.run('token')
