@@ -74,6 +74,25 @@ def parse_time(timestamp):
         return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
 
+
+def oauth_url(client_id, permissions=None):
+    """A helper function that returns the OAuth2 URL for inviting the bot
+    into servers.
+
+    Parameters
+    -----------
+    client_id : str
+        The client ID for your bot.
+    permissions : :class:`Permissions`
+        The permissions you're requesting. If not given then you won't be requesting any
+        permissions.
+    """
+    url = 'https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot'.format(client_id)
+    if permissions is not None:
+        url = url + '&permissions=' + str(permissions.value)
+    return url
+
+
 def snowflake_time(id):
     """Returns the creation date in UTC of a discord id."""
     return datetime.datetime.utcfromtimestamp(((int(id) >> 22) + DISCORD_EPOCH) / 1000)

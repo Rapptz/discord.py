@@ -335,6 +335,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.snowflake_time
 
+.. autofunction:: discord.utils.oauth_url
+
 .. _discord-api-enums:
 
 Enumerations
