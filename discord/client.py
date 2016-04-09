@@ -450,9 +450,10 @@ class Client:
         Parameters
         ----------
         email : str
-            The email used to login.
+            The email used to login. The string 'token' if using
+            the Bot OAuth2 Token flow.
         password : str
-            The password used to login.
+            The password or token used to login.
 
         Raises
         ------
@@ -469,10 +470,10 @@ class Client:
             self.token = password
             self.headers['authorization'] = 'Bot {}'.format(self.token)
             resp = yield from self.session.get(endpoints.ME, headers=self.headers)
+            yield from resp.release()
             log.debug(request_logging_format.format(method='GET', response=resp))
 
             if resp.status != 200:
-                yield from resp.release()
                 if resp.status == 400:
                     raise LoginFailure('Improper token has been passed.')
                 else:
