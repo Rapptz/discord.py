@@ -358,7 +358,7 @@ class Client:
             server_id = data.get('guild_id')
             if user_id == self.user.id:
                 if self.is_voice_connected(server_id=server_id):
-                    self.voice.channel = self.get_channel(data.get('channel_id'))
+                    self.voice[server_id].channel = self.get_channel(data.get('channel_id'))
 
                 self.session_id = data.get('session_id')
                 log.debug('Session ID found: {}'.format(self.session_id))
