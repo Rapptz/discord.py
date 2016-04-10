@@ -91,8 +91,8 @@ class Client:
     -----------
     user : Optional[:class:`User`]
         Represents the connected client. None if not logged in.
-    voice : Optional[:class:`VoiceClient`]
-        Represents the current voice connection. None if you are not connected
+    voice : iterable of :class:`VoiceClient`
+        Dictionary  None if you are not connected
         to a voice channel. To connect to voice use :meth:`join_voice_channel`.
         To query the voice connection state use :meth:`is_voice_connected`.
     servers : iterable of :class:`Server`
@@ -116,7 +116,7 @@ class Client:
         self.ws = None
         self.token = None
         self.gateway = None
-        self.voice = None
+        self.voice = {}
         self.session_id = None
         self.sequence = 0
         self.loop = asyncio.get_event_loop() if loop is None else loop
@@ -355,14 +355,14 @@ class Client:
 
         if event == 'VOICE_STATE_UPDATE':
             user_id = data.get('user_id')
+            server_id = data.get('guild_id')
             if user_id == self.user.id:
-                if self.is_voice_connected():
-                    self.voice.channel = self.get_channel(data.get('channel_id'))
+                if self.is_voice_connected(server_id=server_id):
+                    self.voice[server_id].channel = self.get_channel(data.get('channel_id'))
 
                 self.session_id = data.get('session_id')
                 log.debug('Session ID found: {}'.format(self.session_id))
                 self._session_id_found.set()
-
 
         if event == 'VOICE_SERVER_UPDATE':
             self._voice_data_found.data = data
@@ -422,9 +422,10 @@ class Client:
         yield from self._make_websocket(initial=False)
         yield from self._reconnect_ws()
 
-        if self.is_voice_connected():
-            # update the websocket reference pointed to by voice
-            self.voice.main_ws = self.ws
+        # TODO: This should be fixed for multiple streams
+        #if self.is_voice_connected():
+        #    # update the websocket reference pointed to by voice
+        #    self.voice.main_ws = self.ws
 
     @asyncio.coroutine
     def _reconnect_ws(self):
@@ -587,15 +588,14 @@ class Client:
         if self.is_closed:
             return
 
-        if self.is_voice_connected():
-            yield from self.voice.disconnect()
-            self.voice = None
+        for stream in self.voice.values():
+            yield from stream.disconnect()
 
         if self.ws.open:
             yield from self.ws.close()
 
-
         yield from self.session.close()
+
         self.keep_alive.cancel()
         self._closed.set()
         self._is_ready.clear()
@@ -2557,8 +2557,8 @@ class Client:
             A voice client that is fully connected to the voice server.
         """
 
-        if self.is_voice_connected():
-            raise ClientException('Already connected to a voice channel')
+        if self.is_voice_connected(channel.server.id):
+            raise ClientException('Already connected to a voice channel in this server')
 
         if isinstance(channel, Object):
             channel = self.get_channel(channel.id)
@@ -2594,10 +2594,24 @@ class Client:
             'main_ws': self.ws
         }
 
-        self.voice = VoiceClient(**kwargs)
-        yield from self.voice.connect()
-        return self.voice
+        vc = VoiceClient(**kwargs)
 
-    def is_voice_connected(self):
-        """bool : Indicates if we are currently connected to a voice channel."""
-        return self.voice is not None and self.voice.is_connected()
+        self.voice[channel.server.id] = vc
+        yield from vc.connect()
+        return vc
+
+    def is_voice_connected(self, server_id):
+        """
+        Checks if currently connected to a voice channel in the specified server.
+
+        Parameters
+        ----------
+        server_id : str
+            The server ID to check.
+
+        Returns
+        -------
+        bool
+            If the client is connected or not.
+        """
+        return server_id in self.voice and self.voice[server_id].is_connected()
