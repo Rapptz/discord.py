@@ -445,6 +445,7 @@ class Client:
     def _login_1(self, token):
         log.info('logging in using static token')
         self.token = token
+        self.email = None
         self.headers['authorization'] = 'Bot {}'.format(self.token)
         resp = yield from self.session.get(endpoints.ME, headers=self.headers)
         yield from resp.release()
@@ -1448,12 +1449,13 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
-    def edit_profile(self, password, **fields):
+    def edit_profile(self, password=None, **fields):
         """|coro|
 
         Edits the current profile of the client.
 
-        All fields except ``password`` are optional.
+        If a bot account is used then the password field is optional,
+        otherwise it is required.
 
         The profile is **not** edited in place.
 
@@ -1469,7 +1471,8 @@ class Client:
         Parameters
         -----------
         password : str
-            The current password for the client's account.
+            The current password for the client's account. Not used
+            for bot accounts.
         new_password : str
             The new password you wish to change to.
         email : str
@@ -1486,6 +1489,8 @@ class Client:
             Editing your profile failed.
         InvalidArgument
             Wrong image format passed for ``avatar``.
+        ClientException
+            Password is required for non-bot accounts.
         """
 
         try:
@@ -1498,13 +1503,22 @@ class Client:
             else:
                 avatar = None
 
+        not_bot_account = not self.user.bot
+        if not_bot_account and password is None:
+            raise ClientException('Password is required for non-bot accounts.')
+
         payload = {
             'password': password,
-            'new_password': fields.get('new_password'),
-            'email': fields.get('email', self.email),
             'username': fields.get('username', self.user.name),
             'avatar': avatar
         }
+
+        if not_bot_account:
+            payload['email'] = fields.get('email', self.email)
+
+            if 'new_password' in fields:
+                payload['new_password'] = fields['new_password']
+
 
         r = yield from self.session.patch(endpoints.ME, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='PATCH', response=r))
@@ -1512,12 +1526,14 @@ class Client:
 
         data = yield from r.json()
         log.debug(request_success_log.format(response=r, json=payload, data=data))
-        self.token = data['token']
-        self.email = data['email']
-        self.headers['authorization'] = self.token
 
-        if self.cache_auth:
-            self._update_cache(self.email, password)
+        if not_bot_account:
+            self.token = data['token']
+            self.email = data['email']
+            self.headers['authorization'] = self.token
+
+            if self.cache_auth:
+                self._update_cache(self.email, password)
 
     @asyncio.coroutine
     def change_status(self, game=None, idle=False):
