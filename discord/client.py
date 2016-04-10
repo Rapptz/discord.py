@@ -1275,6 +1275,27 @@ class Client:
 
     # Member management
 
+    _current_batch = []
+
+    @asyncio.coroutine
+    def _batch_req(self):
+        yield from asyncio.sleep(2.0)
+
+        payload = {
+            'op': 8,
+            'd': {
+                'guild_id': self._current_batch,
+                'query': '',
+                'limit': 0
+            }
+        }
+
+        data = utils.to_json(payload)
+
+        self._current_batch = []
+
+        yield from self._send_ws(data)
+
     @asyncio.coroutine
     def request_offline_members(self, server):
         """|coro|
@@ -1297,20 +1318,17 @@ class Client:
         """
 
         if hasattr(server, 'id'):
-            guild_id = server.id
+            guild_ids = [server.id]
         else:
-            guild_id = [s.id for s in server]
+            guild_ids = [s.id for s in server]
 
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
+        do_batch = not self._current_batch
 
-        yield from self._send_ws(utils.to_json(payload))
+        self._current_batch.extend(guild_ids)
+
+        if do_batch:
+            yield from self._batch_req()
+
 
     @asyncio.coroutine
     def kick(self, member):
