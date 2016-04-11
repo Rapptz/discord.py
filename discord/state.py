@@ -46,7 +46,7 @@ class ListenerType(enum.Enum):
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
 log = logging.getLogger(__name__)
-ReadyState = namedtuple('ReadyState', ('launch', 'chunks'))
+ReadyState = namedtuple('ReadyState', ('launch', 'chunks', 'servers'))
 
 class ConnectionState:
     def __init__(self, dispatch, chunker, max_messages, *, loop):
@@ -154,6 +154,7 @@ class ConnectionState:
         # get all the chunks
         chunks = [f for f in self._ready_state.chunks if not f.done()]
         if chunks:
+            yield from self.chunker(self._ready_state.servers)
             yield from asyncio.wait(chunks)
 
         # remove the state
@@ -163,7 +164,7 @@ class ConnectionState:
         self.dispatch('ready')
 
     def parse_ready(self, data):
-        self._ready_state = ReadyState(launch=asyncio.Event(), chunks=[])
+        self._ready_state = ReadyState(launch=asyncio.Event(), chunks=[], servers=[])
         self.user = User(**data['user'])
         guilds = data.get('guilds')
 
@@ -337,7 +338,6 @@ class ConnectionState:
 
         # check if it requires chunking
         if server.large:
-            yield from self.chunker(server)
             chunks = list(self.chunks_needed(server))
 
             if unavailable == False:
@@ -350,6 +350,7 @@ class ConnectionState:
                     state = self._ready_state
                     state.launch.clear()
                     if chunks:
+                        state.servers.append(server)
                         state.chunks.extend(chunks)
                 except AttributeError:
                     # the _ready_state attribute is only there during
@@ -360,6 +361,7 @@ class ConnectionState:
 
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here
+            yield from self.chunker(server)
             if chunks:
                 yield from asyncio.wait(chunks)
 
