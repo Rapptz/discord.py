@@ -510,7 +510,7 @@ class Client:
 
             # or
 
-            await client.login('token')
+            await client.login('email', 'password')
 
         More than 2 parameters or less than 1 parameter raises a
         :exc:`TypeError`.
