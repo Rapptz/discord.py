@@ -217,7 +217,7 @@ class ConnectionState:
         member_id = user['id']
         member = server.get_member(member_id)
         if member is None:
-            if 'name' not in user:
+            if 'username' not in user:
                 # sometimes we receive 'incomplete' member data post-removal.
                 # skip these useless cases.
                 return
