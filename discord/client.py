@@ -1297,20 +1297,21 @@ class Client:
         """
 
         if hasattr(server, 'id'):
-            guild_id = server.id
+            guild_id = [server.id]
         else:
             guild_id = [s.id for s in server]
 
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
+        for idx in range(0, len(guild_id), 75):
+            payload = {
+                'op': 8,
+                'd': {
+                    'guild_id': guild_id[idx:idx+75],
+                    'query': '',
+                    'limit': 0
+                }
             }
-        }
 
-        yield from self._send_ws(utils.to_json(payload))
+            yield from self._send_ws(utils.to_json(payload))
 
     @asyncio.coroutine
     def kick(self, member):
