@@ -46,7 +46,7 @@ class ListenerType(enum.Enum):
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
 log = logging.getLogger(__name__)
-ReadyState = namedtuple('ReadyState', ('launch', 'chunks', 'servers'))
+ReadyState = namedtuple('ReadyState', ('launch', 'servers'))
 
 class ConnectionState:
     def __init__(self, dispatch, chunker, max_messages, *, loop):
@@ -85,6 +85,8 @@ class ConnectionState:
                 if passed:
                     future.set_result(result)
                     removed.append(i)
+                    if listener.type == ListenerType.chunk:
+                        break
 
         for index in reversed(removed):
             del self._listeners[index]
@@ -134,16 +136,7 @@ class ConnectionState:
             yield self.receive_chunk(server.id)
 
     @asyncio.coroutine
-    def _delay_ready(self, large_servers):
-        if len(large_servers):
-            # for regular accounts with < 100 guilds you will
-            # get a regular READY packet without the unavailable
-            # streaming so if this is non-empty then it's a regular
-            # account and it needs chunking.
-            yield from self.chunker(large_servers)
-            for server in large_servers:
-                self._ready_state.chunks.extend(self.chunks_needed(server))
-
+    def _delay_ready(self):
         launch = self._ready_state.launch
         while not launch.is_set():
             # this snippet of code is basically waiting 2 seconds
@@ -152,9 +145,18 @@ class ConnectionState:
             yield from asyncio.sleep(2)
 
         # get all the chunks
-        chunks = [f for f in self._ready_state.chunks if not f.done()]
+        servers = self._ready_state.servers
+        chunks = []
+        for server in servers:
+            chunks.extend(self.chunks_needed(server))
+
+        # we only want to request ~75 guilds per chunk request.
+        splits = [servers[i:i + 75] for i in range(0, len(servers), 75)]
+        for split in splits:
+            yield from self.chunker(split)
+
+        # wait for the chunks
         if chunks:
-            yield from self.chunker(self._ready_state.servers)
             yield from asyncio.wait(chunks)
 
         # remove the state
@@ -164,21 +166,21 @@ class ConnectionState:
         self.dispatch('ready')
 
     def parse_ready(self, data):
-        self._ready_state = ReadyState(launch=asyncio.Event(), chunks=[], servers=[])
+        self._ready_state = ReadyState(launch=asyncio.Event(), servers=[])
         self.user = User(**data['user'])
         guilds = data.get('guilds')
 
-        large_servers = []
+        servers = self._ready_state.servers
         for guild in guilds:
             server = self._add_server_from_data(guild)
             if server.large:
-                large_servers.append(server)
+                servers.append(server)
 
         for pm in data.get('private_channels'):
             self._add_private_channel(PrivateChannel(id=pm['id'],
                                      user=User(**pm['recipient'])))
 
-        utils.create_task(self._delay_ready(large_servers), loop=self.loop)
+        utils.create_task(self._delay_ready(), loop=self.loop)
 
     def parse_message_create(self, data):
         channel = self.get_channel(data.get('channel_id'))
@@ -215,7 +217,13 @@ class ConnectionState:
         member_id = user['id']
         member = server.get_member(member_id)
         if member is None:
-            return
+            if 'name' not in user:
+                # sometimes we receive 'incomplete' member data post-removal.
+                # skip these useless cases.
+                return
+
+            member = self._make_member(server, data)
+            server._add_member(member)
 
         old_member = copy.copy(member)
         member.status = data.get('status')
@@ -338,8 +346,6 @@ class ConnectionState:
 
         # check if it requires chunking
         if server.large:
-            chunks = list(self.chunks_needed(server))
-
             if unavailable == False:
                 # check if we're waiting for 'useful' READY
                 # and if we are, we don't want to dispatch any
@@ -349,9 +355,7 @@ class ConnectionState:
                 try:
                     state = self._ready_state
                     state.launch.clear()
-                    if chunks:
-                        state.servers.append(server)
-                        state.chunks.extend(chunks)
+                    state.servers.append(server)
                 except AttributeError:
                     # the _ready_state attribute is only there during
                     # processing of useful READY.
@@ -362,6 +366,7 @@ class ConnectionState:
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here
             yield from self.chunker(server)
+            chunks = list(self.chunks_needed(server))
             if chunks:
                 yield from asyncio.wait(chunks)
 
