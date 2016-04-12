@@ -314,7 +314,9 @@ class ConnectionState:
             member.name = user['username']
             member.discriminator = user['discriminator']
             member.avatar = user['avatar']
+            member.bot = user.get('bot', False)
             member.roles = [server.default_role]
+
             # update the roles
             for role in server.roles:
                 if role.id in data['roles']:
