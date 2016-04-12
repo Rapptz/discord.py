@@ -379,7 +379,7 @@ class Client:
         else:
             result = func(data)
             if asyncio.iscoroutine(result):
-                utils.create_task(result, loop=self.loop)
+               yield from result
 
     @asyncio.coroutine
     def _make_websocket(self, initial=True):
