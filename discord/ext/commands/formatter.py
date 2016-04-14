@@ -28,6 +28,7 @@ import itertools
 import inspect
 
 from .core import GroupMixin, Command
+from .errors import CommandError
 
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
@@ -193,7 +194,10 @@ class HelpFormatter:
                 # care about them, so just return true.
                 return True
 
-            return cmd.can_run(self.context)
+            try:
+                return cmd.can_run(self.context)
+            except CommandError:
+                return False
 
         iterator = self.command.commands.items() if not self.is_cog() else self.context.bot.commands.items()
         return filter(predicate, iterator)

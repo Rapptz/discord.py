@@ -929,16 +929,23 @@ class Client:
         return channel
 
     @asyncio.coroutine
-    def _rate_limit_helper(self, name, method, url, data):
+    def _rate_limit_helper(self, name, method, url, data, retries=0):
         resp = yield from self.session.request(method, url, data=data, headers=self.headers)
         tmp = request_logging_format.format(method=method, response=resp)
         log_fmt = 'In {}, {}'.format(name, tmp)
         log.debug(log_fmt)
+
+        if resp.status == 502 and retries < 5:
+            # retry the 502 request unconditionally
+            log.info('Retrying the 502 request to ' + name)
+            yield from asyncio.sleep(retries + 1)
+            return (yield from self._rate_limit_helper(name, method, url, data, retries + 1))
+
         if resp.status == 429:
             retry = float(resp.headers['Retry-After']) / 1000.0
             yield from resp.release()
             yield from asyncio.sleep(retry)
-            return (yield from self._rate_limit_helper(name, method, url, data))
+            return (yield from self._rate_limit_helper(name, method, url, data, retries))
 
         return resp
 
