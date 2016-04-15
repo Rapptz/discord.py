@@ -1587,9 +1587,13 @@ class Client:
         log.debug('Sending "{}" to change status'.format(sent))
         yield from self._send_ws(sent)
         for server in self.servers:
-            server.me.game = game
+            me = server.me
+            if me is None:
+                continue
+
+            me.game = game
             status = Status.idle if idle_since else Status.online
-            server.me.status = status
+            me.status = status
 
     # Channel management
 
