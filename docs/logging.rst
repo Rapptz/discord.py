@@ -17,7 +17,7 @@ Placed at the start of the application. This will output the logs from
 discord as well as other libraries that uses the ``logging`` module
 directly to the console.
 
-The optinal ``level`` argument specifies what level of events to log
+The optional ``level`` argument specifies what level of events to log
 out and can any of ``CRITICAL``, ``ERROR``, ``WARNING``, ``INFO``, and
 ``DEBUG`` and if not specified defaults to ``WARNING``.
 
