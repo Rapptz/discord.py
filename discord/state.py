@@ -338,6 +338,17 @@ class ConnectionState:
         return self._add_server_from_data(data)
 
     @asyncio.coroutine
+    def _chunk_and_dispatch(self, server, unavailable):
+        yield from self.chunker(server)
+        chunks = list(self.chunks_needed(server))
+        if chunks:
+            yield from asyncio.wait(chunks)
+
+        if unavailable == False:
+            self.dispatch('server_available', server)
+        else:
+            self.dispatch('server_join', server)
+
     def parse_guild_create(self, data):
         unavailable = data.get('unavailable')
         if unavailable == True:
@@ -367,11 +378,8 @@ class ConnectionState:
 
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here
-            yield from self.chunker(server)
-            chunks = list(self.chunks_needed(server))
-            if chunks:
-                yield from asyncio.wait(chunks)
-
+            utils.create_task(self._chunk_and_dispatch(server, unavailable), loop=self.loop)
+            return
 
         # Dispatch available if newly available
         if unavailable == False:

@@ -378,8 +378,6 @@ class Client:
             log.info('Unhandled event {}'.format(event))
         else:
             result = func(data)
-            if asyncio.iscoroutine(result):
-               yield from result
 
     @asyncio.coroutine
     def _make_websocket(self, initial=True):
