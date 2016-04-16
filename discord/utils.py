@@ -75,7 +75,7 @@ def parse_time(timestamp):
     return None
 
 
-def oauth_url(client_id, permissions=None):
+def oauth_url(client_id, permissions=None, server=None):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into servers.
 
@@ -86,10 +86,14 @@ def oauth_url(client_id, permissions=None):
     permissions : :class:`Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
+    server : :class:`Server`
+        The server to pre-select in the authorization screen, if available.
     """
-    url = 'https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot'.format(client_id)
+    url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
+    if server is not None:
+        url = url + "&guild_id=" + server.id
     return url
 
 
