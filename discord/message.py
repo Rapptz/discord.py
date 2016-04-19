@@ -198,7 +198,7 @@ class Message:
 
         pattern = re.compile('|'.join(transformations.keys()))
         result = pattern.sub(repl, self.content)
-        return result.replace('@everyone', '@\u200beveryone')
+        return result.replace('@', '@\u200b')
 
     def _handle_upgrades(self, channel_id):
         self.server = None
