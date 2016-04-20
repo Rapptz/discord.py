@@ -351,7 +351,7 @@ class VoiceClient:
         # Encrypt and return the data
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
 
-    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, before_options=None, headers=None, after=None):
+    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, before_options=None, headers=None, after=None, output=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
         audio.
 
@@ -393,6 +393,9 @@ class VoiceClient:
         after : callable
             The finalizer that is called after the stream is done being
             played. All exceptions the finalizer throws are silently discarded.
+        output : file ``object`` or ``None``
+            Optionally config ffmpeg's output to a file object if you dont want
+            it to bug out and print ffmpeg wierd crap in your bot's console window.
 
         Raises
         -------
@@ -405,6 +408,7 @@ class VoiceClient:
             A stream player with specific operations.
             See :meth:`create_stream_player`.
         """
+       
         command = 'ffmpeg' if not use_avconv else 'avconv'
         input_name = '-' if pipe else shlex.quote(filename)
         before_args = ""
@@ -426,8 +430,9 @@ class VoiceClient:
 
         stdin = None if not pipe else filename
         args = shlex.split(cmd)
+        stdout = None if not output else subprocess.PIPE
         try:
-            p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
+            p = subprocess.Popen(args, stdin=stdin, stdout=stdout)
             return ProcessPlayer(p, self, after)
         except FileNotFoundError as e:
             raise ClientException('ffmpeg/avconv was not found in your PATH environment variable') from e
