@@ -178,7 +178,8 @@ class Bot(GroupMixin, discord.Client):
         ``"Command {0.name} has no subcommands."``. The first format argument is the
         :class:`Command` attempted to get a subcommand and the second is the name.
     """
-    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
+    def __init__(self, command_prefix, formatter=None, description=None,
+                 pm_help=False, override_event_control=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
@@ -186,6 +187,7 @@ class Bot(GroupMixin, discord.Client):
         self.extensions = {}
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+        self.override_event_control = override_event_control
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
@@ -229,10 +231,8 @@ class Bot(GroupMixin, discord.Client):
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
         ev = 'on_' + event_name
-        if ev in self.extra_events:
-            for event in self.extra_events[ev]:
-                coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.utils.create_task(coro, loop=self.loop)
+        if not self.override_event_control or not hasattr(self,ev):
+            discord.utils.create_task(self.process_events(*args,event=ev,**kwargs))
 
     # utility "send_*" functions
 
@@ -611,6 +611,17 @@ class Bot(GroupMixin, discord.Client):
             exc = CommandNotFound('Command "{}" is not found'.format(invoker))
             self.dispatch('command_error', exc, ctx)
 
+    async def process_events(self,*args,event=None,**kwargs):
+        if event is None:
+            event = inspect.stack()[1][3]
+        #event = 'on_' + event_name
+        if event in self.extra_events:
+            for event_listener in self.extra_events[event]:
+                coro = self._run_extra(event_listener, event, *args, **kwargs)
+                discord.utils.create_task(coro, loop=self.loop)
+
     @asyncio.coroutine
     def on_message(self, message):
         yield from self.process_commands(message)
+        if self.override_event_control:
+            yield from self.process_events(message)
