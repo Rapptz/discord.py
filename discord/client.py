@@ -1940,6 +1940,36 @@ class Client:
         data = yield from resp.json()
         return [User(**user['user']) for user in data]
 
+    @asyncio.coroutine
+    def get_guild_info(self, gid):
+        """|coro|
+
+        Retrieves the details for a single guild given the ID of that guild.
+
+        Parameters
+        ----------
+        gid : str
+            The ID of the server you want information on.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to get the information.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        --------
+        :class:`server`
+            A server object representing the server information.
+        """
+        url = '{0}/{1}'.format(endpoints.SERVERS, gid)
+        resp = yield from self.session.get(url, params=self.headers)
+        log.debug(request_logging_format.format(method='GET', response=resp))
+        yield from utils._verify_successful_response(resp)
+        data = yield from resp.json()
+        return Server(**data)
+
     # Invite management
 
     def _fill_invite_data(self, data):
