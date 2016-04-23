@@ -118,6 +118,7 @@ class Client:
         self.gateway = None
         self.voice = None
         self.session_id = None
+        self.keep_alive = None
         self.sequence = 0
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
@@ -589,12 +590,13 @@ class Client:
             yield from self.voice.disconnect()
             self.voice = None
 
-        if self.ws.open:
+        if self.ws is not None and self.ws.open:
             yield from self.ws.close()
 
+        if self.keep_alive is not None:
+            self.keep_alive.cancel()
 
         yield from self.session.close()
-        self.keep_alive.cancel()
         self._closed.set()
         self._is_ready.clear()
 
