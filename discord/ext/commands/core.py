@@ -155,7 +155,7 @@ class Command:
         return result
 
     def _convert_member(self, bot, message, argument):
-        match = re.match(r'<@([0-9]+)>', argument)
+        match = re.match(r'<@([0-9]+)>$', argument)
         server = message.server
         result = None
         if match is None:
@@ -179,7 +179,7 @@ class Command:
     _convert_user = _convert_member
 
     def _convert_channel(self, bot, message, argument):
-        match = re.match(r'<#([0-9]+)>', argument)
+        match = re.match(r'<#([0-9]+)>$', argument)
         result = None
         server = message.server
         if match is None:

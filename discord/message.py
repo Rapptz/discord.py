@@ -198,7 +198,17 @@ class Message:
 
         pattern = re.compile('|'.join(transformations.keys()))
         result = pattern.sub(repl, self.content)
-        return result.replace('@everyone', '@\u200beveryone')
+
+        transformations = {
+            '@everyone': '@\u200beveryone',
+            '@here': '@\u200bhere'
+        }
+
+        def repl2(obj):
+            return transformations.get(obj.group(0), '')
+
+        pattern = re.compile('|'.join(transformations.keys()))
+        return pattern.sub(repl2, result)
 
     def _handle_upgrades(self, channel_id):
         self.server = None
