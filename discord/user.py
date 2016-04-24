@@ -60,6 +60,7 @@ class User(object):
         self.id = id
         self.discriminator = discriminator
         self.avatar = avatar
+        self.extra = kwargs
 
     def __str__(self):
         return self.name

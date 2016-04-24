@@ -787,7 +787,7 @@ class Client(object):
         log.debug(request_success_log.format(response=response, json=payload, data=data))
         return Message(channel=channel, **data)
 
-    def login(self, email, password):
+    def login(self, *args):
         """Logs in the user with the following credentials and initialises
         the connection to Discord.
 
@@ -801,29 +801,47 @@ class Client(object):
         :param str email: The email used to login.
         :param str password: The password used to login.
         """
+        if len(args) in [1,2]:
+            if len(args)==1:
+                (self.token,) = args
+                self.email = None
+                self.headers['authorization'] = 'Bot {}'.format(self.token)
+                resp = requests.get(endpoints.ME, headers=self.headers)
+                #log.debug(request_logging_format.format(response=resp.status_code))
+                if resp.status_code != 200:
+                    if resp.status_code == 401:
+                        raise LoginFailure('Improper token has been passed.')
+                    else:
+                        raise HTTPException(resp.status_code, None)
+                log.info('token auth returned status code {}'.format(resp.status_code))
+                gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+                self._create_websocket(gateway.json().get('url'), reconnect=False)
+                self._is_logged_in = True
+                
+            if len(args)==2:
+                (email, password) = args
+                payload = {
+                    'email': email,
+                    'password': password
+                }
 
-        payload = {
-            'email': email,
-            'password': password
-        }
+                r = requests.post(endpoints.LOGIN, json=payload)
+                log.debug(request_logging_format.format(response=r))
+                if r.status_code == 400:
+                    raise LoginFailure('Improper credentials have been passed.')
+                elif r.status_code != 200:
+                    raise HTTPException(r)
 
-        r = requests.post(endpoints.LOGIN, json=payload)
-        log.debug(request_logging_format.format(response=r))
-        if r.status_code == 400:
-            raise LoginFailure('Improper credentials have been passed.')
-        elif r.status_code != 200:
-            raise HTTPException(r)
+                log.info('logging in returned status code {}'.format(r.status_code))
+                self.email = email
 
-        log.info('logging in returned status code {}'.format(r.status_code))
-        self.email = email
+                body = r.json()
+                self.token = body['token']
+                self.headers['authorization'] = self.token
 
-        body = r.json()
-        self.token = body['token']
-        self.headers['authorization'] = self.token
-
-        gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
-        self._create_websocket(gateway.json().get('url'), reconnect=False)
-        self._is_logged_in = True
+                gateway = requests.get(endpoints.GATEWAY, headers=self.headers)
+                self._create_websocket(gateway.json().get('url'), reconnect=False)
+                self._is_logged_in = True
 
     def register(self, username, invite, fingerprint=None):
         """Register a new unclaimed account using an invite to a server.

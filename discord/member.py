@@ -75,6 +75,7 @@ class Member(User):
     """
 
     def __init__(self, deaf, joined_at, user, roles, mute, **kwargs):
+        self.extra = kwargs
         super(Member, self).__init__(**user)
         self.deaf = deaf
         self.mute = mute
