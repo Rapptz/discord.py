@@ -612,6 +612,7 @@ class Client:
                     raise ClientException('Unexpected websocket closure received')
                 elif self.ws.close_code != 1000:
                     log.info("Websocket closed on us. Reconnecting.")
+                    self.keep_alive_handler.cancel()
                     try:
                         yield from asyncio.wait_for(self._ws_graceful_reconnect(), timeout=None, loop=self.loop)
                     except Exception:
@@ -623,6 +624,8 @@ class Client:
                             log.info("Mismatch between client state and Websocket state. Correcting.")
                             yield from self._closed.clear()
                             yield from self._reconnect_ws()
+                            if self.is_voice_connected():
+                                self.voice.main_ws = self.ws
                             continue
                         elif self.is_closed:
                             log.info("Websocket was created but did not connect to gateway.")
@@ -631,6 +634,8 @@ class Client:
                         else:
                             log.info("Reconnected to gateway.")
                             yield from self._reconnect_ws()
+                            if self.is_voice_connected():
+                                self.voice.main_ws = self.ws
                             continue
 
             yield from self.received_message(msg)
