@@ -31,7 +31,7 @@ from .message import Message
 from .channel import Channel, PrivateChannel
 from .member import Member
 from .role import Role
-from . import utils
+from . import utils, compat
 from .enums import Status
 
 
@@ -59,6 +59,8 @@ class ConnectionState:
 
     def clear(self):
         self.user = None
+        self.sequence = None
+        self.session_id = None
         self._servers = {}
         self._private_channels = {}
         # extra dict to look up private channels by user id
@@ -180,7 +182,7 @@ class ConnectionState:
             self._add_private_channel(PrivateChannel(id=pm['id'],
                                      user=User(**pm['recipient'])))
 
-        utils.create_task(self._delay_ready(), loop=self.loop)
+        compat.create_task(self._delay_ready(), loop=self.loop)
 
     def parse_message_create(self, data):
         channel = self.get_channel(data.get('channel_id'))
@@ -378,7 +380,7 @@ class ConnectionState:
 
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here
-            utils.create_task(self._chunk_and_dispatch(server, unavailable), loop=self.loop)
+            compat.create_task(self._chunk_and_dispatch(server, unavailable), loop=self.loop)
             return
 
         # Dispatch available if newly available

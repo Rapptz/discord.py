@@ -232,7 +232,7 @@ class Bot(GroupMixin, discord.Client):
         if ev in self.extra_events:
             for event in self.extra_events[ev]:
                 coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.utils.create_task(coro, loop=self.loop)
+                discord.compat.create_task(coro, loop=self.loop)
 
     # utility "send_*" functions
 

@@ -526,6 +526,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: GatewayNotFound
 
+.. autoexception:: ConnectionClosed
+
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded

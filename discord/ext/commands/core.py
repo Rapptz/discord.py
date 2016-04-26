@@ -142,9 +142,9 @@ class Command:
 
         injected = inject_context(ctx, coro)
         if self.instance is not None:
-            discord.utils.create_task(injected(self.instance, error, ctx), loop=ctx.bot.loop)
+            discord.compat.create_task(injected(self.instance, error, ctx), loop=ctx.bot.loop)
         else:
-            discord.utils.create_task(injected(error, ctx), loop=ctx.bot.loop)
+            discord.compat.create_task(injected(error, ctx), loop=ctx.bot.loop)
 
     def _get_from_servers(self, bot, getter, argument):
         result = None
