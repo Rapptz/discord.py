@@ -236,7 +236,3 @@ def _bytes_to_base64_data(data):
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
-try:
-    create_task = asyncio.ensure_future
-except AttributeError:
-    create_task = asyncio.async
