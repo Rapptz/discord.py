@@ -123,6 +123,7 @@ class Client:
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
+        self.reconnect_times = 0
 
         max_messages = options.get('max_messages')
         if max_messages is None or max_messages < 100:
@@ -160,6 +161,22 @@ class Client:
     def _send_ws(self, data):
         self.dispatch('socket_raw_send', data)
         yield from self.ws.send(data)
+
+    @asyncio.coroutine
+    def _ws_graceful_reconnect(self):
+        self.reconnect_times += 1
+        try:
+            yield from asyncio.wait_for(self._make_websocket(initial=False), timeout=None, loop=self.loop)
+        except Exception:
+            self.gateway = self._get_gateway()
+            try:
+                yield from asyncio.wait_for(self._make_websocket(initial=False), timeout=None, loop=self.loop)
+            except Exception:
+                yield from asyncio.wait_for(asyncio.sleep(15), timeout=None, loop=self.loop)
+                try:
+                    yield from asyncio.wait_for(self._make_websocket(initial=False), timeout=None, loop=self.loop)
+                except Exception:
+                    raise asyncio.CancelledError
 
     @asyncio.coroutine
     def _login_via_cache(self, email, password):
@@ -343,6 +360,27 @@ class Client:
             log.info('Unhandled op {}'.format(op))
             return
 
+        if op == 9:
+            log.info("Asked to identify on resume.")
+            payload = {
+                'op': 2,
+                'd': {
+                    'token': self.token,
+                    'properties': {
+                        '$os': sys.platform,
+                        '$browser': 'discord.py',
+                        '$device': 'discord.py',
+                        '$referrer': '',
+                        '$referring_domain': ''
+                    },
+                    'compress': True,
+                    'large_threshold': 250,
+                    'v': 3
+                }
+            }
+            yield from self._send_ws(utils.to_json(payload))
+            return
+
         event = msg.get('t')
         is_ready = event == 'READY'
 
@@ -430,6 +468,7 @@ class Client:
         payload = {
             'op': 6,
             'd': {
+                'token': self.token,
                 'session_id': self.session_id,
                 'seq': self.sequence
             }
@@ -571,9 +610,33 @@ class Client:
                     continue
                 elif not self._is_ready.is_set():
                     raise ClientException('Unexpected websocket closure received')
-                else:
-                    yield from self.close()
-                    break
+                elif self.ws.close_code != 1000:
+                    log.info("Websocket closed on us. Reconnecting.")
+                    self.keep_alive.cancel()
+                    try:
+                        yield from asyncio.wait_for(self._ws_graceful_reconnect(), timeout=None, loop=self.loop)
+                    except Exception:
+                        log.info("Failed reconnecting Websocket. Closing.")
+                        yield from self.close()
+                        break
+                    else:
+                        if self.is_closed and self.ws.open:
+                            log.info("Mismatch between client state and Websocket state. Correcting.")
+                            yield from self._closed.clear()
+                            yield from self._reconnect_ws()
+                            if self.is_voice_connected():
+                                self.voice.main_ws = self.ws
+                            continue
+                        elif self.is_closed:
+                            log.info("Websocket was created but did not connect to gateway.")
+                            yield from self.close()
+                            break
+                        else:
+                            log.info("Reconnected to gateway.")
+                            yield from self._reconnect_ws()
+                            if self.is_voice_connected():
+                                self.voice.main_ws = self.ws
+                            continue
 
             yield from self.received_message(msg)
 
