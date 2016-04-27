@@ -414,7 +414,7 @@ class Client:
                 }
             }
 
-            if self.shard_id and self.shard_count:
+            if self.shard_id is not None and self.shard_count is not None:
                 payload['d']['shard'] = [self.shard_id, self.shard_count]
 
             yield from self._send_ws(utils.to_json(payload))
