@@ -415,7 +415,7 @@ class Client:
         # if we get redirected then we need to recreate the websocket
         # when this recreation happens we have to try to do a reconnection
         log.info('redirecting websocket from {} to {}'.format(self.gateway, url))
-        self.keep_alive_handler.cancel()
+        self.keep_alive.cancel()
 
         self.gateway = url
         yield from self._make_websocket(initial=False)
