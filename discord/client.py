@@ -38,7 +38,7 @@ from .errors import *
 from .state import ConnectionState
 from .permissions import Permissions
 from . import utils, compat
-from .enums import ChannelType, ServerRegion, Status
+from .enums import ChannelType, ServerRegion
 from .voice_client import VoiceClient
 from .iterators import LogsFromIterator
 from .gateway import *
@@ -48,7 +48,7 @@ import aiohttp
 import websockets
 
 import logging, traceback
-import sys, time, re, json
+import sys, re
 import tempfile, os, hashlib
 import itertools
 from random import randint as random_integer
@@ -139,11 +139,6 @@ class Client:
         self._closed = asyncio.Event(loop=self.loop)
         self._is_logged_in = asyncio.Event(loop=self.loop)
         self._is_ready = asyncio.Event(loop=self.loop)
-
-        # These two events correspond to the two events necessary
-        # for a connection to be made
-        self._voice_data_found = asyncio.Event(loop=self.loop)
-        self._session_id_found = asyncio.Event(loop=self.loop)
 
     # internals
 
@@ -279,72 +274,6 @@ class Client:
         """
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
-
-    @asyncio.coroutine
-    def received_message(self, msg):
-        self.dispatch('socket_raw_receive', msg)
-
-        if isinstance(msg, bytes):
-            msg = zlib.decompress(msg, 15, 10490000) # This is 10 MiB
-            msg = msg.decode('utf-8')
-
-        msg = json.loads(msg)
-
-        log.debug('WebSocket Event: {}'.format(msg))
-        self.dispatch('socket_response', msg)
-
-        op = msg.get('op')
-        data = msg.get('d')
-
-        if 's' in msg:
-            self.sequence = msg['s']
-
-        if op == 7:
-            # redirect op code
-            yield from self.ws.close()
-            yield from self.redirect_websocket(data.get('url'))
-            return
-
-        if op != 0:
-            log.info('Unhandled op {}'.format(op))
-            return
-
-        event = msg.get('t')
-        is_ready = event == 'READY'
-
-        if is_ready:
-            self.connection.clear()
-            self.session_id = data['session_id']
-
-        if is_ready or event == 'RESUMED':
-            interval = data['heartbeat_interval'] / 1000.0
-            self.keep_alive = compat.create_task(self.keep_alive_handler(interval), loop=self.loop)
-
-        if event == 'VOICE_STATE_UPDATE':
-            user_id = data.get('user_id')
-            if user_id == self.user.id:
-                if self.is_voice_connected():
-                    self.voice.channel = self.get_channel(data.get('channel_id'))
-
-                self.session_id = data.get('session_id')
-                log.debug('Session ID found: {}'.format(self.session_id))
-                self._session_id_found.set()
-
-
-        if event == 'VOICE_SERVER_UPDATE':
-            self._voice_data_found.data = data
-            log.debug('Voice connection data found: {}'.format(data))
-            self._voice_data_found.set()
-            return
-
-        parser = 'parse_' + event.lower()
-
-        try:
-            func = getattr(self.connection, parser)
-        except AttributeError:
-            log.info('Unhandled event {}'.format(event))
-        else:
-            result = func(data)
 
     # login state management
 
@@ -2442,7 +2371,6 @@ class Client:
         :class:`VoiceClient`
             A voice client that is fully connected to the voice server.
         """
-
         if self.is_voice_connected():
             raise ClientException('Already connected to a voice channel')
 
@@ -2454,29 +2382,29 @@ class Client:
 
         log.info('attempting to join voice channel {0.name}'.format(channel))
 
-        payload = {
-            'op': 4,
-            'd': {
-                'guild_id': channel.server.id,
-                'channel_id': channel.id,
-                'self_mute': False,
-                'self_deaf': False
-            }
-        }
+        def session_id_found(data):
+            user_id = data.get('user_id')
+            return user_id == self.user.id
 
-        yield from self._send_ws(utils.to_json(payload))
-        yield from asyncio.wait_for(self._session_id_found.wait(), timeout=5.0, loop=self.loop)
-        yield from asyncio.wait_for(self._voice_data_found.wait(), timeout=5.0, loop=self.loop)
+        # register the futures for waiting
+        session_id_future = self.ws.wait_for('VOICE_STATE_UPDATE', session_id_found)
+        voice_data_future = self.ws.wait_for('VOICE_SERVER_UPDATE', lambda d: True)
 
-        self._session_id_found.clear()
-        self._voice_data_found.clear()
+        # request joining
+        yield from self.ws.voice_state(channel.server.id, channel.id)
+        session_id_data = yield from asyncio.wait_for(session_id_future, timeout=10.0, loop=self.loop)
+        data = yield from asyncio.wait_for(voice_data_future, timeout=10.0, loop=self.loop)
+
+        # todo: multivoice
+        if self.is_voice_connected():
+            self.voice.channel = self.get_channel(session_id_data.get('channel_id'))
 
         kwargs = {
             'user': self.user,
             'channel': channel,
-            'data': self._voice_data_found.data,
+            'data': data,
             'loop': self.loop,
-            'session_id': self.session_id,
+            'session_id': session_id_data.get('session_id'),
             'main_ws': self.ws
         }
 

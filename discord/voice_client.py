@@ -55,6 +55,7 @@ import nacl.secret
 log = logging.getLogger(__name__)
 
 from . import utils
+from .gateway import *
 from .errors import ClientException, InvalidArgument
 from .opus import Encoder as OpusEncoder
 
@@ -173,7 +174,6 @@ class VoiceClient:
         self.sequence = 0
         self.timestamp = 0
         self.encoder = OpusEncoder(48000, 2)
-        self.secret_key = []
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
     def checked_add(self, attr, value, limit):
@@ -182,87 +182,6 @@ class VoiceClient:
             setattr(self, attr, 0)
         else:
             setattr(self, attr, val + value)
-
-    @asyncio.coroutine
-    def keep_alive_handler(self, delay):
-        try:
-            while True:
-                payload = {
-                    'op': 3,
-                    'd': int(time.time())
-                }
-
-                msg = 'Keeping voice websocket alive with timestamp {}'
-                log.debug(msg.format(payload['d']))
-                yield from self.ws.send(utils.to_json(payload))
-                yield from asyncio.sleep(delay)
-        except asyncio.CancelledError:
-            pass
-
-    @asyncio.coroutine
-    def received_message(self, msg):
-        log.debug('Voice websocket frame received: {}'.format(msg))
-        op = msg.get('op')
-        data = msg.get('d')
-
-        if op == 2:
-            delay = (data['heartbeat_interval'] / 100.0) - 5
-            self.keep_alive = utils.create_task(self.keep_alive_handler(delay), loop=self.loop)
-            yield from self.initial_connection(data)
-        elif op == 4:
-            yield from self.connection_ready(data)
-
-    @asyncio.coroutine
-    def initial_connection(self, data):
-        self.ssrc = data.get('ssrc')
-        self.voice_port = data.get('port')
-        packet = bytearray(70)
-        struct.pack_into('>I', packet, 0, self.ssrc)
-        self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
-        recv = yield from self.loop.sock_recv(self.socket, 70)
-        log.debug('received packet in initial_connection: {}'.format(recv))
-
-        # the ip is ascii starting at the 4th byte and ending at the first null
-        ip_start = 4
-        ip_end = recv.index(0, ip_start)
-        self.ip = recv[ip_start:ip_end].decode('ascii')
-
-        # the port is a little endian unsigned short in the last two bytes
-        # yes, this is different endianness from everything else
-        self.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
-
-        log.debug('detected ip: {} port: {}'.format(self.ip, self.port))
-
-        payload = {
-            'op': 1,
-            'd': {
-                'protocol': 'udp',
-                'data': {
-                    'address': self.ip,
-                    'port': self.port,
-                    'mode': 'xsalsa20_poly1305'
-                }
-            }
-        }
-
-        yield from self.ws.send(utils.to_json(payload))
-        log.debug('sent {} to initialize voice connection'.format(payload))
-        log.info('initial voice connection is done')
-
-    @asyncio.coroutine
-    def connection_ready(self, data):
-        log.info('voice connection is now ready')
-        self.secret_key = data.get('secret_key')
-        speaking = {
-            'op': 5,
-            'd': {
-                'speaking': True,
-                'delay': 0
-            }
-        }
-
-        yield from self.ws.send(utils.to_json(speaking))
-        self._connected.set()
 
     # connection related
 
@@ -275,28 +194,15 @@ class VoiceClient:
         self.socket.setblocking(False)
 
         log.info('Voice endpoint found {0.endpoint} (IP: {0.endpoint_ip})'.format(self))
-        self.ws = yield from websockets.connect('wss://' + self.endpoint, loop=self.loop)
-        self.ws.max_size = None
 
-        payload = {
-            'op': 0,
-            'd': {
-                'server_id': self.guild_id,
-                'user_id': self.user.id,
-                'session_id': self.session_id,
-                'token': self.token
-            }
-        }
-
-        yield from self.ws.send(utils.to_json(payload))
-
+        self.ws = yield from DiscordVoiceWebSocket.from_client(self)
         while not self._connected.is_set():
-            msg = yield from self.ws.recv()
-            if msg is None:
-                yield from self.disconnect()
-                raise ClientException('Unexpected websocket close on voice websocket')
-
-            yield from self.received_message(json.loads(msg))
+            yield from self.ws.poll_event()
+            if hasattr(self, 'secret_key'):
+                # we have a secret key, so we don't need to poll
+                # websocket events anymore
+                self._connected.set()
+                break
 
     @asyncio.coroutine
     def disconnect(self):
@@ -310,22 +216,10 @@ class VoiceClient:
         if not self._connected.is_set():
             return
 
-        self.keep_alive.cancel()
         self.socket.close()
         self._connected.clear()
         yield from self.ws.close()
-
-        payload = {
-            'op': 4,
-            'd': {
-                'guild_id': self.guild_id,
-                'channel_id': None,
-                'self_mute': True,
-                'self_deaf': False
-            }
-        }
-
-        yield from self.main_ws.send(utils.to_json(payload))
+        yield from self.main_ws.voice_state(self.guild_id, None, self_mute=True)
 
     def is_connected(self):
         """bool : Indicates if the voice client is connected to voice."""
