@@ -86,6 +86,10 @@ class Client:
     connector : aiohttp.BaseConnector
         The `connector`_ to use for connection pooling. Useful for proxies, e.g.
         with a `ProxyConnector`_.
+    shard_id : Optional[int]
+        Number starting at 0 and less than shard_count?
+    shard_count : Optional[int]
+        The total number of shards.
 
     Attributes
     -----------
@@ -129,6 +133,9 @@ class Client:
             max_messages = 5000
 
         self.connection = ConnectionState(self.dispatch, self.request_offline_members, max_messages, loop=self.loop)
+
+        self.shard_id = options.get('shard_id')
+        self.shard_count = options.get('shard_count')
 
         # Blame Jake for this
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -406,6 +413,9 @@ class Client:
                     'v': 3
                 }
             }
+
+            if self.shard_id is not None and self.shard_count is not None:
+                payload['d']['shard'] = [self.shard_id, self.shard_count]
 
             yield from self._send_ws(utils.to_json(payload))
             log.info('sent the initial payload to create the websocket')
