@@ -612,7 +612,7 @@ class Client:
                     raise ClientException('Unexpected websocket closure received')
                 elif self.ws.close_code != 1000:
                     log.info("Websocket closed on us. Reconnecting.")
-                    self.keep_alive_handler.cancel()
+                    self.keep_alive.cancel()
                     try:
                         yield from asyncio.wait_for(self._ws_graceful_reconnect(), timeout=None, loop=self.loop)
                     except Exception:
