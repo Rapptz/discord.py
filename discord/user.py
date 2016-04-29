@@ -133,5 +133,5 @@ class User:
         if they have a server specific nickname then that
         is returned instead.
         """
-        return getattr(self, 'nick', self.name)
+        return getattr(self, 'nick', None) or self.name
 
