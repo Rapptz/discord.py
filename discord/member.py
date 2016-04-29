@@ -125,3 +125,11 @@ class Member(User):
             return Colour.default()
 
     color = colour
+
+    @property
+    def mention(self):
+        if self.nick:
+            return '<@!{}>'.format(self.id)
+        return '<@{}>'.format(self.id)
+
+    mention.__doc__ = User.mention.__doc__
