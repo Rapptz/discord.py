@@ -317,9 +317,14 @@ class ConnectionState:
             member.discriminator = user['discriminator']
             member.avatar = user['avatar']
             member.bot = user.get('bot', False)
-            member.roles = [server.default_role]
+
+            # the nickname change is optional,
+            # if it isn't in the payload then it didn't change
+            if 'nick' in data:
+                member.nick = data['nick']
 
             # update the roles
+            member.roles = [server.default_role]
             for role in server.roles:
                 if role.id in data['roles']:
                     member.roles.append(role)

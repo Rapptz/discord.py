@@ -64,11 +64,13 @@ class Member(User):
         The game that the user is currently playing. Could be None if no game is being played.
     server : :class:`Server`
         The server that the member belongs to.
+    nick : Optional[str]
+        The server specific nickname of the user.
     """
 
     __slots__ = [ 'deaf', 'mute', 'self_mute', 'self_deaf', 'is_afk',
                   'voice_channel', 'roles', 'joined_at', 'status', 'game',
-                  'server' ]
+                  'server', 'nick' ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs.get('user'))
@@ -80,6 +82,7 @@ class Member(User):
         game = kwargs.get('game', {})
         self.game = Game(**game) if game else None
         self.server = kwargs.get('server', None)
+        self.nick = kwargs.get('nick', None)
         self._update_voice_state(mute=self.mute, deaf=self.deaf)
 
     def _update_voice_state(self, **kwargs):
