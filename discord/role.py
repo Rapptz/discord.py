@@ -96,3 +96,8 @@ class Role(Hashable):
     def created_at(self):
         """Returns the role's creation time in UTC."""
         return snowflake_time(self.id)
+
+    @property
+    def mention(self):
+        """Returns a string that allows you to mention a role."""
+        return '<@&{}>'.format(self.id)
