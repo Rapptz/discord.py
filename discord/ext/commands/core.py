@@ -155,7 +155,7 @@ class Command:
         return result
 
     def _convert_member(self, bot, message, argument):
-        match = re.match(r'<@([0-9]+)>$', argument)
+        match = re.match(r'<@!?([0-9]+)>$', argument)
         server = message.server
         result = None
         if match is None:
@@ -202,6 +202,8 @@ class Command:
 
     def _convert_colour(self, bot, message, argument):
         arg = argument.replace('0x', '').lower()
+        if arg[0] == '#':
+            arg = arg[1:]
         try:
             value = int(arg, base=16)
             return discord.Colour(value=value)
@@ -216,7 +218,9 @@ class Command:
         if not server:
             raise NoPrivateMessage()
 
-        result = discord.utils.get(server.roles, name=argument)
+        match = re.match(r'<@&([0-9]+)>$', argument)
+        params = dict(id=match.group(1)) if match else dict(name=argument)
+        result = discord.utils.get(server.roles, **params)
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(argument))
         return result
