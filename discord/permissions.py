@@ -73,7 +73,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b00000011111100111111110000111111)
+        return cls(0b00001111111100111111110000111111)
 
     @classmethod
     def all_channel(cls):
@@ -91,7 +91,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions set to True."""
-        return cls(0b00000000000000000000000000111111)
+        return cls(0b00001100000000000000000000111111)
 
     @classmethod
     def text(cls):
@@ -320,4 +320,22 @@ class Permissions:
     def use_voice_activation(self, value):
         self._set(25, value)
 
-    # 6 unused
+    @property
+    def change_nicknames(self):
+        """Returns True if a user can change their nickname in the server."""
+        return self._bit(26)
+
+    @change_nicknames.setter
+    def change_nicknames(self, value):
+        self._set(26, value)
+
+    @property
+    def manage_nicknames(self):
+        """Returns True if a user can change other user's nickname in the server."""
+        return self._bit(27)
+
+    @manage_nicknames.setter
+    def manage_nicknames(self, value):
+        self._set(27, value)
+
+    # 4 unused
