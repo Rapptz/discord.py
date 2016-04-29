@@ -1399,6 +1399,45 @@ class Client:
         """
         yield from self.ws.change_presence(game=game, idle=idle)
 
+    @asyncio.coroutine
+    def change_nickname(self, member, nickname):
+        """|coro|
+
+        Changes a member's nickname.
+
+        You must have the proper permissions to change someone's
+        (or your own) nickname.
+
+        Parameters
+        ----------
+        member : :class:`Member`
+            The member to change the nickname for.
+        nickname : Optional[str]
+            The nickname to change it to. ``None`` to remove
+            the nickname.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to change the nickname.
+        HTTPException
+            Editing the channel failed.
+        """
+
+        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+
+        payload = {
+            # oddly enough, this endpoint requires '' to clear the nickname
+            # instead of the more consistent 'null', this might change in the
+            # future, or not.
+            'nick': nickname if nickname else ''
+        }
+
+        r = yield from self.session.patch(url, data=utils.to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+        yield from r.release()
+
     # Channel management
 
     @asyncio.coroutine
