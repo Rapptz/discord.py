@@ -158,6 +158,9 @@ class VoiceClient:
         The endpoint we are connecting to.
     channel : :class:`Channel`
         The voice channel connected to.
+    server : :class:`Server`
+        The server the voice channel is connected to.
+        Shorthand for ``channel.server``.
     loop
         The event loop that the voice client is running on.
     """
@@ -175,6 +178,10 @@ class VoiceClient:
         self.timestamp = 0
         self.encoder = OpusEncoder(48000, 2)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
+
+    @property
+    def server(self):
+        return self.channel.server
 
     def checked_add(self, attr, value, limit):
         val = getattr(self, attr)

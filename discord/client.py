@@ -90,10 +90,10 @@ class Client:
     -----------
     user : Optional[:class:`User`]
         Represents the connected client. None if not logged in.
-    voice : Optional[:class:`VoiceClient`]
-        Represents the current voice connection. None if you are not connected
-        to a voice channel. To connect to voice use :meth:`join_voice_channel`.
-        To query the voice connection state use :meth:`is_voice_connected`.
+    voice_clients : iterable of :class:`VoiceClient`
+        Represents a list of voice connections. To connect to voice use
+        :meth:`join_voice_channel`. To query the voice connection state use
+        :meth:`is_voice_connected`.
     servers : iterable of :class:`Server`
         The servers that the connected client is a member of.
     private_channels : iterable of :class:`PrivateChannel`
@@ -114,7 +114,6 @@ class Client:
     def __init__(self, *, loop=None, **options):
         self.ws = None
         self.token = None
-        self.voice = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
@@ -227,14 +226,14 @@ class Client:
             raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
 
     def __getattr__(self, name):
-        if name in ('user', 'servers', 'private_channels', 'messages'):
+        if name in ('user', 'servers', 'private_channels', 'messages', 'voice_clients'):
             return getattr(self.connection, name)
         else:
             msg = "'{}' object has no attribute '{}'"
             raise AttributeError(msg.format(self.__class__, name))
 
     def __setattr__(self, name, value):
-        if name in ('user', 'servers', 'private_channels', 'messages'):
+        if name in ('user', 'servers', 'private_channels', 'messages', 'voice_clients'):
             return setattr(self.connection, name, value)
         else:
             object.__setattr__(self, name, value)
@@ -418,12 +417,12 @@ class Client:
         if self.is_closed:
             return
 
-        if self.is_voice_connected():
-            yield from self.voice.disconnect()
-            self.voice = None
-
         if self.ws is not None and self.ws.open:
             yield from self.ws.close()
+
+        for voice in list(self.voice_clients):
+            yield from voice.disconnect()
+            self.connection._remove_voice_client(voice.server.id)
 
         yield from self.session.close()
         self._closed.set()
@@ -2415,14 +2414,16 @@ class Client:
         :class:`VoiceClient`
             A voice client that is fully connected to the voice server.
         """
-        if self.is_voice_connected():
-            raise ClientException('Already connected to a voice channel')
-
         if isinstance(channel, Object):
             channel = self.get_channel(channel.id)
 
         if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
             raise InvalidArgument('Channel passed must be a voice channel')
+
+        server = channel.server
+
+        if self.is_voice_connected(server):
+            raise ClientException('Already connected to a voice channel in this server')
 
         log.info('attempting to join voice channel {0.name}'.format(channel))
 
@@ -2435,13 +2436,9 @@ class Client:
         voice_data_future = self.ws.wait_for('VOICE_SERVER_UPDATE', lambda d: True)
 
         # request joining
-        yield from self.ws.voice_state(channel.server.id, channel.id)
+        yield from self.ws.voice_state(server.id, channel.id)
         session_id_data = yield from asyncio.wait_for(session_id_future, timeout=10.0, loop=self.loop)
         data = yield from asyncio.wait_for(voice_data_future, timeout=10.0, loop=self.loop)
-
-        # todo: multivoice
-        if self.is_voice_connected():
-            self.voice.channel = self.get_channel(session_id_data.get('channel_id'))
 
         kwargs = {
             'user': self.user,
@@ -2452,10 +2449,36 @@ class Client:
             'main_ws': self.ws
         }
 
-        self.voice = VoiceClient(**kwargs)
-        yield from self.voice.connect()
-        return self.voice
+        voice = VoiceClient(**kwargs)
+        yield from voice.connect()
+        self.connection._add_voice_client(server.id, voice)
+        return voice
 
-    def is_voice_connected(self):
-        """bool : Indicates if we are currently connected to a voice channel."""
-        return self.voice is not None and self.voice.is_connected()
+    def is_voice_connected(self, server):
+        """Indicates if we are currently connected to a voice channel in the
+        specified server.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server to query if we're connected to it.
+        """
+        voice = self.voice_client_in(server)
+        return voice is not None
+
+    def voice_client_in(self, server):
+        """Returns the voice client associated with a server.
+
+        If no voice client is found then ``None`` is returned.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server to query if we have a voice client for.
+
+        Returns
+        --------
+        :class:`VoiceClient`
+            The voice client associated with the server.
+        """
+        return self.connection._get_voice_client(server.id)

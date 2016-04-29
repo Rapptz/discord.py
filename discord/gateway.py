@@ -179,51 +179,27 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         # the keep alive
         self._keep_alive = None
 
+
     @classmethod
     @asyncio.coroutine
-    def connect(cls, dispatch, *, token=None, connection=None, loop=None):
-        """Creates a main websocket for Discord used for the client.
+    def from_client(cls, client):
+        """Creates a main websocket for Discord from a :class:`Client`.
 
-        Parameters
-        ----------
-        token : str
-            The token for Discord authentication.
-        connection
-            The ConnectionState for the client.
-        dispatch
-            The function that dispatches events.
-        loop
-            The event loop to use.
-
-        Returns
-        -------
-        DiscordWebSocket
-            A websocket connected to Discord.
+        This is for internal use only.
         """
-
-        gateway = yield from get_gateway(token, loop=loop)
-        ws = yield from websockets.connect(gateway, loop=loop, klass=cls)
+        gateway = yield from get_gateway(client.token, loop=client.loop)
+        ws = yield from websockets.connect(gateway, loop=client.loop, klass=cls)
 
         # dynamically add attributes needed
-        ws.token = token
-        ws._connection = connection
-        ws._dispatch = dispatch
+        ws.token = client.token
+        ws._connection = client.connection
+        ws._dispatch = client.dispatch
         ws.gateway = gateway
 
         log.info('Created websocket connected to {}'.format(gateway))
         yield from ws.identify()
         log.info('sent the identify payload to create the websocket')
         return ws
-
-    @classmethod
-    def from_client(cls, client):
-        """Creates a main websocket for Discord from a :class:`Client`.
-
-        This is for internal use only.
-        """
-        return cls.connect(client.dispatch, token=client.token,
-                                            connection=client.connection,
-                                            loop=client.loop)
 
     def wait_for(self, event, predicate, result=None):
         """Waits for a DISPATCH'd event that meets the predicate.
@@ -280,6 +256,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             msg = msg.decode('utf-8')
 
         msg = json.loads(msg)
+        state = self._connection
 
         log.debug('WebSocket Event: {}'.format(msg))
         self._dispatch('socket_response', msg)
@@ -288,7 +265,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         data = msg.get('d')
 
         if 's' in msg:
-            self._connection.sequence = msg['s']
+            state.sequence = msg['s']
 
         if op == self.RECONNECT:
             # "reconnect" can only be handled by the Client
@@ -299,8 +276,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             raise ReconnectWebSocket()
 
         if op == self.INVALIDATE_SESSION:
-            self._connection.sequence = None
-            self._connection.session_id = None
+            state.sequence = None
+            state.session_id = None
             return
 
         if op != self.DISPATCH:
@@ -311,9 +288,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         is_ready = event == 'READY'
 
         if is_ready:
-            self._connection.clear()
-            self._connection.sequence = msg['s']
-            self._connection.session_id = data['session_id']
+            state.clear()
+            state.sequence = msg['s']
+            state.session_id = data['session_id']
 
         if is_ready or event == 'RESUMED':
             interval = data['heartbeat_interval'] / 1000.0
@@ -366,7 +343,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             msg = yield from self.recv()
             yield from self.received_message(msg)
         except websockets.exceptions.ConnectionClosed as e:
-            if e.code in (4008, 4009) or e.code in range(1001, 1015):
+            if e.code in (4006, 4008, 4009) or e.code in range(1001, 1015):
                 log.info('Websocket closed with {0.code}, attempting a reconnect.'.format(e))
                 raise ReconnectWebSocket() from e
             else:
@@ -423,6 +400,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         }
 
         yield from self.send_as_json(payload)
+
+        # we're leaving a voice channel so remove it from the client list
+        if channel_id is None:
+            self._connection._remove_voice_client(guild_id)
 
     @asyncio.coroutine
     def close(self, code=1000, reason=''):

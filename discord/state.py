@@ -62,6 +62,7 @@ class ConnectionState:
         self.sequence = None
         self.session_id = None
         self._servers = {}
+        self._voice_clients = {}
         self._private_channels = {}
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
@@ -92,6 +93,19 @@ class ConnectionState:
 
         for index in reversed(removed):
             del self._listeners[index]
+
+    @property
+    def voice_clients(self):
+        return self._voice_clients.values()
+
+    def _get_voice_client(self, guild_id):
+        return self._voice_clients.get(guild_id)
+
+    def _add_voice_client(self, guild_id, voice):
+        self._voice_clients[guild_id] = voice
+
+    def _remove_voice_client(self, guild_id):
+        self._voice_clients.pop(guild_id, None)
 
     @property
     def servers(self):
@@ -130,6 +144,7 @@ class ConnectionState:
     def _add_server_from_data(self, guild):
         server = Server(**guild)
         Server.me = property(lambda s: s.get_member(self.user.id))
+        Server.voice_client = property(lambda s: self._get_voice_client(s.id))
         self._add_server(server)
         return server
 
@@ -489,7 +504,13 @@ class ConnectionState:
 
     def parse_voice_state_update(self, data):
         server = self._get_server(data.get('guild_id'))
+        user_id = data.get('user_id')
         if server is not None:
+            if user_id == self.user.id:
+                voice = self._get_voice_client(server.id)
+                if voice is not None:
+                    voice.channel = server.get_channel(data.get('channel_id'))
+
             updated_members = server._update_voice_state(data)
             self.dispatch('voice_state_update', *updated_members)
 
