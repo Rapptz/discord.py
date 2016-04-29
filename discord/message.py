@@ -83,6 +83,9 @@ class Message:
     channel_mentions : list
         A list of :class:`Channel` that were mentioned. If the message is in a private message
         then the list is always empty.
+    role_mentions : list
+        A list of :class:`Role`s that were mentioned. If the message is in a private message
+        then the list is always empty.
     id : str
         The message ID.
     attachments : list
@@ -92,7 +95,8 @@ class Message:
     __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  '_clean_content', '_raw_channel_mentions', 'nonce' ]
+                  '_clean_content', '_raw_channel_mentions', 'nonce',
+                  'role_mentions', '_raw_role_mentions' ]
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -114,27 +118,20 @@ class Message:
         self.nonce = data.get('nonce')
         self.attachments = data.get('attachments')
         self._handle_upgrades(data.get('channel_id'))
-        self._handle_mentions(data.get('mentions', []))
+        self._handle_mentions(data.get('mentions', []), data.get('mention_roles', []))
 
-        # clear the cached slot cache
-        try:
-            del self._raw_mentions
-        except AttributeError:
-            pass
+        # clear the cached properties
+        cached = filter(lambda attr: attr[0] == '_', self.__slots__)
+        for attr in cached:
+            try:
+                delattr(self, attr)
+            except AttributeError:
+                pass
 
-        try:
-            del self._raw_channel_mentions
-        except AttributeError:
-            pass
-        try:
-            del self._clean_content
-        except AttributeError:
-            pass
-
-
-    def _handle_mentions(self, mentions):
+    def _handle_mentions(self, mentions, role_mentions):
         self.mentions = []
         self.channel_mentions = []
+        self.role_mentions = []
         if getattr(self.channel, 'is_private', True):
             return
 
@@ -151,6 +148,11 @@ class Message:
                 if channel is not None:
                     self.channel_mentions.append(channel)
 
+            for role_id in role_mentions:
+                role = utils.get(self.server.roles, id=role_id)
+                if role is not None:
+                    self.role_mentions.append(role)
+
     @utils.cached_slot_property('_raw_mentions')
     def raw_mentions(self):
         """A property that returns an array of user IDs matched with
@@ -159,17 +161,21 @@ class Message:
         This allows you receive the user IDs of mentioned users
         even in a private message context.
         """
-        return re.findall(r'<@([0-9]+)>', self.content)
+        return re.findall(r'<@!?([0-9]+)>', self.content)
 
     @utils.cached_slot_property('_raw_channel_mentions')
     def raw_channel_mentions(self):
         """A property that returns an array of channel IDs matched with
         the syntax of <#channel_id> in the message content.
-
-        This allows you receive the channel IDs of mentioned users
-        even in a private message context.
         """
         return re.findall(r'<#([0-9]+)>', self.content)
+
+    @utils.cached_slot_property('_raw_role_mentions')
+    def raw_role_mentions(self):
+        """A property that returns an array of role IDs matched with
+        the syntax of <@&role_id> in the message content.
+        """
+        return re.findall(r'<@&([0-9]+)>', self.content)
 
     @utils.cached_slot_property('_clean_content')
     def clean_content(self):
@@ -178,7 +184,8 @@ class Message:
         into the way the client shows it. e.g. ``<#id>`` will transform
         into ``#name``.
 
-        This will also transform @everyone mentions into non-mentions.
+        This will also transform @everyone and @here mentions into
+        non-mentions.
         """
 
         transformations = {
@@ -187,11 +194,25 @@ class Message:
         }
 
         mention_transforms = {
-            re.escape('<@{0.id}>'.format(member)): '@' + member.name
+            re.escape('<@{0.id}>'.format(member)): '@' + member.display_name
+            for member in self.mentions
+        }
+
+        # add the <@!user_id> cases as well..
+        second_mention_transforms = {
+            re.escape('<@!{0.id}>'.format(member)): '@' + member.display_name
             for member in self.mentions
         }
 
         transformations.update(mention_transforms)
+        transformations.update(second_mention_transforms)
+
+        if self.server is not None:
+            role_transforms = {
+                re.escape('<@&{0.id}>'.format(role)): '@' + role.name
+                for role in self.role_mentions
+            }
+            transformations.update(role_transforms)
 
         def repl(obj):
             return transformations.get(re.escape(obj.group(0)), '')
