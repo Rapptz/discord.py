@@ -63,10 +63,12 @@ class Role(Hashable):
     managed : bool
         Indicates if the role is managed by the server through some form of
         integrations such as Twitch.
+    mentionable : bool
+        Indicates if the role can be mentioned by users.
     """
 
     __slots__ = ['id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', '_is_everyone', 'hoist' ]
+                 'managed', 'mentionable', '_is_everyone', 'hoist' ]
 
     def __init__(self, **kwargs):
         self._is_everyone = kwargs.get('everyone', False)
@@ -83,6 +85,7 @@ class Role(Hashable):
         self.colour = Colour(kwargs.get('color', 0))
         self.hoist = kwargs.get('hoist', False)
         self.managed = kwargs.get('managed', False)
+        self.mentionable = kwargs.get('mentionable', False)
         self.color = self.colour
         if 'everyone' in kwargs:
             self._is_everyone = kwargs['everyone']
