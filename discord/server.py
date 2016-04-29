@@ -232,6 +232,11 @@ class Server(Hashable):
         precise result. Note that the discriminator must have all 4 digits
         for this to work.
 
+        If a nickname is passed, then it is looked up via the nickname. Note
+        however, that a nickname + discriminator combo will not lookup the nickname
+        but rather the username + discriminator combo due to nickname + discriminator
+        not being unique.
+
         If no member is found, ``None`` is returned.
 
         Parameters
@@ -260,4 +265,7 @@ class Server(Hashable):
             if result is not None:
                 return result
 
-        return utils.get(members, name=name)
+        def pred(m):
+            return m.nick == name or m.name == name
+
+        return utils.find(pred, members)
