@@ -118,6 +118,7 @@ class Client:
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
+        self._semaphores = {}
 
         max_messages = options.get('max_messages')
         if max_messages is None or max_messages < 100:
@@ -222,6 +223,17 @@ class Client:
             else:
                 return found.id
         elif isinstance(destination, Object):
+            return destination.id
+        else:
+            raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
+
+    #@asyncio.coroutine
+    def _resolve_destination_ratelimitdomain(self, destination):
+        if isinstance(destination, (Channel, PrivateChannel)):
+            return destination.server.id
+        elif isinstance(destination, User):
+            return User
+        elif isinstance(destination, (Server, Object)):
             return destination.id
         else:
             raise InvalidArgument('Destination must be Channel, PrivateChannel, User, or Object')
@@ -758,8 +770,22 @@ class Client:
         return channel
 
     @asyncio.coroutine
-    def _rate_limit_helper(self, name, method, url, data, retries=0):
-        resp = yield from self.session.request(method, url, data=data, headers=self.headers)
+    def _rate_limit_helper(self, name, destination, method, url, data, retries=0):
+        local_semaphore = self._semaphores.get(self._resolve_destination_ratelimitdomain(destination), asyncio.BoundedSemaphore(5))
+        # TODO self._semaphores almost certainly leaks memory as channels/servers/DM-channels get destroyed/replaced and the semaphores corresponding to the defunct/old destinations don't get deleted
+        global_semaphore = self._semaphores.get('_global', asyncio.BoundedSemaphore(50))
+        yield from local_semaphore.acquire()
+        yield from global_semaphore.acquire()
+        try:
+            # if we get here, we think we probably won't get 429'ed
+            resp = yield from self.session.request(method, url, data=data, headers=self.headers)
+            self.loop.call_later(10, global_semaphore.release)
+            self.loop.call_later(5, local_semaphore.release)
+        except:
+            global_semaphore.release()
+            local_semaphore.release()
+            raise
+
         tmp = request_logging_format.format(method=method, response=resp)
         log_fmt = 'In {}, {}'.format(name, tmp)
         log.debug(log_fmt)
@@ -768,13 +794,13 @@ class Client:
             # retry the 502 request unconditionally
             log.info('Retrying the 502 request to ' + name)
             yield from asyncio.sleep(retries + 1)
-            return (yield from self._rate_limit_helper(name, method, url, data, retries + 1))
+            return (yield from self._rate_limit_helper(name, destination, method, url, data, retries + 1))
 
         if resp.status == 429:
             retry = float(resp.headers['Retry-After']) / 1000.0
             yield from resp.release()
             yield from asyncio.sleep(retry)
-            return (yield from self._rate_limit_helper(name, method, url, data, retries))
+            return (yield from self._rate_limit_helper(name, destination, method, url, data, retries))
 
         return resp
 
@@ -838,7 +864,7 @@ class Client:
         if tts:
             payload['tts'] = True
 
-        resp = yield from self._rate_limit_helper('send_message', 'POST', url, utils.to_json(payload))
+        resp = yield from self._rate_limit_helper('send_message', destination, 'POST', url, utils.to_json(payload))
         yield from utils._verify_successful_response(resp)
         data = yield from resp.json()
         log.debug(request_success_log.format(response=resp, json=payload, data=data))
@@ -1012,7 +1038,7 @@ class Client:
             'content': content
         }
 
-        response = yield from self._rate_limit_helper('edit_message', 'PATCH', url, utils.to_json(payload))
+        response = yield from self._rate_limit_helper('edit_message', channel, 'PATCH', url, utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json()
