@@ -50,7 +50,7 @@ class Permissions:
         permissions via the properties rather than using this raw value.
     """
 
-    __slots__ = [ 'value' ]
+    __slots__ = ('value',)
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 
@@ -62,6 +62,23 @@ class Permissions:
 
     def __hash__(self):
         return hash(self.value)
+
+    def is_subset(self, other):
+        return isinstance(other, Permissions) and (self.value & other.value) == self.value
+
+    def is_superset(self, other):
+        return isinstance(other, Permissions) and (self.value | other.value) == self.value
+
+    def is_strict_subset(self, other):
+        return isinstance(other, Permissions) and self.is_subset(other) and self != other
+
+    def is_strict_superset(self, other):
+        return isinstance(other, Permissions) and self.is_subset(other) and self != other
+
+    __le__ = is_subset
+    __ge__ = is_superset
+    __lt__ = is_strict_subset
+    __gt__ = is_strict_subset
 
     @classmethod
     def none(cls):
