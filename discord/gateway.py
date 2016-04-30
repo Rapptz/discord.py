@@ -168,6 +168,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         ws._connection = client.connection
         ws._dispatch = client.dispatch
         ws.gateway = gateway
+        ws.shard_id = client.shard_id
+        ws.shard_count = client.shard_count
 
         client.connection._update_references(ws)
 
@@ -232,6 +234,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 'v': 3
             }
         }
+
+        if self.shard_id is not None and self.shard_count is not None:
+            payload['d']['shard'] = [self.shard_id, self.shard_count]
+
         yield from self.send_as_json(payload)
 
     @asyncio.coroutine
