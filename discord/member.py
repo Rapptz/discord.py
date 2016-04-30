@@ -132,8 +132,6 @@ class Member(User):
             return '<@!{}>'.format(self.id)
         return '<@{}>'.format(self.id)
 
-    mention.__doc__ = User.mention.__doc__
-
     def mentioned_in(self, message):
         mentioned = super().mentioned_in(message)
         if mentioned:
@@ -145,5 +143,3 @@ class Member(User):
                 return True
 
         return False
-
-    mentioned_in.__doc__ = User.mentioned_in.__doc__
