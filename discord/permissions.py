@@ -36,6 +36,18 @@ class Permissions:
     +-----------+------------------------------------------+
     | x != y    | Checks if two permissions are not equal. |
     +-----------+------------------------------------------+
+    | x <= y    | Checks if a permission is a subset       |
+    |           | of another permission.                   |
+    +-----------+------------------------------------------+
+    | x >= y    | Checks if a permission is a superset     |
+    |           | of another permission.                   |
+    +-----------+------------------------------------------+
+    | x < y     | Checks if a permission is a strict       |
+    |           | subset of another permission.            |
+    +-----------+------------------------------------------+
+    | x > y     | Checks if a permission is a strict       |
+    |           | superset of another permission.          |
+    +-----------+------------------------------------------+
     | hash(x)   | Return the permission's hash.            |
     +-----------+------------------------------------------+
 
@@ -50,7 +62,7 @@ class Permissions:
         permissions via the properties rather than using this raw value.
     """
 
-    __slots__ = ('value',)
+    __slots__ = [ 'value', ]
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 
