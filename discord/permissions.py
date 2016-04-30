@@ -64,16 +64,22 @@ class Permissions:
         return hash(self.value)
 
     def is_subset(self, other):
-        return isinstance(other, Permissions) and (self.value & other.value) == self.value
+        if isinstance(other, Permissions):
+            return (self.value & other.value) == self.value
+        else:
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
 
     def is_superset(self, other):
-        return isinstance(other, Permissions) and (self.value | other.value) == self.value
+        if isinstance(other, Permissions):
+            return (self.value | other.value) == self.value
+        else:
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
 
     def is_strict_subset(self, other):
-        return isinstance(other, Permissions) and self.is_subset(other) and self != other
+        return self.is_subset(other) and self != other
 
     def is_strict_superset(self, other):
-        return isinstance(other, Permissions) and self.is_subset(other) and self != other
+        return self.is_subset(other) and self != other
 
     __le__ = is_subset
     __ge__ = is_superset
