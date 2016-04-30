@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .game import Game
-from .utils import parse_time
+from . import utils
 from .enums import Status
 from .colour import Colour
 
@@ -76,7 +76,7 @@ class Member(User):
         super().__init__(**kwargs.get('user'))
         self.deaf = kwargs.get('deaf')
         self.mute = kwargs.get('mute')
-        self.joined_at = parse_time(kwargs.get('joined_at'))
+        self.joined_at = utils.parse_time(kwargs.get('joined_at'))
         self.roles = kwargs.get('roles', [])
         self.status = Status.offline
         game = kwargs.get('game', {})
@@ -133,3 +133,17 @@ class Member(User):
         return '<@{}>'.format(self.id)
 
     mention.__doc__ = User.mention.__doc__
+
+    def mentioned_in(self, message):
+        mentioned = super().mentioned_in(message)
+        if mentioned:
+            return True
+
+        for role in message.role_mentions:
+            has_role = utils.get(self.roles, id=role.id) is not None
+            if has_role:
+                return True
+
+        return False
+
+    mentioned_in.__doc__ = User.mentioned_in.__doc__

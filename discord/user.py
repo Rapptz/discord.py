@@ -135,3 +135,19 @@ class User:
         """
         return getattr(self, 'nick', None) or self.name
 
+    def mentioned_in(self, message):
+        """Checks if the user is mentioned in the specified message.
+
+        Parameters
+        -----------
+        message : :class:`Message`
+            The message to check if you're mentioned in.
+        """
+
+        if message.mention_everyone:
+            return True
+
+        if self in message.mentions:
+            return True
+
+        return False
