@@ -324,11 +324,14 @@ class ConnectionState:
                 member.nick = data['nick']
 
             # update the roles
-            member.roles = [server.default_role]
+            member.roles = []
             for role in server.roles:
                 if role.id in data['roles']:
                     member.roles.append(role)
 
+            # sort the roles by ID since they can be "randomised"
+            member.roles.sort(key=lambda r: r.id)
+            member.roles.insert(0, server.default_role)
             self.dispatch('member_update', old_member, member)
 
     def _get_create_server(self, data):
