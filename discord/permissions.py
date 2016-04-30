@@ -76,27 +76,31 @@ class Permissions:
         return hash(self.value)
 
     def is_subset(self, other):
+        """Returns True if other has the same or fewer permissions as self."""
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
             raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
 
     def is_superset(self, other):
+        """Returns True if other has the same or more permissions as self."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
             raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
 
     def is_strict_subset(self, other):
+        """Returns True if the permissions on other are a strict subset of those on self."""
         return self.is_subset(other) and self != other
 
     def is_strict_superset(self, other):
+        """Returns True if the permissions on other are a strict superset of those on self."""
         return self.is_subset(other) and self != other
 
     __le__ = is_subset
     __ge__ = is_superset
     __lt__ = is_strict_subset
-    __gt__ = is_strict_subset
+    __gt__ = is_strict_superset
 
     @classmethod
     def none(cls):
