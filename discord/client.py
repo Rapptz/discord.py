@@ -772,20 +772,27 @@ class Client:
     @asyncio.coroutine
     def _rate_limit_helper(self, name, destination, method, url, data, retries=0):
         local_semaphore = self._semaphores.get(self._resolve_destination_ratelimitdomain(destination), asyncio.BoundedSemaphore(5))
+        snowflake_semaphore = None
         if name == 'delete_message': # this request is a special snowflake and has its own timeout
-            local_semaphore = self._semaphores.get('_delete_message', asyncio.BoundedSemaphore(5))
+            snowflake_semaphore = self._semaphores.get('_delete_message', asyncio.BoundedSemaphore(5))
         # TODO self._semaphores almost certainly leaks memory as servers get destroyed/replaced and the semaphores corresponding to the defunct/old destinations don't get deleted
         global_semaphore = self._semaphores.get('_global', asyncio.BoundedSemaphore(50))
+        if snowflake_semaphore:
+            yield from snowflake_semaphore.acquire()
         yield from local_semaphore.acquire()
         yield from global_semaphore.acquire()
         try:
             # if we get here, we think we probably won't get 429'ed
             resp = yield from self.session.request(method, url, data=data, headers=self.headers)
             self.loop.call_later(10, global_semaphore.release)
-            self.loop.call_later(5 if name != 'delete_message' else 1, local_semaphore.release)
+            self.loop.call_later(5, local_semaphore.release)
+            if snowflake_semaphore:
+                self.loop.call_later(1, snowflake_semaphore.release)
         except:
             global_semaphore.release()
             local_semaphore.release()
+            if snowflake_semaphore:
+                snowflake_semaphore.release()
             raise
 
         tmp = request_logging_format.format(method=method, response=resp)
