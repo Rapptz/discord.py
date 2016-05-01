@@ -50,6 +50,11 @@ class Permissions:
     +-----------+------------------------------------------+
     | hash(x)   | Return the permission's hash.            |
     +-----------+------------------------------------------+
+    | iter(x)   | Returns an iterator of (perm, value)     |
+    |           | pairs. This allows this class to be used |
+    |           | as an iterable in e.g. set/list/dict     |
+    |           | constructions.                           |
+    +-----------+------------------------------------------+
 
     The properties provided are two way. You can set and retrieve individual bits using the properties as if they
     were regular bools. This allows you to edit permissions.
@@ -74,6 +79,16 @@ class Permissions:
 
     def __hash__(self):
         return hash(self.value)
+
+    def _perm_iterator(self):
+        for attr in dir(self):
+            # check if it's a property, because if so it's a permission
+            is_property = isinstance(getattr(self.__class__, attr), property)
+            if is_property:
+                yield (attr, getattr(self, attr))
+
+    def __iter__(self):
+        return self._perm_iterator()
 
     def is_subset(self, other):
         """Returns True if other has the same or fewer permissions as self."""
