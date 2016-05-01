@@ -1995,6 +1995,57 @@ class Client:
     # Role management
 
     @asyncio.coroutine
+    def move_role(self, server, role, position):
+        """|coro|
+
+        Moves the specified :class:`Role` to the given position in the :class:`Server`.
+
+        This does **not** edit the role ordering in place.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server the role belongs to.
+        role : :class:`Role`
+            The role to edit.
+        position : int
+            The position to insert the role to.
+
+        Raises
+        -------
+        InvalidArgument
+            If position is 0, or role is server.default_role
+        """
+
+        if position == 0:
+            raise InvalidArgument("Cannot move role to position 0")
+
+        if role == server.default_role:
+            raise InvalidArgument("Cannot move default role")
+
+        url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
+
+        roles = []
+
+        # Roles may come in with multiple roles with the same position attribute - fix this here by recalculating.
+        for r in sorted(server.roles, key=lambda x: x.position):
+            if r != role:
+                roles.append(r.id)
+
+        roles.insert(position, role.id)
+
+        payload = [{"id": z[0], "position": z[1]} for z in enumerate(roles)]
+
+        # Note - the payload needs to be sorted in reverse position order - otherwise it fails to update properly!
+        # (Results in two roles with the same position.)
+        r = yield from self.session.patch(url, data=utils.to_json(sorted(payload, key=lambda x: -x['position'])), headers=self.headers)
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+        data = yield from r.json()
+        log.debug(request_success_log.format(json=payload, response=r, data=data))
+
+    @asyncio.coroutine
     def edit_role(self, server, role, **fields):
         """|coro|
 
