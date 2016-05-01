@@ -84,7 +84,7 @@ class Message:
         A list of :class:`Channel` that were mentioned. If the message is in a private message
         then the list is always empty.
     role_mentions : list
-        A list of :class:`Role`s that were mentioned. If the message is in a private message
+        A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
     id : str
         The message ID.
