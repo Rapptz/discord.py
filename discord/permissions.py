@@ -95,7 +95,7 @@ class Permissions:
 
     def is_strict_superset(self, other):
         """Returns True if the permissions on other are a strict superset of those on self."""
-        return self.is_subset(other) and self != other
+        return self.is_superset(other) and self != other
 
     __le__ = is_subset
     __ge__ = is_superset
