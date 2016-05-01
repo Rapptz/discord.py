@@ -1424,7 +1424,12 @@ class Client:
             Editing the channel failed.
         """
 
-        url = '{0}/{1.server.id}/members/{1.id}'.format(endpoints.SERVERS, member)
+        if member == self.user:
+            fmt = '{0}/{1.server.id}/members/@me/nick'
+        else:
+            fmt = '{0}/{1.server.id}/members/{1.id}'
+
+        url = fmt.format(endpoints.SERVERS, member)
 
         payload = {
             # oddly enough, this endpoint requires '' to clear the nickname
