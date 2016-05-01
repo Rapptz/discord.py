@@ -2130,6 +2130,62 @@ class Client:
     # Role management
 
     @asyncio.coroutine
+    def move_role(self, server, role, position):
+        """|coro|
+
+        Moves the specified :class:`Role` to the given position in the :class:`Server`.
+
+        This does **not** edit the role ordering in place.
+
+        Parameters
+        -----------
+        server : :class:`Server`
+            The server the role belongs to.
+        role : :class:`Role`
+            The role to edit.
+        position : int
+            The position to insert the role to.
+
+        Raises
+        -------
+        InvalidArgument
+            If position is 0, or role is server.default_role
+        Forbidden
+            You do not have permissions to change role order.
+        HTTPException
+            If moving the role failed, or you are of too low rank to move the role.
+        """
+
+        if position == 0:
+            raise InvalidArgument("Cannot move role to position 0")
+
+        if role == server.default_role:
+            raise InvalidArgument("Cannot move default role")
+
+        if role.position == position:
+            return  # Save discord the extra request.
+
+        url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
+
+        change_range = range(min(role.position, position), max(role.position, position) + 1)
+
+        roles = [r.id for r in sorted(filter(lambda x: (x.position in change_range) and x != role, server.roles), key=lambda x: x.position)]
+
+        if role.position > position:
+            roles.insert(0, role.id)
+        else:
+            roles.append(role.id)
+
+        payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
+
+        r = yield from self.session.patch(url, data=utils.to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+        data = yield from r.json()
+        log.debug(request_success_log.format(json=payload, response=r, data=data))
+
+    @asyncio.coroutine
     def edit_role(self, server, role, **fields):
         """|coro|
 
