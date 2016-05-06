@@ -54,10 +54,9 @@ import nacl.secret
 
 log = logging.getLogger(__name__)
 
-from . import utils
+from . import utils, opus
 from .gateway import *
 from .errors import ClientException, InvalidArgument
-from .opus import Encoder as OpusEncoder
 
 class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
@@ -176,7 +175,7 @@ class VoiceClient:
         self.endpoint = data.get('endpoint')
         self.sequence = 0
         self.timestamp = 0
-        self.encoder = OpusEncoder(48000, 2)
+        self.encoder = opus.Encoder(48000, 2)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
     @property
@@ -496,7 +495,7 @@ class VoiceClient:
         if channels not in (1, 2):
             raise InvalidArgument('Channels must be either 1 or 2.')
 
-        self.encoder = OpusEncoder(sample_rate, channels)
+        self.encoder = opus.Encoder(sample_rate, channels)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
 
     def create_stream_player(self, stream, *, after=None):
