@@ -2450,7 +2450,16 @@ class Client:
         }
 
         voice = VoiceClient(**kwargs)
-        yield from voice.connect()
+        try:
+            yield from voice.connect()
+        except asyncio.TimeoutError as e:
+            try:
+                yield from voice.disconnect()
+            except:
+                # we don't care if disconnect failed because connection failed
+                pass
+            raise e # re-raise
+
         self.connection._add_voice_client(server.id, voice)
         return voice
 
