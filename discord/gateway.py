@@ -371,7 +371,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             raise InvalidArgument('game must be of Game or None')
 
         idle_since = None if idle == False else int(time.time() * 1000)
-        sent_game = game and {'name': game.name}
+        sent_game = dict(game) if game else None
 
         payload = {
             'op': self.PRESENCE,
