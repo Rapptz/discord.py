@@ -29,6 +29,8 @@ import ctypes.util
 import array
 from .errors import DiscordException
 import logging
+import sys
+import os.path
 
 log = logging.getLogger(__name__)
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
@@ -75,8 +77,14 @@ def libopus_loader(name):
     return lib
 
 try:
-    _lib = libopus_loader(ctypes.util.find_library('opus'))
-except:
+    if sys.platform == 'win32':
+        _basedir = os.path.dirname(os.path.abspath(__file__))
+        _bitness = 'x64' if sys.maxsize > 2**32 else 'x86'
+        _filename = os.path.join(_basedir, 'bin', 'libopus-0.{}.dll'.format(_bitness))
+        _lib = libopus_loader(_filename)
+    else:
+        _lib = libopus_loader(ctypes.util.find_library('opus'))
+except Exception as e:
     _lib = None
 
 def load_opus(name):
