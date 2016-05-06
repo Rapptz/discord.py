@@ -330,6 +330,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         for index in reversed(removed):
             del self._dispatch_listeners[index]
 
+    def _can_handle_close(self, code):
+        return code in (4006, 4008, 4009) or code in range(1001, 1015)
+
     @asyncio.coroutine
     def poll_event(self):
         """Polls for a DISPATCH event and handles the general gateway loop.
@@ -343,7 +346,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             msg = yield from self.recv()
             yield from self.received_message(msg)
         except websockets.exceptions.ConnectionClosed as e:
-            if e.code in (4006, 4008, 4009) or e.code in range(1001, 1015):
+            if self._can_handle_close(e.code):
                 log.info('Websocket closed with {0.code}, attempting a reconnect.'.format(e))
                 raise ReconnectWebSocket() from e
             else:
@@ -356,7 +359,11 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
     @asyncio.coroutine
     def send_as_json(self, data):
-        yield from super().send(utils.to_json(data))
+        try:
+            yield from super().send(utils.to_json(data))
+        except websockets.exceptions.ConnectionClosed as e:
+            if not self._can_handle_close(e.code):
+                raise ConnectionClosed(e) from e
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, idle=None):
