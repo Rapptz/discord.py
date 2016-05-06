@@ -45,15 +45,30 @@ class Game:
     -----------
     name : str
         The game's name.
+    url : str
+        The game's URL. Usually used for twitch streaming.
+    type : int
+        The type of game being played. 1 indicates "Streaming".
     """
 
-    __slots__ = ['name']
+    __slots__ = ['name', 'type', 'url']
 
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
+        self.url = kwargs.get('url')
+        self.type = kwargs.get('type')
 
     def __str__(self):
         return self.name
+
+    def _iterator(self):
+        for attr in self.__slots__:
+            value = getattr(self, attr, None)
+            if value is not None:
+                yield (attr, value)
+
+    def __iter__(self):
+        return self._iterator()
 
     def __eq__(self, other):
         return isinstance(other, Game) and other.name == self.name
