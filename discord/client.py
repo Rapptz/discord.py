@@ -321,7 +321,7 @@ class Client:
         log.info('logging in returned status code {}'.format(resp.status))
         self.email = email
 
-        body = yield from resp.json()
+        body = yield from resp.json(encoding='utf-8')
         self.token = body['token']
         self.headers['authorization'] = self.token
         self._is_logged_in.set()
@@ -750,7 +750,7 @@ class Client:
         r = yield from self.session.post(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=r))
         yield from utils._verify_successful_response(r)
-        data = yield from r.json()
+        data = yield from r.json(encoding='utf-8')
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         channel = PrivateChannel(id=data['id'], user=user)
         self.connection._add_private_channel(channel)
@@ -839,7 +839,7 @@ class Client:
 
         resp = yield from self._rate_limit_helper('send_message', 'POST', url, utils.to_json(payload))
         yield from utils._verify_successful_response(resp)
-        data = yield from resp.json()
+        data = yield from resp.json(encoding='utf-8')
         log.debug(request_success_log.format(response=resp, json=payload, data=data))
         channel = self.get_channel(data.get('channel_id'))
         message = Message(channel=channel, **data)
@@ -942,7 +942,7 @@ class Client:
 
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
-        data = yield from response.json()
+        data = yield from response.json(encoding='utf-8')
         msg = 'POST {0.url} returned {0.status} with {1} response'
         log.debug(msg.format(response, data))
         channel = self.get_channel(data.get('channel_id'))
@@ -1129,7 +1129,7 @@ class Client:
         response = yield from self._rate_limit_helper('edit_message', 'PATCH', url, utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
-        data = yield from response.json()
+        data = yield from response.json(encoding='utf-8')
         log.debug(request_success_log.format(response=response, json=payload, data=data))
         return Message(channel=channel, **data)
 
@@ -1195,7 +1195,7 @@ class Client:
         response = yield from self.session.get(url, params=params, headers=self.headers)
         log.debug(request_logging_format.format(method='GET', response=response))
         yield from utils._verify_successful_response(response)
-        messages = yield from response.json()
+        messages = yield from response.json(encoding='utf-8')
         return messages
 
     if PY35:
@@ -1474,7 +1474,7 @@ class Client:
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
-        data = yield from r.json()
+        data = yield from r.json(encoding='utf-8')
         log.debug(request_success_log.format(response=r, json=payload, data=data))
 
         if not_bot_account:
@@ -1599,7 +1599,7 @@ class Client:
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
-        data = yield from r.json()
+        data = yield from r.json(encoding='utf-8')
         log.debug(request_success_log.format(response=r, json=payload, data=data))
 
     @asyncio.coroutine
@@ -1648,7 +1648,7 @@ class Client:
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
 
-        data = yield from response.json()
+        data = yield from response.json(encoding='utf-8')
         log.debug(request_success_log.format(response=response, data=data, json=payload))
         channel = Channel(server=server, **data)
         return channel
@@ -1786,7 +1786,7 @@ class Client:
         r = yield from self.session.post(endpoints.SERVERS, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='POST', response=r))
         yield from utils._verify_successful_response(r)
-        data = yield from r.json()
+        data = yield from r.json(encoding='utf-8')
         log.debug(request_success_log.format(response=r, json=payload, data=data))
         return Server(**data)
 
@@ -1899,7 +1899,7 @@ class Client:
         resp = yield from self.session.get(url, headers=self.headers)
         log.debug(request_logging_format.format(method='GET', response=resp))
         yield from utils._verify_successful_response(resp)
-        data = yield from resp.json()
+        data = yield from resp.json(encoding='utf-8')
         return [User(**user['user']) for user in data]
 
     # Invite management
@@ -1963,7 +1963,7 @@ class Client:
         log.debug(request_logging_format.format(method='POST', response=response))
 
         yield from utils._verify_successful_response(response)
-        data = yield from response.json()
+        data = yield from response.json(encoding='utf-8')
         log.debug(request_success_log.format(json=payload, response=response, data=data))
         self._fill_invite_data(data)
         return Invite(**data)
@@ -2003,7 +2003,7 @@ class Client:
         response = yield from self.session.get(rurl, headers=self.headers)
         log.debug(request_logging_format.format(method='GET', response=response))
         yield from utils._verify_successful_response(response)
-        data = yield from response.json()
+        data = yield from response.json(encoding='utf-8')
         self._fill_invite_data(data)
         return Invite(**data)
 
@@ -2037,7 +2037,7 @@ class Client:
         resp = yield from self.session.get(url, headers=self.headers)
         log.debug(request_logging_format.format(method='GET', response=resp))
         yield from utils._verify_successful_response(resp)
-        data = yield from resp.json()
+        data = yield from resp.json(encoding='utf-8')
         result = []
         for invite in data:
             channel = server.get_channel(invite['channel']['id'])
@@ -2168,7 +2168,7 @@ class Client:
         log.debug(request_logging_format.format(method='PATCH', response=r))
         yield from utils._verify_successful_response(r)
 
-        data = yield from r.json()
+        data = yield from r.json(encoding='utf-8')
         log.debug(request_success_log.format(json=payload, response=r, data=data))
 
     @asyncio.coroutine
@@ -2334,7 +2334,7 @@ class Client:
         log.debug(request_logging_format.format(method='POST', response=r))
         yield from utils._verify_successful_response(r)
 
-        data = yield from r.json()
+        data = yield from r.json(encoding='utf-8')
         everyone = server.id == data.get('id')
         role = Role(everyone=everyone, **data)
 

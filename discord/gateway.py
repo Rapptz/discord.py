@@ -120,7 +120,7 @@ def get_gateway(token, *, loop=None):
         if resp.status != 200:
             yield from resp.release()
             raise GatewayNotFound()
-        data = yield from resp.json()
+        data = yield from resp.json(encoding='utf-8')
         return data.get('url')
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
