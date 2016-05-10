@@ -1020,6 +1020,81 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
+    def purge_from(self, channel, *, limit=100, check=None, before=None, after=None):
+        """|coro|
+
+        Purges a list of messages that meet the criteria given by the predicate
+        ``check``. If a ``check`` is not provided then all messages are deleted
+        without discrimination.
+
+        You must have Manage Messages permission to delete messages that aren't
+        your own. The Read Message History permission is also needed to retrieve
+        message history.
+
+        Parameters
+        -----------
+        channel : :class:`Channel`
+            The channel to purge from.
+        limit : int
+            The number of messages to search through. This is not the number
+            of messages that will be deleted, though it can be.
+        check : predicate
+            The function used to check if a function should be deleted.
+            It must take a :class:`Message` as its sole parameter.
+        before : :class:`Message`
+            The message before scanning for purging must be.
+        after : :class:`Message`
+            The message after scanning for purging must be.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to do the actions required.
+        HTTPException
+            Purging the messages failed.
+
+        Returns
+        --------
+        list
+            The list of messages that were deleted.
+        """
+
+        if check is None:
+            check = lambda m: True
+
+        iterator = LogsFromIterator(self, channel, limit, before, after)
+        ret = []
+        count = 0
+
+        while True:
+            try:
+                msg = yield from iterator.iterate()
+            except asyncio.QueueEmpty:
+                # no more messages to poll
+                if count >= 2:
+                    # more than 2 messages -> bulk delete
+                    to_delete = ret[-count:]
+                    yield from self.delete_messages(to_delete)
+                    yield from asyncio.sleep(1)
+                elif count == 1:
+                    # delete a single message
+                    yield from self.delete_message(ret[-1])
+
+                return ret
+            else:
+                if count == 100:
+                    # we've reached a full 'queue'
+                    to_delete = ret[-100:]
+                    yield from self.delete_messages(to_delete)
+                    count = 0
+                    yield from asyncio.sleep(1)
+                else:
+                    # queue isn't full so just add it in there
+                    if check(msg):
+                        count += 1
+                        ret.append(msg)
+
+    @asyncio.coroutine
     def edit_message(self, message, new_content):
         """|coro|
 
@@ -1462,7 +1537,7 @@ class Client:
         Forbidden
             You do not have permissions to change the nickname.
         HTTPException
-            Editing the channel failed.
+            Changing the nickname failed.
         """
 
         if member == self.user:

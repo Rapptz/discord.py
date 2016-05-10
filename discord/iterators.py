@@ -52,6 +52,13 @@ class LogsFromIterator:
                 for element in data:
                     yield from self.messages.put(Message(channel=self.channel, **element))
 
+    @asyncio.coroutine
+    def iterate(self):
+        if self.messages.empty():
+            yield from self.fill_messages()
+
+        return self.messages.get_nowait()
+
     if PY35:
         @asyncio.coroutine
         def __aiter__(self):
@@ -59,11 +66,8 @@ class LogsFromIterator:
 
         @asyncio.coroutine
         def __anext__(self):
-            if self.messages.empty():
-                yield from self.fill_messages()
-
             try:
-                msg = self.messages.get_nowait()
+                msg = yield from self.iterate()
                 return msg
             except asyncio.QueueEmpty:
                 # if we're still empty at this point...
