@@ -208,10 +208,10 @@ def _verify_successful_response(response):
         message = None
         text = None
         if response.headers['content-type'] == 'application/json':
-            data = yield from response.json()
+            data = yield from response.json(encoding='utf-8')
             message = data.get('message')
         else:
-            text = yield from response.text()
+            text = yield from response.text(encoding='utf-8')
 
         if code == 403:
             raise Forbidden(response, message, text)
