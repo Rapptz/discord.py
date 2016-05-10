@@ -978,6 +978,48 @@ class Client:
         yield from response.release()
 
     @asyncio.coroutine
+    def delete_messages(self, messages):
+        """|coro|
+
+        Deletes a list of messages. This is similar to :func:`delete_message`
+        except it bulk deletes multiple messages.
+
+        The channel to check where the message is deleted from is handled via
+        the first element of the iterable's ``.channel.id`` attributes. If the
+        channel is not consistent throughout the entire sequence, then an
+        :exc:`HTTPException` will be raised.
+
+        Parameters
+        -----------
+        messages : iterable of :class:`Message`
+            An iterable of messages denoting which ones to bulk delete.
+
+        Raises
+        ------
+        ClientException
+            The number of messages to delete is less than 2 or more than 100.
+        Forbidden
+            You do not have proper permissions to delete the messages.
+        HTTPException
+            Deleting the messages failed.
+        """
+
+        messages = list(messages)
+        if len(messages) > 100 or len(messages) < 2:
+            raise ClientException('Can only delete messages in the range of [2, 100]')
+
+        channel_id = messages[0].channel.id
+        url = '{0}/{1}/messages/bulk_delete'.format(endpoints.CHANNELS, channel_id)
+        payload = {
+            'messages': [m.id for m in messages]
+        }
+
+        response = yield from self.session.post(url, headers=self.headers, data=utils.to_json(payload))
+        log.debug(request_logging_format.format(method='POST', response=response))
+        yield from utils._verify_successful_response(response)
+        yield from response.release()
+
+    @asyncio.coroutine
     def edit_message(self, message, new_content):
         """|coro|
 
