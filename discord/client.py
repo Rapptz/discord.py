@@ -1039,7 +1039,7 @@ class Client:
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
         check : predicate
-            The function used to check if a function should be deleted.
+            The function used to check if a message should be deleted.
             It must take a :class:`Message` as its sole parameter.
         before : :class:`Message`
             The message before scanning for purging must be.
@@ -1075,7 +1075,6 @@ class Client:
                     # more than 2 messages -> bulk delete
                     to_delete = ret[-count:]
                     yield from self.delete_messages(to_delete)
-                    yield from asyncio.sleep(1)
                 elif count == 1:
                     # delete a single message
                     yield from self.delete_message(ret[-1])
@@ -1088,11 +1087,10 @@ class Client:
                     yield from self.delete_messages(to_delete)
                     count = 0
                     yield from asyncio.sleep(1)
-                else:
-                    # queue isn't full so just add it in there
-                    if check(msg):
-                        count += 1
-                        ret.append(msg)
+
+                if check(msg):
+                    count += 1
+                    ret.append(msg)
 
     @asyncio.coroutine
     def edit_message(self, message, new_content):
