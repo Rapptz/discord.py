@@ -470,7 +470,10 @@ class Client:
             gathered = asyncio.gather(*pending)
             try:
                 gathered.cancel()
-                self.loop.run_forever()
+                self.loop.run_until_complete(gathered)
+
+                # we want to retrieve any exceptions to make sure that
+                # they don't nag us about it being un-retrieved.
                 gathered.exception()
             except:
                 pass
