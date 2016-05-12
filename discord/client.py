@@ -1004,7 +1004,7 @@ class Client:
         ClientException
             The number of messages to delete is less than 2 or more than 100.
         Forbidden
-            You do not have proper permissions to delete the messages or 
+            You do not have proper permissions to delete the messages or
             you're not using a bot account.
         HTTPException
             Deleting the messages failed.
@@ -1061,6 +1061,17 @@ class Client:
             you're not using a bot account.
         HTTPException
             Purging the messages failed.
+
+        Examples
+        ---------
+
+        Deleting bot's messages ::
+
+            def is_me(m):
+                return m.author == client.user
+
+            deleted = await client.purge_from(channel, limit=100, check=is_me)
+            await client.send_message(channel, 'Deleted {} message(s)'.format(len(deleted)))
 
         Returns
         --------
