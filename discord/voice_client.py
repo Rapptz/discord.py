@@ -227,6 +227,32 @@ class VoiceClient:
         yield from self.ws.close()
         yield from self.main_ws.voice_state(self.guild_id, None, self_mute=True)
 
+    @asyncio.coroutine
+    def move_to(self, channel):
+        """|coro|
+
+        Moves you to a different voice channel.
+
+        .. warning::
+
+            :class:`Object` instances do not work with this function.
+
+        Parameters
+        -----------
+        channel : :class:`Channel`
+            The channel to move to. Must be a voice channel.
+
+        Raises
+        -------
+        InvalidArgument
+            Not a voice channel.
+        """
+
+        if str(getattr(channel, 'type', 'text')) != 'voice':
+            raise InvalidArgument('Must be a voice channel.')
+
+        yield from self.main_ws.voice_state(self.guild_id, channel.id)
+
     def is_connected(self):
         """bool : Indicates if the voice client is connected to voice."""
         return self._connected.is_set()
