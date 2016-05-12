@@ -62,6 +62,7 @@ from .errors import ClientException, InvalidArgument
 class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
         threading.Thread.__init__(self, **kwargs)
+        self.daemon = True
         self.buff = stream
         self.frame_size = encoder.frame_size
         self.player = player
