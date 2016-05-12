@@ -50,6 +50,7 @@ import subprocess
 import shlex
 import functools
 import datetime
+import audioop
 import nacl.secret
 
 log = logging.getLogger(__name__)
@@ -70,6 +71,7 @@ class StreamPlayer(threading.Thread):
         self._connected = connected
         self.after = after
         self.delay = encoder.frame_length / 1000.0
+        self._volume = 1.0
 
     def run(self):
         self.loops = 0
@@ -86,6 +88,10 @@ class StreamPlayer(threading.Thread):
 
             self.loops += 1
             data = self.buff.read(self.frame_size)
+
+            if self._volume != 1.0:
+                data = audioop.mul(data, 2, min(self._volume, 2.0))
+
             if len(data) != self.frame_size:
                 self.stop()
                 break
@@ -102,6 +108,14 @@ class StreamPlayer(threading.Thread):
                 self.after()
             except:
                 pass
+
+    @property
+    def volume(self):
+        return self._volume
+
+    @volume.setter
+    def volume(self, value):
+        self._volume = max(value, 0.0)
 
     def pause(self):
         self._resumed.clear()
@@ -549,6 +563,10 @@ class VoiceClient:
         | player.pause()      | Pauses the audio stream.                            |
         +---------------------+-----------------------------------------------------+
         | player.resume()     | Resumes the audio stream.                           |
+        +---------------------+-----------------------------------------------------+
+        | player.volume       | Allows you to set the volume of the stream. 1.0 is  |
+        |                     | equivalent to 100% and 0.0 is equal to 0%. The      |
+        |                     | maximum the volume can be set to is 2.0 for 200%.   |
         +---------------------+-----------------------------------------------------+
 
         The stream must have the same sampling rate as the encoder and the same
