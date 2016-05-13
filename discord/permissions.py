@@ -127,7 +127,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b00001111111100111111110000111111)
+        return cls(0b00011111111100111111110000111111)
 
     @classmethod
     def all_channel(cls):
@@ -138,14 +138,17 @@ class Permissions:
         - manager_server
         - kick_members
         - ban_members
+        - administrator
+        - change_nicknames
+        - manage_nicknames
         """
-        return cls(0b00000011111100111111110000011001)
+        return cls(0b00010011111100111111110000010001)
 
     @classmethod
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions set to True."""
-        return cls(0b00001100000000000000000000111111)
+        return cls(0b00011100000000000000000000111111)
 
     @classmethod
     def text(cls):
@@ -214,14 +217,15 @@ class Permissions:
         self._set(2, value)
 
     @property
-    def manage_roles(self):
-        """Returns True if a user can manage server roles. This role overrides all other permissions.
+    def administrator(self):
+        """Returns True if a user is an administrator. This role overrides all other permissions.
 
-        This also corresponds to the "manage permissions" channel-specific override."""
+        This also bypasses all channel-specific overrides.
+        """
         return self._bit(3)
 
-    @manage_roles.setter
-    def manage_roles(self, value):
+    @administrator.setter
+    def administrator(self, value):
         self._set(3, value)
 
     @property
@@ -392,4 +396,16 @@ class Permissions:
     def manage_nicknames(self, value):
         self._set(27, value)
 
-    # 4 unused
+    @property
+    def manage_roles(self):
+        """Returns True if a user can create or edit roles less than their role's position.
+
+        This also corresponds to the "manage permissions" channel-specific override.
+        """
+        return self._bit(28)
+
+    @manage_roles.setter
+    def manage_roles(self, value):
+        self._set(28, value)
+
+    # 3 unused
