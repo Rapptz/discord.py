@@ -224,33 +224,28 @@ class Channel(Hashable):
             return Permissions.all()
 
         default = self.server.default_role
-        base = deepcopy(default.permissions)
+        base = Permissions(default.permissions.value)
 
         # Apply server roles that the member has.
         for role in member.roles:
             base.value |= role.permissions.value
 
-        # Server-wide Manage Roles -> True for everything
-        if base.manage_roles:
-            base = Permissions.all()
+        # Server-wide Administrator -> True for everything
+        # Bypass all channel-specific overrides
+        if base.administrator:
+            return Permissions.all()
 
         member_role_ids = set(map(lambda r: r.id, member.roles))
 
         # Apply channel specific role permission overwrites
         for overwrite in self._permission_overwrites:
-            if overwrite.type == 'role':
-                if overwrite.id in member_role_ids:
-                    base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
+            if overwrite.type == 'role' and overwrite.id in member_role_ids:
+                base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
         # Apply member specific permission overwrites
         for overwrite in self._permission_overwrites:
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
-
-        if base.manage_roles:
-            # This point is essentially Channel-specific Manage Roles.
-            tmp = Permissions.all_channel()
-            base.value |= tmp.value
 
         if self.is_default:
             base.read_messages = True
