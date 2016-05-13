@@ -117,12 +117,19 @@ class Member(User):
         There is an alias for this under ``color``.
         """
 
+        default_colour = Colour.default()
         # highest order of the colour is the one that gets rendered.
+        # if the highest is the default colour then the next one with a colour
+        # is chosen instead
         if self.roles:
-            role = max(self.roles, key=lambda r: r.position)
-            return role.colour
-        else:
-            return Colour.default()
+            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
+            for role in roles:
+                if role.colour == default_colour:
+                    continue
+                else:
+                    return role.colour
+
+        return default_colour
 
     color = colour
 
