@@ -59,10 +59,10 @@ class KeepAliveHandler(threading.Thread):
         self.interval = interval
         self.daemon = True
         self.msg = 'Keeping websocket alive with sequence {0[d]}'
-        self._stop = threading.Event()
+        self._stop_ev = threading.Event()
 
     def run(self):
-        while not self._stop.wait(self.interval):
+        while not self._stop_ev.wait(self.interval):
             data = self.get_payload()
             log.debug(self.msg.format(data))
             coro = self.ws.send_as_json(data)
@@ -80,7 +80,7 @@ class KeepAliveHandler(threading.Thread):
         }
 
     def stop(self):
-        self._stop.set()
+        self._stop_ev.set()
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
