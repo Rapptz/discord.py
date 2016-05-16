@@ -760,9 +760,11 @@ class Client:
         return channel
 
     @asyncio.coroutine
-    def _rate_limit_helper(self, name, method, url, data, retries=0):
-        resp = yield from self.session.request(method, url, data=data, headers=self.headers)
-        tmp = request_logging_format.format(method=method, response=resp)
+    def _retry_helper(self, name, *args, retries=0, **kwargs):
+        req_kwargs = {'headers': self.headers}
+        req_kwargs.update(kwargs)
+        resp = yield from self.session.request(*args, **req_kwargs)
+        tmp = request_logging_format.format(method=resp.method, response=resp)
         log_fmt = 'In {}, {}'.format(name, tmp)
         log.debug(log_fmt)
 
@@ -770,13 +772,13 @@ class Client:
             # retry the 502 request unconditionally
             log.info('Retrying the 502 request to ' + name)
             yield from asyncio.sleep(retries + 1)
-            return (yield from self._rate_limit_helper(name, method, url, data, retries + 1))
+            return (yield from self._retry_helper(name, *args, retries=retries + 1, **kwargs))
 
         if resp.status == 429:
             retry = float(resp.headers['Retry-After']) / 1000.0
             yield from resp.release()
             yield from asyncio.sleep(retry)
-            return (yield from self._rate_limit_helper(name, method, url, data, retries))
+            return (yield from self._retry_helper(name, *args, retries=retries, **kwargs))
 
         return resp
 
@@ -840,7 +842,7 @@ class Client:
         if tts:
             payload['tts'] = True
 
-        resp = yield from self._rate_limit_helper('send_message', 'POST', url, utils.to_json(payload))
+        resp = yield from self._retry_helper('send_message', 'POST', url, data=utils.to_json(payload))
         yield from utils._verify_successful_response(resp)
         data = yield from resp.json(encoding='utf-8')
         log.debug(request_success_log.format(response=resp, json=payload, data=data))
@@ -938,10 +940,10 @@ class Client:
             # attempt to open the file and send the request
             with open(fp, 'rb') as f:
                 form.add_field('file', f, filename=filename, content_type='application/octet-stream')
-                response = yield from self.session.post(url, data=form, headers=headers)
+                response = yield from self._retry_helper("send_file", "POST", url, data=form, headers=headers)
         except TypeError:
             form.add_field('file', fp, filename=filename, content_type='application/octet-stream')
-            response = yield from self.session.post(url, data=form, headers=headers)
+            response = yield from self._retry_helper("send_file", "POST", url, data=form, headers=headers)
 
         log.debug(request_logging_format.format(method='POST', response=response))
         yield from utils._verify_successful_response(response)
@@ -1146,7 +1148,7 @@ class Client:
             'content': content
         }
 
-        response = yield from self._rate_limit_helper('edit_message', 'PATCH', url, utils.to_json(payload))
+        response = yield from self._retry_helper('edit_message', 'PATCH', url, data=utils.to_json(payload))
         log.debug(request_logging_format.format(method='PATCH', response=response))
         yield from utils._verify_successful_response(response)
         data = yield from response.json(encoding='utf-8')
