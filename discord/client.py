@@ -51,6 +51,7 @@ import logging, traceback
 import sys, re
 import tempfile, os, hashlib
 import itertools
+import datetime
 from random import randint as random_integer
 
 PY35 = sys.version_info >= (3, 5)
@@ -1167,10 +1168,12 @@ class Client:
             The channel to obtain the logs from.
         limit : int
             The number of messages to retrieve.
-        before : :class:`Message`
-            The message before which all returned messages must be.
-        after : :class:`Message`
-            The message after which all returned messages must be.
+        before : :class:`Message` or `datetime`
+            The message or date before which all returned messages must be.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        after : :class:`Message` or `datetime`
+            The message or date after which all returned messages must be.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
 
         Raises
         ------
@@ -1210,9 +1213,15 @@ class Client:
         }
 
         if before:
-            params['before'] = before.id
+            if isinstance(before, datetime.datetime):
+                params['before'] = utils.time_snowflake(before, high=False)
+            else:
+                params['before'] = before.id
         if after:
-            params['after'] = after.id
+            if isinstance(after, datetime.datetime):
+                params['after'] = utils.time_snowflake(after, high=True)
+            else:
+                params['after'] = after.id
 
         response = yield from self.session.get(url, params=params, headers=self.headers)
         log.debug(request_logging_format.format(method='GET', response=response))
