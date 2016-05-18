@@ -1213,15 +1213,9 @@ class Client:
         }
 
         if before:
-            if isinstance(before, datetime.datetime):
-                params['before'] = utils.time_snowflake(before, high=False)
-            else:
-                params['before'] = before.id
+            params['before'] = before.id
         if after:
-            if isinstance(after, datetime.datetime):
-                params['after'] = utils.time_snowflake(after, high=True)
-            else:
-                params['after'] = after.id
+            params['after'] = after.id
 
         response = yield from self.session.get(url, params=params, headers=self.headers)
         log.debug(request_logging_format.format(method='GET', response=response))
@@ -1230,11 +1224,21 @@ class Client:
         return messages
 
     if PY35:
-        def logs_from(self, channel, limit=100, *, before=None, after=None):
-            return LogsFromIterator(self, channel, limit, before, after)
+        def logs_from(self, channel, limit=100, *, before=None, after=None, reverse=False):
+            if isinstance(before, datetime.datetime):
+                before = Object(utils.time_snowflake(before, high=False))
+            if isinstance(after, datetime.datetime):
+                after = Object(utils.time_snowflake(after, high=True))
+
+            return LogsFromIterator.create(self, channel, limit, before=before, after=after, reverse=reverse)
     else:
         @asyncio.coroutine
         def logs_from(self, channel, limit=100, *, before=None, after=None):
+            if isinstance(before, datetime.datetime):
+                before = Object(utils.time_snowflake(before, high=False))
+            if isinstance(after, datetime.datetime):
+                after = Object(utils.time_snowflake(after, high=True))
+
             def generator(data):
                 for message in data:
                     yield Message(channel=channel, **message)
