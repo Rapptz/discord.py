@@ -29,8 +29,6 @@ import asyncio
 import aiohttp
 from .message import Message
 from .object import Object
-from . import utils
-import datetime
 
 PY35 = sys.version_info >= (3, 5)
 
@@ -147,15 +145,6 @@ class LogsFromBeforeAfterIterator(LogsFromIterator):
         self.before = before
         self.after = after
 
-        if isinstance(before, datetime.datetime):
-            self.before = Object(utils.time_snowflake(before, high=False))
-        else:
-            self.before = before
-        if isinstance(after, datetime.datetime):
-            self.after = Object(utils.time_snowflake(after, high=True))
-        else:
-            self.after = after
-
     @asyncio.coroutine
     def fill_messages(self):
         if self.limit > 0:
@@ -171,8 +160,13 @@ class LogsFromBeforeAfterIterator(LogsFromIterator):
                 for element in data:
                         yield from self.messages.put(Message(channel=self.channel, **element))
 
-class LogsFromBeforeAfterReversedIterator(LogsFromBeforeAfterIterator):
+class LogsFromBeforeAfterReversedIterator(LogsFromIterator):
     """Oldest -> Newest."""
+    def __init__(self, client, channel, limit, before, after):
+        super().__init__(client, channel, limit)
+        self.before = before
+        self.after = after
+
     @asyncio.coroutine
     def fill_messages(self):
         if self.limit > 0:
