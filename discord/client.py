@@ -1228,8 +1228,8 @@ class Client:
         return messages
 
     if PY35:
-        def logs_from(self, channel, limit=100, *, before=None, after=None):
-            return LogsFromIterator(self, channel, limit, before, after)
+        def logs_from(self, channel, limit=100, *, before=None, after=None, reverse=False):
+            return LogsFromIterator.create(self, channel, limit, before=before, after=after, reverse=reverse)
     else:
         @asyncio.coroutine
         def logs_from(self, channel, limit=100, *, before=None, after=None):
