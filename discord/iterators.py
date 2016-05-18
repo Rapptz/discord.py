@@ -29,6 +29,8 @@ import asyncio
 import aiohttp
 from .message import Message
 from .object import Object
+from . import utils
+import datetime
 
 PY35 = sys.version_info >= (3, 5)
 
@@ -145,6 +147,15 @@ class LogsFromBeforeAfterIterator(LogsFromIterator):
         self.before = before
         self.after = after
 
+        if isinstance(before, datetime.datetime):
+            self.before = Object(utils.time_snowflake(before, high=False))
+        else:
+            self.before = before
+        if isinstance(after, datetime.datetime):
+            self.after = Object(utils.time_snowflake(after, high=True))
+        else:
+            self.after = after
+
     @asyncio.coroutine
     def fill_messages(self):
         if self.limit > 0:
@@ -154,17 +165,14 @@ class LogsFromBeforeAfterIterator(LogsFromIterator):
             if len(data):
                 self.limit -= retrieve
                 self.before = Object(id=data[-1]['id'])
+                # Only filter if the oldest message is not after our endpoint
+                if int(data[-1]['id']) <= int(self.after.id):
+                    data = filter(lambda d: int(d['id']) > int(self.after.id), data)
                 for element in data:
-                    if int(element['id']) > int(self.after.id):
                         yield from self.messages.put(Message(channel=self.channel, **element))
 
-class LogsFromBeforeAfterReversedIterator(LogsFromIterator):
+class LogsFromBeforeAfterReversedIterator(LogsFromBeforeAfterIterator):
     """Oldest -> Newest."""
-    def __init__(self, client, channel, limit, before, after):
-        super().__init__(client, channel, limit)
-        self.before = before
-        self.after = after
-
     @asyncio.coroutine
     def fill_messages(self):
         if self.limit > 0:
@@ -174,6 +182,10 @@ class LogsFromBeforeAfterReversedIterator(LogsFromIterator):
             if len(data):
                 self.limit -= retrieve
                 self.after = Object(id=data[0]['id'])
-                for element in reversed(data):
-                    if int(element['id']) < int(self.before.id):
-                        yield from self.messages.put(Message(channel=self.channel, **element))
+                # Only filter if the newest is not before our endpoint
+                if int(data[0]['id']) >= int(self.before.id):
+                    data = filter(lambda d: int(d['id']) < int(self.before.id), reversed(data))
+                else:
+                    data = reversed(data)
+                for element in data:
+                    yield from self.messages.put(Message(channel=self.channel, **element))
