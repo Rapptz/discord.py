@@ -1614,6 +1614,10 @@ class Client:
             The new channel's position in the GUI.
         topic : str
             The new channel's topic.
+        bitrate : int
+            The new channel's bitrate. Voice only.
+        user_limit : int
+            The new channel's user limit. Voice only.
 
         Raises
         ------
@@ -1627,8 +1631,16 @@ class Client:
         payload = {
             'name': options.get('name', channel.name),
             'topic': options.get('topic', channel.topic),
-            'position': options.get('position', channel.position)
+            'position': options.get('position', channel.position),
         }
+
+        user_limit = options.get('user_limit')
+        if user_limit is not None:
+            payload['user_limit'] = user_limit
+
+        bitrate = options.get('bitrate')
+        if bitrate is not None:
+            payload['bitrate'] = bitrate
 
         r = yield from self.session.patch(url, data=utils.to_json(payload), headers=self.headers)
         log.debug(request_logging_format.format(method='PATCH', response=r))
