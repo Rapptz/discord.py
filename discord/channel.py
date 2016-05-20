@@ -84,6 +84,10 @@ class Channel(Hashable):
         The channel's limit for number of members that can be in a voice channel.
     """
 
+    __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
+                  'is_private', 'type', 'bitrate', 'changed_roles',
+                  'user_limit', '_permission_overwrites' ]
+
     def __init__(self, **kwargs):
         self._update(**kwargs)
         self.voice_members = []
