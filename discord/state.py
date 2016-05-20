@@ -521,8 +521,9 @@ class ConnectionState:
                 if voice is not None:
                     voice.channel = server.get_channel(data.get('channel_id'))
 
-            updated_members = server._update_voice_state(data)
-            self.dispatch('voice_state_update', *updated_members)
+            before, after = server._update_voice_state(data)
+            if after is not None:
+                self.dispatch('voice_state_update', before, after)
 
     def parse_typing_start(self, data):
         channel = self.get_channel(data.get('channel_id'))
