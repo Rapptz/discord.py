@@ -1085,7 +1085,7 @@ class Client:
         if check is None:
             check = lambda m: True
 
-        iterator = LogsFromIterator(self, channel, limit, before, after)
+        iterator = LogsFromIterator.create(self, channel, limit, before=before, after=after)
         ret = []
         count = 0
 
