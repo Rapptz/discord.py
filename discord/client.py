@@ -1058,10 +1058,12 @@ class Client:
         check : predicate
             The function used to check if a message should be deleted.
             It must take a :class:`Message` as its sole parameter.
-        before : :class:`Message`
-            The message before scanning for purging must be.
-        after : :class:`Message`
-            The message after scanning for purging must be.
+        before : :class:`Message` or `datetime`
+            The message or date before which all deleted messages must be.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        after : :class:`Message` or `datetime`
+            The message or date after which all deleted messages must be.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
 
         Raises
         -------
@@ -1090,6 +1092,11 @@ class Client:
 
         if check is None:
             check = lambda m: True
+
+        if isinstance(before, datetime.datetime):
+            before = Object(utils.time_snowflake(before, high=False))
+        if isinstance(after, datetime.datetime):
+            after = Object(utils.time_snowflake(after, high=True))
 
         iterator = LogsFromIterator.create(self, channel, limit, before=before, after=after)
         ret = []
