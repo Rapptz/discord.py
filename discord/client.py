@@ -418,12 +418,18 @@ class Client:
         if self.is_closed:
             return
 
+        for voice in list(self.voice_clients):
+            try:
+                yield from voice.disconnect()
+            except:
+                # if an error happens during disconnects, disregard it.
+                pass
+
+            self.connection._remove_voice_client(voice.server.id)
+
         if self.ws is not None and self.ws.open:
             yield from self.ws.close()
 
-        for voice in list(self.voice_clients):
-            yield from voice.disconnect()
-            self.connection._remove_voice_client(voice.server.id)
 
         yield from self.session.close()
         self._closed.set()
