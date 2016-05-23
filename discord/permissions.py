@@ -147,19 +147,19 @@ class Permissions:
     @classmethod
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "General" permissions set to True."""
+        "General" permissions from the official Discord UI set to True."""
         return cls(0b00011100000000000000000000111111)
 
     @classmethod
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "Text" permissions set to True."""
+        "Text" permissions from the official Discord UI set to True."""
         return cls(0b00000000000000111111110000000000)
 
     @classmethod
     def voice(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "Voice" permissions set to True."""
+        "Voice" permissions from the official Discord UI set to True."""
         return cls(0b00000011111100000000000000000000)
 
 
