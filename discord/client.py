@@ -2226,17 +2226,11 @@ class Client:
 
         This does **not** edit the role in place.
 
-        All fields except ``server`` and ``role`` are optional.
+        All fields except ``server`` and ``role`` are optional. To change
+        the position of a role, use :func:`move_role` instead.
 
         .. versionchanged:: 0.8.0
             Editing now uses keyword arguments instead of editing the :class:`Role` object directly.
-
-        Note
-        -----
-        At the moment, the Discord API allows you to set the colour to any
-        RGB value. This might change in the future so it is recommended that
-        you use the constants in the :class:`Colour` instead such as
-        :meth:`Colour.green`.
 
         Parameters
         -----------
@@ -2285,8 +2279,6 @@ class Client:
         """|coro|
 
         Deletes the specified :class:`Role` for the entire :class:`Server`.
-
-        Works in a similar matter to :func:`edit_role`.
 
         Parameters
         -----------
@@ -2359,7 +2351,7 @@ class Client:
 
         You must have the proper permissions to use this function.
 
-        This method does **not** do edit the member in-place.
+        This method does **not** edit the member in-place.
 
         Parameters
         -----------
@@ -2402,7 +2394,7 @@ class Client:
         call is ``client.replace_roles(member, d, e, c)`` then
         the member has the roles ``[d, e, c]``.
 
-        This method does **not** do edit the member in-place.
+        This method does **not** edit the member in-place.
 
         Parameters
         -----------
