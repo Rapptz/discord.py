@@ -560,7 +560,9 @@ class Bot(GroupMixin, discord.Client):
 
         By default, this coroutine is called inside the :func:`on_message`
         event. If you choose to override the :func:`on_message` event, then
-        you should invoke this coroutine as well.
+        you should invoke this coroutine as well. It can also take an optional
+        boolean parameter which will allow it to run even if the author of the
+        message is the bot user.
 
         Warning
         --------
