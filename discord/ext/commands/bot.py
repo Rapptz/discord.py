@@ -551,7 +551,7 @@ class Bot(GroupMixin, discord.Client):
     # command processing
 
     @asyncio.coroutine
-    def process_commands(self, message):
+    def process_commands(self, message, allow = False):
         """|coro|
 
         This function processes the commands that have been registered
@@ -560,7 +560,9 @@ class Bot(GroupMixin, discord.Client):
 
         By default, this coroutine is called inside the :func:`on_message`
         event. If you choose to override the :func:`on_message` event, then
-        you should invoke this coroutine as well.
+        you should invoke this coroutine as well. It can also take an optional
+        boolean parameter which will allow it to run even if the author of the
+        message is the bot user.
 
         Warning
         --------
@@ -578,8 +580,9 @@ class Bot(GroupMixin, discord.Client):
         _internal_author = message.author
 
         view = StringView(message.content)
-        if message.author == self.user:
-            return
+        if not allow:
+            if message.author == self.user:
+                return
 
         prefix = self._get_prefix(message)
         invoked_prefix = prefix
