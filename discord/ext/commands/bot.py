@@ -551,7 +551,7 @@ class Bot(GroupMixin, discord.Client):
     # command processing
 
     @asyncio.coroutine
-    def process_commands(self, message):
+    def process_commands(self, message, allow = False):
         """|coro|
 
         This function processes the commands that have been registered
@@ -578,8 +578,9 @@ class Bot(GroupMixin, discord.Client):
         _internal_author = message.author
 
         view = StringView(message.content)
-        if message.author == self.user:
-            return
+        if not allow:
+            if message.author == self.user:
+                return
 
         prefix = self._get_prefix(message)
         invoked_prefix = prefix
