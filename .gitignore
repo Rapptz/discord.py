@@ -11,3 +11,4 @@ docs/_build
 *.flac
 botkey.py
 cmdhere.bat
+*.bat
