@@ -425,7 +425,7 @@ class VoiceClient:
         | player.views        | How many views the audio stream has.                    |
         +---------------------+---------------------------------------------------------+
 
-        .. _ytdl: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L117-L265
+        .. _ytdl: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L128-L278
 
         Examples
         ----------
@@ -443,7 +443,7 @@ class VoiceClient:
             to ``ffmpeg`` or ``avconv`` to convert to PCM bytes.
         ytdl_options : dict
             A dictionary of options to pass into the ``YoutubeDL`` instance.
-            See `the documentation <ydl>`_ for more details.
+            See `the documentation <ytdl>`_ for more details.
         \*\*kwargs
             The rest of the keyword arguments are forwarded to
             :func:`create_ffmpeg_player`.
