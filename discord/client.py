@@ -2246,6 +2246,8 @@ class Client:
             The new colour to change to. (aliased to color as well)
         hoist : bool
             Indicates if the role should be shown separately in the online list.
+        mentionable : bool
+            Indicates if the role should be mentionable by others.
 
         Raises
         -------
@@ -2264,7 +2266,8 @@ class Client:
             'name': fields.get('name', role.name),
             'permissions': fields.get('permissions', role.permissions).value,
             'color': color.value,
-            'hoist': fields.get('hoist', role.hoist)
+            'hoist': fields.get('hoist', role.hoist),
+            'mentionable': fields.get('mentionable', role.mentionable)
         }
 
         r = yield from self.session.patch(url, data=utils.to_json(payload), headers=self.headers)
