@@ -1,12 +1,14 @@
 import discord
 from discord.ext import commands
 import random
+from dict import DictionaryReader
+from botkey import Key
 
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
 
 There are a number of utility commands being showcased here.'''
-bot = commands.Bot(command_prefix='?', description=description)
+bot = commands.Bot(command_prefix='!', description=description)
 
 @bot.event
 async def on_ready():
@@ -47,6 +49,14 @@ async def repeat(times : int, content='repeating...'):
 async def joined(member : discord.Member):
     """Says when a member joined."""
     await bot.say('{0.name} joined in {0.joined_at}'.format(member))
+	
+@bot.command()
+async def link(*params : str):
+	"""Useful links!"""
+	p = DictionaryReader()
+	s = p.commandReader(params)
+	if s != 'None':
+		await bot.say(p.commandReader(params))
 
 @bot.group(pass_context=True)
 async def cool(ctx):
@@ -62,4 +72,5 @@ async def _bot():
     """Is the bot cool?"""
     await bot.say('Yes, the bot is cool.')
 
-bot.run('token')
+bot.run(Key().value())
+
