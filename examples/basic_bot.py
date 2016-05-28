@@ -3,6 +3,8 @@ from discord.ext import commands
 import random
 from dict import DictionaryReader
 from botkey import Key
+from subprocess import call
+import sys
 
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
@@ -17,33 +19,6 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
-@bot.command()
-async def add(left : int, right : int):
-    """Adds two numbers together."""
-    await bot.say(left + right)
-
-@bot.command()
-async def roll(dice : str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        await bot.say('Format has to be in NdN!')
-        return
-
-    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-    await bot.say(result)
-
-@bot.command(description='For when you wanna settle the score some other way')
-async def choose(*choices : str):
-    """Chooses between multiple choices."""
-    await bot.say(random.choice(choices))
-
-@bot.command()
-async def repeat(times : int, content='repeating...'):
-    """Repeats a message multiple times."""
-    for i in range(times):
-        await bot.say(content)
 
 @bot.command()
 async def joined(member : discord.Member):
@@ -51,26 +26,49 @@ async def joined(member : discord.Member):
     await bot.say('{0.name} joined in {0.joined_at}'.format(member))
 	
 @bot.command()
-async def link(*params : str):
-	"""Useful links!"""
+async def list(*params : str):
+	"""Lists of items"""
 	p = DictionaryReader()
-	s = p.commandReader(params)
+	s = p.commandReader(('list',) + params)
 	if s != 'None':
-		await bot.say(p.commandReader(params))
+		await bot.say(s)
+		
+@bot.command()
+async def item(*params : str):
+	"""Direct link to different items"""
+	p = DictionaryReader()
+	s = p.commandReader(('item',) + params)
+	if s != 'None':
+		await bot.say(s)
+		
+@bot.command()
+async def link(*params : str):
+	"""Useful website/forum links"""
+	p = DictionaryReader()
+	s = p.commandReader(('link',) + params)
+	if s != 'None':
+		await bot.say(s)
+		
+@bot.command()
+async def statweights(*params : str):
+	"""Stat weights"""
+	p = DictionaryReader()
+	s = p.commandReader(('stat',) + params)
+	if s != 'None':
+		await bot.say(s)
 
-@bot.group(pass_context=True)
-async def cool(ctx):
-    """Says if a user is cool.
-
-    In reality this just checks if a subcommand is being invoked.
-    """
-    if ctx.invoked_subcommand is None:
-        await bot.say('No, {0.subcommand_passed} is not cool'.format(ctx))
-
-@cool.command(name='bot')
-async def _bot():
-    """Is the bot cool?"""
-    await bot.say('Yes, the bot is cool.')
+@bot.command()
+async def classfantasy(*params : str):
+	"""Insightful"""
+	await bot.say('http://i.imgur.com/EMSiUF3.jpg')		
+	
+@bot.command()
+async def update():
+	"""Update the bot link database to the most recent one"""
+	call(["git","pull"])
+	call(["cmdhere.bat"])
+	sys.exit();
+	await bot.say('http://i.imgur.com/EMSiUF3.jpg')		
 
 bot.run(Key().value())
 

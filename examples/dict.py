@@ -12,6 +12,7 @@ class DictionaryReader:
 			self.dictionary = json.loads(s)
 	
 	def readEntry(self, entry):
+		print(entry)
 		if entry in self.dictionary:
 			while entry in self.dictionary:
 				entry = self.dictionary[entry]

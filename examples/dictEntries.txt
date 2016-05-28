@@ -1,6 +1,25 @@
 {
-	"id":"123",
-	"test":"hi",
-	"lol":"rofl",
-	"aid":"id"
+	"item.legendary.shadow.shoulders":"item.shadow.shoulder",
+	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
+	"item.shadow.shoulders":"item.shadow.shoulder",
+	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
+	
+	"item.legendary.shadow.wrists":"item.shadow.wrist",
+	"item.legendary.shadow.wrist":"item.shadow.wrist",
+	"item.shadow.wrists":"item.shadow.wrist",
+	"item.shadow.wrist":"https://legion.wowhead.com/item=132409",
+
+	"item.legendary.shadow.waist":"item.shadow.waist",
+	"item.legendary.shadow.belt":"item.shadow.waist",
+	"item.shadow.belt":"item.shadow.waist",
+	"item.shadow.waist":"https://legion.wowhead.com/item=132864",
+	
+	"item.legendary.shadow.head":"item.shadow.helm",
+	"item.legendary.shadow.helm":"item.shadow.helm",
+	"item.shadow.head":"item.shadow.helm",
+	"item.shadow.helm":"https://legion.wowhead.com/item=133971",
+	
+	"list.shadow.legendaries":"list.legendary.shadow",
+	"list.legendaries.shadow":"list.legendary.shadow",
+	"list.legendary.shadow":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=2;qu=5"
 }
