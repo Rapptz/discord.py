@@ -21,5 +21,7 @@
 	
 	"list.shadow.legendaries":"list.legendary.shadow",
 	"list.legendaries.shadow":"list.legendary.shadow",
-	"list.legendary.shadow":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=2;qu=5"
+	"list.legendary.shadow":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=2;qu=5",
+	
+	"list.healing.legendaries":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=4;qu=5"
 }
