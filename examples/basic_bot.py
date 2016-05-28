@@ -6,10 +6,11 @@ from botkey import Key
 from subprocess import call
 import sys
 
-description = '''An example bot to showcase the discord.ext.commands extension
-module.
+description = '''I'm PriestBot, your robot friend for links and quick info!
 
-There are a number of utility commands being showcased here.'''
+Below you'll find my basic commands.
+
+You can find my full list of commands at https://github.com/lgkern/discord.py/blob/async/examples/dictEntries.txt'''
 bot = commands.Bot(command_prefix='!', description=description)
 
 @bot.event
@@ -18,12 +19,6 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-
-
-@bot.command()
-async def joined(member : discord.Member):
-    """Says when a member joined."""
-    await bot.say('{0.name} joined in {0.joined_at}'.format(member))
 	
 @bot.command()
 async def list(*params : str):
@@ -50,25 +45,30 @@ async def link(*params : str):
 		await bot.say(s)
 		
 @bot.command()
-async def statweights(*params : str):
+async def stats(*params : str):
 	"""Stat weights"""
 	p = DictionaryReader()
 	s = p.commandReader(('stat',) + params)
 	if s != 'None':
 		await bot.say(s)
-
+	
 @bot.command()
 async def classfantasy(*params : str):
 	"""Insightful"""
-	await bot.say('http://i.imgur.com/EMSiUF3.jpg')		
+	await bot.say('http://i.imgur.com/EMSiUF3.jpg')	
 	
 @bot.command()
 async def update():
 	"""Update the bot link database to the most recent one"""
 	call(["git","pull"])
+
+@bot.command()
+async def fullUpdate():
+	"""Fully updates the bot's code"""
+	call(["git","pull"])
 	call(["cmdhere.bat"])
 	sys.exit();
-	await bot.say('http://i.imgur.com/EMSiUF3.jpg')		
+	
 
 bot.run(Key().value())
 

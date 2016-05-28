@@ -1,27 +1,63 @@
 {
-	"item.legendary.shadow.shoulders":"item.shadow.shoulder",
 	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
-	"item.shadow.shoulders":"item.shadow.shoulder",
 	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
 	
-	"item.legendary.shadow.wrists":"item.shadow.wrist",
 	"item.legendary.shadow.wrist":"item.shadow.wrist",
-	"item.shadow.wrists":"item.shadow.wrist",
 	"item.shadow.wrist":"https://legion.wowhead.com/item=132409",
 
 	"item.legendary.shadow.waist":"item.shadow.waist",
-	"item.legendary.shadow.belt":"item.shadow.waist",
-	"item.shadow.belt":"item.shadow.waist",
 	"item.shadow.waist":"https://legion.wowhead.com/item=132864",
 	
-	"item.legendary.shadow.head":"item.shadow.helm",
-	"item.legendary.shadow.helm":"item.shadow.helm",
-	"item.shadow.head":"item.shadow.helm",
-	"item.shadow.helm":"https://legion.wowhead.com/item=133971",
+	"item.legendary.shadow.helm":"item.shadow.head",
+	"item.shadow.head":"https://legion.wowhead.com/item=133971",
 	
 	"list.shadow.legendaries":"list.legendary.shadow",
 	"list.legendaries.shadow":"list.legendary.shadow",
 	"list.legendary.shadow":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=2;qu=5",
 	
-	"list.healing.legendaries":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=4;qu=5"
+	"list.healing.legendaries":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=4;qu=5",
+
+	"item.legendary.discipline.waist":"item.discipline.waist",
+	"item.discipline.waist":"https://legion.wowhead.com/item=133800",
+	
+	"item.legendary.discipline.chest":"item.discipline.chest",
+	"item.discipline.chest":"https://legion.wowhead.com/item=132861",
+	
+	"item.legendary.discipline.gloves":"item.discipline.gloves",
+	"item.discipline.gloves":"https://legion.wowhead.com/item=132461",
+	
+	"item.legendary.discipline.wrist":"item.discipline.wrist",
+	"item.discipline.wrist":"https://legion.wowhead.com/item=132436",
+	
+	"item.legendary.holy.waist":"item.holy.waist",
+	"item.holy.waist":"https://legion.wowhead.com/item=132445",
+	
+	"item.legendary.holy.legs":"item.holy.legs",
+	"item.holy.legs":"https://legion.wowhead.com/item=132447",
+		
+	"item.legendary.holy.wrist":"item.holy.wrist",
+	"item.holy.wrist":"https://legion.wowhead.com/item=132450",
+	
+	"link.guide.cop.kilee":"http://howtopriest.com/viewtopic.php?f=19&t=7355",
+	
+	"link.patreon":"https://www.patreon.com/howtopriest",
+	"link.donor":"http://howtopriest.com/viewtopic.php?f=5&t=2714",
+	
+	"link.shadow.hub":"http://howtopriest.com/viewtopic.php?f=8&t=4483",
+	"link.shadow.bis":"http://howtopriest.com/viewtopic.php?t=7637",
+	"link.shadow.bis.cop":"http://howtopriest.com/viewtopic.php?t=7643",
+	"link.shadow.bis.as":"http://howtopriest.com/viewtopic.php?t=7642",
+	"link.guide.shadow":"link.guide.cop.kilee",
+	
+	"link.healing.hub":"http://howtopriest.com/viewtopic.php?f=13&t=4484",
+	"link.guide.holy":"http://howtopriest.com/viewtopic.php?f=13&t=7648",
+	"link.guide.discipline":"http://howtopriest.com/viewtopic.php?f=8&t=4483",	
+	
+	"stat.shadow.cop":"Int = 1.0000\nSpell Power = 0.9057\nCrit = 0.7592\nHaste = 0.8540\nMastery = 0.9198\nMultistrike = 0.6584\nVersatility = 0.6427\nDPS (Pure Damage) = 0.1118",
+	"stat.shadow.cop.short":"Int>SP>Mastery>Haste>Crit>Multi>Vers>DPS",
+	"stat.shadow.as":"Int = 1.0000\nSpell Power = 0.9266\nCrit = 1.0729\nHaste = 0.8429\nMastery = 0.4907\nMultistrike = 0.6946\nVersatility = 0.6529\nDPS (Pure Damage) = 0.1125",
+	"stat.shadow.as.short":"Crit>Int>SP>Haste>Multi>Vers>Mast>DPS",
+	
+	"stat.discipline":"Spirit > Mastery > Multistrike >= Crit > Haste > Vers",
+	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit >Mastery > Vers"
 }
