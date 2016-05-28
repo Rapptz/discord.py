@@ -165,6 +165,9 @@ class Bot(GroupMixin, discord.Client):
         output is PM'd. If ``None``, then the bot will only PM when the help
         message becomes too long (dictated by more than 1000 characters).
         Defaults to ``False``.
+    self_bot : bool
+        Indicates if the bot should invoke commands when it is the author of the
+        message. Defaults to ``False``.
     help_attrs : dict
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing
@@ -181,7 +184,7 @@ class Bot(GroupMixin, discord.Client):
         ``"Command {0.name} has no subcommands."``. The first format argument is the
         :class:`Command` attempted to get a subcommand and the second is the name.
     """
-    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
+    def __init__(self, command_prefix, description=None, formatter=None, pm_help=False, self_bot=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
@@ -189,6 +192,7 @@ class Bot(GroupMixin, discord.Client):
         self.extensions = {}
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+        self.self_bot = self_bot
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
@@ -457,7 +461,7 @@ class Bot(GroupMixin, discord.Client):
         return self.cogs.get(name)
 
     def remove_cog(self, name):
-        """Removes a cog the bot.
+        """Removes a cog from the bot.
 
         All registered commands and event listeners that the
         cog has registered will be removed as well.
@@ -578,7 +582,7 @@ class Bot(GroupMixin, discord.Client):
         _internal_author = message.author
 
         view = StringView(message.content)
-        if message.author == self.user:
+        if not self.self_bot and message.author == self.user:
             return
 
         prefix = self._get_prefix(message)
