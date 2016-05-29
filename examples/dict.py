@@ -22,7 +22,8 @@ class DictionaryReader:
 				fixed = self.dictionary[fixed]
 			return fixed
 		else:
-			return 'None'
+			##print(entry.split('.')[0]+".invalid")
+			return self.readEntry(entry.split('.')[0]+".invalid")
 			
 	def fixEntry(self, entry):
 		result = entry.lower()

@@ -1,4 +1,9 @@
 {
+	"item.invalid":"Invalid argument\nUsage: !item <spec> <slot>",
+	"list.invalid":"Invalid argument\nUsage: !list <spec> <type>",
+	"link.invalid":"Invalid argument\nUsage: !link <spec> <[information]>",
+	"stat.invalid":"Invalid argument\nUsage: !stats <spec> <[subtype]>",
+
 	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
 	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
 	
@@ -15,6 +20,8 @@
 	"list.legendaries.shadow":"list.legendary.shadow",
 	"list.legendary.shadow":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=2;qu=5",
 	
+	"list.holy.legendaries":"list.healing.legendaries",
+	"list.discipline.legendaries":"list.healing.legendaries",
 	"list.healing.legendaries":"https://legion.wowhead.com/items=4.1?filter=minle=895;ub=5;ro=4;qu=5",
 
 	"item.legendary.discipline.waist":"item.discipline.waist",
@@ -38,7 +45,7 @@
 	"item.legendary.holy.wrist":"item.holy.wrist",
 	"item.holy.wrist":"https://legion.wowhead.com/item=132450",
 	
-	"link.guide.cop.kilee":"http://howtopriest.com/viewtopic.php?f=19&t=7355",
+	"link.shadow.guide.cop.kilee":"http://howtopriest.com/viewtopic.php?f=19&t=7355",
 	
 	"link.patreon":"https://www.patreon.com/howtopriest",
 	"link.donor":"http://howtopriest.com/viewtopic.php?f=5&t=2714",
@@ -47,11 +54,13 @@
 	"link.shadow.bis":"http://howtopriest.com/viewtopic.php?t=7637",
 	"link.shadow.bis.cop":"http://howtopriest.com/viewtopic.php?t=7643",
 	"link.shadow.bis.as":"http://howtopriest.com/viewtopic.php?t=7642",
-	"link.guide.shadow":"link.guide.cop.kilee",
+	"link.shadow.guide":"link.shadow.guide.cop.kilee",
 	
 	"link.healing.hub":"http://howtopriest.com/viewtopic.php?f=13&t=4484",
-	"link.guide.holy":"http://howtopriest.com/viewtopic.php?f=13&t=7648",
-	"link.guide.discipline":"http://howtopriest.com/viewtopic.php?f=8&t=4483",	
+	"link.holy.hub":"link.healing.hub",
+	"link.discipline.hub":"link.healing.hub",
+	"link.holy.guide":"http://howtopriest.com/viewtopic.php?f=13&t=7648",
+	"link.discipline.guide":"http://howtopriest.com/viewtopic.php?f=8&t=4483",	
 	
 	"stat.shadow.cop":"Int = 1.0000\nSpell Power = 0.9057\nCrit = 0.7592\nHaste = 0.8540\nMastery = 0.9198\nMultistrike = 0.6584\nVersatility = 0.6427\nDPS (Pure Damage) = 0.1118",
 	"stat.shadow.cop.short":"Int>SP>Mastery>Haste>Crit>Multi>Vers>DPS",
@@ -59,5 +68,5 @@
 	"stat.shadow.as.short":"Crit>Int>SP>Haste>Multi>Vers>Mast>DPS",
 	
 	"stat.discipline":"Spirit > Mastery > Multistrike >= Crit > Haste > Vers",
-	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit >Mastery > Vers"
+	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit > Mastery > Vers"
 }
