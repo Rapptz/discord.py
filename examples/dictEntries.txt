@@ -1,8 +1,8 @@
 {
 	"item.invalid":"Invalid argument\nUsage: !item <spec> <slot>",
 	"list.invalid":"Invalid argument\nUsage: !list <spec> <type>",
-	"link.invalid":"Invalid argument\nUsage: !link <spec> <[information]>",
-	"stat.invalid":"Invalid argument\nUsage: !stats <spec> <[subtype]>",
+	"link.invalid":"Invalid argument\nUsage: !link <spec> <information>",
+	"stat.invalid":"Invalid argument\nUsage: !stats <spec> [subtype]",
 
 	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
 	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
