@@ -51,6 +51,14 @@ async def stats(*params : str):
 	s = p.commandReader(('stat',) + params)
 	if s != 'None':
 		await bot.say(s)
+        
+@bot.command()
+async def weakauras(*params : str):
+	"""Links for WeakAuras"""
+	p = DictionaryReader()
+	s = p.commandReader(('wa',) + params)
+	if s != 'None':
+		await bot.say(s)
 	
 @bot.command()
 async def classfantasy(*params : str):

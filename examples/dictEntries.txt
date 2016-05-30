@@ -1,8 +1,9 @@
 {
 	"item.invalid":"Invalid argument\nUsage: !item <spec> <slot>",
 	"list.invalid":"Invalid argument\nUsage: !list <spec> <type>",
-	"link.invalid":"Invalid argument\nUsage: !link <spec> <[information]>",
-	"stat.invalid":"Invalid argument\nUsage: !stats <spec> <[subtype]>",
+	"link.invalid":"Invalid argument\nUsage: !link <spec> [information]",
+	"stat.invalid":"Invalid argument\nUsage: !stats <spec> [subtype]",
+    "wa.invalid":"Invalid argument\nUsage: !weakauras <spec> [author]",
 
 	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
 	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
@@ -68,5 +69,9 @@
 	"stat.shadow.as.short":"Crit>Int>SP>Haste>Multi>Vers>Mast>DPS",
 	
 	"stat.discipline":"Spirit > Mastery > Multistrike >= Crit > Haste > Vers",
-	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit > Mastery > Vers"
+	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit > Mastery > Vers",
+    
+    "wa.shadow":"",
+    "":"",
+    "":""
 }
