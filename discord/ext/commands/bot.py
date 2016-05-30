@@ -229,13 +229,24 @@ class Bot(GroupMixin, discord.Client):
             except asyncio.CancelledError:
                 pass
 
-    def dispatch(self, event_name, *args, **kwargs):
-        super().dispatch(event_name, *args, **kwargs)
+    @asyncio.coroutine
+    def _schedule_extra(self, task, event_name, *args, **kwargs):
+        if task is not None:
+            yield from asyncio.wait(task, loop=self.loop)
+            exc = task.exception()
+            if type(exc) is discord.errors.EventInterrupt:
+                return
         ev = 'on_' + event_name
         if ev in self.extra_events:
             for event in self.extra_events[ev]:
                 coro = self._run_extra(event, event_name, *args, **kwargs)
                 discord.compat.create_task(coro, loop=self.loop)
+
+    def dispatch(self, event_name, *args, **kwargs):
+        task = super().dispatch(event_name, *args, **kwargs)
+        discord.compat.create_task(
+            self._schedule_extra(task, event_name, *args, **kwargs),
+            loop=self.loop)
 
     # utility "send_*" functions
 

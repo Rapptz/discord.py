@@ -245,6 +245,8 @@ class Client:
             yield from getattr(self, event)(*args, **kwargs)
         except asyncio.CancelledError:
             pass
+        except EventInterrupt:
+            raise
         except Exception:
             try:
                 yield from self.on_error(event, *args, **kwargs)
@@ -260,7 +262,8 @@ class Client:
             getattr(self, handler)(*args, **kwargs)
 
         if hasattr(self, method):
-            compat.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
+            task = compat.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
+            return task
 
     @asyncio.coroutine
     def on_error(self, event_method, *args, **kwargs):

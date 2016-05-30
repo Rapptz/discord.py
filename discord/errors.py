@@ -119,3 +119,7 @@ class ConnectionClosed(ClientException):
         self.code = original.code
         self.reason = original.reason
         super().__init__(str(original))
+
+class EventInterrupt(ClientException):
+    """Exception thrown by a client event to interrupt further dispatching."""
+    pass
