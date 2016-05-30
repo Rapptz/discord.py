@@ -32,7 +32,7 @@ async def list(*params : str):
 async def item(*params : str):
 	"""Direct link to different items"""
 	p = DictionaryReader()
-	s = p.commandReader(('item',) + params)
+	s = p.itemReader(('item',) + params)
 	if s != 'None':
 		await bot.say(s)
 		

@@ -22,8 +22,10 @@ class DictionaryReader:
 				fixed = self.dictionary[fixed]
 			return fixed
 		else:
-			##print(entry.split('.')[0]+".invalid")
+			print(entry.split('.')[0]+".invalid")
 			return self.readEntry(entry.split('.')[0]+".invalid")
+            
+            
 			
 	def fixEntry(self, entry):
 		result = entry.lower()
@@ -63,3 +65,10 @@ class DictionaryReader:
 		
 	def commandReader(self, params):
 		return self.readEntry('.'.join(params))
+    
+    def itemReader(self, params):
+		result = self.commandReader(params)
+        if 'Invalid' in result:
+            if params[1].isdigit:
+                return 'https://legion.wowhead.com/item='+params[1]
+        return result
