@@ -59,6 +59,22 @@ async def weakauras(*params : str):
 	s = p.commandReader(('wa',) + params)
 	if s != 'None':
 		await bot.say(s)
+        
+@bot.command()
+async def bis(*params : str):
+	"""Links for Best in Slot lists"""
+	p = DictionaryReader()
+	s = p.commandReader(('bis',) + params)
+	if s != 'None':
+		await bot.say(s)
+        
+@bot.command()
+async def boss(*params : str):
+	"""Links for Boss Discussions"""
+	p = DictionaryReader()
+	s = p.commandReader(('boss',) + params)
+	if s != 'None':
+		await bot.say(s)
 	
 @bot.command()
 async def classfantasy(*params : str):

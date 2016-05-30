@@ -1,9 +1,11 @@
 {
 	"item.invalid":"Invalid argument\nUsage: !item <spec> <slot>",
 	"list.invalid":"Invalid argument\nUsage: !list <spec> <type>",
-	"link.invalid":"Invalid argument\nUsage: !link <spec> [information]",
+	"link.invalid":"Invalid argument\nUsage: !link <spec> <information>",
 	"stat.invalid":"Invalid argument\nUsage: !stats <spec> [subtype]",
     "wa.invalid":"Invalid argument\nUsage: !weakauras <spec> [author]",
+    "bis.invalid":"Invalid argument\nUsage: !bis <spec> [subtype]",
+    "boss.invalid":"Invalid argument\nUsage: !boss <spec> <bossName>",
 
 	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
 	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
@@ -71,7 +73,55 @@
 	"stat.discipline":"Spirit > Mastery > Multistrike >= Crit > Haste > Vers",
 	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit > Mastery > Vers",
     
-    "wa.shadow":"",
-    "":"",
-    "":""
+    "wa.shadow":"http://howtopriest.com/viewtopic.php?t=6059",
+    "wa.holy":"None",
+    "wa.discipline":"None",
+    
+    
+    "bis.shadow":"bis.shadow.cop",
+    "bis.shadow.cop":"http://howtopriest.com/viewtopic.php?t=7643",
+    "bis.shadow.as":"http://howtopriest.com/viewtopic.php?t=7642",
+    "bis.holy":"http://howtopriest.com/viewtopic.php?f=13&t=7648#BiS",
+    "bis.discipline":"http://howtopriest.com/viewtopic.php?f=13&t=7649#BiS",
+    
+    "boss.shadow.nythendra":"",
+    "boss.shadow.ursoc":"",
+    "boss.shadow.xavius":"",
+    "boss.shadow.don":"",
+
+    "boss.shadow.ilgynoth":"",
+    "boss.shadow.elerethe ":"",
+    "boss.shadow.cenarius":"",
+    "boss.shadow.skorpyron":"",
+    "boss.shadow.krosus":"",
+    "boss.shadow.chromatic.anomaly":"",
+    "boss.shadow.trilliax":"",
+    "boss.shadow.star.augur.etraeus":"",
+    "boss.shadow.guldan":"",
+    "boss.shadow.grand.magistrix.elisande":"",   
+    "boss.shadow.spellblade.aluriel":"",
+    "boss.shadow.high.botanist.tel'arn":"",
+    "boss.shadow.tichondrius":"",
+    "boss":"",
+
+    "boss.shadow.dragons.of.nightmare":"boss.shadow.don",
+    "boss.shadow.dragons":"boss.shadow.don",
+    "boss.shadow.dragon.council":"boss.shadow.don",    
+    "boss.shadow.chromaticanomaly":"boss.shadow.chromatic.anomaly",
+    "boss.shadow.ca":"boss.shadow.chromatic.anomaly",
+    "boss.shadow.gul'dan":"boss.shadow.guldan",
+    "boss.shadow.sae":"boss.shadow.star.augur.etraeus",
+    "boss.shadow.star.augur":"boss.shadow.star.augur.etraeus",
+    "boss.shadow.etraeus":"boss.shadow.star.augur.etraeus",    
+    "boss.shadow.gme":"boss.shadow.grand.magistrix.elisande",
+    "boss.shadow.grand.magistrix":"boss.shadow.grand.magistrix.elisande",
+    "boss.shadow.elisande":"boss.shadow.grand.magistrix.elisande",
+    "boss.shadow.aluriel":"boss.shadow.spellblade.aluriel",
+    "boss.shadow.sba":"boss.shadow.spellblade.aluriel",
+    "boss.shadow.high.botanist.telarn":"boss.shadow.high.botanist.tel'arn",
+    "boss.shadow.hbt":"boss.shadow.high.botanist.tel'arn",
+    "boss.shadow.high.botanist":"boss.shadow.high.botanist.tel'arn",
+    "boss.shadow.tel'arn":"boss.shadow.high.botanist.tel'arn",
+    "boss.shadow.telarn":"boss.shadow.high.botanist.tel'arn"
 }
+
