@@ -77,6 +77,7 @@
     "wa.holy":"None",
     "wa.discipline":"None",
     
+	
     
     "bis.shadow":"bis.shadow.cop",
     "bis.shadow.cop":"http://howtopriest.com/viewtopic.php?t=7643",
@@ -91,7 +92,7 @@
     "boss.shadow.ilgynoth":"TBA",
     "boss.shadow.elerethe ":"TBA",
     "boss.shadow.cenarius":"TBA",
-    
+    "boss.shadow.guldan":"TBA",
     "boss.shadow.skorpyron":"TBA",
     "boss.shadow.krosus":"TBA",
     "boss.shadow.chromatic.anomaly":"TBA",
@@ -109,7 +110,7 @@
     "boss.shadow.dragon.council":"boss.shadow.don",    
     "boss.shadow.chromaticanomaly":"boss.shadow.chromatic.anomaly",
     "boss.shadow.ca":"boss.shadow.chromatic.anomaly",
-    "boss.shadow.gul\'dan":"boss.shadow.guldan",
+    "boss.shadow.gul'dan":"boss.shadow.guldan",
     "boss.shadow.sae":"boss.shadow.star.augur.etraeus",
     "boss.shadow.star.augur":"boss.shadow.star.augur.etraeus",
     "boss.shadow.etraeus":"boss.shadow.star.augur.etraeus",    
@@ -120,7 +121,7 @@
     "boss.shadow.sba":"boss.shadow.spellblade.aluriel",
     "boss.shadow.high.botanist.telarn":"boss.shadow.high.botanist.tel'arn",
     "boss.shadow.hbt":"boss.shadow.high.botanist.tel'arn",
-    "boss.shadow.high.botanist":"boss.shadow.high.botanist.tel\'arn",
+    "boss.shadow.high.botanist":"boss.shadow.high.botanist.tel'arn",
     "boss.shadow.tel'arn":"boss.shadow.high.botanist.tel'arn",
     "boss.shadow.telarn":"boss.shadow.high.botanist.tel'arn"
 }
