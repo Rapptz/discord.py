@@ -66,9 +66,9 @@ class DictionaryReader:
 	def commandReader(self, params):
 		return self.readEntry('.'.join(params))
     
-    def itemReader(self, params):
+	def itemReader(self, params):
 		result = self.commandReader(params)
-        if 'Invalid' in result:
-            if params[1].isdigit:
-                return 'https://legion.wowhead.com/item='+params[1]
-        return result
+		if 'Invalid' in result:
+			if params[1].isdigit():
+				return 'https://legion.wowhead.com/item='+params[1]
+		return result

@@ -1,5 +1,5 @@
 {
-	"item.invalid":"Invalid argument\nUsage: !item <spec> <slot>",
+	"item.invalid":"Invalid argument\nUsage:\n\t!item <spec> <slot>\n\t!item <itemNumber>",
 	"list.invalid":"Invalid argument\nUsage: !list <spec> <type>",
 	"link.invalid":"Invalid argument\nUsage: !link <spec> <information>",
 	"stat.invalid":"Invalid argument\nUsage: !stats <spec> [subtype]",
