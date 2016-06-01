@@ -40,9 +40,13 @@ def _get_variable(name):
     stack = inspect.stack()
     try:
         for frames in stack:
-            current_locals = frames[0].f_locals
-            if name in current_locals:
-                return current_locals[name]
+            try:
+                frame = frames[0]
+                current_locals = frame.f_locals
+                if name in current_locals:
+                    return current_locals[name]
+            finally:
+                del frame
     finally:
         del stack
 
