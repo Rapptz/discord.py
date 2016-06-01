@@ -264,12 +264,13 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: The :class:`Server` prior to being updated.
     :param after: The :class:`Server` after being updated.
 
-.. function:: on_server_role_create(server, role)
-              on_server_role_delete(server, role)
+.. function:: on_server_role_create(role)
+              on_server_role_delete(role)
 
     Called when a :class:`Server` creates or deletes a new :class:`Role`.
 
-    :param server: The :class:`Server` that was created or deleted.
+    To get the server it belongs to, use :attr:`Role.server`.
+
     :param role: The :class:`Role` that was created or deleted.
 
 .. function:: on_server_role_update(before, after)

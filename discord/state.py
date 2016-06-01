@@ -476,10 +476,9 @@ class ConnectionState:
     def parse_guild_role_create(self, data):
         server = self._get_server(data.get('guild_id'))
         role_data = data.get('role', {})
-        everyone = server.id == role_data.get('id')
-        role = Role(everyone=everyone, **role_data)
+        role = Role(server=server, **role_data)
         server.roles.append(role)
-        self.dispatch('server_role_create', server, role)
+        self.dispatch('server_role_create', role)
 
     def parse_guild_role_delete(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -491,7 +490,7 @@ class ConnectionState:
             except ValueError:
                 return
             else:
-                self.dispatch('server_role_delete', server, role)
+                self.dispatch('server_role_delete', role)
 
     def parse_guild_role_update(self, data):
         server = self._get_server(data.get('guild_id'))

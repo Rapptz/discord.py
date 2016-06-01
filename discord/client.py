@@ -2447,8 +2447,7 @@ class Client:
         yield from utils._verify_successful_response(r)
 
         data = yield from r.json(encoding='utf-8')
-        everyone = server.id == data.get('id')
-        role = Role(everyone=everyone, **data)
+        role = Role(server=server, **data)
 
         # we have to call edit because you can't pass a payload to the
         # http request currently.
