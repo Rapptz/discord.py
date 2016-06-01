@@ -199,6 +199,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         ws._dispatch = client.dispatch
         ws.gateway = gateway
 
+        client.connection._update_references(ws)
+
         log.info('Created websocket connected to {}'.format(gateway))
         if not resume:
             yield from ws.identify()

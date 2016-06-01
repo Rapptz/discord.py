@@ -107,6 +107,10 @@ class ConnectionState:
     def _remove_voice_client(self, guild_id):
         self._voice_clients.pop(guild_id, None)
 
+    def _update_references(self, ws):
+        for vc in self.voice_clients:
+            vc.main_ws = ws
+
     @property
     def servers(self):
         return self._servers.values()
