@@ -109,6 +109,10 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
         This function is not guaranteed to be the first event called.
 
+.. function:: on_resumed()
+
+    Called when the client has resumed a session.
+
 .. function:: on_error(event, \*args, \*\*kwargs)
 
     Usually when an event raises an uncaught exception, a traceback is

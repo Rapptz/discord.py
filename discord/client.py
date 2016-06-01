@@ -401,9 +401,10 @@ class Client:
         while not self.is_closed:
             try:
                 yield from self.ws.poll_event()
-            except ReconnectWebSocket:
-                log.info('Reconnecting the websocket.')
-                self.ws = yield from DiscordWebSocket.from_client(self)
+            except (ReconnectWebSocket, ResumeWebSocket) as e:
+                resume = type(e) is ResumeWebSocket
+                log.info('Got ' + type(e).__name__)
+                self.ws = yield from DiscordWebSocket.from_client(self, resume=resume)
             except ConnectionClosed as e:
                 yield from self.close()
                 if e.code != 1000:

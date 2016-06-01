@@ -199,6 +199,9 @@ class ConnectionState:
 
         compat.create_task(self._delay_ready(), loop=self.loop)
 
+    def parse_resumed(self, data):
+        self.dispatch('resumed')
+
     def parse_message_create(self, data):
         channel = self.get_channel(data.get('channel_id'))
         message = Message(channel=channel, **data)
