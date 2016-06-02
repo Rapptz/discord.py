@@ -61,7 +61,8 @@ class Role(Hashable):
     hoist : bool
          Indicates if the role will be displayed separately from other members.
     position : int
-        The position of the role. This number is usually positive.
+        The position of the role. This number is usually positive. The bottom
+        role has a position of 0.
     managed : bool
         Indicates if the role is managed by the server through some form of
         integrations such as Twitch.
