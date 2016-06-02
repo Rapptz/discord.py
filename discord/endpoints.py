@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 BASE          = 'https://discordapp.com'
 API_BASE      = BASE     + '/api'
-GATEWAY       = API_BASE + '/gateway?encoding=json&v=4'
+GATEWAY       = API_BASE + '/gateway'
 USERS         = API_BASE + '/users'
 ME            = USERS    + '/@me'
 REGISTER      = API_BASE + '/auth/register'

@@ -125,7 +125,7 @@ def get_gateway(token, *, loop=None):
             yield from resp.release()
             raise GatewayNotFound()
         data = yield from resp.json(encoding='utf-8')
-        return data.get('url')
+        return data.get('url') + '?encoding=json&v=4'
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements a WebSocket for Discord's gateway v4.
@@ -310,6 +310,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         if op == self.INVALIDATE_SESSION:
             state.sequence = None
             state.session_id = None
+            if data == True:
+                raise ResumeWebSocket()
+
             yield from self.identify()
             return
 
@@ -381,10 +384,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         except websockets.exceptions.ConnectionClosed as e:
             if self._can_handle_close(e.code):
                 log.info('Websocket closed with {0.code} ({0.reason}), attempting a reconnect.'.format(e))
-                if e.code == 4006:
-                    raise ReconnectWebSocket() from e
-                else:
-                    raise ResumeWebSocket() from e
+                raise ResumeWebSocket() from e
             else:
                 raise ConnectionClosed(e) from e
 
