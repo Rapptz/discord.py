@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from copy import deepcopy
+import copy
 from . import utils
 from .permissions import Permissions
 from .enums import ChannelType
@@ -74,9 +74,6 @@ class Channel(Hashable):
         the channel type is not within the ones recognised by the enumerator.
     bitrate : int
         The channel's preferred audio bitrate in bits per second.
-    changed_roles
-        A list of :class:`Roles` that have been overridden from their default
-        values in the :attr:`Server.roles` attribute.
     voice_members
         A list of :class:`Members` that are currently inside this voice channel.
         If :attr:`type` is not :attr:`ChannelType.voice` then this is always an empty array.
@@ -85,8 +82,8 @@ class Channel(Hashable):
     """
 
     __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
-                  'is_private', 'type', 'bitrate', 'changed_roles',
-                  'user_limit', '_permission_overwrites' ]
+                  'is_private', 'type', 'bitrate', 'user_limit',
+                  '_permission_overwrites' ]
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -110,7 +107,6 @@ class Channel(Hashable):
         except:
             pass
 
-        self.changed_roles = []
         self._permission_overwrites = []
         everyone_index = 0
         everyone_id = self.server.default_role.id
@@ -130,21 +126,25 @@ class Channel(Hashable):
                 # swap it to be the first one.
                 everyone_index = index
 
-            # this is pretty inefficient due to the deep nested loops unfortunately
-            role = utils.find(lambda r: r.id == overridden_id, self.server.roles)
-            if role is None:
-                continue
-
-            denied = overridden.get('deny', 0)
-            allowed = overridden.get('allow', 0)
-            override = deepcopy(role)
-            override.permissions.handle_overwrite(allowed, denied)
-            self.changed_roles.append(override)
-
         # do the swap
         tmp = self._permission_overwrites
         if tmp:
             tmp[everyone_index], tmp[0] = tmp[0], tmp[everyone_index]
+
+    @property
+    def changed_roles(self):
+        """Returns a list of :class:`Roles` that have been overridden from
+        their default values in the :attr:`Server.roles` attribute."""
+        ret = []
+        for overwrite in filter(lambda o: o.type == 'role', self._permission_overwrites):
+            role = utils.get(self.server.roles, id=overwrite.id)
+            if role is None:
+                continue
+
+            role = copy.copy(role)
+            role.permissions.handle_overwrite(overwrite.allow, overwrite.deny)
+            ret.append(role)
+        return ret
 
     @property
     def is_default(self):
