@@ -477,7 +477,7 @@ class ConnectionState:
         server = self._get_server(data.get('guild_id'))
         role_data = data.get('role', {})
         role = Role(server=server, **role_data)
-        server.roles.append(role)
+        server._add_role(role)
         self.dispatch('server_role_create', role)
 
     def parse_guild_role_delete(self, data):
@@ -486,7 +486,7 @@ class ConnectionState:
             role_id = data.get('role_id')
             role = utils.find(lambda r: r.id == role_id, server.roles)
             try:
-                server.roles.remove(role)
+                server._remove_role(role)
             except ValueError:
                 return
             else:

@@ -136,6 +136,27 @@ class Server(Hashable):
             member._update_voice_state(voice_channel=channel, **data)
         return before, member
 
+    def _add_role(self, role):
+        # roles get added to the bottom (position 1, pos 0 is @everyone)
+        # so since self.roles has the @everyone role, we can't increment
+        # its position because it's stuck at position 0. Luckily x += False
+        # is equivalent to adding 0. So we cast the position to a bool and
+        # increment it.
+        for r in self.roles:
+            r.position += bool(r.position)
+
+        self.roles.append(role)
+
+    def _remove_role(self, role):
+        # this raises ValueError if it fails..
+        self.roles.remove(role)
+
+        # since it didn't, we can change the positions now
+        # basically the same as above except we only decrement
+        # the position if we're above the role we deleted.
+        for r in self.roles:
+            r.position -= r.position > role.position
+
     def _from_data(self, guild):
         # according to Stan, this is always available even if the guild is unavailable
         # I don't have this guarantee when someone updates the server.
