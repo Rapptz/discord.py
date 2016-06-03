@@ -278,11 +278,15 @@ class Client:
     # login state management
 
     @asyncio.coroutine
-    def _login_1(self, token):
+    def _login_1(self, token, **kwargs):
         log.info('logging in using static token')
         self.token = token
         self.email = None
-        self.headers['authorization'] = 'Bot {}'.format(self.token)
+        if kwargs.pop('bot', True):
+            self.headers['authorization'] = 'Bot ' + self.token
+        else:
+            self.headers['authorization'] = self.token
+
         resp = yield from self.session.get(endpoints.ME, headers=self.headers)
         yield from resp.release()
         log.debug(request_logging_format.format(method='GET', response=resp))
@@ -297,7 +301,7 @@ class Client:
         self._is_logged_in.set()
 
     @asyncio.coroutine
-    def _login_2(self, email, password):
+    def _login_2(self, email, password, **kwargs):
         # attempt to read the token from cache
         if self.cache_auth:
             yield from self._login_via_cache(email, password)
@@ -333,7 +337,7 @@ class Client:
             self._update_cache(email, password)
 
     @asyncio.coroutine
-    def login(self, *args):
+    def login(self, *args, **kwargs):
         """|coro|
 
         Logs in the client with the specified credentials.
@@ -351,6 +355,13 @@ class Client:
         More than 2 parameters or less than 1 parameter raises a
         :exc:`TypeError`.
 
+        Parameters
+        -----------
+        bot : bool
+            Keyword argument that specifies if the account logging on is a bot
+            token or not. Only useful for logging in with a static token.
+            Ignored for the email and password combo. Defaults to ``True``.
+
         Raises
         ------
         LoginFailure
@@ -365,7 +376,7 @@ class Client:
 
         n = len(args)
         if n in (2, 1):
-            yield from getattr(self, '_login_' + str(n))(*args)
+            yield from getattr(self, '_login_' + str(n))(*args, **kwargs)
         else:
             raise TypeError('login() takes 1 or 2 positional arguments but {} were given'.format(n))
 
@@ -437,15 +448,15 @@ class Client:
         self._is_ready.clear()
 
     @asyncio.coroutine
-    def start(self, *args):
+    def start(self, *args, **kwargs):
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
         """
-        yield from self.login(*args)
+        yield from self.login(*args, **kwargs)
         yield from self.connect()
 
-    def run(self, *args):
+    def run(self, *args, **kwargs):
         """A blocking call that abstracts away the `event loop`_
         initialisation from you.
 
@@ -456,7 +467,7 @@ class Client:
         Roughly Equivalent to: ::
 
             try:
-                loop.run_until_complete(start(*args))
+                loop.run_until_complete(start(*args, **kwargs))
             except KeyboardInterrupt:
                 loop.run_until_complete(logout())
                 # cancel all tasks lingering
@@ -471,7 +482,7 @@ class Client:
         """
 
         try:
-            self.loop.run_until_complete(self.start(*args))
+            self.loop.run_until_complete(self.start(*args, **kwargs))
         except KeyboardInterrupt:
             self.loop.run_until_complete(self.logout())
             pending = asyncio.Task.all_tasks()
