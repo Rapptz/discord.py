@@ -110,8 +110,13 @@ class Client:
         The websocket gateway the client is currently connected to. Could be None.
     loop
         The `event loop`_ that the client uses for HTTP requests and websocket operations.
-
     """
+
+    __slots__ = [ 'user', 'voice_clients', 'servers', 'private_channels',
+                  'messages', 'email', 'gateway', 'loop', 'ws', 'token',
+                  '_listeners', 'cache_auth', 'connection', 'headers',
+                  'session', '_closed', '_is_logged_in', '_is_ready' ]
+
     def __init__(self, *, loop=None, **options):
         self.ws = None
         self.token = None

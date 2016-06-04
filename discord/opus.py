@@ -146,6 +146,8 @@ class OpusError(DiscordException):
         The error code returned.
     """
 
+    __slots__ = ['code']
+
     def __init__(self, code):
         self.code = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')

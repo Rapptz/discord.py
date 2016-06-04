@@ -178,6 +178,12 @@ class VoiceClient:
     loop
         The event loop that the voice client is running on.
     """
+
+    __slots__ = [ 'session_id', 'token', 'user', 'endpoint', 'channel', 'loop',
+                  'main_ws', '_connected', 'guild_id', 'sequence', 'timestamp',
+                  'encoder', 'socket', 'ws', 'secret_key', 'ssrc',
+                  'endpoint_ip', 'voice_port', 'port', 'ip' ]
+
     def __init__(self, user, main_ws, session_id, channel, data, loop):
         self.user = user
         self.main_ws = main_ws
