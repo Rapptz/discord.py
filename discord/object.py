@@ -45,6 +45,8 @@ class Object:
         The ID of the object.
     """
 
+    __slots__ = ['id', '__dict__']
+
     def __init__(self, id):
         self.id = id
 

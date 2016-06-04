@@ -60,6 +60,8 @@ class HTTPException(DiscordException):
         The text of the response if it wasn't JSON. Could be None.
     """
 
+    __slots__ = ['response', 'text']
+
     def __init__(self, response, message=None, text=None):
         self.response = response
         self.text = text
@@ -113,6 +115,9 @@ class ConnectionClosed(ClientException):
     reason : str
         The reason provided for the closure.
     """
+
+    __slots__ = ['code', 'reason']
+
     def __init__(self, original):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
