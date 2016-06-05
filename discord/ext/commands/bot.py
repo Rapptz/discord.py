@@ -29,11 +29,12 @@ import discord
 import inspect
 import importlib
 import sys
+import traceback
 
 from .core import GroupMixin, Command, command
 from .view import StringView
 from .context import Context
-from .errors import CommandNotFound
+from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
 
 def _get_variable(name):
@@ -246,6 +247,26 @@ class Bot(GroupMixin, discord.Client):
             for event in self.extra_events[ev]:
                 coro = self._run_extra(event, event_name, *args, **kwargs)
                 discord.compat.create_task(coro, loop=self.loop)
+
+    @asyncio.coroutine
+    def on_command_error(self, exception, context):
+        """|coro|
+
+        The default command error handler provided by the bot.
+
+        By default this prints to ``sys.stderr`` however it could be
+        overridden to have a different implementation.
+
+        This only fires if you do not specify any listeners for command error.
+        """
+        if self.extra_events.get('on_command_error', None):
+            return
+
+        if hasattr(context.command, "on_error"):
+            return
+
+        print('Ignoring exception in command {}'.format(context.command), file=sys.stderr)
+        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     # utility "send_*" functions
 
@@ -618,8 +639,13 @@ class Bot(GroupMixin, discord.Client):
             command = self.commands[invoker]
             self.dispatch('command', command, ctx)
             ctx.command = command
-            yield from command.invoke(ctx)
-            self.dispatch('command_completion', command, ctx)
+            try:
+                yield from command.invoke(ctx)
+            except CommandError as e:
+                command.handle_local_error(e, ctx)
+                self.dispatch('command_error', e, ctx)
+            else:
+                self.dispatch('command_completion', command, ctx)
         else:
             exc = CommandNotFound('Command "{}" is not found'.format(invoker))
             self.dispatch('command_error', exc, ctx)
