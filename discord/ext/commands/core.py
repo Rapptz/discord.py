@@ -365,6 +365,7 @@ class Command:
 
     @asyncio.coroutine
     def invoke(self, ctx):
+        ctx.command = self
         self._verify_checks(ctx)
         yield from self._parse_arguments(ctx)
 
@@ -588,6 +589,7 @@ class Group(GroupMixin, Command):
     def invoke(self, ctx):
         early_invoke = not self.invoke_without_command
         if early_invoke:
+            ctx.command = self
             self._verify_checks(ctx)
             yield from self._parse_arguments(ctx)
 

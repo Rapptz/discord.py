@@ -638,7 +638,6 @@ class Bot(GroupMixin, discord.Client):
         if invoker in self.commands:
             command = self.commands[invoker]
             self.dispatch('command', command, ctx)
-            ctx.command = command
             try:
                 yield from command.invoke(ctx)
             except CommandError as e:
