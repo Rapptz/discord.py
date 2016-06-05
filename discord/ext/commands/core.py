@@ -137,17 +137,20 @@ class Command:
         self.instance = None
         self.parent = None
 
-    def handle_local_error(self, error, ctx):
+    def dispatch_error(self, error, ctx):
         try:
             coro = self.on_error
         except AttributeError:
-            return
-
-        injected = inject_context(ctx, coro)
-        if self.instance is not None:
-            discord.compat.create_task(injected(self.instance, error, ctx), loop=ctx.bot.loop)
+            pass
         else:
-            discord.compat.create_task(injected(error, ctx), loop=ctx.bot.loop)
+            loop = ctx.bot.loop
+            injected = inject_context(ctx, coro)
+            if self.instance is not None:
+                discord.compat.create_task(injected(self.instance, error, ctx), loop=loop)
+            else:
+                discord.compat.create_task(injected(error, ctx), loop=loop)
+        finally:
+            ctx.bot.dispatch('command_error', error, ctx)
 
     def _get_from_servers(self, bot, getter, argument):
         result = None
