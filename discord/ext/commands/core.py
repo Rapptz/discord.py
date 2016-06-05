@@ -352,7 +352,6 @@ class Command:
                         args.append(transformed)
                     except RuntimeError:
                         break
-        return True
 
     def _verify_checks(self, ctx):
         if not self.enabled:
@@ -363,16 +362,13 @@ class Command:
 
         if not self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
-        return True
 
     @asyncio.coroutine
     def invoke(self, ctx):
-        if not self._verify_checks(ctx):
-            return
-
-        if (yield from self._parse_arguments(ctx)):
-            injected = inject_context(ctx, self.callback)
-            yield from injected(*ctx.args, **ctx.kwargs)
+        self._verify_checks(ctx)
+        yield from self._parse_arguments(ctx)
+        injected = inject_context(ctx, self.callback)
+        yield from injected(*ctx.args, **ctx.kwargs)
 
     def error(self, coro):
         """A decorator that registers a coroutine as a local error handler.
@@ -587,9 +583,8 @@ class Group(GroupMixin, Command):
     def invoke(self, ctx):
         early_invoke = not self.invoke_without_command
         if early_invoke:
-            valid = self._verify_checks(ctx) and (yield from self._parse_arguments(ctx))
-            if not valid:
-                return
+            self._verify_checks(ctx)
+            yield from self._parse_arguments(ctx)
 
         view = ctx.view
         previous = view.index
@@ -612,9 +607,8 @@ class Group(GroupMixin, Command):
             # undo the trigger parsing
             view.index = previous
             view.previous = previous
-            valid = self._verify_checks(ctx) and (yield from self._parse_arguments(ctx))
-            if not valid:
-                return
+            self._verify_checks(ctx)
+            yield from self._parse_arguments(ctx)
             injected = inject_context(ctx, self.callback)
             yield from injected(*ctx.args, **ctx.kwargs)
 
