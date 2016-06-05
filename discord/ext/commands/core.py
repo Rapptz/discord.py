@@ -367,6 +367,11 @@ class Command:
     def invoke(self, ctx):
         self._verify_checks(ctx)
         yield from self._parse_arguments(ctx)
+
+        # terminate the invoked_subcommand chain.
+        # since we're in a regular command (and not a group) then
+        # the invoked subcommand is None.
+        ctx.invoked_subcommand = None
         injected = inject_context(ctx, self.callback)
         yield from injected(*ctx.args, **ctx.kwargs)
 
@@ -593,8 +598,7 @@ class Group(GroupMixin, Command):
 
         if trigger:
             ctx.subcommand_passed = trigger
-            if trigger in self.commands:
-                ctx.invoked_subcommand = self.commands[trigger]
+            ctx.invoked_subcommand = self.commands.get(trigger, None)
 
         if early_invoke:
             injected = inject_context(ctx, self.callback)
