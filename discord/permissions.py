@@ -65,11 +65,16 @@ class Permissions:
         The raw value. This value is a bit array field of a 32-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
+    perms
+        Set permissions to True or False by name.
     """
 
     __slots__ = [ 'value' ]
-    def __init__(self, permissions=0, **kwargs):
+    def __init__(self, permissions=0, **perms):
         self.value = permissions
+
+        for perm, val in perms.items():
+            setattr(self, perm, val)
 
     def __eq__(self, other):
         return isinstance(other, Permissions) and self.value == other.value
