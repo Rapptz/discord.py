@@ -44,7 +44,10 @@ def inject_context(ctx, coro):
         _internal_channel = ctx.message.channel
         _internal_author = ctx.message.author
 
-        ret = yield from coro(*args, **kwargs)
+        try:
+            ret = yield from coro(*args, **kwargs)
+        except Exception as e:
+            raise CommandError("Exception raised while executing command") from e
         return ret
     return wrapped
 
@@ -306,72 +309,60 @@ class Command:
 
     @asyncio.coroutine
     def _parse_arguments(self, ctx):
-        try:
-            ctx.args = [] if self.instance is None else [self.instance]
-            ctx.kwargs = {}
-            args = ctx.args
-            kwargs = ctx.kwargs
+        ctx.args = [] if self.instance is None else [self.instance]
+        ctx.kwargs = {}
+        args = ctx.args
+        kwargs = ctx.kwargs
 
-            first = True
-            view = ctx.view
-            iterator = iter(self.params.items())
+        first = True
+        view = ctx.view
+        iterator = iter(self.params.items())
 
-            if self.instance is not None:
-                # we have 'self' as the first parameter so just advance
-                # the iterator and resume parsing
-                try:
-                    next(iterator)
-                except StopIteration:
-                    fmt = 'Callback for {0.name} command is missing "self" parameter.'
-                    raise discord.ClientException(fmt.format(self))
+        if self.instance is not None:
+            # we have 'self' as the first parameter so just advance
+            # the iterator and resume parsing
+            try:
+                next(iterator)
+            except StopIteration:
+                fmt = 'Callback for {0.name} command is missing "self" parameter.'
+                raise discord.ClientException(fmt.format(self))
 
-            for name, param in iterator:
-                if first and self.pass_context:
-                    args.append(ctx)
-                    first = False
-                    continue
+        for name, param in iterator:
+            if first and self.pass_context:
+                args.append(ctx)
+                first = False
+                continue
 
-                if param.kind == param.POSITIONAL_OR_KEYWORD:
-                    transformed = yield from self.transform(ctx, param)
-                    args.append(transformed)
-                elif param.kind == param.KEYWORD_ONLY:
-                    # kwarg only param denotes "consume rest" semantics
-                    if self.rest_is_raw:
-                        converter = self._get_converter(param)
-                        argument = view.read_rest()
-                        kwargs[name] = yield from self.do_conversion(ctx.bot, ctx.message, converter, argument)
-                    else:
-                        kwargs[name] = yield from self.transform(ctx, param)
-                    break
-                elif param.kind == param.VAR_POSITIONAL:
-                    while not view.eof:
-                        try:
-                            transformed = yield from self.transform(ctx, param)
-                            args.append(transformed)
-                        except RuntimeError:
-                            break
-
-        except CommandError as e:
-            self.handle_local_error(e, ctx)
-            ctx.bot.dispatch('command_error', e, ctx)
-            return False
+            if param.kind == param.POSITIONAL_OR_KEYWORD:
+                transformed = yield from self.transform(ctx, param)
+                args.append(transformed)
+            elif param.kind == param.KEYWORD_ONLY:
+                # kwarg only param denotes "consume rest" semantics
+                if self.rest_is_raw:
+                    converter = self._get_converter(param)
+                    argument = view.read_rest()
+                    kwargs[name] = yield from self.do_conversion(ctx.bot, ctx.message, converter, argument)
+                else:
+                    kwargs[name] = yield from self.transform(ctx, param)
+                break
+            elif param.kind == param.VAR_POSITIONAL:
+                while not view.eof:
+                    try:
+                        transformed = yield from self.transform(ctx, param)
+                        args.append(transformed)
+                    except RuntimeError:
+                        break
         return True
 
     def _verify_checks(self, ctx):
-        try:
-            if not self.enabled:
-                raise DisabledCommand('{0.name} command is disabled'.format(self))
+        if not self.enabled:
+            raise DisabledCommand('{0.name} command is disabled'.format(self))
 
-            if self.no_pm and ctx.message.channel.is_private:
-                raise NoPrivateMessage('This command cannot be used in private messages.')
+        if self.no_pm and ctx.message.channel.is_private:
+            raise NoPrivateMessage('This command cannot be used in private messages.')
 
-            if not self.can_run(ctx):
-                raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
-        except CommandError as exc:
-            self.handle_local_error(exc, ctx)
-            ctx.bot.dispatch('command_error', exc, ctx)
-            return False
-
+        if not self.can_run(ctx):
+            raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
         return True
 
     @asyncio.coroutine
