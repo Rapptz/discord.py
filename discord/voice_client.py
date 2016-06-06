@@ -225,6 +225,16 @@ class VoiceClient:
                 self._connected.set()
                 break
 
+        self.loop.create_task(self.poll_voice_ws())
+
+    @asyncio.coroutine
+    def poll_voice_ws(self):
+        """|coro|
+        Reads from the voice websocket while connected.
+        """
+        while self._connected.is_set():
+            yield from self.ws.poll_event()
+
     @asyncio.coroutine
     def disconnect(self):
         """|coro|

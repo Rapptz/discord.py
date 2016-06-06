@@ -549,7 +549,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         data = msg.get('d')
 
         if op == self.READY:
-            interval = (data['heartbeat_interval'] / 100.0) - 5
+            interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=interval)
             self._keep_alive.start()
             yield from self.initial_connection(data)
