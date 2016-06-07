@@ -15,6 +15,7 @@ Contents:
    whats_new
    migrating
    api
+   faq
 
 
 Indices and tables
