@@ -55,7 +55,7 @@ What does "blocking" mean?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In asynchronous programming a blocking call is essentially all the parts of the function that are not ``await``. Do not
-despair however, because not all forms of blocking are bad! Avoiding blocking calls is inevitable, but you must work to make
+despair however, because not all forms of blocking are bad! Using blocking calls is inevitable, but you must work to make
 sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has
 not stopped the function's execution at that point to do other things.
 
@@ -179,7 +179,7 @@ one of the following functions:
 - :meth:`Server.get_member`
 - :meth:`Server.get_channel`
 
-If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would server some use in finding
+If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding
 specific entities. The documentation for those functions provide specific examples.
 
 Commands Extension
