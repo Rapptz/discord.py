@@ -1627,6 +1627,8 @@ class Client:
 
         You must have the proper permissions to edit the channel.
 
+        To move the channel's position use :meth:`move_channel` instead.
+
         The channel is **not** edited in-place.
 
         Parameters
@@ -1635,8 +1637,6 @@ class Client:
             The channel to update.
         name : str
             The new channel name.
-        position : int
-            The new channel's position in the GUI.
         topic : str
             The new channel's topic.
         bitrate : int
@@ -1656,7 +1656,6 @@ class Client:
         payload = {
             'name': options.get('name', channel.name),
             'topic': options.get('topic', channel.topic),
-            'position': options.get('position', channel.position),
         }
 
         user_limit = options.get('user_limit')
@@ -1673,6 +1672,66 @@ class Client:
 
         data = yield from r.json(encoding='utf-8')
         log.debug(request_success_log.format(response=r, json=payload, data=data))
+
+    @asyncio.coroutine
+    def move_channel(self, channel, position):
+        """|coro|
+
+        Moves the specified :class:`Channel` to the given position in the GUI.
+        Note that voice channels and text channels have different position values.
+
+        This does **not** edit the channel ordering in place.
+
+        .. warning::
+
+            :class:`Object` instances do not work with this function.
+
+        Parameters
+        -----------
+        channel : :class:`Channel`
+            The channel to change positions of.
+        position : int
+            The position to insert the channel to.
+
+        Raises
+        -------
+        InvalidArgument
+            If position is less than 0 or greater than the number of channels.
+        Forbidden
+            You do not have permissions to change channel order.
+        HTTPException
+            If moving the channel failed, or you are of too low rank to move the channel.
+        """
+
+        if position < 0:
+            raise InvalidArgument('Channel position cannot be less than 0.')
+
+        url = '{0}/{1.server.id}/channels'.format(endpoints.SERVERS, channel)
+        channels = [c for c in channel.server.channels if c.type is channel.type]
+
+        if position >= len(channels):
+            raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
+
+        channels.sort(key=lambda c: c.position)
+
+        try:
+            # remove ourselves from the channel list
+            channels.remove(channel)
+        except ValueError:
+            # not there somehow lol
+            return
+        else:
+            # add ourselves at our designated position
+            channels.insert(position, channel)
+
+        payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
+
+        r = yield from self.session.patch(url, data=utils.to_json(payload), headers=self.headers)
+        log.debug(request_logging_format.format(method='PATCH', response=r))
+        yield from utils._verify_successful_response(r)
+
+        yield from r.release()
+        log.debug(request_success_log.format(json=payload, response=r, data={}))
 
     @asyncio.coroutine
     def create_channel(self, server, name, type=None):
