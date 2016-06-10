@@ -641,7 +641,7 @@ class Bot(GroupMixin, discord.Client):
             try:
                 yield from command.invoke(ctx)
             except CommandError as e:
-                command.dispatch_error(e, ctx)
+                ctx.command.dispatch_error(e, ctx)
             else:
                 self.dispatch('command_completion', command, ctx)
         else:
