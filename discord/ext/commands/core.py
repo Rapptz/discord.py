@@ -648,6 +648,7 @@ class Group(GroupMixin, Command):
             # undo the trigger parsing
             view.index = previous
             view.previous = previous
+            ctx.command = self
             self._verify_checks(ctx)
             yield from self._parse_arguments(ctx)
             injected = inject_context(ctx, self.callback)
