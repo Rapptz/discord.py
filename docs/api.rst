@@ -108,6 +108,9 @@ to handle it, which defaults to print a traceback and ignore the exception.
     .. warning::
 
         This function is not guaranteed to be the first event called.
+        Likewise, this function is **not** guaranteed to only be called
+        once. This library implements reconnection logic and thus will
+        end up calling this event whenever a RESUME request fails.
 
 .. function:: on_resumed()
 
