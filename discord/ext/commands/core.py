@@ -47,7 +47,7 @@ def inject_context(ctx, coro):
         try:
             ret = yield from coro(*args, **kwargs)
         except Exception as e:
-            raise CommandError("Exception raised while executing command") from e
+            raise CommandInvokeError(e) from e
         return ret
     return wrapped
 

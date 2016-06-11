@@ -28,7 +28,7 @@ from discord.errors import DiscordException
 
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
-           'DisabledCommand' ]
+           'DisabledCommand', 'CommandInvokeError' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -74,3 +74,16 @@ class CheckFailure(CommandError):
 class DisabledCommand(CommandError):
     """Exception raised when the command being invoked is disabled."""
     pass
+
+class CommandInvokeError(CommandError):
+    """Exception raised when the command being invoked raised an exception.
+
+    Attributes
+    -----------
+    original
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    """
+    def __init__(self, e):
+        self.original = e
+        super().__init__('Command raised an exception: {0.__class__.__name__}: {0}'.format(e))
