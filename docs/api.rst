@@ -31,7 +31,6 @@ There are two main ways to query version information about the library.
 
     A string representation of the version. e.g. ``'0.10.0-alpha0'``.
 
-
 Client
 -------
 
@@ -344,6 +343,31 @@ Utility Functions
 .. autofunction:: discord.utils.snowflake_time
 
 .. autofunction:: discord.utils.oauth_url
+
+Application Info
+------------------
+
+.. class:: AppInfo
+
+    A namedtuple representing the bot's application info.
+
+    .. attribute:: id
+
+        The application's ``client_id``.
+    .. attribute:: name
+
+        The application's name.
+    .. attribute:: description
+
+        The application's description
+    .. attribute:: icon
+
+        The application's icon hash if it exists, ``None`` otherwise.
+    .. attribute:: icon_url
+
+        A property that retrieves the application's icon URL if it exists.
+
+        If it doesn't exist an empty string is returned.
 
 .. _discord-api-enums:
 

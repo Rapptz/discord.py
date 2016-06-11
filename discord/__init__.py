@@ -17,7 +17,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2016 Rapptz'
 __version__ = '0.10.0-alpha'
 
-from .client import Client
+from .client import Client, AppInfo
 from .user import User
 from .game import Game
 from .channel import Channel, PrivateChannel

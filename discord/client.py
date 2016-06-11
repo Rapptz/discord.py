@@ -53,11 +53,22 @@ import tempfile, os, hashlib
 import itertools
 import datetime
 from random import randint as random_integer
+from collections import namedtuple
 
 PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
 request_success_log = '{response.url} with {json} received {data}'
+
+AppInfo = namedtuple('AppInfo', 'id name description icon')
+def app_info_icon_url(self):
+    """Retrieves the application's icon_url if it exists. Empty string otherwise."""
+    if not self.icon:
+        return ''
+
+    return 'https://cdn.discordapp.com/app-icons/{0.id}/{0.icon}.jpg'.format(self)
+
+AppInfo.icon_url = property(app_info_icon_url)
 
 class Client:
     """Represents a client connection that connects to Discord.
@@ -2787,3 +2798,31 @@ class Client:
             The voice client associated with the server.
         """
         return self.connection._get_voice_client(server.id)
+
+
+    # Miscellaneous stuff
+
+    @asyncio.coroutine
+    def application_info(self):
+        """|coro|
+
+        Retrieve's the bot's application information.
+
+        Returns
+        --------
+        :class:`AppInfo`
+            A namedtuple representing the application info.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the information failed somehow.
+        """
+        url = '{}/@me'.format(endpoints.APPLICATIONS)
+        resp = yield from self.session.get(url, headers=self.headers)
+        yield from utils._verify_successful_response(resp)
+        data = yield from resp.json()
+        return AppInfo(id=data['id'], name=data['name'],
+                       description=data['description'], icon=data['icon'])
+
+
