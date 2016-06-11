@@ -30,6 +30,7 @@ import inspect
 import importlib
 import sys
 import traceback
+import re
 
 from .core import GroupMixin, Command, command
 from .view import StringView
@@ -80,18 +81,28 @@ def when_mentioned_or(*prefixes):
 
     return inner
 
+_mentions_transforms = {
+    '@everyone': '@\u200beveryone',
+    '@here': '@\u200bhere'
+}
+
+_mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
+
 @asyncio.coroutine
 def _default_help_command(ctx, *commands : str):
     """Shows this message."""
     bot = ctx.bot
     destination = ctx.message.author if bot.pm_help else ctx.message.channel
 
+    def repl(obj):
+        return _mentions_transforms.get(obj.group(0), '')
+
     # help by itself just lists our own commands.
     if len(commands) == 0:
         pages = bot.formatter.format_help_for(ctx, bot)
     elif len(commands) == 1:
         # try to see if it is a cog name
-        name = commands[0]
+        name = _mention_pattern.sub(repl, commands[0])
         command = None
         if name in bot.cogs:
             command = bot.cogs[name]
@@ -103,7 +114,7 @@ def _default_help_command(ctx, *commands : str):
 
         pages = bot.formatter.format_help_for(ctx, command)
     else:
-        name = commands[0]
+        name = _mention_pattern.sub(repl, commands[0])
         command = bot.commands.get(name)
         if command is None:
             yield from bot.send_message(destination, bot.command_not_found.format(name))
@@ -111,6 +122,7 @@ def _default_help_command(ctx, *commands : str):
 
         for key in commands[1:]:
             try:
+                key = _mention_pattern.sub(repl, key)
                 command = command.commands.get(key)
                 if command is None:
                     yield from bot.send_message(destination, bot.command_not_found.format(key))
