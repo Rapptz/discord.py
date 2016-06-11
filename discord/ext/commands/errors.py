@@ -39,7 +39,10 @@ class CommandError(DiscordException):
     in a special way as they are caught and passed into a special event
     from :class:`Bot`\, :func:`on_command_error`.
     """
-    pass
+    def __init__(self, message):
+        # clean-up @everyone and @here mentions
+        m = message.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
+        super().__init__(m)
 
 class CommandNotFound(CommandError):
     """Exception raised when a command is attempted to be invoked
@@ -48,6 +51,7 @@ class CommandNotFound(CommandError):
     This is not raised for invalid subcommands, rather just the
     initial main command that is attempted to be invoked.
     """
+    pass
 
 class MissingRequiredArgument(CommandError):
     """Exception raised when parsing a command and a parameter
