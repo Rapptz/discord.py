@@ -57,7 +57,7 @@ log = logging.getLogger(__name__)
 
 from . import utils, opus
 from .gateway import *
-from .errors import ClientException, InvalidArgument
+from .errors import ClientException, InvalidArgument, ConnectionClosed
 
 class StreamPlayer(threading.Thread):
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
@@ -233,7 +233,13 @@ class VoiceClient:
         Reads from the voice websocket while connected.
         """
         while self._connected.is_set():
-            yield from self.ws.poll_event()
+            try:
+                yield from self.ws.poll_event()
+            except ConnectionClosed as e:
+                if e.code == 1000:
+                    break
+                else:
+                    raise
 
     @asyncio.coroutine
     def disconnect(self):
