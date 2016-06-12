@@ -801,6 +801,7 @@ class Client:
         if resp.status == 502 and retries < 5:
             # retry the 502 request unconditionally
             log.info('Retrying the 502 request to ' + name)
+            yield from resp.release()
             yield from asyncio.sleep(retries + 1)
             return (yield from self._retry_helper(name, *args, retries=retries + 1, **kwargs))
 
