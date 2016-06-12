@@ -235,7 +235,12 @@ def _verify_successful_response(response):
             raise Forbidden(response, message, text)
         elif code == 404:
             raise NotFound(response, message, text)
-        raise HTTPException(response, message, text)
+        elif code == 429:
+            raise RateLimitError(message)
+        elif code == 502:
+            return
+        else:
+            raise HTTPException(response, message, text)
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):

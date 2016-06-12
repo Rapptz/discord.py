@@ -1007,10 +1007,10 @@ class Client:
         """
 
         url = '{}/{}/messages/{}'.format(endpoints.CHANNELS, message.channel.id, message.id)
-        response = yield from self.session.delete(url, headers=self.headers)
-        log.debug(request_logging_format.format(method='DELETE', response=response))
-        yield from utils._verify_successful_response(response)
-        yield from response.release()
+        resp = yield from self._rate_limit_helper('delete_message', 'DELETE', url, None)
+        log.debug(request_logging_format.format(method='DELETE', response=resp))
+        yield from utils._verify_successful_response(resp)
+        yield from resp.release()
 
     @asyncio.coroutine
     def delete_messages(self, messages):

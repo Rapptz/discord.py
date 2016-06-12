@@ -119,3 +119,13 @@ class ConnectionClosed(ClientException):
         self.code = original.code
         self.reason = original.reason
         super().__init__(str(original))
+
+class RateLimitError(ClientException):
+    """Exception that's thrown when you send more requests to a discord
+    endpoint than that you can do per second.
+    
+    This essentially throws a Error saying you are being rate limited.
+    
+    Will be replaced with a rate limit helper that would allow it to be
+    retried when Danny gets to making it."""
+    pass
