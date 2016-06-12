@@ -391,7 +391,6 @@ class Client:
         else:
             raise TypeError('login() takes 1 or 2 positional arguments but {} were given'.format(n))
 
-
     @asyncio.coroutine
     def logout(self):
         """|coro|

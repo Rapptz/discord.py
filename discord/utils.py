@@ -224,18 +224,17 @@ def _verify_successful_response(response):
     success = code >= 200 and code < 300
     if not success:
         message = None
-        text = None
         if response.headers['content-type'] == 'application/json':
             data = yield from response.json(encoding='utf-8')
             message = data.get('message')
         else:
-            text = yield from response.text(encoding='utf-8')
+            message = yield from response.text(encoding='utf-8')
 
         if code == 403:
-            raise Forbidden(response, message, text)
+            raise Forbidden(response, message)
         elif code == 404:
-            raise NotFound(response, message, text)
-        raise HTTPException(response, message, text)
+            raise NotFound(response, message)
+        raise HTTPException(response, message)
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
