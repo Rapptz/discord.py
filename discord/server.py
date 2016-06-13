@@ -82,6 +82,10 @@ class Server(Hashable):
         all be None. It is best to not do anything with the server if it is unavailable.
 
         Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
+    large : bool
+        Indicates if the server is a 'large' server. A large server is defined as having
+        more than ``large_threshold`` count members, which for this library is set to
+        the maximum of 250.
     """
 
     __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
