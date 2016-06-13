@@ -2399,11 +2399,12 @@ class Client:
 
         def session_id_found(data):
             user_id = data.get('user_id')
-            return user_id == self.user.id
+            guild_id = data.get('guild_id')
+            return user_id == self.user.id and guild_id == server.id
 
         # register the futures for waiting
         session_id_future = self.ws.wait_for('VOICE_STATE_UPDATE', session_id_found)
-        voice_data_future = self.ws.wait_for('VOICE_SERVER_UPDATE', lambda d: True)
+        voice_data_future = self.ws.wait_for('VOICE_SERVER_UPDATE', lambda d: d.get('guild_id') == server.id)
 
         # request joining
         yield from self.ws.voice_state(server.id, channel.id)
