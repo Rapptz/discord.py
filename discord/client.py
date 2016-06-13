@@ -126,6 +126,7 @@ class Client:
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
+        self.email = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
