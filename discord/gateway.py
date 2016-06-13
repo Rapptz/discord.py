@@ -475,7 +475,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
                 'server_id': client.guild_id,
                 'user_id': client.user.id,
                 'session_id': client.session_id,
-                'token': client.http.token
+                'token': client.token
             }
         }
 
