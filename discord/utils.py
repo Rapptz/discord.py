@@ -218,24 +218,6 @@ def _unique(iterable):
 def _null_event(*args, **kwargs):
     pass
 
-@asyncio.coroutine
-def _verify_successful_response(response):
-    code = response.status
-    success = code >= 200 and code < 300
-    if not success:
-        message = None
-        if response.headers['content-type'] == 'application/json':
-            data = yield from response.json(encoding='utf-8')
-            message = data.get('message')
-        else:
-            message = yield from response.text(encoding='utf-8')
-
-        if code == 403:
-            raise Forbidden(response, message)
-        elif code == 404:
-            raise NotFound(response, message)
-        raise HTTPException(response, message)
-
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
