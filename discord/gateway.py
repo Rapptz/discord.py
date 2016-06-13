@@ -40,7 +40,7 @@ import struct
 
 log = logging.getLogger(__name__)
 
-__all__ = [ 'ReconnectWebSocket', 'get_gateway', 'DiscordWebSocket',
+__all__ = [ 'ReconnectWebSocket', 'DiscordWebSocket',
             'KeepAliveHandler', 'VoiceKeepAliveHandler',
             'DiscordVoiceWebSocket', 'ResumeWebSocket' ]
 
@@ -96,36 +96,6 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
             'op': self.ws.HEARTBEAT,
             'd': int(time.time() * 1000)
         }
-
-
-@asyncio.coroutine
-def get_gateway(token, *, loop=None):
-    """Returns the gateway URL for connecting to the WebSocket.
-
-    Parameters
-    -----------
-    token : str
-        The discord authentication token.
-    loop
-        The event loop.
-
-    Raises
-    ------
-    GatewayNotFound
-        When the gateway is not returned gracefully.
-    """
-    headers = {
-        'authorization': token,
-        'content-type': 'application/json'
-    }
-
-    with aiohttp.ClientSession(loop=loop) as session:
-        resp = yield from session.get(endpoints.GATEWAY, headers=headers)
-        if resp.status != 200:
-            yield from resp.release()
-            raise GatewayNotFound()
-        data = yield from resp.json(encoding='utf-8')
-        return data.get('url') + '?encoding=json&v=4'
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements a WebSocket for Discord's gateway v4.
@@ -190,11 +160,11 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         This is for internal use only.
         """
-        gateway = yield from get_gateway(client.token, loop=client.loop)
+        gateway = yield from client.http.get_gateway()
         ws = yield from websockets.connect(gateway, loop=client.loop, klass=cls)
 
         # dynamically add attributes needed
-        ws.token = client.token
+        ws.token = client.http.token
         ws._connection = client.connection
         ws._dispatch = client.dispatch
         ws.gateway = gateway
@@ -505,7 +475,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
                 'server_id': client.guild_id,
                 'user_id': client.user.id,
                 'session_id': client.session_id,
-                'token': client.token
+                'token': client.http.token
             }
         }
 
