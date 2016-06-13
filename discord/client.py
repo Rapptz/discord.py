@@ -1123,6 +1123,9 @@ class Client:
                 if message.author == client.user:
                     counter += 1
         """
+        before = getattr(before, 'id', None)
+        after  = getattr(after, 'id', None)
+
         return self.http.logs_from(channel.id, limit, before=before, after=after)
 
     if PY35:
