@@ -125,7 +125,6 @@ class Client:
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
-        self.token = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
@@ -171,7 +170,7 @@ class Client:
             os.makedirs(os.path.dirname(cache_file), exist_ok=True)
             with os.fdopen(os.open(cache_file, os.O_WRONLY | os.O_CREAT, 0o0600), 'w') as f:
                 log.info('updating login cache')
-                f.write(self.token)
+                f.write(self.http.token)
         except OSError:
             log.info('a problem occurred while updating the login cache')
             pass
@@ -300,7 +299,7 @@ class Client:
         if self.cache_auth:
             token = self._get_cache_token(email, password)
             try:
-                self.http.static_login(token, bot=False)
+                yield from self.http.static_login(token, bot=False)
             except:
                 log.info('cache auth token is out of date')
             else:
@@ -1383,6 +1382,8 @@ class Client:
         yield from self.http.edit_profile(**args)
         if not_bot_account:
             self.email = data['email']
+            if 'token' in data:
+                self.http._token(data['token'], bot=False)
 
             if self.cache_auth:
                 self._update_cache(self.email, password)
