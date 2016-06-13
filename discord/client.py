@@ -54,6 +54,7 @@ import tempfile, os, hashlib
 import itertools
 import datetime
 from collections import namedtuple
+from os.path import split as path_split
 
 PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
@@ -874,7 +875,7 @@ class Client:
             with open(fp, 'rb') as f:
                 buffer = io.BytesIO(f.read())
                 if filename is None:
-                    filename = fp
+                    _, filename = path_split(fp)
         except TypeError:
             buffer = fp
 
