@@ -298,7 +298,7 @@ class Client:
     def _login_2(self, email, password, **kwargs):
         # attempt to read the token from cache
         if self.cache_auth:
-            token = self._get_cache_token()
+            token = self._get_cache_token(email, password)
             try:
                 self.http.static_login(token, bot=False)
             except:
