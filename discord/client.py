@@ -2051,10 +2051,14 @@ class Client:
             Editing the role failed.
         """
 
+        colour = fields.get('colour')
+        if colour is None:
+            colour = fields.get('color', role.colour)
+
         payload = {
             'name': fields.get('name', role.name),
             'permissions': fields.get('permissions', role.permissions).value,
-            'color': color.value,
+            'color': colour.value,
             'hoist': fields.get('hoist', role.hoist),
             'mentionable': fields.get('mentionable', role.mentionable)
         }
