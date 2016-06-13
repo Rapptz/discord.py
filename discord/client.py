@@ -49,7 +49,7 @@ import aiohttp
 import websockets
 
 import logging, traceback
-import sys, re
+import sys, re, io
 import tempfile, os, hashlib
 import itertools
 import datetime
@@ -873,7 +873,7 @@ class Client:
 
         try:
             with open(fp, 'rb') as f:
-                buffer = f.read()
+                buffer = io.BytesIO(f.read())
                 if filename is None:
                     filename = fp
         except TypeError:

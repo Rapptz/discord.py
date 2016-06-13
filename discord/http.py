@@ -29,7 +29,6 @@ import asyncio
 import json
 import sys
 import logging
-import io
 import inspect
 import weakref
 from random import randint as random_integer
@@ -239,7 +238,7 @@ class HTTPClient:
             form.add_field('content', str(content))
 
         form.add_field('tts', 'true' if tts else 'false')
-        form.add_field('file', io.BytesIO(buffer), filename=filename, content_type='application/octet-stream')
+        form.add_field('file', buffer, filename=filename, content_type='application/octet-stream')
 
         return self.post(url, data=form, bucket='messages:' + str(guild_id))
 
