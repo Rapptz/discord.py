@@ -329,7 +329,7 @@ class HTTPClient:
         payload = {
             'nick': nickname
         }
-        bucket = '{}:{}'.format(_func_(), guild_id)
+        bucket = 'members:{}'.format(guild_id)
         return self.patch(url, json=payload, bucket=bucket)
 
     # Channel management
