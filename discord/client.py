@@ -588,7 +588,7 @@ class Client:
 
             @client.async_event
             def on_message(message):
-                if message.content.startswith('$greet')
+                if message.content.startswith('$greet'):
                     yield from client.send_message(message.channel, 'Say hello')
                     msg = yield from client.wait_for_message(author=message.author, content='hello')
                     yield from client.send_message(message.channel, 'Hello.')
@@ -600,7 +600,7 @@ class Client:
 
             @client.async_event
             def on_message(message):
-                if message.content.startswith('$start')
+                if message.content.startswith('$start'):
                     yield from client.send_message(message.channel, 'Type $stop 4 times.')
                     for i in range(4):
                         msg = yield from client.wait_for_message(author=message.author, content='$stop')
