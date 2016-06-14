@@ -656,7 +656,7 @@ class Bot(GroupMixin, discord.Client):
                 ctx.command.dispatch_error(e, ctx)
             else:
                 self.dispatch('command_completion', command, ctx)
-        else:
+        elif invoker:
             exc = CommandNotFound('Command "{}" is not found'.format(invoker))
             self.dispatch('command_error', exc, ctx)
 
