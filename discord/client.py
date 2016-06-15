@@ -1070,8 +1070,8 @@ class Client:
 
         channel = message.channel
         content = str(new_content)
-
-        data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=channel.server.id)
+        guild_id = channel.server.id if not channel.is_private else None
+        data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id)
         return Message(channel=channel, **data)
 
     def _logs_from(self, channel, limit=100, before=None, after=None):
