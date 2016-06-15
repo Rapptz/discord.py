@@ -1077,6 +1077,40 @@ class Client:
         data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id)
         return Message(channel=channel, **data)
 
+    @asyncio.coroutine
+    def get_message(self, channel, id):
+        """|coro|
+
+        Retrieves a single :class:`Message` from a :class:`Channel`.
+
+        This can only be used by bot accounts.
+
+        Parameters
+        ------------
+        channel: :class:`Channel`
+            The text channel to retrieve the message from.
+        id: str
+            The message ID to look for.
+
+        Returns
+        --------
+        :class:`Message`
+            The message asked for.
+
+        Raises
+        --------
+        NotFound
+            The specified channel or message was not found.
+        Forbidden
+            You do not have the permissions required to get a message.
+        HTTPException
+            Retrieving the message failed.
+        """
+
+        data = yield from self.http.get_message(channel.id, id)
+        return Message(channel=channel, **data)
+
+
     def _logs_from(self, channel, limit=100, before=None, after=None):
         """|coro|
 
