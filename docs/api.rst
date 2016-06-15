@@ -518,6 +518,12 @@ Permissions
 .. autoclass:: Permissions
     :members:
 
+PermissionOverwrite
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PermissionOverwrite
+    :members:
+
 Channel
 ~~~~~~~~
 

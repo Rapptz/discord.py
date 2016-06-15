@@ -409,3 +409,96 @@ class Permissions:
         self._set(28, value)
 
     # 3 unused
+
+def augment_from_permissions(cls):
+    cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+
+    # make descriptors for all the valid names
+    for name in cls.VALID_NAMES:
+        # god bless Python
+        def getter(self, x=name):
+            return self._values.get(x)
+        def setter(self, value, x=name):
+            self._set(x, value)
+
+        prop = property(getter, setter)
+        setattr(cls, name, prop)
+
+    return cls
+
+@augment_from_permissions
+class PermissionOverwrite:
+    """A type that is used to represent a channel specific permission.
+
+    Unlike a regular :class:`Permissions`\, the default value of a
+    permission is equivalent to ``None`` and not ``False``. Setting
+    a value to ``False`` is **explicitly** denying that permission,
+    while setting a value to ``True`` is **explicitly** allowing
+    that permission.
+
+    The values supported by this are the same as :class:`Permissions`
+    with the added possibility of it being set to ``None``.
+
+    Supported operations:
+
+    +-----------+------------------------------------------+
+    | Operation |               Description                |
+    +===========+==========================================+
+    | iter(x)   | Returns an iterator of (perm, value)     |
+    |           | pairs. This allows this class to be used |
+    |           | as an iterable in e.g. set/list/dict     |
+    |           | constructions.                           |
+    +-----------+------------------------------------------+
+
+    Parameters
+    -----------
+    \*\*kwargs
+        Set the value of permissions by their name.
+    """
+
+    def __init__(self, **kwargs):
+        self._values = {}
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def _set(self, key, value):
+        if value not in (True, None, False):
+            raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
+
+        self._values[key] = value
+
+    def pair(self):
+        """Returns the (allow, deny) pair from this overwrite.
+
+        The value of these pairs is :class:`Permissions`.
+        """
+
+        allow = Permissions.none()
+        deny  = Permissions.none()
+
+        for key, value in self._values.items():
+            if value is True:
+                setattr(allow, key, True)
+            elif value is False:
+                setattr(deny, key, True)
+
+        return allow, deny
+
+    @classmethod
+    def from_pair(cls, allow, deny):
+        """Creates an overwrite from an allow/deny pair of :class:`Permissions`."""
+        ret = cls()
+        for key, value in allow:
+            if value is True:
+                setattr(ret, key, True)
+
+        for key, value in deny:
+            if value is True:
+                setattr(ret, key, False)
+
+        return ret
+
+    def __iter__(self):
+        for key in self.VALID_NAMES:
+            yield key, self._values.get(key)

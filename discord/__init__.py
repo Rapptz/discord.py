@@ -25,7 +25,7 @@ from .server import Server
 from .member import Member
 from .message import Message
 from .errors import *
-from .permissions import Permissions
+from .permissions import Permissions, PermissionOverwrite
 from .role import Role
 from .colour import Color, Colour
 from .invite import Invite
