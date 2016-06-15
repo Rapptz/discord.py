@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from . import utils
-from .permissions import Permissions
+from .permissions import Permissions, PermissionOverwrite
 from .enums import ChannelType
 from collections import namedtuple
 from .mixins import Hashable
@@ -33,7 +33,6 @@ from .role import Role
 from .member import Member
 
 Overwrites = namedtuple('Overwrites', 'id allow deny type')
-PermissionOverwrite = namedtuple('PermissionOverwrite', 'allow deny')
 
 class Channel(Hashable):
     """Represents a Discord server channel.
@@ -162,17 +161,18 @@ class Channel(Hashable):
         return utils.snowflake_time(self.id)
 
     def overwrites_for(self, obj):
-        """Returns a namedtuple that gives you the channel-specific overwrites
-        for a member or a role.
-
-        The named tuple is a tuple of (allow, deny) :class:`Permissions`
-        with the appropriately named entries.
+        """Returns the channel-specific overwrites for a member or a role.
 
         Parameters
         -----------
         obj
             The :class:`Role` or :class:`Member` or :class:`Object` denoting
             whose overwrite to get.
+
+        Returns
+        ---------
+        :class:`PermissionOverwrite`
+            The permission overwrites for this object.
         """
 
         if isinstance(obj, Member):
@@ -184,10 +184,11 @@ class Channel(Hashable):
 
         for overwrite in filter(predicate, self._permission_overwrites):
             if overwrite.id == obj.id:
-                return PermissionOverwrite(allow=Permissions(overwrite.allow),
-                                           deny=Permissions(overwrite.deny))
+                allow = Permissions(overwrite.allow)
+                deny = Permissions(overwrite.deny)
+                return PermissionOverwrite.from_pair(allow, deny)
 
-        return PermissionOverwrite(allow=Permissions.none(), deny=Permissions.none())
+        return PermissionOverwrite()
 
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`Member`.
