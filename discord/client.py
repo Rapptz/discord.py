@@ -2288,7 +2288,7 @@ class Client:
         return role
 
     @asyncio.coroutine
-    def edit_channel_permissions(self, channel, target, *, allow=None, deny=None):
+    def edit_channel_permissions(self, channel, target, overwrite=None):
         """|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -2304,11 +2304,10 @@ class Client:
 
         Setting allow and deny: ::
 
-            allow = discord.Permissions.none()
-            deny = discord.Permissions.none()
-            allow.mention_everyone = True
-            deny.manage_messages = True
-            yield from client.edit_channel_permissions(message.channel, message.author, allow=allow, deny=deny)
+            overwrite = discord.PermissionOverwrite()
+            overwrite.read_messages = True
+            overwrite.ban_members = False
+            yield from client.edit_channel_permissions(message.channel, message.author, overwrite)
 
         Parameters
         -----------
@@ -2316,10 +2315,8 @@ class Client:
             The channel to give the specific permissions for.
         target
             The :class:`Member` or :class:`Role` to overwrite permissions for.
-        allow : :class:`Permissions`
-            The permissions to explicitly allow. (optional)
-        deny : :class:`Permissions`
-            The permissions to explicitly deny. (optional)
+        overwrite: :class:`PermissionOverwrite`
+            The permissions to allow and deny to the target.
 
         Raises
         -------
@@ -2330,27 +2327,26 @@ class Client:
         HTTPException
             Editing channel specific permissions failed.
         InvalidArgument
-            The allow or deny arguments were not of type :class:`Permissions`
+            The overwrite parameter was not of type :class:`PermissionOverwrite`
             or the target type was not :class:`Role` or :class:`Member`.
         """
 
-        allow = Permissions.none() if allow is None else allow
-        deny = Permissions.none() if deny is None else deny
+        overwrite = PermissionOverwrite() if overwrite is None else overwrite
 
-        if not (isinstance(allow, Permissions) and isinstance(deny, Permissions)):
-            raise InvalidArgument('allow and deny parameters must be discord.Permissions')
 
-        deny =  deny.value
-        allow = allow.value
+        if not isinstance(overwrite, PermissionOverwrite):
+            raise InvalidArgument('allow and deny parameters must be PermissionOverwrite')
+
+        allow, deny = overwrite.pair()
 
         if isinstance(target, Member):
             perm_type = 'member'
         elif isinstance(target, Role):
             perm_type = 'role'
         else:
-            raise InvalidArgument('target parameter must be either discord.Member or discord.Role')
+            raise InvalidArgument('target parameter must be either Member or Role')
 
-        yield from self.http.edit_channel_permissions(channel.id, target.id, allow, deny, perm_type)
+        yield from self.http.edit_channel_permissions(channel.id, target.id, allow.value, deny.value, perm_type)
 
     @asyncio.coroutine
     def delete_channel_permissions(self, channel, target):
