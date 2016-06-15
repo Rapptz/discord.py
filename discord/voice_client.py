@@ -253,10 +253,12 @@ class VoiceClient:
         if not self._connected.is_set():
             return
 
-        self.socket.close()
         self._connected.clear()
-        yield from self.ws.close()
-        yield from self.main_ws.voice_state(self.guild_id, None, self_mute=True)
+        try:
+            yield from self.ws.close()
+            yield from self.main_ws.voice_state(self.guild_id, None, self_mute=True)
+        finally:
+            self.socket.close()
 
     @asyncio.coroutine
     def move_to(self, channel):
