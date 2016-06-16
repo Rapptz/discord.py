@@ -115,3 +115,10 @@ class Context:
         ret = yield from command.callback(*arguments, **kwargs)
         return ret
 
+    @property
+    def cog(self):
+        """Returns the cog associated with this context's command. None if it does not exist."""
+
+        if self.command is None:
+            return None
+        return self.command.instance
