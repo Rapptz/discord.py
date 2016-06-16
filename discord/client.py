@@ -1522,6 +1522,9 @@ class Client:
             Editing the channel failed.
         """
 
+        if 'name' not in options:
+            options['name'] = channel.name
+
         yield from self.http.edit_channel(channel.id, **options)
 
     @asyncio.coroutine
