@@ -64,8 +64,8 @@ class HTTPClient:
     CHANNELS      = API_BASE + '/channels'
     APPLICATIONS  = API_BASE + '/oauth2/applications'
 
-    SUCCESS_LOG = '{method} {url} with {json} has received {text}'
-    REQUEST_LOG = '{method} {url} has returned {status}'
+    SUCCESS_LOG = '{method} {url} has received {text}'
+    REQUEST_LOG = '{method} {url} with {json} has returned {status}'
 
     def __init__(self, connector=None, *, loop=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
@@ -103,15 +103,14 @@ class HTTPClient:
         with (yield from lock):
             for tries in range(5):
                 r = yield from self.session.request(method, url, **kwargs)
-                log.debug(self.REQUEST_LOG.format(method=method, url=url, status=r.status))
+                log.debug(self.REQUEST_LOG.format(method=method, url=url, status=r.status, json=kwargs.get('data')))
                 try:
                     # even errors have text involved in them so this is safe to call
                     data = yield from json_or_text(r)
 
                     # the request was successful so just return the text/json
                     if 300 > r.status >= 200:
-                        log.debug(self.SUCCESS_LOG.format(method=method, url=url,
-                                                          json=kwargs.get('data'), text=data))
+                        log.debug(self.SUCCESS_LOG.format(method=method, url=url, text=data))
                         return data
 
                     # we are being rate limited
