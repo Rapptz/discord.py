@@ -1522,8 +1522,10 @@ class Client:
             Editing the channel failed.
         """
 
-        if 'name' not in options:
-            options['name'] = channel.name
+        keys = ('name', 'topic', 'position')
+        for key in keys:
+            if key not in options:
+                options[key] = getattr(channel, key)
 
         yield from self.http.edit_channel(channel.id, **options)
 

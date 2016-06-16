@@ -339,7 +339,7 @@ class HTTPClient:
     def edit_channel(self, channel_id, **options):
         url = '{0.CHANNELS}/{1}'.format(self, channel_id)
 
-        valid_keys = ('name', 'topic', 'bitrate', 'user_limit')
+        valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }
