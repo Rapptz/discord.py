@@ -278,6 +278,18 @@ class HTTPClient:
 
         return self.get(url, params=params, bucket=_func_())
 
+    def pin_message(self, channel_id, message_id):
+        url = '{0.CHANNELS}/{1}/pins/{2}'.format(self, channel_id, message_id)
+        return self.put(url, bucket=_func_())
+
+    def unpin_message(self, channel_id, message_id):
+        url = '{0.CHANNELS}/{1}/pins/{2}'.format(self, channel_id, message_id)
+        return self.delete(url, bucket=_func_())
+
+    def pins_from(self, channel_id):
+        url = '{0.CHANNELS}/{1}/pins'.format(self, channel_id)
+        return self.get(url, bucket=_func_())
+
     # Member management
 
     def kick(self, user_id, guild_id):

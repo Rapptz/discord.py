@@ -90,12 +90,14 @@ class Message:
         The message ID.
     attachments : list
         A list of attachments given to a message.
+    pinned: bool
+        Specifies if the message is currently pinned.
     """
 
     __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  '_clean_content', '_raw_channel_mentions', 'nonce',
+                  '_clean_content', '_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_raw_role_mentions' ]
 
     def __init__(self, **kwargs):
@@ -108,7 +110,8 @@ class Message:
         # sometimes the .%f modifier is missing
         self.edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
         self.timestamp = utils.parse_time(data.get('timestamp'))
-        self.tts = data.get('tts')
+        self.tts = data.get('tts', False)
+        self.pinned = data.get('pinned', False)
         self.content = data.get('content')
         self.mention_everyone = data.get('mention_everyone')
         self.embeds = data.get('embeds')

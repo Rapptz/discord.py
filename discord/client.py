@@ -1110,6 +1110,75 @@ class Client:
         data = yield from self.http.get_message(channel.id, id)
         return Message(channel=channel, **data)
 
+    @asyncio.coroutine
+    def pin_message(self, message):
+        """|coro|
+
+        Pins a message. You must have Manage Messages permissions
+        to do this in a non-private channel context.
+
+        Parameters
+        -----------
+        message: :class:`Message`
+            The message to pin.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to pin the message.
+        NotFound
+            The message or channel was not found.
+        HTTPException
+            Pinning the message failed, probably due to the channel
+            having more than 50 pinned messages.
+        """
+        yield from self.http.pin_message(message.channel.id, message.id)
+
+    @asyncio.coroutine
+    def unpin_message(self, message):
+        """|coro|
+
+        Unpins a message. You must have Manage Messages permissions
+        to do this in a non-private channel context.
+
+        Parameters
+        -----------
+        message: :class:`Message`
+            The message to unpin.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to unpin the message.
+        NotFound
+            The message or channel was not found.
+        HTTPException
+            Unpinning the message failed.
+        """
+        yield from self.http.unpin_message(message.channel.id, message.id)
+
+    @asyncio.coroutine
+    def pins_from(self, channel):
+        """|coro|
+
+        Returns a list of :class:`Message` that are currently pinned for
+        the specified :class:`Channel` or :class:`PrivateChannel`.
+
+        Parameters
+        -----------
+        channel: :class:`Channel` or :class:`PrivateChannel`
+            The channel to look through pins for.
+
+        Raises
+        -------
+        NotFound
+            The channel was not found.
+        HTTPException
+            Retrieving the pinned messages failed.
+        """
+
+        data = yield from self.http.pins_from(channel.id)
+        return [Message(channel=channel, **m) for m in data]
 
     def _logs_from(self, channel, limit=100, before=None, after=None):
         """|coro|
