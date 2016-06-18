@@ -1187,7 +1187,7 @@ class Client:
 
         Parameters
         -----------
-        channel : :class:`Channel`
+        channel : :class:`Channel` or :class:`PrivateChannel`
             The channel to obtain the logs from.
         limit : int
             The number of messages to retrieve.
