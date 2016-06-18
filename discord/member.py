@@ -150,3 +150,16 @@ class Member(User):
                 return True
 
         return False
+
+    @property
+    def top_role(self):
+        """Returns the member's highest role.
+
+        This is useful for figuring where a member stands in the role
+        hierarchy chain.
+        """
+
+        if self.roles:
+            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
+            return roles[0]
+        return None
