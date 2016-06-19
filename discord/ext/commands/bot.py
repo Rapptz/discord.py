@@ -282,6 +282,20 @@ class Bot(GroupMixin, discord.Client):
 
     # utility "send_*" functions
 
+    @asyncio.coroutine
+    def _augmented_msg(self, coro, **kwargs):
+        msg = yield from coro
+        delete_after = kwargs.get('delete_after')
+        if delete_after is not None:
+            @asyncio.coroutine
+            def delete():
+                yield from asyncio.sleep(delete_after)
+                yield from self.delete_message(msg)
+
+            discord.compat.create_task(delete(), loop=self.loop)
+
+        return msg
+
     def say(self, *args, **kwargs):
         """|coro|
 
@@ -291,12 +305,28 @@ class Bot(GroupMixin, discord.Client):
 
             self.send_message(message.channel, *args, **kwargs)
 
+        The following keyword arguments are "extensions" that augment the
+        behaviour of the standard wrapped call.
+
+        Parameters
+        ------------
+        delete_after: float
+            Number of seconds to wait before automatically deleting the
+            message.
+
         See Also
         ---------
         :meth:`Client.send_message`
         """
         destination = _get_variable('_internal_channel')
-        return self.send_message(destination, *args, **kwargs)
+
+        extensions = ('delete_after',)
+        params = {
+            k: kwargs.pop(k, None) for k in extensions
+        }
+
+        coro = self.send_message(destination, *args, **kwargs)
+        return self._augmented_msg(coro, **params)
 
     def whisper(self, *args, **kwargs):
         """|coro|
@@ -307,12 +337,28 @@ class Bot(GroupMixin, discord.Client):
 
             self.send_message(message.author, *args, **kwargs)
 
+        The following keyword arguments are "extensions" that augment the
+        behaviour of the standard wrapped call.
+
+        Parameters
+        ------------
+        delete_after: float
+            Number of seconds to wait before automatically deleting the
+            message.
+
         See Also
         ---------
         :meth:`Client.send_message`
         """
         destination = _get_variable('_internal_author')
-        return self.send_message(destination, *args, **kwargs)
+
+        extensions = ('delete_after',)
+        params = {
+            k: kwargs.pop(k, None) for k in extensions
+        }
+
+        coro = self.send_message(destination, *args, **kwargs)
+        return self._augmented_msg(coro, **params)
 
     def reply(self, content, *args, **kwargs):
         """|coro|
@@ -324,6 +370,15 @@ class Bot(GroupMixin, discord.Client):
             msg = '{0.mention}, {1}'.format(message.author, content)
             self.send_message(message.channel, msg, *args, **kwargs)
 
+        The following keyword arguments are "extensions" that augment the
+        behaviour of the standard wrapped call.
+
+        Parameters
+        ------------
+        delete_after: float
+            Number of seconds to wait before automatically deleting the
+            message.
+
         See Also
         ---------
         :meth:`Client.send_message`
@@ -331,7 +386,14 @@ class Bot(GroupMixin, discord.Client):
         author = _get_variable('_internal_author')
         destination = _get_variable('_internal_channel')
         fmt = '{0.mention}, {1}'.format(author, str(content))
-        return self.send_message(destination, fmt, *args, **kwargs)
+
+        extensions = ('delete_after',)
+        params = {
+            k: kwargs.pop(k, None) for k in extensions
+        }
+
+        coro = self.send_message(destination, fmt, *args, **kwargs)
+        return self._augmented_msg(coro, **params)
 
     def upload(self, *args, **kwargs):
         """|coro|
@@ -342,12 +404,28 @@ class Bot(GroupMixin, discord.Client):
 
             self.send_file(message.channel, *args, **kwargs)
 
+        The following keyword arguments are "extensions" that augment the
+        behaviour of the standard wrapped call.
+
+        Parameters
+        ------------
+        delete_after: float
+            Number of seconds to wait before automatically deleting the
+            message.
+
         See Also
         ---------
         :meth:`Client.send_file`
         """
         destination = _get_variable('_internal_channel')
-        return self.send_file(destination, *args, **kwargs)
+
+        extensions = ('delete_after',)
+        params = {
+            k: kwargs.pop(k, None) for k in extensions
+        }
+
+        coro = self.send_file(destination, *args, **kwargs)
+        return self._augmented_msg(coro, **params)
 
     def type(self):
         """|coro|
