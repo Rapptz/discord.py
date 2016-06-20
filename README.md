@@ -70,8 +70,7 @@ You can find examples in the examples directory.
 - `aiohttp` library
 - `websockets` library
 - `PyNaCl` library
-    - On Linux systems this requires the `libffi` library. You can install in
-      debian based systems by doing `sudo apt-get install libffi-dev`.
+    - On Linux systems this requires the `libffi` library. You can install on debian based systems by doing `sudo apt-get install libffi-dev` or on redhat based systems by doing `yum install libffi-devel`.
 
 Usually `pip` will handle these for you.
 
