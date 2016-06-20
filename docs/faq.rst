@@ -163,6 +163,27 @@ this together we can do the following: ::
     player = await voice.create_ytdl_player(url, after=my_after)
     player.start()
 
+Why is my "after" function being called right away?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``after`` keyword argument expects a *function object* to be passed in. Similar to how ``threading.Thread`` expects a
+callable in its ``target`` keyword argument. This means that the following are invalid:
+
+.. code-block:: python
+
+    player = await voice.create_ytdl_player(url, after=self.foo())
+    other  = await voice.create_ytdl_player(url, after=self.bar(10))
+
+However the following are correct:
+
+.. code-block:: python
+
+    player = await voice.create_ytdl_player(url, after=self.foo)
+    other  = await voice.create_ytdl_player(url, after=lambda: self.bar(10))
+
+Basically, these functions should not be called.
+
+
 How do I run something in the background?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
