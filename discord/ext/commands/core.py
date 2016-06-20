@@ -395,8 +395,11 @@ class Command:
         if self.no_pm and ctx.message.channel.is_private:
             raise NoPrivateMessage('This command cannot be used in private messages.')
 
+        if not ctx.bot.can_run(ctx):
+            raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
+
         if not self.can_run(ctx):
-            raise CheckFailure('The check functions for command {0.name} failed.'.format(self))
+            raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
     @asyncio.coroutine
     def invoke(self, ctx):
