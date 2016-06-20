@@ -74,6 +74,9 @@ class StreamPlayer(threading.Thread):
         self.delay = encoder.frame_length / 1000.0
         self._volume = 1.0
 
+        if after is not None and not callable(after):
+            raise TypeError('Expected a callable for the "after" parameter.')
+
     def run(self):
         self.loops = 0
         self._start = time.time()
@@ -104,7 +107,7 @@ class StreamPlayer(threading.Thread):
 
     def stop(self):
         self._end.set()
-        if callable(self.after):
+        if self.after is not None:
             try:
                 self.after()
             except:
