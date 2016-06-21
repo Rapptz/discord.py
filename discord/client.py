@@ -911,7 +911,8 @@ class Client:
             Deleting the message failed.
         """
         channel = message.channel
-        yield from self.http.delete_message(channel.id, message.id, channel.server.id)
+        guild_id = channel.server.id if not getattr(channel, 'is_private', True) else None
+        yield from self.http.delete_message(channel.id, message.id, guild_id)
 
     @asyncio.coroutine
     def delete_messages(self, messages):
@@ -949,7 +950,8 @@ class Client:
 
         channel = messages[0].channel
         message_ids = [m.id for m in messages]
-        yield from self.http.delete_messages(channel.id, message_ids, channel.server.id)
+        guild_id = channel.server.id if not getattr(channel, 'is_private', True) else None
+        yield from self.http.delete_messages(channel.id, message_ids, guild_id)
 
     @asyncio.coroutine
     def purge_from(self, channel, *, limit=100, check=None, before=None, after=None):
@@ -1073,7 +1075,7 @@ class Client:
 
         channel = message.channel
         content = str(new_content)
-        guild_id = channel.server.id if not channel.is_private else None
+        guild_id = channel.server.id if not getattr(channel, 'is_private', True) else None
         data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id)
         return Message(channel=channel, **data)
 
