@@ -28,7 +28,7 @@ from discord.errors import DiscordException
 
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
-           'DisabledCommand', 'CommandInvokeError' ]
+           'DisabledCommand', 'CommandInvokeError', 'TooManyArguments' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -94,3 +94,9 @@ class CommandInvokeError(CommandError):
     def __init__(self, e):
         self.original = e
         super().__init__('Command raised an exception: {0.__class__.__name__}: {0}'.format(e))
+
+class TooManyArguments(CommandError):
+    """Exception raised when the command was passed too many arguments and its
+    :attr:`Command.ignore_extra` attribute was not set to ``True``.
+    """
+    pass

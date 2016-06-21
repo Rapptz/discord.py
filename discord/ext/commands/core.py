@@ -100,10 +100,10 @@ class Command:
     description : str
         The message prefixed into the default help command.
     hidden : bool
-        If ``True``, the default help command does not show this in the
+        If ``True``\, the default help command does not show this in the
         help output.
     no_pm : bool
-        If ``True``, then the command is not allowed to be executed in
+        If ``True``\, then the command is not allowed to be executed in
         private messages. Defaults to ``False``. Note that if it is executed
         in private messages, then :func:`on_command_error` and local error handlers
         are called with the :exc:`NoPrivateMessage` error.
@@ -114,6 +114,11 @@ class Command:
         regular matter rather than passing the rest completely raw. If ``True``
         then the keyword-only argument will pass in the rest of the arguments
         in a completely raw matter. Defaults to ``False``.
+    ignore_extra : bool
+        If ``True``\, ignores extraneous strings passed to a command if all its
+        requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
+        and ``b``). Otherwise :func:`on_command_error` and local error handlers
+        are called with :exc:`TooManyArguments`. Defaults to ``True``.
     """
     def __init__(self, name, callback, **kwargs):
         self.name = name
@@ -134,6 +139,7 @@ class Command:
         self.checks = kwargs.get('checks', [])
         self.module = inspect.getmodule(callback)
         self.no_pm = kwargs.get('no_pm', False)
+        self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
 
@@ -387,6 +393,11 @@ class Command:
                         args.append(transformed)
                     except RuntimeError:
                         break
+
+        if not self.ignore_extra:
+            if not view.eof:
+                raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
+
 
     def _verify_checks(self, ctx):
         if not self.enabled:
