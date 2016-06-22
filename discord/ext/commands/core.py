@@ -35,7 +35,8 @@ from .view import quoted_word
 
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role' ]
+            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+            'Converter' ]
 
 def inject_context(ctx, coro):
     @functools.wraps(coro)
@@ -59,6 +60,31 @@ def _convert_to_bool(argument):
         return False
     else:
         raise BadArgument(lowered + ' is not a recognised boolean option')
+
+class Converter:
+    """The base class of custom converters that require the :class:`Context`
+    to be passed to be useful.
+
+    This allows you to implement converters that function similar to the
+    special cased ``discord`` classes.
+
+    Classes that derive from this should override the :meth:`convert` method
+    to do its conversion logic. This method could be a coroutine or a regular
+    function.
+
+    Attributes
+    -----------
+    ctx: :class:`Context`
+        The invocation context that the argument is being used in.
+    argument: str
+        The argument that is being converted.
+    """
+    def __init__(self, ctx, argument):
+        self.ctx = ctx
+        self.argument = argument
+
+    def convert(self):
+        raise NotImplementedError('Derived classes need to implement this.')
 
 class Command:
     """A class that implements the protocol for a bot text command.
@@ -241,9 +267,16 @@ class Command:
         return discord.Game(name=argument)
 
     @asyncio.coroutine
-    def do_conversion(self, bot, message, converter, argument):
+    def do_conversion(self, ctx, converter, argument):
         if converter is bool:
             return _convert_to_bool(argument)
+
+        if issubclass(converter, Converter):
+            instance = converter(ctx, argument)
+            if asyncio.iscoroutinefunction(instance.convert):
+                return (yield from instance.convert())
+            else:
+                return instance.convert()
 
         if converter.__module__.split('.')[0] != 'discord':
             return converter(argument)
@@ -251,13 +284,13 @@ class Command:
         # special handling for discord.py related classes
         if converter is discord.Invite:
             try:
-                invite = yield from bot.get_invite(argument)
+                invite = yield from ctx.bot.get_invite(argument)
                 return invite
             except Exception as e:
                 raise BadArgument('Invite is invalid or expired') from e
 
         new_converter = getattr(self, '_convert_{}'.format(converter.__name__.lower()))
-        return new_converter(bot, message, argument)
+        return new_converter(ctx.bot, ctx.message, argument)
 
     def _get_converter(self, param):
         converter = param.annotation
@@ -292,7 +325,7 @@ class Command:
             argument = quoted_word(view)
 
         try:
-            return (yield from self.do_conversion(ctx.bot, ctx.message, converter, argument))
+            return (yield from self.do_conversion(ctx, converter, argument))
         except CommandError as e:
             raise e
         except Exception as e:
