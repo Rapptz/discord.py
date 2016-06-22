@@ -307,12 +307,15 @@ class HTTPClient:
         url = '{0.GUILDS}/{1}/bans/{2}'.format(self, guild_id, user_id)
         return self.delete(url, bucket=_func_())
 
-    def server_voice_state(self, user_id, guild_id, *, mute=False, deafen=False):
+    def server_voice_state(self, user_id, guild_id, *, mute=None, deafen=None):
         url = '{0.GUILDS}/{1}/members/{2}'.format(self, guild_id, user_id)
-        payload = {
-            'mute': mute,
-            'deafen': deafen
-        }
+        payload = {}
+        if mute is not None:
+            payload['mute'] = mute
+
+        if deafen is not None:
+            payload['deaf'] = deafen
+
         return self.patch(url, json=payload, bucket='members:' + str(guild_id))
 
     def edit_profile(self, password, username, avatar, **fields):

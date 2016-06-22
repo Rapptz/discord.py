@@ -1398,7 +1398,7 @@ class Client:
         yield from self.http.unban(user.id, server.id)
 
     @asyncio.coroutine
-    def server_voice_state(self, member, *, mute=False, deafen=False):
+    def server_voice_state(self, member, *, mute=None, deafen=None):
         """|coro|
 
         Server mutes or deafens a specific :class:`Member`.
@@ -1413,9 +1413,9 @@ class Client:
         -----------
         member : :class:`Member`
             The member to unban from their server.
-        mute : bool
+        mute: Optional[bool]
             Indicates if the member should be server muted or un-muted.
-        deafen : bool
+        deafen: Optional[bool]
             Indicates if the member should be server deafened or un-deafened.
 
         Raises
