@@ -225,6 +225,13 @@ class ConnectionState:
             self.dispatch('message_delete', found)
             self.messages.remove(found)
 
+    def parse_message_delete_bulk(self, data):
+        message_ids = set(data.get('ids', []))
+        to_be_deleted = list(filter(lambda m: m.id in message_ids, self.messages))
+        for msg in to_be_deleted:
+            self.dispatch('message_delete', msg)
+            self.messages.remove(msg)
+
     def parse_message_update(self, data):
         message = self._get_message(data.get('id'))
         if message is not None:
