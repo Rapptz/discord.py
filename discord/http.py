@@ -497,4 +497,4 @@ class HTTPClient:
             data = yield from self.get(self.GATEWAY, bucket=_func_())
         except HTTPException as e:
             raise GatewayNotFound() from e
-        return data.get('url') + '?encoding=json&v=4'
+        return data.get('url') + '?encoding=json&v=5'

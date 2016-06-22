@@ -138,7 +138,8 @@ class Client:
         if max_messages is None or max_messages < 100:
             max_messages = 5000
 
-        self.connection = ConnectionState(self.dispatch, self.request_offline_members, max_messages, loop=self.loop)
+        self.connection = ConnectionState(self.dispatch, self.request_offline_members,
+                                          self._syncer, max_messages, loop=self.loop)
 
         connector = options.pop('connector', None)
         self.http = HTTPClient(connector, loop=self.loop)
@@ -148,6 +149,10 @@ class Client:
         self._is_ready = asyncio.Event(loop=self.loop)
 
     # internals
+
+    @asyncio.coroutine
+    def _syncer(self, guilds):
+        yield from self.ws.request_sync(guilds)
 
     def _get_cache_filename(self, email):
         filename = hashlib.md5(email.encode('utf-8')).hexdigest()
@@ -295,12 +300,16 @@ class Client:
     @asyncio.coroutine
     def _login_1(self, token, **kwargs):
         log.info('logging in using static token')
-        yield from self.http.static_login(token, bot=kwargs.pop('bot', True))
+        is_bot = kwargs.pop('bot', True)
+        yield from self.http.static_login(token, bot=is_bot)
+        self.connection.is_bot = is_bot
         self._is_logged_in.set()
 
     @asyncio.coroutine
     def _login_2(self, email, password, **kwargs):
         # attempt to read the token from cache
+        self.connection.is_bot = False
+
         if self.cache_auth:
             token = self._get_cache_token(email, password)
             try:

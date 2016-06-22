@@ -108,7 +108,7 @@ class Channel(Hashable):
 
         self._permission_overwrites = []
         everyone_index = 0
-        everyone_id = self.server.default_role.id
+        everyone_id = self.server.id
 
         for index, overridden in enumerate(kwargs.get('permission_overwrites', [])):
             overridden_id = overridden['id']

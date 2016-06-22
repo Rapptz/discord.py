@@ -49,11 +49,13 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'servers'))
 
 class ConnectionState:
-    def __init__(self, dispatch, chunker, max_messages, *, loop):
+    def __init__(self, dispatch, chunker, syncer, max_messages, *, loop):
         self.loop = loop
         self.max_messages = max_messages
         self.dispatch = dispatch
         self.chunker = chunker
+        self.syncer = syncer
+        self.is_bot = None
         self._listeners = []
         self.clear()
 
@@ -165,8 +167,9 @@ class ConnectionState:
             launch.set()
             yield from asyncio.sleep(2)
 
-        # get all the chunks
         servers = self._ready_state.servers
+
+        # get all the chunks
         chunks = []
         for server in servers:
             chunks.extend(self.chunks_needed(server))
@@ -194,8 +197,11 @@ class ConnectionState:
         servers = self._ready_state.servers
         for guild in guilds:
             server = self._add_server_from_data(guild)
-            if server.large:
+            if server.large or not self.is_bot:
                 servers.append(server)
+
+        if not self.is_bot:
+            compat.create_task(self.syncer([s.id for s in self.servers]), loop=self.loop)
 
         for pm in data.get('private_channels'):
             self._add_private_channel(PrivateChannel(id=pm['id'],
@@ -426,6 +432,10 @@ class ConnectionState:
             self.dispatch('server_available', server)
         else:
             self.dispatch('server_join', server)
+
+    def parse_guild_sync(self, data):
+        server = self._get_server(data.get('id'))
+        server._sync(data)
 
     def parse_guild_update(self, data):
         server = self._get_server(data.get('id'))

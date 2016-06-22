@@ -127,6 +127,13 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     INVALIDATE_SESSION
         Receive only. Tells the client to invalidate the session and IDENTIFY
         again.
+    HELLO
+        Receive only. Tells the client the heartbeat interval.
+    HEARTBEAT_ACK
+        Receive only. Confirms receiving of a heartbeat. Not having it implies
+        a connection issue.
+    GUILD_SYNC
+        Send only. Requests a guild sync.
     gateway
         The gateway we are currently connected to.
     token
@@ -143,6 +150,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     RECONNECT          = 7
     REQUEST_MEMBERS    = 8
     INVALIDATE_SESSION = 9
+    HELLO              = 10
+    HEARTBEAT_ACK      = 11
+    GUILD_SYNC         = 12
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, max_size=None, **kwargs)
@@ -172,6 +182,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         client.connection._update_references(ws)
 
         log.info('Created websocket connected to {}'.format(gateway))
+
+        # poll the event for OP HELLO
+        yield from ws.poll_event()
+
         if not resume:
             yield from ws.identify()
             log.info('sent the identify payload to create the websocket')
@@ -232,6 +246,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 'v': 3
             }
         }
+
+        if not self._connection.is_bot:
+            payload['d']['synced_guilds'] = []
+
         yield from self.send_as_json(payload)
 
     @asyncio.coroutine
@@ -277,6 +295,12 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             yield from self.close()
             raise ReconnectWebSocket()
 
+        if op == self.HELLO:
+            interval = data['heartbeat_interval'] / 1000.0
+            self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
+            self._keep_alive.start()
+            return
+
         if op == self.INVALIDATE_SESSION:
             state.sequence = None
             state.session_id = None
@@ -297,11 +321,6 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             state.clear()
             state.sequence = msg['s']
             state.session_id = data['session_id']
-
-        if is_ready or event == 'RESUMED':
-            interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
-            self._keep_alive.start()
 
         parser = 'parse_' + event.lower()
 
@@ -399,6 +418,14 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             me.game = game
             status = Status.idle if idle_since else Status.online
             me.status = status
+
+    @asyncio.coroutine
+    def request_sync(self, guild_ids):
+        payload = {
+            'op': self.GUILD_SYNC,
+            'd': list(guild_ids)
+        }
+        yield from self.send_as_json(payload)
 
     @asyncio.coroutine
     def voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):

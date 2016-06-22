@@ -169,7 +169,6 @@ class Server(Hashable):
             self._member_count = member_count
 
         self.name = guild.get('name')
-        self.large = guild.get('large', None if member_count is None else self._member_count > 250)
         self.region = guild.get('region')
         try:
             self.region = ServerRegion(self.region)
@@ -181,24 +180,36 @@ class Server(Hashable):
         self.unavailable = guild.get('unavailable', False)
         self.id = guild['id']
         self.roles = [Role(server=self, **r) for r in guild.get('roles', [])]
-
-        for data in guild.get('members', []):
-            roles = [self.default_role]
-            for role_id in data['roles']:
-                role = utils.find(lambda r: r.id == role_id, self.roles)
-                if role is not None:
-                    roles.append(role)
-
-            data['roles'] = roles
-            member = Member(**data)
-            member.server = self
-            self._add_member(member)
+        self._sync(guild)
+        self.large = None if member_count is None else self._member_count > 250
 
         if 'owner_id' in guild:
             self.owner_id = guild['owner_id']
             self.owner = self.get_member(self.owner_id)
 
-        for presence in guild.get('presences', []):
+        afk_id = guild.get('afk_channel_id')
+        self.afk_channel = self.get_channel(afk_id)
+
+        for obj in guild.get('voice_states', []):
+            self._update_voice_state(obj)
+
+    def _sync(self, data):
+        if 'large' in data:
+            self.large = data['large']
+
+        for mdata in data.get('members', []):
+            roles = [self.default_role]
+            for role_id in mdata['roles']:
+                role = utils.find(lambda r: r.id == role_id, self.roles)
+                if role is not None:
+                    roles.append(role)
+
+            mdata['roles'] = roles
+            member = Member(**mdata)
+            member.server = self
+            self._add_member(member)
+
+        for presence in data.get('presences', []):
             user_id = presence['user']['id']
             member = self.get_member(user_id)
             if member is not None:
@@ -210,17 +221,12 @@ class Server(Hashable):
                 game = presence.get('game', {})
                 member.game = Game(**game) if game else None
 
-        if 'channels' in guild:
-            channels = guild['channels']
+        if 'channels' in data:
+            channels = data['channels']
             for c in channels:
                 channel = Channel(server=self, **c)
                 self._add_channel(channel)
 
-        afk_id = guild.get('afk_channel_id')
-        self.afk_channel = self.get_channel(afk_id)
-
-        for obj in guild.get('voice_states', []):
-            self._update_voice_state(obj)
 
     @utils.cached_slot_property('_default_role')
     def default_role(self):
