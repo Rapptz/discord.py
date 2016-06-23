@@ -174,7 +174,7 @@ class Command:
         if converter.__module__.startswith('discord.'):
             converter = getattr(converters, converter.__name__ + 'Converter')
 
-        if issubclass(converter, converters.Converter):
+        if inspect.isclass(converter) and issubclass(converter, converters.Converter):
             instance = converter(ctx, argument)
             if asyncio.iscoroutinefunction(instance.convert):
                 return (yield from instance.convert())
