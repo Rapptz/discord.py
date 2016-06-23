@@ -1498,7 +1498,7 @@ class Client:
             if 'new_password' in fields:
                 args['new_password'] = fields['new_password']
 
-        yield from self.http.edit_profile(**args)
+        data = yield from self.http.edit_profile(**args)
         if not_bot_account:
             self.email = data['email']
             if 'token' in data:
