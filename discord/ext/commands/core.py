@@ -306,7 +306,7 @@ class Command:
                 if self.rest_is_raw:
                     converter = self._get_converter(param)
                     argument = view.read_rest()
-                    kwargs[name] = yield from self.do_conversion(ctx.bot, ctx.message, converter, argument)
+                    kwargs[name] = yield from self.do_conversion(ctx, converter, argument)
                 else:
                     kwargs[name] = yield from self.transform(ctx, param)
                 break
