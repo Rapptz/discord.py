@@ -2118,6 +2118,8 @@ class Client:
             Accepting the invite failed.
         NotFound
             The invite is invalid or expired.
+        Forbidden
+            You are a bot user and cannot use this endpoint.
         """
 
         invite_id = self._resolve_invite(invite)
