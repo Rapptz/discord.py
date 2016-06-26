@@ -101,6 +101,10 @@ class Client:
     connector : aiohttp.BaseConnector
         The `connector`_ to use for connection pooling. Useful for proxies, e.g.
         with a `ProxyConnector`_.
+    shard_id : Optional[int]
+        Integer starting at 0 and less than shard_count.
+    shard_count : Optional[int]
+        The total number of shards.
 
     Attributes
     -----------
@@ -133,6 +137,8 @@ class Client:
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
         self.cache_auth = options.get('cache_auth', True)
+        self.shard_id = options.get('shard_id')
+        self.shard_count = options.get('shard_count')
 
         max_messages = options.get('max_messages')
         if max_messages is None or max_messages < 100:
