@@ -14,19 +14,42 @@ This was written to allow easier writing of bots or chat logs. Make sure to fami
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before `v1.0.0`.
 
-I recommend that you follow the discussion in the [unofficial Discord API discord channel][ch] and update your installation periodically through `pip install --upgrade discord.py`. I will attempt to make note of breaking changes in the API channel.
+I recommend that you follow the discussion in the [unofficial Discord API discord channel][ch] and update your installation periodically. I will attempt to make note of breaking changes in the API channel so make sure to subscribe to library news by typing `?sub news` in the channel.
 
 [ch]: https://discord.gg/0SBTUU1wZTUzBx2q
 
 ## Installing
 
-Installing the async beta is easy:
+To install the library without full voice support, you can just run the following command:
 
 ```
-pip install git+https://github.com/Rapptz/discord.py@async
+python3 -m pip install -U discord.py
 ```
 
-Note that this requires `git` to be installed.
+Otherwise to get voice support you should run the following command:
+
+```
+python3 -m pip install -U discord.py[voice]
+```
+
+To install the development version, do the following:
+
+```
+python3 -m pip install -U https://github.com/Rapptz/discord.py/archive/master.zip#egg=discord.py[voice]
+```
+
+or the more long winded from cloned source:
+
+```
+$ git clone https://github.com/Rapptz/discord.py
+$ cd discord.py
+$ python3 -m pip install -U .[voice]
+```
+
+Please note that on Linux installing voice you must install the following packages via your favourite package manager (e.g. `apt`, `yum`, etc) before running the above command:
+
+- libffi-dev (or `libffi-devel` on some systems)
+- python<version>-dev (e.g. `python3.5-dev` for Python 3.5)
 
 ## Quick Example
 
@@ -69,7 +92,7 @@ You can find examples in the examples directory.
 - Python 3.4.2+
 - `aiohttp` library
 - `websockets` library
-- `PyNaCl` library
+- `PyNaCl` library (optional, for voice only)
     - On Linux systems this requires the `libffi` library. You can install in
       debian based systems by doing `sudo apt-get install libffi-dev`.
 
