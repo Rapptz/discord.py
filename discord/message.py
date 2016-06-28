@@ -146,10 +146,8 @@ class Message:
                     self.mentions.append(member)
 
         if self.server is not None:
-            for mention in self.raw_channel_mentions:
-                channel = self.server.get_channel(mention)
-                if channel is not None:
-                    self.channel_mentions.append(channel)
+            it = filter(None, map(lambda m: self.server.get_channel(m), self.raw_channel_mentions))
+            self.channel_mentions = utils._unique(it)
 
             for role_id in role_mentions:
                 role = utils.get(self.server.roles, id=role_id)
