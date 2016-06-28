@@ -13,12 +13,14 @@ in specific versions.
 v0.10.0
 -------
 
-For breaking changes, see :ref:`migrating-to-async`. The breaking changes listed there will not be enumerated below.
+For breaking changes, see :ref:`migrating-to-async`. The breaking changes listed there will not be enumerated below. Since this version is rather a big departure from v0.9.2, this change log will be non-exhaustive.
 
 New Features
 ~~~~~~~~~~~~~
 
 - The library is now fully ``asyncio`` compatible, allowing you to write non-blocking code a lot more easily.
+- The library now fully handles 429s and unconditionally retries on 502s.
+- A new command extension module was added but is currently undocumented. Figuring it out is left as an exercise to the reader.
 - Two new exception types, :exc:`Forbidden` and :exc:`NotFound` to denote permission errors or 404 errors.
 - Added :meth:`Client.delete_invite` to revoke invites.
 - Added support for sending voice. Check :class:`VoiceClient` for more details.
@@ -27,7 +29,7 @@ New Features
 - Login credentials are now cached to have a faster login experience. You can disable this by passing in ``cache_auth=False``
   when constructing a :class:`Client`.
 - New utility function, :func:`discord.utils.get` to simplify retrieval of items based on attributes.
-- All data classes now support ``!=``, ``==`` and ``str(obj)``.
+- All data classes now support ``!=``, ``==``, ``hash(obj)`` and ``str(obj)``.
 - Added :meth:`Client.get_bans` to get banned members from a server.
 - Added :meth:`Client.invites_from` to get currently active invites in a server.
 - Added :attr:`Server.me` attribute to get the :class:`Member` version of :attr:`Client.user`.
