@@ -185,7 +185,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
     Called when a message is deleted or edited from any given server. If the message is not found in the
     :attr:`Client.messages` cache, then these events will not be called. This happens if the message
     is too old or the client is participating in high traffic servers. To fix this, increase
-    the ``max_length`` option of :class:`Client`.
+    the ``max_messages`` option of :class:`Client`.
 
     :param message: A :class:`Message` of the deleted message.
     :param before: A :class:`Message` of the previous version of the message.
