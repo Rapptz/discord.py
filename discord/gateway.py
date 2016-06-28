@@ -300,6 +300,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             yield from self.close()
             raise ReconnectWebSocket()
 
+        if op == self.HEARTBEAT_ACK:
+            return # disable noisy logging for now
+
         if op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
