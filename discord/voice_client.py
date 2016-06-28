@@ -51,9 +51,14 @@ import shlex
 import functools
 import datetime
 import audioop
-import nacl.secret
 
 log = logging.getLogger(__name__)
+
+try:
+    import nacl.secret
+    has_nacl = True
+except ImportError:
+    has_nacl = False
 
 from . import utils, opus
 from .gateway import *
@@ -182,6 +187,9 @@ class VoiceClient:
         The event loop that the voice client is running on.
     """
     def __init__(self, user, main_ws, session_id, channel, data, loop):
+        if not has_nacl:
+            raise RuntimeError("PyNaCl library needed in order to use voice")
+
         self.user = user
         self.main_ws = main_ws
         self.channel = channel
@@ -195,6 +203,8 @@ class VoiceClient:
         self.timestamp = 0
         self.encoder = opus.Encoder(48000, 2)
         log.info('created opus encoder with {0.__dict__}'.format(self.encoder))
+
+    warn_nacl = not has_nacl
 
     @property
     def server(self):
