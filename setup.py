@@ -21,6 +21,10 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
+extras_require = {
+    'voice': ['PyNaCl==1.0.1'],
+}
+
 setup(name='discord.py',
       author='Rapptz',
       url='https://github.com/Rapptz/discord.py',
@@ -31,8 +35,9 @@ setup(name='discord.py',
       long_description=readme,
       include_package_data=True,
       install_requires=requirements,
+      extras_require=extras_require,
       classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Natural Language :: English',
