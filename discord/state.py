@@ -186,6 +186,10 @@ class ConnectionState:
         # remove the state
         del self._ready_state
 
+        # call GUILD_SYNC after we're done chunking
+        if not self.is_bot:
+            compat.create_task(self.syncer([s.id for s in self.servers]), loop=self.loop)
+
         # dispatch the event
         self.dispatch('ready')
 
@@ -199,9 +203,6 @@ class ConnectionState:
             server = self._add_server_from_data(guild)
             if server.large or not self.is_bot:
                 servers.append(server)
-
-        if not self.is_bot:
-            compat.create_task(self.syncer([s.id for s in self.servers]), loop=self.loop)
 
         for pm in data.get('private_channels'):
             self._add_private_channel(PrivateChannel(id=pm['id'],
