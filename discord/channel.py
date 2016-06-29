@@ -255,8 +255,27 @@ class Channel(Hashable):
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
 
+        # default channels can always be read
         if self.is_default:
             base.read_messages = True
+
+        # if you can't send a message in a channel then you can't have certain
+        # permissions as well
+        if not base.send_messages:
+            base.send_tts_messages = False
+            base.mention_everyone = False
+            base.embed_links = False
+            base.attach_files = False
+
+        # if you can't read a channel then you have no permissions there
+        if not base.read_messages:
+            denied = Permissions.all_channel()
+            base.value &= ~denied.value
+
+        # text channels do not have voice related permissions
+        if self.type is ChannelType.text:
+            denied = Permissions.voice()
+            base.value &= ~denied.value
 
         return base
 
