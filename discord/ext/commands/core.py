@@ -486,6 +486,11 @@ class GroupMixin:
             `None` is returned instead.
         """
         command = self.commands.pop(name, None)
+
+        # does not exist
+        if command is None:
+            return None
+
         if name in command.aliases:
             # we're removing an alias so we don't want to remove the rest
             return command
