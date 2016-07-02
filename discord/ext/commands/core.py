@@ -616,7 +616,7 @@ def command(name=None, cls=None, **attrs):
     -----------
     name : str
         The name to create the command with. By default this uses the
-        function named unchanged.
+        function name unchanged.
     cls
         The class to construct with. By default this is :class:`Command`.
         You usually do not change this.
@@ -654,7 +654,7 @@ def command(name=None, cls=None, **attrs):
                 help_doc = help_doc.decode('utf-8')
 
         attrs['help'] = help_doc
-        fname = name or func.__name__.lower()
+        fname = name or func.__name__
         return cls(name=fname, callback=func, checks=checks, **attrs)
 
     return decorator
