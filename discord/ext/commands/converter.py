@@ -34,6 +34,14 @@ __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'ChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter' ]
 
+def _get_from_servers(bot, getter, argument):
+    result = None
+    for server in bot.servers:
+        result = getattr(server, getter)(argument)
+        if result:
+            return result
+    return result
+
 class Converter:
     """The base class of custom converters that require the :class:`Context`
     to be passed to be useful.
@@ -72,13 +80,13 @@ class MemberConverter(Converter):
             if server:
                 result = server.get_member_named(self.argument)
             else:
-                result = self._get_from_servers(bot, 'get_member_named', self.argument)
+                result = _get_from_servers(bot, 'get_member_named', self.argument)
         else:
             user_id = match.group(1)
             if server:
                 result = server.get_member(user_id)
             else:
-                result = self._get_from_servers(bot, 'get_member', user_id)
+                result = _get_from_servers(bot, 'get_member', user_id)
 
         if result is None:
             raise BadArgument('Member "{}" not found'.format(self.argument))
@@ -106,7 +114,7 @@ class ChannelConverter(Converter):
             if server:
                 result = server.get_channel(channel_id)
             else:
-                result = self._get_from_servers(bot, 'get_channel', channel_id)
+                result = _get_from_servers(bot, 'get_channel', channel_id)
 
         if result is None:
             raise BadArgument('Channel "{}" not found.'.format(self.argument))

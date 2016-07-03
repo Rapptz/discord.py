@@ -158,14 +158,6 @@ class Command:
         finally:
             ctx.bot.dispatch('command_error', error, ctx)
 
-    def _get_from_servers(self, bot, getter, argument):
-        result = None
-        for server in bot.servers:
-            result = getattr(server, getter)(argument)
-            if result:
-                return result
-        return result
-
     @asyncio.coroutine
     def do_conversion(self, ctx, converter, argument):
         if converter is bool:
