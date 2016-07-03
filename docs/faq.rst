@@ -2,7 +2,7 @@
 .. _faq:
 
 Frequently Asked Questions
-===========================
+==========================
 
 This is a list of Frequently Asked Questions regarding using ``discord.py`` and its extension modules. Feel free to suggest a
 new question or submit one via pull requests.
@@ -16,7 +16,7 @@ Coroutines
 Questions regarding coroutines and asyncio belong here.
 
 I get a SyntaxError around the word ``async``\! What should I do?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This ``SyntaxError`` happens because you're using a Python version lower than 3.5. Python 3.4 uses ``@asyncio.coroutine`` and
 ``yield from`` instead of ``async def`` and ``await``.
@@ -37,7 +37,7 @@ Don't forget to ``import asyncio`` on the top of your files.
 **It is heavily recommended that you update to Python 3.5 or higher as it simplifies asyncio massively.**
 
 What is a coroutine?
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 A coroutine is a function that must be invoked with ``await`` or ``yield from``. When Python encounters an ``await`` it stops
 the function's execution at that point and works on other things until it comes back to that point and finishes off its work.
@@ -47,7 +47,7 @@ multiprocessing.
 **If you forget to await a coroutine then the coroutine will not run. Never forget to await a coroutine.**
 
 Where can I use ``await``\?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can only use ``await`` inside ``async def`` functions and nowhere else.
 
@@ -87,12 +87,12 @@ Consider the following example: ::
             await client.send_message(channel, js['file'])
 
 General
----------
+-------
 
 General questions regarding library usage belong here.
 
 How do I set the "Playing" status?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There is a method for this under :class:`Client` called :meth:`Client.change_status`. The relevant aspect of this is its
 ``game`` keyword argument which takes in a :class:`Game` object. Putting both of these pieces of info together, you get the
@@ -101,7 +101,7 @@ following: ::
     await client.change_status(game=discord.Game(name='my game'))
 
 How do I send a message to a specific channel?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you have its ID then you can do this in two ways, first is by using :class:`Object`\: ::
 
@@ -117,7 +117,7 @@ I'm passing IDs as integers and things are not working!
 In the library IDs must be of type ``str`` not of type ``int``. Wrap it in quotes.
 
 How do I upload an image?
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are two ways of doing it. Both of which involve using :meth:`Client.send_file`.
 
@@ -131,7 +131,7 @@ The second is by passing the file name directly: ::
     await client.send_file(channel, 'my_image.png')
 
 How do I pass a coroutine to the player's "after" function?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A StreamPlayer is just a ``threading.Thread`` object that plays music. As a result it does not execute inside a coroutine.
 This does not mean that it is not possible to call a coroutine in the ``after`` parameter. To do so you must pass a callable
@@ -164,7 +164,7 @@ this together we can do the following: ::
     player.start()
 
 Why is my "after" function being called right away?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``after`` keyword argument expects a *function object* to be passed in. Similar to how ``threading.Thread`` expects a
 callable in its ``target`` keyword argument. This means that the following are invalid:
@@ -185,12 +185,12 @@ Basically, these functions should not be called.
 
 
 How do I run something in the background?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/async/examples/background_task.py>`_
+`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_
 
 How do I get a specific User/Role/Channel/Server?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are multiple ways of doing this. If you have a specific entity's ID then you can use
 one of the following functions:
@@ -204,24 +204,24 @@ If the functions above do not help you, then use of :func:`utils.find` or :func:
 specific entities. The documentation for those functions provide specific examples.
 
 Commands Extension
--------------------
+------------------
 
 Questions regarding ``discord.ext.commands`` belong here.
 
 Is there any documentation for this?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Not at the moment. Writing documentation for stuff takes time. A lot of people get by reading the docstrings in the source
 code. Others get by via asking questions in the `Discord server <https://discord.gg/0SBTUU1wZTXZNJPa>`_. Others look at the
 source code of `other existing bots <https://github.com/Rapptz/RoboDanny>`_.
 
-There is a `basic example <https://github.com/Rapptz/discord.py/blob/async/examples/basic_bot.py>`_ showcasing some
+There is a `basic example <https://github.com/Rapptz/discord.py/blob/master/examples/basic_bot.py>`_ showcasing some
 functionality.
 
 **Documentation is being worked on, it will just take some time to polish it**.
 
 Why does ``on_message`` make my commands stop working?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Overriding the default provided ``on_message`` forbids any extra commands from running. To fix this, add a
 ``bot.process_commands(message)`` line at the end of your ``on_message``. For example: ::
@@ -233,12 +233,12 @@ Overriding the default provided ``on_message`` forbids any extra commands from r
         await bot.process_commands(message)
 
 Can I use ``bot.say`` in other places aside from commands?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 No. They only work inside commands due to the way the magic involved works.
 
 Why do my arguments require quotes?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In a simple command defined as: ::
 
@@ -270,7 +270,7 @@ Example: ::
         await bot.say('{0} joined at {0.joined_at}'.format(member))
 
 How do I make a subcommand?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use the ``group`` decorator. This will transform the callback into a ``Group`` which will allow you to add commands into
 the group operating as "subcommands". These groups can be arbitrarily nested as well.
@@ -288,4 +288,3 @@ Example: ::
 
 
 This could then be used as ``?git push origin master``.
-
