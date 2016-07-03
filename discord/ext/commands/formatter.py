@@ -276,7 +276,7 @@ class HelpFormatter:
 
             # end it here if it's just a regular command
             if not self.has_subcommands():
-                self._current_page.append('```diff')
+                self._current_page.append('```')
                 self._pages.append('\n'.join(self._current_page))
                 return self._pages
 
