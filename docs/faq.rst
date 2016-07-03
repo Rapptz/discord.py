@@ -288,3 +288,18 @@ Example: ::
 
 
 This could then be used as ``?git push origin master``.
+
+How do I disable the default help command?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is a method to remove commands dynamically under :class:`Bot` called :meth:`bot.remove_command`. Example: ::
+
+    bot = discord.ext.commands.Bot('!')
+    bot.remove_command('help')
+    bot.run('token')
+
+How do I make categories in the default help command ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The cogs you use in your bot will be represented as categories in the default help command. `A basic example cog <https://github.com/Rapptz/discord.py/blob/master/examples/basic_bot.py>`_
+is used in the `basic_bot.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/basic_bot.py>`_ to showcase this.
