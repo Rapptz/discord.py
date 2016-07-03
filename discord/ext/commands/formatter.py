@@ -153,8 +153,8 @@ class HelpFormatter:
 
     def get_ending_note(self):
         command_name = self.context.invoked_with
-        return "Type {0}{1} command for more info on a command.\n" \
-               "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
+        return "! Type {0}{1} command for more info on a command.\n" \
+               "! You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
 
     def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
@@ -197,7 +197,7 @@ class HelpFormatter:
             # add the page
             self._current_page.append('```')
             self._pages.append('\n'.join(self._current_page))
-            self._current_page = ['```']
+            self._current_page = ['```diff']
             self._count = 4
             return True
         return False
@@ -208,7 +208,7 @@ class HelpFormatter:
                 # skip aliases
                 continue
 
-            entry = '  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width)
+            entry = '+  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width)
             shortened = self.shorten(entry)
             self._count += len(shortened)
             if self._check_new_page():
@@ -248,7 +248,7 @@ class HelpFormatter:
         """
         self._pages = []
         self._count = 4 # ``` + '\n'
-        self._current_page = ['```']
+        self._current_page = ['```diff']
 
         # we need a padding of ~80 or so
 
@@ -276,7 +276,7 @@ class HelpFormatter:
 
             # end it here if it's just a regular command
             if not self.has_subcommands():
-                self._current_page.append('```')
+                self._current_page.append('```diff')
                 self._pages.append('\n'.join(self._current_page))
                 return self._pages
 
@@ -287,7 +287,7 @@ class HelpFormatter:
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return cog + ':' if cog is not None else '\u200bNo Category:'
+            return '- ' + cog + ':' if cog is not None else '- \u200bNo Category:'
 
         if self.is_bot():
             data = sorted(self.filter_command_list(), key=category)
@@ -301,7 +301,7 @@ class HelpFormatter:
 
                 self._add_subcommands_to_page(max_width, commands)
         else:
-            self._current_page.append('Commands:')
+            self._current_page.append('- Commands:')
             self._count += 1 + len(self._current_page[-1])
             self._add_subcommands_to_page(max_width, self.filter_command_list())
 
