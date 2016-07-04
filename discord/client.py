@@ -2348,16 +2348,11 @@ class Client:
             Removing roles failed.
         """
         new_roles = [x.id for x in member.roles]
-        remove = []
         for role in roles:
             try:
-                index = new_roles.index(role.id)
-                remove.append(index)
+                new_roles.remove(role.id)
             except ValueError:
-                continue
-
-        for index in reversed(remove):
-            del new_roles[index]
+                pass
 
         yield from self._replace_roles(member, new_roles)
 
