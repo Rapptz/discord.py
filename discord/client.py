@@ -311,7 +311,8 @@ class Client:
     def _login_1(self, token, **kwargs):
         log.info('logging in using static token')
         is_bot = kwargs.pop('bot', True)
-        yield from self.http.static_login(token, bot=is_bot)
+        data = yield from self.http.static_login(token, bot=is_bot)
+        self.email = data.get('email', None)
         self.connection.is_bot = is_bot
         self._is_logged_in.set()
 
