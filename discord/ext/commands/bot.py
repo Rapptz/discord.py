@@ -63,8 +63,8 @@ def when_mentioned(bot, msg):
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
 
-    Examples
-    ---------
+    Example
+    --------
 
     .. code-block:: python
 
@@ -466,7 +466,7 @@ class Bot(GroupMixin, discord.Client):
 
         .. code-block:: python
 
-            @bot.check
+            @bot.check()
             def whitelist(ctx):
                 return ctx.message.author.id in my_whitelist
 
@@ -520,8 +520,8 @@ class Bot(GroupMixin, discord.Client):
         name : Optional[str]
             The name of the command to use. Defaults to ``func.__name__``.
 
-        Examples
-        ---------
+        Example
+        --------
 
         .. code-block:: python
 
@@ -569,12 +569,12 @@ class Bot(GroupMixin, discord.Client):
 
         The functions being listened to must be a coroutine.
 
-        Examples
-        ---------
+        Example
+        --------
 
         .. code-block:: python
 
-            @bot.listen
+            @bot.listen()
             async def on_message(message):
                 print('one')
 
