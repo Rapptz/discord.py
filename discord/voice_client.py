@@ -323,7 +323,7 @@ class VoiceClient:
         # Encrypt and return the data
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
 
-    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, options=None, before_options=None, headers=None, after=None):
+    def create_ffmpeg_player(self, filename, *, use_avconv=False, pipe=False, stderr=None, options=None, before_options=None, headers=None, after=None):
         """Creates a stream player for ffmpeg that launches in a separate thread to play
         audio.
 
@@ -356,6 +356,9 @@ class VoiceClient:
         pipe : bool
             If true, denotes that ``filename`` parameter will be passed
             to the stdin of ffmpeg.
+        stderr
+            A file-like object or ``subprocess.PIPE`` to pass to the Popen
+            constructor.
         options : str
             Extra command line flags to pass to ``ffmpeg`` after the ``-i`` flag.
         before_options : str
@@ -399,7 +402,7 @@ class VoiceClient:
         stdin = None if not pipe else filename
         args = shlex.split(cmd)
         try:
-            p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE)
+            p = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
             return ProcessPlayer(p, self, after)
         except FileNotFoundError as e:
             raise ClientException('ffmpeg/avconv was not found in your PATH environment variable') from e
