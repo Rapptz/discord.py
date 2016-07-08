@@ -446,7 +446,7 @@ class Bot(GroupMixin, discord.Client):
 
     # global check registration
 
-    def check(self):
+    def check(self, func):
         """A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`check` that is applied
@@ -466,15 +466,13 @@ class Bot(GroupMixin, discord.Client):
 
         .. code-block:: python
 
-            @bot.check()
+            @bot.check
             def whitelist(ctx):
                 return ctx.message.author.id in my_whitelist
 
         """
-        def decorator(func):
-            self.add_check(func)
-            return func
-        return decorator
+        self.add_check(func)
+        return func
 
     def add_check(self, func):
         """Adds a global check to the bot.
