@@ -391,6 +391,12 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: voice
 
         A voice channel.
+    .. attribute:: private
+
+        A private text channel. Also called a direct message.
+    .. attribute:: group
+
+        A private group text channel.
 
 .. class:: ServerRegion
 

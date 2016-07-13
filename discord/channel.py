@@ -30,6 +30,7 @@ from .enums import ChannelType
 from collections import namedtuple
 from .mixins import Hashable
 from .role import Role
+from .user import User
 from .member import Member
 
 Overwrites = namedtuple('Overwrites', 'id allow deny type')
@@ -298,23 +299,67 @@ class PrivateChannel(Hashable):
 
     Attributes
     ----------
-    user : :class:`User`
-        The user you are participating with in the private channel.
-    id : str
+    recipients: list of :class:`User`
+        The users you are participating with in the private channel.
+    id: str
         The private channel ID.
-    is_private : bool
+    is_private: bool
         ``True`` if the channel is a private channel (i.e. PM). ``True`` in this case.
+    type: :class:`ChannelType`
+        The type of private channel.
+    owner: Optional[:class:`User`]
+        The user that owns the private channel. If the channel type is not
+        :attr:`ChannelType.group` then this is always ``None``.
+    icon: Optional[str]
+        The private channel's icon hash. If the channel type is not
+        :attr:`ChannelType.group` then this is always ``None``.
+    name: Optional[str]
+        The private channel's name. If the channel type is not
+        :attr:`ChannelType.group` then this is always ``None``.
     """
 
-    __slots__ = ['user', 'id', 'is_private']
+    __slots__ = ['id', 'is_private', 'recipients', 'type', 'owner', 'icon', 'name']
 
-    def __init__(self, user, id, **kwargs):
-        self.user = user
-        self.id = id
+    def __init__(self, me, **kwargs):
+        self.recipients = [User(**u) for u in kwargs['recipients']]
+        self.id = kwargs['id']
         self.is_private = True
+        self.type = ChannelType(kwargs['type'])
+
+        owner_id = kwargs.get('owner_id')
+        self.owner = None
+        self.icon = kwargs.get('icon')
+        self.name = kwargs.get('name')
+
+        self.recipients = []
+        for data in kwargs['recipients']:
+            to_add = User(**data)
+            if to_add.id == owner_id:
+                self.owner = to_add
+            self.recipients.append(to_add)
+
+        if owner_id == me.id:
+            self.owner = me
 
     def __str__(self):
         return 'Direct Message with {0.name}'.format(self.user)
+
+    @property
+    def user(self):
+        """A property that returns the first recipient of the private channel.
+
+        This is mainly for compatibility and ease of use with old style private
+        channels that had a single recipient.
+        """
+        return self.recipients[0]
+
+    @property
+    def icon_url(self):
+        """Returns the channel's icon URL if available or an empty string otherwise."""
+        if self.icon is None:
+            return ''
+
+        return 'https://cdn.discordapp.com/channel-icons/{0.id}/{0.icon}.jpg'.format(self)
 
     @property
     def created_at(self):
@@ -332,7 +377,9 @@ class PrivateChannel(Hashable):
 
         - send_tts_messages: You cannot send TTS messages in a PM.
         - manage_messages: You cannot delete others messages in a PM.
-        - mention_everyone: There is no one to mention in a PM.
+
+        This also handles permissions for :attr:`ChannelType.group` channels
+        such as kicking or mentioning everyone.
 
         Parameters
         -----------
@@ -348,7 +395,11 @@ class PrivateChannel(Hashable):
         base = Permissions.text()
         base.send_tts_messages = False
         base.manage_messages = False
-        base.mention_everyone = False
+        base.mention_everyone = self.type is ChannelType.group
+
+        if user == self.owner:
+            base.kick_members = True
+
         return base
 
 

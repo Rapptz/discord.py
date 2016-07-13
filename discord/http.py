@@ -53,7 +53,7 @@ class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
 
     BASE          = 'https://discordapp.com'
-    API_BASE      = BASE     + '/api'
+    API_BASE      = BASE     + '/api/v6'
     GATEWAY       = API_BASE + '/gateway'
     USERS         = API_BASE + '/users'
     ME            = USERS    + '/@me'
@@ -500,4 +500,4 @@ class HTTPClient:
             data = yield from self.get(self.GATEWAY, bucket=_func_())
         except HTTPException as e:
             raise GatewayNotFound() from e
-        return data.get('url') + '?encoding=json&v=5'
+        return data.get('url') + '?encoding=json&v=6'

@@ -98,7 +98,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         }
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
-    """Implements a WebSocket for Discord's gateway v4.
+    """Implements a WebSocket for Discord's gateway v6.
 
     This is created through :func:`create_main_websocket`. Library
     users should never create this manually.

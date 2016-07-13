@@ -205,8 +205,7 @@ class ConnectionState:
                 servers.append(server)
 
         for pm in data.get('private_channels'):
-            self._add_private_channel(PrivateChannel(id=pm['id'],
-                                     user=User(**pm['recipient'])))
+            self._add_private_channel(PrivateChannel(self.user, **pm))
 
         compat.create_task(self._delay_ready(), loop=self.loop)
 
@@ -303,9 +302,7 @@ class ConnectionState:
         is_private = data.get('is_private', False)
         channel = None
         if is_private:
-            recipient = User(**data.get('recipient'))
-            pm_id = data.get('id')
-            channel = PrivateChannel(id=pm_id, user=recipient)
+            channel = PrivateChannel(self.user, **data)
             self._add_private_channel(channel)
         else:
             server = self._get_server(data.get('guild_id'))
