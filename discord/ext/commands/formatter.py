@@ -160,7 +160,7 @@ class HelpFormatter:
         try:
             commands = self.command.commands if not self.is_cog() else self.context.bot.commands
             if commands:
-                return max(map(lambda c: len(c.name), commands.values()))
+                return max(map(lambda c: len(c.name) if self.show_hidden or not c.hidden else 0, commands.values()))
             return 0
         except AttributeError:
             return len(self.command.name)
