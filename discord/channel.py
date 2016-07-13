@@ -325,21 +325,13 @@ class PrivateChannel(Hashable):
         self.id = kwargs['id']
         self.is_private = True
         self.type = ChannelType(kwargs['type'])
+        self._update_group(**kwargs)
 
+    def _update_group(self, **kwargs):
         owner_id = kwargs.get('owner_id')
-        self.owner = None
         self.icon = kwargs.get('icon')
         self.name = kwargs.get('name')
-
-        self.recipients = []
-        for data in kwargs['recipients']:
-            to_add = User(**data)
-            if to_add.id == owner_id:
-                self.owner = to_add
-            self.recipients.append(to_add)
-
-        if owner_id == me.id:
-            self.owner = me
+        self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
     def __str__(self):
         return 'Direct Message with {0.name}'.format(self.user)
