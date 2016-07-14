@@ -35,6 +35,14 @@ class ChannelType(Enum):
     def __str__(self):
         return self.name
 
+class MessageType(Enum):
+    default             = 0
+    recipient_add       = 1
+    recipient_remove    = 2
+    call                = 3
+    channel_name_change = 4
+    channel_icon_change = 5
+
 class ServerRegion(Enum):
     us_west = 'us-west'
     us_east = 'us-east'

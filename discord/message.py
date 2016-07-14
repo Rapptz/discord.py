@@ -27,7 +27,9 @@ DEALINGS IN THE SOFTWARE.
 from . import utils
 from .user import User
 from .object import Object
+from .calls import CallMessage
 import re
+from .enums import MessageType, try_enum
 
 class Message:
     """Represents a message from Discord.
@@ -42,6 +44,9 @@ class Message:
         A naive UTC datetime object containing the time the message was created.
     tts : bool
         Specifies if the message was done with text-to-speech.
+    type: :class:`MessageType`
+        The type of message. In most cases this should not be checked, but it is helpful
+        in cases where it might be a system message for :attr:`system_content`.
     author
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel, then it is a :class:`User` instead.
@@ -62,6 +67,9 @@ class Message:
         For the sake of convenience, this :class:`Object` instance has an attribute ``is_private`` set to ``True``.
     server : Optional[:class:`Server`]
         The server that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
+    call: Optional[:class:`CallMessage`]
+        The call that the message refers to. This is only applicable to messages of type
+        :attr:`MessageType.call`.
     mention_everyone : bool
         Specifies if the message mentions everyone.
 
@@ -71,9 +79,11 @@ class Message:
             Rather this boolean indicates if the ``@everyone`` text is in the message
             **and** it did end up mentioning everyone.
 
-    mentions : list
+    mentions: list
         A list of :class:`Member` that were mentioned. If the message is in a private message
-        then the list is always empty.
+        then the list will be of :class:`User` instead. For messages that are not of type
+        :attr:`MessageType.default`\, this array can be used to aid in system messages.
+        For more information, see :attr:`system_content`.
 
         .. warning::
 
@@ -98,7 +108,8 @@ class Message:
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   'channel_mentions', 'server', '_raw_mentions', 'attachments',
                   '_clean_content', '_raw_channel_mentions', 'nonce', 'pinned',
-                  'role_mentions', '_raw_role_mentions' ]
+                  'role_mentions', '_raw_role_mentions', 'type', 'call',
+                  '_system_content' ]
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -120,8 +131,10 @@ class Message:
         self.author = User(**data.get('author', {}))
         self.nonce = data.get('nonce')
         self.attachments = data.get('attachments')
+        self.type = try_enum(MessageType, data.get('type'))
         self._handle_upgrades(data.get('channel_id'))
         self._handle_mentions(data.get('mentions', []), data.get('mention_roles', []))
+        self._handle_call(data.get('call'))
 
         # clear the cached properties
         cached = filter(lambda attr: attr[0] == '_', self.__slots__)
@@ -136,16 +149,16 @@ class Message:
         self.channel_mentions = []
         self.role_mentions = []
         if getattr(self.channel, 'is_private', True):
+            self.mentions = [User(**m) for m in mentions]
             return
 
-        if self.channel is not None:
+        if self.server is not None:
             for mention in mentions:
                 id_search = mention.get('id')
                 member = self.server.get_member(id_search)
                 if member is not None:
                     self.mentions.append(member)
 
-        if self.server is not None:
             it = filter(None, map(lambda m: self.server.get_channel(m), self.raw_channel_mentions))
             self.channel_mentions = utils._unique(it)
 
@@ -153,6 +166,26 @@ class Message:
                 role = utils.get(self.server.roles, id=role_id)
                 if role is not None:
                     self.role_mentions.append(role)
+
+    def _handle_call(self, call):
+        if call is None or self.type is not MessageType.call:
+            self.call = None
+            return
+
+        # we get the participant source from the mentions array or
+        # the author
+
+        participants = []
+        for uid in call.get('participants', []):
+            if uid == self.author.id:
+                participants.append(self.author)
+            else:
+                user = utils.find(lambda u: u.id == uid, self.mentions)
+                if user is not None:
+                    participants.append(user)
+
+        call['participants'] = participants
+        self.call = CallMessage(channel=self.channel, **call)
 
     @utils.cached_slot_property('_raw_mentions')
     def raw_mentions(self):
@@ -248,3 +281,41 @@ class Message:
             found = self.server.get_member(self.author.id)
             if found is not None:
                 self.author = found
+
+    @utils.cached_slot_property('_system_content')
+    def system_content(self):
+        """A property that returns the content that is rendered
+        regardless of the :attr:`Message.type`.
+
+        In the case of :attr:`MessageType.default`\, this just returns the
+        regular :attr:`Message.content`. Otherwise this returns an English
+        message denoting the contents of the system message.
+        """
+
+        if self.type is MessageType.default:
+            return self.content
+
+        if self.type is MessageType.recipient_add:
+            return '{0.name} added {1.name} to the group.'.format(self.author, self.mentions[0])
+
+        if self.type is MessageType.recipient_remove:
+            return '{0.name} removed {1.name} from the group.'.format(self.author, self.mentions[0])
+
+        if self.type is MessageType.channel_name_change:
+            return '{0.author.name} changed the channel name: {0.content}'.format(self)
+
+        if self.type is MessageType.channel_icon_change:
+            return '{0.author.name} changed the channel icon.'.format(self)
+
+        # we're at the call message type now, which is a bit more complicated.
+        # we can make the assumption that Message.channel is a PrivateChannel
+        # with the type ChannelType.group or ChannelType.private
+        call_ended = self.call.ended_timestamp is not None
+
+        if call_ended:
+            if self.channel.me in self.call.participants:
+                return '{0.author.name} started a call.'.format(self)
+            else:
+                return 'You missed a call from {0.author.name}'.format(self)
+        else:
+            return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)

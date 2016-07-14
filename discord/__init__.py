@@ -25,6 +25,7 @@ from .server import Server
 from .member import Member
 from .message import Message
 from .errors import *
+from .calls import CallMessage
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role
 from .colour import Color, Colour
@@ -32,7 +33,7 @@ from .invite import Invite
 from .object import Object
 from . import utils, opus, compat
 from .voice_client import VoiceClient
-from .enums import ChannelType, ServerRegion, Status
+from .enums import ChannelType, ServerRegion, Status, MessageType
 from collections import namedtuple
 
 import logging

@@ -398,6 +398,33 @@ All enumerations are subclasses of `enum`_.
 
         A private group text channel.
 
+.. class:: MessageType
+
+    Specifies the type of :class:`Message`. This is used to denote if a message
+    is to be interpreted as a system message or a regular message.
+
+    .. attribute:: default
+
+        The default message type. This is the same as regular messages.
+    .. attribute:: recipient_add
+
+        The system message when a recipient is added to a group private
+        message, i.e. a private channel of type :attr:`ChannelType.group`.
+    .. attribute:: recipient_remove
+
+        The system message when a recipient is removed from a group private
+        message, i.e. a private channel of type :attr:`ChannelType.group`.
+    .. attribute:: call
+
+        The system message denoting call state, e.g. missed call, started call,
+        etc.
+    .. attribute:: channel_name_change
+
+        The system message denoting that a channel's name has been changed.
+    .. attribute:: channel_icon_change
+
+        The system message denoting that a channel's icon has been changed.
+
 .. class:: ServerRegion
 
     Specifies the region a :class:`Server`'s voice server belongs to.
@@ -486,6 +513,12 @@ Message
 ~~~~~~~
 
 .. autoclass:: Message
+    :members:
+
+CallMessage
+~~~~~~~~~~~~
+
+.. autoclass:: CallMessage
     :members:
 
 Server

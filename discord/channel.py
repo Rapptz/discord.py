@@ -301,6 +301,8 @@ class PrivateChannel(Hashable):
     ----------
     recipients: list of :class:`User`
         The users you are participating with in the private channel.
+    me: :class:`User`
+        The user presenting yourself.
     id: str
         The private channel ID.
     is_private: bool
@@ -318,11 +320,12 @@ class PrivateChannel(Hashable):
         :attr:`ChannelType.group` then this is always ``None``.
     """
 
-    __slots__ = ['id', 'is_private', 'recipients', 'type', 'owner', 'icon', 'name']
+    __slots__ = ['id', 'is_private', 'recipients', 'type', 'owner', 'icon', 'name', 'me']
 
     def __init__(self, me, **kwargs):
         self.recipients = [User(**u) for u in kwargs['recipients']]
         self.id = kwargs['id']
+        self.me = me
         self.is_private = True
         self.type = ChannelType(kwargs['type'])
         self._update_group(**kwargs)

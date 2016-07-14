@@ -238,7 +238,10 @@ class ConnectionState:
         message = self._get_message(data.get('id'))
         if message is not None:
             older_message = copy.copy(message)
-            if 'content' not in data:
+            if 'call' in data:
+                # call state message edit
+                message._handle_call(data['call'])
+            elif 'content' not in data:
                 # embed only edit
                 message.embeds = data['embeds']
             else:
