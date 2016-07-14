@@ -451,6 +451,19 @@ All enumerations are subclasses of `enum`_.
 
         The Frankfurt region.
 
+    .. attribute:: brazil
+
+        The Brazil region.
+    .. attribute:: vip_us_east
+
+        The US East region for VIP servers.
+    .. attribute:: vip_us_west
+
+        The US West region for VIP servers.
+    .. attribute:: vip_amsterdam
+
+        The Amsterdam region for VIP servers.
+
 .. class:: Status
 
     Specifies a :class:`Member` 's status.

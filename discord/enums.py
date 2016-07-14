@@ -44,15 +44,19 @@ class MessageType(Enum):
     channel_icon_change = 5
 
 class ServerRegion(Enum):
-    us_west = 'us-west'
-    us_east = 'us-east'
-    us_south = 'us-south'
-    us_central = 'us-central'
-    singapore = 'singapore'
-    london = 'london'
-    sydney = 'sydney'
-    amsterdam = 'amsterdam'
-    frankfurt = 'frankfurt'
+    us_west       = 'us-west'
+    us_east       = 'us-east'
+    us_south      = 'us-south'
+    us_central    = 'us-central'
+    singapore     = 'singapore'
+    london        = 'london'
+    sydney        = 'sydney'
+    amsterdam     = 'amsterdam'
+    frankfurt     = 'frankfurt'
+    brazil        = 'brazil'
+    vip_us_east   = 'vip-us-east'
+    vip_us_west   = 'vip-us-west'
+    vip_amsterdam = 'vip-amsterdam'
 
     def __str__(self):
         return self.value
