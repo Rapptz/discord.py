@@ -107,6 +107,8 @@ class GroupCall:
     def _update(self, **kwargs):
         self.region = try_enum(ServerRegion, kwargs.get('region'))
         lookup = {u.id: u for u in self.call.channel.recipients}
+        me = self.call.channel.me
+        lookup[me.id] = me
         self.ringing = list(filter(None, map(lambda i: lookup.get(i), kwargs.get('ringing', []))))
 
     def _update_voice_state(self, data):
