@@ -27,9 +27,55 @@ DEALINGS IN THE SOFTWARE.
 from .user import User
 from .game import Game
 from . import utils
-from .enums import Status
+from .enums import Status, ChannelType
 from .colour import Colour
 
+class VoiceState:
+    """Represents a Discord user's voice state.
+
+    Attributes
+    ------------
+    deaf: bool
+        Indicates if the user is currently deafened by the server.
+    mute: bool
+        Indicates if the user is currently muted by the server.
+    self_mute: bool
+        Indicates if the user is currently muted by their own accord.
+    self_deaf: bool
+        Indicates if the user is currently deafened by their own accord.
+    is_afk: bool
+        Indicates if the user is currently in the AFK channel in the server.
+    voice_channel: Optional[Union[:class:`Channel`, :class:`PrivateChannel`]]
+        The voice channel that the user is currently connected to. None if the user
+        is not currently in a voice channel.
+    """
+
+    __slots__ = [ 'session_id', 'deaf', 'mute', 'self_mute',
+                  'self_deaf', 'is_afk', 'voice_channel' ]
+
+    def __init__(self, **kwargs):
+        self.session_id = kwargs.get('session_id')
+        self._update_voice_state(**kwargs)
+
+    def _update_voice_state(self, **kwargs):
+        self.self_mute = kwargs.get('self_mute', False)
+        self.self_deaf = kwargs.get('self_deaf', False)
+        self.is_afk = kwargs.get('suppress', False)
+        self.mute = kwargs.get('mute', False)
+        self.deaf = kwargs.get('deaf', False)
+        self._handle_voice_channel(kwargs.get('voice_channel'), kwargs.get('user_id'))
+
+    def _handle_voice_channel(self, voice_channel, user_id):
+        self.voice_channel = voice_channel
+
+def flatten_voice_states(cls):
+    for attr in VoiceState.__slots__:
+        def getter(self, x=attr):
+            return getattr(self.voice, x)
+        setattr(cls, attr, property(getter))
+    return cls
+
+@flatten_voice_states
 class Member(User):
     """Represents a Discord member to a :class:`Server`.
 
@@ -38,19 +84,9 @@ class Member(User):
 
     Attributes
     ----------
-    deaf : bool
-        Indicates if the member is currently deafened by the server.
-    mute : bool
-        Indicates if the member is currently muted by the server.
-    self_mute : bool
-        Indicates if the member is currently muted by their own accord.
-    self_deaf : bool
-        Indicates if the member is currently deafened by their own accord.
-    is_afk : bool
-        Indicates if the member is currently in the AFK channel in the server.
-    voice_channel : :class:`Channel`
-        The voice channel that the member is currently connected to. None if the member
-        is not currently in a voice channel.
+    voice: :class:`VoiceState`
+        The member's voice state. Properties are defined to mirror access of the attributes.
+        e.g. ``Member.is_afk`` is equivalent to `Member.voice.is_afk``.
     roles
         A list of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role.
@@ -68,14 +104,11 @@ class Member(User):
         The server specific nickname of the user.
     """
 
-    __slots__ = [ 'deaf', 'mute', 'self_mute', 'self_deaf', 'is_afk',
-                  'voice_channel', 'roles', 'joined_at', 'status', 'game',
-                  'server', 'nick' ]
+    __slots__ = [ 'roles', 'joined_at', 'status', 'game', 'server', 'nick', 'voice' ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs.get('user'))
-        self.deaf = kwargs.get('deaf')
-        self.mute = kwargs.get('mute')
+        self.voice = VoiceState(**kwargs)
         self.joined_at = utils.parse_time(kwargs.get('joined_at'))
         self.roles = kwargs.get('roles', [])
         self.status = Status.offline
@@ -83,14 +116,33 @@ class Member(User):
         self.game = Game(**game) if game else None
         self.server = kwargs.get('server', None)
         self.nick = kwargs.get('nick', None)
-        self._update_voice_state(mute=self.mute, deaf=self.deaf)
 
     def _update_voice_state(self, **kwargs):
-        self.self_mute = kwargs.get('self_mute', False)
-        self.self_deaf = kwargs.get('self_deaf', False)
-        self.is_afk = kwargs.get('suppress', False)
-        self.mute = kwargs.get('mute', False)
-        self.deaf = kwargs.get('deaf', False)
+        self.voice.self_mute = kwargs.get('self_mute', False)
+        self.voice.self_deaf = kwargs.get('self_deaf', False)
+        self.voice.is_afk = kwargs.get('suppress', False)
+        self.voice.mute = kwargs.get('mute', False)
+        self.voice.deaf = kwargs.get('deaf', False)
+        old_channel = getattr(self, 'voice_channel', None)
+        vc = kwargs.get('voice_channel')
+
+        if old_channel is None and vc is not None:
+            # we joined a channel
+            vc.voice_members.append(self)
+        elif old_channel is not None:
+            try:
+                # we either left a channel or we switched channels
+                old_channel.voice_members.remove(self)
+            except ValueError:
+                pass
+            finally:
+                # we switched channels
+                if vc is not None:
+                    vc.voice_members.append(self)
+
+        self.voice.voice_channel = vc
+
+    def _handle_voice_channel(self, voice_channel, user_id):
         old_channel = getattr(self, 'voice_channel', None)
         self.voice_channel = kwargs.get('voice_channel')
 

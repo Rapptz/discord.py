@@ -25,7 +25,7 @@ from .server import Server
 from .member import Member
 from .message import Message
 from .errors import *
-from .calls import CallMessage
+from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role
 from .colour import Color, Colour

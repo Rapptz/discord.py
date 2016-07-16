@@ -543,6 +543,12 @@ CallMessage
 .. autoclass:: CallMessage
     :members:
 
+GroupCall
+~~~~~~~~~~
+
+.. autoclass:: GroupCall
+    :members:
+
 Server
 ~~~~~~
 
