@@ -185,7 +185,7 @@ class Message:
                     participants.append(user)
 
         call['participants'] = participants
-        self.call = CallMessage(channel=self.channel, **call)
+        self.call = CallMessage(message=self, **call)
 
     @utils.cached_slot_property('_raw_mentions')
     def raw_mentions(self):

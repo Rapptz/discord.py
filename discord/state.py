@@ -601,7 +601,7 @@ class ConnectionState:
     def parse_call_create(self, data):
         message = self._get_message(data.get('message_id'))
         if message is not None:
-            call = GroupCall(message=message, **data)
+            call = GroupCall(call=message, **data)
             self._calls[data['channel_id']] = call
             self.dispatch('call', call)
 

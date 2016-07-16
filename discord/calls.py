@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import utils
+import datetime
 from .enums import ServerRegion, try_enum
 from .member import VoiceState
 
@@ -40,14 +41,41 @@ class CallMessage:
         A naive UTC datetime object that represents the time that the call has ended.
     participants: List[:class:`User`]
         The list of users that are participating in this call.
-    channel: :class:`PrivateChannel`
-        The private channel associated with this call.
+    message: :class:`Message`
+        The message associated with this call message.
     """
 
-    def __init__(self, channel, **kwargs):
-        self.channel = channel
+    def __init__(self, message, **kwargs):
+        self.message = message
         self.ended_timestamp = utils.parse_time(kwargs.get('ended_timestamp'))
         self.participants = kwargs.get('participants')
+
+    @property
+    def call_ended(self):
+        """bool: Indicates if the call has ended."""
+        return self.ended_timestamp is not None
+
+    @property
+    def channel(self):
+        """:class:`PrivateChannel`\: The private channel associated with this message."""
+        return self.message.channel
+
+    @property
+    def duration(self):
+        """Queries the duration of the call.
+
+        If the call has not ended then the current duration will
+        be returned.
+
+        Returns
+        ---------
+        datetime.timedelta
+            The timedelta object representing the duration.
+        """
+        if self.ended_timestamp is None:
+            return datetime.datetime.utcnow() - self.message.timestamp
+        else:
+            return self.ended_timestamp - self.message.timestamp
 
 class GroupCall:
     """Represents the actual group call from Discord.
@@ -56,8 +84,8 @@ class GroupCall:
 
     Attributes
     -----------
-    message: :class:`CallMessage`
-        The message associated with this group call.
+    call: :class:`CallMessage`
+        The call message associated with this group call.
     unavailable: bool
         Denotes if this group call is unavailable.
     ringing: List[:class:`User`]
@@ -67,7 +95,7 @@ class GroupCall:
     """
 
     def __init__(self, **kwargs):
-        self.message = kwargs.get('message')
+        self.call = kwargs.get('call')
         self.unavailable = kwargs.get('unavailable')
         self._voice_states = {}
 
@@ -78,7 +106,7 @@ class GroupCall:
 
     def _update(self, **kwargs):
         self.region = try_enum(ServerRegion, kwargs.get('region'))
-        lookup = {u.id: u for u in self.message.channel.recipients}
+        lookup = {u.id: u for u in self.call.channel.recipients}
         self.ringing = list(filter(None, map(lambda i: lookup.get(i), kwargs.get('ringing', []))))
 
     def _update_voice_state(self, data):
@@ -102,7 +130,7 @@ class GroupCall:
     @property
     def channel(self):
         """:class:`PrivateChannel`\: Returns the channel the group call is in."""
-        return self.message.channel
+        return self.call.channel
 
     def voice_state_for(self, user):
         """Retrieves the :class:`VoiceState` for a specified :class:`User`.
