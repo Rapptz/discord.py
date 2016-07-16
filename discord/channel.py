@@ -294,7 +294,7 @@ class PrivateChannel(Hashable):
     +-----------+-------------------------------------------------+
     | hash(x)   | Returns the channel's hash.                     |
     +-----------+-------------------------------------------------+
-    | str(x)    | Returns the string "Direct Message with <User>" |
+    | str(x)    | Returns a string representation of the channel  |
     +-----------+-------------------------------------------------+
 
     Attributes
@@ -320,13 +320,12 @@ class PrivateChannel(Hashable):
         :attr:`ChannelType.group` then this is always ``None``.
     """
 
-    __slots__ = ['id', 'is_private', 'recipients', 'type', 'owner', 'icon', 'name', 'me']
+    __slots__ = ['id', 'recipients', 'type', 'owner', 'icon', 'name', 'me']
 
     def __init__(self, me, **kwargs):
         self.recipients = [User(**u) for u in kwargs['recipients']]
         self.id = kwargs['id']
         self.me = me
-        self.is_private = True
         self.type = ChannelType(kwargs['type'])
         self._update_group(**kwargs)
 
@@ -336,8 +335,21 @@ class PrivateChannel(Hashable):
         self.name = kwargs.get('name')
         self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
+    @property
+    def is_private(self):
+        return True
+
     def __str__(self):
-        return 'Direct Message with {0.name}'.format(self.user)
+        if self.type is ChannelType.private:
+            return 'Direct Message with {0.name}'.format(self.user)
+
+        if self.name:
+            return self.name
+
+        if len(self.recipients) == 0:
+            return 'Unnamed'
+
+        return ', '.join(map(lambda x: x.name, self.recipients))
 
     @property
     def user(self):
