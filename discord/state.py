@@ -325,6 +325,22 @@ class ConnectionState:
 
         self.dispatch('channel_create', channel)
 
+    def parse_channel_recipient_add(self, data):
+        channel = self._get_private_channel(data.get('channel_id'))
+        user = User(**data.get('user', {}))
+        channel.recipients.append(user)
+        self.dispatch('group_join', channel, user)
+
+    def parse_channel_recipient_remove(self, data):
+        channel = self._get_private_channel(data.get('channel_id'))
+        user = User(**data.get('user', {}))
+        try:
+            channel.recipients.remove(user)
+        except ValueError:
+            pass
+        else:
+            self.dispatch('group_remove', channel, user)
+
     def _make_member(self, server, data):
         roles = [server.default_role]
         for roleid in data.get('roles', []):
@@ -479,7 +495,6 @@ class ConnectionState:
 
         self._remove_server(server)
         self.dispatch('server_remove', server)
-
 
     def parse_guild_ban_add(self, data):
         # we make the assumption that GUILD_BAN_ADD is done

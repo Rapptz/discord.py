@@ -331,6 +331,15 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param user: The user that started typing.
     :param when: A ``datetime.datetime`` object representing when typing started.
 
+.. function:: on_group_join(channel, user)
+              on_group_remove(channel, user)
+
+    Called when someone joins or leaves a group, i.e. a :class:`PrivateChannel`
+    with a :attr:`PrivateChannel.type` of :attr:`ChannelType.group`.
+
+    :param channel: The group that the user joined or left.
+    :param user: The user that joined or left.
+
 .. _discord-api-utils:
 
 Utility Functions
