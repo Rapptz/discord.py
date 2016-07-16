@@ -312,10 +312,9 @@ class Message:
         # with the type ChannelType.group or ChannelType.private
         call_ended = self.call.ended_timestamp is not None
 
-        if call_ended:
-            if self.channel.me in self.call.participants:
-                return '{0.author.name} started a call.'.format(self)
-            else:
-                return 'You missed a call from {0.author.name}'.format(self)
+        if self.channel.me in self.call.participants:
+            return '{0.author.name} started a call.'.format(self)
+        elif call_ended:
+            return 'You missed a call from {0.author.name}'.format(self)
         else:
             return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
