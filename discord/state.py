@@ -312,9 +312,9 @@ class ConnectionState:
                 self.dispatch('channel_update', old_channel, channel)
 
     def parse_channel_create(self, data):
-        is_private = data.get('is_private', False)
+        ch_type = try_enum(ChannelType, data.get('type'))
         channel = None
-        if is_private:
+        if ch_type in (ChannelType.group, ChannelType.private):
             channel = PrivateChannel(self.user, **data)
             self._add_private_channel(channel)
         else:
