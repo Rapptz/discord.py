@@ -279,6 +279,7 @@ class ConnectionState:
         member.game = Game(**game) if game else None
         member.name = user.get('username', member.name)
         member.avatar = user.get('avatar', member.avatar)
+        member.discriminator = user.get('discriminator', member.discriminator)
 
         self.dispatch('member_update', old_member, member)
 
