@@ -377,6 +377,10 @@ Application Info
         A property that retrieves the application's icon URL if it exists.
 
         If it doesn't exist an empty string is returned.
+    .. attribute:: owner
+
+        The owner of the application. This is a :class:`User` instance
+        with the owner's information at the time of the call.
 
 .. _discord-api-enums:
 

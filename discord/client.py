@@ -61,7 +61,7 @@ log = logging.getLogger(__name__)
 request_logging_format = '{method} {response.url} has returned {response.status}'
 request_success_log = '{response.url} with {json} received {data}'
 
-AppInfo = namedtuple('AppInfo', 'id name description icon')
+AppInfo = namedtuple('AppInfo', 'id name description icon owner')
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
     if not self.icon:
@@ -2688,6 +2688,7 @@ class Client:
         """
         data = yield from self.http.application_info()
         return AppInfo(id=data['id'], name=data['name'],
-                       description=data['description'], icon=data['icon'])
+                       description=data['description'], icon=data['icon'],
+                       owner=User(**data['owner']))
 
 
