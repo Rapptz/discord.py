@@ -117,7 +117,8 @@ class GroupCall:
         if data['channel_id'] is None:
             self._voice_states.pop(user_id, None)
         else:
-            self._voice_states[user_id] = VoiceState(**data, voice_channel=self.channel)
+            data['voice_channel'] = self.channel
+            self._voice_states[user_id] = VoiceState(**data)
 
     @property
     def connected(self):
