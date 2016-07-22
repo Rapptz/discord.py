@@ -28,7 +28,8 @@ from discord.errors import DiscordException
 
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
-           'DisabledCommand', 'CommandInvokeError', 'TooManyArguments' ]
+           'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
+           'UserInputError' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -47,6 +48,14 @@ class CommandError(DiscordException):
         else:
             super().__init__(*args)
 
+class UserInputError(CommandError):
+    """The base exception type for errors that involve errors
+    regarding user input.
+
+    This inherits from :exc:`CommandError`.
+    """
+    pass
+
 class CommandNotFound(CommandError):
     """Exception raised when a command is attempted to be invoked
     but no command under that name is found.
@@ -56,13 +65,19 @@ class CommandNotFound(CommandError):
     """
     pass
 
-class MissingRequiredArgument(CommandError):
+class MissingRequiredArgument(UserInputError):
     """Exception raised when parsing a command and a parameter
     that is required is not encountered.
     """
     pass
 
-class BadArgument(CommandError):
+class TooManyArguments(UserInputError):
+    """Exception raised when the command was passed too many arguments and its
+    :attr:`Command.ignore_extra` attribute was not set to ``True``.
+    """
+    pass
+
+class BadArgument(UserInputError):
     """Exception raised when a parsing or conversion failure is encountered
     on an argument to pass into a command.
     """
@@ -95,8 +110,3 @@ class CommandInvokeError(CommandError):
         self.original = e
         super().__init__('Command raised an exception: {0.__class__.__name__}: {0}'.format(e))
 
-class TooManyArguments(CommandError):
-    """Exception raised when the command was passed too many arguments and its
-    :attr:`Command.ignore_extra` attribute was not set to ``True``.
-    """
-    pass
