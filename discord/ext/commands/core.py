@@ -30,12 +30,14 @@ import discord
 import functools
 
 from .errors import *
+from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
 
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role' ]
+            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+            'cooldown' ]
 
 def inject_context(ctx, coro):
     @functools.wraps(coro)
@@ -142,6 +144,7 @@ class Command:
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
+        self._buckets = CooldownMapping(kwargs.get('cooldown'))
 
     def dispatch_error(self, error, ctx):
         try:
@@ -327,6 +330,12 @@ class Command:
 
         if not self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
+
+        if self._buckets.valid:
+            bucket = self._buckets.get_bucket(ctx)
+            retry_after = bucket.is_rate_limited()
+            if retry_after:
+                raise CommandOnCooldown(bucket, retry_after)
 
     @asyncio.coroutine
     def invoke(self, ctx):
@@ -637,6 +646,12 @@ def command(name=None, cls=None, **attrs):
         except AttributeError:
             checks = []
 
+        try:
+            cooldown = func.__commands_cooldown__
+            del func.__commands_cooldown__
+        except AttributeError:
+            cooldown = None
+
         help_doc = attrs.get('help')
         if help_doc is not None:
             help_doc = inspect.cleandoc(help_doc)
@@ -647,7 +662,7 @@ def command(name=None, cls=None, **attrs):
 
         attrs['help'] = help_doc
         fname = name or func.__name__
-        return cls(name=fname, callback=func, checks=checks, **attrs)
+        return cls(name=fname, callback=func, checks=checks, cooldown=cooldown, **attrs)
 
     return decorator
 
@@ -848,3 +863,41 @@ def bot_has_permissions(**perms):
         permissions = ch.permissions_for(me)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
+
+def cooldown(rate, per, type=BucketType.default):
+    """A decorator that adds a cooldown to a :class:`Command`
+    or its subclasses.
+
+    A cooldown allows a command to only be used a specific amount
+    of times in a specific time frame. These cooldowns can be based
+    either on a per-server, per-channel, per-user, or global basis.
+    Denoted by the third argument of ``type`` which must be of enum
+    type ``BucketType`` which could be either:
+
+    - ``BucketType.default`` for a global basis.
+    - ``BucketType.user`` for a per-user basis.
+    - ``BucketType.server`` for a per-server basis.
+    - ``BucketType.channel`` for a per-channel basis.
+
+    If a cooldown is triggered, then :exc:`CommandOnCooldown` is triggered in
+    :func:`on_command_error` and the local error handler.
+
+    A command can only have a single cooldown.
+
+    Parameters
+    ------------
+    rate: int
+        The number of times a command can be used before triggering a cooldown.
+    per: float
+        The amount of seconds to wait for a cooldown when it's been triggered.
+    type: ``BucketType``
+        The type of cooldown to have.
+    """
+
+    def decorator(func):
+        if isinstance(func, Command):
+            func.cooldown = Cooldown(rate, per, type)
+        else:
+            func.__commands_cooldown__ = Cooldown(rate, per, type)
+        return func
+    return decorator
