@@ -896,7 +896,7 @@ def cooldown(rate, per, type=BucketType.default):
 
     def decorator(func):
         if isinstance(func, Command):
-            func.cooldown = Cooldown(rate, per, type)
+            func._buckets = CooldownMapping(Cooldown(rate, per, type))
         else:
             func.__commands_cooldown__ = Cooldown(rate, per, type)
         return func
