@@ -142,24 +142,6 @@ class Member(User):
 
         self.voice.voice_channel = vc
 
-    def _handle_voice_channel(self, voice_channel, user_id):
-        old_channel = getattr(self, 'voice_channel', None)
-        self.voice_channel = kwargs.get('voice_channel')
-
-        if old_channel is None and self.voice_channel is not None:
-            # we joined a channel
-            self.voice_channel.voice_members.append(self)
-        elif old_channel is not None:
-            try:
-                # we either left a channel or we switched channels
-                old_channel.voice_members.remove(self)
-            except ValueError:
-                pass
-            finally:
-                # we switched channels
-                if self.voice_channel is not None:
-                    self.voice_channel.voice_members.append(self)
-
     @property
     def colour(self):
         """A property that returns a :class:`Colour` denoting the rendered colour
