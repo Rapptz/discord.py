@@ -37,10 +37,11 @@ class BucketType(enum.Enum):
 class Cooldown:
     __slots__ = ['rate', 'per', 'type', '_window', '_tokens', '_last']
 
-    def __init__(self, rate, per, type):
+    def __init__(self, rate, per, type, **kwargs):
         self.rate = int(rate)
         self.per = float(per)
         self.type = type
+        self.bypass_checks = kwargs.get('bypass_checks', [])
         self._window = 0.0
         self._tokens = self.rate
 
@@ -83,9 +84,16 @@ class CooldownMapping:
         self._cache = {}
         self._cooldown = original
 
-    @property
-    def valid(self):
-        return self._cooldown is not None
+    def is_valid(self, ctx):
+        if self._cooldown is None:
+            return False
+
+        # check if we are supposed to ignore the cooldown
+        predicates = self._cooldown.bypass_checks
+        if predicates and all(predicate(ctx) for predicate in predicates):
+            return False
+
+        return True
 
     def _bucket_key(self, ctx):
         msg = ctx.message

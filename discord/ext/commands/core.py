@@ -331,7 +331,7 @@ class Command:
         if not self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
-        if self._buckets.valid:
+        if self._buckets.is_valid(ctx):
             bucket = self._buckets.get_bucket(ctx)
             retry_after = bucket.is_rate_limited()
             if retry_after:
@@ -864,7 +864,7 @@ def bot_has_permissions(**perms):
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
 
-def cooldown(rate, per, type=BucketType.default):
+def cooldown(rate, per, type=BucketType.default, **kwargs):
     """A decorator that adds a cooldown to a :class:`Command`
     or its subclasses.
 
@@ -892,12 +892,15 @@ def cooldown(rate, per, type=BucketType.default):
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: ``BucketType``
         The type of cooldown to have.
+    bypass_checks
+        A list of predicates that checks if the cooldown could be bypassed
+        with the given :class:`Context` as the sole parameter.
     """
 
     def decorator(func):
         if isinstance(func, Command):
-            func._buckets = CooldownMapping(Cooldown(rate, per, type))
+            func._buckets = CooldownMapping(Cooldown(rate, per, type, **kwargs))
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per, type)
+            func.__commands_cooldown__ = Cooldown(rate, per, type, **kwargs)
         return func
     return decorator
