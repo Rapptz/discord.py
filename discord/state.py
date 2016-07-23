@@ -268,7 +268,7 @@ class ConnectionState:
             member = self._make_member(server, data)
             server._add_member(member)
 
-        old_member = copy.copy(member)
+        old_member = member._copy()
         member.status = data.get('status')
         try:
             member.status = Status(member.status)
@@ -385,7 +385,7 @@ class ConnectionState:
         member = server.get_member(user_id)
         if member is not None:
             user = data['user']
-            old_member = copy.copy(member)
+            old_member = member._copy()
             member.name = user['username']
             member.discriminator = user['discriminator']
             member.avatar = user['avatar']
