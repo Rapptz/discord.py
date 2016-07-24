@@ -565,6 +565,12 @@ Member
 .. autoclass:: Member
     :members:
 
+VoiceState
+~~~~~~~~~~~
+
+.. autoclass:: VoiceState
+    :members:
+
 Colour
 ~~~~~~
 

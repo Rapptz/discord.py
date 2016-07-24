@@ -22,7 +22,7 @@ from .user import User
 from .game import Game
 from .channel import Channel, PrivateChannel
 from .server import Server
-from .member import Member
+from .member import Member, VoiceState
 from .message import Message
 from .errors import *
 from .calls import CallMessage, GroupCall
