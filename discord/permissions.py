@@ -127,7 +127,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b00011111111100111111110000111111)
+        return cls(0b00011111111101111111110000111111)
 
     @classmethod
     def all_channel(cls):
@@ -142,7 +142,7 @@ class Permissions:
         - change_nicknames
         - manage_nicknames
         """
-        return cls(0b00010011111100111111110000010001)
+        return cls(0b00010011111101111111110000010001)
 
     @classmethod
     def general(cls):
@@ -154,7 +154,7 @@ class Permissions:
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Text" permissions from the official Discord UI set to True."""
-        return cls(0b00000000000000111111110000000000)
+        return cls(0b00000000000001111111110000000000)
 
     @classmethod
     def voice(cls):
@@ -322,7 +322,16 @@ class Permissions:
     def mention_everyone(self, value):
         self._set(17, value)
 
-    # 2 unused
+    @property
+    def external_emojis(self):
+        """Returns True if a user can use emojis from other servers."""
+        return self._bit(18)
+
+    @external_emojis.setter
+    def external_emojis(self, value):
+        self._set(18, value)
+
+    # 1 unused
 
     @property
     def connect(self):
