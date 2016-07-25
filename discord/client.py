@@ -767,7 +767,7 @@ class Client:
             raise InvalidArgument('user argument must be a User')
 
         data = yield from self.http.start_private_message(user.id)
-        channel = PrivateChannel(me=self.user, id=data['id'], user=user)
+        channel = PrivateChannel(me=self.user, **data)
         self.connection._add_private_channel(channel)
         return channel
 
