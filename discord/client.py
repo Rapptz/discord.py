@@ -981,9 +981,9 @@ class Client:
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        You must have Manage Messages permission to delete messages that aren't
-        your own. The Read Message History permission is also needed to retrieve
-        message history.
+        You must have Manage Messages permission to delete messages even if they
+        are your own. The Read Message History permission is also needed to
+        retrieve message history.
 
         Usable only by bot accounts.
 
