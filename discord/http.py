@@ -411,6 +411,20 @@ class HTTPClient:
         url = '{0.GUILDS}/{1}/bans'.format(self, guild_id)
         return self.get(url, bucket=_func_())
 
+    def prune_members(self, guild_id, days):
+        url = '{0.GUILDS}/{1}/prune'.format(self, guild_id)
+        params = {
+            'days': days
+        }
+        return self.post(url, params=params, bucket=_func_())
+
+    def estimate_pruned_members(self, guild_id, days):
+        url = '{0.GUILDS}/{1}/prune'.format(self, guild_id)
+        params = {
+            'days': days
+        }
+        return self.get(url, params=params, bucket=_func_())
+
     # Invite management
 
     def create_invite(self, channel_id, **options):

@@ -1954,7 +1954,6 @@ class Client:
 
         yield from self.http.edit_server(server.id, **fields)
 
-
     @asyncio.coroutine
     def get_bans(self, server):
         """|coro|
@@ -1984,6 +1983,84 @@ class Client:
 
         data = yield from self.http.get_bans(server.id)
         return [User(**user['user']) for user in data]
+
+    @asyncio.coroutine
+    def prune_members(self, server, *, days):
+        """|coro|
+
+        Prunes a :class:`Server` from its inactive members.
+
+        The inactive members are denoted if they have not logged on in
+        ``days`` number of days and they have no roles.
+
+        You must have the "Kick Members" permission to use this.
+
+        To check how many members you would prune without actually pruning,
+        see the :meth:`estimate_pruned_members` function.
+
+        Parameters
+        -----------
+        server: :class:`Server`
+            The server to prune from.
+        days: int
+            The number of days before counting as inactive.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to prune members.
+        HTTPException
+            An error occurred while pruning members.
+        InvalidArgument
+            An integer was not passed for ``days``.
+
+        Returns
+        ---------
+        int
+            The number of members pruned.
+        """
+
+        if not isinstance(days, int):
+            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+
+        data = yield from self.http.prune_members(server.id, days)
+        return data['pruned']
+
+    @asyncio.coroutine
+    def estimate_pruned_members(self, server, *, days):
+        """|coro|
+
+        Similar to :meth:`prune_members` except instead of actually
+        pruning members, it returns how many members it would prune
+        from the server had it been called.
+
+        Parameters
+        -----------
+        server: :class:`Server`
+            The server to estimate a prune from.
+        days: int
+            The number of days before counting as inactive.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to prune members.
+        HTTPException
+            An error occurred while fetching the prune members estimate.
+        InvalidArgument
+            An integer was not passed for ``days``.
+
+        Returns
+        ---------
+        int
+            The number of members estimated to be pruned.
+        """
+
+        if not isinstance(days, int):
+            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+
+        data = yield from self.http.estimate_pruned_members(server.id, days)
+        return data['pruned']
 
     # Invite management
 
