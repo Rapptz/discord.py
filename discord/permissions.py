@@ -388,12 +388,12 @@ class Permissions:
         self._set(25, value)
 
     @property
-    def change_nicknames(self):
+    def change_nickname(self):
         """Returns True if a user can change their nickname in the server."""
         return self._bit(26)
 
-    @change_nicknames.setter
-    def change_nicknames(self, value):
+    @change_nickname.setter
+    def change_nickname(self, value):
         self._set(26, value)
 
     @property
