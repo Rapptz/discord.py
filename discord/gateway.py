@@ -303,6 +303,11 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         if op == self.HEARTBEAT_ACK:
             return # disable noisy logging for now
 
+        if op == self.HEARTBEAT:
+            beat = self._keep_alive.get_payload()
+            yield from self.send_as_json(beat)
+            return
+
         if op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
