@@ -15,7 +15,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2016 Rapptz'
-__version__ = '0.10.0'
+__version__ = '0.11.0'
 
 from .client import Client, AppInfo, ChannelPermissions
 from .user import User
@@ -40,7 +40,7 @@ import logging
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=0, minor=10, micro=0, releaselevel='final', serial=0)
+version_info = VersionInfo(major=0, minor=11, micro=0, releaselevel='final', serial=0)
 
 try:
     from logging import NullHandler

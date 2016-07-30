@@ -8,6 +8,56 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _v0p11p0:
+
+v0.11.0
+--------
+
+This is a minor bug fix update that comes with a gateway update (v5 -> v6).
+
+Breaking Changes
+~~~~~~~~~~~~~~~~~
+
+- ``Permissions.change_nicknames`` has been renamed to :attr:`Permissions.change_nickname` to match the UI.
+
+New Features
+~~~~~~~~~~~~~
+
+- Add the ability to prune members via :meth:`Client.prune_members`.
+- Switch the websocket gateway version to v6 from v5. This allows the library to work with group DMs and 1-on-1 calls.
+- Add :attr:`AppInfo.owner` attribute.
+- Add :class:`CallMessage` for group voice call messages.
+- Add :class:`GroupCall` for group voice call information.
+- Add :attr:`Message.system_content` to get the system message.
+- Add the remaining VIP servers and the Brazil servers into :class:`ServerRegion` enum.
+- Add ``stderr`` argument to :meth:`VoiceClient.create_ffmpeg_player` to redirect stderr.
+- The library now handles implicit permission resolution in :meth:`Channel.permissions_for`.
+- Add :attr:`Server.mfa_level` to query a server's 2FA requirement.
+- Add :attr:`Permissions.external_emojis` permission.
+- Add :attr:`Member.voice` attribute that refers to a :class:`VoiceState`.
+    - For backwards compatibility, the member object will have properties mirroring the old behaviour.
+
+For the command extension, the following are new:
+
+- Command cooldown system with the ``cooldown`` decorator.
+- ``UserInputError`` exception for the hierarchy for user input related errors.
+
+Bug Fixes
+~~~~~~~~~~
+
+- :attr:`Client.email` is now saved when using a token for user accounts.
+- Fix issue when removing roles out of order.
+- Fix bug where discriminators would not update.
+- Handle cases where ``HEARTBEAT`` opcode is received. This caused bots to disconnect seemingly randomly.
+
+For the command extension, the following bug fixes apply:
+
+- ``Bot.check`` decorator is actually a decorator not requiring parentheses.
+- ``Bot.remove_command`` and ``Group.remove_command`` no longer throw if the command doesn't exist.
+- Command names are no longer forced to be ``lower()``.
+- Fix a bug where Member and User converters failed to work in private message contexts.
+- ``HelpFormatter`` now ignores hidden commands when deciding the maximum width.
+
 .. _v0p10p0:
 
 v0.10.0
