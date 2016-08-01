@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from . import utils
 from .role import Role
 from .member import Member
+from .emoji import Emoji
 from .game import Game
 from .channel import Channel
 from .enums import ServerRegion, Status
@@ -58,6 +59,8 @@ class Server(Hashable):
         This is essentially used to get the member version of yourself.
     roles
         A list of :class:`Role` that the server has available.
+    emojis
+        A list of :class:`Emoji` that the server owns.
     region : :class:`ServerRegion`
         The region the server belongs on. There is a chance that the region
         will be a ``str`` if the value is not recognised by the enumerator.
@@ -94,7 +97,7 @@ class Server(Hashable):
     __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'owner', 'unavailable', 'name', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
-                 'large', 'owner_id', 'mfa_level' ]
+                 'large', 'owner_id', 'mfa_level', 'emojis']
 
     def __init__(self, **kwargs):
         self._channels = {}
@@ -185,6 +188,7 @@ class Server(Hashable):
         self.id = guild['id']
         self.roles = [Role(server=self, **r) for r in guild.get('roles', [])]
         self.mfa_level = guild.get('mfa_level')
+        self.emojis = [Emoji(server=self, **r) for r in guild.get('emojis', [])]
 
         for mdata in guild.get('members', []):
             roles = [self.default_role]

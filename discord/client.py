@@ -523,6 +523,12 @@ class Client:
         """Returns a :class:`Server` with the given ID. If not found, returns None."""
         return self.connection._get_server(id)
 
+    def get_all_emojis(self):
+        """Returns a generator with every :class:`Emoji` the client can see."""
+        for server in self.servers:
+            for emoji in server.emojis:
+                yield emoji
+
     def get_all_channels(self):
         """A generator that retrieves every :class:`Channel` the client can 'access'.
 

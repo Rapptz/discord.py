@@ -20,6 +20,7 @@ __version__ = '0.11.0'
 from .client import Client, AppInfo, ChannelPermissions
 from .user import User
 from .game import Game
+from .emoji import Emoji
 from .channel import Channel, PrivateChannel
 from .server import Server
 from .member import Member, VoiceState

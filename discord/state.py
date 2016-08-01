@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .server import Server
 from .user import User
 from .game import Game
+from .emoji import Emoji
 from .message import Message
 from .channel import Channel, PrivateChannel
 from .member import Member
@@ -405,6 +406,12 @@ class ConnectionState:
             # sort the roles by ID since they can be "randomised"
             member.roles.sort(key=lambda r: int(r.id))
             self.dispatch('member_update', old_member, member)
+
+    def parse_guild_emojis_update(self, data):
+        server = self._get_server(data.get('guild_id'))
+        before_emojis = server.emojis
+        server.emojis = [Emoji(server=server, **e) for e in data.get('emojis', [])]
+        self.dispatch('server_emojis_update', before_emojis, server.emojis)
 
     def _get_create_server(self, data):
         if data.get('unavailable') == False:
