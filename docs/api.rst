@@ -280,7 +280,14 @@ to handle it, which defaults to print a traceback and ignore the exception.
     Called when a :class:`Role` is changed server-wide.
 
     :param before: The :class:`Role` that updated with the old info.
-    :param after: The :class:`Role` that updated with the updated info
+    :param after: The :class:`Role` that updated with the updated info.
+
+.. function:: on_server_emojis_update(before, after)
+
+    Called when a :class:`Server` adds or removes :class:`Emoji`.
+
+    :param before: A list of :class:`Emoji` before the update.
+    :param after: A list of :class:`Emoji` after the update.
 
 .. function:: on_server_available(server)
               on_server_unavailable(server)
@@ -581,6 +588,12 @@ Game
 ~~~~
 
 .. autoclass:: Game
+    :members:
+
+Emoji
+~~~~~
+
+.. autoclass:: Emoji
     :members:
 
 Role
