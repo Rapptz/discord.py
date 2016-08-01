@@ -161,3 +161,34 @@ class InviteConverter(Converter):
             return invite
         except Exception as e:
             raise BadArgument('Invite is invalid or expired') from e
+
+class EmojiConverter(Converter):
+    @asyncio.coroutine
+    def convert(self):
+        message = self.ctx.message
+        bot = self.ctx.bot
+
+        match = re.match(r'<:([a-zA-Z0-9]+):([0-9]+)>$', self.argument)
+        result = None
+        server = message.server
+        if match is None:
+            # Try to get the emoji by name. Try local server first.
+            if server:
+                result = discord.utils.get(server.emojis, name=self.argument)
+
+            if result is None:
+                result = discord.utils.get(bot.get_all_emojis(), name=self.argument)
+        else:
+            emoji_id = match.group(2)
+
+            # Try to look up emoji by id.
+            if server:
+                result = discord.utils.get(server.emojis, id=emoji_id)
+
+            if result is None:
+                result = discord.utils.get(bot.get_all_emojis(), id=emoji_id)
+
+        if result is None:
+            raise BadArgument('Emoji "{}" not found.'.format(self.argument))
+
+        return result
