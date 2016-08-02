@@ -62,8 +62,6 @@ class Emoji(Hashable):
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
     managed : bool
         If this emoji is managed by a Twitch integration.
-    created_at : `datetime.datetime`
-        A datetime object denoting the time the invite was created.
     server : :class:`Server`
         The server the emoji belongs to.
     roles : List[:class:`Role`]
