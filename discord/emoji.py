@@ -100,3 +100,8 @@ class Emoji(Hashable):
     def created_at(self):
         """Returns the emoji's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def url(self):
+        """Returns a URL version of the emoji."""
+        return "https://discordcdn.com/emojis/{0.id}.png".format(self)
