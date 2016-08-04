@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import collections
 import discord
 import inspect
 import importlib
@@ -205,7 +206,7 @@ class Bot(GroupMixin, discord.Client):
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
-        self.extra_events = {}
+        self.extra_events = collections.defaultdict(list)
         self.cogs = {}
         self.extensions = {}
         self._checks = []
@@ -256,10 +257,9 @@ class Bot(GroupMixin, discord.Client):
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
         ev = 'on_' + event_name
-        if ev in self.extra_events:
-            for event in self.extra_events[ev]:
-                coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.compat.create_task(coro, loop=self.loop)
+        for event in self.extra_events[ev]:
+            coro = self._run_extra(event, event_name, *args, **kwargs)
+            discord.compat.create_task(coro, loop=self.loop)
 
     @asyncio.coroutine
     def on_command_error(self, exception, context):
@@ -535,10 +535,7 @@ class Bot(GroupMixin, discord.Client):
         if not asyncio.iscoroutinefunction(func):
             raise discord.ClientException('Listeners must be coroutines')
 
-        if name in self.extra_events:
-            self.extra_events[name].append(func)
-        else:
-            self.extra_events[name] = [func]
+        self.extra_events[name].append(func)
 
     def remove_listener(self, func, name=None):
         """Removes a listener from the pool of listeners.
@@ -554,11 +551,10 @@ class Bot(GroupMixin, discord.Client):
 
         name = func.__name__ if name is None else name
 
-        if name in self.extra_events:
-            try:
-                self.extra_events[name].remove(func)
-            except ValueError:
-                pass
+        try:
+            self.extra_events[name].remove(func)
+        except ValueError:
+            pass
 
     def listen(self, name=None):
         """A decorator that registers another function as an external
