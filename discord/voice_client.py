@@ -147,7 +147,10 @@ class ProcessPlayer(StreamPlayer):
         self.process = process
 
     def run(self):
-        super().run()
+        try:
+    super().run()
+except Exception as err:
+    log.exception(str(err))
 
         self.process.kill()
         if self.process.poll() is None:
