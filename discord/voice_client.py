@@ -146,11 +146,11 @@ class ProcessPlayer(StreamPlayer):
                          client._connected, client.play_audio, after, **kwargs)
         self.process = process
 
-    def run(self):
+     def run(self):
         try:
-    super().run()
-except Exception as err:
-    log.exception(str(err))
+            super().run()
+        except Exception as err:
+            log.exception(str(err))
 
         self.process.kill()
         if self.process.poll() is None:
