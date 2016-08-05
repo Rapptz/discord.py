@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import discord
 import asyncio
 import re
+import inspect
 
 from .errors import BadArgument, NoPrivateMessage
 
