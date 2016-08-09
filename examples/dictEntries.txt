@@ -54,10 +54,10 @@
 	"link.donor":"http://howtopriest.com/viewtopic.php?f=5&t=2714",
 	
 	"link.shadow.hub":"http://howtopriest.com/viewtopic.php?f=8&t=4483",
-	"link.shadow.bis":"http://howtopriest.com/viewtopic.php?t=7637",
+	"link.shadow.bis":">>Not updated to Legion<<\nhttp://howtopriest.com/viewtopic.php?t=7637",
 	"link.shadow.bis.cop":"http://howtopriest.com/viewtopic.php?t=7643",
 	"link.shadow.bis.as":"http://howtopriest.com/viewtopic.php?t=7642",
-	"link.shadow.guide":"link.shadow.guide.cop.kilee",
+	"link.shadow.guide":"http://howtopriest.com/viewtopic.php?f=19&t=8402",
 	
 	"link.healing.hub":"http://howtopriest.com/viewtopic.php?f=13&t=4484",
 	"link.holy.hub":"link.healing.hub",
@@ -65,25 +65,50 @@
 	"link.holy.guide":"http://howtopriest.com/viewtopic.php?f=13&t=7648",
 	"link.discipline.guide":"http://howtopriest.com/viewtopic.php?f=8&t=4483",	
 	
+	"stat.shadow":"Pre-patch recommendation:\nFor Legacy of the Void\n1 Target: Int > Haste > Crit > Vers > Mastery\n2+ Targets: Int > Haste >= Crit > Mastery > Vers\n\nFor StM\nHaste > Int > Crit > Mastery > Vers",
 	"stat.shadow.cop":"Int = 1.0000\nSpell Power = 0.9057\nCrit = 0.7592\nHaste = 0.8540\nMastery = 0.9198\nMultistrike = 0.6584\nVersatility = 0.6427\nDPS (Pure Damage) = 0.1118",
 	"stat.shadow.cop.short":"Int>SP>Mastery>Haste>Crit>Multi>Vers>DPS",
 	"stat.shadow.as":"Int = 1.0000\nSpell Power = 0.9266\nCrit = 1.0729\nHaste = 0.8429\nMastery = 0.4907\nMultistrike = 0.6946\nVersatility = 0.6529\nDPS (Pure Damage) = 0.1125",
 	"stat.shadow.as.short":"Crit>Int>SP>Haste>Multi>Vers>Mast>DPS",
 	
-	"stat.discipline":"Spirit > Mastery > Multistrike >= Crit > Haste > Vers",
-	"stat.holy":"Spirit to comfy > Multistrike > Haste > Crit > Mastery > Vers",
+	"stat.discipline":">>Not updated to Legion<<\nSpirit > Mastery >= Crit > Haste > Vers",
+	"stat.holy":">>Not updated to Legion<<\nSpirit to comfy > Haste > Crit > Mastery > Vers",
     
-    "wa.shadow":"http://howtopriest.com/viewtopic.php?t=6059",
+    "wa.shadow":"wa.shadow.twintop",
     "wa.holy":"None",
     "wa.discipline":"None",
-    
+	"wa.shadow.val":"http://howtopriest.com/viewtopic.php?f=95&t=8341",
+	"wa.shadow.twintop":"http://howtopriest.com/viewtopic.php?f=104&t=8339",
 	
-    
-    "bis.shadow":"bis.shadow.cop",
+	
+	"discord":"Death Knight: https://discord.gg/0ez1cFfUH3ingV96\nDemon Hunter: https://discord.gg/0enuZ4FBFluNZH1r\nDruid: https://discord.gg/0dWu0WkuetF87H9H\nPaladin: https://discord.gg/0dvRDgpa5xZHFfnD\nPriest: https://discord.gg/0f1Ta8lT8xXXEAIY\nRogue: https://discord.gg/0h08tydxoNhfDVZf\nShaman: https://discord.gg/0VcupJEQX0JmBCcC\nMage: https://discord.gg/0gLMHikX2aZ23VdA\nMonk: https://discord.gg/0dkfBMAxzTmggsPH\nWarlock: https://discord.gg/0onXDymd9Wpc2CEu\nWarrior: https://discord.gg/0pYY7932lTH4FHW6",
+	
+	"discord.invalid":"Invalid class",
+	
+	"discord.death.knight":" https://discord.gg/0ez1cFfUH3ingV96",
+	"discord.demon.hunter":"https://discord.gg/0enuZ4FBFluNZH1r",
+	"discord.druid":"https://discord.gg/0dWu0WkuetF87H9H",
+	"discord.hunter":"No discord listed",
+	"discord.mage":"https://discord.gg/0gLMHikX2aZ23VdA",
+	"discord.paladin":"https://discord.gg/0dvRDgpa5xZHFfnD",
+	"discord.priest":"https://discord.gg/0f1Ta8lT8xXXEAIY",
+	"discord.rogue":"https://discord.gg/0h08tydxoNhfDVZf",
+	"discord.monk":"https://discord.gg/0dkfBMAxzTmggsPH",
+	"discord.warlock":"https://discord.gg/0onXDymd9Wpc2CEu",
+	"discord.warrior":"https://discord.gg/0pYY7932lTH4FHW6",
+	"discord.shaman":"https://discord.gg/0VcupJEQX0JmBCcC",
+	
+	"discord.dh":"discord.demon.hunter",
+	"discord.dk":"discord.death.knight",
+	"discord.pally":"discord.paladin",
+	"discord.lock":"discord.warlock",
+	"discord.shammy":"discord.shaman",
+	
+    "bis.shadow":">>Pre-patch data<<\nhttp://howtopriest.com/viewtopic.php?f=19&t=8402#BiS",
     "bis.shadow.cop":"http://howtopriest.com/viewtopic.php?t=7643",
     "bis.shadow.as":"http://howtopriest.com/viewtopic.php?t=7642",
-    "bis.holy":"http://howtopriest.com/viewtopic.php?f=13&t=7648#BiS",
-    "bis.discipline":"http://howtopriest.com/viewtopic.php?f=13&t=7649#BiS",
+    "bis.holy":">>Not updated to Legion<<\nhttp://howtopriest.com/viewtopic.php?f=13&t=7648#BiS",
+    "bis.discipline":">>Not updated to Legion<<\nhttp://howtopriest.com/viewtopic.php?f=13&t=7649#BiS",
     
     "boss.shadow.nythendra":"TBA",
     "boss.shadow.ursoc":"TBA",

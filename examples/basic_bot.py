@@ -67,7 +67,20 @@ async def bis(*params : str):
 	s = p.commandReader(('bis',) + params)
 	if s != 'None':
 		await bot.say(s)
-        
+		
+@bot.command()
+async def discord(*params : str):
+	"""Links for all class Discords"""
+	p = DictionaryReader()
+	s = p.commandReader(('discord',) + params)
+	if s != 'None':
+		await bot.say(s)
+		
+@bot.command()
+async def shame(*params : str):
+	"""Shame on you!"""
+	await bot.say('http://i.imgur.com/FidZknJ.gif')
+		
 @bot.command()
 async def boss(*params : str):
 	"""Links for Boss Discussions"""
@@ -75,11 +88,23 @@ async def boss(*params : str):
 	s = p.commandReader(('boss',) + params)
 	if s != 'None':
 		await bot.say(s)
+
+		
+		
+@bot.command()
+async def decent(*params : str):
+	"""Best Voidform NA"""
+	await bot.say('https://puu.sh/qgWCQ/f565207eb0.jpg')		
 	
 @bot.command()
-async def classfantasy(*params : str):
-	"""Insightful"""
+async def fantasy(*params : str):
+	"""Can you feel it?"""
 	await bot.say('http://i.imgur.com/EMSiUF3.jpg')	
+	
+@bot.command()
+async def racial(*params : str):
+	"""Best racial for Legion"""
+	await bot.say('"Follow your :heart:"\n~Hygeiah 2016')		
 	
 @bot.command()
 async def update():

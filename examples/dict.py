@@ -60,7 +60,8 @@ class DictionaryReader:
 		#Off-hand
 		
 		#Specs
-		result = result.replace("disc","discipline",1)
+		if "ord" not in result:
+			result = result.replace("disc","discipline",1)
 		return result
 		
 	def commandReader(self, params):
