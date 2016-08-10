@@ -712,6 +712,8 @@ class Bot(GroupMixin, discord.Client):
 
         lib = importlib.import_module(name)
         if not hasattr(lib, 'setup'):
+            del lib
+            del sys.modules[name]
             raise discord.ClientException('extension does not have a setup function')
 
         lib.setup(self)
