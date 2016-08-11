@@ -59,6 +59,14 @@ async def weakauras(*params : str):
 	s = p.commandReader(('wa',) + params)
 	if s != 'None':
 		await bot.say(s)
+		
+@bot.command()
+async def wa(*params : str):
+	"""Links for WeakAuras"""
+	p = DictionaryReader()
+	s = p.commandReader(('wa',) + params)
+	if s != 'None':
+		await bot.say(s)
         
 @bot.command()
 async def bis(*params : str):
