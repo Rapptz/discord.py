@@ -108,7 +108,7 @@ async def artifact(*params : str):
 @bot.command()
 async def decent(*params : str):
 	"""Best Voidform NA"""
-	await bot.say('https://puu.sh/qgWCQ/f565207eb0.jpg')		
+	await bot.say('Here is Twintop\'s best StM to date:\nhttps://puu.sh/qgWCQ/f565207eb0.jpg')		
 	
 @bot.command()
 async def fantasy(*params : str):
