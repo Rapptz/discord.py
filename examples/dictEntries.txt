@@ -66,6 +66,8 @@
 	"link.holy.guide":"http://howtopriest.com/viewtopic.php?f=13&t=7648",
 	"link.discipline.guide":"http://howtopriest.com/viewtopic.php?f=8&t=4483",	
 	
+	"link.lexicon":"https://docs.google.com/spreadsheets/d/1TiiI4huz4NXKfx7PGvvVTyP6xu8VaDNZ4-FEn69mOhc/pubhtml#",
+	
 	"stat.shadow":"Pre-patch recommendation:\nFor Legacy of the Void\n1 Target: Int > Haste > Crit > Vers > Mastery\n2+ Targets: Int > Haste >= Crit > Mastery > Vers\n\nFor StM\nHaste > Int > Crit > Mastery > Vers",
 	"stat.shadow.cop":"Int = 1.0000\nSpell Power = 0.9057\nCrit = 0.7592\nHaste = 0.8540\nMastery = 0.9198\nMultistrike = 0.6584\nVersatility = 0.6427\nDPS (Pure Damage) = 0.1118",
 	"stat.shadow.cop.short":"Int>SP>Mastery>Haste>Crit>Multi>Vers>DPS",
