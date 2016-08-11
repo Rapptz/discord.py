@@ -61,7 +61,8 @@ class DictionaryReader:
 		
 		#Specs
 		if "ord" not in result:
-			result = result.replace("disc","discipline",1)
+			if "discipline" not in result:
+				result = result.replace("disc","discipline",1)
 		return result
 		
 	def commandReader(self, params):
