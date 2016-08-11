@@ -6,6 +6,7 @@
     "wa.invalid":"Invalid argument\nUsage: !weakauras <spec> [author]",
     "bis.invalid":"Invalid argument\nUsage: !bis <spec> [subtype]",
     "boss.invalid":"Invalid argument\nUsage: !boss <spec> <bossName>",
+	"artifact.invalid":"Invalid argument\nUsage: !artifact <spec> <route>\nRoutes: first, second, full",
 
 	"item.legendary.shadow.shoulder":"item.shadow.shoulder",
 	"item.shadow.shoulder":"https://legion.wowhead.com/item=132437",
@@ -109,6 +110,21 @@
     "bis.shadow.as":"http://howtopriest.com/viewtopic.php?t=7642",
     "bis.holy":">>Not updated to Legion<<\nhttp://howtopriest.com/viewtopic.php?f=13&t=7648#BiS",
     "bis.discipline":">>Not updated to Legion<<\nhttp://howtopriest.com/viewtopic.php?f=13&t=7649#BiS",
+	
+	"artifact.shadow":"artifact.shadow.full",
+	"artifact.shadow.full":"http://i.imgur.com/MN6IjP5.png",
+	"artifact.shadow.first":"http://i.imgur.com/KcxBzbI.png",
+	"artifact.shadow.second":"http://i.imgur.com/i7Y7RK6.png",
+	
+	"artifact.holy":"artifact.holy.full",
+	"artifact.holy.full":"TBA",
+	"artifact.holy.first":"TBA",
+	"artifact.holy.second":"TBA",
+	
+	"artifact.discipline":"artifact.discipline.full",
+	"artifact.discipline.full":"TBA",
+	"artifact.discipline.first":"TBA",
+	"artifact.discipline.second":"TBA",
     
     "boss.shadow.nythendra":"TBA",
     "boss.shadow.ursoc":"TBA",

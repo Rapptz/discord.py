@@ -97,7 +97,13 @@ async def boss(*params : str):
 	if s != 'None':
 		await bot.say(s)
 
-		
+@bot.command()
+async def artifact(*params : str):
+	"""Useful info on Artifacts"""
+	p = DictionaryReader()
+	s = p.commandReader(('artifact',) + params)
+	if s != 'None':
+		await bot.say(s)		
 		
 @bot.command()
 async def decent(*params : str):
