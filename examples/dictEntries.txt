@@ -124,9 +124,9 @@
 	"artifact.holy.second":"TBA",
 	
 	"artifact.discipline":"artifact.discipline.full",
-	"artifact.discipline.full":"TBA",
-	"artifact.discipline.first":"TBA",
-	"artifact.discipline.second":"TBA",
+	"artifact.discipline.full":"http://i.imgur.com/ibZJ5tP.png",
+	"artifact.discipline.first":"artifact.discipline.full",
+	"artifact.discipline.second":"artifact.discipline.full",
     
     "boss.shadow.nythendra":"TBA",
     "boss.shadow.ursoc":"TBA",
