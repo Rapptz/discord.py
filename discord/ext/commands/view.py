@@ -25,7 +25,9 @@ DEALINGS IN THE SOFTWARE.
 
 from .errors import BadArgument
 
+
 class StringView:
+
     def __init__(self, buffer):
         self.index = 0
         self.buffer = buffer
@@ -107,6 +109,7 @@ class StringView:
         return '<StringView pos: {0.index} prev: {0.previous} end: {0.end} eof: {0.eof}>'.format(self)
 
 # Parser
+
 
 def quoted_word(view):
     current = view.current

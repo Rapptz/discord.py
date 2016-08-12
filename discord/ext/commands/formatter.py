@@ -51,6 +51,7 @@ from .errors import CommandError
 # Type <prefix>help command for more info on a command.
 # You can also type <prefix>help category for more info on a category.
 
+
 class Paginator:
     """A class that aids in paginating code blocks for Discord messages.
 
@@ -63,12 +64,13 @@ class Paginator:
     max_size: int
         The maximum amount of codepoints allowed in a page.
     """
+
     def __init__(self, prefix='```', suffix='```', max_size=2000):
         self.prefix = prefix
         self.suffix = suffix
         self.max_size = max_size - len(suffix)
         self._current_page = [prefix]
-        self._count = len(prefix) + 1 # prefix + newline
+        self._count = len(prefix) + 1  # prefix + newline
         self._pages = []
 
     def add_line(self, line='', *, empty=False):
@@ -96,7 +98,7 @@ class Paginator:
         self._current_page.append(self.suffix)
         self._pages.append('\n'.join(self._current_page))
         self._current_page = [self.prefix]
-        self._count = len(self.prefix) + 1 # prefix + newline
+        self._count = len(self.prefix) + 1  # prefix + newline
 
     @property
     def pages(self):
@@ -109,6 +111,7 @@ class Paginator:
     def __repr__(self):
         fmt = '<Paginator prefix: {0.prefix} suffix: {0.suffix} max_size: {0.max_size} count: {0._count}>'
         return fmt.format(self)
+
 
 class HelpFormatter:
     """The default base implementation that handles formatting of the help
@@ -130,6 +133,7 @@ class HelpFormatter:
         The maximum number of characters that fit in a line.
         Defaults to 80.
     """
+
     def __init__(self, show_hidden=False, show_check_failure=False, width=80):
         self.width = width
         self.show_hidden = show_hidden

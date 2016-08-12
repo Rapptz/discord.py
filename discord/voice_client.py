@@ -42,7 +42,8 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import websockets
 import socket
-import json, time
+import json
+import time
 import logging
 import struct
 import threading
@@ -64,7 +65,9 @@ from . import utils, opus
 from .gateway import *
 from .errors import ClientException, InvalidArgument, ConnectionClosed
 
+
 class StreamPlayer(threading.Thread):
+
     def __init__(self, stream, encoder, connected, player, after, **kwargs):
         threading.Thread.__init__(self, **kwargs)
         self.daemon = True
@@ -73,7 +76,7 @@ class StreamPlayer(threading.Thread):
         self.player = player
         self._end = threading.Event()
         self._resumed = threading.Event()
-        self._resumed.set() # we are not paused
+        self._resumed.set()  # we are not paused
         self._connected = connected
         self.after = after
         self.delay = encoder.frame_length / 1000.0
@@ -140,7 +143,9 @@ class StreamPlayer(threading.Thread):
     def is_done(self):
         return not self._connected.is_set() or self._end.is_set()
 
+
 class ProcessPlayer(StreamPlayer):
+
     def __init__(self, process, client, after, **kwargs):
         super().__init__(process.stdout, client.encoder,
                          client._connected, client.play_audio, after, **kwargs)
@@ -186,6 +191,7 @@ class VoiceClient:
     loop
         The event loop that the voice client is running on.
     """
+
     def __init__(self, user, main_ws, session_id, channel, data, loop):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
@@ -408,7 +414,6 @@ class VoiceClient:
             raise ClientException('ffmpeg/avconv was not found in your PATH environment variable') from e
         except subprocess.SubprocessError as e:
             raise ClientException('Popen failed: {0.__name__} {1}'.format(type(e), str(e))) from e
-
 
     @asyncio.coroutine
     def create_ytdl_player(self, url, *, ytdl_options=None, **kwargs):

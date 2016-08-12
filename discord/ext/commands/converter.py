@@ -31,9 +31,10 @@ import inspect
 
 from .errors import BadArgument, NoPrivateMessage
 
-__all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
-            'ChannelConverter', 'InviteConverter', 'RoleConverter',
-            'GameConverter', 'ColourConverter' ]
+__all__ = ['Converter', 'MemberConverter', 'UserConverter',
+           'ChannelConverter', 'InviteConverter', 'RoleConverter',
+           'GameConverter', 'ColourConverter']
+
 
 def _get_from_servers(bot, getter, argument):
     result = None
@@ -42,6 +43,7 @@ def _get_from_servers(bot, getter, argument):
         if result:
             return result
     return result
+
 
 class Converter:
     """The base class of custom converters that require the :class:`Context`
@@ -61,6 +63,7 @@ class Converter:
     argument: str
         The argument that is being converted.
     """
+
     def __init__(self, ctx, argument):
         self.ctx = ctx
         self.argument = argument
@@ -68,7 +71,9 @@ class Converter:
     def convert(self):
         raise NotImplementedError('Derived classes need to implement this.')
 
+
 class MemberConverter(Converter):
+
     def convert(self):
         message = self.ctx.message
         bot = self.ctx.bot
@@ -96,7 +101,9 @@ class MemberConverter(Converter):
 
 UserConverter = MemberConverter
 
+
 class ChannelConverter(Converter):
+
     def convert(self):
         message = self.ctx.message
         bot = self.ctx.bot
@@ -122,7 +129,9 @@ class ChannelConverter(Converter):
 
         return result
 
+
 class ColourConverter(Converter):
+
     def convert(self):
         arg = self.argument.replace('0x', '').lower()
 
@@ -137,7 +146,9 @@ class ColourConverter(Converter):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return method()
 
+
 class RoleConverter(Converter):
+
     def convert(self):
         server = self.ctx.message.server
         if not server:
@@ -150,11 +161,15 @@ class RoleConverter(Converter):
             raise BadArgument('Role "{}" not found.'.format(self.argument))
         return result
 
+
 class GameConverter(Converter):
+
     def convert(self):
         return discord.Game(name=self.argument)
 
+
 class InviteConverter(Converter):
+
     @asyncio.coroutine
     def convert(self):
         try:
@@ -163,7 +178,9 @@ class InviteConverter(Converter):
         except Exception as e:
             raise BadArgument('Invite is invalid or expired') from e
 
+
 class EmojiConverter(Converter):
+
     @asyncio.coroutine
     def convert(self):
         message = self.ctx.message

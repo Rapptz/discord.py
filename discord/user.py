@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .utils import snowflake_time
 from .enums import DefaultAvatar
 
+
 class User:
     """Represents a Discord user.
 

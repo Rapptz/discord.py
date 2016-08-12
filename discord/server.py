@@ -33,6 +33,7 @@ from .channel import Channel
 from .enums import ServerRegion, Status
 from .mixins import Hashable
 
+
 class Server(Hashable):
     """Represents a Discord server.
 
@@ -236,7 +237,6 @@ class Server(Hashable):
             for c in channels:
                 channel = Channel(server=self, **c)
                 self._add_channel(channel)
-
 
     @utils.cached_slot_property('_default_role')
     def default_role(self):

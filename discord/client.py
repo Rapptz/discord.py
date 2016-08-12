@@ -48,9 +48,14 @@ import asyncio
 import aiohttp
 import websockets
 
-import logging, traceback
-import sys, re, io
-import tempfile, os, hashlib
+import logging
+import traceback
+import sys
+import re
+import io
+import tempfile
+import os
+import hashlib
 import itertools
 import datetime
 from collections import namedtuple
@@ -62,6 +67,8 @@ request_logging_format = '{method} {response.url} has returned {response.status}
 request_success_log = '{response.url} with {json} received {data}'
 
 AppInfo = namedtuple('AppInfo', 'id name description icon owner')
+
+
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
     if not self.icon:
@@ -73,6 +80,7 @@ AppInfo.icon_url = property(app_info_icon_url)
 
 ChannelPermissions = namedtuple('ChannelPermissions', 'target overwrite')
 ChannelPermissions.__new__.__defaults__ = (PermissionOverwrite(),)
+
 
 class Client:
     """Represents a client connection that connects to Discord.
@@ -131,6 +139,7 @@ class Client:
         The `event loop`_ that the client uses for HTTP requests and websocket operations.
 
     """
+
     def __init__(self, *, loop=None, **options):
         self.ws = None
         self.email = None
@@ -182,7 +191,7 @@ class Client:
             # redo the cache
         except OSError:
             log.info('a problem occurred while opening login cache')
-            return None # file not found et al
+            return None  # file not found et al
 
     def _update_cache(self, email, password):
         try:
@@ -211,7 +220,6 @@ class Client:
                 if result:
                     future.set_result(message)
                     removed.append(i)
-
 
         for idx in reversed(removed):
             del self._listeners[idx]
@@ -331,7 +339,6 @@ class Client:
                 self._is_logged_in.set()
                 return
 
-
         yield from self.http.email_login(email, password)
         self.email = email
         self._is_logged_in.set()
@@ -443,7 +450,6 @@ class Client:
 
         if self.ws is not None and self.ws.open:
             yield from self.ws.close()
-
 
         yield from self.http.close()
         self._closed.set()
@@ -1259,7 +1265,7 @@ class Client:
                     counter += 1
         """
         before = getattr(before, 'id', None)
-        after  = getattr(after, 'id', None)
+        after = getattr(after, 'id', None)
 
         return self.http.logs_from(channel.id, limit, before=before, after=after)
 
@@ -1677,7 +1683,7 @@ class Client:
             # add ourselves at our designated position
             channels.insert(position, channel)
 
-        payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
+        payload = [{'id': c.id, 'position': index} for index, c in enumerate(channels)]
         yield from self.http.patch(url, json=payload, bucket='move_channel')
 
     @asyncio.coroutine
@@ -2543,7 +2549,6 @@ class Client:
 
         overwrite = PermissionOverwrite() if overwrite is None else overwrite
 
-
         if not isinstance(overwrite, PermissionOverwrite):
             raise InvalidArgument('allow and deny parameters must be PermissionOverwrite')
 
@@ -2700,7 +2705,7 @@ class Client:
             except:
                 # we don't care if disconnect failed because connection failed
                 pass
-            raise e # re-raise
+            raise e  # re-raise
 
         self.connection._add_voice_client(server.id, voice)
         return voice
@@ -2773,5 +2778,3 @@ class Client:
         return AppInfo(id=data['id'], name=data['name'],
                        description=data['description'], icon=data['icon'],
                        owner=User(**data['owner']))
-
-

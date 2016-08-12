@@ -28,6 +28,7 @@ from .user import User
 from .utils import parse_time
 from .mixins import Hashable
 
+
 class Invite(Hashable):
     """Represents a Discord :class:`Server` or :class:`Channel` invite.
 
@@ -75,9 +76,8 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
-
-    __slots__ = [ 'max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
-                  'temporary', 'max_uses', 'xkcd', 'inviter', 'channel' ]
+    __slots__ = ['max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
+                 'temporary', 'max_uses', 'xkcd', 'inviter', 'channel']
 
     def __init__(self, **kwargs):
         self.max_age = kwargs.get('max_age')
@@ -106,4 +106,3 @@ class Invite(Hashable):
     def url(self):
         """A property that retrieves the invite URL."""
         return 'http://discord.gg/{}'.format(self.id)
-

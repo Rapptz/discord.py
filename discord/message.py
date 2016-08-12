@@ -31,6 +31,7 @@ from .calls import CallMessage
 import re
 from .enums import MessageType, try_enum
 
+
 class Message:
     """Represents a message from Discord.
 
@@ -104,12 +105,12 @@ class Message:
         Specifies if the message is currently pinned.
     """
 
-    __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
-                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  '_clean_content', '_raw_channel_mentions', 'nonce', 'pinned',
-                  'role_mentions', '_raw_role_mentions', 'type', 'call',
-                  '_system_content' ]
+    __slots__ = ['edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
+                 'mention_everyone', 'embeds', 'id', 'mentions', 'author',
+                 'channel_mentions', 'server', '_raw_mentions', 'attachments',
+                 '_clean_content', '_raw_channel_mentions', 'nonce', 'pinned',
+                 'role_mentions', '_raw_role_mentions', 'type', 'call',
+                 '_system_content']
 
     def __init__(self, **kwargs):
         self._update(**kwargs)

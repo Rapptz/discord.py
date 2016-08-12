@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+
 class Permissions:
     """Wraps up the Discord permission value.
 
@@ -67,7 +68,8 @@ class Permissions:
         permissions via the properties rather than using this raw value.
     """
 
-    __slots__ = [ 'value' ]
+    __slots__ = ['value']
+
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 
@@ -162,14 +164,13 @@ class Permissions:
         "Voice" permissions from the official Discord UI set to True."""
         return cls(0b00000011111100000000000000000000)
 
-
     def _bit(self, index):
         return bool((self.value >> index) & 1)
 
     def _set(self, index, value):
-        if value == True:
+        if value:
             self.value |= (1 << index)
-        elif value == False:
+        elif value is False:
             self.value &= ~(1 << index)
         else:
             raise TypeError('Value to set for Permissions must be a bool.')
@@ -419,14 +420,16 @@ class Permissions:
 
     # 3 unused
 
+
 def augment_from_permissions(cls):
-    cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+    cls.VALID_NAMES = {name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property)}
 
     # make descriptors for all the valid names
     for name in cls.VALID_NAMES:
         # god bless Python
         def getter(self, x=name):
             return self._values.get(x)
+
         def setter(self, value, x=name):
             self._set(x, value)
 
@@ -434,6 +437,7 @@ def augment_from_permissions(cls):
         setattr(cls, name, prop)
 
     return cls
+
 
 @augment_from_permissions
 class PermissionOverwrite:
@@ -484,7 +488,7 @@ class PermissionOverwrite:
         """
 
         allow = Permissions.none()
-        deny  = Permissions.none()
+        deny = Permissions.none()
 
         for key, value in self._values.items():
             if value is True:

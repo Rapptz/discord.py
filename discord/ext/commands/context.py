@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 
+
 class Context:
     """Represents the context in which a command is being invoked under.
 
@@ -66,7 +67,7 @@ class Context:
     """
     __slots__ = ['message', 'bot', 'args', 'kwargs', 'command', 'view',
                  'invoked_with', 'invoked_subcommand', 'subcommand_passed',
-                 'prefix' ]
+                 'prefix']
 
     def __init__(self, **attrs):
         self.message = attrs.pop('message', None)

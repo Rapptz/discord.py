@@ -29,6 +29,7 @@ from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time
 
+
 class Role(Hashable):
     """Represents a Discord role in a :class:`Server`.
 
@@ -71,7 +72,7 @@ class Role(Hashable):
     """
 
     __slots__ = ['id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'server' ]
+                 'managed', 'mentionable', 'hoist', 'server']
 
     def __init__(self, **kwargs):
         self.server = kwargs.pop('server')

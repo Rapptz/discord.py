@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .utils import snowflake_time
 
+
 class Object:
     """Represents a generic Discord object.
 

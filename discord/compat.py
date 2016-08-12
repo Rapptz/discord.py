@@ -54,7 +54,6 @@ except AttributeError:
             result = source.result()
             concurrent.set_result(result)
 
-
     def _copy_future_state(source, dest):
         """Internal helper to copy state from another Future.
         The other Future may be a concurrent.futures.Future.

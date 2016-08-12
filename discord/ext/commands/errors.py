@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
 from discord.errors import DiscordException
 
 
-__all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
+__all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
-           'UserInputError', 'CommandOnCooldown' ]
+           'UserInputError', 'CommandOnCooldown']
+
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -40,6 +41,7 @@ class CommandError(DiscordException):
     in a special way as they are caught and passed into a special event
     from :class:`Bot`\, :func:`on_command_error`.
     """
+
     def __init__(self, message=None, *args):
         if message is not None:
             # clean-up @everyone and @here mentions
@@ -48,6 +50,7 @@ class CommandError(DiscordException):
         else:
             super().__init__(*args)
 
+
 class UserInputError(CommandError):
     """The base exception type for errors that involve errors
     regarding user input.
@@ -55,6 +58,7 @@ class UserInputError(CommandError):
     This inherits from :exc:`CommandError`.
     """
     pass
+
 
 class CommandNotFound(CommandError):
     """Exception raised when a command is attempted to be invoked
@@ -65,11 +69,13 @@ class CommandNotFound(CommandError):
     """
     pass
 
+
 class MissingRequiredArgument(UserInputError):
     """Exception raised when parsing a command and a parameter
     that is required is not encountered.
     """
     pass
+
 
 class TooManyArguments(UserInputError):
     """Exception raised when the command was passed too many arguments and its
@@ -77,11 +83,13 @@ class TooManyArguments(UserInputError):
     """
     pass
 
+
 class BadArgument(UserInputError):
     """Exception raised when a parsing or conversion failure is encountered
     on an argument to pass into a command.
     """
     pass
+
 
 class NoPrivateMessage(CommandError):
     """Exception raised when an operation does not work in private message
@@ -89,13 +97,16 @@ class NoPrivateMessage(CommandError):
     """
     pass
 
+
 class CheckFailure(CommandError):
     """Exception raised when the predicates in :attr:`Command.checks` have failed."""
     pass
 
+
 class DisabledCommand(CommandError):
     """Exception raised when the command being invoked is disabled."""
     pass
+
 
 class CommandInvokeError(CommandError):
     """Exception raised when the command being invoked raised an exception.
@@ -106,9 +117,11 @@ class CommandInvokeError(CommandError):
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
+
     def __init__(self, e):
         self.original = e
         super().__init__('Command raised an exception: {0.__class__.__name__}: {0}'.format(e))
+
 
 class CommandOnCooldown(CommandError):
     """Exception raised when the command being invoked is on cooldown.
@@ -121,6 +134,7 @@ class CommandOnCooldown(CommandError):
     retry_after: float
         The amount of seconds to wait before you can retry again.
     """
+
     def __init__(self, cooldown, retry_after):
         self.cooldown = cooldown
         self.retry_after = retry_after
