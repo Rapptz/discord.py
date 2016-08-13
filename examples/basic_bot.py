@@ -88,6 +88,11 @@ async def discord(*params : str):
 async def shame(*params : str):
 	"""Shame on you!"""
 	await bot.say('http://i.imgur.com/FidZknJ.gif')
+	
+@bot.command()
+async def power(*params : str):
+	"""Don't underestimate it!"""
+	await bot.say('http://i.imgur.com/8Igah2t.png')
 		
 @bot.command()
 async def boss(*params : str):
