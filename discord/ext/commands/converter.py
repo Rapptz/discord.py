@@ -69,6 +69,8 @@ class Converter:
         raise NotImplementedError('Derived classes need to implement this.')
 
 class MemberConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Member`
+    """
     def convert(self):
         message = self.ctx.message
         bot = self.ctx.bot
@@ -97,6 +99,8 @@ class MemberConverter(Converter):
 UserConverter = MemberConverter
 
 class ChannelConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Channel`
+    """
     def convert(self):
         message = self.ctx.message
         bot = self.ctx.bot
@@ -123,6 +127,8 @@ class ChannelConverter(Converter):
         return result
 
 class ColourConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Colour`
+    """
     def convert(self):
         arg = self.argument.replace('0x', '').lower()
 
@@ -138,6 +144,8 @@ class ColourConverter(Converter):
             return method()
 
 class RoleConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Role`
+    """
     def convert(self):
         server = self.ctx.message.server
         if not server:
@@ -151,10 +159,14 @@ class RoleConverter(Converter):
         return result
 
 class GameConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Game`
+    """
     def convert(self):
         return discord.Game(name=self.argument)
 
 class InviteConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Invite`
+    """
     @asyncio.coroutine
     def convert(self):
         try:
@@ -164,6 +176,8 @@ class InviteConverter(Converter):
             raise BadArgument('Invite is invalid or expired') from e
 
 class EmojiConverter(Converter):
+    """The :class:`Converter` for a string argument to data class :class:`.Emoji`
+    """
     @asyncio.coroutine
     def convert(self):
         message = self.ctx.message

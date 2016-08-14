@@ -659,3 +659,163 @@ The following exceptions are thrown by the library.
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
+
+.. currentmodule:: discord.ext.commands
+
+Commands Ext
+--------------
+
+The following section outlines the commands extension module.
+
+This module is designed to make it easier to create a bot that responds to commands.
+Example usage of it is as follows: ::
+
+    import discord
+    from discord.ext import commands
+
+    bot = commands.Bot(command_prefix='?', description="My first bot")
+
+    @bot.event
+    async def on_ready():
+        print('Logged in as {0.name} ({0.id})'.format(bot.user))
+
+    @bot.command()
+    async def add(left : int, right : int):
+        """Adds two numbers together."""
+        await bot.say(left + right)
+
+.. autofunction:: discord.ext.commands.when_mentioned
+
+.. autofunction:: discord.ext.commands.when_mentioned_or
+
+Bot
+~~~
+
+.. autoclass:: Bot
+    :members:
+
+Context
+~~~~~~~
+
+.. autoclass:: Context
+    :members:
+
+GroupMixin
+~~~~~~~~~~
+
+.. autoclass:: GroupMixin
+    :members:
+
+Converter
+~~~~~~~~~~
+
+.. autoclass:: Converter
+    :members:
+
+.. autoclass:: MemberConverter
+    :members:
+
+.. autoclass:: ChannelConverter
+    :members:
+
+.. autoclass:: ColourConverter
+    :members:
+
+.. autoclass:: RoleConverter
+    :members:
+
+.. autoclass:: GameConverter
+    :members:
+
+.. autoclass:: InviteConverter
+    :members:
+
+Event Reference
+~~~~~~~~~~~~~~~
+
+.. function:: on_command_error(exception, context)
+
+    Called when an error occurs within a :class:`Command`
+
+    :param exception: The `Exception` that occurred
+    :param context: The :class:`Context` associated with the error
+
+Utility Functions
+~~~~~~~~~~~~~~~~~
+.. autofunction:: discord.ext.commands.core.command
+
+.. autofunction:: discord.ext.commands.core.group
+
+.. autofunction:: discord.ext.commands.core.check
+
+.. autofunction:: discord.ext.commands.core.has_role
+
+.. autofunction:: discord.ext.commands.core.has_any_role
+
+.. autofunction:: discord.ext.commands.core.has_permissions
+
+.. autofunction:: discord.ext.commands.core.bot_has_role
+
+.. autofunction:: discord.ext.commands.core.bot_has_any_role
+
+.. autofunction:: discord.ext.commands.core.cooldown
+
+Enumerations
+~~~~~~~~~~~~
+
+.. class:: discord.ext.commands.cooldowns.BucketType
+
+    Specifies the type of bucket, used for cooldowns.
+
+    .. attribute:: default
+
+        Global basis.
+    .. attribute:: user
+
+        Per-user basis.
+    .. attribute:: server
+
+        Per-server basis.
+    .. attribute:: channel
+
+        Per-channel basis.
+
+Data Classes
+~~~~~~~~~~~~
+
+Command
+*******
+
+.. autoclass:: Command
+    :members:
+
+Group
+*****
+
+.. autoclass:: Group
+    :members:
+
+Exceptions
+~~~~~~~~~~~~
+
+.. autoexception:: CommandError
+
+.. autoexception:: UserInputError
+
+.. autoexception:: CommandNotFound
+
+.. autoexception:: MissingRequiredArgument
+
+.. autoexception:: TooManyArguments
+
+.. autoexception:: BadArgument
+
+.. autoexception:: NoPrivateMessage
+
+.. autoexception:: CheckFailure
+
+.. autoexception:: DisabledCommand
+
+.. autoexception:: CommandInvokeError
+
+.. autoexception:: CommandOnCooldown
