@@ -180,14 +180,30 @@ to handle it, which defaults to print a traceback and ignore the exception.
                     message or ``str`` to denote a regular text message.
 
 .. function:: on_message_delete(message)
-              on_message_edit(before, after)
 
-    Called when a message is deleted or edited from any given server. If the message is not found in the
-    :attr:`Client.messages` cache, then these events will not be called. This happens if the message
-    is too old or the client is participating in high traffic servers. To fix this, increase
-    the ``max_messages`` option of :class:`Client`.
+    Called when a message is deleted. If the message is not found in the
+    :attr:`Client.messages` cache, then these events will not be called. This
+    happens if the message is too old or the client is participating in high
+    traffic servers. To fix this, increase the ``max_messages`` option of
+    :class:`Client`.
 
     :param message: A :class:`Message` of the deleted message.
+
+.. function:: on_message_edit(before, after)
+
+    Called when a message receives an update event. If the message is not found
+    in the :attr:`Client.messages` cache, then these events will not be called.
+    This happens if the message is too old or the client is participating in high
+    traffic servers. To fix this, increase the ``max_messages`` option of :class:`Client`.
+
+    The following non-exhaustive cases trigger this event:
+
+    - A message has been pinned or unpinned.
+    - The message content has been changed.
+    - The message has received an embed.
+        - For performance reasons, the embed server does not do this in a "consistent" manner.
+    - A call message has received an update to its participants or ending time.
+
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
