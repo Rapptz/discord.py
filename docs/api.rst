@@ -684,6 +684,8 @@ Example usage of it is as follows: ::
         """Adds two numbers together."""
         await bot.say(left + right)
 
+    bot.run('token')
+
 .. autofunction:: discord.ext.commands.when_mentioned
 
 .. autofunction:: discord.ext.commands.when_mentioned_or
