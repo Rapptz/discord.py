@@ -677,7 +677,7 @@ The commands extension module was designed to be a rich and powerful extension t
 
     bot = commands.Bot(command_prefix='?', description="My first bot")
 
-After doing that, you can register new event and command functions using the decorators :meth:`Client.event` and :meth:`command`. A basic example of usage of this is below. ::
+After doing that, you can register new event and command functions using the decorators :meth:`discord.Client.event` and :meth:`command`. A basic example of usage of this is below. ::
 
     @bot.event
     async def on_ready():
@@ -727,6 +727,11 @@ Bot
 
 Context
 ~~~~~~~
+
+    .. warning::
+
+        The invocation context of a command is passed using :attr:`Command.pass_context`.
+        You should never create this class manually.
 
 .. autoclass:: Context
     :members:
@@ -822,6 +827,10 @@ Enumerations
 
 Data Classes
 ~~~~~~~~~~~~
+
+    .. warning::
+
+        Data classes should never be created manually.
 
 Command
 *******
