@@ -730,6 +730,15 @@ Converter
 .. autoclass:: InviteConverter
     :members:
 
+Formatter
+~~~~~~~~~~
+
+.. autoclass:: Paginator
+    :members:
+
+.. autoclass:: HelpFormatter
+    :members:
+
 Event Reference
 ~~~~~~~~~~~~~~~
 
