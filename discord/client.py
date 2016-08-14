@@ -1118,7 +1118,7 @@ class Client:
 
         Parameters
         ------------
-        channel: :class:`Channel`
+        channel: :class:`Channel` or :class:`PrivateChannel`
             The text channel to retrieve the message from.
         id: str
             The message ID to look for.
