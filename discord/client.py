@@ -1081,6 +1081,9 @@ class Client:
 
         The new_content must be able to be transformed into a string via ``str(new_content)``.
 
+        The :class:`Message` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
+
         Parameters
         -----------
         message : :class:`Message`
@@ -1115,7 +1118,7 @@ class Client:
 
         Parameters
         ------------
-        channel: :class:`Channel`
+        channel: :class:`Channel` or :class:`PrivateChannel`
             The text channel to retrieve the message from.
         id: str
             The message ID to look for.
@@ -1453,7 +1456,8 @@ class Client:
         If a bot account is used then the password field is optional,
         otherwise it is required.
 
-        The profile is **not** edited in place.
+        The :attr:`Client.user` object is not modified directly afterwards until the
+        corresponding WebSocket event is received.
 
         Note
         -----
@@ -1596,7 +1600,8 @@ class Client:
 
         To move the channel's position use :meth:`move_channel` instead.
 
-        The channel is **not** edited in-place.
+        The :class:`Channel` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         Parameters
         ----------
@@ -1633,7 +1638,8 @@ class Client:
         Moves the specified :class:`Channel` to the given position in the GUI.
         Note that voice channels and text channels have different position values.
 
-        This does **not** edit the channel ordering in place.
+        The :class:`Channel` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         .. warning::
 
@@ -1903,7 +1909,8 @@ class Client:
 
         You must have the proper permissions to edit the server.
 
-        The server is **not** edited in-place.
+        The :class:`Server` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         Parameters
         ----------
@@ -2254,7 +2261,8 @@ class Client:
 
         Moves the specified :class:`Role` to the given position in the :class:`Server`.
 
-        This does **not** edit the role ordering in place.
+        The :class:`Role` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         Parameters
         -----------
@@ -2304,7 +2312,8 @@ class Client:
 
         Edits the specified :class:`Role` for the entire :class:`Server`.
 
-        This does **not** edit the role in place.
+        The :class:`Role` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         All fields except ``server`` and ``role`` are optional. To change
         the position of a role, use :func:`move_role` instead.
@@ -2386,8 +2395,8 @@ class Client:
 
         You must have the proper permissions to use this function.
 
-        This method **appends** a role to a member but does **not** do it
-        in-place.
+        The :class:`Member` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         Parameters
         -----------
@@ -2415,7 +2424,8 @@ class Client:
 
         You must have the proper permissions to use this function.
 
-        This method does **not** edit the member in-place.
+        The :class:`Member` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         Parameters
         -----------
@@ -2453,7 +2463,8 @@ class Client:
         call is ``client.replace_roles(member, d, e, c)`` then
         the member has the roles ``[d, e, c]``.
 
-        This method does **not** edit the member in-place.
+        The :class:`Member` object is not directly modified afterwards until the
+        corresponding WebSocket event is received.
 
         Parameters
         -----------
@@ -2599,7 +2610,7 @@ class Client:
 
         Note
         -----
-        You cannot pass in a :class:`Object` in place of a :class:`Channel`
+        You cannot pass in a :class:`Object` instead of a :class:`Channel`
         object in this function.
 
         Parameters
