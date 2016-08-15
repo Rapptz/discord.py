@@ -148,7 +148,7 @@ class ProcessPlayer(StreamPlayer):
 
     def run(self):
         try:
-            super().run()  # Exceptions can happen here if so we log them instead of write them in console.
+            super().run()
         except Exception as err:
             log.exception('Exception in Daemon Thread(s) {0}.'.format(str(err)))
 
