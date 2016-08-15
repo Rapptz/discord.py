@@ -34,10 +34,11 @@ from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
 
-__all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
-            'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown' ]
+__all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
+           'has_role', 'has_permissions', 'has_any_role', 'check',
+           'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+           'cooldown']
+
 
 def inject_context(ctx, coro):
     @functools.wraps(coro)
@@ -53,6 +54,7 @@ def inject_context(ctx, coro):
         return ret
     return wrapped
 
+
 def _convert_to_bool(argument):
     lowered = argument.lower()
     if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
@@ -61,6 +63,7 @@ def _convert_to_bool(argument):
         return False
     else:
         raise BadArgument(lowered + ' is not a recognised boolean option')
+
 
 class Command:
     """A class that implements the protocol for a bot text command.
@@ -122,6 +125,7 @@ class Command:
         and ``b``). Otherwise :func:`on_command_error` and local error handlers
         are called with :exc:`TooManyArguments`. Defaults to ``True``.
     """
+
     def __init__(self, name, callback, **kwargs):
         self.name = name
         if not isinstance(name, str):
@@ -200,7 +204,7 @@ class Command:
 
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
-                raise RuntimeError() # break the loop
+                raise RuntimeError()  # break the loop
             if required:
                 raise MissingRequiredArgument('{0.name} is a required argument that is missing.'.format(param))
             return param.default
@@ -317,7 +321,6 @@ class Command:
             if not view.eof:
                 raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-
     def _verify_checks(self, ctx):
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
@@ -414,6 +417,7 @@ class Command:
             return True
         return all(predicate(context) for predicate in predicates)
 
+
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
     similar to :class:`Group` and are allowed to register commands.
@@ -424,6 +428,7 @@ class GroupMixin:
         A mapping of command name to :class:`Command` or superclass
         objects.
     """
+
     def __init__(self, **kwargs):
         self.commands = {}
         super().__init__(**kwargs)
@@ -541,6 +546,7 @@ class GroupMixin:
 
         return decorator
 
+
 class Group(GroupMixin, Command):
     """A class that implements a grouping protocol for commands to be
     executed as subcommands.
@@ -560,6 +566,7 @@ class Group(GroupMixin, Command):
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
     """
+
     def __init__(self, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)
         super().__init__(**attrs)
@@ -599,6 +606,7 @@ class Group(GroupMixin, Command):
             yield from injected(*ctx.args, **ctx.kwargs)
 
 # Decorators
+
 
 def command(name=None, cls=None, **attrs):
     """A decorator that transforms a function into a :class:`Command`
@@ -666,6 +674,7 @@ def command(name=None, cls=None, **attrs):
 
     return decorator
 
+
 def group(name=None, **attrs):
     """A decorator that transforms a function into a :class:`Group`.
 
@@ -673,6 +682,7 @@ def group(name=None, **attrs):
     :class:`Group` instead of a :class:`Command`.
     """
     return command(name=name, cls=Group, **attrs)
+
 
 def check(predicate):
     """A decorator that adds a check to the :class:`Command` or its
@@ -736,6 +746,7 @@ def check(predicate):
         return func
     return decorator
 
+
 def has_role(name):
     """A :func:`check` that is added that checks if the member invoking the
     command has the role specified via the name specified.
@@ -762,6 +773,7 @@ def has_role(name):
         return role is not None
 
     return check(predicate)
+
 
 def has_any_role(*names):
     """A :func:`check` that is added that checks if the member invoking the
@@ -795,6 +807,7 @@ def has_any_role(*names):
         return any(getter(name=name) is not None for name in names)
     return check(predicate)
 
+
 def has_permissions(**perms):
     """A :func:`check` that is added that checks if the member has any of
     the permissions necessary.
@@ -826,6 +839,7 @@ def has_permissions(**perms):
 
     return check(predicate)
 
+
 def bot_has_role(name):
     """Similar to :func:`has_role` except checks if the bot itself has the
     role.
@@ -840,6 +854,7 @@ def bot_has_role(name):
         return role is not None
     return check(predicate)
 
+
 def bot_has_any_role(*names):
     """Similar to :func:`has_any_role` except checks if the bot itself has
     any of the roles listed.
@@ -853,6 +868,7 @@ def bot_has_any_role(*names):
         return any(getter(name=name) is not None for name in names)
     return check(predicate)
 
+
 def bot_has_permissions(**perms):
     """Similar to :func:`has_permissions` except checks if the bot itself has
     the permissions listed.
@@ -863,6 +879,7 @@ def bot_has_permissions(**perms):
         permissions = ch.permissions_for(me)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
+
 
 def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`Command`

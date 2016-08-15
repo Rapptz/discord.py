@@ -38,6 +38,7 @@ from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
 
+
 def _get_variable(name):
     stack = inspect.stack()
     try:
@@ -52,6 +53,7 @@ def _get_variable(name):
     finally:
         del stack
 
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent
     to being mentioned, e.g. ``@bot ``."""
@@ -59,6 +61,7 @@ def when_mentioned(bot, msg):
     if server is not None:
         return '{0.me.mention} '.format(server)
     return '{0.user.mention} '.format(bot)
+
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
@@ -88,8 +91,9 @@ _mentions_transforms = {
 
 _mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
 
+
 @asyncio.coroutine
-def _default_help_command(ctx, *commands : str):
+def _default_help_command(ctx, *commands: str):
     """Shows this message."""
     bot = ctx.bot
     destination = ctx.message.author if bot.pm_help else ctx.message.channel
@@ -202,6 +206,7 @@ class Bot(GroupMixin, discord.Client):
         ``"Command {0.name} has no subcommands."``. The first format argument is the
         :class:`Command` attempted to get a subcommand and the second is the name.
     """
+
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
@@ -797,7 +802,6 @@ class Bot(GroupMixin, discord.Client):
             invoked_prefix = discord.utils.find(view.skip_string, prefix)
             if invoked_prefix is None:
                 return
-
 
         invoker = view.get_word()
         tmp = {

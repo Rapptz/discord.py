@@ -24,12 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+
 class DiscordException(Exception):
     """Base exception class for discord.py
 
     Ideally speaking, this could be caught to handle any exceptions thrown from this library.
     """
     pass
+
 
 class ClientException(DiscordException):
     """Exception that's thrown when an operation in the :class:`Client` fails.
@@ -38,12 +40,15 @@ class ClientException(DiscordException):
     """
     pass
 
+
 class GatewayNotFound(DiscordException):
     """An exception that is usually thrown when the gateway hub
     for the :class:`Client` websocket is not found."""
+
     def __init__(self):
         message = 'The gateway to connect to discord was not found.'
         super(GatewayNotFound, self).__init__(message)
+
 
 class HTTPException(DiscordException):
     """Exception that's thrown when an HTTP request operation fails.
@@ -62,7 +67,7 @@ class HTTPException(DiscordException):
 
     def __init__(self, response, message):
         self.response = response
-        if type(message) is dict:
+        if isinstance(message, dict):
             self.text = message.get('message', '')
             self.code = message.get('code', 0)
         else:
@@ -74,12 +79,14 @@ class HTTPException(DiscordException):
 
         super().__init__(fmt.format(self.response, self.text))
 
+
 class Forbidden(HTTPException):
     """Exception that's thrown for when status code 403 occurs.
 
     Subclass of :exc:`HTTPException`
     """
     pass
+
 
 class NotFound(HTTPException):
     """Exception that's thrown for when status code 404 occurs.
@@ -99,12 +106,14 @@ class InvalidArgument(ClientException):
     """
     pass
 
+
 class LoginFailure(ClientException):
     """Exception that's thrown when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
     """
     pass
+
 
 class ConnectionClosed(ClientException):
     """Exception that's thrown when the gateway connection is
@@ -117,6 +126,7 @@ class ConnectionClosed(ClientException):
     reason : str
         The reason provided for the closure.
     """
+
     def __init__(self, original):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users

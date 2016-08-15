@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
 from . import utils, __version__
 
+
 @asyncio.coroutine
 def json_or_text(response):
     text = yield from response.text(encoding='utf-8')
@@ -45,24 +46,26 @@ def json_or_text(response):
         return json.loads(text)
     return text
 
+
 def _func_():
     # emulate __func__ from C++
     return inspect.currentframe().f_back.f_code.co_name
 
+
 class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
 
-    BASE          = 'https://discordapp.com'
-    API_BASE      = BASE     + '/api/v6'
-    GATEWAY       = API_BASE + '/gateway'
-    USERS         = API_BASE + '/users'
-    ME            = USERS    + '/@me'
-    REGISTER      = API_BASE + '/auth/register'
-    LOGIN         = API_BASE + '/auth/login'
-    LOGOUT        = API_BASE + '/auth/logout'
-    GUILDS        = API_BASE + '/guilds'
-    CHANNELS      = API_BASE + '/channels'
-    APPLICATIONS  = API_BASE + '/oauth2/applications'
+    BASE = 'https://discordapp.com'
+    API_BASE = BASE + '/api/v6'
+    GATEWAY = API_BASE + '/gateway'
+    USERS = API_BASE + '/users'
+    ME = USERS + '/@me'
+    REGISTER = API_BASE + '/auth/register'
+    LOGIN = API_BASE + '/auth/login'
+    LOGOUT = API_BASE + '/auth/logout'
+    GUILDS = API_BASE + '/guilds'
+    CHANNELS = API_BASE + '/channels'
+    APPLICATIONS = API_BASE + '/oauth2/applications'
 
     SUCCESS_LOG = '{method} {url} has received {text}'
     REQUEST_LOG = '{method} {url} with {json} has returned {status}'

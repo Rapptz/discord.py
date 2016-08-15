@@ -31,6 +31,7 @@ from .enums import Status, ChannelType
 from .colour import Colour
 import copy
 
+
 class VoiceState:
     """Represents a Discord user's voice state.
 
@@ -51,8 +52,8 @@ class VoiceState:
         is not currently in a voice channel.
     """
 
-    __slots__ = [ 'session_id', 'deaf', 'mute', 'self_mute',
-                  'self_deaf', 'is_afk', 'voice_channel' ]
+    __slots__ = ['session_id', 'deaf', 'mute', 'self_mute',
+                 'self_deaf', 'is_afk', 'voice_channel']
 
     def __init__(self, **kwargs):
         self.session_id = kwargs.get('session_id')
@@ -66,12 +67,14 @@ class VoiceState:
         self.deaf = kwargs.get('deaf', False)
         self.voice_channel = kwargs.get('voice_channel')
 
+
 def flatten_voice_states(cls):
     for attr in VoiceState.__slots__:
         def getter(self, x=attr):
             return getattr(self.voice, x)
         setattr(cls, attr, property(getter))
     return cls
+
 
 @flatten_voice_states
 class Member(User):
@@ -102,7 +105,7 @@ class Member(User):
         The server specific nickname of the user.
     """
 
-    __slots__ = [ 'roles', 'joined_at', 'status', 'game', 'server', 'nick', 'voice' ]
+    __slots__ = ['roles', 'joined_at', 'status', 'game', 'server', 'nick', 'voice']
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs.get('user'))

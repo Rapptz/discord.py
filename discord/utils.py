@@ -33,7 +33,9 @@ import json
 
 DISCORD_EPOCH = 1420070400000
 
+
 class cached_property:
+
     def __init__(self, function):
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
@@ -47,7 +49,9 @@ class cached_property:
 
         return value
 
+
 class CachedSlotProperty:
+
     def __init__(self, name, function):
         self.name = name
         self.function = function
@@ -64,10 +68,12 @@ class CachedSlotProperty:
             setattr(instance, self.name, value)
             return value
 
+
 def cached_slot_property(name):
     def decorator(func):
         return CachedSlotProperty(name, func)
     return decorator
+
 
 def parse_time(timestamp):
     if timestamp:
@@ -106,6 +112,7 @@ def snowflake_time(id):
     """Returns the creation date in UTC of a discord id."""
     return datetime.datetime.utcfromtimestamp(((int(id) >> 22) + DISCORD_EPOCH) / 1000)
 
+
 def time_snowflake(datetime_obj, high=False):
     """Returns a numeric snowflake pretending to be created at the given date.
 
@@ -122,7 +129,8 @@ def time_snowflake(datetime_obj, high=False):
     unix_seconds = (datetime_obj - type(datetime_obj)(1970, 1, 1)).total_seconds()
     discord_millis = int(unix_seconds * 1000 - DISCORD_EPOCH)
 
-    return (discord_millis << 22) + (2**22-1 if high else 0)
+    return (discord_millis << 22) + (2**22 - 1 if high else 0)
+
 
 def find(predicate, seq):
     """A helper to return the first element found in the sequence
@@ -151,6 +159,7 @@ def find(predicate, seq):
         if predicate(element):
             return element
     return None
+
 
 def get(iterable, **attrs):
     """A helper that returns the first element in the iterable that meets
@@ -215,8 +224,10 @@ def _unique(iterable):
     adder = seen.add
     return [x for x in iterable if not (x in seen or adder(x))]
 
+
 def _null_event(*args, **kwargs):
     pass
+
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
@@ -226,12 +237,13 @@ def _get_mime_type_for_image(data):
     else:
         raise InvalidArgument('Unsupported image type given')
 
+
 def _bytes_to_base64_data(data):
     fmt = 'data:{mime};base64,{data}'
     mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
 
+
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
-

@@ -37,10 +37,13 @@ from .enums import Status, ChannelType, try_enum
 from .calls import GroupCall
 
 from collections import deque, namedtuple
-import copy, enum, math
+import copy
+import enum
+import math
 import datetime
 import asyncio
 import logging
+
 
 class ListenerType(enum.Enum):
     chunk = 0
@@ -49,7 +52,9 @@ Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
 log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'servers'))
 
+
 class ConnectionState:
+
     def __init__(self, dispatch, chunker, syncer, max_messages, *, loop):
         self.loop = loop
         self.max_messages = max_messages
@@ -288,7 +293,7 @@ class ConnectionState:
         self.user = User(**data)
 
     def parse_channel_delete(self, data):
-        server =  self._get_server(data.get('guild_id'))
+        server = self._get_server(data.get('guild_id'))
         if server is not None:
             channel_id = data.get('id')
             channel = server.get_channel(channel_id)
@@ -414,7 +419,7 @@ class ConnectionState:
         self.dispatch('server_emojis_update', before_emojis, server.emojis)
 
     def _get_create_server(self, data):
-        if data.get('unavailable') == False:
+        if data.get('unavailable') is False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the server has become available
             # and is therefore in the cache
@@ -433,14 +438,14 @@ class ConnectionState:
         if chunks:
             yield from asyncio.wait(chunks)
 
-        if unavailable == False:
+        if not unavailable:
             self.dispatch('server_available', server)
         else:
             self.dispatch('server_join', server)
 
     def parse_guild_create(self, data):
         unavailable = data.get('unavailable')
-        if unavailable == True:
+        if unavailable:
             # joined a server with unavailable == True so..
             return
 
@@ -448,7 +453,7 @@ class ConnectionState:
 
         # check if it requires chunking
         if server.large:
-            if unavailable == False:
+            if not unavailable:
                 # check if we're waiting for 'useful' READY
                 # and if we are, we don't want to dispatch any
                 # event such as server_join or server_available
@@ -471,7 +476,7 @@ class ConnectionState:
             return
 
         # Dispatch available if newly available
-        if unavailable == False:
+        if not unavailable:
             self.dispatch('server_available', server)
         else:
             self.dispatch('server_join', server)
@@ -594,7 +599,7 @@ class ConnectionState:
             member = None
             user_id = data.get('user_id')
             is_private = getattr(channel, 'is_private', None)
-            if is_private == None:
+            if is_private is None:
                 return
 
             if is_private:

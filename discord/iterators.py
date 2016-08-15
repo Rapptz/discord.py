@@ -32,7 +32,9 @@ from .object import Object
 
 PY35 = sys.version_info >= (3, 5)
 
+
 class LogsFromIterator:
+
     @staticmethod
     def create(client, channel, limit, *, before=None, after=None, reverse=False):
         """Create a proper iterator depending on parameters.
@@ -99,7 +101,9 @@ class LogsFromIterator:
                 # we didn't get any new messages so stop looping
                 raise StopAsyncIteration()
 
+
 class LogsFromBeforeIterator(LogsFromIterator):
+
     def __init__(self, client, channel, limit, before):
         super().__init__(client, channel, limit)
         self.before = before
@@ -116,11 +120,13 @@ class LogsFromBeforeIterator(LogsFromIterator):
                 for element in data:
                     yield from self.messages.put(Message(channel=self.channel, **element))
 
+
 class LogsFromAfterIterator(LogsFromIterator):
     """Iterator for retrieving "after" style responses.
 
     Recommended to use with reverse=True - this will return messages oldest to newest.
     With reverse=False, you'll recieve messages 99-0, 199-100, etc."""
+
     def __init__(self, client, channel, limit, after, *, reverse=False):
         super().__init__(client, channel, limit)
         self.after = after
@@ -138,8 +144,10 @@ class LogsFromAfterIterator(LogsFromIterator):
                 for element in (data if not self.reverse else reversed(data)):
                     yield from self.messages.put(Message(channel=self.channel, **element))
 
+
 class LogsFromBeforeAfterIterator(LogsFromIterator):
     """Newest -> Oldest."""
+
     def __init__(self, client, channel, limit, before, after):
         super().__init__(client, channel, limit)
         self.before = before
@@ -158,10 +166,12 @@ class LogsFromBeforeAfterIterator(LogsFromIterator):
                 if int(data[-1]['id']) <= int(self.after.id):
                     data = filter(lambda d: int(d['id']) > int(self.after.id), data)
                 for element in data:
-                        yield from self.messages.put(Message(channel=self.channel, **element))
+                    yield from self.messages.put(Message(channel=self.channel, **element))
+
 
 class LogsFromBeforeAfterReversedIterator(LogsFromIterator):
     """Oldest -> Newest."""
+
     def __init__(self, client, channel, limit, before, after):
         super().__init__(client, channel, limit)
         self.before = before

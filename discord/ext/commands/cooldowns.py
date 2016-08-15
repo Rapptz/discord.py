@@ -28,11 +28,13 @@ import time
 
 __all__ = ['BucketType', 'Cooldown', 'CooldownMapping']
 
+
 class BucketType(enum.Enum):
     default = 0
-    user    = 1
-    server  = 2
+    user = 1
+    server = 2
     channel = 3
+
 
 class Cooldown:
     __slots__ = ['rate', 'per', 'type', '_window', '_tokens', '_last']
@@ -78,7 +80,9 @@ class Cooldown:
     def __repr__(self):
         return '<Cooldown rate: {0.rate} per: {0.per} window: {0._window} tokens: {0._tokens}>'.format(self)
 
+
 class CooldownMapping:
+
     def __init__(self, original):
         self._cache = {}
         self._cooldown = original

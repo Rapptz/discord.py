@@ -35,6 +35,7 @@ from .member import Member
 
 Overwrites = namedtuple('Overwrites', 'id allow deny type')
 
+
 class Channel(Hashable):
     """Represents a Discord server channel.
 
@@ -81,9 +82,9 @@ class Channel(Hashable):
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
-                  'is_private', 'type', 'bitrate', 'user_limit',
-                  '_permission_overwrites' ]
+    __slots__ = ['voice_members', 'name', 'id', 'server', 'topic', 'position',
+                 'is_private', 'type', 'bitrate', 'user_limit',
+                 '_permission_overwrites']
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -280,6 +281,7 @@ class Channel(Hashable):
 
         return base
 
+
 class PrivateChannel(Hashable):
     """Represents a Discord private channel.
 
@@ -408,5 +410,3 @@ class PrivateChannel(Hashable):
             base.kick_members = True
 
         return base
-
-
