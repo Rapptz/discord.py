@@ -30,6 +30,7 @@ import datetime
 from base64 import b64encode
 import asyncio
 import json
+import inspect
 
 DISCORD_EPOCH = 1420070400000
 
@@ -142,13 +143,16 @@ def find(predicate, seq):
     Parameters
     -----------
     predicate
-        A function that returns a boolean-like result.
+        A function or coroutine that returns a boolean-like result.
     seq : iterable
         The iterable to search through.
     """
 
     for element in seq:
-        if predicate(element):
+        result = predicate(element)
+        if inspect.isawaitable(result):
+            result = await result
+        if result:
             return element
     return None
 
