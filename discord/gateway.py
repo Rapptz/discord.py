@@ -318,6 +318,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             state.sequence = None
             state.session_id = None
             if data == True:
+                yield from self.close()
                 raise ResumeWebSocket()
 
             yield from self.identify()
@@ -459,11 +460,11 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             self._connection._remove_voice_client(guild_id)
 
     @asyncio.coroutine
-    def close(self, code=1000, reason=''):
+    def close_connection(self, force=False):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        yield from super().close(code, reason)
+        yield from super().close_connection(force=force)
 
 class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements the websocket protocol for handling voice connections.
@@ -605,10 +606,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             raise ConnectionClosed(e) from e
 
     @asyncio.coroutine
-    def close(self, code=1000, reason=''):
+    def close_connection(self, force=False):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        yield from super().close(code, reason)
+        yield from super().close_connection(force=force)
 
 
