@@ -155,7 +155,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     GUILD_SYNC         = 12
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, max_size=None, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.max_size = None
         # an empty dispatcher to prevent crashes
         self._dispatch = lambda *args: None
         # generic event listeners
