@@ -675,3 +675,212 @@ The following exceptions are thrown by the library.
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
+
+.. currentmodule:: discord.ext.commands
+
+Commands Ext
+--------------
+
+The following section outlines the commands extension module.
+
+Introduction
+~~~~~~~~~~~~
+
+The commands extension module was designed to be a rich and powerful extension to discord.py that allows you to quickly and easily create a Discord bot. In order to use it, you should first initialise the :class:`Bot` class by declaring it as a variable or subclassing it: ::
+
+    import discord
+    from discord.ext import commands
+
+    bot = commands.Bot(command_prefix='?', description="My first bot")
+
+After doing that, you can register new event and command functions using the decorators :meth:`discord.Client.event` and :meth:`command`. A basic example of usage of this is below. ::
+
+    @bot.event
+    async def on_ready():
+        print('Logged in as {0.name} ({0.id})'.format(bot.user))
+
+    @bot.command()
+    async def add(left : int, right : int):
+        """Adds two numbers together."""
+        await bot.say(left + right)
+
+    bot.run('token')
+
+One of the last (if not the last) functions that should be called in your script is :meth:`discord.Client.run`, along with the login details of the account you want to run the bot on. For OAuth accounts, this is passed as a token.
+
+Arguments for commands should be added in the order that they will be required in, and the type they will be converted to. In the example above, the command `add` takes two arguments, `left` and `right`, both of which will be converted to integers, and then added together and sent as a response using :meth:`Bot.say`.
+
+You can pass the :class:`Context` object associated with the invoked command by adding `pass_context=True` to the decorator. This will allow you to obtain, for example, the invoking :class:`discord.Message` object. It should be added as the first paramater of the function. ::
+
+    @bot.command(pass_context=True)
+    async def add(ctx, left : int, right : int):
+        """Adds two numbers together."""
+        print(ctx.message.author)
+        await bot.say(left + right)
+
+The code above gets the author of the :class:`discord.Message` object and prints it to stdout, as a basic example of its usage. Creating subcommands are easy enough too, by using the :meth:`group` decorator. It will act as the main command, and you can pass the context to that too to check if a subcommand was actually used or if the command was just used on its own. ::
+
+    @bot.group(pass_context=True)
+    async def foo(ctx):
+        """Base command."""
+        if ctx.invoked_subcommand is None:
+            await bot.say('Nope.')
+
+    @test.command()
+    async def bar():
+        """Subcommand."""
+        await bot.say('Yes.')
+
+Bot
+~~~
+
+.. autoclass:: Bot
+    :members:
+
+.. autofunction:: discord.ext.commands.when_mentioned
+
+.. autofunction:: discord.ext.commands.when_mentioned_or
+
+Context
+~~~~~~~
+
+    .. warning::
+
+        The invocation context of a command is passed using :attr:`Command.pass_context`.
+        You should never create this class manually.
+
+.. autoclass:: Context
+    :members:
+
+GroupMixin
+~~~~~~~~~~
+
+.. autoclass:: GroupMixin
+    :members:
+
+Converter
+~~~~~~~~~~
+
+.. autoclass:: Converter
+    :members:
+
+.. autoclass:: MemberConverter
+    :members:
+
+.. autoclass:: ChannelConverter
+    :members:
+
+.. autoclass:: ColourConverter
+    :members:
+
+.. autoclass:: RoleConverter
+    :members:
+
+.. autoclass:: GameConverter
+    :members:
+
+.. autoclass:: InviteConverter
+    :members:
+
+Formatter
+~~~~~~~~~~
+
+.. autoclass:: Paginator
+    :members:
+
+.. autoclass:: HelpFormatter
+    :members:
+
+Event Reference
+~~~~~~~~~~~~~~~
+
+.. function:: on_command_error(exception, context)
+
+    Called when an error occurs within a :class:`Command`
+
+    :param exception: The `Exception` that occurred
+    :param context: The :class:`Context` associated with the error
+
+Utility Functions
+~~~~~~~~~~~~~~~~~
+.. autofunction:: command
+
+.. autofunction:: group
+
+.. autofunction:: check
+
+.. autofunction:: has_role
+
+.. autofunction:: has_any_role
+
+.. autofunction:: has_permissions
+
+.. autofunction:: bot_has_role
+
+.. autofunction:: bot_has_any_role
+
+.. autofunction:: cooldown
+
+Enumerations
+~~~~~~~~~~~~
+
+.. class:: discord.ext.commands.cooldowns.BucketType
+
+    Specifies the type of bucket, used for cooldowns.
+
+    .. attribute:: default
+
+        Global basis.
+    .. attribute:: user
+
+        Per-user basis.
+    .. attribute:: server
+
+        Per-server basis.
+    .. attribute:: channel
+
+        Per-channel basis.
+
+Data Classes
+~~~~~~~~~~~~
+
+    .. warning::
+
+        Data classes should never be created manually.
+
+Command
+*******
+
+.. autoclass:: Command
+    :members:
+
+Group
+*****
+
+.. autoclass:: Group
+    :members:
+
+Exceptions
+~~~~~~~~~~~~
+
+.. autoexception:: CommandError
+
+.. autoexception:: UserInputError
+
+.. autoexception:: CommandNotFound
+
+.. autoexception:: MissingRequiredArgument
+
+.. autoexception:: TooManyArguments
+
+.. autoexception:: BadArgument
+
+.. autoexception:: NoPrivateMessage
+
+.. autoexception:: CheckFailure
+
+.. autoexception:: DisabledCommand
+
+.. autoexception:: CommandInvokeError
+
+.. autoexception:: CommandOnCooldown
