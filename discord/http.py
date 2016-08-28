@@ -31,6 +31,7 @@ import sys
 import logging
 import inspect
 import weakref
+import datetime
 from random import randint as random_integer
 
 log = logging.getLogger(__name__)
@@ -72,6 +73,9 @@ class HTTPClient:
         self.connector = connector
         self.session = aiohttp.ClientSession(connector=connector, loop=self.loop)
         self._locks = weakref.WeakValueDictionary()
+        self._limits = {}
+        self._global_limit_over = asyncio.Event(loop=self.loop)
+        self._global_limit_over.set()
         self.token = None
         self.bot_token = False
 
@@ -85,6 +89,15 @@ class HTTPClient:
             lock = asyncio.Lock(loop=self.loop)
             if bucket is not None:
                 self._locks[bucket] = lock
+
+        limit = self._limits.get(bucket)
+        if limit is None:
+            limit = {
+                'limit': 1,
+                'remaining': 1,
+                'reset': 0
+            }
+            self._limits[bucket] = limit
 
         # header creation
         headers = {
@@ -102,11 +115,42 @@ class HTTPClient:
         kwargs['headers'] = headers
         with (yield from lock):
             for tries in range(5):
+
+                # wait if we are globally rate limited
+                yield from self._global_limit_over.wait()
+
+                if limit['remaining'] == 0:
+                    now = int(datetime.datetime.utcnow().timestamp())
+                    resettime = int(limit['reset'])
+                    diff = resettime - now
+                    if diff > 0:
+                        fmt = "reached rate limit, sleeping until {} ({} secs)"
+                        log.debug(fmt.format(limit['reset'], diff))
+                        yield from asyncio.sleep(diff)
+                        # reset in case server doesn't send us headers
+                        limit = {
+                            'limit': 1,
+                            'remaining': 1,
+                            'reset': 0
+                        }
+
                 r = yield from self.session.request(method, url, **kwargs)
                 log.debug(self.REQUEST_LOG.format(method=method, url=url, status=r.status, json=kwargs.get('data')))
                 try:
                     # even errors have text involved in them so this is safe to call
                     data = yield from json_or_text(r)
+
+                    # set limits per response headers
+                    try:
+                        if all (k in r.headers for k in ('X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset')):
+                            limit['limit'] = int(r.headers['X-RateLimit-Limit'])
+                            limit['remaining'] = int(r.headers['X-RateLimit-Remaining'])
+                            limit['reset'] = int(r.headers['X-RateLimit-Reset'])
+                            fmt = "New rate limits: {}, Remaining: {}, Reset: {}"
+                            log.debug(fmt.format(limit['limit'], limit['remaining'], limit['reset']))
+                    except:
+                        fmt = "Error parsing rate limit headers Limit: {}, Remaining: {}, Reset: {}"
+                        log.debug(fmt.format(r.headers['X-RateLimit-Limit'], r.headers['X-RateLimit-Remaining'], r.headers['X-RateLimit-Reset']))
 
                     # the request was successful so just return the text/json
                     if 300 > r.status >= 200:
@@ -117,10 +161,23 @@ class HTTPClient:
                     if r.status == 429:
                         fmt = 'We are being rate limited. Retrying in {:.2} seconds. Handled under the bucket "{}"'
 
+                        limitglobal = False
+                        if 'X-RateLimit-Global' in r.headers:
+                            limitglobal = r.headers['X-RateLimit-Global'].lower() == "true"
+                        elif 'global' in data:
+                            limitglobal = data['global']
+
+                        # clear the global rate limit Event
+                        if limitglobal:
+                            self._global_limit_over.clear()
+
                         # sleep a bit
                         retry_after = data['retry_after'] / 1000.0
                         log.info(fmt.format(retry_after, bucket))
                         yield from asyncio.sleep(retry_after)
+
+                        if limitglobal:
+                            self._global_limit_over.set()
                         continue
 
                     # we've received a 502, unconditional retry
