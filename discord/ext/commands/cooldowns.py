@@ -43,6 +43,7 @@ class Cooldown:
         self.type = type
         self._window = 0.0
         self._tokens = self.rate
+        self._last = 0
 
         if not isinstance(self.type, BucketType):
             raise TypeError('Cooldown type must be a BucketType')
@@ -74,6 +75,7 @@ class Cooldown:
     
     def reset(self):
         self._tokens = self.rate
+        self._last = 0
         
     def copy(self):
         return Cooldown(self.rate, self.per, self.type)

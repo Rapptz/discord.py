@@ -337,11 +337,9 @@ class Command:
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
-
     def reset_cooldown(self, ctx):
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx)
-            bucket.is_rate_limited()
             bucket.reset()
 
     @asyncio.coroutine
