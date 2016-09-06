@@ -337,6 +337,18 @@ class Command:
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
+    def reset_cooldown(self, ctx):
+        """Resets the cooldown on this command.
+
+        Parameters
+        -----------
+        ctx: :class:`Context`
+            The invocation context to reset the cooldown under.
+        """
+        if self._buckets.valid:
+            bucket = self._buckets.get_bucket(ctx)
+            bucket.reset()
+
     @asyncio.coroutine
     def invoke(self, ctx):
         ctx.command = self
