@@ -71,7 +71,10 @@ class Cooldown:
         # so update the window to point to our current time frame
         if self._tokens == 0:
             self._window = current
-
+    
+    def reset(self):
+        self._tokens = self.rate
+        
     def copy(self):
         return Cooldown(self.rate, self.per, self.type)
 
