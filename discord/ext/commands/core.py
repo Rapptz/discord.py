@@ -331,6 +331,12 @@ class Command:
         if not self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
+    @asyncio.coroutine
+    def prepare(self, ctx):
+        ctx.command = self
+        self._verify_checks(ctx)
+        yield from self._parse_arguments(ctx)
+
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx)
             retry_after = bucket.is_rate_limited()
@@ -351,9 +357,7 @@ class Command:
 
     @asyncio.coroutine
     def invoke(self, ctx):
-        ctx.command = self
-        self._verify_checks(ctx)
-        yield from self._parse_arguments(ctx)
+        yield from self.prepare(ctx)
 
         # terminate the invoked_subcommand chain.
         # since we're in a regular command (and not a group) then
@@ -580,9 +584,7 @@ class Group(GroupMixin, Command):
     def invoke(self, ctx):
         early_invoke = not self.invoke_without_command
         if early_invoke:
-            ctx.command = self
-            self._verify_checks(ctx)
-            yield from self._parse_arguments(ctx)
+            yield from self.prepare(ctx)
 
         view = ctx.view
         previous = view.index
@@ -604,11 +606,7 @@ class Group(GroupMixin, Command):
             # undo the trigger parsing
             view.index = previous
             view.previous = previous
-            ctx.command = self
-            self._verify_checks(ctx)
-            yield from self._parse_arguments(ctx)
-            injected = inject_context(ctx, self.callback)
-            yield from injected(*ctx.args, **ctx.kwargs)
+            yield from super().invoke(ctx)
 
 # Decorators
 
