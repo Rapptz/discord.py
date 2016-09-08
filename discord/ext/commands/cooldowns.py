@@ -43,6 +43,7 @@ class Cooldown:
         self.type = type
         self._window = 0.0
         self._tokens = self.rate
+        self._last = 0
 
         if not isinstance(self.type, BucketType):
             raise TypeError('Cooldown type must be a BucketType')
@@ -71,7 +72,12 @@ class Cooldown:
         # so update the window to point to our current time frame
         if self._tokens == 0:
             self._window = current
-
+    
+    def reset(self):
+        """Resets our token so a new rate limit window will be started"""
+        self._tokens = self.rate
+        self._last = 0
+        
     def copy(self):
         return Cooldown(self.rate, self.per, self.type)
 
