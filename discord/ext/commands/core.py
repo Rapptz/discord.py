@@ -338,6 +338,7 @@ class Command:
                 raise CommandOnCooldown(bucket, retry_after)
 
     def reset_cooldown(self, ctx):
+        """A method used to reset the cooldown on this command"""
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx)
             bucket.reset()

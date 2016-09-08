@@ -74,6 +74,7 @@ class Cooldown:
             self._window = current
     
     def reset(self):
+        """Resets our token so a new rate limit window will be started"""
         self._tokens = self.rate
         self._last = 0
         
