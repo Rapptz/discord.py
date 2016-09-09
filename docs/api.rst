@@ -471,6 +471,15 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: us_east
 
         The US East region.
+    .. attribute:: us_central
+
+        The US Central region.
+    .. attribute:: eu_west
+
+        The EU West region.
+    .. attribute:: eu_central
+
+        The EU Central region.
     .. attribute:: singapore
 
         The Singapore region.

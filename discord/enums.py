@@ -48,6 +48,8 @@ class ServerRegion(Enum):
     us_east       = 'us-east'
     us_south      = 'us-south'
     us_central    = 'us-central'
+    eu_west       = 'eu-west'
+    eu_central    = 'eu-central'
     singapore     = 'singapore'
     london        = 'london'
     sydney        = 'sydney'
