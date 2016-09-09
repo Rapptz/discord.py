@@ -1965,6 +1965,9 @@ class Client:
 
             fields['owner_id'] = fields['owner'].id
 
+        if 'region' in fields:
+            fields['region'] = str(fields['region'])
+
         yield from self.http.edit_server(server.id, **fields)
 
     @asyncio.coroutine
