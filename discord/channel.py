@@ -245,16 +245,22 @@ class Channel(Hashable):
             return Permissions.all()
 
         member_role_ids = set(map(lambda r: r.id, member.roles))
+        denies = 0
+        allows = 0
 
         # Apply channel specific role permission overwrites
         for overwrite in self._permission_overwrites:
             if overwrite.type == 'role' and overwrite.id in member_role_ids:
-                base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
+                denies |= overwrite.deny
+                allows |= overwrite.allow
+
+        base.handle_overwrite(allow=allows, deny=denies)
 
         # Apply member specific permission overwrites
         for overwrite in self._permission_overwrites:
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
+                break
 
         # default channels can always be read
         if self.is_default:
