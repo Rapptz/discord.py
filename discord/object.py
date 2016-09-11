@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time
+from . import utils
 
 class Object:
     """Represents a generic Discord object.
