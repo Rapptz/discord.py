@@ -460,6 +460,9 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: channel_icon_change
 
         The system message denoting that a channel's icon has been changed.
+    .. attribute:: pins_add
+
+        The system message denoting that a pinned message has been added to a channel.
 
 .. class:: ServerRegion
 
