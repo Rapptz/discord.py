@@ -64,6 +64,16 @@ class ServerRegion(Enum):
     def __str__(self):
         return self.value
 
+class VerificationLevel(Enum):
+    none       = 0
+    low        = 1
+    medium     = 2
+    high       = 3
+    table_flip = 3
+
+    def __str__(self):
+        return self.name
+
 class Status(Enum):
     online = 'online'
     offline = 'offline'

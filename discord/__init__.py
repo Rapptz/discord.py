@@ -34,7 +34,7 @@ from .invite import Invite
 from .object import Object
 from . import utils, opus, compat
 from .voice_client import VoiceClient
-from .enums import ChannelType, ServerRegion, Status, MessageType
+from .enums import ChannelType, ServerRegion, Status, MessageType, VerificationLevel
 from collections import namedtuple
 
 import logging

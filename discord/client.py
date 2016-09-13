@@ -38,7 +38,7 @@ from .errors import *
 from .state import ConnectionState
 from .permissions import Permissions, PermissionOverwrite
 from . import utils, compat
-from .enums import ChannelType, ServerRegion
+from .enums import ChannelType, ServerRegion, VerificationLevel
 from .voice_client import VoiceClient
 from .iterators import LogsFromIterator
 from .gateway import *
@@ -1930,6 +1930,8 @@ class Client:
         owner : :class:`Member`
             The new owner of the server to transfer ownership to. Note that you must
             be owner of the server to do this.
+        verification_level: :class:`VerificationLevel`
+            The new verification level for the server.
 
         Raises
         -------
@@ -1968,6 +1970,11 @@ class Client:
         if 'region' in fields:
             fields['region'] = str(fields['region'])
 
+        level = fields.get('verification_level', server.verification_level)
+        if not isinstance(level, VerificationLevel):
+            raise InvalidArgument('verification_level field must of type VerificationLevel')
+
+        fields['verification_level'] = level.value
         yield from self.http.edit_server(server.id, **fields)
 
     @asyncio.coroutine

@@ -30,7 +30,7 @@ from .member import Member
 from .emoji import Emoji
 from .game import Game
 from .channel import Channel
-from .enums import ServerRegion, Status
+from .enums import ServerRegion, Status, try_enum, VerificationLevel
 from .mixins import Hashable
 
 class Server(Hashable):
@@ -92,12 +92,15 @@ class Server(Hashable):
         Indicates the server's two factor authorisation level. If this value is 0 then
         the server does not require 2FA for their administrative members. If the value is
         1 then they do.
+    verification_level: :class:`VerificationLevel`
+        The server's verification level.
     """
 
     __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'owner', 'unavailable', 'name', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
-                 'large', 'owner_id', 'mfa_level', 'emojis']
+                 'large', 'owner_id', 'mfa_level', 'emojis',
+                 'verification_level' ]
 
     def __init__(self, **kwargs):
         self._channels = {}
@@ -176,12 +179,8 @@ class Server(Hashable):
             self._member_count = member_count
 
         self.name = guild.get('name')
-        self.region = guild.get('region')
-        try:
-            self.region = ServerRegion(self.region)
-        except:
-            pass
-
+        self.region = try_enum(ServerRegion, guild.get('region'))
+        self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)

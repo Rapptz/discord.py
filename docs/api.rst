@@ -512,6 +512,30 @@ All enumerations are subclasses of `enum`_.
 
         The Amsterdam region for VIP servers.
 
+.. class:: VerificationLevel
+
+    Specifies a :class:`Server`\'s verification level, which is the criteria in
+    which a member must meet before being able to send messages to the server.
+
+    .. attribute:: none
+
+        No criteria set.
+    .. attribute:: low
+
+        Member must have a verified email on their Discord account.
+    .. attribute:: medium
+
+        Member must have a verified email and be registered on Discord for more
+        than five minutes.
+    .. attribute:: high
+
+        Member must have a verified email, be registered on Discord for more
+        than five minutes, and be a member of the server itself for more than
+        ten minutes.
+    .. attribute:: table_flip
+
+        An alias for :attr:`high`.
+
 .. class:: Status
 
     Specifies a :class:`Member` 's status.
