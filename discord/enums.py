@@ -42,6 +42,7 @@ class MessageType(Enum):
     call                = 3
     channel_name_change = 4
     channel_icon_change = 5
+    pins_add            = 6
 
 class ServerRegion(Enum):
     us_west       = 'us-west'

@@ -295,6 +295,9 @@ class Message:
         if self.type is MessageType.default:
             return self.content
 
+        if self.type is MessageType.pins_add:
+            return '{0.name} pinned a message to this channel.'.format(self.author)
+
         if self.type is MessageType.recipient_add:
             return '{0.name} added {1.name} to the group.'.format(self.author, self.mentions[0])
 
@@ -307,14 +310,15 @@ class Message:
         if self.type is MessageType.channel_icon_change:
             return '{0.author.name} changed the channel icon.'.format(self)
 
-        # we're at the call message type now, which is a bit more complicated.
-        # we can make the assumption that Message.channel is a PrivateChannel
-        # with the type ChannelType.group or ChannelType.private
-        call_ended = self.call.ended_timestamp is not None
+        if self.type is MessageType.call:
+            # we're at the call message type now, which is a bit more complicated.
+            # we can make the assumption that Message.channel is a PrivateChannel
+            # with the type ChannelType.group or ChannelType.private
+            call_ended = self.call.ended_timestamp is not None
 
-        if self.channel.me in self.call.participants:
-            return '{0.author.name} started a call.'.format(self)
-        elif call_ended:
-            return 'You missed a call from {0.author.name}'.format(self)
-        else:
-            return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
+            if self.channel.me in self.call.participants:
+                return '{0.author.name} started a call.'.format(self)
+            elif call_ended:
+                return 'You missed a call from {0.author.name}'.format(self)
+            else:
+                return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
