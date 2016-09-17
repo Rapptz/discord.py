@@ -483,7 +483,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     SESSION_DESCRIPTION
         Receive only. Gives you the secret key required for voice.
     SPEAKING
-        Send only. Notifies the client if you are currently speaking.
+        Send and receive. Notifies who is currently speaking (including you).
     """
 
     IDENTIFY            = 0
@@ -567,11 +567,16 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             yield from self.initial_connection(data)
         elif op == self.SESSION_DESCRIPTION:
             yield from self.load_secret_key(data)
+        elif op == self.SPEAKING:
+            self._connection.client_ssrc[data.get('ssrc')] = data.get('user_id')
+            self._connection.dispatch('speaking', data.get('speaking'), data.get('user_id'))
+
 
     @asyncio.coroutine
     def initial_connection(self, data):
         state = self._connection
         state.ssrc = data.get('ssrc')
+        stats.client_ssrc = {}
         state.voice_port = data.get('port')
         packet = bytearray(70)
         struct.pack_into('>I', packet, 0, state.ssrc)
