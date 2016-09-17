@@ -161,7 +161,8 @@ class Bot(GroupMixin, discord.Client):
         indicate what the prefix should be, or a callable that takes in the bot
         as its first parameter and :class:`discord.Message` as its second
         parameter and returns the prefix. This is to facilitate "dynamic"
-        command prefixes.
+        command prefixes. This callable can be either a regular function or
+        a coroutine.
 
         The command prefix could also be a list or a tuple indicating that
         multiple checks for the prefix should be used and the first one to
@@ -234,10 +235,14 @@ class Bot(GroupMixin, discord.Client):
 
     # internal helpers
 
+    @asyncio.coroutine
     def _get_prefix(self, message):
         prefix = self.command_prefix
         if callable(prefix):
-            return prefix(self, message)
+            ret = prefix(self, message)
+            if asyncio.iscoroutine(ret):
+                ret = yield from ret
+            return ret
         else:
             return prefix
 
@@ -787,7 +792,7 @@ class Bot(GroupMixin, discord.Client):
         if self._skip_check(message.author, self.user):
             return
 
-        prefix = self._get_prefix(message)
+        prefix = yield from self._get_prefix(message)
         invoked_prefix = prefix
 
         if not isinstance(prefix, (tuple, list)):
