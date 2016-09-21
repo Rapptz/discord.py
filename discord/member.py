@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import User
 from .game import Game
+from .permissions import Permissions
 from . import utils
 from .enums import Status, ChannelType
 from .colour import Colour
@@ -200,3 +201,29 @@ class Member(User):
             roles = sorted(self.roles, reverse=True)
             return roles[0]
         return None
+
+    @property
+    def server_permissions(self):
+        """Returns the member's server permissions.
+
+        This only takes into consideration the server permissions
+        and not most of the implied permissions or any of the
+        channel permission overwrites. For 100% accurate permission
+        calculation, please use either :meth;`permissions_in` or
+        :meth:`Channel.permissions_for`.
+
+        This does take into consideration server ownership and the
+        administrator implication.
+        """
+
+        if self.server.owner == self:
+            return Permissions.all()
+
+        base = Permissions.none()
+        for r in self.roles:
+            base.value |= r.permissions.value
+
+        if base.administrator:
+            return Permissions.all()
+
+        return base
