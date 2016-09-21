@@ -197,6 +197,6 @@ class Member(User):
         """
 
         if self.roles:
-            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
+            roles = sorted(self.roles, reverse=True)
             return roles[0]
         return None

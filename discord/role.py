@@ -34,17 +34,25 @@ class Role(Hashable):
 
     Supported Operations:
 
-    +-----------+------------------------------------+
-    | Operation |            Description             |
-    +===========+====================================+
-    | x == y    | Checks if two roles are equal.     |
-    +-----------+------------------------------------+
-    | x != y    | Checks if two roles are not equal. |
-    +-----------+------------------------------------+
-    | hash(x)   | Return the role's hash.            |
-    +-----------+------------------------------------+
-    | str(x)    | Returns the role's name.           |
-    +-----------+------------------------------------+
+    +-----------+------------------------------------------------------------------+
+    | Operation |                           Description                            |
+    +===========+==================================================================+
+    | x == y    | Checks if two roles are equal.                                   |
+    +-----------+------------------------------------------------------------------+
+    | x != y    | Checks if two roles are not equal.                               |
+    +-----------+------------------------------------------------------------------+
+    | x > y     | Checks if a role is higher than another in the hierarchy.        |
+    +-----------+------------------------------------------------------------------+
+    | x < y     | Checks if a role is lower than another in the hierarchy.         |
+    +-----------+------------------------------------------------------------------+
+    | x >= y    | Checks if a role is higher or equal to another in the hierarchy. |
+    +-----------+------------------------------------------------------------------+
+    | x <= y    | Checks if a role is lower or equal to another in the hierarchy.  |
+    +-----------+------------------------------------------------------------------+
+    | hash(x)   | Return the role's hash.                                          |
+    +-----------+------------------------------------------------------------------+
+    | str(x)    | Returns the role's name.                                         |
+    +-----------+------------------------------------------------------------------+
 
     Attributes
     ----------
@@ -79,6 +87,36 @@ class Role(Hashable):
 
     def __str__(self):
         return self.name
+
+    def __lt__(self, other):
+        if not isinstance(other, Role) or  not isinstance(self, Role):
+            return NotImplemented
+
+        if self.server != other.server:
+            raise RuntimeError('cannot compare roles from two different servers.')
+
+        if self.position < other.position:
+            return True
+
+        if self.position == other.position:
+            return self.id > other.id
+
+        return False
+
+    def __le__(self, other):
+        r = Role.__lt__(other, self)
+        if r is NotImplemented:
+            return NotImplemented
+        return not r
+
+    def __gt__(self, other):
+        return Role.__lt__(other, self)
+
+    def __ge__(self, other):
+        r = Role.__lt__(self, other)
+        if r is NotImplemented:
+            return NotImplemented
+        return not r
 
     def _update(self, **kwargs):
         self.id = kwargs.get('id')
