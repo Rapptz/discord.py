@@ -264,6 +264,15 @@ class Server(Hashable):
         """Returns the server's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
+    @property
+    def role_hierarchy(self):
+        """Returns the server's roles in the order of the hierarchy.
+
+        The first element of this list will be the highest role in the
+        hierarchy.
+        """
+        return sorted(self.roles, reverse=True)
+
     def get_member_named(self, name):
         """Returns the first member found that matches the name provided.
 
