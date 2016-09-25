@@ -187,7 +187,7 @@ Basically, these functions should not be called.
 How do I run something in the background?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/async/examples/background_task.py>`_
+`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_
 
 How do I get a specific User/Role/Channel/Server?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,7 +215,7 @@ Not at the moment. Writing documentation for stuff takes time. A lot of people g
 code. Others get by via asking questions in the `Discord server <https://discord.gg/0SBTUU1wZTXZNJPa>`_. Others look at the
 source code of `other existing bots <https://github.com/Rapptz/RoboDanny>`_.
 
-There is a `basic example <https://github.com/Rapptz/discord.py/blob/async/examples/basic_bot.py>`_ showcasing some
+There is a `basic example <https://github.com/Rapptz/discord.py/blob/master/examples/basic_bot.py>`_ showcasing some
 functionality.
 
 **Documentation is being worked on, it will just take some time to polish it**.
