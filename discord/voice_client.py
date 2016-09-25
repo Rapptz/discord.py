@@ -51,6 +51,7 @@ import shlex
 import functools
 import datetime
 import audioop
+import inspect
 
 log = logging.getLogger(__name__)
 
@@ -78,11 +79,12 @@ class StreamPlayer(threading.Thread):
         self.after = after
         self.delay = encoder.frame_length / 1000.0
         self._volume = 1.0
+        self._current_error = None
 
         if after is not None and not callable(after):
             raise TypeError('Expected a callable for the "after" parameter.')
 
-    def run(self):
+    def _do_run(self):
         self.loops = 0
         self._start = time.time()
         while not self._end.is_set():
@@ -110,13 +112,33 @@ class StreamPlayer(threading.Thread):
             delay = max(0, self.delay + (next_time - time.time()))
             time.sleep(delay)
 
+    def run(self):
+        try:
+            self._do_run()
+        except Exception as e:
+            self._current_error = e
+            self.stop()
+
     def stop(self):
         self._end.set()
         if self.after is not None:
             try:
-                self.after()
+                arg_count = len(inspect.signature(self.after).parameters)
+            except:
+                # if this ended up happening, a mistake was made.
+                arg_count = 0
+
+            try:
+                if arg_count == 0:
+                    self.after()
+                else:
+                    self.after(self)
             except:
                 pass
+
+    @property
+    def error(self):
+        return self._current_error
 
     @property
     def volume(self):
@@ -580,7 +602,8 @@ class VoiceClient:
         The stream player assumes that ``stream.read`` is a valid function
         that returns a *bytes-like* object.
 
-        The finalizer, ``after`` is called after the stream has been exhausted.
+        The finalizer, ``after`` is called after the stream has been exhausted
+        or an error occurred (see below).
 
         The following operations are valid on the ``StreamPlayer`` object:
 
@@ -603,11 +626,19 @@ class VoiceClient:
         |                     | equivalent to 100% and 0.0 is equal to 0%. The      |
         |                     | maximum the volume can be set to is 2.0 for 200%.   |
         +---------------------+-----------------------------------------------------+
+        | player.error        | The exception that stopped the player. If no error  |
+        |                     | happened, then this returns None.                   |
+        +---------------------+-----------------------------------------------------+
 
         The stream must have the same sampling rate as the encoder and the same
         number of channels. The defaults are 48000 Hz and 2 channels. You
         could change the encoder options by using :meth:`encoder_options`
         but this must be called **before** this function.
+
+        If an error happens while the player is running, the exception is caught and
+        the player is then stopped. The caught exception could then be retrieved
+        via  ``player.error``\. When the player is stopped in this matter, the
+        finalizer under ``after`` is called.
 
         Parameters
         -----------
@@ -615,8 +646,9 @@ class VoiceClient:
             The stream object to read from.
         after
             The finalizer that is called after the stream is exhausted.
-            All exceptions it throws are silently discarded. It is called
-            without parameters.
+            All exceptions it throws are silently discarded. This function
+            can have either no parameters or a single parameter taking in the
+            current player.
 
         Returns
         --------
