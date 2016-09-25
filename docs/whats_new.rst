@@ -8,6 +8,61 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _v0p12p0:
+
+v0.12.0
+---------
+
+This is a bug fix update that also comes with new features.
+
+New Features
+~~~~~~~~~~~~~
+
+- Add custom emoji support.
+
+    - Adds a new class to represent a custom Emoji named :class:`Emoji`
+    - Adds a utility generator function, :meth:`Client.get_all_emojis`.
+    - Adds a list of emojis on a server, :attr:`Server.emojis`.
+    - Adds a new event, :func:`on_server_emojis_update`.
+- Add new server regions to :class:`ServerRegion`
+
+    - :attr:`ServerRegion.eu_central` and :attr:`ServerRegion.eu_west`.
+- Add support for new pinned system message under :attr:`MessageType.pins_add`.
+- Add order comparisons for :class:`Role` to allow it to be compared with regards to hierarchy.
+
+    - This means that you can now do ``role_a > role_b`` etc to check if ``role_b`` is lower in the hierarchy.
+
+- Add :attr:`Server.role_hierarchy` to get the server's role hierarchy.
+- Add :attr:`Member.server_permissions` to get a member's server permissions without their channel specific overwrites.
+- Add :meth:`Client.get_user_info` to retrieve a user's info from their ID.
+- Add a new ``Player`` property, ``Player.error`` to fetch the error that stopped the player.
+
+    - To help with this change, a player's ``after`` function can now take a single parameter denoting the current player.
+- Add support for server verification levels.
+
+    - Adds a new enum called :class:`VerificationLevel`.
+    - This enum can be used in :meth:`Client.edit_server` under the ``verification_level`` keyword argument.
+    - Adds a new attribute in the server, :attr:`Server.verification_level`.
+- Add :attr:`Server.voice_client` shortcut property for :meth:`Client.voice_client_in`.
+
+    - This is technically old (was added in v0.10.0) but was undocumented until v0.12.0.
+
+For the command extension, the following are new:
+
+- Add custom emoji converter.
+- All default converters that can take IDs can now convert via ID.
+- Add coroutine support for ``Bot.command_prefix``.
+- Add a method to reset command cooldown.
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix bug that caused the library to not work with the latest ``websockets`` library.
+- Fix bug that leaked keep alive threads (:issue:`309`)
+- Fix bug that disallowed :class:`ServerRegion` from being used in :meth:`Client.edit_server`.
+- Fix bug in :meth:`Channel.permissions_for` that caused permission resolution to happen out of order.
+- Fix bug in :attr:`Member.top_role` that did not account for same-position roles.
+
 .. _v0p11p0:
 
 v0.11.0
@@ -35,6 +90,7 @@ New Features
 - Add :attr:`Server.mfa_level` to query a server's 2FA requirement.
 - Add :attr:`Permissions.external_emojis` permission.
 - Add :attr:`Member.voice` attribute that refers to a :class:`VoiceState`.
+
     - For backwards compatibility, the member object will have properties mirroring the old behaviour.
 
 For the command extension, the following are new:
