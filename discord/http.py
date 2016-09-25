@@ -515,3 +515,6 @@ class HTTPClient:
         except HTTPException as e:
             raise GatewayNotFound() from e
         return data.get('url') + '?encoding=json&v=6'
+
+    def get_user_info(self, user_id):
+        return self.get('{0.USERS}/{1}'.format(self, user_id), bucket=_func_())

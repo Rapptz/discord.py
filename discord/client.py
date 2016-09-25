@@ -2795,4 +2795,31 @@ class Client:
                        description=data['description'], icon=data['icon'],
                        owner=User(**data['owner']))
 
+    @asyncio.coroutine
+    def get_user_info(self, user_id):
+        """|coro|
 
+        Retrieves a :class:`User` based on their ID. This can only
+        be used by bot accounts. You do not have to share any servers
+        with the user to get this information, however many operations
+        do require that you do.
+
+        Parameters
+        -----------
+        user_id: str
+            The user's ID to fetch from.
+
+        Returns
+        --------
+        :class:`User`
+            The user you requested.
+
+        Raises
+        -------
+        NotFound
+            A user with this ID does not exist.
+        HTTPException
+            Fetching the user failed.
+        """
+        data = yield from self.http.get_user_info(user_id)
+        return User(**data)
