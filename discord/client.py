@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import __version__ as library_version
-from . import endpoints
 from .user import User
 from .member import Member
 from .channel import Channel, PrivateChannel
@@ -58,8 +57,6 @@ from os.path import split as path_split
 
 PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
-request_logging_format = '{method} {response.url} has returned {response.status}'
-request_success_log = '{response.url} with {json} received {data}'
 
 AppInfo = namedtuple('AppInfo', 'id name description icon owner')
 def app_info_icon_url(self):
@@ -1665,7 +1662,7 @@ class Client:
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
-        url = '{0}/{1.server.id}/channels'.format(endpoints.SERVERS, channel)
+        url = '{0}/{1.server.id}/channels'.format(self.http.GUILDS, channel)
         channels = [c for c in channel.server.channels if c.type is channel.type]
 
         if position >= len(channels):
@@ -2302,7 +2299,7 @@ class Client:
         if role.position == position:
             return  # Save discord the extra request.
 
-        url = '{0}/{1.id}/roles'.format(endpoints.SERVERS, server)
+        url = '{0}/{1.id}/roles'.format(self.http.GUILDS, server)
 
         change_range = range(min(role.position, position), max(role.position, position) + 1)
 

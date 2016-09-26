@@ -28,7 +28,7 @@ import sys
 import websockets
 import asyncio
 import aiohttp
-from . import utils, endpoints, compat
+from . import utils, compat
 from .enums import Status
 from .game import Game
 from .errors import GatewayNotFound, ConnectionClosed, InvalidArgument
