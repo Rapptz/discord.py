@@ -30,6 +30,7 @@ import datetime
 from base64 import b64encode
 import asyncio
 import json
+import warnings, functools
 
 DISCORD_EPOCH = 1420070400000
 
@@ -74,6 +75,21 @@ def parse_time(timestamp):
         return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
 
+def deprecated(instead=None):
+    def actual_decorator(func):
+        @functools.wraps(func)
+        def decorated(*args, **kwargs):
+            warnings.simplefilter('always', DeprecationWarning) # turn off filter
+            if instead:
+                fmt = "{0.__name__} is deprecated, use {1} instead."
+            else:
+                fmt = '{0.__name__} is deprecated.'
+
+            warnings.warn(fmt.format(func, instead), stacklevel=3, category=DeprecationWarning)
+            warnings.simplefilter('default', DeprecationWarning) # reset filter
+            return func(*args, **kwargs)
+        return decorated
+    return actual_decorator
 
 def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
     """A helper function that returns the OAuth2 URL for inviting the bot

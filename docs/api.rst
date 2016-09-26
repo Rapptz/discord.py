@@ -549,6 +549,17 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: idle
 
         The member is idle.
+    .. attribute:: dnd
+
+        The member is "Do Not Disturb".
+    .. attribute:: do_not_disturb
+
+        An alias for :attr:`dnd`.
+    .. attribute:: invisible
+
+        The member is "invisible". In reality, this is only used in sending
+        a presence a la :meth:`Client.change_presence`. When you receive a
+        user's presence this will be :attr:`offline` instead.
 
 .. _discord_api_data:
 
