@@ -127,7 +127,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b00011111111101111111110000111111)
+        return cls(0b00111111111101111111110000111111)
 
     @classmethod
     def all_channel(cls):
@@ -148,7 +148,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to True."""
-        return cls(0b00011100000000000000000000111111)
+        return cls(0b00111100000000000000000000111111)
 
     @classmethod
     def text(cls):
@@ -417,7 +417,21 @@ class Permissions:
     def manage_roles(self, value):
         self._set(28, value)
 
-    # 3 unused
+    @property
+    def manage_emojis(self):
+        """Returns True if a user can create or edit emojis.
+
+        This also corresponds to the "manage permissions" channel-specific override.
+        """
+        return self._bit(29)
+
+    @manage_emojis.setter
+    def manage_emojis(self, value):
+        self._set(29, value)
+
+    # 2 unused
+
+    # after these 32 bits, there's 21 more unused ones technically
 
 def augment_from_permissions(cls):
     cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
