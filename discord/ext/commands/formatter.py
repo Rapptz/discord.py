@@ -74,13 +74,24 @@ class Paginator:
     def add_line(self, line='', *, empty=False):
         """Adds a line to the current page.
 
+        If the line exceeds the :attr:`max_size` then an exception
+        is raised.
+
         Parameters
         -----------
         line: str
             The line to add.
         empty: bool
             Indicates if another empty line should be added.
+
+        Raises
+        ------
+        RuntimeError
+            The line was too big for the current :attr:`max_size`.
         """
+        if len(line) >= self.max_size:
+            raise RuntimeError('Line exceeds maximum page size %s' % (self.max_size))
+
         if self._count + len(line) + 1 > self.max_size:
             self.close_page()
 
