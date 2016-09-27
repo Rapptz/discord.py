@@ -41,6 +41,7 @@ from .enums import ChannelType, ServerRegion, VerificationLevel, Status
 from .voice_client import VoiceClient
 from .iterators import LogsFromIterator
 from .gateway import *
+from .emoji import Emoji
 from .http import HTTPClient
 
 import asyncio
@@ -2119,6 +2120,92 @@ class Client:
 
         data = yield from self.http.estimate_pruned_members(server.id, days)
         return data['pruned']
+
+    @asyncio.coroutine
+    def create_custom_emoji(self, server, *, name, image):
+        """|coro|
+
+        Creates a custom :class:`Emoji` for a :class:`Server`.
+
+        This endpoint is only allowed for user bots or white listed
+        bots. If this is done by a user bot then this is a local
+        emoji that can only be used inside that server.
+
+        There is currently a limit of 50 local emotes per server.
+
+        Parameters
+        -----------
+        server: :class:`Server`
+            The server to add the emoji to.
+        name: str
+            The emoji name. Must be at least 2 characters.
+        image: bytes
+            The *bytes-like* object representing the image data to use.
+            Only JPG and PNG images are supported.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The created emoji.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to create emojis.
+        HTTPException
+            An error occurred creating an emoji.
+        """
+
+        img = utils._bytes_to_base64_data(image)
+        data = yield from self.http.create_custom_emoji(server.id, name, img)
+        return Emoji(server=server, **data)
+
+    @asyncio.coroutine
+    def delete_custom_emoji(self, emoji):
+        """|coro|
+
+        Deletes a custom :class:`Emoji` from a :class:`Server`.
+
+        This follows the same rules as :meth:`create_custom_emoji`.
+
+        Parameters
+        -----------
+        emoji: :class:`Emoji`
+            The emoji to delete.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete emojis.
+        HTTPException
+            An error occurred deleting the emoji.
+        """
+
+        yield from self.http.delete_custom_emoji(emoji.server.id, emoji.id)
+
+    @asyncio.coroutine
+    def edit_custom_emoji(self, emoji, *, name):
+        """|coro|
+
+        Edits a :class:`Emoji`.
+
+        Parameters
+        -----------
+        emoji: :class:`Emoji`
+            The emoji to edit.
+        name: str
+            The new emoji name.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to edit emojis.
+        HTTPException
+            An error occurred editing the emoji.
+        """
+
+        yield from self.http.edit_custom_emoji(emoji.server.id, emoji.id, name=name)
+
 
     # Invite management
 
