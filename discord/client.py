@@ -1540,7 +1540,7 @@ class Client:
         client should go idle or not.
 
         .. deprecated:: v0.13.0
-            Use :meth:`change_status` instead.
+            Use :meth:`change_presence` instead.
 
         Parameters
         ----------
