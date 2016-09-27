@@ -8,6 +8,42 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _v0p13p0:
+
+v0.13.0
+---------
+
+This is a backwards compatible update with new features.
+
+New Features
+~~~~~~~~~~~~~
+
+- Add the ability to manage emojis.
+
+    - :meth:`Client.create_custom_emoji` to create new emoji.
+    - :meth:`Client.edit_custom_emoji` to edit an old emoji.
+    - :meth:`Client.delete_custom_emoji` to delete a custom emoji.
+- Add new :attr:`Permissions.manage_emojis` toggle.
+
+    - This applies for :class:`PermissionOverwrite` as well.
+- Add new statuses for :class:`Status`.
+
+    - :attr:`Status.dnd` (aliased with :attr:`Status.do_not_disturb`\) for Do Not Disturb.
+    - :attr:`Status.invisible` for setting your status to invisible (please see the docs for a caveat).
+- Deprecate :meth:`Client.change_status`
+
+    - Use :meth:`Client.change_presence` instead for better more up to date functionality.
+    - This method is subject for removal in a future API version.
+- Add :meth:`Client.change_presence` for changing your status with the new Discord API change.
+
+    - This is the only method that allows changing your status to invisible or do not disturb.
+
+Bug Fixes
+~~~~~~~~~~
+
+- Paginator pages do not exceed their max_size anymore (:issue:`340`)
+- Do Not Disturb users no longer show up offline due to the new :class:`Status` changes.
+
 .. _v0p12p0:
 
 v0.12.0
