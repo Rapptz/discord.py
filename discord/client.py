@@ -123,7 +123,7 @@ class Client:
     email
         The email used to login. This is only set if login is successful,
         otherwise it's None.
-    gateway
+    ws
         The websocket gateway the client is currently connected to. Could be None.
     loop
         The `event loop`_ that the client uses for HTTP requests and websocket operations.
