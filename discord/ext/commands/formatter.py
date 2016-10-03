@@ -90,7 +90,7 @@ class Paginator:
             The line was too big for the current :attr:`max_size`.
         """
         if len(line) > self.max_size - len(self.prefix) - 2:
-            raise RuntimeError('Line exceeds maximum page size %s' % (self.max_size))
+            raise RuntimeError('Line exceeds maximum page size %s' % (self.max_size - len(self.prefix) - 2))
 
         if self._count + len(line) + 1 > self.max_size:
             self.close_page()
