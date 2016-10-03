@@ -127,7 +127,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01011111111101111111110000111111)
+        return cls(0b01111111111101111111110000111111)
 
     @classmethod
     def all_channel(cls):
@@ -142,13 +142,13 @@ class Permissions:
         - change_nicknames
         - manage_nicknames
         """
-        return cls(0b00010011111101111111110000010001)
+        return cls(0b00110011111101111111110000010001)
 
     @classmethod
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to True."""
-        return cls(0b01011100000000000000000000111111)
+        return cls(0b01111100000000000000000000111111)
 
     @classmethod
     def text(cls):
@@ -418,18 +418,24 @@ class Permissions:
         self._set(28, value)
 
     @property
-    def manage_emojis(self):
-        """Returns True if a user can create or edit emojis.
+    def manage_webhooks(self):
+        """Returns True if a user can create, edit, or delete webhooks."""
+        return self._bit(29)
 
-        This also corresponds to the "manage permissions" channel-specific override.
-        """
+    @manage_webhooks.setter
+    def manage_webhooks(self, value):
+        self._set(29, value)
+
+    @property
+    def manage_emojis(self):
+        """Returns True if a user can create, edit, or delete emojis."""
         return self._bit(30)
 
     @manage_emojis.setter
     def manage_emojis(self, value):
         self._set(30, value)
 
-    # 2 unused
+    # 1 unused
 
     # after these 32 bits, there's 21 more unused ones technically
 
