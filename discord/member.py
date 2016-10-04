@@ -209,7 +209,7 @@ class Member(User):
         This only takes into consideration the server permissions
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
-        calculation, please use either :meth;`permissions_in` or
+        calculation, please use either :meth:`permissions_in` or
         :meth:`Channel.permissions_for`.
 
         This does take into consideration server ownership and the
