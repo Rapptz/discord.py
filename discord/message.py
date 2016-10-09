@@ -39,11 +39,9 @@ class Message:
 
     Attributes
     -----------
-    edited_timestamp : Optional[datetime.datetime]
+    edited_timestamp: Optional[datetime.datetime]
         A naive UTC datetime object containing the edited time of the message.
-    timestamp : datetime.datetime
-        A naive UTC datetime object containing the time the message was created.
-    tts : bool
+    tts: bool
         Specifies if the message was done with text-to-speech.
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
@@ -51,12 +49,12 @@ class Message:
     author
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel, then it is a :class:`User` instead.
-    content : str
+    content: str
         The actual contents of the message.
     nonce
         The value used by the discord server and the client to verify that the message is successfully sent.
         This is typically non-important.
-    embeds : list
+    embeds: list
         A list of embedded objects. The elements are objects that meet oEmbed's specification_.
 
         .. _specification: http://oembed.com/
@@ -66,12 +64,12 @@ class Message:
         In :issue:`very rare cases <21>` this could be a :class:`Object` instead.
 
         For the sake of convenience, this :class:`Object` instance has an attribute ``is_private`` set to ``True``.
-    server : Optional[:class:`Server`]
+    server: Optional[:class:`Server`]
         The server that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
-    mention_everyone : bool
+    mention_everyone: bool
         Specifies if the message mentions everyone.
 
         .. note::
@@ -91,15 +89,18 @@ class Message:
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a discord limitation, not one with the library.
 
-    channel_mentions : list
+    channel_mentions: list
         A list of :class:`Channel` that were mentioned. If the message is in a private message
         then the list is always empty.
-    role_mentions : list
+    role_mentions: list
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
-    id : str
+    id: str
         The message ID.
-    attachments : list
+    webhook_id: Optional[str]
+        If this message was sent by a webhook, then this is the webhook ID's that sent this
+        message.
+    attachments: list
         A list of attachments given to a message.
     pinned: bool
         Specifies if the message is currently pinned.
@@ -107,9 +108,9 @@ class Message:
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
     """
 
-    __slots__ = ( 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
+    __slots__ = ( 'edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  'channel_mentions', 'server', '_cs_raw_mentions', 'attachments',
+                  '_cs_channel_mentions', 'server', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
                   '_cs_system_content', '_state', 'reactions' )
@@ -121,27 +122,31 @@ class Message:
             reaction.message = self
         self._update(channel, data)
 
+    def _try_patch(self, data, key, transform):
+        try:
+            value = data[key]
+        except KeyError:
+            pass
+        else:
+            setattr(self, key, transform(value))
+
     def _update(self, channel, data):
-        # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
-        # we can use this to our advantage to use strptime instead of a complicated parsing routine.
-        # example timestamp: 2015-08-21T12:03:45.782000+00:00
-        # sometimes the .%f modifier is missing
-        self.edited_timestamp = utils.parse_time(data['edited_timestamp'])
-        self.timestamp = utils.parse_time(data['timestamp'])
-        self.tts = data.get('tts', False)
-        self.pinned = data.get('pinned', False)
-        self.content = data['content']
-        self.mention_everyone = data['mention_everyone']
-        self.embeds = data['embeds']
-        self.id = data['id']
         self.channel = channel
-        self.author = self._state.try_insert_user(data['author'])
-        self.nonce = data.get('nonce')
-        self.attachments = data['attachments']
-        self.type = try_enum(MessageType, data.get('type'))
-        self._handle_upgrades(data['channel_id'])
-        self._handle_mentions(data.get('mentions', []), data.get('mention_roles', []))
-        self._handle_call(data.get('call'))
+        for handler in ('mentions', 'mention_roles', 'call'):
+            try:
+                getattr(self, '_handle_%s' % handler)(data[handler])
+            except KeyError:
+                continue
+
+        self._try_patch(data, 'edited_timestamp', utils.parse_time)
+        self._try_patch(data, 'author', self._state.try_insert_user)
+        self._try_patch(data, 'pinned', bool)
+        self._try_patch(data, 'mention_everyone', bool)
+        self._try_patch(data, 'tts', bool)
+        self._try_patch(data, 'content', str)
+        self._try_patch(data, 'attachments', lambda x: x)
+        self._try_patch(data, 'embeds', lambda x: x)
+        self._try_patch(data, 'nonce', lambda x: x)
 
         # clear the cached properties
         cached = filter(lambda attr: attr.startswith('_cs_'), self.__slots__)
@@ -151,24 +156,21 @@ class Message:
             except AttributeError:
                 pass
 
-    def _handle_mentions(self, mentions, role_mentions):
+    def _handle_mentions(self, mentions):
         self.mentions = []
-        self.channel_mentions = []
-        self.role_mentions = []
-        if getattr(self.channel, 'is_private', True):
+        if self.server is None:
             self.mentions = [self._state.try_insert_user(m) for m in mentions]
             return
 
+        for mention in mentions:
+            id_search = mention['id']
+            member = self.server.get_member(id_search)
+            if member is not None:
+                self.mentions.append(member)
+
+    def _handle_mention_roles(self, role_mentions):
+        self.role_mentions = []
         if self.server is not None:
-            for mention in mentions:
-                id_search = mention.get('id')
-                member = self.server.get_member(id_search)
-                if member is not None:
-                    self.mentions.append(member)
-
-            it = filter(None, map(lambda m: self.server.get_channel(m), self.raw_channel_mentions))
-            self.channel_mentions = utils._unique(it)
-
             for role_id in role_mentions:
                 role = utils.get(self.server.roles, id=role_id)
                 if role is not None:
@@ -217,6 +219,13 @@ class Message:
         the syntax of <@&role_id> in the message content.
         """
         return re.findall(r'<@&([0-9]+)>', self.content)
+
+    @utils.cached_slot_property('_cs_channel_mentions')
+    def channel_mentions(self):
+        if self.server is None:
+            return []
+        it = filter(None, map(lambda m: self.server.get_channel(m), self.raw_channel_mentions))
+        return utils._unique(it)
 
     @utils.cached_slot_property('_cs_clean_content')
     def clean_content(self):
@@ -288,6 +297,11 @@ class Message:
             found = self.server.get_member(self.author.id)
             if found is not None:
                 self.author = found
+
+    @property
+    def created_at(self):
+        """Returns the message's creation time in UTC."""
+        return utils.snowflake_time(self.id)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
