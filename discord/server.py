@@ -26,12 +26,14 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 from .role import Role
-from .member import Member
+from .member import Member, VoiceState
 from .emoji import Emoji
 from .game import Game
 from .channel import Channel
 from .enums import ServerRegion, Status, try_enum, VerificationLevel
 from .mixins import Hashable
+
+import copy
 
 class Server(Hashable):
     """Represents a Discord server.
@@ -112,12 +114,13 @@ class Server(Hashable):
                  'name', 'id', 'owner', 'unavailable', 'name', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
                  'large', 'owner_id', 'mfa_level', 'emojis', 'features',
-                 'verification_level', 'splash' )
+                 'verification_level', 'splash', '_voice_states' )
 
     def __init__(self, *, data, state):
         self._channels = {}
         self.owner = None
         self._members = {}
+        self._voice_states = {}
         self._state = state
         self._from_data(data)
 
@@ -134,6 +137,9 @@ class Server(Hashable):
 
     def _remove_channel(self, channel):
         self._channels.pop(channel.id, None)
+
+    def _voice_state_for(self, user_id):
+        return self._voice_states.get(user_id)
 
     @property
     def members(self):
@@ -153,15 +159,42 @@ class Server(Hashable):
         return self.name
 
     def _update_voice_state(self, data):
-        user_id = data.get('user_id')
+        user_id = data['user_id']
+        channel = self.get_channel(data['channel_id'])
+        try:
+            # check if we should remove the voice state from cache
+            if channel is None:
+                after = self._voice_states.pop(user_id)
+            else:
+                after = self._voice_states[user_id]
+
+            before = copy.copy(after)
+            after._update(data, channel)
+        except KeyError:
+            # if we're here then we're getting added into the cache
+            after = VoiceState(data=data, channel=channel)
+            before = VoiceState(data=data, channel=None)
+            self._voice_states[user_id] = after
+
         member = self.get_member(user_id)
-        before = None
         if member is not None:
-            before = member._copy()
-            ch_id = data.get('channel_id')
-            channel = self.get_channel(ch_id)
-            member._update_voice_state(voice_channel=channel, **data)
-        return before, member
+            old = before.channel
+            # update the references pointed to by the voice channels
+            if old is None and channel is not None:
+                # we joined a channel
+                channel.voice_members.append(member)
+            elif old is not None:
+                try:
+                    # we either left a channel or switched channels
+                    old.voice_members.remove(member)
+                except ValueError:
+                    pass
+                finally:
+                    # we switched channels
+                    if channel is not None:
+                        channel.voice_members.append(self)
+
+        return member, before, after
 
     def _add_role(self, role):
         # roles get added to the bottom (position 1, pos 0 is @everyone)

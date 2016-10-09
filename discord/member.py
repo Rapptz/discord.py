@@ -31,9 +31,6 @@ from . import utils
 from .enums import Status, ChannelType, try_enum
 from .colour import Colour
 
-import copy
-import inspect
-
 class VoiceState:
     """Represents a Discord user's voice state.
 
@@ -49,32 +46,25 @@ class VoiceState:
         Indicates if the user is currently deafened by their own accord.
     is_afk: bool
         Indicates if the user is currently in the AFK channel in the server.
-    voice_channel: Optional[Union[:class:`Channel`, :class:`PrivateChannel`]]
+    channel: Optional[Union[:class:`Channel`, :class:`PrivateChannel`]]
         The voice channel that the user is currently connected to. None if the user
         is not currently in a voice channel.
     """
 
     __slots__ = ( 'session_id', 'deaf', 'mute', 'self_mute',
-                  'self_deaf', 'is_afk', 'voice_channel' )
+                  'self_deaf', 'is_afk', 'channel' )
 
-    def __init__(self, **kwargs):
-        self.session_id = kwargs.get('session_id')
-        self._update_voice_state(**kwargs)
+    def __init__(self, *, data, channel=None):
+        self.session_id = data.get('session_id')
+        self._update(data, channel)
 
-    def _update_voice_state(self, **kwargs):
-        self.self_mute = kwargs.get('self_mute', False)
-        self.self_deaf = kwargs.get('self_deaf', False)
-        self.is_afk = kwargs.get('suppress', False)
-        self.mute = kwargs.get('mute', False)
-        self.deaf = kwargs.get('deaf', False)
-        self.voice_channel = kwargs.get('voice_channel')
-
-def flatten_voice_states(cls):
-    for attr in VoiceState.__slots__:
-        def getter(self, x=attr):
-            return getattr(self.voice, x)
-        setattr(cls, attr, property(getter))
-    return cls
+    def _update(self, data, channel):
+        self.self_mute = data.get('self_mute', False)
+        self.self_deaf = data.get('self_deaf', False)
+        self.is_afk = data.get('suppress', False)
+        self.mute = data.get('mute', False)
+        self.deaf = data.get('deaf', False)
+        self.channel = channel
 
 def flatten_user(cls):
     for attr, value in User.__dict__.items():
@@ -107,7 +97,6 @@ def flatten_user(cls):
 
     return cls
 
-@flatten_voice_states
 @flatten_user
 class Member:
     """Represents a Discord member to a :class:`Server`.
@@ -130,9 +119,6 @@ class Member:
 
     Attributes
     ----------
-    voice: :class:`VoiceState`
-        The member's voice state. Properties are defined to mirror access of the attributes.
-        e.g. ``Member.is_afk`` is equivalent to `Member.voice.is_afk``.
     roles
         A list of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role.
@@ -150,12 +136,11 @@ class Member:
         The server specific nickname of the user.
     """
 
-    __slots__ = ('roles', 'joined_at', 'status', 'game', 'server', 'nick', 'voice', '_user', '_state')
+    __slots__ = ('roles', 'joined_at', 'status', 'game', 'server', 'nick', '_user', '_state')
 
     def __init__(self, *, data, server, state):
         self._state = state
         self._user = state.try_insert_user(data['user'])
-        self.voice = VoiceState(**data)
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self.roles = data.get('roles', [])
         self.status = Status.offline
@@ -175,36 +160,6 @@ class Member:
 
     def __hash__(self):
         return hash(self._user.id)
-
-    def _update_voice_state(self, **kwargs):
-        self.voice.self_mute = kwargs.get('self_mute', False)
-        self.voice.self_deaf = kwargs.get('self_deaf', False)
-        self.voice.is_afk = kwargs.get('suppress', False)
-        self.voice.mute = kwargs.get('mute', False)
-        self.voice.deaf = kwargs.get('deaf', False)
-        old_channel = getattr(self, 'voice_channel', None)
-        vc = kwargs.get('voice_channel')
-
-        if old_channel is None and vc is not None:
-            # we joined a channel
-            vc.voice_members.append(self)
-        elif old_channel is not None:
-            try:
-                # we either left a channel or we switched channels
-                old_channel.voice_members.remove(self)
-            except ValueError:
-                pass
-            finally:
-                # we switched channels
-                if vc is not None:
-                    vc.voice_members.append(self)
-
-        self.voice.voice_channel = vc
-
-    def _copy(self):
-        ret = copy.copy(self)
-        ret.voice = copy.copy(self.voice)
-        return ret
 
     def _update(self, data, user):
         self._user.name = user['username']
@@ -323,3 +278,8 @@ class Member:
             return Permissions.all()
 
         return base
+
+    @property
+    def voice(self):
+        """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
+        return self.server._voice_state_for(self._user.id)

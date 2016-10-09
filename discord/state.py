@@ -340,7 +340,7 @@ class ConnectionState:
             member = self._make_member(server, data)
             server._add_member(member)
 
-        old_member = member._copy()
+        old_member = copy.copy(member)
         member._presence_update(data=data, user=user)
         self.dispatch('member_update', old_member, member)
 
@@ -431,12 +431,14 @@ class ConnectionState:
                 server._member_count -= 1
 
                 # remove them from the voice channel member list
-                vc = member.voice_channel
-                if vc is not None:
-                    try:
-                        vc.voice_members.remove(member)
-                    except:
-                        pass
+                vc = server._voice_state_for(user_id)
+                if vc:
+                    voice_channel = vc.channel
+                    if voice_channel is not None:
+                        try:
+                            voice_channel.voice_members.remove(member)
+                        except ValueError:
+                            pass
 
                 self.dispatch('member_remove', member)
 
@@ -446,7 +448,7 @@ class ConnectionState:
         user_id = user['id']
         member = server.get_member(user_id)
         if member is not None:
-            old_member = member._copy()
+            old_member = copy.copy(member)
             member._update(data, user)
             self.dispatch('member_update', old_member, member)
 
@@ -620,15 +622,14 @@ class ConnectionState:
     def parse_voice_state_update(self, data):
         server = self._get_server(data.get('guild_id'))
         if server is not None:
-            channel = server.get_channel(data.get('channel_id'))
             if data.get('user_id') == self.user.id:
                 voice = self._get_voice_client(server.id)
                 if voice is not None:
-                    voice.channel = channel
+                    voice.channel = server.get_channel(data.get('channel_id'))
 
-            before, after = server._update_voice_state(data)
+            member, before, after = server._update_voice_state(data)
             if after is not None:
-                self.dispatch('voice_state_update', before, after)
+                self.dispatch('voice_state_update', member, before, after)
         else:
             # in here we're either at private or group calls
             call = self._calls.get(data.get('channel_id'), None)
