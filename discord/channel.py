@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 import copy
 from . import utils
 from .permissions import Permissions, PermissionOverwrite
-from .enums import ChannelType
+from .enums import ChannelType, try_enum
 from collections import namedtuple
 from .mixins import Hashable
 from .role import Role
@@ -54,68 +54,63 @@ class Channel(Hashable):
 
     Attributes
     -----------
-    name : str
+    name: str
         The channel name.
-    server : :class:`Server`
+    server: :class:`Server`
         The server the channel belongs to.
-    id : str
+    id: str
         The channel ID.
-    topic : Optional[str]
+    topic: Optional[str]
         The channel's topic. None if it doesn't exist.
-    is_private : bool
+    is_private: bool
         ``True`` if the channel is a private channel (i.e. PM). ``False`` in this case.
-    position : int
+    position: int
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0. The position varies depending on being a voice channel
         or a text channel, so a 0 position voice channel is on top of the voice channel
         list.
-    type : :class:`ChannelType`
+    type: :class:`ChannelType`
         The channel type. There is a chance that the type will be ``str`` if
         the channel type is not within the ones recognised by the enumerator.
-    bitrate : int
+    bitrate: int
         The channel's preferred audio bitrate in bits per second.
     voice_members
         A list of :class:`Members` that are currently inside this voice channel.
         If :attr:`type` is not :attr:`ChannelType.voice` then this is always an empty array.
-    user_limit : int
+    user_limit: int
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
-                  'is_private', 'type', 'bitrate', 'user_limit',
-                  '_permission_overwrites' ]
+    __slots__ = ( 'voice_members', 'name', 'id', 'server', 'topic',
+                  'type', 'bitrate', 'user_limit', '_state', 'position',
+                  '_permission_overwrites' )
 
-    def __init__(self, **kwargs):
-        self._update(**kwargs)
+    def __init__(self, *, state, server, data):
+        self._state = state
+        self._update(server, data)
         self.voice_members = []
 
     def __str__(self):
         return self.name
 
-    def _update(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.server = kwargs.get('server')
-        self.id = kwargs.get('id')
-        self.topic = kwargs.get('topic')
-        self.is_private = False
-        self.position = kwargs.get('position')
-        self.bitrate = kwargs.get('bitrate')
-        self.type = kwargs.get('type')
-        self.user_limit = kwargs.get('user_limit')
-        try:
-            self.type = ChannelType(self.type)
-        except:
-            pass
-
+    def _update(self, server, data):
+        self.server = server
+        self.name = data['name']
+        self.id = data['id']
+        self.topic = data.get('topic')
+        self.position = data['position']
+        self.bitrate = data.get('bitrate')
+        self.type = data['type']
+        self.user_limit = data.get('user_limit')
         self._permission_overwrites = []
         everyone_index = 0
         everyone_id = self.server.id
 
-        for index, overridden in enumerate(kwargs.get('permission_overwrites', [])):
+        for index, overridden in enumerate(data.get('permission_overwrites', [])):
             overridden_id = overridden['id']
             self._permission_overwrites.append(Overwrites(**overridden))
 
-            if overridden.get('type') == 'member':
+            if overridden['type'] == 'member':
                 continue
 
             if overridden_id == everyone_id:
@@ -150,6 +145,10 @@ class Channel(Hashable):
     def is_default(self):
         """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
+
+    @property
+    def is_private(self):
+        return False
 
     @property
     def mention(self):
@@ -354,19 +353,20 @@ class PrivateChannel(Hashable):
         :attr:`ChannelType.group` then this is always ``None``.
     """
 
-    __slots__ = ['id', 'recipients', 'type', 'owner', 'icon', 'name', 'me']
+    __slots__ = ['id', 'recipients', 'type', 'owner', 'icon', 'name', 'me', '_state']
 
-    def __init__(self, me, **kwargs):
-        self.recipients = [User(**u) for u in kwargs['recipients']]
-        self.id = kwargs['id']
+    def __init__(self, *, me, state, data):
+        self._state = state
+        self.recipients = [state.try_insert_user(u) for u in data['recipients']]
+        self.id = data['id']
         self.me = me
-        self.type = ChannelType(kwargs['type'])
-        self._update_group(**kwargs)
+        self.type = ChannelType(data['type'])
+        self._update_group(data)
 
-    def _update_group(self, **kwargs):
-        owner_id = kwargs.get('owner_id')
-        self.icon = kwargs.get('icon')
-        self.name = kwargs.get('name')
+    def _update_group(self, data):
+        owner_id = data.get('owner_id')
+        self.icon = data.get('icon')
+        self.name = data.get('name')
         self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
     @property

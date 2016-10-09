@@ -68,11 +68,12 @@ class Emoji(Hashable):
         A list of :class:`Role` that is allowed to use this emoji. If roles is empty,
         the emoji is unrestricted.
     """
-    __slots__ = ["require_colons", "managed", "id", "name", "roles", 'server']
+    __slots__ = ('require_colons', 'managed', 'id', 'name', 'roles', 'server', '_state')
 
-    def __init__(self, **kwargs):
-        self.server = kwargs.pop('server')
-        self._from_data(kwargs)
+    def __init__(self, *, server, state, data):
+        self.server = server
+        self._state = state
+        self._from_data(data)
 
     def _from_data(self, emoji):
         self.require_colons = emoji.get('require_colons')
@@ -86,9 +87,10 @@ class Emoji(Hashable):
 
     def _iterator(self):
         for attr in self.__slots__:
-            value = getattr(self, attr, None)
-            if value is not None:
-                yield (attr, value)
+            if attr[0] != '_':
+                value = getattr(self, attr, None)
+                if value is not None:
+                    yield (attr, value)
 
     def __iter__(self):
         return self._iterator()

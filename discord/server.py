@@ -52,39 +52,39 @@ class Server(Hashable):
 
     Attributes
     ----------
-    name : str
+    name: str
         The server name.
-    me : :class:`Member`
+    me: :class:`Member`
         Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
     roles
         A list of :class:`Role` that the server has available.
     emojis
         A list of :class:`Emoji` that the server owns.
-    region : :class:`ServerRegion`
+    region: :class:`ServerRegion`
         The region the server belongs on. There is a chance that the region
         will be a ``str`` if the value is not recognised by the enumerator.
-    afk_timeout : int
+    afk_timeout: int
         The timeout to get sent to the AFK channel.
-    afk_channel : :class:`Channel`
+    afk_channel: :class:`Channel`
         The channel that denotes the AFK channel. None if it doesn't exist.
     members
         An iterable of :class:`Member` that are currently on the server.
     channels
         An iterable of :class:`Channel` that are currently on the server.
-    icon : str
+    icon: str
         The server's icon.
-    id : str
+    id: str
         The server's ID.
-    owner : :class:`Member`
+    owner: :class:`Member`
         The member who owns the server.
-    unavailable : bool
+    unavailable: bool
         Indicates if the server is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Server.id` is slim and they might
         all be None. It is best to not do anything with the server if it is unavailable.
 
         Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
-    large : bool
+    large: bool
         Indicates if the server is a 'large' server. A large server is defined as having
         more than ``large_threshold`` count members, which for this library is set to
         the maximum of 250.
@@ -108,17 +108,18 @@ class Server(Hashable):
         The server's invite splash.
     """
 
-    __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
+    __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'owner', 'unavailable', 'name', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
                  'large', 'owner_id', 'mfa_level', 'emojis', 'features',
-                 'verification_level', 'splash' ]
+                 'verification_level', 'splash' )
 
-    def __init__(self, **kwargs):
+    def __init__(self, *, data, state):
         self._channels = {}
         self.owner = None
         self._members = {}
-        self._from_data(kwargs)
+        self._state = state
+        self._from_data(data)
 
     @property
     def channels(self):
@@ -197,9 +198,9 @@ class Server(Hashable):
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
         self.id = guild['id']
-        self.roles = [Role(server=self, **r) for r in guild.get('roles', [])]
+        self.roles = [Role(server=self, data=r, state=self._state) for r in guild.get('roles', [])]
         self.mfa_level = guild.get('mfa_level')
-        self.emojis = [Emoji(server=self, **r) for r in guild.get('emojis', [])]
+        self.emojis = [Emoji(server=self, data=r, state=self._state) for r in guild.get('emojis', [])]
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
 
@@ -211,8 +212,7 @@ class Server(Hashable):
                     roles.append(role)
 
             mdata['roles'] = roles
-            member = Member(**mdata)
-            member.server = self
+            member = Member(data=mdata, server=self, state=self._state)
             self._add_member(member)
 
         self._sync(guild)
@@ -236,18 +236,14 @@ class Server(Hashable):
             user_id = presence['user']['id']
             member = self.get_member(user_id)
             if member is not None:
-                member.status = presence['status']
-                try:
-                    member.status = Status(member.status)
-                except:
-                    pass
+                member.status = try_enum(Status, presence['status'])
                 game = presence.get('game', {})
                 member.game = Game(**game) if game else None
 
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                channel = Channel(server=self, **c)
+                channel = Channel(server=self, data=c, state=self._state)
                 self._add_channel(channel)
 
 
@@ -311,7 +307,7 @@ class Server(Hashable):
 
         Parameters
         -----------
-        name : str
+        name: str
             The name of the member to lookup with an optional discriminator.
 
         Returns

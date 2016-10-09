@@ -72,7 +72,6 @@ class LogsFromIterator:
     def __init__(self, client, channel, limit,
                  before=None, after=None, around=None, reverse=False):
         self.client = client
-        self.connection = client.connection
         self.channel = channel
         self.limit = limit
         self.before = before
@@ -81,6 +80,7 @@ class LogsFromIterator:
         self.reverse = reverse
         self._filter = None  # message dict -> bool
         self.messages = asyncio.Queue()
+        self.ctx = client.connection.ctx
 
         if self.around:
             if self.limit > 101:
@@ -92,18 +92,18 @@ class LogsFromIterator:
 
             self._retrieve_messages = self._retrieve_messages_around_strategy
             if self.before and self.after:
-                self._filter = lambda m: int(self.after.id) < int(m['id']) < int(self.before.id)
+                self._filter = lambda m: self.after.id < m['id'] < self.before.id
             elif self.before:
-                self._filter = lambda m: int(m['id']) < int(self.before.id)
+                self._filter = lambda m: m['id'] < self.before.id
             elif self.after:
-                self._filter = lambda m: int(self.after.id) < int(m['id'])
+                self._filter = lambda m: self.after.id < m['id']
         elif self.before and self.after:
             if self.reverse:
                 self._retrieve_messages = self._retrieve_messages_after_strategy
-                self._filter = lambda m: int(m['id']) < int(self.before.id)
+                self._filter = lambda m: m['id'] < self.before.id
             else:
                 self._retrieve_messages = self._retrieve_messages_before_strategy
-                self._filter = lambda m: int(m['id']) > int(self.after.id)
+                self._filter = lambda m: m['id'] > self.after.id
         elif self.after:
             self._retrieve_messages = self._retrieve_messages_after_strategy
         else:
@@ -126,9 +126,7 @@ class LogsFromIterator:
             if self._filter:
                 data = filter(self._filter, data)
             for element in data:
-                yield from self.messages.put(
-                    self.connection._create_message(
-                        channel=self.channel, **element))
+                yield from self.messages.put(Message(channel=self.channel, state=self.ctx, data=element))
 
     @asyncio.coroutine
     def _retrieve_messages(self, retrieve):
@@ -141,7 +139,7 @@ class LogsFromIterator:
         data = yield from self.client._logs_from(self.channel, retrieve, before=self.before)
         if len(data):
             self.limit -= retrieve
-            self.before = Object(id=data[-1]['id'])
+            self.before = Object(id=int(data[-1]['id']))
         return data
 
     @asyncio.coroutine
@@ -150,7 +148,7 @@ class LogsFromIterator:
         data = yield from self.client._logs_from(self.channel, retrieve, after=self.after)
         if len(data):
             self.limit -= retrieve
-            self.after = Object(id=data[0]['id'])
+            self.after = Object(id=int(data[0]['id']))
         return data
 
     @asyncio.coroutine

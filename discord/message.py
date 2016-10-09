@@ -107,43 +107,44 @@ class Message:
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
     """
 
-    __slots__ = [ 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
+    __slots__ = ( 'edited_timestamp', 'timestamp', 'tts', 'content', 'channel',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  'channel_mentions', 'server', '_raw_mentions', 'attachments',
-                  '_clean_content', '_raw_channel_mentions', 'nonce', 'pinned',
-                  'role_mentions', '_raw_role_mentions', 'type', 'call',
-                  '_system_content', 'reactions' ]
+                  'channel_mentions', 'server', '_cs_raw_mentions', 'attachments',
+                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
+                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                  '_cs_system_content', '_state', 'reactions' )
 
-    def __init__(self, **kwargs):
+    def __init__(self, *, state, channel, data):
+        self._state = state
         self.reactions = kwargs.pop('reactions')
         for reaction in self.reactions:
             reaction.message = self
-        self._update(**kwargs)
+        self._update(channel, data)
 
-    def _update(self, **data):
+    def _update(self, channel, data):
         # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.
         # example timestamp: 2015-08-21T12:03:45.782000+00:00
         # sometimes the .%f modifier is missing
-        self.edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
-        self.timestamp = utils.parse_time(data.get('timestamp'))
+        self.edited_timestamp = utils.parse_time(data['edited_timestamp'])
+        self.timestamp = utils.parse_time(data['timestamp'])
         self.tts = data.get('tts', False)
         self.pinned = data.get('pinned', False)
-        self.content = data.get('content')
-        self.mention_everyone = data.get('mention_everyone')
-        self.embeds = data.get('embeds')
-        self.id = data.get('id')
-        self.channel = data.get('channel')
-        self.author = User(**data.get('author', {}))
+        self.content = data['content']
+        self.mention_everyone = data['mention_everyone']
+        self.embeds = data['embeds']
+        self.id = data['id']
+        self.channel = channel
+        self.author = self._state.try_insert_user(data['author'])
         self.nonce = data.get('nonce')
-        self.attachments = data.get('attachments')
+        self.attachments = data['attachments']
         self.type = try_enum(MessageType, data.get('type'))
-        self._handle_upgrades(data.get('channel_id'))
+        self._handle_upgrades(data['channel_id'])
         self._handle_mentions(data.get('mentions', []), data.get('mention_roles', []))
         self._handle_call(data.get('call'))
 
         # clear the cached properties
-        cached = filter(lambda attr: attr[0] == '_', self.__slots__)
+        cached = filter(lambda attr: attr.startswith('_cs_'), self.__slots__)
         for attr in cached:
             try:
                 delattr(self, attr)
@@ -155,7 +156,7 @@ class Message:
         self.channel_mentions = []
         self.role_mentions = []
         if getattr(self.channel, 'is_private', True):
-            self.mentions = [User(**m) for m in mentions]
+            self.mentions = [self._state.try_insert_user(m) for m in mentions]
             return
 
         if self.server is not None:
@@ -193,7 +194,7 @@ class Message:
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
-    @utils.cached_slot_property('_raw_mentions')
+    @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self):
         """A property that returns an array of user IDs matched with
         the syntax of <@user_id> in the message content.
@@ -203,21 +204,21 @@ class Message:
         """
         return re.findall(r'<@!?([0-9]+)>', self.content)
 
-    @utils.cached_slot_property('_raw_channel_mentions')
+    @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
         """A property that returns an array of channel IDs matched with
         the syntax of <#channel_id> in the message content.
         """
         return re.findall(r'<#([0-9]+)>', self.content)
 
-    @utils.cached_slot_property('_raw_role_mentions')
+    @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
         """A property that returns an array of role IDs matched with
         the syntax of <@&role_id> in the message content.
         """
         return re.findall(r'<@&([0-9]+)>', self.content)
 
-    @utils.cached_slot_property('_clean_content')
+    @utils.cached_slot_property('_cs_clean_content')
     def clean_content(self):
         """A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
@@ -288,7 +289,7 @@ class Message:
             if found is not None:
                 self.author = found
 
-    @utils.cached_slot_property('_system_content')
+    @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
         """A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.

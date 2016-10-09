@@ -58,14 +58,15 @@ class User:
         Specifies if the user is a bot account.
     """
 
-    __slots__ = ['name', 'id', 'discriminator', 'avatar', 'bot']
+    __slots__ = ['name', 'id', 'discriminator', 'avatar', 'bot', '_state']
 
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('username')
-        self.id = kwargs.get('id')
-        self.discriminator = kwargs.get('discriminator')
-        self.avatar = kwargs.get('avatar')
-        self.bot = kwargs.get('bot', False)
+    def __init__(self, *, state, data):
+        self._state = state
+        self.name = data['username']
+        self.id = data['id']
+        self.discriminator = data['discriminator']
+        self.avatar = data['avatar']
+        self.bot = data.get('bot', False)
 
     def __str__(self):
         return '{0.name}#{0.discriminator}'.format(self)

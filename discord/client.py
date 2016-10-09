@@ -32,7 +32,6 @@ from .server import Server
 from .message import Message
 from .invite import Invite
 from .object import Object
-from .reaction import Reaction
 from .role import Role
 from .errors import *
 from .state import ConnectionState
@@ -145,15 +144,14 @@ class Client:
         self.shard_id = options.get('shard_id')
         self.shard_count = options.get('shard_count')
 
-        max_messages = options.get('max_messages')
-        if max_messages is None or max_messages < 100:
-            max_messages = 5000
-
-        self.connection = ConnectionState(self.dispatch, self.request_offline_members,
-                                          self._syncer, max_messages, loop=self.loop)
-
         connector = options.pop('connector', None)
         self.http = HTTPClient(connector, loop=self.loop)
+
+        self.connection = ConnectionState(dispatch=self.dispatch,
+                                          chunker=self.request_offline_members,
+                                          syncer=self._syncer,
+                                          http=self.http, loop=self.loop,
+                                          **options)
 
         self._closed = asyncio.Event(loop=self.loop)
         self._is_logged_in = asyncio.Event(loop=self.loop)
@@ -914,7 +912,7 @@ class Client:
             raise InvalidArgument('user argument must be a User')
 
         data = yield from self.http.start_private_message(user.id)
-        channel = PrivateChannel(me=self.user, **data)
+        channel = PrivateChannel(me=self.user, data=data, state=self.connection.ctx)
         self.connection._add_private_channel(channel)
         return channel
 
@@ -1151,7 +1149,7 @@ class Client:
 
         data = yield from self.http.send_message(channel_id, content, guild_id=guild_id, tts=tts, embed=embed)
         channel = self.get_channel(data.get('channel_id'))
-        message = self.connection._create_message(channel=channel, **data)
+        message = Message(channel=channel, state=self.connection.ctx, data=data)
         return message
 
     @asyncio.coroutine
@@ -1233,7 +1231,7 @@ class Client:
         data = yield from self.http.send_file(channel_id, buffer, guild_id=guild_id,
                                               filename=filename, content=content, tts=tts)
         channel = self.get_channel(data.get('channel_id'))
-        message = self.connection._create_message(channel=channel, **data)
+        message = Message(channel=channel, state=self.connection.ctx, data=data)
         return message
 
     @asyncio.coroutine
@@ -1438,7 +1436,7 @@ class Client:
         embed = embed.to_dict() if embed else None
         guild_id = channel.server.id if not getattr(channel, 'is_private', True) else None
         data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id, embed=embed)
-        return self.connection._create_message(channel=channel, **data)
+        return Message(channel=channel, state=self.connection.ctx, data=data)
 
     @asyncio.coroutine
     def get_message(self, channel, id):
@@ -1471,7 +1469,7 @@ class Client:
         """
 
         data = yield from self.http.get_message(channel.id, id)
-        return self.connection._create_message(channel=channel, **data)
+        return Message(channel=channel, state=self.connection.ctx, data=data)
 
     @asyncio.coroutine
     def pin_message(self, message):
@@ -1541,7 +1539,7 @@ class Client:
         """
 
         data = yield from self.http.pins_from(channel.id)
-        return [self.connection._create_message(channel=channel, **m) for m in data]
+        return [Message(channel=channel, state=self.connection.ctx, data=m) for m in data]
 
     def _logs_from(self, channel, limit=100, before=None, after=None, around=None):
         """|coro|
@@ -1622,7 +1620,7 @@ class Client:
 
             def generator(data):
                 for message in data:
-                    yield self.connection._create_message(channel=channel, **message)
+                    yield Message(channel=channel, state=self.connection.ctx, data=message)
 
             result = []
             while limit > 0:
@@ -2161,7 +2159,7 @@ class Client:
             perms.append(payload)
 
         data = yield from self.http.create_channel(server.id, name, str(type), permission_overwrites=perms)
-        channel = Channel(server=server, **data)
+        channel = Channel(server=server, state=self.connection.ctx, data=data)
         return channel
 
     @asyncio.coroutine
@@ -2275,7 +2273,7 @@ class Client:
             region = region.name
 
         data = yield from self.http.create_server(name, region, icon)
-        return Server(**data)
+        return Server(data=data, state=self.connection.ctx)
 
     @asyncio.coroutine
     def edit_server(self, server, **fields):
@@ -2397,7 +2395,7 @@ class Client:
         """
 
         data = yield from self.http.get_bans(server.id)
-        return [User(**user['user']) for user in data]
+        return [self.connection.try_insert_user(user) for user in data]
 
     @asyncio.coroutine
     def prune_members(self, server, *, days):
@@ -2514,7 +2512,7 @@ class Client:
 
         img = utils._bytes_to_base64_data(image)
         data = yield from self.http.create_custom_emoji(server.id, name, img)
-        return Emoji(server=server, **data)
+        return Emoji(server=server, data=data, state=self.connection.ctx)
 
     @asyncio.coroutine
     def delete_custom_emoji(self, emoji):
@@ -2989,7 +2987,7 @@ class Client:
         """
 
         data = yield from self.http.create_role(server.id)
-        role = Role(server=server, **data)
+        role = Role(server=server, data=data, state=self.connection.ctx)
 
         # we have to call edit because you can't pass a payload to the
         # http request currently.
@@ -3271,7 +3269,7 @@ class Client:
         data = yield from self.http.application_info()
         return AppInfo(id=data['id'], name=data['name'],
                        description=data['description'], icon=data['icon'],
-                       owner=User(**data['owner']))
+                       owner=User(state=self.connection.ctx, data=data['owner']))
 
     @asyncio.coroutine
     def get_user_info(self, user_id):
@@ -3300,4 +3298,4 @@ class Client:
             Fetching the user failed.
         """
         data = yield from self.http.get_user_info(user_id)
-        return User(**data)
+        return User(state=self.connection.ctx, data=data)

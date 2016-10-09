@@ -76,23 +76,24 @@ class Invite(Hashable):
     """
 
 
-    __slots__ = [ 'max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
-                  'temporary', 'max_uses', 'xkcd', 'inviter', 'channel' ]
+    __slots__ = ( 'max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
+                  'temporary', 'max_uses', 'xkcd', 'inviter', 'channel', '_state' )
 
-    def __init__(self, **kwargs):
-        self.max_age = kwargs.get('max_age')
-        self.code = kwargs.get('code')
-        self.server = kwargs.get('server')
-        self.revoked = kwargs.get('revoked')
-        self.created_at = parse_time(kwargs.get('created_at'))
-        self.temporary = kwargs.get('temporary')
-        self.uses = kwargs.get('uses')
-        self.max_uses = kwargs.get('max_uses')
-        self.xkcd = kwargs.get('xkcdpass')
+    def __init__(self, *, state, data):
+        self._state = state
+        self.max_age = data.get('max_age')
+        self.code = data.get('code')
+        self.server = data.get('server')
+        self.revoked = data.get('revoked')
+        self.created_at = parse_time(data.get('created_at'))
+        self.temporary = data.get('temporary')
+        self.uses = data.get('uses')
+        self.max_uses = data.get('max_uses')
+        self.xkcd = data.get('xkcdpass')
 
-        inviter_data = kwargs.get('inviter')
-        self.inviter = None if inviter_data is None else User(**inviter_data)
-        self.channel = kwargs.get('channel')
+        inviter_data = data.get('inviter')
+        self.inviter = None if inviter_data is None else User(state=state, data=data)
+        self.channel = data.get('channel')
 
     def __str__(self):
         return self.url

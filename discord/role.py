@@ -78,12 +78,13 @@ class Role(Hashable):
         Indicates if the role can be mentioned by users.
     """
 
-    __slots__ = ['id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'server' ]
+    __slots__ = ('id', 'name', 'permissions', 'color', 'colour', 'position',
+                 'managed', 'mentionable', 'hoist', 'server', '_state' )
 
-    def __init__(self, **kwargs):
-        self.server = kwargs.pop('server')
-        self._update(**kwargs)
+    def __init__(self, *, server, state, data):
+        self.server = server
+        self._state = state
+        self._update(data)
 
     def __str__(self):
         return self.name
@@ -118,15 +119,15 @@ class Role(Hashable):
             return NotImplemented
         return not r
 
-    def _update(self, **kwargs):
-        self.id = kwargs.get('id')
-        self.name = kwargs.get('name')
-        self.permissions = Permissions(kwargs.get('permissions', 0))
-        self.position = kwargs.get('position', 0)
-        self.colour = Colour(kwargs.get('color', 0))
-        self.hoist = kwargs.get('hoist', False)
-        self.managed = kwargs.get('managed', False)
-        self.mentionable = kwargs.get('mentionable', False)
+    def _update(self, data):
+        self.id = data['id']
+        self.name = data['name']
+        self.permissions = Permissions(data.get('permissions', 0))
+        self.position = data.get('position', 0)
+        self.colour = Colour(data.get('color', 0))
+        self.hoist = data.get('hoist', False)
+        self.managed = data.get('managed', False)
+        self.mentionable = data.get('mentionable', False)
         self.color = self.colour
 
     @property
