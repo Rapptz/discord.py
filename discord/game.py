@@ -51,7 +51,7 @@ class Game:
         The type of game being played. 1 indicates "Streaming".
     """
 
-    __slots__ = ['name', 'type', 'url']
+    __slots__ = ('name', 'type', 'url')
 
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')

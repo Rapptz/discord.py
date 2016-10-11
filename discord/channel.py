@@ -353,7 +353,7 @@ class PrivateChannel(Hashable):
         :attr:`ChannelType.group` then this is always ``None``.
     """
 
-    __slots__ = ['id', 'recipients', 'type', 'owner', 'icon', 'name', 'me', '_state']
+    __slots__ = ('id', 'recipients', 'type', 'owner', 'icon', 'name', 'me', '_state')
 
     def __init__(self, *, me, state, data):
         self._state = state

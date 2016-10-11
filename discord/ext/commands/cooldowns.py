@@ -35,7 +35,7 @@ class BucketType(enum.Enum):
     channel = 3
 
 class Cooldown:
-    __slots__ = ['rate', 'per', 'type', '_window', '_tokens', '_last']
+    __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
 
     def __init__(self, rate, per, type):
         self.rate = int(rate)

@@ -67,7 +67,7 @@ class Permissions:
         permissions via the properties rather than using this raw value.
     """
 
-    __slots__ = [ 'value' ]
+    __slots__ = ('value',)
     def __init__(self, permissions=0, **kwargs):
         self.value = permissions
 
