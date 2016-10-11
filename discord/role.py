@@ -56,25 +56,25 @@ class Role(Hashable):
 
     Attributes
     ----------
-    id : str
+    id: int
         The ID for the role.
-    name : str
+    name: str
         The name of the role.
-    permissions : :class:`Permissions`
+    permissions: :class:`Permissions`
         Represents the role's permissions.
-    server : :class:`Server`
+    server: :class:`Server`
         The server the role belongs to.
-    colour : :class:`Colour`
+    colour: :class:`Colour`
         Represents the role colour. An alias exists under ``color``.
-    hoist : bool
+    hoist: bool
          Indicates if the role will be displayed separately from other members.
-    position : int
+    position: int
         The position of the role. This number is usually positive. The bottom
         role has a position of 0.
-    managed : bool
+    managed: bool
         Indicates if the role is managed by the server through some form of
         integrations such as Twitch.
-    mentionable : bool
+    mentionable: bool
         Indicates if the role can be mentioned by users.
     """
 
@@ -84,6 +84,7 @@ class Role(Hashable):
     def __init__(self, *, server, state, data):
         self.server = server
         self._state = state
+        self.id = int(data['id'])
         self._update(data)
 
     def __str__(self):
@@ -120,7 +121,6 @@ class Role(Hashable):
         return not r
 
     def _update(self, data):
-        self.id = data['id']
         self.name = data['name']
         self.permissions = Permissions(data.get('permissions', 0))
         self.position = data.get('position', 0)

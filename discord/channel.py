@@ -58,7 +58,7 @@ class Channel(Hashable):
         The channel name.
     server: :class:`Server`
         The server the channel belongs to.
-    id: str
+    id: int
         The channel ID.
     topic: Optional[str]
         The channel's topic. None if it doesn't exist.
@@ -87,6 +87,7 @@ class Channel(Hashable):
 
     def __init__(self, *, state, server, data):
         self._state = state
+        self.id = int(data['id'])
         self._update(server, data)
         self.voice_members = []
 
@@ -96,7 +97,6 @@ class Channel(Hashable):
     def _update(self, server, data):
         self.server = server
         self.name = data['name']
-        self.id = data['id']
         self.topic = data.get('topic')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
@@ -107,8 +107,8 @@ class Channel(Hashable):
         everyone_id = self.server.id
 
         for index, overridden in enumerate(data.get('permission_overwrites', [])):
-            overridden_id = overridden['id']
-            self._permission_overwrites.append(Overwrites(**overridden))
+            overridden_id = int(overridden.pop('id'))
+            self._permission_overwrites.append(Overwrites(id=overridden_id, **overridden))
 
             if overridden['type'] == 'member':
                 continue
@@ -336,7 +336,7 @@ class PrivateChannel(Hashable):
         The users you are participating with in the private channel.
     me: :class:`User`
         The user presenting yourself.
-    id: str
+    id: int
         The private channel ID.
     is_private: bool
         ``True`` if the channel is a private channel (i.e. PM). ``True`` in this case.
@@ -358,13 +358,13 @@ class PrivateChannel(Hashable):
     def __init__(self, *, me, state, data):
         self._state = state
         self.recipients = [state.try_insert_user(u) for u in data['recipients']]
-        self.id = data['id']
+        self.id = int(data['id'])
         self.me = me
-        self.type = ChannelType(data['type'])
+        self.type = try_enum(ChannelType, data['type'])
         self._update_group(data)
 
     def _update_group(self, data):
-        owner_id = data.get('owner_id')
+        owner_id = utils._get_as_snowflake(data, 'owner_id')
         self.icon = data.get('icon')
         self.name = data.get('name')
         self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)

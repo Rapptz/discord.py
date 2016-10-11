@@ -112,7 +112,7 @@ class GroupCall:
         self.ringing = list(filter(None, map(lambda i: lookup.get(i), kwargs.get('ringing', []))))
 
     def _update_voice_state(self, data):
-        user_id = data['user_id']
+        user_id = int(data['user_id'])
         # left the voice channel?
         if data['channel_id'] is None:
             self._voice_states.pop(user_id, None)

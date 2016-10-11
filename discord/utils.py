@@ -120,7 +120,7 @@ def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
 
 def snowflake_time(id):
     """Returns the creation date in UTC of a discord id."""
-    return datetime.datetime.utcfromtimestamp(((int(id) >> 22) + DISCORD_EPOCH) / 1000)
+    return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
 
 def time_snowflake(datetime_obj, high=False):
     """Returns a numeric snowflake pretending to be created at the given date.
@@ -231,8 +231,15 @@ def _unique(iterable):
     adder = seen.add
     return [x for x in iterable if not (x in seen or adder(x))]
 
-def _null_event(*args, **kwargs):
-    pass
+def _get_as_snowflake(data, key):
+    try:
+        value = data[key]
+    except KeyError:
+        return None
+    else:
+        if value is None:
+            return value
+        return int(value)
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):

@@ -76,10 +76,10 @@ class Server(Hashable):
         An iterable of :class:`Channel` that are currently on the server.
     icon: str
         The server's icon.
-    id: str
+    id: int
         The server's ID.
-    owner: :class:`Member`
-        The member who owns the server.
+    owner_id: int
+        The server owner's ID. Use :attr:`Server.owner` instead.
     unavailable: bool
         Indicates if the server is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Server.id` is slim and they might
@@ -111,14 +111,13 @@ class Server(Hashable):
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'owner', 'unavailable', 'name', 'region',
+                 'name', 'id', 'unavailable', 'name', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
                  'large', 'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'splash', '_voice_states' )
 
     def __init__(self, *, data, state):
         self._channels = {}
-        self.owner = None
         self._members = {}
         self._voice_states = {}
         self._state = state
@@ -158,9 +157,9 @@ class Server(Hashable):
     def __str__(self):
         return self.name
 
-    def _update_voice_state(self, data):
-        user_id = data['user_id']
-        channel = self.get_channel(data['channel_id'])
+    def _update_voice_state(self, data, channel_id):
+        user_id = int(data['user_id'])
+        channel = self.get_channel(channel_id)
         try:
             # check if we should remove the voice state from cache
             if channel is None:
@@ -230,7 +229,7 @@ class Server(Hashable):
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
-        self.id = guild['id']
+        self.id = int(guild['id'])
         self.roles = [Role(server=self, data=r, state=self._state) for r in guild.get('roles', [])]
         self.mfa_level = guild.get('mfa_level')
         self.emojis = [Emoji(server=self, data=r, state=self._state) for r in guild.get('emojis', [])]
@@ -251,22 +250,20 @@ class Server(Hashable):
         self._sync(guild)
         self.large = None if member_count is None else self._member_count >= 250
 
-        if 'owner_id' in guild:
-            self.owner_id = guild['owner_id']
-            self.owner = self.get_member(self.owner_id)
-
-        afk_id = guild.get('afk_channel_id')
-        self.afk_channel = self.get_channel(afk_id)
+        self.owner_id = utils._get_as_snowflake(guild, 'owner_id')
+        self.afk_channel = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))
 
         for obj in guild.get('voice_states', []):
-            self._update_voice_state(obj)
+            self._update_voice_state(obj, int(obj['channel_id']))
 
     def _sync(self, data):
-        if 'large' in data:
+        try:
             self.large = data['large']
+        except KeyError:
+            pass
 
         for presence in data.get('presences', []):
-            user_id = presence['user']['id']
+            user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
                 member.status = try_enum(Status, presence['status'])
@@ -279,7 +276,6 @@ class Server(Hashable):
                 channel = Channel(server=self, data=c, state=self._state)
                 self._add_channel(channel)
 
-
     @utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
@@ -289,6 +285,11 @@ class Server(Hashable):
     def default_channel(self):
         """Gets the default :class:`Channel` for the server."""
         return utils.find(lambda c: c.is_default, self.channels)
+
+    @property
+    def owner(self):
+        """:class:`Member`: The member that owns the server."""
+        return self.get_member(self.owner_id)
 
     @property
     def icon_url(self):

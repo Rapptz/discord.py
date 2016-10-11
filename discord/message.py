@@ -95,9 +95,9 @@ class Message:
     role_mentions: list
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
-    id: str
+    id: int
         The message ID.
-    webhook_id: Optional[str]
+    webhook_id: Optional[int]
         If this message was sent by a webhook, then this is the webhook ID's that sent this
         message.
     attachments: list
@@ -163,7 +163,7 @@ class Message:
             return
 
         for mention in mentions:
-            id_search = mention['id']
+            id_search = int(mention['id'])
             member = self.server.get_member(id_search)
             if member is not None:
                 self.mentions.append(member)
@@ -185,7 +185,7 @@ class Message:
         # the author
 
         participants = []
-        for uid in call.get('participants', []):
+        for uid in map(int, call.get('participants', [])):
             if uid == self.author.id:
                 participants.append(self.author)
             else:
@@ -204,21 +204,21 @@ class Message:
         This allows you receive the user IDs of mentioned users
         even in a private message context.
         """
-        return re.findall(r'<@!?([0-9]+)>', self.content)
+        return [int(x) for x in re.findall(r'<@!?([0-9]+)>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
         """A property that returns an array of channel IDs matched with
         the syntax of <#channel_id> in the message content.
         """
-        return re.findall(r'<#([0-9]+)>', self.content)
+        return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
         """A property that returns an array of role IDs matched with
         the syntax of <@&role_id> in the message content.
         """
-        return re.findall(r'<@&([0-9]+)>', self.content)
+        return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
 
     @utils.cached_slot_property('_cs_channel_mentions')
     def channel_mentions(self):

@@ -46,15 +46,15 @@ class User:
 
     Attributes
     -----------
-    name : str
+    name: str
         The user's username.
-    id : str
+    id: int
         The user's unique ID.
-    discriminator : str or int
+    discriminator: str
         The user's discriminator. This is given when the username has conflicts.
-    avatar : str
+    avatar: str
         The avatar hash the user has. Could be None.
-    bot : bool
+    bot: bool
         Specifies if the user is a bot account.
     """
 
@@ -63,7 +63,7 @@ class User:
     def __init__(self, *, state, data):
         self._state = state
         self.name = data['username']
-        self.id = data['id']
+        self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self.avatar = data['avatar']
         self.bot = data.get('bot', False)

@@ -54,17 +54,17 @@ class Emoji(Hashable):
 
     Attributes
     -----------
-    name : str
+    name: str
         The name of the emoji.
-    id : str
+    id: int
         The emoji's ID.
-    require_colons : bool
+    require_colons: bool
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
-    managed : bool
+    managed: bool
         If this emoji is managed by a Twitch integration.
-    server : :class:`Server`
+    server: :class:`Server`
         The server the emoji belongs to.
-    roles : List[:class:`Role`]
+    roles: List[:class:`Role`]
         A list of :class:`Role` that is allowed to use this emoji. If roles is empty,
         the emoji is unrestricted.
     """
@@ -76,10 +76,10 @@ class Emoji(Hashable):
         self._from_data(data)
 
     def _from_data(self, emoji):
-        self.require_colons = emoji.get('require_colons')
-        self.managed = emoji.get('managed')
-        self.id = emoji.get('id')
-        self.name = emoji.get('name')
+        self.require_colons = emoji['require_colons']
+        self.managed = emoji['managed']
+        self.id = int(emoji['id'])
+        self.name = emoji['name']
         self.roles = emoji.get('roles', [])
         if self.roles:
             roles = set(self.roles)

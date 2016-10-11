@@ -90,7 +90,7 @@ class MemberConverter(IDConverter):
             else:
                 result = _get_from_servers(bot, 'get_member_named', self.argument)
         else:
-            user_id = match.group(1)
+            user_id = int(match.group(1))
             if server:
                 result = server.get_member(user_id)
             else:
@@ -118,7 +118,7 @@ class ChannelConverter(IDConverter):
             else:
                 result = discord.utils.get(bot.get_all_channels(), name=self.argument)
         else:
-            channel_id = match.group(1)
+            channel_id = int(match.group(1))
             if server:
                 result = server.get_channel(channel_id)
             else:
@@ -151,7 +151,7 @@ class RoleConverter(IDConverter):
             raise NoPrivateMessage()
 
         match = self._get_id_match() or re.match(r'<@&([0-9]+)>$', self.argument)
-        params = dict(id=match.group(1)) if match else dict(name=self.argument)
+        params = dict(id=int(match.group(1))) if match else dict(name=self.argument)
         result = discord.utils.get(server.roles, **params)
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(self.argument))
@@ -187,7 +187,7 @@ class EmojiConverter(IDConverter):
             if result is None:
                 result = discord.utils.get(bot.get_all_emojis(), name=self.argument)
         else:
-            emoji_id = match.group(1)
+            emoji_id = int(match.group(1))
 
             # Try to look up emoji by id.
             if server:
