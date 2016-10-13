@@ -215,7 +215,10 @@ class Bot(GroupMixin, discord.Client):
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
-        self._skip_check = discord.User.__ne__ if options.pop('self_bot', False) else discord.User.__eq__
+        if options.pop('self_bot', False):
+            self._skip_check = lambda x, y: x != y
+        else:
+            self._skip_check = lambda x, y: x == y
 
         self.help_attrs = options.pop('help_attrs', {})
         self.help_attrs['pass_context'] = True
@@ -815,7 +818,7 @@ class Bot(GroupMixin, discord.Client):
         _internal_author = message.author
 
         view = StringView(message.content)
-        if self._skip_check(message.author, self.user):
+        if self._skip_check(message.author.id, self.user.id):
             return
 
         prefix = yield from self._get_prefix(message)
