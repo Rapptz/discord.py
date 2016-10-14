@@ -711,7 +711,7 @@ class Bot(GroupMixin, discord.Client):
 
     # extensions
 
-    def load_extension(self, name):
+    def load_extension(self, name, *args, **kwargs):
         if name in self.extensions:
             return
 
@@ -721,7 +721,7 @@ class Bot(GroupMixin, discord.Client):
             del sys.modules[name]
             raise discord.ClientException('extension does not have a setup function')
 
-        lib.setup(self)
+        lib.setup(self, *args, **kwargs)
         self.extensions[name] = lib
 
     def unload_extension(self, name):
