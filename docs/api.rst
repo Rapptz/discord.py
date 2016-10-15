@@ -9,7 +9,7 @@ The following section outlines the API of discord.py.
 
     This module uses the Python logging module to log diagnostic and errors
     in an output independent way.  If the logging module is not configured,
-    these logs will not be output anywhere.  See :ref:`logging_setup` for
+    these logs will not output anywhere.  See :ref:`logging_setup` for
     more information on how to set up and use the logging module with
     discord.py.
 
@@ -91,8 +91,8 @@ to handle it, which defaults to print a traceback and ignore the exception.
         def on_ready():
             pass
 
-    Since this can be a potentially common mistake, there is a helper
-    decorator, :meth:`Client.async_event` to convert a basic function
+    Since this can potentially be a common mistake, there is a helper
+    decorator; :meth:`Client.async_event`, to convert a basic function
     into a coroutine and an event at the same time. Note that it is
     not necessary if you use ``async def``.
 
@@ -119,8 +119,8 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     Usually when an event raises an uncaught exception, a traceback is
     printed to stderr and the exception is ignored. If you want to
-    change this behaviour and handle the exception for whatever reason
-    yourself, this event can be overridden. Which, when done, will
+    change this behaviour and handle the exception yourself for whatever reason,
+    this event can be overridden. Which, when done, will
     supress the default action of printing the traceback.
 
     The information of the exception rasied and the exception itself can
@@ -146,7 +146,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is received from the websocket, before
-    it's processed.This event is always dispatched when a message is
+    it's processed. This event is always dispatched when a message is
     received and the passed data is not processed in any way.
 
     This is only really useful for grabbing the websocket stream and
@@ -222,8 +222,8 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     Called whenever a channel is updated. e.g. changed name, topic, permissions.
 
-    :param before: The :class:`Channel` that got updated with the old info.
-    :param after: The :class:`Channel` that got updated with the updated info.
+    :param before: The :class:`Channel` that got updated, with the old info.
+    :param after: The :class:`Channel` that got updated, with the updated info.
 
 .. function:: on_member_join(member)
               on_member_remove(member)
@@ -411,7 +411,7 @@ Enumerations
 -------------
 
 The API provides some enumerations for certain types of strings to avoid the API
-from being stringly typed in case the strings change in the future.
+from being strongly typed in case the strings change in the future.
 
 All enumerations are subclasses of `enum`_.
 
@@ -498,7 +498,6 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: frankfurt
 
         The Frankfurt region.
-
     .. attribute:: brazil
 
         The Brazil region.
@@ -509,12 +508,12 @@ All enumerations are subclasses of `enum`_.
 
         The US West region for VIP servers.
     .. attribute:: vip_amsterdam
-
+    
         The Amsterdam region for VIP servers.
 
 .. class:: VerificationLevel
 
-    Specifies a :class:`Server`\'s verification level, which is the criteria in
+    Specifies a :class:`Server`\'s verification level, which is the criteria
     which a member must meet before being able to send messages to the server.
 
     .. attribute:: none
@@ -538,7 +537,7 @@ All enumerations are subclasses of `enum`_.
 
 .. class:: Status
 
-    Specifies a :class:`Member` 's status.
+    Specifies a :class:`Member`\'s status.
 
     .. attribute:: online
 
@@ -566,7 +565,7 @@ All enumerations are subclasses of `enum`_.
 Data Classes
 --------------
 
-Some classes are just there to be data containers, this lists them.
+Some classes are just there to be data containers - they are listed here.
 
 .. note::
 
