@@ -408,7 +408,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False, since=0.0, idle=None):
         if game is not None and not isinstance(game, Game):
-            raise InvalidArgument('game must be of Game or None')
+            raise InvalidArgument('game must be of type Game or None')
 
         if idle:
             status = 'idle'
