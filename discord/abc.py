@@ -31,6 +31,7 @@ import asyncio
 
 from .message import Message
 from .iterators import LogsFromIterator
+from .context_managers import Typing
 
 class Snowflake(metaclass=abc.ABCMeta):
     __slots__ = ()
@@ -181,6 +182,20 @@ class MessageChannel(metaclass=abc.ABCMeta):
 
         channel_id, _ = self._get_destination()
         yield from self._state.http.send_typing(channel_id)
+
+    def typing(self):
+        """Returns a context manager that allows you to type for an indefinite period of time.
+
+        This is useful for denoting long computations in your bot.
+
+        Example Usage: ::
+
+            with channel.typing():
+                # do expensive stuff here
+                await channel.send_message('done!')
+
+        """
+        return Typing(self)
 
     @asyncio.coroutine
     def upload(self, fp, *, filename=None, content=None, tts=False):
