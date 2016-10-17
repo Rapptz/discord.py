@@ -50,34 +50,32 @@ class Invite(Hashable):
 
     Attributes
     -----------
-    max_age : int
+    max_age: int
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
-    code : str
+    code: str
         The URL fragment used for the invite. :attr:`xkcd` is also a possible fragment.
-    server : :class:`Server`
+    server: :class:`Server`
         The server the invite is for.
-    revoked : bool
+    revoked: bool
         Indicates if the invite has been revoked.
-    created_at : `datetime.datetime`
+    created_at: `datetime.datetime`
         A datetime object denoting the time the invite was created.
-    temporary : bool
+    temporary: bool
         Indicates that the invite grants temporary membership.
         If True, members who joined via this invite will be kicked upon disconnect.
-    uses : int
+    uses: int
         How many times the invite has been used.
-    max_uses : int
+    max_uses: int
         How many times the invite can be used.
-    xkcd : str
-        The URL fragment used for the invite if it is human readable.
-    inviter : :class:`User`
+    inviter: :class:`User`
         The user who created the invite.
-    channel : :class:`Channel`
+    channel: :class:`Channel`
         The channel the invite is for.
     """
 
 
     __slots__ = ( 'max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
-                  'temporary', 'max_uses', 'xkcd', 'inviter', 'channel', '_state' )
+                  'temporary', 'max_uses', 'inviter', 'channel', '_state' )
 
     def __init__(self, *, state, data):
         self._state = state
@@ -89,7 +87,6 @@ class Invite(Hashable):
         self.temporary = data.get('temporary')
         self.uses = data.get('uses')
         self.max_uses = data.get('max_uses')
-        self.xkcd = data.get('xkcdpass')
 
         inviter_data = data.get('inviter')
         self.inviter = None if inviter_data is None else User(state=state, data=data)
@@ -101,7 +98,7 @@ class Invite(Hashable):
     @property
     def id(self):
         """Returns the proper code portion of the invite."""
-        return self.xkcd if self.xkcd else self.code
+        return self.code
 
     @property
     def url(self):

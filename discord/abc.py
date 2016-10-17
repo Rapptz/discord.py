@@ -32,6 +32,7 @@ import asyncio
 from .message import Message
 from .iterators import LogsFromIterator
 from .context_managers import Typing
+from .errors import ClientException, NoMoreMessages
 
 class Snowflake(metaclass=abc.ABCMeta):
     __slots__ = ()
@@ -288,6 +289,40 @@ class MessageChannel(metaclass=abc.ABCMeta):
         return Message(channel=self, state=self._state, data=data)
 
     @asyncio.coroutine
+    def delete_messages(self, messages):
+        """|coro|
+
+        Deletes a list of messages. This is similar to :meth:`Message.delete`
+        except it bulk deletes multiple messages.
+
+        Usable only by bot accounts.
+
+        Parameters
+        -----------
+        messages : iterable of :class:`Message`
+            An iterable of messages denoting which ones to bulk delete.
+
+        Raises
+        ------
+        ClientException
+            The number of messages to delete is less than 2 or more than 100.
+        Forbidden
+            You do not have proper permissions to delete the messages or
+            you're not using a bot account.
+        HTTPException
+            Deleting the messages failed.
+        """
+
+        messages = list(messages)
+        if len(messages) > 100 or len(messages) < 2:
+            raise ClientException('Can only delete messages in the range of [2, 100]')
+
+        message_ids = [m.id for m in messages]
+        channel_id, guild_id = self._get_destination()
+
+        yield from self._state.http.delete_messages(channel_id, message_ids, guild_id)
+
+    @asyncio.coroutine
     def pins(self):
         """|coro|
 
@@ -367,3 +402,91 @@ class MessageChannel(metaclass=abc.ABCMeta):
                         counter += 1
         """
         return LogsFromIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
+
+    @asyncio.coroutine
+    def purge(self, *, limit=100, check=None, before=None, after=None, around=None):
+        """|coro|
+
+        Purges a list of messages that meet the criteria given by the predicate
+        ``check``. If a ``check`` is not provided then all messages are deleted
+        without discrimination.
+
+        You must have :attr:`Permissions.manage_messages` permission to
+        delete messages even if they are your own. The
+        :attr:`Permissions.read_message_history` permission is also needed to
+        retrieve message history.
+
+        Usable only by bot accounts.
+
+        Parameters
+        -----------
+        limit: int
+            The number of messages to search through. This is not the number
+            of messages that will be deleted, though it can be.
+        check: predicate
+            The function used to check if a message should be deleted.
+            It must take a :class:`Message` as its sole parameter.
+        before
+            Same as ``before`` in :meth:`history`.
+        after
+            Same as ``after`` in :meth:`history`.
+        around
+            Same as ``around`` in :meth:`history`.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to do the actions required or
+            you're not using a bot account.
+        HTTPException
+            Purging the messages failed.
+
+        Examples
+        ---------
+
+        Deleting bot's messages ::
+
+            def is_me(m):
+                return m.author == client.user
+
+            deleted = await channel.purge(limit=100, check=is_me)
+            await channel.send_message('Deleted {} message(s)'.format(len(deleted)))
+
+        Returns
+        --------
+        list
+            The list of messages that were deleted.
+        """
+
+        if check is None:
+            check = lambda m: True
+
+        iterator = self.history(limit=limit, before=before, after=after, around=around)
+        ret = []
+        count = 0
+
+        while True:
+            try:
+                msg = yield from iterator.get()
+            except NoMoreMessages:
+                # no more messages to poll
+                if count >= 2:
+                    # more than 2 messages -> bulk delete
+                    to_delete = ret[-count:]
+                    yield from self.delete_messages(to_delete)
+                elif count == 1:
+                    # delete a single message
+                    yield from ret[-1].delete()
+
+                return ret
+            else:
+                if count == 100:
+                    # we've reached a full 'queue'
+                    to_delete = ret[-100:]
+                    yield from self.delete_messages(to_delete)
+                    count = 0
+                    yield from asyncio.sleep(1)
+
+                if check(msg):
+                    count += 1
+                    ret.append(msg)

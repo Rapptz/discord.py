@@ -24,12 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+import re
+
 from .user import User
 from .reaction import Reaction
 from . import utils, abc
 from .object import Object
 from .calls import CallMessage
-import re
 from .enums import MessageType, try_enum
 
 class Message:
@@ -343,3 +345,86 @@ class Message:
                 return 'You missed a call from {0.author.name}'.format(self)
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
+
+    @asyncio.coroutine
+    def delete(self):
+        """|coro|
+
+        Deletes the message.
+
+        Your own messages could be deleted without any proper permissions. However to
+        delete other people's messages, you need the :attr:`Permissions.manage_messages`
+        permission.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to delete the message.
+        HTTPException
+            Deleting the message failed.
+        """
+        yield from self._state.http.delete_message(self.channel.id, self.id, getattr(self.server, 'id', None))
+
+    @asyncio.coroutine
+    def edit(self, *, content: str):
+        """|coro|
+
+        Edits the message.
+
+        The content must be able to be transformed into a string via ``str(content)``.
+
+        Parameters
+        -----------
+        content: str
+            The new content to replace the message with.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        """
+
+        guild_id = getattr(self.server, 'id', None)
+        data = yield from self._state.http.edit_message(self.id, self.channel.id, str(content), guild_id=guild_id)
+        self._update(channel=self.channel, data=data)
+
+    @asyncio.coroutine
+    def pin(self):
+        """|coro|
+
+        Pins the message. You must have :attr:`Permissions.manage_messages`
+        permissions to do this in a non-private channel context.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to pin the message.
+        NotFound
+            The message or channel was not found or deleted.
+        HTTPException
+            Pinning the message failed, probably due to the channel
+            having more than 50 pinned messages.
+        """
+
+        yield from self._state.http.pin_message(self.channel.id, self.id)
+        self.pinned = True
+
+    @asyncio.coroutine
+    def unpin(self):
+        """|coro|
+
+        Unpins the message. You must have :attr:`Permissions.manage_messages`
+        permissions to do this in a non-private channel context.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to unpin the message.
+        NotFound
+            The message or channel was not found or deleted.
+        HTTPException
+            Unpinning the message failed.
+        """
+
+        yield from self._state.http.unpin_message(self.channel.id, self.id)
+        self.pinned = False
