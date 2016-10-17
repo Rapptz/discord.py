@@ -1041,7 +1041,7 @@ class Client:
         if isinstance(after, datetime.datetime):
             after = Object(utils.time_snowflake(after, high=True))
 
-        iterator = LogsFromIterator.create(self, channel, limit, before=before, after=after)
+        iterator = LogsFromIterator(self, channel, limit, before=before, after=after)
         ret = []
         count = 0
 
@@ -1271,7 +1271,7 @@ class Client:
             if isinstance(after, datetime.datetime):
                 after = Object(utils.time_snowflake(after, high=True))
 
-            return LogsFromIterator.create(self, channel, limit, before=before, after=after, reverse=reverse)
+            return LogsFromIterator(self, channel, limit, before=before, after=after, reverse=reverse)
     else:
         @asyncio.coroutine
         def logs_from(self, channel, limit=100, *, before=None, after=None):
