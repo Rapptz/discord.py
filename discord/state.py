@@ -30,7 +30,7 @@ from .game import Game
 from .emoji import Emoji
 from .reaction import Reaction
 from .message import Message
-from .channel import Channel, PrivateChannel
+from .channel import *
 from .member import Member
 from .role import Role
 from . import utils, compat
@@ -153,13 +153,13 @@ class ConnectionState:
 
     def _add_private_channel(self, channel):
         self._private_channels[channel.id] = channel
-        if channel.type is ChannelType.private:
-            self._private_channels_by_user[channel.user.id] = channel
+        if isinstance(channel, DMChannel):
+            self._private_channels_by_user[channel.recipient.id] = channel
 
     def _remove_private_channel(self, channel):
         self._private_channels.pop(channel.id, None)
-        if channel.type is ChannelType.private:
-            self._private_channels_by_user.pop(channel.user.id, None)
+        if isinstance(channel, DMChannel):
+            self._private_channels_by_user.pop(channel.recipient.id, None)
 
     def _get_message(self, msg_id):
         return utils.find(lambda m: m.id == msg_id, self.messages)
@@ -229,7 +229,8 @@ class ConnectionState:
                 servers.append(server)
 
         for pm in data.get('private_channels'):
-            self._add_private_channel(PrivateChannel(me=self.user, data=pm, state=self.ctx))
+            factory, _ = _channel_factory(pm['type'])
+            self._add_private_channel(factory(me=self.user, data=pm, state=self.ctx))
 
         compat.create_task(self._delay_ready(), loop=self.loop)
 
@@ -348,13 +349,18 @@ class ConnectionState:
         self.user = User(state=self.ctx, data=data)
 
     def parse_channel_delete(self, data):
-        server =  self._get_server(int(data['guild_id']))
+        server =  self._get_server(utils._get_as_snowflake(data, 'guild_id'))
+        channel_id = int(data['id'])
         if server is not None:
-            channel_id = data.get('id')
             channel = server.get_channel(channel_id)
             if channel is not None:
                 server._remove_channel(channel)
                 self.dispatch('channel_delete', channel)
+        else:
+            # the reason we're doing this is so it's also removed from the
+            # private channel by user cache as well
+            channel = self._get_private_channel(channel_id)
+            self._remove_private_channel(channel)
 
     def parse_channel_update(self, data):
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -375,15 +381,15 @@ class ConnectionState:
                 self.dispatch('channel_update', old_channel, channel)
 
     def parse_channel_create(self, data):
-        ch_type = try_enum(ChannelType, data.get('type'))
+        factory, ch_type = _channel_factory(data['type'])
         channel = None
         if ch_type in (ChannelType.group, ChannelType.private):
-            channel = PrivateChannel(me=self.user, data=data, state=self.ctx)
+            channel = factory(me=self.user, data=data, state=self.ctx)
             self._add_private_channel(channel)
         else:
             server = self._get_server(utils._get_as_snowflake(data, 'guild_id'))
             if server is not None:
-                channel = Channel(server=server, state=self.ctx, data=data)
+                channel = factory(server=server, state=self.ctx, data=data)
                 server._add_channel(channel)
 
         self.dispatch('channel_create', channel)
@@ -638,14 +644,12 @@ class ConnectionState:
         if channel is not None:
             member = None
             user_id = utils._get_as_snowflake(data, 'user_id')
-            is_private = getattr(channel, 'is_private', None)
-            if is_private == None:
-                return
-
-            if is_private:
-                member = channel.user
-            else:
+            if isinstance(channel, DMChannel):
+                member = channel.recipient
+            elif isinstance(channel, TextChannel):
                 member = channel.server.get_member(user_id)
+            elif isinstance(channel, GroupChannel):
+                member = utils.find(lambda x: x.id == user_id, channel.recipients)
 
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))

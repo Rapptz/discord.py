@@ -21,7 +21,7 @@ from .client import Client, AppInfo, ChannelPermissions
 from .user import User
 from .game import Game
 from .emoji import Emoji
-from .channel import Channel, PrivateChannel
+from .channel import *
 from .server import Server
 from .member import Member, VoiceState
 from .message import Message

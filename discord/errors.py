@@ -38,6 +38,12 @@ class ClientException(DiscordException):
     """
     pass
 
+class NoMoreMessages(DiscordException):
+    """Exception that is thrown when a ``history`` operation has no more
+    messages. This is only exposed for Python 3.4 only.
+    """
+    pass
+
 class GatewayNotFound(DiscordException):
     """An exception that is usually thrown when the gateway hub
     for the :class:`Client` websocket is not found."""

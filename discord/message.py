@@ -24,9 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from . import utils
 from .user import User
 from .reaction import Reaction
+from . import utils, abc
 from .object import Object
 from .calls import CallMessage
 import re
@@ -292,7 +292,7 @@ class Message:
                 self.channel.is_private = True
             return
 
-        if not self.channel.is_private:
+        if isinstance(self.channel, abc.GuildChannel):
             self.server = self.channel.server
             found = self.server.get_member(self.author.id)
             if found is not None:

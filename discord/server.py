@@ -29,8 +29,8 @@ from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
 from .game import Game
-from .channel import Channel
-from .enums import ServerRegion, Status, try_enum, VerificationLevel
+from .channel import *
+from .enums import ServerRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
 
 import copy
@@ -273,7 +273,11 @@ class Server(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                channel = Channel(server=self, data=c, state=self._state)
+                if c['type'] == ChannelType.text.value:
+                    channel = TextChannel(server=self, data=c, state=self._state)
+                else:
+                    channel = VoiceChannel(server=self, data=c, state=self._state)
+
                 self._add_channel(channel)
 
     @utils.cached_slot_property('_default_role')

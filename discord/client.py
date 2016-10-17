@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from . import __version__ as library_version
 from .user import User
 from .member import Member
-from .channel import Channel, PrivateChannel
+from .channel import *
 from .server import Server
 from .message import Message
 from .invite import Invite
@@ -261,9 +261,9 @@ class Client:
 
     @asyncio.coroutine
     def _resolve_destination(self, destination):
-        if isinstance(destination, Channel):
+        if isinstance(destination, TextChannel):
             return destination.id, destination.server.id
-        elif isinstance(destination, PrivateChannel):
+        elif isinstance(destination, DMChannel):
             return destination.id, None
         elif isinstance(destination, Server):
             return destination.id, destination.id
@@ -283,7 +283,7 @@ class Client:
             # couldn't find it in cache so YOLO
             return destination.id, destination.id
         else:
-            fmt = 'Destination must be Channel, PrivateChannel, User, or Object. Received {0.__class__.__name__}'
+            fmt = 'Destination must be TextChannel, DMChannel, User, or Object. Received {0.__class__.__name__}'
             raise InvalidArgument(fmt.format(destination))
 
     def __getattr__(self, name):
