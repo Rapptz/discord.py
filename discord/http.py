@@ -265,7 +265,7 @@ class HTTPClient:
         url = '{0.CHANNELS}/{1}/messages/{2}'.format(self, channel_id, message_id)
         return self.get(url, bucket=_func_())
 
-    def logs_from(self, channel_id, limit, before=None, after=None):
+    def logs_from(self, channel_id, limit, before=None, after=None, around=None):
         url = '{0.CHANNELS}/{1}/messages'.format(self, channel_id)
         params = {
             'limit': limit
@@ -275,6 +275,8 @@ class HTTPClient:
             params['before'] = before
         if after:
             params['after'] = after
+        if around:
+            params['around'] = around
 
         return self.get(url, params=params, bucket=_func_())
 

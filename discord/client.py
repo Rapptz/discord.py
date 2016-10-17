@@ -978,7 +978,7 @@ class Client:
         yield from self.http.delete_messages(channel.id, message_ids, guild_id)
 
     @asyncio.coroutine
-    def purge_from(self, channel, *, limit=100, check=None, before=None, after=None):
+    def purge_from(self, channel, *, limit=100, check=None, before=None, after=None, around=None):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -1006,6 +1006,9 @@ class Client:
             If a date is provided it must be a timezone-naive datetime representing UTC time.
         after : :class:`Message` or `datetime`
             The message or date after which all deleted messages must be.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        around : :class:`Message` or `datetime`
+            The message or date around which all deleted messages must be.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
 
         Raises
@@ -1040,8 +1043,10 @@ class Client:
             before = Object(utils.time_snowflake(before, high=False))
         if isinstance(after, datetime.datetime):
             after = Object(utils.time_snowflake(after, high=True))
+        if isinstance(around, datetime.datetime):
+            around = Object(utils.time_snowflake(around, high=True))
 
-        iterator = LogsFromIterator(self, channel, limit, before=before, after=after)
+        iterator = LogsFromIterator(self, channel, limit, before=before, after=after, around=around)
         ret = []
         count = 0
 
@@ -1209,7 +1214,7 @@ class Client:
         data = yield from self.http.pins_from(channel.id)
         return [Message(channel=channel, **m) for m in data]
 
-    def _logs_from(self, channel, limit=100, before=None, after=None):
+    def _logs_from(self, channel, limit=100, before=None, after=None, around=None):
         """|coro|
 
         This coroutine returns a generator that obtains logs from a specified channel.
@@ -1225,6 +1230,9 @@ class Client:
             If a date is provided it must be a timezone-naive datetime representing UTC time.
         after : :class:`Message` or `datetime`
             The message or date after which all returned messages must be.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        around : :class:`Message` or `datetime`
+            The message or date around which all returned messages must be.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
 
         Raises
@@ -1261,17 +1269,20 @@ class Client:
         """
         before = getattr(before, 'id', None)
         after  = getattr(after, 'id', None)
+        around  = getattr(around, 'id', None)
 
-        return self.http.logs_from(channel.id, limit, before=before, after=after)
+        return self.http.logs_from(channel.id, limit, before=before, after=after, around=around)
 
     if PY35:
-        def logs_from(self, channel, limit=100, *, before=None, after=None, reverse=False):
+        def logs_from(self, channel, limit=100, *, before=None, after=None, around=None, reverse=False):
             if isinstance(before, datetime.datetime):
                 before = Object(utils.time_snowflake(before, high=False))
             if isinstance(after, datetime.datetime):
                 after = Object(utils.time_snowflake(after, high=True))
+            if isinstance(around, datetime.datetime):
+                around = Object(utils.time_snowflake(around))
 
-            return LogsFromIterator(self, channel, limit, before=before, after=after, reverse=reverse)
+            return LogsFromIterator(self, channel, limit, before=before, after=after, around=around, reverse=reverse)
     else:
         @asyncio.coroutine
         def logs_from(self, channel, limit=100, *, before=None, after=None):
