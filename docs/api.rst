@@ -102,7 +102,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 .. function:: on_ready()
 
     Called when the client is done preparing the data received from Discord. Usually after login is successful
-    and the :attr:`Client.servers` and co. are filled up.
+    and the :attr:`Client.guilds` and co. are filled up.
 
     .. warning::
 
@@ -139,7 +139,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
 .. function:: on_message(message)
 
-    Called when a message is created and sent to a server.
+    Called when a message is created and sent to a guild.
 
     :param message: A :class:`Message` of the current message.
 
@@ -184,7 +184,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
     Called when a message is deleted. If the message is not found in the
     :attr:`Client.messages` cache, then these events will not be called. This
     happens if the message is too old or the client is participating in high
-    traffic servers. To fix this, increase the ``max_messages`` option of
+    traffic guilds. To fix this, increase the ``max_messages`` option of
     :class:`Client`.
 
     :param message: A :class:`Message` of the deleted message.
@@ -194,14 +194,14 @@ to handle it, which defaults to print a traceback and ignore the exception.
     Called when a message receives an update event. If the message is not found
     in the :attr:`Client.messages` cache, then these events will not be called.
     This happens if the message is too old or the client is participating in high
-    traffic servers. To fix this, increase the ``max_messages`` option of :class:`Client`.
+    traffic guilds. To fix this, increase the ``max_messages`` option of :class:`Client`.
 
     The following non-exhaustive cases trigger this event:
 
     - A message has been pinned or unpinned.
     - The message content has been changed.
     - The message has received an embed.
-        - For performance reasons, the embed server does not do this in a "consistent" manner.
+        - For performance reasons, the embed guild does not do this in a "consistent" manner.
     - A call message has received an update to its participants or ending time.
 
     :param before: A :class:`Message` of the previous version of the message.
@@ -245,9 +245,9 @@ to handle it, which defaults to print a traceback and ignore the exception.
 .. function:: on_channel_delete(channel)
               on_channel_create(channel)
 
-    Called whenever a channel is removed or added from a server.
+    Called whenever a channel is removed or added from a guild.
 
-    Note that you can get the server from :attr:`Channel.server`.
+    Note that you can get the guild from :attr:`Channel.guild`.
     :func:`on_channel_create` could also pass in a :class:`PrivateChannel` depending
     on the value of :attr:`Channel.is_private`.
 
@@ -263,7 +263,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 .. function:: on_member_join(member)
               on_member_remove(member)
 
-    Called when a :class:`Member` leaves or joins a :class:`Server`.
+    Called when a :class:`Member` leaves or joins a :class:`Guild`.
 
     :param member: The :class:`Member` that joined or left.
 
@@ -282,71 +282,71 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: The :class:`Member` that updated their profile with the old info.
     :param after: The :class:`Member` that updated their profile with the updated info.
 
-.. function:: on_server_join(server)
+.. function:: on_guild_join(guild)
 
-    Called when a :class:`Server` is either created by the :class:`Client` or when the
-    :class:`Client` joins a server.
+    Called when a :class:`Guild` is either created by the :class:`Client` or when the
+    :class:`Client` joins a guild.
 
-    :param server: The class:`Server` that was joined.
+    :param guild: The class:`Guild` that was joined.
 
-.. function:: on_server_remove(server)
+.. function:: on_guild_remove(guild)
 
-    Called when a :class:`Server` is removed from the :class:`Client`.
+    Called when a :class:`Guild` is removed from the :class:`Client`.
 
     This happens through, but not limited to, these circumstances:
 
     - The client got banned.
     - The client got kicked.
-    - The client left the server.
-    - The client or the server owner deleted the server.
+    - The client left the guild.
+    - The client or the guild owner deleted the guild.
 
     In order for this event to be invoked then the :class:`Client` must have
-    been part of the server to begin with. (i.e. it is part of :attr:`Client.servers`)
+    been part of the guild to begin with. (i.e. it is part of :attr:`Client.guilds`)
 
-    :param server: The :class:`Server` that got removed.
+    :param guild: The :class:`Guild` that got removed.
 
-.. function:: on_server_update(before, after)
+.. function:: on_guild_update(before, after)
 
-    Called when a :class:`Server` updates, for example:
+    Called when a :class:`Guild` updates, for example:
 
     - Changed name
     - Changed AFK channel
     - Changed AFK timeout
     - etc
 
-    :param before: The :class:`Server` prior to being updated.
-    :param after: The :class:`Server` after being updated.
+    :param before: The :class:`Guild` prior to being updated.
+    :param after: The :class:`Guild` after being updated.
 
-.. function:: on_server_role_create(role)
-              on_server_role_delete(role)
+.. function:: on_guild_role_create(role)
+              on_guild_role_delete(role)
 
-    Called when a :class:`Server` creates or deletes a new :class:`Role`.
+    Called when a :class:`Guild` creates or deletes a new :class:`Role`.
 
-    To get the server it belongs to, use :attr:`Role.server`.
+    To get the guild it belongs to, use :attr:`Role.guild`.
 
     :param role: The :class:`Role` that was created or deleted.
 
-.. function:: on_server_role_update(before, after)
+.. function:: on_guild_role_update(before, after)
 
-    Called when a :class:`Role` is changed server-wide.
+    Called when a :class:`Role` is changed guild-wide.
 
     :param before: The :class:`Role` that updated with the old info.
     :param after: The :class:`Role` that updated with the updated info.
 
-.. function:: on_server_emojis_update(before, after)
+.. function:: on_guild_emojis_update(before, after)
 
-    Called when a :class:`Server` adds or removes :class:`Emoji`.
+    Called when a :class:`Guild` adds or removes :class:`Emoji`.
 
     :param before: A list of :class:`Emoji` before the update.
     :param after: A list of :class:`Emoji` after the update.
 
-.. function:: on_server_available(server)
-              on_server_unavailable(server)
+.. function:: on_guild_available(guild)
+              on_guild_unavailable(guild)
 
-    Called when a server becomes available or unavailable. The server must have
-    existed in the :attr:`Client.servers` cache.
+    Called when a guild becomes available or unavailable. The guild must have
+    existed in the :attr:`Client.guilds` cache.
 
-    :param server: The :class:`Server` that has changed availability.
+    :param guild: The :class:`Guild` that has changed availability.
 
 .. function:: on_voice_state_update(before, after)
 
@@ -357,24 +357,24 @@ to handle it, which defaults to print a traceback and ignore the exception.
     - A member joins a voice room.
     - A member leaves a voice room.
     - A member is muted or deafened by their own accord.
-    - A member is muted or deafened by a server administrator.
+    - A member is muted or deafened by a guild administrator.
 
     :param before: The :class:`Member` whose voice state changed prior to the changes.
     :param after: The :class:`Member` whose voice state changed after the changes.
 
 .. function:: on_member_ban(member)
 
-    Called when a :class:`Member` gets banned from a :class:`Server`.
+    Called when a :class:`Member` gets banned from a :class:`Guild`.
 
-    You can access the server that the member got banned from via :attr:`Member.server`.
+    You can access the guild that the member got banned from via :attr:`Member.guild`.
 
     :param member: The member that got banned.
 
-.. function:: on_member_unban(server, user)
+.. function:: on_member_unban(guild, user)
 
-    Called when a :class:`User` gets unbanned from a :class:`Server`.
+    Called when a :class:`User` gets unbanned from a :class:`Guild`.
 
-    :param server: The server the user got unbanned from.
+    :param guild: The guild the user got unbanned from.
     :param user: The user that got unbanned.
 
 .. function:: on_typing(channel, user, when)
@@ -499,9 +499,9 @@ All enumerations are subclasses of `enum`_.
 
         The system message denoting that a pinned message has been added to a channel.
 
-.. class:: ServerRegion
+.. class:: GuildRegion
 
-    Specifies the region a :class:`Server`'s voice server belongs to.
+    Specifies the region a :class:`Guild`'s voice server belongs to.
 
     .. attribute:: us_west
 
@@ -539,18 +539,18 @@ All enumerations are subclasses of `enum`_.
         The Brazil region.
     .. attribute:: vip_us_east
 
-        The US East region for VIP servers.
+        The US East region for VIP guilds.
     .. attribute:: vip_us_west
 
-        The US West region for VIP servers.
+        The US West region for VIP guilds.
     .. attribute:: vip_amsterdam
 
-        The Amsterdam region for VIP servers.
+        The Amsterdam region for VIP guilds.
 
 .. class:: VerificationLevel
 
-    Specifies a :class:`Server`\'s verification level, which is the criteria in
-    which a member must meet before being able to send messages to the server.
+    Specifies a :class:`Guild`\'s verification level, which is the criteria in
+    which a member must meet before being able to send messages to the guild.
 
     .. attribute:: none
 
@@ -565,7 +565,7 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: high
 
         Member must have a verified email, be registered on Discord for more
-        than five minutes, and be a member of the server itself for more than
+        than five minutes, and be a member of the guild itself for more than
         ten minutes.
     .. attribute:: table_flip
 
@@ -670,10 +670,10 @@ GroupCall
 .. autoclass:: GroupCall
     :members:
 
-Server
+Guild
 ~~~~~~
 
-.. autoclass:: Server
+.. autoclass:: Guild
     :members:
 
 Member

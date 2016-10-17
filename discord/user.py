@@ -136,7 +136,7 @@ class User:
         """Returns the user's display name.
 
         For regular users this is just their username, but
-        if they have a server specific nickname then that
+        if they have a guild specific nickname then that
         is returned instead.
         """
         return getattr(self, 'nick', None) or self.name

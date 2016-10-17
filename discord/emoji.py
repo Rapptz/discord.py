@@ -62,16 +62,16 @@ class Emoji(Hashable):
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
     managed: bool
         If this emoji is managed by a Twitch integration.
-    server: :class:`Server`
-        The server the emoji belongs to.
+    guild: :class:`Guild`
+        The guild the emoji belongs to.
     roles: List[:class:`Role`]
         A list of :class:`Role` that is allowed to use this emoji. If roles is empty,
         the emoji is unrestricted.
     """
-    __slots__ = ('require_colons', 'managed', 'id', 'name', 'roles', 'server', '_state')
+    __slots__ = ('require_colons', 'managed', 'id', 'name', 'roles', 'guild', '_state')
 
-    def __init__(self, *, server, state, data):
-        self.server = server
+    def __init__(self, *, guild, state, data):
+        self.guild = guild
         self._state = state
         self._from_data(data)
 
@@ -83,7 +83,7 @@ class Emoji(Hashable):
         self.roles = emoji.get('roles', [])
         if self.roles:
             roles = set(self.roles)
-            self.roles = [role for role in self.server.roles if role.id in roles]
+            self.roles = [role for role in self.guild.roles if role.id in roles]
 
     def _iterator(self):
         for attr in self.__slots__:

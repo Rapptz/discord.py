@@ -37,15 +37,15 @@ class VoiceState:
     Attributes
     ------------
     deaf: bool
-        Indicates if the user is currently deafened by the server.
+        Indicates if the user is currently deafened by the guild.
     mute: bool
-        Indicates if the user is currently muted by the server.
+        Indicates if the user is currently muted by the guild.
     self_mute: bool
         Indicates if the user is currently muted by their own accord.
     self_deaf: bool
         Indicates if the user is currently deafened by their own accord.
     is_afk: bool
-        Indicates if the user is currently in the AFK channel in the server.
+        Indicates if the user is currently in the AFK channel in the guild.
     channel: Optional[Union[:class:`Channel`, :class:`PrivateChannel`]]
         The voice channel that the user is currently connected to. None if the user
         is not currently in a voice channel.
@@ -99,7 +99,7 @@ def flatten_user(cls):
 
 @flatten_user
 class Member:
-    """Represents a Discord member to a :class:`Server`.
+    """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
 
@@ -123,22 +123,22 @@ class Member:
         A list of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role.
     joined_at : `datetime.datetime`
-        A datetime object that specifies the date and time in UTC that the member joined the server for
+        A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`
         The member's status. There is a chance that the status will be a ``str``
         if it is a value that is not recognised by the enumerator.
     game : :class:`Game`
         The game that the user is currently playing. Could be None if no game is being played.
-    server : :class:`Server`
-        The server that the member belongs to.
+    guild : :class:`Guild`
+        The guild that the member belongs to.
     nick : Optional[str]
-        The server specific nickname of the user.
+        The guild specific nickname of the user.
     """
 
-    __slots__ = ('roles', 'joined_at', 'status', 'game', 'server', 'nick', '_user', '_state')
+    __slots__ = ('roles', 'joined_at', 'status', 'game', 'guild', 'nick', '_user', '_state')
 
-    def __init__(self, *, data, server, state):
+    def __init__(self, *, data, guild, state):
         self._state = state
         self._user = state.try_insert_user(data['user'])
         self.joined_at = utils.parse_time(data.get('joined_at'))
@@ -146,14 +146,14 @@ class Member:
         self.status = Status.offline
         game = data.get('game', {})
         self.game = Game(**game) if game else None
-        self.server = server
+        self.guild = guild
         self.nick = data.get('nick', None)
 
     def __str__(self):
         return self._user.__str__()
 
     def __eq__(self, other):
-        return isinstance(other, Member) and other._user.id == self._user.id and self.server.id == other.server.id
+        return isinstance(other, Member) and other._user.id == self._user.id and self.guild.id == other.guild.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -173,8 +173,8 @@ class Member:
             self.nick = data['nick']
 
         # update the roles
-        self.roles = [self.server.default_role]
-        for role in self.server.roles:
+        self.roles = [self.guild.default_role]
+        for role in self.guild.roles:
             if role.id in data['roles']:
                 self.roles.append(role)
 
@@ -254,20 +254,20 @@ class Member:
         return None
 
     @property
-    def server_permissions(self):
-        """Returns the member's server permissions.
+    def guild_permissions(self):
+        """Returns the member's guild permissions.
 
-        This only takes into consideration the server permissions
+        This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
         calculation, please use either :meth:`permissions_in` or
         :meth:`Channel.permissions_for`.
 
-        This does take into consideration server ownership and the
+        This does take into consideration guild ownership and the
         administrator implication.
         """
 
-        if self.server.owner == self:
+        if self.guild.owner == self:
             return Permissions.all()
 
         base = Permissions.none()
@@ -282,4 +282,4 @@ class Member:
     @property
     def voice(self):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
-        return self.server._voice_state_for(self._user.id)
+        return self.guild._voice_state_for(self._user.id)

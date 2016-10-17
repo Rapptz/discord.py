@@ -44,7 +44,7 @@ class MessageType(Enum):
     channel_icon_change = 5
     pins_add            = 6
 
-class ServerRegion(Enum):
+class GuildRegion(Enum):
     us_west       = 'us-west'
     us_east       = 'us-east'
     us_south      = 'us-south'

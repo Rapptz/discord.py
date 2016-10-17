@@ -30,88 +30,90 @@ from .member import Member, VoiceState
 from .emoji import Emoji
 from .game import Game
 from .channel import *
-from .enums import ServerRegion, Status, ChannelType, try_enum, VerificationLevel
+from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
 
 import copy
 
-class Server(Hashable):
-    """Represents a Discord server.
+class Guild(Hashable):
+    """Represents a Discord guild.
+
+    This is referred to as a "server" in the official Discord UI.
 
     Supported Operations:
 
     +-----------+--------------------------------------+
     | Operation |             Description              |
     +===========+======================================+
-    | x == y    | Checks if two servers are equal.     |
+    | x == y    | Checks if two guilds are equal.     |
     +-----------+--------------------------------------+
-    | x != y    | Checks if two servers are not equal. |
+    | x != y    | Checks if two guilds are not equal. |
     +-----------+--------------------------------------+
-    | hash(x)   | Returns the server's hash.           |
+    | hash(x)   | Returns the guild's hash.           |
     +-----------+--------------------------------------+
-    | str(x)    | Returns the server's name.           |
+    | str(x)    | Returns the guild's name.           |
     +-----------+--------------------------------------+
 
     Attributes
     ----------
     name: str
-        The server name.
+        The guild name.
     me: :class:`Member`
         Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
     roles
-        A list of :class:`Role` that the server has available.
+        A list of :class:`Role` that the guild has available.
     emojis
-        A list of :class:`Emoji` that the server owns.
-    region: :class:`ServerRegion`
-        The region the server belongs on. There is a chance that the region
+        A list of :class:`Emoji` that the guild owns.
+    region: :class:`GuildRegion`
+        The region the guild belongs on. There is a chance that the region
         will be a ``str`` if the value is not recognised by the enumerator.
     afk_timeout: int
         The timeout to get sent to the AFK channel.
     afk_channel: :class:`Channel`
         The channel that denotes the AFK channel. None if it doesn't exist.
     members
-        An iterable of :class:`Member` that are currently on the server.
+        An iterable of :class:`Member` that are currently on the guild.
     channels
-        An iterable of :class:`Channel` that are currently on the server.
+        An iterable of :class:`Channel` that are currently on the guild.
     icon: str
-        The server's icon.
+        The guild's icon.
     id: int
-        The server's ID.
+        The guild's ID.
     owner_id: int
-        The server owner's ID. Use :attr:`Server.owner` instead.
+        The guild owner's ID. Use :attr:`Guild.owner` instead.
     unavailable: bool
-        Indicates if the server is unavailable. If this is ``True`` then the
-        reliability of other attributes outside of :meth:`Server.id` is slim and they might
-        all be None. It is best to not do anything with the server if it is unavailable.
+        Indicates if the guild is unavailable. If this is ``True`` then the
+        reliability of other attributes outside of :meth:`Guild.id` is slim and they might
+        all be None. It is best to not do anything with the guild if it is unavailable.
 
-        Check the :func:`on_server_unavailable` and :func:`on_server_available` events.
+        Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
     large: bool
-        Indicates if the server is a 'large' server. A large server is defined as having
+        Indicates if the guild is a 'large' guild. A large guild is defined as having
         more than ``large_threshold`` count members, which for this library is set to
         the maximum of 250.
     voice_client: Optional[:class:`VoiceClient`]
-        The VoiceClient associated with this server. A shortcut for the
+        The VoiceClient associated with this guild. A shortcut for the
         :meth:`Client.voice_client_in` call.
     mfa_level: int
-        Indicates the server's two factor authorisation level. If this value is 0 then
-        the server does not require 2FA for their administrative members. If the value is
+        Indicates the guild's two factor authorisation level. If this value is 0 then
+        the guild does not require 2FA for their administrative members. If the value is
         1 then they do.
     verification_level: :class:`VerificationLevel`
-        The server's verification level.
+        The guild's verification level.
     features: List[str]
-        A list of features that the server has. They are currently as follows:
+        A list of features that the guild has. They are currently as follows:
 
-        - ``VIP_REGIONS``: Server has VIP voice regions
-        - ``VANITY_URL``: Server has a vanity invite URL (e.g. discord.gg/discord-api)
-        - ``INVITE_SPLASH``: Server's invite page has a special splash.
+        - ``VIP_REGIONS``: Guild has VIP voice regions
+        - ``VANITY_URL``: Guild has a vanity invite URL (e.g. discord.gg/discord-api)
+        - ``INVITE_SPLASH``: Guild's invite page has a special splash.
 
     splash: str
-        The server's invite splash.
+        The guild's invite splash.
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'name', 'region',
+                 'name', 'id', 'unavailable', 'name', 'region', '_state',
                  '_default_role', '_default_channel', 'roles', '_member_count',
                  'large', 'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'splash', '_voice_states' )
@@ -218,19 +220,19 @@ class Server(Hashable):
 
     def _from_data(self, guild):
         # according to Stan, this is always available even if the guild is unavailable
-        # I don't have this guarantee when someone updates the server.
+        # I don't have this guarantee when someone updates the guild.
         member_count = guild.get('member_count', None)
         if member_count:
             self._member_count = member_count
 
         self.name = guild.get('name')
-        self.region = try_enum(ServerRegion, guild.get('region'))
+        self.region = try_enum(GuildRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
-        self.roles = [Role(server=self, data=r, state=self._state) for r in guild.get('roles', [])]
+        self.roles = [Role(guild=self, data=r, state=self._state) for r in guild.get('roles', [])]
         self.mfa_level = guild.get('mfa_level')
         self.emojis = [Emoji(server=self, data=r, state=self._state) for r in guild.get('emojis', [])]
         self.features = guild.get('features', [])
@@ -244,7 +246,7 @@ class Server(Hashable):
                     roles.append(role)
 
             mdata['roles'] = roles
-            member = Member(data=mdata, server=self, state=self._state)
+            member = Member(data=mdata, guild=self, state=self._state)
             self._add_member(member)
 
         self._sync(guild)
@@ -274,9 +276,9 @@ class Server(Hashable):
             channels = data['channels']
             for c in channels:
                 if c['type'] == ChannelType.text.value:
-                    channel = TextChannel(server=self, data=c, state=self._state)
+                    channel = TextChannel(guild=self, data=c, state=self._state)
                 else:
-                    channel = VoiceChannel(server=self, data=c, state=self._state)
+                    channel = VoiceChannel(guild=self, data=c, state=self._state)
 
                 self._add_channel(channel)
 
@@ -287,17 +289,17 @@ class Server(Hashable):
 
     @utils.cached_slot_property('_default_channel')
     def default_channel(self):
-        """Gets the default :class:`Channel` for the server."""
+        """Gets the default :class:`Channel` for the guild."""
         return utils.find(lambda c: c.is_default, self.channels)
 
     @property
     def owner(self):
-        """:class:`Member`: The member that owns the server."""
+        """:class:`Member`: The member that owns the guild."""
         return self.get_member(self.owner_id)
 
     @property
     def icon_url(self):
-        """Returns the URL version of the server's icon. Returns an empty string if it has no icon."""
+        """Returns the URL version of the guild's icon. Returns an empty string if it has no icon."""
         if self.icon is None:
             return ''
         return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.jpg'.format(self)
@@ -316,12 +318,12 @@ class Server(Hashable):
 
     @property
     def created_at(self):
-        """Returns the server's creation time in UTC."""
+        """Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def role_hierarchy(self):
-        """Returns the server's roles in the order of the hierarchy.
+        """Returns the guild's roles in the order of the hierarchy.
 
         The first element of this list will be the highest role in the
         hierarchy.
@@ -351,7 +353,7 @@ class Server(Hashable):
         Returns
         --------
         :class:`Member`
-            The member in this server with the associated name. If not found
+            The member in this guild with the associated name. If not found
             then ``None`` is returned.
         """
 

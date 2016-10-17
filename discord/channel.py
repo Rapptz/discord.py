@@ -51,8 +51,8 @@ class CommonGuildChannel(Hashable):
             raise InvalidArgument('Channel position cannot be less than 0.')
 
         http = self._state.http
-        url = '{0}/{1.server.id}/channels'.format(http.GUILDS, self)
-        channels = [c for c in self.server.channels if isinstance(c, type(self))]
+        url = '{0}/{1.guild.id}/channels'.format(http.GUILDS, self)
+        channels = [c for c in self.guild.channels if isinstance(c, type(self))]
 
         if position >= len(channels):
             raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
@@ -75,7 +75,7 @@ class CommonGuildChannel(Hashable):
     def _fill_overwrites(self, data):
         self._overwrites = []
         everyone_index = 0
-        everyone_id = self.server.id
+        everyone_id = self.guild.id
 
         for index, overridden in enumerate(data.get('permission_overwrites', [])):
             overridden_id = int(overridden.pop('id'))
@@ -100,10 +100,10 @@ class CommonGuildChannel(Hashable):
     @property
     def changed_roles(self):
         """Returns a list of :class:`Roles` that have been overridden from
-        their default values in the :attr:`Server.roles` attribute."""
+        their default values in the :attr:`Guild.roles` attribute."""
         ret = []
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
-            role = utils.get(self.server.roles, id=overwrite.id)
+            role = utils.get(self.guild.roles, id=overwrite.id)
             if role is None:
                 continue
 
@@ -114,8 +114,8 @@ class CommonGuildChannel(Hashable):
 
     @property
     def is_default(self):
-        """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
-        return self.server.id == self.id
+        """bool : Indicates if this is the default channel for the :class:`Guild` it belongs to."""
+        return self.guild.id == self.id
 
     @property
     def mention(self):
@@ -190,8 +190,8 @@ class CommonGuildChannel(Hashable):
 
         This function takes into consideration the following cases:
 
-        - Server owner
-        - Server roles
+        - Guild owner
+        - Guild roles
         - Channel overrides
         - Member overrides
         - Whether the channel is the default channel.
@@ -208,7 +208,7 @@ class CommonGuildChannel(Hashable):
         """
 
         # The current cases can be explained as:
-        # Server owner get all permissions -- no questions asked. Otherwise...
+        # Guild owner get all permissions -- no questions asked. Otherwise...
         # The @everyone role gets the first application.
         # After that, the applied roles that the user has in the channel
         # (or otherwise) are then OR'd together.
@@ -223,17 +223,17 @@ class CommonGuildChannel(Hashable):
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        if member.id == self.server.owner.id:
+        if member.id == self.guild.owner.id:
             return Permissions.all()
 
-        default = self.server.default_role
+        default = self.guild.default_role
         base = Permissions(default.permissions.value)
 
-        # Apply server roles that the member has.
+        # Apply guild roles that the member has.
         for role in member.roles:
             base.value |= role.permissions.value
 
-        # Server-wide Administrator -> True for everything
+        # Guild-wide Administrator -> True for everything
         # Bypass all channel-specific overrides
         if base.administrator:
             return Permissions.all()
@@ -300,7 +300,7 @@ class CommonGuildChannel(Hashable):
         yield from self._state.http.delete_channel(self.id)
 
 class TextChannel(abc.MessageChannel, CommonGuildChannel):
-    """Represents a Discord server text channel.
+    """Represents a Discord guild text channel.
 
     Supported Operations:
 
@@ -320,8 +320,8 @@ class TextChannel(abc.MessageChannel, CommonGuildChannel):
     -----------
     name: str
         The channel name.
-    server: :class:`Server`
-        The server the channel belongs to.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
     id: int
         The channel ID.
     topic: Optional[str]
@@ -331,23 +331,23 @@ class TextChannel(abc.MessageChannel, CommonGuildChannel):
         top channel is position 0.
     """
 
-    __slots__ = ( 'name', 'id', 'server', 'topic', '_state',
+    __slots__ = ( 'name', 'id', 'guild', 'topic', '_state',
                   'position', '_overwrites' )
 
-    def __init__(self, *, state, server, data):
+    def __init__(self, *, state, guild, data):
         self._state = state
         self.id = int(data['id'])
-        self._update(server, data)
+        self._update(guild, data)
 
-    def _update(self, server, data):
-        self.server = server
+    def _update(self, guild, data):
+        self.guild = guild
         self.name = data['name']
         self.topic = data.get('topic')
         self.position = data['position']
         self._fill_overwrites(data)
 
     def _get_destination(self):
-        return self.id, self.server.id
+        return self.id, self.guild.id
 
     @asyncio.coroutine
     def edit(self, **options):
@@ -385,10 +385,10 @@ class TextChannel(abc.MessageChannel, CommonGuildChannel):
 
         if options:
             data = yield from self._state.http.edit_channel(self.id, **options)
-            self._update(self.server, data)
+            self._update(self.guild, data)
 
 class VoiceChannel(CommonGuildChannel):
-    """Represents a Discord server voice channel.
+    """Represents a Discord guild voice channel.
 
     Supported Operations:
 
@@ -408,8 +408,8 @@ class VoiceChannel(CommonGuildChannel):
     -----------
     name: str
         The channel name.
-    server: :class:`Server`
-        The server the channel belongs to.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
     id: int
         The channel ID.
     position: int
@@ -423,17 +423,17 @@ class VoiceChannel(CommonGuildChannel):
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = ( 'voice_members', 'name', 'id', 'server', 'bitrate',
+    __slots__ = ( 'voice_members', 'name', 'id', 'guild', 'bitrate',
                   'user_limit', '_state', 'position', '_overwrites' )
 
-    def __init__(self, *, state, server, data):
+    def __init__(self, *, state, guild, data):
         self._state = state
         self.id = int(data['id'])
-        self._update(server, data)
+        self._update(guild, data)
         self.voice_members = []
 
-    def _update(self, server, data):
-        self.server = server
+    def _update(self, guild, data):
+        self.guild = guild
         self.name = data['name']
         self.position = data['position']
         self.bitrate = data.get('bitrate')
@@ -475,7 +475,7 @@ class VoiceChannel(CommonGuildChannel):
 
         if options:
             data = yield from self._state.http.edit_channel(self.id, **options)
-            self._update(self.server, data)
+            self._update(self.guild, data)
 
 class DMChannel(abc.MessageChannel, Hashable):
     """Represents a Discord direct message channel.

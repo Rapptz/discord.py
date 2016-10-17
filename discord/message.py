@@ -54,7 +54,7 @@ class Message:
     content: str
         The actual contents of the message.
     nonce
-        The value used by the discord server and the client to verify that the message is successfully sent.
+        The value used by the discord guild and the client to verify that the message is successfully sent.
         This is typically non-important.
     embeds: list
         A list of embedded objects. The elements are objects that meet oEmbed's specification_.
@@ -66,8 +66,8 @@ class Message:
         In :issue:`very rare cases <21>` this could be a :class:`Object` instead.
 
         For the sake of convenience, this :class:`Object` instance has an attribute ``is_private`` set to ``True``.
-    server: Optional[:class:`Server`]
-        The server that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
+    guild: Optional[:class:`Guild`]
+        The guild that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
@@ -112,7 +112,7 @@ class Message:
 
     __slots__ = ( 'edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  '_cs_channel_mentions', 'server', '_cs_raw_mentions', 'attachments',
+                  '_cs_channel_mentions', 'guild', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
                   '_cs_system_content', '_state', 'reactions' )
@@ -160,21 +160,21 @@ class Message:
 
     def _handle_mentions(self, mentions):
         self.mentions = []
-        if self.server is None:
+        if self.guild is None:
             self.mentions = [self._state.try_insert_user(m) for m in mentions]
             return
 
         for mention in mentions:
             id_search = int(mention['id'])
-            member = self.server.get_member(id_search)
+            member = self.guild.get_member(id_search)
             if member is not None:
                 self.mentions.append(member)
 
     def _handle_mention_roles(self, role_mentions):
         self.role_mentions = []
-        if self.server is not None:
+        if self.guild is not None:
             for role_id in role_mentions:
-                role = utils.get(self.server.roles, id=role_id)
+                role = utils.get(self.guild.roles, id=role_id)
                 if role is not None:
                     self.role_mentions.append(role)
 
@@ -224,9 +224,9 @@ class Message:
 
     @utils.cached_slot_property('_cs_channel_mentions')
     def channel_mentions(self):
-        if self.server is None:
+        if self.guild is None:
             return []
-        it = filter(None, map(lambda m: self.server.get_channel(m), self.raw_channel_mentions))
+        it = filter(None, map(lambda m: self.guild.get_channel(m), self.raw_channel_mentions))
         return utils._unique(it)
 
     @utils.cached_slot_property('_cs_clean_content')
@@ -259,7 +259,7 @@ class Message:
         transformations.update(mention_transforms)
         transformations.update(second_mention_transforms)
 
-        if self.server is not None:
+        if self.guild is not None:
             role_transforms = {
                 re.escape('<@&{0.id}>'.format(role)): '@' + role.name
                 for role in self.role_mentions
@@ -284,7 +284,7 @@ class Message:
         return pattern.sub(repl2, result)
 
     def _handle_upgrades(self, channel_id):
-        self.server = None
+        self.guild = None
         if isinstance(self.channel, Object):
             return
 
@@ -295,8 +295,8 @@ class Message:
             return
 
         if isinstance(self.channel, abc.GuildChannel):
-            self.server = self.channel.server
-            found = self.server.get_member(self.author.id)
+            self.guild = self.channel.guild
+            found = self.guild.get_member(self.author.id)
             if found is not None:
                 self.author = found
 
@@ -363,7 +363,7 @@ class Message:
         HTTPException
             Deleting the message failed.
         """
-        yield from self._state.http.delete_message(self.channel.id, self.id, getattr(self.server, 'id', None))
+        yield from self._state.http.delete_message(self.channel.id, self.id, getattr(self.guild, 'id', None))
 
     @asyncio.coroutine
     def edit(self, *, content: str):
@@ -384,7 +384,7 @@ class Message:
             Editing the message failed.
         """
 
-        guild_id = getattr(self.server, 'id', None)
+        guild_id = getattr(self.guild, 'id', None)
         data = yield from self._state.http.edit_message(self.id, self.channel.id, str(content), guild_id=guild_id)
         self._update(channel=self.channel, data=data)
 

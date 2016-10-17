@@ -30,7 +30,7 @@ from .mixins import Hashable
 from .utils import snowflake_time
 
 class Role(Hashable):
-    """Represents a Discord role in a :class:`Server`.
+    """Represents a Discord role in a :class:`Guild`.
 
     Supported Operations:
 
@@ -62,8 +62,8 @@ class Role(Hashable):
         The name of the role.
     permissions: :class:`Permissions`
         Represents the role's permissions.
-    server: :class:`Server`
-        The server the role belongs to.
+    guild: :class:`Guild`
+        The guild the role belongs to.
     colour: :class:`Colour`
         Represents the role colour. An alias exists under ``color``.
     hoist: bool
@@ -72,17 +72,17 @@ class Role(Hashable):
         The position of the role. This number is usually positive. The bottom
         role has a position of 0.
     managed: bool
-        Indicates if the role is managed by the server through some form of
+        Indicates if the role is managed by the guild through some form of
         integrations such as Twitch.
     mentionable: bool
         Indicates if the role can be mentioned by users.
     """
 
     __slots__ = ('id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'server', '_state' )
+                 'managed', 'mentionable', 'hoist', 'guild', '_state' )
 
-    def __init__(self, *, server, state, data):
-        self.server = server
+    def __init__(self, *, guild, state, data):
+        self.guild = guild
         self._state = state
         self.id = int(data['id'])
         self._update(data)
@@ -94,8 +94,8 @@ class Role(Hashable):
         if not isinstance(other, Role) or  not isinstance(self, Role):
             return NotImplemented
 
-        if self.server != other.server:
-            raise RuntimeError('cannot compare roles from two different servers.')
+        if self.guild != other.guild:
+            raise RuntimeError('cannot compare roles from two different guilds.')
 
         if self.position < other.position:
             return True
@@ -133,7 +133,7 @@ class Role(Hashable):
     @property
     def is_everyone(self):
         """Checks if the role is the @everyone role."""
-        return self.server.id == self.id
+        return self.guild.id == self.id
 
     @property
     def created_at(self):

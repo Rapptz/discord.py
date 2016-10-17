@@ -847,7 +847,7 @@ def bot_has_role(name):
         ch = ctx.message.channel
         if ch.is_private:
             return False
-        me = ch.server.me
+        me = ch.guild.me
         role = discord.utils.get(me.roles, name=name)
         return role is not None
     return check(predicate)
@@ -860,7 +860,7 @@ def bot_has_any_role(*names):
         ch = ctx.message.channel
         if ch.is_private:
             return False
-        me = ch.server.me
+        me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
         return any(getter(name=name) is not None for name in names)
     return check(predicate)
@@ -871,7 +871,7 @@ def bot_has_permissions(**perms):
     """
     def predicate(ctx):
         ch = ctx.message.channel
-        me = ch.server.me if not ch.is_private else ctx.bot.user
+        me = ch.guild.me if not ch.is_private else ctx.bot.user
         permissions = ch.permissions_for(me)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
@@ -882,13 +882,13 @@ def cooldown(rate, per, type=BucketType.default):
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
-    either on a per-server, per-channel, per-user, or global basis.
+    either on a per-guild, per-channel, per-user, or global basis.
     Denoted by the third argument of ``type`` which must be of enum
     type ``BucketType`` which could be either:
 
     - ``BucketType.default`` for a global basis.
     - ``BucketType.user`` for a per-user basis.
-    - ``BucketType.server`` for a per-server basis.
+    - ``BucketType.guild`` for a per-guild basis.
     - ``BucketType.channel`` for a per-channel basis.
 
     If a cooldown is triggered, then :exc:`CommandOnCooldown` is triggered in

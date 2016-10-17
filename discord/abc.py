@@ -107,7 +107,7 @@ class GuildChannel(metaclass=abc.ABCMeta):
                 return NotImplemented
 
             mro = C.__mro__
-            for attr in ('name', 'server', 'overwrites_for', 'permissions_for', 'mention'):
+            for attr in ('name', 'guild', 'overwrites_for', 'permissions_for', 'mention'):
                 for base in mro:
                     if attr in base.__dict__:
                         break

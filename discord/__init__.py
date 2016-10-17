@@ -22,7 +22,7 @@ from .user import User
 from .game import Game
 from .emoji import Emoji
 from .channel import *
-from .server import Server
+from .guild import Guild
 from .member import Member, VoiceState
 from .message import Message
 from .errors import *
@@ -35,7 +35,7 @@ from .object import Object
 from .reaction import Reaction
 from . import utils, opus, compat, abc
 from .voice_client import VoiceClient
-from .enums import ChannelType, ServerRegion, Status, MessageType, VerificationLevel
+from .enums import ChannelType, GuildRegion, Status, MessageType, VerificationLevel
 from collections import namedtuple
 from .embeds import Embed
 

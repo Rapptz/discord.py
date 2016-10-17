@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 import datetime
-from .enums import ServerRegion, try_enum
+from .enums import GuildRegion, try_enum
 from .member import VoiceState
 
 class CallMessage:
@@ -90,8 +90,8 @@ class GroupCall:
         Denotes if this group call is unavailable.
     ringing: List[:class:`User`]
         A list of users that are currently being rung to join the call.
-    region: :class:`ServerRegion`
-        The server region the group call is being hosted on.
+    region: :class:`GuildRegion`
+        The guild region the group call is being hosted on.
     """
 
     def __init__(self, **kwargs):
@@ -105,7 +105,7 @@ class GroupCall:
         self._update(**kwargs)
 
     def _update(self, **kwargs):
-        self.region = try_enum(ServerRegion, kwargs.get('region'))
+        self.region = try_enum(GuildRegion, kwargs.get('region'))
         lookup = {u.id: u for u in self.call.channel.recipients}
         me = self.call.channel.me
         lookup[me.id] = me

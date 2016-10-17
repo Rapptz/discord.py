@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 """Some documentation to refer to:
 
-- Our main web socket (mWS) sends opcode 4 with a server ID and channel ID.
+- Our main web socket (mWS) sends opcode 4 with a guild ID and channel ID.
 - The mWS receives VOICE_STATE_UPDATE and VOICE_SERVER_UPDATE.
 - We pull the session_id from VOICE_STATE_UPDATE.
 - We pull the token, endpoint and guild_id from VOICE_SERVER_UPDATE.
@@ -202,9 +202,9 @@ class VoiceClient:
         The endpoint we are connecting to.
     channel : :class:`Channel`
         The voice channel connected to.
-    server : :class:`Server`
-        The server the voice channel is connected to.
-        Shorthand for ``channel.server``.
+    guild : :class:`Guild`
+        The guild the voice channel is connected to.
+        Shorthand for ``channel.guild``.
     loop
         The event loop that the voice client is running on.
     """
@@ -229,8 +229,8 @@ class VoiceClient:
     warn_nacl = not has_nacl
 
     @property
-    def server(self):
-        return self.channel.server
+    def guild(self):
+        return self.channel.guild
 
     def checked_add(self, attr, value, limit):
         val = getattr(self, attr)

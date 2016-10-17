@@ -35,10 +35,10 @@ __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'ChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter' ]
 
-def _get_from_servers(bot, getter, argument):
+def _get_from_guilds(bot, getter, argument):
     result = None
-    for server in bot.servers:
-        result = getattr(server, getter)(argument)
+    for guild in bot.guilds:
+        result = getattr(guild, getter)(argument)
         if result:
             return result
     return result
@@ -81,20 +81,20 @@ class MemberConverter(IDConverter):
         message = self.ctx.message
         bot = self.ctx.bot
         match = self._get_id_match() or re.match(r'<@!?([0-9]+)>$', self.argument)
-        server = message.server
+        guild = message.guild
         result = None
         if match is None:
             # not a mention...
-            if server:
-                result = server.get_member_named(self.argument)
+            if guild:
+                result = guild.get_member_named(self.argument)
             else:
-                result = _get_from_servers(bot, 'get_member_named', self.argument)
+                result = _get_from_guilds(bot, 'get_member_named', self.argument)
         else:
             user_id = int(match.group(1))
-            if server:
-                result = server.get_member(user_id)
+            if guild:
+                result = guild.get_member(user_id)
             else:
-                result = _get_from_servers(bot, 'get_member', user_id)
+                result = _get_from_guilds(bot, 'get_member', user_id)
 
         if result is None:
             raise BadArgument('Member "{}" not found'.format(self.argument))
@@ -110,19 +110,19 @@ class ChannelConverter(IDConverter):
 
         match = self._get_id_match() or re.match(r'<#([0-9]+)>$', self.argument)
         result = None
-        server = message.server
+        guild = message.guild
         if match is None:
             # not a mention
-            if server:
-                result = discord.utils.get(server.channels, name=self.argument)
+            if guild:
+                result = discord.utils.get(guild.channels, name=self.argument)
             else:
                 result = discord.utils.get(bot.get_all_channels(), name=self.argument)
         else:
             channel_id = int(match.group(1))
-            if server:
-                result = server.get_channel(channel_id)
+            if guild:
+                result = guild.get_channel(channel_id)
             else:
-                result = _get_from_servers(bot, 'get_channel', channel_id)
+                result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if result is None:
             raise BadArgument('Channel "{}" not found.'.format(self.argument))
@@ -146,13 +146,13 @@ class ColourConverter(Converter):
 
 class RoleConverter(IDConverter):
     def convert(self):
-        server = self.ctx.message.server
-        if not server:
+        guild = self.ctx.message.guild
+        if not guild:
             raise NoPrivateMessage()
 
         match = self._get_id_match() or re.match(r'<@&([0-9]+)>$', self.argument)
         params = dict(id=int(match.group(1))) if match else dict(name=self.argument)
-        result = discord.utils.get(server.roles, **params)
+        result = discord.utils.get(guild.roles, **params)
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(self.argument))
         return result
@@ -178,11 +178,11 @@ class EmojiConverter(IDConverter):
 
         match = self._get_id_match() or re.match(r'<:[a-zA-Z0-9]+:([0-9]+)>$', self.argument)
         result = None
-        server = message.server
+        guild = message.guild
         if match is None:
-            # Try to get the emoji by name. Try local server first.
-            if server:
-                result = discord.utils.get(server.emojis, name=self.argument)
+            # Try to get the emoji by name. Try local guild first.
+            if guild:
+                result = discord.utils.get(guild.emojis, name=self.argument)
 
             if result is None:
                 result = discord.utils.get(bot.get_all_emojis(), name=self.argument)
@@ -190,8 +190,8 @@ class EmojiConverter(IDConverter):
             emoji_id = int(match.group(1))
 
             # Try to look up emoji by id.
-            if server:
-                result = discord.utils.get(server.emojis, id=emoji_id)
+            if guild:
+                result = discord.utils.get(guild.emojis, id=emoji_id)
 
             if result is None:
                 result = discord.utils.get(bot.get_all_emojis(), id=emoji_id)

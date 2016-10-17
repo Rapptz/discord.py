@@ -91,9 +91,9 @@ def deprecated(instead=None):
         return decorated
     return actual_decorator
 
-def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
+def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     """A helper function that returns the OAuth2 URL for inviting the bot
-    into servers.
+    into guilds.
 
     Parameters
     -----------
@@ -102,16 +102,16 @@ def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
     permissions : :class:`Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
-    server : :class:`Server`
-        The server to pre-select in the authorization screen, if available.
+    guild : :class:`Guild`
+        The guild to pre-select in the authorization screen, if available.
     redirect_uri : str
         An optional valid redirect URI.
     """
     url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
-    if server is not None:
-        url = url + "&guild_id=" + server.id
+    if guild is not None:
+        url = url + "&guild_id=" + guild.id
     if redirect_uri is not None:
         from urllib.parse import urlencode
         url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
@@ -144,7 +144,7 @@ def find(predicate, seq):
     """A helper to return the first element found in the sequence
     that meets the predicate. For example: ::
 
-        member = find(lambda m: m.name == 'Mighty', channel.server.members)
+        member = find(lambda m: m.name == 'Mighty', channel.guild.members)
 
     would find the first :class:`Member` whose name is 'Mighty' and return it.
     If an entry is not found, then ``None`` is returned.
@@ -190,19 +190,19 @@ def get(iterable, **attrs):
 
     .. code-block:: python
 
-        member = discord.utils.get(message.server.members, name='Foo')
+        member = discord.utils.get(message.guild.members, name='Foo')
 
     Multiple attribute matching:
 
     .. code-block:: python
 
-        channel = discord.utils.get(server.channels, name='Foo', type=ChannelType.voice)
+        channel = discord.utils.get(guild.channels, name='Foo', type=ChannelType.voice)
 
     Nested attribute matching:
 
     .. code-block:: python
 
-        channel = discord.utils.get(client.get_all_channels(), server__name='Cool', name='general')
+        channel = discord.utils.get(client.get_all_channels(), guild__name='Cool', name='general')
 
     Parameters
     -----------

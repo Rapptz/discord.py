@@ -29,7 +29,7 @@ from .utils import parse_time
 from .mixins import Hashable
 
 class Invite(Hashable):
-    """Represents a Discord :class:`Server` or :class:`Channel` invite.
+    """Represents a Discord :class:`Guild` or :class:`Channel` invite.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
@@ -54,8 +54,8 @@ class Invite(Hashable):
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
     code: str
         The URL fragment used for the invite. :attr:`xkcd` is also a possible fragment.
-    server: :class:`Server`
-        The server the invite is for.
+    guild: :class:`Guild`
+        The guild the invite is for.
     revoked: bool
         Indicates if the invite has been revoked.
     created_at: `datetime.datetime`
@@ -74,14 +74,14 @@ class Invite(Hashable):
     """
 
 
-    __slots__ = ( 'max_age', 'code', 'server', 'revoked', 'created_at', 'uses',
+    __slots__ = ( 'max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
                   'temporary', 'max_uses', 'inviter', 'channel', '_state' )
 
     def __init__(self, *, state, data):
         self._state = state
         self.max_age = data.get('max_age')
         self.code = data.get('code')
-        self.server = data.get('server')
+        self.guild = data.get('guild')
         self.revoked = data.get('revoked')
         self.created_at = parse_time(data.get('created_at'))
         self.temporary = data.get('temporary')
