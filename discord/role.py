@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+
 from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
@@ -144,3 +146,109 @@ class Role(Hashable):
     def mention(self):
         """Returns a string that allows you to mention a role."""
         return '<@&{}>'.format(self.id)
+
+    @asyncio.coroutine
+    def _move(self, position):
+        if position <= 0:
+            raise InvalidArgument("Cannot move role to position 0 or below")
+
+        if self.is_everyone:
+            raise InvalidArgument("Cannot move default role")
+
+        if self.position == position:
+            return  # Save discord the extra request.
+
+        http = self._state.http
+        url = '{0}/{1}/roles'.format(http.GUILDS, self.guild.id)
+
+        change_range = range(min(self.position, position), max(self.position, position) + 1)
+        sorted_roles = sorted((x for x in self.guild.roles if x.position in change_range and x.id != self.id),
+                              key=lambda x: x.position)
+
+        roles = [r.id for r in sorted_roles]
+
+        if self.position > position:
+            roles.insert(0, self.id)
+        else:
+            roles.append(self.id)
+
+        payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
+        yield from http.patch(url, json=payload, bucket='move_role')
+
+    @asyncio.coroutine
+    def edit(self, **fields):
+        """|coro|
+
+        Edits the role.
+
+        You must have the :attr:`Permissions.manage_roles` permission to
+        use this.
+
+        All fields are optional.
+
+        Parameters
+        -----------
+        name: str
+            The new role name to change to.
+        permissions: :class:`Permissions`
+            The new permissions to change to.
+        colour: :class:`Colour`
+            The new colour to change to. (aliased to color as well)
+        hoist: bool
+            Indicates if the role should be shown separately in the member list.
+        mentionable: bool
+            Indicates if the role should be mentionable by others.
+        position: int
+            The new role's position. This must be below your top role's
+            position or it will fail.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to change the role.
+        HTTPException
+            Editing the role failed.
+        InvalidArgument
+            An invalid position was given or the default
+            role was asked to be moved.
+        """
+
+        position = fields.get('position')
+        if position is not None:
+            yield from self._move(position)
+            self.position = position
+
+        try:
+            colour = fields['colour']
+        except KeyError:
+            colour = fields.get('color', self.colour)
+
+        payload = {
+            'name': fields.get('name', self.name),
+            'permissions': fields.get('permissions', self.permissions).value,
+            'color': colour.value,
+            'hoist': fields.get('hoist', self.hoist),
+            'mentionable': fields.get('mentionable', self.mentionable)
+        }
+
+        data = yield from self._state.http.edit_role(self.guild.id, self.id, **payload)
+        self._update(data)
+
+    @asyncio.coroutine
+    def delete(self):
+        """|coro|
+
+        Deletes the role.
+
+        You must have the :attr:`Permissions.manage_roles` permission to
+        use this.
+
+        Raises
+        --------
+        Forbidden
+            You do not have permissions to delete the role.
+        HTTPException
+            Deleting the role failed.
+        """
+
+        yield from self._state.http.delete_role(self.guild.id, self.id)

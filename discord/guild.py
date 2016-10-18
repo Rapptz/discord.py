@@ -24,6 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import copy
+import asyncio
+
 from . import utils
 from .role import Role
 from .member import Member, VoiceState
@@ -32,8 +35,8 @@ from .game import Game
 from .channel import *
 from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
-
-import copy
+from .user import User
+from .invite import Invite
 
 class Guild(Hashable):
     """Represents a Discord guild.
@@ -375,3 +378,305 @@ class Guild(Hashable):
             return m.nick == name or m.name == name
 
         return utils.find(pred, members)
+
+
+    @asyncio.coroutine
+    def leave(self):
+        """|coro|
+
+        Leaves the guild.
+
+        Note
+        --------
+        You cannot leave the guild that you own, you must delete it instead
+        via :meth:`delete`.
+
+        Raises
+        --------
+        HTTPException
+            Leaving the guild failed.
+        """
+        yield from self._state.http.leave_guild(self.id)
+
+    @asyncio.coroutine
+    def delete(self):
+        """|coro|
+
+        Deletes the guild. You must be the guild owner to delete the
+        guild.
+
+        Raises
+        --------
+        HTTPException
+            Deleting the guild failed.
+        Forbidden
+            You do not have permissions to delete the guild.
+        """
+
+        yield from self._state.http.delete_guild(self.id)
+
+    @asyncio.coroutine
+    def edit(self, **fields):
+        """|coro|
+
+        Edits the guild.
+
+        You must have the :attr:`Permissions.manage_guild` permission
+        to edit the guild.
+
+        Parameters
+        ----------
+        name: str
+            The new name of the guild.
+        icon: bytes
+            A *bytes-like* object representing the icon. Only PNG/JPEG supported.
+            Could be ``None`` to denote removal of the icon.
+        region: :class:`GuildRegion`
+            The new region for the guild's voice communication.
+        afk_channel: :class:`VoiceChannel`
+            The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
+        afk_timeout: int
+            The number of seconds until someone is moved to the AFK channel.
+        owner: :class:`Member`
+            The new owner of the guild to transfer ownership to. Note that you must
+            be owner of the guild to do this.
+        verification_level: :class:`VerificationLevel`
+            The new verification level for the guild.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit the guild.
+        HTTPException
+            Editing the guild failed.
+        InvalidArgument
+            The image format passed in to ``icon`` is invalid. It must be
+            PNG or JPG. This is also raised if you are not the owner of the
+            guild and request an ownership transfer.
+        """
+
+        try:
+            icon_bytes = fields['icon']
+        except KeyError:
+            icon = self.icon
+        else:
+            if icon_bytes is not None:
+                icon = utils._bytes_to_base64_data(icon_bytes)
+            else:
+                icon = None
+
+        fields['icon'] = icon
+        if 'afk_channel' in fields:
+            fields['afk_channel_id'] = fields['afk_channel'].id
+
+        if 'owner' in fields:
+            if self.owner != self.me:
+                raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
+
+            fields['owner_id'] = fields['owner'].id
+
+        if 'region' in fields:
+            fields['region'] = str(fields['region'])
+
+        level = fields.get('verification_level', self.verification_level)
+        if not isinstance(level, VerificationLevel):
+            raise InvalidArgument('verification_level field must of type VerificationLevel')
+
+        fields['verification_level'] = level.value
+        yield from self._state.http.edit_guild(self.id, **fields)
+
+
+    @asyncio.coroutine
+    def bans(self):
+        """|coro|
+
+        Retrieves all the :class:`User`\s that are banned from the guild.
+
+        You must have :attr:`Permissions.ban_members` permission
+        to get this information.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to get the information.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        --------
+        list
+            A list of :class:`User` that have been banned.
+        """
+
+        data = yield from self._state.http.get_bans(self.id)
+        return [User(state=self._state, data=user) for user in data]
+
+    @asyncio.coroutine
+    def prune_members(self, *, days):
+        """|coro|
+
+        Prunes the guild from its inactive members.
+
+        The inactive members are denoted if they have not logged on in
+        ``days`` number of days and they have no roles.
+
+        You must have the :attr:`Permissions.kick_members` permission
+        to use this.
+
+        To check how many members you would prune without actually pruning,
+        see the :meth:`estimate_pruned_members` function.
+
+        Parameters
+        -----------
+        days: int
+            The number of days before counting as inactive.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to prune members.
+        HTTPException
+            An error occurred while pruning members.
+        InvalidArgument
+            An integer was not passed for ``days``.
+
+        Returns
+        ---------
+        int
+            The number of members pruned.
+        """
+
+        if not isinstance(days, int):
+            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+
+        data = yield from self._state.http.prune_members(self.id, days)
+        return data['pruned']
+
+    @asyncio.coroutine
+    def estimate_pruned_members(self, *, days):
+        """|coro|
+
+        Similar to :meth:`prune_members` except instead of actually
+        pruning members, it returns how many members it would prune
+        from the guild had it been called.
+
+        Parameters
+        -----------
+        days: int
+            The number of days before counting as inactive.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to prune members.
+        HTTPException
+            An error occurred while fetching the prune members estimate.
+        InvalidArgument
+            An integer was not passed for ``days``.
+
+        Returns
+        ---------
+        int
+            The number of members estimated to be pruned.
+        """
+
+        if not isinstance(days, int):
+            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+
+        data = yield from self._state.http.estimate_pruned_members(self.id, days)
+        return data['pruned']
+
+    @asyncio.coroutine
+    def invites(self):
+        """|coro|
+
+        Returns a list of all active instant invites from the guild.
+
+        You must have :attr:`Permissions.manage_guild` to get this information.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to get the information.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        -------
+        list of :class:`Invite`
+            The list of invites that are currently active.
+        """
+
+        data = yield from self._state.http.invites_from(guild.id)
+        result = []
+        for invite in data:
+            channel = self.get_channel(int(invite['channel']['id']))
+            invite['channel'] = channel
+            invite['guild'] = self
+            result.append(Invite(state=self._state, data=invite))
+
+        return result
+
+    @asyncio.coroutine
+    def create_custom_emoji(self, *, name, image):
+        """|coro|
+
+        Creates a custom :class:`Emoji` for the guild.
+
+        This endpoint is only allowed for user bots or white listed
+        bots. If this is done by a user bot then this is a local
+        emoji that can only be used inside the guild. If done by
+        a whitelisted bot, then this emoji is "global".
+
+        There is currently a limit of 50 local emotes per guild.
+
+        Parameters
+        -----------
+        name: str
+            The emoji name. Must be at least 2 characters.
+        image: bytes
+            The *bytes-like* object representing the image data to use.
+            Only JPG and PNG images are supported.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The created emoji.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to create emojis.
+        HTTPException
+            An error occurred creating an emoji.
+        """
+
+        img = utils._bytes_to_base64_data(image)
+        data = yield from self._state.http.create_custom_emoji(self.id, name, img)
+        return Emoji(guild=self, data=data, state=self._state)
+
+    @asyncio.coroutine
+    def create_role(self, **fields):
+        """|coro|
+
+        Creates a :class:`Role` for the guild.
+
+        This function is similar to :meth:`Role.edit` in both
+        the fields taken and exceptions thrown.
+
+        Returns
+        --------
+        :class:`Role`
+            The newly created role.
+        """
+
+        data = yield from self._state.http.create_role(self.id)
+        role = Role(guild=self, data=data, state=self._state)
+
+        if fields:
+            # we have to call edit because you can't pass a payload to the
+            # http request currently.
+            yield from role.edit(**fields)
+
+        # TODO: add to cache
+        return role

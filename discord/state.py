@@ -589,7 +589,7 @@ class ConnectionState:
     def parse_guild_role_delete(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            role_id = data.get('role_id')
+            role_id = int(data['role_id'])
             role = utils.find(lambda r: r.id == role_id, guild.roles)
             try:
                 guild._remove_role(role)
@@ -602,7 +602,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             role_data = data['role']
-            role_id = role_data['id']
+            role_id = int(role_data['id'])
             role = utils.find(lambda r: r.id == role_id, guild.roles)
             if role is not None:
                 old_role = copy.copy(role)
