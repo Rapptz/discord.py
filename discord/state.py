@@ -28,6 +28,7 @@ from .server import Server
 from .user import User
 from .game import Game
 from .emoji import Emoji
+from .reaction import Reaction
 from .message import Message
 from .channel import Channel, PrivateChannel
 from .member import Member
@@ -250,6 +251,54 @@ class ConnectionState:
                 message._update(channel=message.channel, **data)
 
             self.dispatch('message_edit', older_message, message)
+
+    def parse_message_reaction_add(self, data):
+        message = self._get_message(data['message_id'])
+        if message is not None:
+            if data['emoji']['id']:
+                reaction_emoji = Emoji(server=None, **data['emoji'])
+            else:
+                reaction_emoji = data['emoji']['name']
+            reaction = utils.get(
+                message.reactions, emoji=reaction_emoji)
+
+            is_me = data['user_id'] == self.user.id
+
+            if not reaction:
+                reaction = Reaction(message=message, me=is_me, **data)
+                message.reactions.append(reaction)
+            else:
+                reaction.count += 1
+                if is_me:
+                    reaction.me = True
+
+            channel = self.get_channel(data['channel_id'])
+            member = self._get_member(channel, data['user_id'])
+
+            self.dispatch('message_reaction_add', message, reaction, member)
+
+    def parse_message_reaction_remove(self, data):
+        message = self._get_message(data['message_id'])
+        if message is not None:
+            if data['emoji']['id']:
+                reaction_emoji = Emoji(server=None, **data['emoji'])
+            else:
+                reaction_emoji = data['emoji']['name']
+            reaction = utils.get(
+                message.reactions, emoji=reaction_emoji)
+
+            # if reaction isn't in the list, we crash. This means discord
+            # sent bad data, or we stored improperly
+            reaction.count -= 1
+            if data['user_id'] == self.user.id:
+                reaction.me = False
+            if reaction.count == 0:
+                message.reactions.remove(reaction)
+
+            channel = self.get_channel(data['channel_id'])
+            member = self._get_member(channel, data['user_id'])
+
+            self.dispatch('message_reaction_remove', message, reaction, member)
 
     def parse_presence_update(self, data):
         server = self._get_server(data.get('guild_id'))
@@ -624,6 +673,12 @@ class ConnectionState:
         call = self._calls.pop(data.get('channel_id'), None)
         if call is not None:
             self.dispatch('call_remove', call)
+
+    def _get_member(self, channel, id):
+        if channel.is_private:
+            return utils.get(channel.recipients, id=id)
+        else:
+            return channel.server.get_member(id)
 
     def get_channel(self, id):
         if id is None:

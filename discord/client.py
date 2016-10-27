@@ -32,6 +32,7 @@ from .server import Server
 from .message import Message
 from .invite import Invite
 from .object import Object
+from .reaction import Reaction
 from .role import Role
 from .errors import *
 from .state import ConnectionState
@@ -774,6 +775,130 @@ class Client:
         channel = PrivateChannel(me=self.user, **data)
         self.connection._add_private_channel(channel)
         return channel
+
+    @asyncio.coroutine
+    def add_reaction(self, message, emoji):
+        """|coro|
+
+        Add a reaction to the given message.
+
+        The message must be a :class:`Message` that exists. emoji may be a unicode emoji,
+        or a custom server :class:`Emoji`.
+
+        Parameters
+        ------------
+        message : :class:`Message`
+            The message to react to.
+        emoji : :class:`Emoji` or str
+            The emoji to react with.
+
+        Raises
+        --------
+        HTTPException
+            Adding the reaction failed.
+        Forbidden
+            You do not have the proper permissions to react to the message.
+        NotFound
+            The message or emoji you specified was not found.
+        InvalidArgument
+            The message or emoji parameter is invalid.
+        """
+        if not isinstance(message, Message):
+            raise InvalidArgument('message argument must be a Message')
+        if not isinstance(emoji, (str, Emoji)):
+            raise InvalidArgument('emoji argument must be a string or Emoji')
+
+        if isinstance(emoji, Emoji):
+            emoji = '{}:{}'.format(emoji.name, emoji.id)
+
+        yield from self.http.add_reaction(message.id, message.channel.id, emoji)
+
+    @asyncio.coroutine
+    def remove_reaction(self, message, emoji, member):
+        """|coro|
+
+        Remove a reaction by the member from the given message.
+
+        If member != server.me, you need Manage Messages to remove the reaction.
+
+        The message must be a :class:`Message` that exists. emoji may be a unicode emoji,
+        or a custom server :class:`Emoji`.
+
+        Parameters
+        ------------
+        message : :class:`Message`
+            The message.
+        emoji : :class:`Emoji` or str
+            The emoji to remove.
+        member : :class:`Member`
+            The member for which to delete the reaction.
+
+        Raises
+        --------
+        HTTPException
+            Adding the reaction failed.
+        Forbidden
+            You do not have the proper permissions to remove the reaction.
+        NotFound
+            The message or emoji you specified was not found.
+        InvalidArgument
+            The message or emoji parameter is invalid.
+        """
+        if not isinstance(message, Message):
+            raise InvalidArgument('message argument must be a Message')
+        if not isinstance(emoji, (str, Emoji)):
+            raise InvalidArgument('emoji must be a string or Emoji')
+
+        if isinstance(emoji, Emoji):
+            emoji = '{}:{}'.format(emoji.name, emoji.id)
+
+        if member == self.user:
+            member_id = '@me'
+        else:
+            member_id = member.id
+
+        yield from self.http.remove_reaction(message.id, message.channel.id, emoji, member_id)
+
+    @asyncio.coroutine
+    def get_reaction_users(self, reaction, limit=100, after=None):
+        """|coro|
+
+        Get the users that added a reaction to a message.
+
+        Parameters
+        ------------
+        reaction : :class:`Reaction`
+            The reaction to retrieve users for.
+        limit : int
+            The maximum number of results to return.
+        after : :class:`Member` or :class:`Object`
+            For pagination, reactions are sorted by member.
+
+        Raises
+        --------
+        HTTPException
+            Getting the users for the reaction failed.
+        NotFound
+            The message or emoji you specified was not found.
+        InvalidArgument
+            The reaction parameter is invalid.
+        """
+        if not isinstance(reaction, Reaction):
+            raise InvalidArgument('reaction must be a Reaction')
+
+        emoji = reaction.emoji
+
+        if isinstance(emoji, Emoji):
+            emoji = '{}:{}'.format(emoji.name, emoji.id)
+
+        if after:
+            after = after.id
+
+        data = yield from self.http.get_reaction_users(
+            reaction.message.id, reaction.message.channel.id,
+            emoji, limit, after=after)
+
+        return [User(**user) for user in data]
 
     @asyncio.coroutine
     def send_message(self, destination, content, *, tts=False):

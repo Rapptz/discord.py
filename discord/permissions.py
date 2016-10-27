@@ -127,7 +127,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110000111111)
+        return cls(0b01111111111101111111110001111111)
 
     @classmethod
     def all_channel(cls):
@@ -142,7 +142,7 @@ class Permissions:
         - change_nicknames
         - manage_nicknames
         """
-        return cls(0b00110011111101111111110000010001)
+        return cls(0b00110011111101111111110001010001)
 
     @classmethod
     def general(cls):
@@ -154,7 +154,7 @@ class Permissions:
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Text" permissions from the official Discord UI set to True."""
-        return cls(0b00000000000001111111110000000000)
+        return cls(0b00000000000001111111110001000000)
 
     @classmethod
     def voice(cls):
@@ -247,6 +247,15 @@ class Permissions:
     @manage_server.setter
     def manage_server(self, value):
         self._set(5, value)
+
+    @property
+    def add_reactions(self):
+        """Returns True if a user can add reactions to messages."""
+        return self._bit(6)
+
+    @add_reactions.setter
+    def add_reactions(self, value):
+        self._set(6, value)
 
     # 4 unused
 

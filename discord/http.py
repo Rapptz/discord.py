@@ -261,6 +261,24 @@ class HTTPClient:
         }
         return self.patch(url, json=payload, bucket='messages:' + str(guild_id))
 
+    def add_reaction(self, message_id, channel_id, emoji):
+        url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}/@me'.format(
+            self, channel_id, message_id, emoji)
+        return self.put(url, bucket=_func_())
+
+    def remove_reaction(self, message_id, channel_id, emoji, member_id):
+        url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}/{4}'.format(
+            self, channel_id, message_id, emoji, member_id)
+        return self.delete(url, bucket=_func_())
+
+    def get_reaction_users(self, message_id, channel_id, emoji, limit, after=None):
+        url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}'.format(
+            self, channel_id, message_id, emoji)
+        params = {'limit': limit}
+        if after:
+            params['after'] = after
+        return self.get(url, params=params, bucket=_func_())
+
     def get_message(self, channel_id, message_id):
         url = '{0.CHANNELS}/{1}/messages/{2}'.format(self, channel_id, message_id)
         return self.get(url, bucket=_func_())
