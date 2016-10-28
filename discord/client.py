@@ -953,7 +953,7 @@ class Client:
 
         data = yield from self.http.send_message(channel_id, content, guild_id=guild_id, tts=tts)
         channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
+        message = self.connection._create_message(channel=channel, **data)
         return message
 
     @asyncio.coroutine
@@ -1035,7 +1035,7 @@ class Client:
         data = yield from self.http.send_file(channel_id, buffer, guild_id=guild_id,
                                               filename=filename, content=content, tts=tts)
         channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
+        message = self.connection._create_message(channel=channel, **data)
         return message
 
     @asyncio.coroutine
@@ -1234,7 +1234,7 @@ class Client:
         content = str(new_content)
         guild_id = channel.server.id if not getattr(channel, 'is_private', True) else None
         data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id)
-        return Message(channel=channel, **data)
+        return self.connection._create_message(channel=channel, **data)
 
     @asyncio.coroutine
     def get_message(self, channel, id):
@@ -1267,7 +1267,7 @@ class Client:
         """
 
         data = yield from self.http.get_message(channel.id, id)
-        return Message(channel=channel, **data)
+        return self.connection._create_message(channel=channel, **data)
 
     @asyncio.coroutine
     def pin_message(self, message):
@@ -1337,7 +1337,7 @@ class Client:
         """
 
         data = yield from self.http.pins_from(channel.id)
-        return [Message(channel=channel, **m) for m in data]
+        return [self.connection._create_message(channel=channel, **m) for m in data]
 
     def _logs_from(self, channel, limit=100, before=None, after=None, around=None):
         """|coro|
@@ -1418,7 +1418,7 @@ class Client:
 
             def generator(data):
                 for message in data:
-                    yield Message(channel=channel, **message)
+                    yield self.connection._create_message(channel=channel, **message)
 
             result = []
             while limit > 0:
