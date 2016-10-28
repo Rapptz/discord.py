@@ -115,6 +115,9 @@ class Message:
                   '_system_content', 'reactions' ]
 
     def __init__(self, **kwargs):
+        self.reactions = kwargs.pop('reactions')
+        for reaction in self.reactions:
+            reaction.message = self
         self._update(**kwargs)
 
     def _update(self, **data):
@@ -138,7 +141,6 @@ class Message:
         self._handle_upgrades(data.get('channel_id'))
         self._handle_mentions(data.get('mentions', []), data.get('mention_roles', []))
         self._handle_call(data.get('call'))
-        self.reactions = [Reaction(message=self, **reaction) for reaction in data.get('reactions', [])]
 
         # clear the cached properties
         cached = filter(lambda attr: attr[0] == '_', self.__slots__)

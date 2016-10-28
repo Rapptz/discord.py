@@ -72,6 +72,7 @@ class LogsFromIterator:
     def __init__(self, client, channel, limit,
                  before=None, after=None, around=None, reverse=False):
         self.client = client
+        self.connection = client.connection
         self.channel = channel
         self.limit = limit
         self.before = before
@@ -125,7 +126,9 @@ class LogsFromIterator:
             if self._filter:
                 data = filter(self._filter, data)
             for element in data:
-                yield from self.messages.put(Message(channel=self.channel, **element))
+                yield from self.messages.put(
+                    self.connection._create_message(
+                        channel=self.channel, **element))
 
     @asyncio.coroutine
     def _retrieve_messages(self, retrieve):

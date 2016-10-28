@@ -62,19 +62,11 @@ class Reaction:
     __slots__ = ['message', 'count', 'emoji', 'me', 'custom_emoji']
 
     def __init__(self, **kwargs):
-        self.message = kwargs.pop('message')
-        self._from_data(kwargs)
-
-    def _from_data(self, reaction):
-        self.count = reaction.get('count', 1)
-        self.me = reaction.get('me')
-        emoji = reaction['emoji']
-        if emoji['id']:
-            self.custom_emoji = True
-            self.emoji = Emoji(server=None, id=emoji['id'], name=emoji['name'])
-        else:
-            self.custom_emoji = False
-            self.emoji = emoji['name']
+        self.message = kwargs.get('message')
+        self.emoji = kwargs['emoji']
+        self.count = kwargs.get('count', 1)
+        self.me = kwargs.get('me')
+        self.custom_emoji = isinstance(self.emoji, Emoji)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.emoji == self.emoji

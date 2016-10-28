@@ -219,7 +219,7 @@ class ConnectionState:
 
     def parse_message_create(self, data):
         channel = self.get_channel(data.get('channel_id'))
-        message = Message(channel=channel, **data)
+        message = self._create_message(channel=channel, **data)
         self.dispatch('message', message)
         self.messages.append(message)
 
@@ -255,17 +255,14 @@ class ConnectionState:
     def parse_message_reaction_add(self, data):
         message = self._get_message(data['message_id'])
         if message is not None:
-            if data['emoji']['id']:
-                reaction_emoji = Emoji(server=None, **data['emoji'])
-            else:
-                reaction_emoji = data['emoji']['name']
-            reaction = utils.get(
-                message.reactions, emoji=reaction_emoji)
+            emoji = self._get_reaction_emoji(**data.pop('emoji'))
+            reaction = utils.get(message.reactions, emoji=emoji)
 
             is_me = data['user_id'] == self.user.id
 
             if not reaction:
-                reaction = Reaction(message=message, me=is_me, **data)
+                reaction = Reaction(
+                    message=message, emoji=emoji, me=is_me, **data)
                 message.reactions.append(reaction)
             else:
                 reaction.count += 1
@@ -280,12 +277,8 @@ class ConnectionState:
     def parse_message_reaction_remove(self, data):
         message = self._get_message(data['message_id'])
         if message is not None:
-            if data['emoji']['id']:
-                reaction_emoji = Emoji(server=None, **data['emoji'])
-            else:
-                reaction_emoji = data['emoji']['name']
-            reaction = utils.get(
-                message.reactions, emoji=reaction_emoji)
+            emoji = self._get_reaction_emoji(**data['emoji'])
+            reaction = utils.get(message.reactions, emoji=emoji)
 
             # if reaction isn't in the list, we crash. This means discord
             # sent bad data, or we stored improperly
@@ -679,6 +672,30 @@ class ConnectionState:
             return utils.get(channel.recipients, id=id)
         else:
             return channel.server.get_member(id)
+
+    def _create_message(self, **message):
+        """Helper mostly for injecting reactions."""
+        reactions = [
+            self._create_reaction(**r) for r in message.pop('reactions', [])
+        ]
+        return Message(channel=message.pop('channel'),
+                       reactions=reactions, **message)
+
+    def _create_reaction(self, **reaction):
+        emoji = self._get_reaction_emoji(**reaction.pop('emoji'))
+        return Reaction(emoji=emoji, **reaction)
+
+    def _get_reaction_emoji(self, **data):
+        id = data['id']
+
+        if id is None:
+            return data['name']
+
+        for server in self.servers:
+            for emoji in server.emojis:
+                if emoji.id == id:
+                    return emoji
+        return Emoji(server=None, **data)
 
     def get_channel(self, id):
         if id is None:
