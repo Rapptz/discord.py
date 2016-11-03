@@ -120,8 +120,6 @@ class Message:
             reaction.message = self
         self._update(**kwargs)
 
-        assert not len(self.reactions) or isinstance(self.reactions[0], Reaction)
-
     def _update(self, **data):
         # at the moment, the timestamps seem to be naive so they have no time zone and operate on UTC time.
         # we can use this to our advantage to use strptime instead of a complicated parsing routine.

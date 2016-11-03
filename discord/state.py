@@ -248,7 +248,7 @@ class ConnectionState:
                 # embed only edit
                 message.embeds = data['embeds']
             else:
-                message = self._create_message(channel=message.channel, **data)
+                message._update(channel=message.channel, **data)
 
             self.dispatch('message_edit', older_message, message)
 
