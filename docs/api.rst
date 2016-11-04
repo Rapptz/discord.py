@@ -207,23 +207,29 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
-.. function:: on_message_reaction_add(message, reaction, user)
+.. function:: on_reaction_add(reaction, user)
 
     Called when a message has a reaction added to it. Similar to on_message_edit,
-    if the message is not found in the :attr:`Client.messages` cache, then this 
+    if the message is not found in the :attr:`Client.messages` cache, then this
     event will not be called.
 
-    :param message: A :class:`Message` that was reacted to.
+    .. note::
+
+        To get the message being reacted, access it via :attr:`Reaction.message`.
+
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who added the reaction.
 
-.. function:: on_message_reaction_remove(message, reaction, user)
+.. function:: on_reaction_remove(reaction, user)
 
     Called when a message has a reaction removed from it. Similar to on_message_edit,
     if the message is not found in the :attr:`Client.messages` cache, then this event
     will not be called.
 
-    :param message: A :class:`Message` that was reacted to.
+    .. note::
+
+        To get the message being reacted, access it via :attr:`Reaction.message`.
+
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who removed the reaction.
 
@@ -629,6 +635,12 @@ Message
 ~~~~~~~
 
 .. autoclass:: Message
+    :members:
+
+Reaction
+~~~~~~~~~
+
+.. autoclass:: Reaction
     :members:
 
 CallMessage

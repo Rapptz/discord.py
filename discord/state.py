@@ -272,7 +272,7 @@ class ConnectionState:
             channel = self.get_channel(data['channel_id'])
             member = self._get_member(channel, data['user_id'])
 
-            self.dispatch('message_reaction_add', message, reaction, member)
+            self.dispatch('reaction_add', reaction, member)
 
     def parse_message_reaction_remove(self, data):
         message = self._get_message(data['message_id'])
@@ -291,7 +291,7 @@ class ConnectionState:
             channel = self.get_channel(data['channel_id'])
             member = self._get_member(channel, data['user_id'])
 
-            self.dispatch('message_reaction_remove', message, reaction, member)
+            self.dispatch('reaction_remove', reaction, member)
 
     def parse_presence_update(self, data):
         server = self._get_server(data.get('guild_id'))
