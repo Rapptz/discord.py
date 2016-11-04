@@ -8,6 +8,22 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _v0p14p2:
+
+v0.14.2
+---------
+
+New Features
+~~~~~~~~~~~~~~
+
+- :meth:`Client.wait_for_reaction` now returns a namedtuple with ``reaction`` and ``user`` attributes.
+    - This is for better support in the case that ``None`` is returned since tuple unpacking can lead to issues.
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix bug that disallowed ``None`` to be passed for ``emoji`` parameter in :meth:`Client.wait_for_reaction`.
+
 .. _v0p14p1:
 
 v0.14.1
