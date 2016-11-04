@@ -10,6 +10,9 @@ in specific versions.
 
 .. _v0p14p0:
 
+v0.14.0
+--------
+
 This update adds new API features and a couple of bug fixes.
 
 New Features
