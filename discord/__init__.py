@@ -15,7 +15,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2016 Rapptz'
-__version__ = '0.14.0'
+__version__ = '0.14.1'
 
 from .client import Client, AppInfo, ChannelPermissions
 from .user import User
@@ -32,6 +32,7 @@ from .role import Role
 from .colour import Color, Colour
 from .invite import Invite
 from .object import Object
+from .reaction import Reaction
 from . import utils, opus, compat
 from .voice_client import VoiceClient
 from .enums import ChannelType, ServerRegion, Status, MessageType, VerificationLevel
@@ -41,7 +42,7 @@ import logging
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=0, minor=14, micro=0, releaselevel='final', serial=0)
+version_info = VersionInfo(major=0, minor=14, micro=1, releaselevel='final', serial=0)
 
 try:
     from logging import NullHandler

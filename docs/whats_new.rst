@@ -8,6 +8,17 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _v0p14p1:
+
+v0.14.1
+---------
+
+Bug fixes
+~~~~~~~~~~
+
+- Fix bug with `Reaction` not being visible at import.
+    - This was also breaking the documentation.
+
 .. _v0p14p0:
 
 v0.14.0
