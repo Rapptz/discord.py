@@ -823,7 +823,7 @@ class Client:
         try:
             return (yield from asyncio.wait_for(future, timeout, loop=self.loop))
         except asyncio.TimeoutError:
-            return None
+            return (None, None)
 
     # event registration
 
