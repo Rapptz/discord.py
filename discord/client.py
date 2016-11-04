@@ -61,6 +61,8 @@ PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
 
 AppInfo = namedtuple('AppInfo', 'id name description icon owner')
+WaitedReaction = namedtuple('WaitedReaction', 'reaction user')
+
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
     if not self.icon:
@@ -215,7 +217,7 @@ class Client:
                 removed.append(i)
             else:
                 if result:
-                    future.set_result((reaction, user))
+                    future.set_result(WaitedReaction(reaction, user))
                     removed.append(i)
 
 
@@ -770,10 +772,24 @@ class Client:
             async def on_message(message):
                 if message.content.startswith('$react'):
                     msg = await client.send_message(message.channel, 'React with thumbs up or thumbs down.')
-                    (reaction, user) = await client.wait_for_reaction(['\N{THUMBS UP SIGN}',
-                                                                       '\N{THUMBS DOWN SIGN}'],
-                                                                      message=msg)
-                    await client.send_message(message.channel, '{} reacted with {.emoji}!'.format(user, reaction))
+                    res = await client.wait_for_reaction(['\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'], message=msg)
+                    await client.send_message(message.channel, '{.user} reacted with {.reaction.emoji}!'.format(res))
+
+        Checking for reaction emoji regardless of skin tone:
+
+        .. code-block:: python
+
+            @client.event
+            async def on_message(message):
+                if message.content.startswith('$react'):
+                    msg = await client.send_message(message.channel, 'React with thumbs up or thumbs down.')
+
+                    def check(reaction, user):
+                        e = str(reaction.emoji)
+                        return e.startswith(('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'))
+
+                    res = await client.wait_for_reaction(message=msg, check=check)
+                    await client.send_message(message.channel, '{.user} reacted with {.reaction.emoji}!'.format(res))
 
         Parameters
         -----------
@@ -793,12 +809,13 @@ class Client:
 
         Returns
         --------
-        tuple
-            A tuple of ``(reaction, user)`` similar to :func:`on_reaction_add`.
+        namedtuple
+            A namedtuple with attributes ``reaction`` and ``user`` similar to :func:`on_reaction_add`.
         """
 
-        emoji_check = lambda r: True
-        if isinstance(emoji, (str, Emoji)):
+        if emoji is None:
+            emoji_check = lambda r: True
+        elif isinstance(emoji, (str, Emoji)):
             emoji_check = lambda r: r.emoji == emoji
         else:
             emoji_check = lambda r: r.emoji in emoji
