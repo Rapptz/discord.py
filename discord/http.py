@@ -383,6 +383,11 @@ class HTTPClient:
         bucket = 'members:{}'.format(guild_id)
         return self.patch(url, json=payload, bucket=bucket)
 
+    def edit_member(self, guild_id, user_id, **fields):
+        url = '{0.GUILDS}/{1}/members/{2}'.format(self, guild_id, user_id)
+        bucket = 'members:%s' % guild_id
+        return self.patch(url, json=fields, bucket=bucket)
+
     # Channel management
 
     def edit_channel(self, channel_id, **options):

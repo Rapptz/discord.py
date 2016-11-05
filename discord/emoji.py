@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+
 from . import utils
 from .mixins import Hashable
 
@@ -107,3 +109,51 @@ class Emoji(Hashable):
     def url(self):
         """Returns a URL version of the emoji."""
         return "https://discordapp.com/api/emojis/{0.id}.png".format(self)
+
+
+    @asyncio.coroutine
+    def delete(self):
+        """|coro|
+
+        Deletes the custom emoji.
+
+        You must have :attr:`Permissions.manage_emojis` permission to
+        do this.
+
+        Guild local emotes can only be deleted by user bots.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete emojis.
+        HTTPException
+            An error occurred deleting the emoji.
+        """
+
+        yield from self._state.http.delete_custom_emoji(self.guild.id, self.id)
+
+    @asyncio.coroutine
+    def edit(self, *, name):
+        """|coro|
+
+        Edits the custom emoji.
+
+        You must have :attr:`Permissions.manage_emojis` permission to
+        do this.
+
+        Guild local emotes can only be edited by user bots.
+
+        Parameters
+        -----------
+        name: str
+            The new emoji name.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to edit emojis.
+        HTTPException
+            An error occurred editing the emoji.
+        """
+
+        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name)

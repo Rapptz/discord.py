@@ -47,7 +47,7 @@ class ListenerType(enum.Enum):
     chunk = 0
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
-StateContext = namedtuple('StateContext', 'try_insert_user http')
+StateContext = namedtuple('StateContext', 'try_insert_user http self_id')
 log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
@@ -60,7 +60,7 @@ class ConnectionState:
         self.syncer = syncer
         self.is_bot = None
         self._listeners = []
-        self.ctx = StateContext(try_insert_user=self.try_insert_user, http=http)
+        self.ctx = StateContext(try_insert_user=self.try_insert_user, http=http, self_id=None)
         self.clear()
 
     def clear(self):
@@ -220,6 +220,7 @@ class ConnectionState:
     def parse_ready(self, data):
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
         self.user = self.try_insert_user(data['user'])
+        self.ctx.self_id = self.user.id
         guilds = data.get('guilds')
 
         guilds = self._ready_state.guilds

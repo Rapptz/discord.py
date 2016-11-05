@@ -355,7 +355,8 @@ class TextChannel(abc.MessageChannel, CommonGuildChannel):
 
         Edits the channel.
 
-        You must have the Manage Channel permission to use this.
+        You must have the :attr:`Permissions.manage_channel` permission to
+        use this.
 
         Parameters
         ----------
@@ -446,7 +447,8 @@ class VoiceChannel(CommonGuildChannel):
 
         Edits the channel.
 
-        You must have the Manage Channel permission to use this.
+        You must have the :attr:`Permissions.manage_channel` permission to
+        use this.
 
         Parameters
         ----------

@@ -680,3 +680,81 @@ class Guild(Hashable):
 
         # TODO: add to cache
         return role
+
+    @asyncio.coroutine
+    def kick(self, user):
+        """|coro|
+
+        Kicks a user from the guild.
+
+        The user must meet the :class:`abc.Snowflake` abc.
+
+        You must have :attr:`Permissions.kick_members` permissions to
+        do this.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to kick from their guild.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to kick.
+        HTTPException
+            Kicking failed.
+        """
+        yield from self._state.http.kick(user.id, self.id)
+
+    @asyncio.coroutine
+    def ban(self, user, *, delete_message_days=1):
+        """|coro|
+
+        Bans a user from the guild.
+
+        The user must meet the :class:`abc.Snowflake` abc.
+
+        You must have :attr:`Permissions.ban_members` permissions to
+        do this.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to ban from their guild.
+        delete_message_days: int
+            The number of days worth of messages to delete from the user
+            in the guild. The minimum is 0 and the maximum is 7.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to ban.
+        HTTPException
+            Banning failed.
+        """
+        yield from self._state.http.ban(user.id, self.id, delete_message_days)
+
+    @asyncio.coroutine
+    def unban(self, user):
+        """|coro|
+
+        Unbans a user from the guild.
+
+        The user must meet the :class:`abc.Snowflake` abc.
+
+        You must have :attr:`Permissions.ban_members` permissions to
+        do this.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to unban.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to unban.
+        HTTPException
+            Unbanning failed.
+        """
+        yield from self._state.http.unban(user.id, self.id)

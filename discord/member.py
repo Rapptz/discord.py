@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+
 from .user import User
 from .game import Game
 from .permissions import Permissions
@@ -161,16 +163,19 @@ class Member:
     def __hash__(self):
         return hash(self._user.id)
 
-    def _update(self, data, user):
-        self._user.name = user['username']
-        self._user.discriminator = user['discriminator']
-        self._user.avatar = user['avatar']
-        self._user.bot = user.get('bot', False)
+    def _update(self, data, user=None):
+        if user:
+            self._user.name = user['username']
+            self._user.discriminator = user['discriminator']
+            self._user.avatar = user['avatar']
+            self._user.bot = user.get('bot', False)
 
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
-        if 'nick' in data:
+        try:
             self.nick = data['nick']
+        except KeyError:
+            pass
 
         # update the roles
         self.roles = [self.guild.default_role]
@@ -283,3 +288,187 @@ class Member:
     def voice(self):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
+
+    @asyncio.coroutine
+    def ban(self):
+        """|coro|
+
+        Bans this member. Equivalent to :meth:`Guild.ban`
+        """
+        yield from self.guild.ban(self)
+
+    @asyncio.coroutine
+    def unban(self):
+        """|coro|
+
+        Unbans this member. Equivalent to :meth:`Guild.unban`
+        """
+        yield from self.guild.unban(self)
+
+    @asyncio.coroutine
+    def kick(self):
+        """|coro|
+
+        Kicks this member. Equivalent to :meth:`Guild.kick`
+        """
+        yield from self.guild.kick(self)
+
+    @asyncio.coroutine
+    def edit(self, **fields):
+        """|coro|
+
+        Edits the member's data.
+
+        Depending on the parameter passed, this requires different permissions listed below:
+
+        +---------------+--------------------------------------+
+        |   Parameter   |              Permission              |
+        +---------------+--------------------------------------+
+        | nick          | :attr:`Permissions.manage_nicknames` |
+        +---------------+--------------------------------------+
+        | mute          | :attr:`Permissions.mute_members`     |
+        +---------------+--------------------------------------+
+        | deafen        | :attr:`Permissions.deafen_members`   |
+        +---------------+--------------------------------------+
+        | roles         | :attr:`Permissions.manage_roles`     |
+        +---------------+--------------------------------------+
+        | voice_channel | :attr:`Permissions.move_members`     |
+        +---------------+--------------------------------------+
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        nick: str
+            The member's new nickname. Use ``None`` to remove the nickname.
+        mute: bool
+            Indicates if the member should be guild muted or un-muted.
+        deafen: bool
+            Indicates if the member should be guild deafened or un-deafened.
+        roles: List[:class:`Roles`]
+            The member's new list of roles. This *replaces* the roles.
+        voice_channel: :class:`VoiceChannel`
+            The voice channel to move the member to.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to the action requested.
+        HTTPException
+            The operation failed.
+        """
+        http = self._state.http
+        guild_id = self.guild.id
+        payload = {}
+
+        try:
+            nick = fields['nick']
+        except KeyError:
+            # nick not present so...
+            pass
+        else:
+            nick = nick if nick else ''
+            if self._state.self_id == self.id:
+                yield from http.change_my_nickname(guild_id, nick)
+            else:
+                payload['nick'] = nick
+
+        deafen = fields.get('deafen')
+        if deafen is not None:
+            payload['deaf'] = deafen
+
+        mute = fields.get('mute')
+        if mute is not None:
+            payload['mute'] = mute
+
+        try:
+            vc = fields['voice_channel']
+        except KeyError:
+            pass
+        else:
+            payload['channel_id'] = vc.id
+
+        try:
+            roles = fields['roles']
+        except KeyError:
+            pass
+        else:
+            payload['roles'] = tuple(r.id for r in roles)
+
+        yield from http.edit_member(guild_id, self.id, **payload)
+
+        # TODO: wait for WS event for modify-in-place behaviour
+
+    @asyncio.coroutine
+    def move_to(self, channel):
+        """|coro|
+
+        Moves a member to a new voice channel (they must be connected first).
+
+        You must have the :attr:`Permissions.move_members` permission to
+        use this.
+
+        This raises the same exceptions as :meth:`edit`.
+
+        Parameters
+        -----------
+        channel: :class:`VoiceChannel`
+            The new voice channel to move the member to.
+        """
+        yield from self.edit(voice_channel=channel)
+
+    @asyncio.coroutine
+    def add_roles(self, *roles):
+        """|coro|
+
+        Gives the member a number of :class:`Role`\s.
+
+        You must have the :attr:`Permissions.manage_roles` permission to
+        use this.
+
+        Parameters
+        -----------
+        \*roles
+            An argument list of :class:`Role`\s to give the member.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add these roles.
+        HTTPException
+            Adding roles failed.
+        """
+
+        new_roles = utils._unique(r for s in (self.roles[1:], roles) for r in s)
+        yield from self.edit(roles=new_roles)
+
+    @asyncio.coroutine
+    def remove_roles(self, *roles):
+        """|coro|
+
+        Removes :class:`Role`\s from this member.
+
+        You must have the :attr:`Permissions.manage_roles` permission to
+        use this.
+
+        Parameters
+        -----------
+        \*roles
+            An argument list of :class:`Role`\s to remove from the member.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove these roles.
+        HTTPException
+            Removing the roles failed.
+        """
+
+        new_roles = self.roles[1:] # remove @everyone
+        for role in roles:
+            try:
+                new_roles.remove(role)
+            except ValueError:
+                pass
+
+        yield from self.edit(roles=new_roles)
