@@ -274,9 +274,9 @@ class HTTPClient:
     def get_reaction_users(self, message_id, channel_id, emoji, limit, after=None):
         url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}'.format(
             self, channel_id, message_id, emoji)
-        params = {'limit': limit}
+        params = {'limit': str(limit)}
         if after:
-            params['after'] = after
+            params['after'] = str(after)
         return self.get(url, params=params, bucket=_func_())
 
     def get_message(self, channel_id, message_id):
@@ -286,7 +286,7 @@ class HTTPClient:
     def logs_from(self, channel_id, limit, before=None, after=None, around=None):
         url = '{0.CHANNELS}/{1}/messages'.format(self, channel_id)
         params = {
-            'limit': limit
+            'limit': str(limit)
         }
 
         if before:
@@ -319,7 +319,7 @@ class HTTPClient:
     def ban(self, user_id, guild_id, delete_message_days=1):
         url = '{0.GUILDS}/{1}/bans/{2}'.format(self, guild_id, user_id)
         params = {
-            'delete-message-days': delete_message_days
+            'delete-message-days': str(delete_message_days)
         }
         return self.put(url, params=params, bucket=_func_())
 
@@ -434,14 +434,14 @@ class HTTPClient:
     def prune_members(self, guild_id, days):
         url = '{0.GUILDS}/{1}/prune'.format(self, guild_id)
         params = {
-            'days': days
+            'days': str(days)
         }
         return self.post(url, params=params, bucket=_func_())
 
     def estimate_pruned_members(self, guild_id, days):
         url = '{0.GUILDS}/{1}/prune'.format(self, guild_id)
         params = {
-            'days': days
+            'days': str(days)
         }
         return self.get(url, params=params, bucket=_func_())
 
