@@ -286,7 +286,7 @@ class HTTPClient:
     def logs_from(self, channel_id, limit, before=None, after=None, around=None):
         url = '{0.CHANNELS}/{1}/messages'.format(self, channel_id)
         params = {
-            'limit': limit
+            'limit': str(limit)
         }
 
         if before:
