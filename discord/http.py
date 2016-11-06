@@ -264,12 +264,12 @@ class HTTPClient:
     def add_reaction(self, message_id, channel_id, emoji):
         url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}/@me'.format(
             self, channel_id, message_id, emoji)
-        return self.put(url, bucket=_func_())
+        return self.put(url, bucket='%s:%s' % (_func_(), channel_id))
 
     def remove_reaction(self, message_id, channel_id, emoji, member_id):
         url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}/{4}'.format(
             self, channel_id, message_id, emoji, member_id)
-        return self.delete(url, bucket=_func_())
+        return self.delete(url, bucket='%s:%s' % (_func_(), channel_id))
 
     def get_reaction_users(self, message_id, channel_id, emoji, limit, after=None):
         url = '{0.CHANNELS}/{1}/messages/{2}/reactions/{3}'.format(
@@ -277,7 +277,7 @@ class HTTPClient:
         params = {'limit': limit}
         if after:
             params['after'] = after
-        return self.get(url, params=params, bucket=_func_())
+        return self.get(url, params=params, bucket='%s:%s' % (_func_(), channel_id))
 
     def get_message(self, channel_id, message_id):
         url = '{0.CHANNELS}/{1}/messages/{2}'.format(self, channel_id, message_id)
