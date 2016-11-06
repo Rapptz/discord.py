@@ -8,6 +8,17 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp014p3:
+
+v0.14.3
+---------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix crash when dealing with MESSAGE_REACTION_REMOVE
+- Fix incorrect buckets for reactions.
+
 .. _v0p14p2:
 
 v0.14.2
