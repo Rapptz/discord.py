@@ -688,7 +688,7 @@ class ConnectionState:
     def _get_reaction_emoji(self, **data):
         id = data['id']
 
-        if id is None:
+        if not id:
             return data['name']
 
         for server in self.servers:
