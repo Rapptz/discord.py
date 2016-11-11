@@ -29,10 +29,12 @@ import re
 
 from .user import User
 from .reaction import Reaction
+from .emoji import Emoji
 from . import utils, abc
 from .object import Object
 from .calls import CallMessage
 from .enums import MessageType, try_enum
+from .errors import InvalidArgument
 
 class Message:
     """Represents a message from Discord.
@@ -66,8 +68,6 @@ class Message:
         In :issue:`very rare cases <21>` this could be a :class:`Object` instead.
 
         For the sake of convenience, this :class:`Object` instance has an attribute ``is_private`` set to ``True``.
-    guild: Optional[:class:`Guild`]
-        The guild that the message belongs to. If not applicable (i.e. a PM) then it's None instead.
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
@@ -112,16 +112,15 @@ class Message:
 
     __slots__ = ( 'edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  '_cs_channel_mentions', 'guild', '_cs_raw_mentions', 'attachments',
+                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
                   '_cs_system_content', '_state', 'reactions' )
 
     def __init__(self, *, state, channel, data):
         self._state = state
-        self.reactions = kwargs.pop('reactions')
-        for reaction in self.reactions:
-            reaction.message = self
+        self.id = int(data['id'])
+        self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
         self._update(channel, data)
 
     def _try_patch(self, data, key, transform):
@@ -131,6 +130,41 @@ class Message:
             pass
         else:
             setattr(self, key, transform(value))
+
+    def _add_reaction(self, data):
+        emoji = self._state.reaction_emoji(data['emoji'])
+        reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
+        is_me = data['me'] = int(data['user_id']) == self._state.self_id
+
+        if reaction is None:
+            reaction = Reaction(message=self, data=data, emoji=emoji)
+            self.reactions.append(reaction)
+        else:
+            reaction.count += 1
+            if is_me:
+                reaction.me = is_me
+
+        return reaction
+
+    def _remove_reaction(self, data):
+        emoji = self._state.reaction_emoji(data['emoji'])
+        reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
+
+        if reaction is None:
+            # already removed?
+            raise ValueError('Emoji already removed?')
+
+        # if reaction isn't in the list, we crash. This means discord
+        # sent bad data, or we stored improperly
+        reaction.count -= 1
+
+        if int(data['user_id']) == self._state.self_id:
+            reaction.me = False
+        if reaction.count == 0:
+            # this raises ValueError if something went wrong as well.
+            self.reactions.remove(reaction)
+
+        return reaction
 
     def _update(self, channel, data):
         self.channel = channel
@@ -197,6 +231,11 @@ class Message:
 
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
+
+    @property
+    def guild(self):
+        """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
+        return getattr(self.channel, 'guild', None)
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self):
@@ -428,3 +467,82 @@ class Message:
 
         yield from self._state.http.unpin_message(self.channel.id, self.id)
         self.pinned = False
+
+    @asyncio.coroutine
+    def add_reaction(self, emoji):
+        """|coro|
+
+        Add a reaction to the message.
+
+        The emoji may be a unicode emoji or a custom server :class:`Emoji`.
+
+        You must have the :attr:`Permissions.add_reactions` permission to
+        add new reactions to a message.
+
+        Parameters
+        ------------
+        emoji: :class:`Emoji` or str
+            The emoji to react with.
+
+        Raises
+        --------
+        HTTPException
+            Adding the reaction failed.
+        Forbidden
+            You do not have the proper permissions to react to the message.
+        NotFound
+            The emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        if isinstance(emoji, Emoji):
+            emoji = '%s:%s' % (emoji.name, emoji.id)
+        elif isinstance(emoji, str):
+            pass # this is okay
+        else:
+            raise InvalidArgument('emoji argument must be a string or discord.Emoji')
+
+        yield from self._state.http.add_reaction(self.id, self.channel.id, emoji)
+
+    @asyncio.coroutine
+    def remove_reaction(self, emoji, member):
+        """|coro|
+
+        Remove a reaction by the member from the message.
+
+        The emoji may be a unicode emoji or a custom server :class:`Emoji`.
+
+        If the reaction is not your own (i.e. ``member`` parameter is not you) then
+        the :attr:`Permissions.manage_messages` permission is needed.
+
+        The ``member`` parameter must represent a member and meet
+        the :class:`abc.Snowflake` abc.
+
+        Parameters
+        ------------
+        emoji: :class:`Emoji` or str
+            The emoji to remove.
+        member: :class:`abc.Snowflake`
+            The member for which to remove the reaction.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to remove the reaction.
+        NotFound
+            The member or emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        if isinstance(emoji, Emoji):
+            emoji = '%s:%s' % (emoji.name, emoji.id)
+        elif isinstance(emoji, str):
+            pass # this is okay
+        else:
+            raise InvalidArgument('emoji argument must be a string or discord.Emoji')
+
+        yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)

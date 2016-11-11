@@ -25,9 +25,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+from collections import namedtuple
 
 from . import utils
 from .mixins import Hashable
+
+PartialEmoji = namedtuple('PartialEmoji', 'id name')
 
 class Emoji(Hashable):
     """Represents a custom emoji.

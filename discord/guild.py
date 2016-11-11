@@ -237,7 +237,7 @@ class Guild(Hashable):
         self.id = int(guild['id'])
         self.roles = [Role(guild=self, data=r, state=self._state) for r in guild.get('roles', [])]
         self.mfa_level = guild.get('mfa_level')
-        self.emojis = [Emoji(server=self, data=r, state=self._state) for r in guild.get('emojis', [])]
+        self.emojis = tuple(map(lambda d: self._state.store_emoji(self, d), guild.get('emojis', [])))
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
 
@@ -653,7 +653,7 @@ class Guild(Hashable):
 
         img = utils._bytes_to_base64_data(image)
         data = yield from self._state.http.create_custom_emoji(self.id, name, img)
-        return Emoji(guild=self, data=data, state=self._state)
+        return self._state.store_emoji(self, data)
 
     @asyncio.coroutine
     def create_role(self, **fields):

@@ -24,7 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .emoji import Emoji
+import asyncio
+
+from .user import User
 
 class Reaction:
     """Represents a reaction to a message.
@@ -48,25 +50,27 @@ class Reaction:
 
     Attributes
     -----------
-    emoji : :class:`Emoji` or str
+    emoji: :class:`Emoji` or str
         The reaction emoji. May be a custom emoji, or a unicode emoji.
-    custom_emoji : bool
-        If this is a custom emoji.
-    count : int
+    count: int
         Number of times this reaction was made
-    me : bool
+    me: bool
         If the user sent this reaction.
     message: :class:`Message`
         Message this reaction is for.
     """
-    __slots__ = ['message', 'count', 'emoji', 'me', 'custom_emoji']
+    __slots__ = ('message', 'count', 'emoji', 'me')
 
-    def __init__(self, **kwargs):
-        self.message = kwargs.get('message')
-        self.emoji = kwargs['emoji']
-        self.count = kwargs.get('count', 1)
-        self.me = kwargs.get('me')
-        self.custom_emoji = isinstance(self.emoji, Emoji)
+    def __init__(self, *, message, data, emoji=None):
+        self.message = message
+        self.emoji = message._state.reaction_emoji(data['emoji']) if emoji is None else emoji
+        self.count = data.get('count', 1)
+        self.me = data.get('me')
+
+    @property
+    def custom_emoji(self):
+        """bool: If this is a custom emoji."""
+        return not isinstance(self.emoji, str)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.emoji == self.emoji
@@ -78,3 +82,45 @@ class Reaction:
 
     def __hash__(self):
         return hash(self.emoji)
+
+    @asyncio.coroutine
+    def users(self, limit=100, after=None):
+        """|coro|
+
+        Get the users that added this reaction.
+
+        The ``after`` parameter must represent a member
+        and meet the :class:`abc.Snowflake` abc.
+
+        Parameters
+        ------------
+        limit: int
+            The maximum number of results to return.
+        after: :class:`abc.Snowflake`
+            For pagination, reactions are sorted by member.
+
+        Raises
+        --------
+        HTTPException
+            Getting the users for the reaction failed.
+
+        Returns
+        --------
+        List[:class:`User`]
+            A list of users who reacted to the message.
+        """
+
+        # TODO: Return an iterator a la `MessageChannel.history`?
+
+        if self.custom_emoji:
+            emoji = '{0.name}:{0.id}'.format(self.emoji)
+        else:
+            emoji = self.emoji
+
+        if after:
+            after = after.id
+
+        msg = self.message
+        state = msg._state
+        data = yield from state.http.get_reaction_users(msg.id, msg.channel.id, emoji, limit, after=after)
+        return [User(state=state, data=user) for user in data]
