@@ -141,7 +141,7 @@ class Message:
                 continue
 
         self._try_patch(data, 'edited_timestamp', utils.parse_time)
-        self._try_patch(data, 'author', self._state.try_insert_user)
+        self._try_patch(data, 'author', self._state.store_user)
         self._try_patch(data, 'pinned', bool)
         self._try_patch(data, 'mention_everyone', bool)
         self._try_patch(data, 'tts', bool)
@@ -161,7 +161,7 @@ class Message:
     def _handle_mentions(self, mentions):
         self.mentions = []
         if self.guild is None:
-            self.mentions = [self._state.try_insert_user(m) for m in mentions]
+            self.mentions = [self._state.store_user(m) for m in mentions]
             return
 
         for mention in mentions:

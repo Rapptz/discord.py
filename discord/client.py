@@ -2395,7 +2395,7 @@ class Client:
         """
 
         data = yield from self.http.get_bans(guild.id)
-        return [self.connection.try_insert_user(user) for user in data]
+        return [self.connection.store_user(user) for user in data]
 
     @asyncio.coroutine
     def prune_members(self, guild, *, days):

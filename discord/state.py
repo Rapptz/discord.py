@@ -47,7 +47,7 @@ class ListenerType(enum.Enum):
     chunk = 0
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
-StateContext = namedtuple('StateContext', 'try_insert_user http self_id')
+StateContext = namedtuple('StateContext', 'store_user http self_id')
 log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
@@ -60,7 +60,7 @@ class ConnectionState:
         self.syncer = syncer
         self.is_bot = None
         self._listeners = []
-        self.ctx = StateContext(try_insert_user=self.try_insert_user, http=http, self_id=None)
+        self.ctx = StateContext(store_user=self.store_user, http=http, self_id=None)
         self.clear()
 
     def clear(self):
@@ -119,7 +119,7 @@ class ConnectionState:
         for vc in self.voice_clients:
             vc.main_ws = ws
 
-    def try_insert_user(self, data):
+    def store_user(self, data):
         # this way is 300% faster than `dict.setdefault`.
         user_id = int(data['id'])
         try:
@@ -219,7 +219,7 @@ class ConnectionState:
 
     def parse_ready(self, data):
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
-        self.user = self.try_insert_user(data['user'])
+        self.user = self.store_user(data['user'])
         self.ctx.self_id = self.user.id
         guilds = data.get('guilds')
 
@@ -397,13 +397,13 @@ class ConnectionState:
 
     def parse_channel_recipient_add(self, data):
         channel = self._get_private_channel(int(data['channel_id']))
-        user = self.try_insert_user(data['user'])
+        user = self.store_user(data['user'])
         channel.recipients.append(user)
         self.dispatch('group_join', channel, user)
 
     def parse_channel_recipient_remove(self, data):
         channel = self._get_private_channel(int(data['channel_id']))
-        user = self.try_insert_user(data['user'])
+        user = self.store_user(data['user'])
         try:
             channel.recipients.remove(user)
         except ValueError:
@@ -577,7 +577,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             if 'user' in data:
-                user = self.try_insert_user(data['user'])
+                user = self.store_user(data['user'])
                 self.dispatch('member_unban', guild, user)
 
     def parse_guild_role_create(self, data):

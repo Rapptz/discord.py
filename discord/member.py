@@ -142,7 +142,7 @@ class Member:
 
     def __init__(self, *, data, guild, state):
         self._state = state
-        self._user = state.try_insert_user(data['user'])
+        self._user = state.store_user(data['user'])
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self.roles = data.get('roles', [])
         self.status = Status.offline

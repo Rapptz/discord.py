@@ -510,7 +510,7 @@ class DMChannel(abc.MessageChannel, Hashable):
 
     def __init__(self, *, me, state, data):
         self._state = state
-        self.recipient = state.try_insert_user(data['recipients'][0])
+        self.recipient = state.store_user(data['recipients'][0])
         self.me = me
         self.id = int(data['id'])
 
@@ -591,7 +591,7 @@ class GroupChannel(abc.MessageChannel, Hashable):
 
     def __init__(self, *, me, state, data):
         self._state = state
-        self.recipients = [state.try_insert_user(u) for u in data['recipients']]
+        self.recipients = [state.store_user(u) for u in data['recipients']]
         self.id = int(data['id'])
         self.me = me
         self._update_group(data)
