@@ -643,6 +643,12 @@ Reaction
 .. autoclass:: Reaction
     :members:
 
+Embed
+~~~~~~
+
+.. autoclass:: Embed
+    :members:
+
 CallMessage
 ~~~~~~~~~~~~
 

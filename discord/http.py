@@ -213,15 +213,20 @@ class HTTPClient:
 
         return self.post(self.ME + '/channels', json=payload, bucket=_func_())
 
-    def send_message(self, channel_id, content, *, guild_id=None, tts=False):
+    def send_message(self, channel_id, content, *, guild_id=None, tts=False, embed=None):
         url = '{0.CHANNELS}/{1}/messages'.format(self, channel_id)
         payload = {
-            'content': str(content),
             'nonce': random_integer(-2**63, 2**63 - 1)
         }
 
+        if content:
+            payload['content'] = content
+
         if tts:
             payload['tts'] = True
+
+        if embed:
+            payload['embed'] = embed
 
         return self.post(url, json=payload, bucket='messages:' + str(guild_id))
 
