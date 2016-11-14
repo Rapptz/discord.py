@@ -35,6 +35,7 @@ from .object import Object
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument
+from .embeds import Embed
 
 class Message:
     """Represents a message from Discord.
@@ -58,10 +59,8 @@ class Message:
     nonce
         The value used by the discord guild and the client to verify that the message is successfully sent.
         This is typically non-important.
-    embeds: list
-        A list of embedded objects. The elements are objects that meet oEmbed's specification_.
-
-        .. _specification: http://oembed.com/
+    embeds: List[:class:`Embed`]
+        A list embeds the message has.
     channel
         The :class:`Channel` that the message was sent from.
         Could be a :class:`PrivateChannel` if it's a private message.
@@ -181,7 +180,7 @@ class Message:
         self._try_patch(data, 'tts', bool)
         self._try_patch(data, 'content', str)
         self._try_patch(data, 'attachments', lambda x: x)
-        self._try_patch(data, 'embeds', lambda x: x)
+        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
         self._try_patch(data, 'nonce', lambda x: x)
 
         # clear the cached properties
