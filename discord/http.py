@@ -259,11 +259,16 @@ class HTTPClient:
         bucket = '{}:{}'.format(_func_(), guild_id)
         return self.post(url, json=payload, bucket=bucket)
 
-    def edit_message(self, message_id, channel_id, content, *, guild_id=None):
+    def edit_message(self, message_id, channel_id, content, *, guild_id=None, embed=None):
         url = '{0.CHANNELS}/{1}/messages/{2}'.format(self, channel_id, message_id)
-        payload = {
-            'content': str(content)
-        }
+        payload = {}
+
+        if content:
+            payload['content'] = content
+
+        if embed:
+            payload['embed'] = embed
+
         return self.patch(url, json=payload, bucket='messages:' + str(guild_id))
 
     def add_reaction(self, message_id, channel_id, emoji):

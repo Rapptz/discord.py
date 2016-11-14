@@ -1374,12 +1374,15 @@ class Client:
                     ret.append(msg)
 
     @asyncio.coroutine
-    def edit_message(self, message, new_content):
+    def edit_message(self, message, new_content=None, *, embed=None):
         """|coro|
 
         Edits a :class:`Message` with the new message content.
 
         The new_content must be able to be transformed into a string via ``str(new_content)``.
+
+        If the ``new_content`` is not provided, then ``embed`` must be provided, which must
+        be of type :class:`Embed`.
 
         The :class:`Message` object is not directly modified afterwards until the
         corresponding WebSocket event is received.
@@ -1403,9 +1406,10 @@ class Client:
         """
 
         channel = message.channel
-        content = str(new_content)
+        content = str(new_content) if new_content else None
+        embed = embed.to_dict() if embed else None
         guild_id = channel.server.id if not getattr(channel, 'is_private', True) else None
-        data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id)
+        data = yield from self.http.edit_message(message.id, channel.id, content, guild_id=guild_id, embed=embed)
         return self.connection._create_message(channel=channel, **data)
 
     @asyncio.coroutine
