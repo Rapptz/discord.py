@@ -130,6 +130,23 @@ The second is by passing the file name directly: ::
 
     await client.send_file(channel, 'my_image.png')
 
+How can I add a reaction to a message?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You use the :meth:`Client.add_reaction` method. 
+
+If you want to use unicode emoji, you must pass a valid unicode code point in a string. In your code, you can write this in a few different ways: 
+
+- ``'👍'``
+- ``'\U0001F44D'``
+- ``'\N{THUMBS UP SIGN}'``
+
+In case you want to use emoji that come from a message, you already get their code points in the content without needing to do anything special.
+You **cannot** send ``':thumbsup:'`` style shorthands.
+
+For custom emoji, you should pass an instance of :class:`discord.Emoji`. You can also pass a ``'name:id'`` string, but if you can use said emoji,
+you should be able to use :meth:`Client.get_all_emojis`/:attr:`Server.emojis` to find the one you're looking for.
+
 How do I pass a coroutine to the player's "after" function?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
