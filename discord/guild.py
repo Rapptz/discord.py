@@ -67,7 +67,7 @@ class Guild(Hashable):
     roles
         A list of :class:`Role` that the guild has available.
     emojis
-        A list of :class:`Emoji` that the guild owns.
+        A tuple of :class:`Emoji` that the guild owns.
     region: :class:`GuildRegion`
         The region the guild belongs on. There is a chance that the region
         will be a ``str`` if the value is not recognised by the enumerator.
@@ -75,10 +75,6 @@ class Guild(Hashable):
         The timeout to get sent to the AFK channel.
     afk_channel: :class:`Channel`
         The channel that denotes the AFK channel. None if it doesn't exist.
-    members
-        An iterable of :class:`Member` that are currently on the guild.
-    channels
-        An iterable of :class:`Channel` that are currently on the guild.
     icon: str
         The guild's icon.
     id: int
@@ -128,14 +124,6 @@ class Guild(Hashable):
         self._state = state
         self._from_data(data)
 
-    @property
-    def channels(self):
-        return self._channels.values()
-
-    def get_channel(self, channel_id):
-        """Returns a :class:`Channel` with the given ID. If not found, returns None."""
-        return self._channels.get(channel_id)
-
     def _add_channel(self, channel):
         self._channels[channel.id] = channel
 
@@ -144,14 +132,6 @@ class Guild(Hashable):
 
     def _voice_state_for(self, user_id):
         return self._voice_states.get(user_id)
-
-    @property
-    def members(self):
-        return self._members.values()
-
-    def get_member(self, user_id):
-        """Returns a :class:`Member` with the given ID. If not found, returns None."""
-        return self._members.get(user_id)
 
     def _add_member(self, member):
         self._members[member.id] = member
@@ -284,6 +264,34 @@ class Guild(Hashable):
                     channel = VoiceChannel(guild=self, data=c, state=self._state)
 
                 self._add_channel(channel)
+
+    @property
+    def channels(self):
+        """List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
+        return list(self._channels.values())
+
+    @property
+    def voice_channels(self):
+        """List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild."""
+        return [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+
+    @property
+    def text_channels(self):
+        """List[:class:`TextChannel`]: A list of text channels that belongs to this guild."""
+        return [ch for ch in self._channels.values() if isinstance(ch, TextChannel)]
+
+    def get_channel(self, channel_id):
+        """Returns a :class:`Channel` with the given ID. If not found, returns None."""
+        return self._channels.get(channel_id)
+
+    @property
+    def members(self):
+        """List[:class:`Member`]: A list of members that belongs to this guild."""
+        return list(self._members.values())
+
+    def get_member(self, user_id):
+        """Returns a :class:`Member` with the given ID. If not found, returns None."""
+        return self._members.get(user_id)
 
     @utils.cached_slot_property('_default_role')
     def default_role(self):

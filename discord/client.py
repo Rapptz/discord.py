@@ -114,13 +114,13 @@ class Client:
     -----------
     user : Optional[:class:`User`]
         Represents the connected client. None if not logged in.
-    voice_clients : iterable of :class:`VoiceClient`
+    voice_clients: List[:class:`VoiceClient`]
         Represents a list of voice connections. To connect to voice use
         :meth:`join_voice_channel`. To query the voice connection state use
         :meth:`is_voice_connected`.
-    guilds : iterable of :class:`Guild`
+    guilds: List[:class:`Guild`]
         The guilds that the connected client is a member of.
-    private_channels : iterable of :class:`PrivateChannel`
+    private_channels: List[:class:`abc.PrivateChannel`]
         The private channels that the connected client is participating on.
     messages
         A deque_ of :class:`Message` that the client has received from all

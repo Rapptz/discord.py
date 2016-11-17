@@ -114,7 +114,7 @@ class ConnectionState:
 
     @property
     def voice_clients(self):
-        return self._voice_clients.values()
+        return list(self._voice_clients.values())
 
     def _get_voice_client(self, guild_id):
         return self._voice_clients.get(guild_id)
@@ -148,7 +148,7 @@ class ConnectionState:
 
     @property
     def guilds(self):
-        return self._guilds.values()
+        return list(self._guilds.values())
 
     def _get_guild(self, guild_id):
         return self._guilds.get(guild_id)
@@ -161,7 +161,7 @@ class ConnectionState:
 
     @property
     def private_channels(self):
-        return self._private_channels.values()
+        return list(self._private_channels.values())
 
     def _get_private_channel(self, channel_id):
         return self._private_channels.get(channel_id)
