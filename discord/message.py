@@ -404,7 +404,7 @@ class Message:
         yield from self._state.http.delete_message(self.channel.id, self.id, getattr(self.guild, 'id', None))
 
     @asyncio.coroutine
-    def edit(self, *, content: str):
+    def edit(self, *, content: str = None, embed: Embed = None):
         """|coro|
 
         Edits the message.
@@ -415,6 +415,8 @@ class Message:
         -----------
         content: str
             The new content to replace the message with.
+        embed: :class:`Embed`
+            The new embed to replace the original with.
 
         Raises
         -------
@@ -423,7 +425,9 @@ class Message:
         """
 
         guild_id = getattr(self.guild, 'id', None)
-        data = yield from self._state.http.edit_message(self.id, self.channel.id, str(content), guild_id=guild_id)
+        content = str(content) if content else None
+        embed = embed.to_dict() if embed else None
+        data = yield from self._state.http.edit_message(self.id, self.channel.id, content, guild_id=guild_id, embed=embed)
         self._update(channel=self.channel, data=data)
 
     @asyncio.coroutine

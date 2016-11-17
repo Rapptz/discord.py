@@ -140,12 +140,17 @@ class MessageChannel(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send_message(self, content, *, tts=False):
+    def send_message(self, content=None, *, tts=False, embed=None):
         """|coro|
 
         Sends a message to the channel with the content given.
 
         The content must be a type that can convert to a string through ``str(content)``.
+        If the content is set to ``None`` (the default), then the ``embed`` parameter must
+        be provided.
+
+        If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
+        it must be a rich embed type.
 
         Parameters
         ------------
@@ -153,6 +158,8 @@ class MessageChannel(metaclass=abc.ABCMeta):
             The content of the message to send.
         tts: bool
             Indicates if the message should be sent using text-to-speech.
+        embed: :class:`Embed`
+            The rich embed for the content.
 
         Raises
         --------
@@ -168,8 +175,11 @@ class MessageChannel(metaclass=abc.ABCMeta):
         """
 
         channel_id, guild_id = self._get_destination()
-        content = str(content)
-        data = yield from self._state.http.send_message(channel_id, content, guild_id=guild_id, tts=tts)
+        content = str(content) if content else None
+        if embed is not None:
+            embed = embed.to_dict()
+
+        data = yield from self._state.http.send_message(channel_id, content, guild_id=guild_id, tts=tts, embed=embed)
         return Message(channel=self, state=self._state, data=data)
 
     @asyncio.coroutine
