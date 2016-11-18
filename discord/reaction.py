@@ -55,7 +55,7 @@ class Reaction:
     count : int
         Number of times this reaction was made
     me : bool
-        If the user has send this reaction.
+        If the user sent this reaction.
     message: :class:`Message`
         Message this reaction is for.
     """

@@ -978,7 +978,7 @@ class Client:
         Raises
         --------
         HTTPException
-            Adding the reaction failed.
+            Removing the reaction failed.
         Forbidden
             You do not have the proper permissions to remove the reaction.
         NotFound
@@ -1124,9 +1124,13 @@ class Client:
 
         Sending a TTS message:
 
+        .. code-block:: python
+
             await client.send_message(message.channel, 'Goodbye.', tts=True)
 
         Sending an embed message:
+
+        .. code-block:: python
 
             em = discord.Embed(title='My Embed Title', description='My Embed Content.', colour=0xDEADBF)
             em.set_author(name='Someone', icon_url=client.user.default_avatar_url)
@@ -1415,6 +1419,8 @@ class Client:
             The message to edit.
         new_content
             The new content to replace the message with.
+        embed: :class:`Embed`
+            The new embed to replace the original embed with.
 
         Raises
         -------
