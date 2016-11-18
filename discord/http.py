@@ -531,6 +531,14 @@ class HTTPClient:
         url = '{0.GUILDS}/{1}/roles'.format(self, guild_id)
         return self.post(url, bucket=_func_())
 
+    def add_role(self, guild_id, member_id, role_id):
+        url = '{0.GUILDS}/{1}/members/{2}/{3}'.format(self, guild_id, member_id, role_id)
+        return self.put(url)
+
+    def remove_role(self, guild_id, member_id, role_id):
+        url = '{0.GUILDS}/{1}/members/{2}/{3}'.format(self, guild_id, member_id, role_id)
+        return self.delete(url)
+
     def edit_channel_permissions(self, channel_id, target, allow, deny, type):
         url = '{0.CHANNELS}/{1}/permissions/{2}'.format(self, channel_id, target)
         payload = {
