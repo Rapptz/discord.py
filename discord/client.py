@@ -1043,6 +1043,28 @@ class Client:
         return [User(**user) for user in data]
 
     @asyncio.coroutine
+    def clear_reactions(self, message):
+        """|coro|
+
+        Removes all the reactions from a given message.
+
+        You need Manage Messages permission to use this.
+
+        Parameters
+        -----------
+        message: :class:`Message`
+            The message to remove all reactions from.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reactions failed.
+        Forbidden
+            You do not have the proper permissions to remove all the reactions.
+        """
+        yield from self.http.clear_reactions(message.id, message.channel.id)
+
+    @asyncio.coroutine
     def send_message(self, destination, content=None, *, tts=False, embed=None):
         """|coro|
 

@@ -289,6 +289,10 @@ class HTTPClient:
             params['after'] = after
         return self.get(url, params=params, bucket='%s:%s' % (_func_(), channel_id))
 
+    def clear_reactions(self, message_id, channel_id):
+        url = '{0.CHANNELS}/{1}/messages/{2}/reactions'.format(self, channel_id, message_id)
+        return self.delete(url)
+
     def get_message(self, channel_id, message_id):
         url = '{0.CHANNELS}/{1}/messages/{2}'.format(self, channel_id, message_id)
         return self.get(url, bucket=_func_())
