@@ -557,6 +557,14 @@ class PermissionOverwrite:
 
         return ret
 
+    def is_empty(self):
+        """Checks if the permission overwrite is currently empty.
+
+        An empty permission overwrite is one that has no overwrites set
+        to True or False.
+        """
+        return all(x is None for x in self._values.values())
+
     def update(self, **kwargs):
         """Bulk updates this permission overwrite object.
 
