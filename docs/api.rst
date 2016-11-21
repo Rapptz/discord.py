@@ -233,6 +233,15 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who removed the reaction.
 
+.. function:: on_reaction_clear(message, reactions)
+
+    Called when a message has all its reactions removed from it. Similar to on_message_edit,
+    if the message is not found in the :attr:`Client.messages` cache, then this event
+    will not be called.
+
+    :param message: The :class:`Message` that had its reactions cleared.
+    :param reactions: A list of :class:`Reaction`\s that were removed.
+
 .. function:: on_channel_delete(channel)
               on_channel_create(channel)
 

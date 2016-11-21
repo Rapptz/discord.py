@@ -274,6 +274,13 @@ class ConnectionState:
 
             self.dispatch('reaction_add', reaction, member)
 
+    def parse_message_reaction_remove_all(self, data):
+        message =  self._get_message(data['message_id'])
+        if message is not None:
+            old_reactions = message.reactions.copy()
+            message.reactions.clear()
+            self.dispatch('reaction_clear', message, old_reactions)
+
     def parse_message_reaction_remove(self, data):
         message = self._get_message(data['message_id'])
         if message is not None:
