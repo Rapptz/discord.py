@@ -549,3 +549,21 @@ class Message:
             raise InvalidArgument('emoji argument must be a string or discord.Emoji')
 
         yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+
+    @asyncio.coroutine
+    def clear_reactions(self):
+        """|coro|
+
+        Removes all the reactions from the message.
+
+        You need :attr:`Permissions.manage_messages` permission
+        to use this.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reactions failed.
+        Forbidden
+            You do not have the proper permissions to remove all the reactions.
+        """
+        yield from self._state.http.clear_reactions(self.id, self.channel.id)
