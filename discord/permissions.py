@@ -162,6 +162,26 @@ class Permissions:
         "Voice" permissions from the official Discord UI set to True."""
         return cls(0b00000011111100000000000000000000)
 
+    def update(self, **kwargs):
+        """Bulk updates this permission object.
+
+        Allows you to set multiple attributes by using keyword
+        arguments. The names must be equivalent to the properties
+        listed. Extraneous key/value pairs will be silently ignored.
+
+        Parameters
+        ------------
+        \*\*kwargs
+            A list of key/value pairs to bulk update permissions with.
+        """
+        for key, value in kwargs.items():
+            try:
+                is_property = isinstance(getattr(self.__class__, key), property)
+            except AttributeError:
+                continue
+
+            if is_property:
+                setattr(self, key, value)
 
     def _bit(self, index):
         return bool((self.value >> index) & 1)
@@ -536,6 +556,24 @@ class PermissionOverwrite:
                 setattr(ret, key, False)
 
         return ret
+
+    def update(self, **kwargs):
+        """Bulk updates this permission overwrite object.
+
+        Allows you to set multiple attributes by using keyword
+        arguments. The names must be equivalent to the properties
+        listed. Extraneous key/value pairs will be silently ignored.
+
+        Parameters
+        ------------
+        \*\*kwargs
+            A list of key/value pairs to bulk update with.
+        """
+        for key, value in kwargs.items():
+            if key not in self.VALID_NAMES:
+                continue
+
+            setattr(self, key, value)
 
     def __iter__(self):
         for key in self.VALID_NAMES:
