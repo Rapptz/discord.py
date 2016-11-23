@@ -64,9 +64,6 @@ class Context:
         nonsense string. If nothing was passed to attempt a call to a
         subcommand then this is set to `None`.
     """
-    __slots__ = ['message', 'bot', 'args', 'kwargs', 'command', 'view',
-                 'invoked_with', 'invoked_subcommand', 'subcommand_passed',
-                 'prefix' ]
 
     def __init__(self, **attrs):
         self.message = attrs.pop('message', None)
