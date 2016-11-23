@@ -8,7 +8,29 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
-.. _vp014p3:
+.. _vp0p15p0:
+
+v0.15.0
+--------
+
+New Features
+~~~~~~~~~~~~~~
+
+- Rich Embeds for messages are now supported.
+
+    - To do so, create your own :class:`Embed` and pass the instance to the ``embed`` keyword argument to :meth:`Client.send_message` or :meth:`Client.edit_message`.
+- Add :meth:`Client.clear_reactions` to remove all reactions from a message.
+- Add support for MESSAGE_REACTION_REMOVE_ALL event, under :func:`on_reaction_clear`.
+- Add :meth:`Permissions.update` and :meth:`PermissionOverwrite.update` for bulk permission updates.
+
+    - This allows you to use e.g. ``p.update(read_messages=True, send_messages=False)`` in a single line.
+- Add :meth:`PermissionOverwrite.is_empty` to check if the overwrite is empty (i.e. has no overwrites set explicitly as true or false).
+
+For the command extension, the following changed:
+
+- ``Context`` is no longer slotted to facilitate setting dynamic attributes.
+
+.. _vp0p14p3:
 
 v0.14.3
 ---------
