@@ -287,8 +287,11 @@ class ConnectionState:
             emoji = self._get_reaction_emoji(**data['emoji'])
             reaction = utils.get(message.reactions, emoji=emoji)
 
-            # if reaction isn't in the list, we crash. This means discord
-            # sent bad data, or we stored improperly
+            # Eventual consistency means we can get out of order or duplicate removes.
+            if not reaction:
+                log.warning("Unexpected reaction remove {}".format(data))
+                return
+            
             reaction.count -= 1
             if data['user_id'] == self.user.id:
                 reaction.me = False
