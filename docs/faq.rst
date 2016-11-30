@@ -94,11 +94,11 @@ General questions regarding library usage belong here.
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is a method for this under :class:`Client` called :meth:`Client.change_status`. The relevant aspect of this is its
+There is a method for this under :class:`Client` called :meth:`Client.change_presence`. The relevant aspect of this is its
 ``game`` keyword argument which takes in a :class:`Game` object. Putting both of these pieces of info together, you get the
 following: ::
 
-    await client.change_status(game=discord.Game(name='my game'))
+    await client.change_presence(game=discord.Game(name='my game'))
 
 How do I send a message to a specific channel?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,9 +133,9 @@ The second is by passing the file name directly: ::
 How can I add a reaction to a message?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You use the :meth:`Client.add_reaction` method. 
+You use the :meth:`Client.add_reaction` method.
 
-If you want to use unicode emoji, you must pass a valid unicode code point in a string. In your code, you can write this in a few different ways: 
+If you want to use unicode emoji, you must pass a valid unicode code point in a string. In your code, you can write this in a few different ways:
 
 - ``'👍'``
 - ``'\U0001F44D'``
