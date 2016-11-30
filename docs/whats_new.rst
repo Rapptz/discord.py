@@ -8,6 +8,13 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp0p15p1:
+
+v0.15.1
+---------
+
+- Fix crash on duplicate or out of order reactions.
+
 .. _vp0p15p0:
 
 v0.15.0
