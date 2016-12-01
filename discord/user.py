@@ -101,6 +101,11 @@ class User:
     def mention(self):
         """Returns a string that allows you to mention the given user."""
         return '<@{0.id}>'.format(self)
+    
+    @property
+    def nick_mention(self):
+        """Returns a string that allows you to mention the given user."""
+        return '<@!{0.id}>'.format(self)
 
     def permissions_in(self, channel):
         """An alias for :meth:`Channel.permissions_for`.
