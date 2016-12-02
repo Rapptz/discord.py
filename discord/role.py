@@ -99,7 +99,7 @@ class Role(Hashable):
             return True
 
         if self.position == other.position:
-            return self.id > other.id
+            return int(self.id) > int(other.id)
 
         return False
 
