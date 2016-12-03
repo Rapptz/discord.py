@@ -252,7 +252,7 @@ class HelpFormatter:
                 return True
 
             try:
-                return cmd.can_run(self.context)
+                return cmd.can_run(self.context) and self.context.bot.can_run(self.context)
             except CommandError:
                 return False
 
