@@ -38,6 +38,7 @@ from . import utils
 from .invite import Invite
 from .object import Object
 from .game import Game
+from .voice_client import VoiceClient
 
 import traceback
 import requests
@@ -135,7 +136,7 @@ class WebSocket(WebSocketBaseClient):
                      'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE',
                      'GUILD_MEMBER_UPDATE', 'GUILD_CREATE', 'GUILD_DELETE',
                      'GUILD_ROLE_CREATE', 'GUILD_ROLE_DELETE', 'TYPING_START',
-                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE'):
+                     'GUILD_ROLE_UPDATE', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'):
             self.dispatch('socket_update', event, data)
 
         else:
@@ -150,6 +151,8 @@ class ConnectionState(object):
         self.servers = []
         self.private_channels = []
         self.messages = deque([], maxlen=kwargs.get('max_length', 5000))
+        self.voice_session_id = None
+        self.voice_data = None
 
     def _get_message(self, msg_id):
         return utils.find(lambda m: m.id == msg_id, self.messages)
@@ -370,7 +373,14 @@ class ConnectionState(object):
         server = self._get_server(data.get('guild_id'))
         if server is not None:
             updated_member = server._update_voice_state(data)
+            if data.get('user_id') == self.user.id:
+                self.voice_session_id = data.get('session_id')
             self.dispatch('voice_state_update', updated_member)
+    
+    def handle_voice_server_update(self, data):
+        print("Voice state update happened")
+        self.voice_data = data
+        self.dispatch('voice_server_update', data)
 
     def handle_typing_start(self, data):
         channel = self.get_channel(data.get('channel_id'))
@@ -441,6 +451,7 @@ class Client(object):
         self.connection = ConnectionState(self.dispatch, **kwargs)
         self.dispatch_lock = threading.RLock()
         self.token = ''
+        self.voice = None
 
         # the actual headers for the request...
         # we only override 'authorization' since the rest could use the defaults.
@@ -1483,3 +1494,55 @@ class Client(object):
         sent = json.dumps(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         self.ws.send(sent)
+    
+    def join_voice_channel(self, channel):
+        
+
+        if self.is_voice_connected():
+            raise ClientException('Already connected to a voice channel')
+
+        if isinstance(channel, Object):
+            channel = self.get_channel(channel.id)
+
+        if getattr(channel, 'type', "text") != "voice":
+            raise InvalidArgument('Channel passed must be a voice channel')
+
+        log.info('attempting to join voice channel {0.name}'.format(channel))
+
+        payload = {
+            'op': 4,
+            'd': {
+                'guild_id': channel.server.id,
+                'channel_id': channel.id,
+                'self_mute': False,
+                'self_deaf': False
+            }
+        }
+
+        self.ws.send(utils.to_json(payload))
+        #yield from asyncio.wait_for(self._session_id_found.wait(), timeout=5.0, loop=self.loop)
+        #yield from asyncio.wait_for(self._voice_data_found.wait(), timeout=5.0, loop=self.loop)
+
+        #self._session_id_found.clear()
+        #self._voice_data_found.clear()
+        
+        while self.connection.voice_data==None or self.connection.voice_session_id==None:
+            print("waiting for voice data")
+            time.sleep(1)
+
+        kwargs = {
+            'user': self.user,
+            'channel': channel,
+            'data': self.connection.voice_data,
+            'session_id': self.connection.voice_session_id,
+            'main_ws': self.ws
+        }
+        
+        self.voice = VoiceClient(**kwargs)
+        self.voice.connect()
+        return self.voice
+
+    def is_voice_connected(self):
+        """bool : Indicates if we are currently connected to a voice channel."""
+        return self.voice is not None and self.voice.is_connected()
+
