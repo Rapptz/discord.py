@@ -773,7 +773,7 @@ class Client:
                 if message.content.startswith('$react'):
                     msg = await client.send_message(message.channel, 'React with thumbs up or thumbs down.')
                     res = await client.wait_for_reaction(['\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'], message=msg)
-                    await client.send_message(message.channel, '{.user} reacted with {.reaction.emoji}!'.format(res))
+                    await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(res))
 
         Checking for reaction emoji regardless of skin tone:
 
@@ -789,7 +789,7 @@ class Client:
                         return e.startswith(('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'))
 
                     res = await client.wait_for_reaction(message=msg, check=check)
-                    await client.send_message(message.channel, '{.user} reacted with {.reaction.emoji}!'.format(res))
+                    await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(res))
 
         Parameters
         -----------
