@@ -821,7 +821,7 @@ class Bot(GroupMixin, discord.Client):
         if invoker in self.commands:
             command = self.commands[invoker]
             if before_invoke is not None:
-                if asyncio.iscoroutine(before_invoke):
+                if asyncio.iscoroutinefunction(before_invoke):
                     yield from before_invoke()
                 else:
                     before_invoke()
