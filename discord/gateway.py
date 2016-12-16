@@ -186,7 +186,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         log.info('Created websocket connected to {}'.format(gateway))
 
-        # poll the event for OP HELLO
+        # poll event for OP Hello
         yield from ws.poll_event()
 
         if not resume:
@@ -289,9 +289,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         op = msg.get('op')
         data = msg.get('d')
-
-        if 's' in msg:
-            state.sequence = msg['s']
+        seq = msg.get('s')
+        if seq is not None:
+            state.sequence = seq
 
         if op == self.RECONNECT:
             # "reconnect" can only be handled by the Client
