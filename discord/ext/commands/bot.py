@@ -764,10 +764,20 @@ class Bot(GroupMixin, discord.Client):
             for index in reversed(remove):
                 del event_list[index]
 
-        # finally remove the import..
-        del lib
-        del self.extensions[name]
-        del sys.modules[name]
+        try:
+            func = getattr(lib, 'teardown')
+        except AttributeError:
+            pass
+        else:
+            try:
+                func(bot)
+            except:
+                pass
+        finally:
+            # finally remove the import..
+            del lib
+            del self.extensions[name]
+            del sys.modules[name]
 
     # command processing
 
