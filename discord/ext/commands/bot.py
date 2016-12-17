@@ -267,6 +267,16 @@ class Bot(GroupMixin, discord.Client):
                 discord.compat.create_task(coro, loop=self.loop)
 
     @asyncio.coroutine
+    def close(self):
+        for extension in self.extensions:
+            try:
+                self.unload_extension(extension)
+            except:
+                pass
+
+        yield from super().close()
+
+    @asyncio.coroutine
     def on_command_error(self, exception, context):
         """|coro|
 
