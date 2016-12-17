@@ -186,10 +186,16 @@ class ConnectionState:
 
         # wait for the chunks
         if chunks:
-            yield from asyncio.wait(chunks)
+            try:
+                yield from asyncio.wait(chunks, timeout=len(chunks))
+            except asyncio.TimeoutError:
+                log.info('Somehow timed out waiting for chunks.')
 
         # remove the state
-        del self._ready_state
+        try:
+            del self._ready_state
+        except AttributeError:
+            pass # already been deleted somehow
 
         # call GUILD_SYNC after we're done chunking
         if not self.is_bot:
@@ -206,7 +212,7 @@ class ConnectionState:
         servers = self._ready_state.servers
         for guild in guilds:
             server = self._add_server_from_data(guild)
-            if server.large or not self.is_bot:
+            if not self.is_bot and server.large:
                 servers.append(server)
 
         for pm in data.get('private_channels'):
@@ -291,7 +297,7 @@ class ConnectionState:
             if not reaction:
                 log.warning("Unexpected reaction remove {}".format(data))
                 return
-            
+
             reaction.count -= 1
             if data['user_id'] == self.user.id:
                 reaction.me = False
