@@ -274,6 +274,12 @@ class Bot(GroupMixin, discord.Client):
             except:
                 pass
 
+        for cog in self.cogs:
+            try:
+                self.remove_cog(cog)
+            except:
+                pass
+
         yield from super().close()
 
     @asyncio.coroutine
