@@ -191,6 +191,34 @@ class Channel(Hashable):
 
         return PermissionOverwrite()
 
+    @property
+    def overwrites(self):
+        """Returns all of the channel's overwrites.
+
+        This is returned as a list of two-element tuples containing the target,
+        which can be either a :class:`Role` or a :class:`Member` and the overwrite
+        as the second element as a :class:`PermissionOverwrite`.
+
+        Returns
+        --------
+        List[Tuple[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]]:
+            The channel's permission overwrites.
+        """
+        ret = []
+        for ow in self._permission_overwrites:
+            allow = Permissions(ow.allow)
+            deny = Permissions(ow.deny)
+            overwrite = PermissionOverwrite.from_pair(allow, deny)
+
+            if ow.type == 'role':
+                # accidentally quadratic
+                target = utils.find(lambda r: r.id == ow.id, self.server.roles)
+            elif ow.type == 'member':
+                target = self.server.get_member(ow.id)
+
+            ret.append((target, overwrite))
+        return ret
+
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`Member`.
 
