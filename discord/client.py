@@ -2290,20 +2290,25 @@ class Client:
 
         Parameters
         ----------
-        server : :class:`Server`
+        server: :class:`Server`
             The server to edit.
-        name : str
+        name: str
             The new name of the server.
-        icon : bytes
+        icon: bytes
             A *bytes-like* object representing the icon. See :meth:`edit_profile`
-            for more details. Could be ``None`` to denote
-        region : :class:`ServerRegion`
+            for more details. Could be ``None`` to denote no icon.
+        splash: bytes
+            A *bytes-like* object representing the invite splash. See
+            :meth:`edit_profile` for more details. Could be ``None`` to denote
+            no invite splash. Only available for partnered servers with
+            ``INVITE_SPLASH`` feature.
+        region: :class:`ServerRegion`
             The new region for the server's voice communication.
-        afk_channel : :class:`Channel`
+        afk_channel: :class:`Channel`
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
-        afk_timeout : int
+        afk_timeout: int
             The number of seconds until someone is moved to the AFK channel.
-        owner : :class:`Member`
+        owner: :class:`Member`
             The new owner of the server to transfer ownership to. Note that you must
             be owner of the server to do this.
         verification_level: :class:`VerificationLevel`
@@ -2333,7 +2338,18 @@ class Client:
             else:
                 icon = None
 
+        try:
+            splash_bytes = fields['splash']
+        except KeyError:
+            splash = server.splash
+        else:
+            if splash_bytes is not None:
+                splash = utils._bytes_to_base64_data(splash_bytes)
+            else:
+                splash = None
+
         fields['icon'] = icon
+        fields['splash'] = splash
         if 'afk_channel' in fields:
             fields['afk_channel_id'] = fields['afk_channel'].id
 

@@ -97,13 +97,22 @@ class Server(Hashable):
         1 then they do.
     verification_level: :class:`VerificationLevel`
         The server's verification level.
+    features: List[str]
+        A list of features that the server has. They are currently as follows:
+
+        - ``VIP_REGIONS``: Server has VIP voice regions
+        - ``VANITY_URL``: Server has a vanity invite URL (e.g. discord.gg/discord-api)
+        - ``INVITE_SPLASH``: Server's invite page has a special splash.
+
+    splash: str
+        The server's invite splash.
     """
 
     __slots__ = ['afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'owner', 'unavailable', 'name', 'region',
                  '_default_role', '_default_channel', 'roles', '_member_count',
-                 'large', 'owner_id', 'mfa_level', 'emojis',
-                 'verification_level' ]
+                 'large', 'owner_id', 'mfa_level', 'emojis', 'features',
+                 'verification_level', 'splash' ]
 
     def __init__(self, **kwargs):
         self._channels = {}
@@ -191,6 +200,8 @@ class Server(Hashable):
         self.roles = [Role(server=self, **r) for r in guild.get('roles', [])]
         self.mfa_level = guild.get('mfa_level')
         self.emojis = [Emoji(server=self, **r) for r in guild.get('emojis', [])]
+        self.features = guild.get('features', [])
+        self.splash = guild.get('splash')
 
         for mdata in guild.get('members', []):
             roles = [self.default_role]
@@ -205,7 +216,7 @@ class Server(Hashable):
             self._add_member(member)
 
         self._sync(guild)
-        self.large = None if member_count is None else self._member_count > 250
+        self.large = None if member_count is None else self._member_count >= 250
 
         if 'owner_id' in guild:
             self.owner_id = guild['owner_id']
@@ -256,6 +267,13 @@ class Server(Hashable):
         if self.icon is None:
             return ''
         return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.jpg'.format(self)
+
+    @property
+    def splash_url(self):
+        """Returns the URL version of the server's invite splash. Returns an empty string if it has no splash."""
+        if self.splash is None:
+            return ''
+        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(self)
 
     @property
     def member_count(self):
