@@ -268,13 +268,13 @@ class Bot(GroupMixin, discord.Client):
 
     @asyncio.coroutine
     def close(self):
-        for extension in self.extensions:
+        for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
             except:
                 pass
 
-        for cog in self.cogs:
+        for cog in tuple(self.cogs):
             try:
                 self.remove_cog(cog)
             except:
