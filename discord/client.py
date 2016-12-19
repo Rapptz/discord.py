@@ -501,9 +501,9 @@ class Client:
         Roughly Equivalent to: ::
 
             try:
-                loop.run_until_complete(start(*args, **kwargs))
+                loop.run_forever(start(*args, **kwargs))
             except KeyboardInterrupt:
-                loop.run_until_complete(logout())
+                loop.run_forever(logout())
                 # cancel all tasks lingering
             finally:
                 loop.close()
@@ -516,14 +516,14 @@ class Client:
         """
 
         try:
-            self.loop.run_until_complete(self.start(*args, **kwargs))
+            self.loop.run_forever(self.start(*args, **kwargs))
         except KeyboardInterrupt:
-            self.loop.run_until_complete(self.logout())
+            self.loop.run_forever(self.logout())
             pending = asyncio.Task.all_tasks()
             gathered = asyncio.gather(*pending)
             try:
                 gathered.cancel()
-                self.loop.run_until_complete(gathered)
+                self.loop.run_forever(gathered)
 
                 # we want to retrieve any exceptions to make sure that
                 # they don't nag us about it being un-retrieved.
