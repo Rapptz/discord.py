@@ -8,6 +8,31 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp0p16p0:
+
+v0.16.0
+---------
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add :attr:`Channel.overwrites` to get all the permission overwrites of a channel.
+- Add :attr:`Server.features` to get information about partnered servers.
+
+Bug Fixes
+~~~~~~~~~~
+
+- Timeout when waiting for offline members while triggering :func:`on_ready`.
+
+    - The fact that we did not timeout caused a gigantic memory leak in the library that caused
+      thousands of duplicate :class:`Member` instances causing big memory spikes.
+
+- Discard null sequences in the gateway.
+
+    - The fact these were not discarded meant that :func:`on_ready` kept being called instead of
+      :func:`on_resumed`. Since this has been corrected, in most cases :func:`on_ready` will be
+      called once or twice with :func:`on_resumed` being called much more often.
+
 .. _vp0p15p1:
 
 v0.15.1
