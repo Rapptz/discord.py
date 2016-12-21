@@ -311,7 +311,7 @@ class Bot(GroupMixin, discord.Client):
         if delete_after is not None:
             @asyncio.coroutine
             def delete():
-                yield from asyncio.sleep(delete_after)
+                yield from asyncio.sleep(delete_after, loop=self.loop)
                 yield from self.delete_message(msg)
 
             discord.compat.create_task(delete(), loop=self.loop)

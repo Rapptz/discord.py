@@ -519,8 +519,8 @@ class Client:
             self.loop.run_until_complete(self.start(*args, **kwargs))
         except KeyboardInterrupt:
             self.loop.run_until_complete(self.logout())
-            pending = asyncio.Task.all_tasks()
-            gathered = asyncio.gather(*pending)
+            pending = asyncio.Task.all_tasks(loop=self.loop)
+            gathered = asyncio.gather(*pending, loop=self.loop)
             try:
                 gathered.cancel()
                 self.loop.run_until_complete(gathered)
@@ -1393,7 +1393,7 @@ class Client:
                     to_delete = ret[-100:]
                     yield from self.delete_messages(to_delete)
                     count = 0
-                    yield from asyncio.sleep(1)
+                    yield from asyncio.sleep(1, loop=self.loop)
 
                 if check(msg):
                     count += 1

@@ -170,7 +170,7 @@ class ConnectionState:
             # this snippet of code is basically waiting 2 seconds
             # until the last GUILD_CREATE was sent
             launch.set()
-            yield from asyncio.sleep(2)
+            yield from asyncio.sleep(2, loop=self.loop)
 
         servers = self._ready_state.servers
 
@@ -187,7 +187,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                yield from asyncio.wait(chunks, timeout=len(chunks))
+                yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -489,7 +489,10 @@ class ConnectionState:
         yield from self.chunker(server)
         chunks = list(self.chunks_needed(server))
         if chunks:
-            yield from asyncio.wait(chunks)
+            try:
+                yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
+            except asyncio.TimeoutError:
+                log.info('Somehow timed out waiting for chunks.')
 
         if unavailable == False:
             self.dispatch('server_available', server)

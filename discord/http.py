@@ -120,12 +120,12 @@ class HTTPClient:
                         # sleep a bit
                         retry_after = data['retry_after'] / 1000.0
                         log.info(fmt.format(retry_after, bucket))
-                        yield from asyncio.sleep(retry_after)
+                        yield from asyncio.sleep(retry_after, loop=self.loop)
                         continue
 
                     # we've received a 502, unconditional retry
                     if r.status == 502 and tries <= 5:
-                        yield from asyncio.sleep(1 + tries * 2)
+                        yield from asyncio.sleep(1 + tries * 2, loop=self.loop)
                         continue
 
                     # the usual error cases
