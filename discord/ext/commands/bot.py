@@ -788,7 +788,7 @@ class Bot(GroupMixin, discord.Client):
     # command processing
 
     @asyncio.coroutine
-    def process_commands(self, message):
+    def process_commands(self, message, before_invoke=None):
         """|coro|
 
         This function processes the commands that have been registered
@@ -810,6 +810,9 @@ class Bot(GroupMixin, discord.Client):
         -----------
         message : discord.Message
             The message to process commands for.
+        before_invoke : Optional[function]
+            A function to execute right before the command is invoked.
+            Can also be a coroutine.
         """
         _internal_channel = message.channel
         _internal_author = message.author
@@ -843,6 +846,11 @@ class Bot(GroupMixin, discord.Client):
 
         if invoker in self.commands:
             command = self.commands[invoker]
+            if before_invoke is not None:
+                if asyncio.iscoroutinefunction(before_invoke):
+                    yield from before_invoke()
+                else:
+                    before_invoke()
             self.dispatch('command', command, ctx)
             try:
                 yield from command.invoke(ctx)
