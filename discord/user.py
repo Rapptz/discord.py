@@ -85,7 +85,12 @@ class User:
         the user has no avatar."""
         if self.avatar is None:
             return ''
-        return 'https://discordapp.com/api/users/{0.id}/avatars/{0.avatar}.jpg'.format(self)
+
+        url = 'https://images.discordapp.net/avatars/{0.id}/{0.avatar}.{1}?size=1024'
+        if self.avatar.startswith('a_'):
+            return url.format(self, 'gif')
+        else:
+            return url.format(self, 'webp')
 
     @property
     def default_avatar(self):
