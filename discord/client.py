@@ -270,13 +270,8 @@ class Client:
         elif isinstance(destination, Server):
             return destination.id, destination.id
         elif isinstance(destination, User):
-            found = self.connection._get_private_channel_by_user(destination.id)
-            if found is None:
-                # Couldn't find the user, so start a PM with them first.
-                channel = yield from self.start_private_message(destination)
-                return channel.id, None
-            else:
-                return found.id, None
+            channel = yield from self.start_private_message(destination)
+            return channel.id, None
         elif isinstance(destination, Object):
             found = self.get_channel(destination.id)
             if found is not None:
@@ -907,16 +902,19 @@ class Client:
         HTTPException
             The request failed.
         InvalidArgument
-            The user argument was not of :class:`User`.
+            The user argument was not of :class:`User` or :class:`Object`.
         """
 
-        if not isinstance(user, User):
-            raise InvalidArgument('user argument must be a User')
+        if not isinstance(user, User) and not isinstance(user, Object):
+            raise InvalidArgument('user argument must be a User or Object')
 
-        data = yield from self.http.start_private_message(user.id)
-        channel = PrivateChannel(me=self.user, **data)
-        self.connection._add_private_channel(channel)
-        return channel
+        found = self.connection._get_private_channel_by_user(user.id)
+        if found is None:
+            data = yield from self.http.start_private_message(user.id)
+            channel = PrivateChannel(me=self.user, **data)
+            self.connection._add_private_channel(channel)
+            return channel
+        return found
 
     @asyncio.coroutine
     def add_reaction(self, message, emoji):
