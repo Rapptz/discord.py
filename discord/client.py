@@ -24,19 +24,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from . import __version__ as library_version
 from .user import User
 from .invite import Invite
 from .object import Object
 from .errors import *
-from .state import ConnectionState
 from .permissions import Permissions, PermissionOverwrite
-from . import utils, compat
 from .enums import ChannelType, Status
 from .voice_client import VoiceClient
 from .gateway import *
 from .emoji import Emoji
 from .http import HTTPClient
+
+import discord.utils
+import discord.compat
+import discord.state
 
 import asyncio
 import aiohttp
@@ -141,11 +142,11 @@ class Client:
         connector = options.pop('connector', None)
         self.http = HTTPClient(connector, loop=self.loop)
 
-        self.connection = ConnectionState(dispatch=self.dispatch,
-                                          chunker=self.request_offline_members,
-                                          syncer=self._syncer,
-                                          http=self.http, loop=self.loop,
-                                          **options)
+        self.connection = discord.state.ConnectionState(dispatch=self.dispatch,
+                                                        chunker=self.request_offline_members,
+                                                        syncer=self._syncer,
+                                                        http=self.http, loop=self.loop,
+                                                        **options)
 
         self._closed = asyncio.Event(loop=self.loop)
         self._is_logged_in = asyncio.Event(loop=self.loop)
@@ -287,7 +288,7 @@ class Client:
             getattr(self, handler)(*args, **kwargs)
 
         if hasattr(self, method):
-            compat.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
+            discord.compat.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
 
     @asyncio.coroutine
     def on_error(self, event_method, *args, **kwargs):
@@ -937,7 +938,7 @@ class Client:
             avatar = self.user.avatar
         else:
             if avatar_bytes is not None:
-                avatar = utils._bytes_to_base64_data(avatar_bytes)
+                avatar = discord.utils._bytes_to_base64_data(avatar_bytes)
             else:
                 avatar = None
 

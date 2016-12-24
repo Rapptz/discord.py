@@ -26,8 +26,9 @@ DEALINGS IN THE SOFTWARE.
 
 import datetime
 
+import discord.utils
+
 from .colour import Colour
-from . import utils
 
 class _EmptyEmbed:
     def __bool__(self):
@@ -128,7 +129,7 @@ class Embed:
             pass
 
         try:
-            self._timestamp = utils.parse_time(data['timestamp'])
+            self._timestamp = discord.utils.parse_time(data['timestamp'])
         except KeyError:
             pass
 

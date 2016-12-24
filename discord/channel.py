@@ -23,7 +23,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from . import utils, abc
 from .permissions import Permissions, PermissionOverwrite
 from .enums import ChannelType, try_enum
 from collections import namedtuple
@@ -31,6 +30,9 @@ from .mixins import Hashable
 from .role import Role
 from .user import User
 from .member import Member
+
+import discord.utils
+import discord.abc
 
 import copy
 import asyncio
@@ -103,7 +105,7 @@ class CommonGuildChannel(Hashable):
         their default values in the :attr:`Guild.roles` attribute."""
         ret = []
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
-            role = utils.get(self.guild.roles, id=overwrite.id)
+            role = discord.utils.get(self.guild.roles, id=overwrite.id)
             if role is None:
                 continue
 
@@ -125,7 +127,7 @@ class CommonGuildChannel(Hashable):
     @property
     def created_at(self):
         """Returns the channel's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return discord.utils.snowflake_time(self.id)
 
     def overwrites_for(self, obj):
         """Returns the channel-specific overwrites for a member or a role.
@@ -178,7 +180,7 @@ class CommonGuildChannel(Hashable):
 
             if ow.type == 'role':
                 # accidentally quadratic
-                target = utils.find(lambda r: r.id == ow.id, self.server.roles)
+                target = discord.utils.find(lambda r: r.id == ow.id, self.server.roles)
             elif ow.type == 'member':
                 target = self.server.get_member(ow.id)
 
@@ -299,7 +301,7 @@ class CommonGuildChannel(Hashable):
         """
         yield from self._state.http.delete_channel(self.id)
 
-class TextChannel(abc.MessageChannel, CommonGuildChannel):
+class TextChannel(discord.abc.MessageChannel, CommonGuildChannel):
     """Represents a Discord guild text channel.
 
     Supported Operations:
@@ -479,7 +481,7 @@ class VoiceChannel(CommonGuildChannel):
             data = yield from self._state.http.edit_channel(self.id, **options)
             self._update(self.guild, data)
 
-class DMChannel(abc.MessageChannel, Hashable):
+class DMChannel(discord.abc.MessageChannel, Hashable):
     """Represents a Discord direct message channel.
 
     Supported Operations:
@@ -523,7 +525,7 @@ class DMChannel(abc.MessageChannel, Hashable):
     @property
     def created_at(self):
         """Returns the direct message channel's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return discord.utils.snowflake_time(self.id)
 
     def permissions_for(self, user=None):
         """Handles permission resolution for a :class:`User`.
@@ -554,7 +556,7 @@ class DMChannel(abc.MessageChannel, Hashable):
         base.manage_messages = False
         return base
 
-class GroupChannel(abc.MessageChannel, Hashable):
+class GroupChannel(discord.abc.MessageChannel, Hashable):
     """Represents a Discord group channel.
 
     Supported Operations:
@@ -597,14 +599,14 @@ class GroupChannel(abc.MessageChannel, Hashable):
         self._update_group(data)
 
     def _update_group(self, data):
-        owner_id = utils._get_as_snowflake(data, 'owner_id')
+        owner_id = discord.utils._get_as_snowflake(data, 'owner_id')
         self.icon = data.get('icon')
         self.name = data.get('name')
 
         if owner_id == self.me.id:
             self.owner = self.me
         else:
-            self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
+            self.owner = discord.utils.find(lambda u: u.id == owner_id, self.recipients)
 
     def _get_destination(self):
         return self.id, None
@@ -629,7 +631,7 @@ class GroupChannel(abc.MessageChannel, Hashable):
     @property
     def created_at(self):
         """Returns the channel's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return discord.utils.snowflake_time(self.id)
 
     def permissions_for(self, user):
         """Handles permission resolution for a :class:`User`.

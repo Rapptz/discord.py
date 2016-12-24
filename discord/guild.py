@@ -27,7 +27,9 @@ DEALINGS IN THE SOFTWARE.
 import copy
 import asyncio
 
-from . import utils
+
+import discord.utils
+
 from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
@@ -224,7 +226,7 @@ class Guild(Hashable):
         for mdata in guild.get('members', []):
             roles = [self.default_role]
             for role_id in mdata['roles']:
-                role = utils.find(lambda r: r.id == role_id, self.roles)
+                role = discord.utils.find(lambda r: r.id == role_id, self.roles)
                 if role is not None:
                     roles.append(role)
 
@@ -235,8 +237,8 @@ class Guild(Hashable):
         self._sync(guild)
         self.large = None if member_count is None else self._member_count >= 250
 
-        self.owner_id = utils._get_as_snowflake(guild, 'owner_id')
-        self.afk_channel = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))
+        self.owner_id = discord.utils._get_as_snowflake(guild, 'owner_id')
+        self.afk_channel = self.get_channel(discord.utils._get_as_snowflake(guild, 'afk_channel_id'))
 
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj, int(obj['channel_id']))
@@ -293,15 +295,15 @@ class Guild(Hashable):
         """Returns a :class:`Member` with the given ID. If not found, returns None."""
         return self._members.get(user_id)
 
-    @utils.cached_slot_property('_default_role')
+    @discord.utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_everyone, self.roles)
+        return discord.utils.find(lambda r: r.is_everyone, self.roles)
 
-    @utils.cached_slot_property('_default_channel')
+    @discord.utils.cached_slot_property('_default_channel')
     def default_channel(self):
         """Gets the default :class:`Channel` for the guild."""
-        return utils.find(lambda c: c.is_default, self.channels)
+        return discord.utils.find(lambda c: c.is_default, self.channels)
 
     @property
     def owner(self):
@@ -330,7 +332,7 @@ class Guild(Hashable):
     @property
     def created_at(self):
         """Returns the guild's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return discord.utils.snowflake_time(self.id)
 
     @property
     def role_hierarchy(self):
@@ -378,14 +380,14 @@ class Guild(Hashable):
 
             # do the actual lookup and return if found
             # if it isn't found then we'll do a full name lookup below.
-            result = utils.get(members, name=name[:-5], discriminator=potential_discriminator)
+            result = discord.utils.get(members, name=name[:-5], discriminator=potential_discriminator)
             if result is not None:
                 return result
 
         def pred(m):
             return m.nick == name or m.name == name
 
-        return utils.find(pred, members)
+        return discord.utils.find(pred, members)
 
 
     @asyncio.coroutine
@@ -469,7 +471,7 @@ class Guild(Hashable):
             icon = self.icon
         else:
             if icon_bytes is not None:
-                icon = utils._bytes_to_base64_data(icon_bytes)
+                icon = discord.utils._bytes_to_base64_data(icon_bytes)
             else:
                 icon = None
 
@@ -659,7 +661,7 @@ class Guild(Hashable):
             An error occurred creating an emoji.
         """
 
-        img = utils._bytes_to_base64_data(image)
+        img = discord.utils._bytes_to_base64_data(image)
         data = yield from self._state.http.create_custom_emoji(self.id, name, img)
         return self._state.store_emoji(self, data)
 

@@ -34,6 +34,11 @@ from .iterators import LogsFromIterator
 from .context_managers import Typing
 from .errors import ClientException, NoMoreMessages
 
+import discord.message
+import discord.iterators
+import discord.context_managers
+import discord.errors
+
 class Snowflake(metaclass=abc.ABCMeta):
     __slots__ = ()
 

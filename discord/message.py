@@ -27,10 +27,11 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import re
 
+import discord.utils
+import discord.abc
 from .user import User
 from .reaction import Reaction
 from .emoji import Emoji
-from . import utils, abc
 from .object import Object
 from .calls import CallMessage
 from .enums import MessageType, try_enum
@@ -132,7 +133,7 @@ class Message:
 
     def _add_reaction(self, data):
         emoji = self._state.reaction_emoji(data['emoji'])
-        reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
+        reaction = discord.utils.find(lambda r: r.emoji == emoji, self.reactions)
         is_me = data['me'] = int(data['user_id']) == self._state.self_id
 
         if reaction is None:
@@ -147,7 +148,7 @@ class Message:
 
     def _remove_reaction(self, data):
         emoji = self._state.reaction_emoji(data['emoji'])
-        reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
+        reaction = discord.utils.find(lambda r: r.emoji == emoji, self.reactions)
 
         if reaction is None:
             # already removed?
@@ -173,7 +174,7 @@ class Message:
             except KeyError:
                 continue
 
-        self._try_patch(data, 'edited_timestamp', utils.parse_time)
+        self._try_patch(data, 'edited_timestamp', discord.utils.parse_time)
         self._try_patch(data, 'author', self._state.store_user)
         self._try_patch(data, 'pinned', bool)
         self._try_patch(data, 'mention_everyone', bool)
@@ -207,7 +208,7 @@ class Message:
         self.role_mentions = []
         if self.guild is not None:
             for role_id in role_mentions:
-                role = utils.get(self.guild.roles, id=role_id)
+                role = discord.utils.get(self.guild.roles, id=role_id)
                 if role is not None:
                     self.role_mentions.append(role)
 
@@ -224,7 +225,7 @@ class Message:
             if uid == self.author.id:
                 participants.append(self.author)
             else:
-                user = utils.find(lambda u: u.id == uid, self.mentions)
+                user = discord.utils.find(lambda u: u.id == uid, self.mentions)
                 if user is not None:
                     participants.append(user)
 
@@ -236,7 +237,7 @@ class Message:
         """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
         return getattr(self.channel, 'guild', None)
 
-    @utils.cached_slot_property('_cs_raw_mentions')
+    @discord.utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self):
         """A property that returns an array of user IDs matched with
         the syntax of <@user_id> in the message content.
@@ -246,28 +247,28 @@ class Message:
         """
         return [int(x) for x in re.findall(r'<@!?([0-9]+)>', self.content)]
 
-    @utils.cached_slot_property('_cs_raw_channel_mentions')
+    @discord.utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
         """A property that returns an array of channel IDs matched with
         the syntax of <#channel_id> in the message content.
         """
         return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
 
-    @utils.cached_slot_property('_cs_raw_role_mentions')
+    @discord.utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
         """A property that returns an array of role IDs matched with
         the syntax of <@&role_id> in the message content.
         """
         return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
 
-    @utils.cached_slot_property('_cs_channel_mentions')
+    @discord.utils.cached_slot_property('_cs_channel_mentions')
     def channel_mentions(self):
         if self.guild is None:
             return []
         it = filter(None, map(lambda m: self.guild.get_channel(m), self.raw_channel_mentions))
-        return utils._unique(it)
+        return discord.utils._unique(it)
 
-    @utils.cached_slot_property('_cs_clean_content')
+    @discord.utils.cached_slot_property('_cs_clean_content')
     def clean_content(self):
         """A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
@@ -332,7 +333,7 @@ class Message:
                 self.channel.is_private = True
             return
 
-        if isinstance(self.channel, abc.GuildChannel):
+        if isinstance(self.channel, discord.abc.GuildChannel):
             self.guild = self.channel.guild
             found = self.guild.get_member(self.author.id)
             if found is not None:
@@ -341,9 +342,9 @@ class Message:
     @property
     def created_at(self):
         """Returns the message's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return discord.utils.snowflake_time(self.id)
 
-    @utils.cached_slot_property('_cs_system_content')
+    @discord.utils.cached_slot_property('_cs_system_content')
     def system_content(self):
         """A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.

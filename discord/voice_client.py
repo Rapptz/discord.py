@@ -61,7 +61,7 @@ try:
 except ImportError:
     has_nacl = False
 
-from . import utils, opus
+from . import opus
 from .gateway import *
 from .errors import ClientException, InvalidArgument, ConnectionClosed
 

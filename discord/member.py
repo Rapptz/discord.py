@@ -26,10 +26,10 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 
+import discord.utils
 from .user import User
 from .game import Game
 from .permissions import Permissions
-from . import utils
 from .enums import Status, ChannelType, try_enum
 from .colour import Colour
 
@@ -143,7 +143,7 @@ class Member:
     def __init__(self, *, data, guild, state):
         self._state = state
         self._user = state.store_user(data['user'])
-        self.joined_at = utils.parse_time(data.get('joined_at'))
+        self.joined_at = discord.utils.parse_time(data.get('joined_at'))
         self.roles = data.get('roles', [])
         self.status = Status.offline
         game = data.get('game', {})
@@ -239,7 +239,7 @@ class Member:
             return True
 
         for role in message.role_mentions:
-            has_role = utils.get(self.roles, id=role.id) is not None
+            has_role = discord.utils.get(self.roles, id=role.id) is not None
             if has_role:
                 return True
 
@@ -439,7 +439,7 @@ class Member:
             Adding roles failed.
         """
 
-        new_roles = utils._unique(r for s in (self.roles[1:], roles) for r in s)
+        new_roles = discord.utils._unique(r for s in (self.roles[1:], roles) for r in s)
         yield from self.edit(roles=new_roles)
 
     @asyncio.coroutine
