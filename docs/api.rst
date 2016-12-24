@@ -724,17 +724,35 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
-Channel
-~~~~~~~~
 
-.. autoclass:: Channel
+TextChannel
+~~~~~~~~~~~~
+
+.. autoclass:: TextChannel
     :members:
+    :inherited-members:
 
-PrivateChannel
-~~~~~~~~~~~~~~~
+VoiceChannel
+~~~~~~~~~~~~~
 
-.. autoclass:: PrivateChannel
+.. autoclass:: VoiceChannel
     :members:
+    :inherited-members:
+
+DMChannel
+~~~~~~~~~
+
+.. autoclass:: DMChannel
+    :members:
+    :inherited-members:
+
+GroupChannel
+~~~~~~~~~~~~
+
+.. autoclass:: GroupChannel
+    :members:
+    :inherited-members:
+
 
 Invite
 ~~~~~~~
