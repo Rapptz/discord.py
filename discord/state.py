@@ -36,6 +36,7 @@ from .role import Role
 from . import utils, compat
 from .enums import Status, ChannelType, try_enum
 from .calls import GroupCall
+from .embeds import Embed
 
 from collections import deque, namedtuple
 import copy, enum, math
@@ -697,8 +698,12 @@ class ConnectionState:
         reactions = [
             self._create_reaction(**r) for r in message.pop('reactions', [])
         ]
+        embeds = [
+            Embed.from_data(e) for e in message.pop('embeds', [])
+        ]
         return Message(channel=message.pop('channel'),
-                       reactions=reactions, **message)
+                       reactions=reactions,
+                       embeds=embeds, **message)
 
     def _create_reaction(self, **reaction):
         emoji = self._get_reaction_emoji(**reaction.pop('emoji'))
