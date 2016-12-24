@@ -101,7 +101,7 @@ See :ref:`discord-api-events` for more information. Other removed events include
 Coroutines
 -----------
 
-The biggest change that the library went through is that almost every function in :class:`Client`
+Another huge change that the library went through is that almost every function in :class:`Client`
 was changed to be a `coroutine <https://docs.python.org/3/library/asyncio-task.html>`_. Functions
 that are marked as a coroutine in the documentation must be awaited from or yielded from in order
 for the computation to be done. For example...
