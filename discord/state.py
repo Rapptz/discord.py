@@ -187,7 +187,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
+                yield from asyncio.wait(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -199,7 +199,8 @@ class ConnectionState:
 
         # call GUILD_SYNC after we're done chunking
         if not self.is_bot:
-            compat.create_task(self.syncer([s.id for s in self.servers]), loop=self.loop)
+            log.info('Requesting GUILD_SYNC for %s guilds' % len(self.servers))
+            yield from self.syncer([s.id for s in self.servers])
 
         # dispatch the event
         self.dispatch('ready')
@@ -212,7 +213,7 @@ class ConnectionState:
         servers = self._ready_state.servers
         for guild in guilds:
             server = self._add_server_from_data(guild)
-            if not self.is_bot and server.large:
+            if not self.is_bot or server.large:
                 servers.append(server)
 
         for pm in data.get('private_channels'):
