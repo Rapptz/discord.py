@@ -140,7 +140,7 @@ class MessageChannel(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send_message(self, content=None, *, tts=False, embed=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, filename=None):
         """|coro|
 
         Sends a message to the channel with the content given.
@@ -148,6 +148,20 @@ class MessageChannel(metaclass=abc.ABCMeta):
         The content must be a type that can convert to a string through ``str(content)``.
         If the content is set to ``None`` (the default), then the ``embed`` parameter must
         be provided.
+
+        The ``file`` parameter should be either a string denoting the location for a
+        file or a *file-like object*. The *file-like object* passed is **not closed**
+        at the end of execution. You are responsible for closing it yourself.
+
+        .. note::
+
+            If the file-like object passed is opened via ``open`` then the modes
+            'rb' should be used.
+
+        The ``filename`` parameter is the filename of the file.
+        If this is not given then it defaults to ``file.name`` or if ``file`` is a string
+        then the ``filename`` will default to the string given. You can overwrite
+        this value by passing this in.
 
         If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
         it must be a rich embed type.
@@ -160,6 +174,12 @@ class MessageChannel(metaclass=abc.ABCMeta):
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`Embed`
             The rich embed for the content.
+        file: file-like object or filename
+            The *file-like object* or file path to send.
+        filename: str
+            The filename of the file. Defaults to ``file.name`` if it's available.
+            If this is provided, you must also provide the ``file`` parameter or it
+            is silently ignored.
 
         Raises
         --------
@@ -175,12 +195,26 @@ class MessageChannel(metaclass=abc.ABCMeta):
         """
 
         channel_id, guild_id = self._get_destination()
+        state = self._state
         content = str(content) if content else None
         if embed is not None:
             embed = embed.to_dict()
 
-        data = yield from self._state.http.send_message(channel_id, content, guild_id=guild_id, tts=tts, embed=embed)
-        return Message(channel=self, state=self._state, data=data)
+        if file is not None:
+            try:
+                with open(file, 'rb') as f:
+                    buffer = io.BytesIO(f.read())
+                    if filename is None:
+                        _, filename = os.path.split(file)
+            except TypeError:
+                buffer = file
+
+            data = yield from state.http.send_file(channel_id, buffer, guild_id=guild_id, filename=filename,
+                                                   content=content, tts=tts, embed=embed)
+        else:
+            data = yield from state.http.send_message(channel_id, content, guild_id=guild_id, tts=tts, embed=embed)
+
+        return Message(channel=self, state=state, data=data)
 
     @asyncio.coroutine
     def send_typing(self):
@@ -207,65 +241,6 @@ class MessageChannel(metaclass=abc.ABCMeta):
 
         """
         return Typing(self)
-
-    @asyncio.coroutine
-    def upload(self, fp, *, filename=None, content=None, tts=False):
-        """|coro|
-
-        Sends a message to the channel with the file given.
-
-        The ``fp`` parameter should be either a string denoting the location for a
-        file or a *file-like object*. The *file-like object* passed is **not closed**
-        at the end of execution. You are responsible for closing it yourself.
-
-        .. note::
-
-            If the file-like object passed is opened via ``open`` then the modes
-            'rb' should be used.
-
-        The ``filename`` parameter is the filename of the file.
-        If this is not given then it defaults to ``fp.name`` or if ``fp`` is a string
-        then the ``filename`` will default to the string given. You can overwrite
-        this value by passing this in.
-
-        Parameters
-        ------------
-        fp
-            The *file-like object* or file path to send.
-        filename: str
-            The filename of the file. Defaults to ``fp.name`` if it's available.
-        content: str
-            The content of the message to send along with the file. This is
-            forced into a string by a ``str(content)`` call.
-        tts: bool
-            If the content of the message should be sent with TTS enabled.
-
-        Raises
-        -------
-        HTTPException
-            Sending the file failed.
-
-        Returns
-        --------
-        :class:`Message`
-            The message sent.
-        """
-
-        channel_id, guild_id = self._get_destination()
-
-        try:
-            with open(fp, 'rb') as f:
-                buffer = io.BytesIO(f.read())
-                if filename is None:
-                    _, filename = os.path.split(fp)
-        except TypeError:
-            buffer = fp
-
-        state = self._state
-        data = yield from state.http.send_file(channel_id, buffer, guild_id=guild_id,
-                                                     filename=filename, content=content, tts=tts)
-
-        return Message(channel=self, state=state, data=data)
 
     @asyncio.coroutine
     def get_message(self, id):

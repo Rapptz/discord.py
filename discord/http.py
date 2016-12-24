@@ -234,14 +234,17 @@ class HTTPClient:
         url = '{0.CHANNELS}/{1}/typing'.format(self, channel_id)
         return self.post(url, bucket=_func_())
 
-    def send_file(self, channel_id, buffer, *, guild_id=None, filename=None, content=None, tts=False):
+    def send_file(self, channel_id, buffer, *, guild_id=None, filename=None, content=None, tts=False, embed=None):
         url = '{0.CHANNELS}/{1}/messages'.format(self, channel_id)
         form = aiohttp.FormData()
 
-        if content is not None:
-            form.add_field('content', str(content))
+        payload = {'tts': tts}
+        if content:
+            payload['content'] = content
+        if embed:
+            payload['embed'] = embed
 
-        form.add_field('tts', 'true' if tts else 'false')
+        form.add_field('payload_json', utils.to_json(payload))
         form.add_field('file', buffer, filename=filename, content_type='application/octet-stream')
 
         return self.post(url, data=form, bucket='messages:' + str(guild_id))
