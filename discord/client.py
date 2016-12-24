@@ -3187,7 +3187,8 @@ class Client:
             'data': data,
             'loop': self.loop,
             'session_id': session_id_data.get('session_id'),
-            'main_ws': self.ws
+            'main_ws': self.ws,
+            'dispatch': self.dispatch
         }
 
         voice = VoiceClient(**kwargs)

@@ -175,6 +175,19 @@ class ProcessPlayer(StreamPlayer):
         if self.process.poll() is None:
             self.process.communicate()
 
+class VoiceClientProtocol:
+    def __init__(self, secret_key, callback):
+        self.callback = callback
+        self.box = nacl.secret.SecretBox(bytes(secret_key))
+
+    def datagram_received(self, data, addr):
+        """
+        Decrypt the data before passing it to the callback
+        """
+        nonce = bytearray(24)
+        nonce[:12] = data[:12]
+        sequence, timestamp, ssrc = struct.unpack_from('>2xHII', data)
+        self.callback(self.box.decrypt(data[12:], nonce=bytes(nonce)), ssrc, sequence, timestamp)
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -208,7 +221,7 @@ class VoiceClient:
     loop
         The event loop that the voice client is running on.
     """
-    def __init__(self, user, main_ws, session_id, channel, data, loop):
+    def __init__(self, user, main_ws, session_id, channel, data, loop, dispatch):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
@@ -217,6 +230,7 @@ class VoiceClient:
         self.channel = channel
         self.session_id = session_id
         self.loop = loop
+        self.dispatch = dispatch
         self._connected = asyncio.Event(loop=self.loop)
         self.token = data.get('token')
         self.guild_id = data.get('guild_id')
@@ -326,6 +340,31 @@ class VoiceClient:
         return self._connected.is_set()
 
     # audio related
+
+    @asyncio.coroutine
+    def enable_voice_events(self):
+        """|coro|
+
+        Enable dispatching `speak` events.
+
+        .. warning::
+            You must be connected to a voice channel.
+
+        Returns
+        --------
+        boolean
+            True if successful, False otherwise.
+        """
+        log.info('enabling voice packet events...')
+        if not self._connected.is_set():
+            return False
+        func = functools.partial(VoiceClientProtocol, self.secret_key, self._handle_voice_packet)
+        connect = self.loop.create_datagram_endpoint(func, sock=self.socket)
+        transport, protocol = yield from connect
+        return True
+
+    def _handle_voice_packet(self, data, ssrc, timestamp, sequence):
+        self.dispatch('speak', data, self.client_ssrc.get(ssrc), timestamp, sequence)
 
     def _get_voice_packet(self, data):
         header = bytearray(12)
