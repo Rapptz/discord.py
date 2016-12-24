@@ -825,7 +825,8 @@ class Bot(GroupMixin, discord.Client):
             if not view.skip_string(prefix):
                 return
         else:
-            invoked_prefix = discord.utils.find(view.skip_string, prefix)
+            invoked_prefix = filter(view.skip_string, prefix)
+            invoked_prefix = max(invoked_prefix, lambda s: len(s))
             if invoked_prefix is None:
                 return
 
