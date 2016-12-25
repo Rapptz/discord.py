@@ -39,13 +39,10 @@ __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
             'cooldown' ]
 
-def inject_context(ctx, coro):
+def wrap_callback(coro):
     @functools.wraps(coro)
     @asyncio.coroutine
     def wrapped(*args, **kwargs):
-        _internal_channel = ctx.message.channel
-        _internal_author = ctx.message.author
-
         try:
             ret = yield from coro(*args, **kwargs)
         except CommandError:
@@ -155,7 +152,7 @@ class Command:
             pass
         else:
             loop = ctx.bot.loop
-            injected = inject_context(ctx, coro)
+            injected = wrap_callback(coro)
             if self.instance is not None:
                 discord.compat.create_task(injected(self.instance, error, ctx), loop=loop)
             else:
@@ -365,7 +362,7 @@ class Command:
         # since we're in a regular command (and not a group) then
         # the invoked subcommand is None.
         ctx.invoked_subcommand = None
-        injected = inject_context(ctx, self.callback)
+        injected = wrap_callback(self.callback)
         yield from injected(*ctx.args, **ctx.kwargs)
 
     def error(self, coro):
@@ -598,7 +595,7 @@ class Group(GroupMixin, Command):
             ctx.invoked_subcommand = self.commands.get(trigger, None)
 
         if early_invoke:
-            injected = inject_context(ctx, self.callback)
+            injected = wrap_callback(self.callback)
             yield from injected(*ctx.args, **ctx.kwargs)
 
         if trigger and ctx.invoked_subcommand:
