@@ -145,7 +145,7 @@ class MessageChannel(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, filename=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, filename=None, delete_after=None):
         """|coro|
 
         Sends a message to the channel with the content given.
@@ -185,6 +185,10 @@ class MessageChannel(metaclass=abc.ABCMeta):
             The filename of the file. Defaults to ``file.name`` if it's available.
             If this is provided, you must also provide the ``file`` parameter or it
             is silently ignored.
+        delete_after: float
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just sent. If the deletion fails,
+            then it is silently ignored.
 
         Raises
         --------
@@ -219,7 +223,17 @@ class MessageChannel(metaclass=abc.ABCMeta):
         else:
             data = yield from state.http.send_message(channel_id, content, guild_id=guild_id, tts=tts, embed=embed)
 
-        return Message(channel=self, state=state, data=data)
+        ret = Message(channel=self, state=state, data=data)
+        if delete_after is not None:
+            @asyncio.coroutine
+            def delete():
+                yield from asyncio.sleep(delete_after, loop=state.loop)
+                try:
+                    yield from ret.delete()
+                except:
+                    pass
+            discord.compat.create_task(delete(), loop=state.loop)
+        return ret
 
     @asyncio.coroutine
     def send_typing(self):

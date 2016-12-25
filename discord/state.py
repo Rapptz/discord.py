@@ -53,7 +53,7 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
 class StateContext:
-    __slots__ = ('store_user', 'http', 'self_id', 'store_emoji', 'reaction_emoji')
+    __slots__ = ('store_user', 'http', 'self_id', 'store_emoji', 'reaction_emoji', 'loop')
 
     def __init__(self, **kwargs):
         for attr, value in kwargs.items():
@@ -71,7 +71,7 @@ class ConnectionState:
         self.ctx = StateContext(store_user=self.store_user,
                                 store_emoji=self.store_emoji,
                                 reaction_emoji=self._get_reaction_emoji,
-                                http=http, self_id=None)
+                                http=http, self_id=None, loop=loop)
         self.clear()
 
     def clear(self):
