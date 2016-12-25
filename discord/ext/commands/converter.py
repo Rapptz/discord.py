@@ -32,8 +32,8 @@ import inspect
 from .errors import BadArgument, NoPrivateMessage
 
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
-            'ChannelConverter', 'InviteConverter', 'RoleConverter',
-            'GameConverter', 'ColourConverter' ]
+            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
+            'GameConverter', 'ColourConverter', 'VoiceChannelConverter' ]
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -103,20 +103,50 @@ class MemberConverter(IDConverter):
 
 UserConverter = MemberConverter
 
-class ChannelConverter(IDConverter):
+class TextChannelConverter(IDConverter):
     def convert(self):
-        message = self.ctx.message
         bot = self.ctx.bot
 
         match = self._get_id_match() or re.match(r'<#([0-9]+)>$', self.argument)
         result = None
-        guild = message.guild
+        guild = self.ctx.guild
+
         if match is None:
             # not a mention
             if guild:
-                result = discord.utils.get(guild.channels, name=self.argument)
+                result = discord.utils.get(guild.text_channels, name=self.argument)
             else:
-                result = discord.utils.get(bot.get_all_channels(), name=self.argument)
+                def check(c):
+                    return isinstance(c, discord.TextChannel) and c.name == self.argument
+                result = discord.utils.find(check, bot.get_all_channels())
+        else:
+            channel_id = int(match.group(1))
+            if guild:
+                result = guild.get_channel(channel_id)
+            else:
+                result = _get_from_guilds(bot, 'get_channel', channel_id)
+
+        if result is None:
+            raise BadArgument('Channel "{}" not found.'.format(self.argument))
+
+        return result
+
+class VoiceChannelConverter(IDConverter):
+    def convert(self):
+        bot = self.ctx.bot
+
+        match = self._get_id_match() or re.match(r'<#([0-9]+)>$', self.argument)
+        result = None
+        guild = self.ctx.guild
+
+        if match is None:
+            # not a mention
+            if guild:
+                result = discord.utils.get(guild.voice_channels, name=self.argument)
+            else:
+                def check(c):
+                    return isinstance(c, discord.VoiceChannel) and c.name == self.argument
+                result = discord.utils.find(check, bot.get_all_channels())
         else:
             channel_id = int(match.group(1))
             if guild:

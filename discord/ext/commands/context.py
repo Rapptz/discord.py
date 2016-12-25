@@ -24,13 +24,17 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import discord.abc
+import discord.utils
 
-class Context:
+class Context(discord.abc.MessageChannel):
     """Represents the context in which a command is being invoked under.
 
     This class contains a lot of meta data to help you understand more about
     the invocation context. This class is not created manually and is instead
     passed around to commands by passing in :attr:`Command.pass_context`.
+
+    This class implements the :class:`abc.MessageChannel` ABC.
 
     Attributes
     -----------
@@ -76,6 +80,7 @@ class Context:
         self.invoked_with = attrs.pop('invoked_with', None)
         self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
         self.subcommand_passed = attrs.pop('subcommand_passed', None)
+        self._state = self.message._state
 
     @asyncio.coroutine
     def invoke(self, command, *args, **kwargs):
@@ -112,6 +117,9 @@ class Context:
         ret = yield from command.callback(*arguments, **kwargs)
         return ret
 
+    def _get_destination(self):
+        return self.channel.id, getattr(self.guild, 'id', None)
+
     @property
     def cog(self):
         """Returns the cog associated with this context's command. None if it does not exist."""
@@ -119,3 +127,25 @@ class Context:
         if self.command is None:
             return None
         return self.command.instance
+
+    @discord.utils.cached_property
+    def id(self):
+        # we need this to meet MessageChannel abc
+        # it is purposefully undocumented because it makes no logistic sense
+        # outside of providing the sugar of the main class.
+        return self.channel.id
+
+    @discord.utils.cached_property
+    def guild(self):
+        """Returns the guild associated with this context's command. None if not available."""
+        return self.message.guild
+
+    @discord.utils.cached_property
+    def channel(self):
+        """Returns the channel associated with this context's command. Shorthand for :attr:`Message.channel`."""
+        return self.message.channel
+
+    @discord.utils.cached_property
+    def author(self):
+        """Returns the author associated with this context's command. Shorthand for :attr:`Message.author`"""
+        return self.message.author

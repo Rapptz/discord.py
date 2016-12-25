@@ -85,7 +85,7 @@ class Command:
         The list of aliases the command can be invoked under.
     pass_context : bool
         A boolean that indicates that the current :class:`Context` should
-        be passed as the **first parameter**. Defaults to `False`.
+        be passed as the **first parameter**. Defaults to `True`.
     enabled : bool
         A boolean that indicates if the command is currently enabled.
         If the command is invoked while it is disabled, then
@@ -135,7 +135,7 @@ class Command:
         self.brief = kwargs.get('brief')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
-        self.pass_context = kwargs.get('pass_context', False)
+        self.pass_context = kwargs.get('pass_context', True)
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
         signature = inspect.signature(callback)
