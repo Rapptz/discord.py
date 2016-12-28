@@ -487,7 +487,7 @@ class Bot(GroupMixin, discord.Client):
 
         .. code-block:: python
 
-            @bot.check
+            @bot.check()
             def whitelist(ctx):
                 return ctx.message.author.id in my_whitelist
 
