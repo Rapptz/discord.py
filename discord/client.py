@@ -2162,7 +2162,7 @@ class Client:
 
         data = yield from self.http.create_channel(server.id, name, str(type), permission_overwrites=perms)
         channel = Channel(server=server, **data)
-        return channel
+        return utils.get(server.channels, id=channel.id)
 
     @asyncio.coroutine
     def delete_channel(self, channel):
@@ -2275,7 +2275,8 @@ class Client:
             region = region.name
 
         data = yield from self.http.create_server(name, region, icon)
-        return Server(**data)
+        server = Server(**data)
+        return utils.get(self.servers, id=server.id)
 
     @asyncio.coroutine
     def edit_server(self, server, **fields):
@@ -2994,7 +2995,7 @@ class Client:
         # we have to call edit because you can't pass a payload to the
         # http request currently.
         yield from self.edit_role(server, role, **fields)
-        return role
+        return utils.get(server.roles, id=role.id)
 
     @asyncio.coroutine
     def edit_channel_permissions(self, channel, target, overwrite=None):
