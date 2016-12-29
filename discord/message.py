@@ -115,7 +115,7 @@ class Message:
                   '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_state', 'reactions' )
+                  '_cs_system_content', '_cs_guild', '_state', 'reactions' )
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -168,17 +168,17 @@ class Message:
 
     def _update(self, channel, data):
         self.channel = channel
-        for handler in ('mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'mentions', 'mention_roles', 'call'):
             try:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
                 continue
 
         self._try_patch(data, 'edited_timestamp', discord.utils.parse_time)
-        self._try_patch(data, 'author', self._state.store_user)
         self._try_patch(data, 'pinned', bool)
         self._try_patch(data, 'mention_everyone', bool)
         self._try_patch(data, 'tts', bool)
+        self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
         self._try_patch(data, 'content', str)
         self._try_patch(data, 'attachments', lambda x: x)
         self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
@@ -191,6 +191,13 @@ class Message:
                 delattr(self, attr)
             except AttributeError:
                 pass
+
+    def _handle_author(self, author):
+        self.author = self._state.store_user(author)
+        if self.guild is not None:
+            found = self.guild.get_member(self.author.id)
+            if found is not None:
+                self.author = found
 
     def _handle_mentions(self, mentions):
         self.mentions = []
@@ -232,7 +239,7 @@ class Message:
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
-    @property
+    @discord.utils.cached_slot_property('_cs_guild')
     def guild(self):
         """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
         return getattr(self.channel, 'guild', None)
