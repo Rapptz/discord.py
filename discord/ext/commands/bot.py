@@ -776,7 +776,7 @@ class Bot(GroupMixin, discord.Client):
             pass
         else:
             try:
-                func(bot)
+                func(self)
             except:
                 pass
         finally:
