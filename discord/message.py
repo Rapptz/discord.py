@@ -123,6 +123,9 @@ class Message:
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
         self._update(channel, data)
 
+    def __repr__(self):
+        return '<Message id={0.id} pinned={0.pinned} author={0.author!r}>'.format(self)
+
     def _try_patch(self, data, key, transform):
         try:
             value = data[key]

@@ -83,6 +83,9 @@ class Reaction:
     def __hash__(self):
         return hash(self.emoji)
 
+    def __repr__(self):
+        return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
+
     @asyncio.coroutine
     def users(self, limit=100, after=None):
         """|coro|

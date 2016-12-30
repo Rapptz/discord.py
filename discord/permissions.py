@@ -80,6 +80,9 @@ class Permissions:
     def __hash__(self):
         return hash(self.value)
 
+    def __repr__(self):
+        return '<Permissions value=%s>' % self.value
+
     def _perm_iterator(self):
         for attr in dir(self):
             # check if it's a property, because if so it's a permission

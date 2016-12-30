@@ -144,6 +144,10 @@ class Guild(Hashable):
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        chunked = getattr(self, '_member_count', None) == len(self._members)
+        return '<Guild id={0.id} name={0.name!r} chunked={1}>'.format(self, chunked)
+
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
         channel = self.get_channel(channel_id)

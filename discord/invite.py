@@ -95,6 +95,9 @@ class Invite(Hashable):
     def __str__(self):
         return self.url
 
+    def __repr__(self):
+        return '<Invite code={0.code!r}>'.format(self)
+
     @property
     def id(self):
         """Returns the proper code portion of the invite."""

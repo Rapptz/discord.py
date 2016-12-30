@@ -103,6 +103,9 @@ class Emoji(Hashable):
     def __str__(self):
         return "<:{0.name}:{0.id}>".format(self)
 
+    def __repr__(self):
+        return '<Emoji id={0.id} name={0.name!r}>'.format(self)
+
     @property
     def created_at(self):
         """Returns the emoji's creation time in UTC."""

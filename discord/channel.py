@@ -341,6 +341,9 @@ class TextChannel(discord.abc.MessageChannel, CommonGuildChannel):
         self.id = int(data['id'])
         self._update(guild, data)
 
+    def __repr__(self):
+        return '<TextChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
@@ -435,6 +438,9 @@ class VoiceChannel(CommonGuildChannel):
         self._update(guild, data)
         self.voice_members = []
 
+    def __repr__(self):
+        return '<VoiceChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
@@ -521,6 +527,9 @@ class DMChannel(discord.abc.MessageChannel, Hashable):
 
     def __str__(self):
         return 'Direct Message with %s' % self.recipient
+
+    def __repr__(self):
+        return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
 
     @property
     def created_at(self):
@@ -619,6 +628,9 @@ class GroupChannel(discord.abc.MessageChannel, Hashable):
             return 'Unnamed'
 
         return ', '.join(map(lambda x: x.name, self.recipients))
+
+    def __repr__(self):
+        return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
 
     @property
     def icon_url(self):

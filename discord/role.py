@@ -92,6 +92,9 @@ class Role(Hashable):
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return '<Role id={0.id} name={0.name!r}>'.format(self)
+
     def __lt__(self, other):
         if not isinstance(other, Role) or  not isinstance(self, Role):
             return NotImplemented

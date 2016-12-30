@@ -152,7 +152,11 @@ class Member:
         self.nick = data.get('nick', None)
 
     def __str__(self):
-        return self._user.__str__()
+        return str(self._user)
+
+    def __repr__(self):
+        return '<Member id={1.id} name={1.name!r} discriminator={1.discriminator!r}' \
+               ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
 
     def __eq__(self, other):
         return isinstance(other, Member) and other._user.id == self._user.id and self.guild.id == other.guild.id

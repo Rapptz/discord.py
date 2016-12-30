@@ -80,6 +80,9 @@ class User:
     def __hash__(self):
         return hash(self.id)
 
+    def __repr__(self):
+        return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
+
     @property
     def avatar_url(self):
         """Returns a friendly URL version of the avatar variable the user has. An empty string if
