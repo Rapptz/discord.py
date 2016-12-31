@@ -113,7 +113,7 @@ class Reaction:
             A list of users who reacted to the message.
         """
 
-        # TODO: Return an iterator a la `MessageChannel.history`?
+        # TODO: Return an iterator a la `Messageable.history`?
 
         if self.custom_emoji:
             emoji = '{0.name}:{0.id}'.format(self.emoji)

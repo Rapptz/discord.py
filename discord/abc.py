@@ -466,18 +466,22 @@ class GuildChannel:
             raise InvalidArgument('Invalid overwrite type provided.')
 
 
-class MessageChannel(metaclass=abc.ABCMeta):
+class Messageable(metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    def _get_destination(self):
+    def _get_channel(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_guild_id(self):
         raise NotImplementedError
 
     @asyncio.coroutine
     def send(self, content=None, *, tts=False, embed=None, file=None, filename=None, delete_after=None):
         """|coro|
 
-        Sends a message to the channel with the content given.
+        Sends a message to the destination with the content given.
 
         The content must be a type that can convert to a string through ``str(content)``.
         If the content is set to ``None`` (the default), then the ``embed`` parameter must
@@ -532,7 +536,8 @@ class MessageChannel(metaclass=abc.ABCMeta):
             The message that was sent.
         """
 
-        channel_id, guild_id = self._get_destination()
+        channel = self._get_channel()
+        guild_id = self._get_guild_id()
         state = self._state
         content = str(content) if content else None
         if embed is not None:
@@ -547,12 +552,12 @@ class MessageChannel(metaclass=abc.ABCMeta):
             except TypeError:
                 buffer = file
 
-            data = yield from state.http.send_file(channel_id, buffer, guild_id=guild_id, filename=filename,
+            data = yield from state.http.send_file(channel.id, buffer, guild_id=guild_id, filename=filename,
                                                    content=content, tts=tts, embed=embed)
         else:
-            data = yield from state.http.send_message(channel_id, content, guild_id=guild_id, tts=tts, embed=embed)
+            data = yield from state.http.send_message(channel.id, content, guild_id=guild_id, tts=tts, embed=embed)
 
-        ret = Message(channel=self, state=state, data=data)
+        ret = Message(channel=channel, state=state, data=data)
         if delete_after is not None:
             @asyncio.coroutine
             def delete():
@@ -565,21 +570,26 @@ class MessageChannel(metaclass=abc.ABCMeta):
         return ret
 
     @asyncio.coroutine
-    def send_typing(self):
+    def trigger_typing(self):
         """|coro|
 
-        Send a *typing* status to the channel.
+        Triggers a *typing* indicator to the destination.
 
-        *Typing* status will go away after 10 seconds, or after a message is sent.
+        *Typing* indicator will go away after 10 seconds, or after a message is sent.
         """
 
-        channel_id, _ = self._get_destination()
-        yield from self._state.http.send_typing(channel_id)
+        channel = self._get_channel()
+        yield from self._state.http.send_typing(channel.id)
 
     def typing(self):
         """Returns a context manager that allows you to type for an indefinite period of time.
 
         This is useful for denoting long computations in your bot.
+
+        .. note::
+
+            This is both a regular context manager and an async context manager.
+            This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
 
@@ -588,13 +598,13 @@ class MessageChannel(metaclass=abc.ABCMeta):
                 await channel.send_message('done!')
 
         """
-        return Typing(self)
+        return Typing(self._get_channel())
 
     @asyncio.coroutine
     def get_message(self, id):
         """|coro|
 
-        Retrieves a single :class:`Message` from a channel.
+        Retrieves a single :class:`Message` from the destination.
 
         This can only be used by bot accounts.
 
@@ -618,8 +628,9 @@ class MessageChannel(metaclass=abc.ABCMeta):
             Retrieving the message failed.
         """
 
-        data = yield from self._state.http.get_message(self.id, id)
-        return Message(channel=self, state=self._state, data=data)
+        channel = self._get_channel()
+        data = yield from self._state.http.get_message(channel.id, id)
+        return Message(channel=channel, state=self._state, data=data)
 
     @asyncio.coroutine
     def delete_messages(self, messages):
@@ -651,9 +662,10 @@ class MessageChannel(metaclass=abc.ABCMeta):
             raise ClientException('Can only delete messages in the range of [2, 100]')
 
         message_ids = [m.id for m in messages]
-        channel_id, guild_id = self._get_destination()
+        channel = self._get_channel()
+        guild_id = self._get_guild_id()
 
-        yield from self._state.http.delete_messages(channel_id, message_ids, guild_id)
+        yield from self._state.http.delete_messages(channel.id, message_ids, guild_id)
 
     @asyncio.coroutine
     def pins(self):
@@ -667,12 +679,13 @@ class MessageChannel(metaclass=abc.ABCMeta):
             Retrieving the pinned messages failed.
         """
 
+        channel = self._get_channel()
         state = self._state
-        data = yield from state.http.pins_from(self.id)
-        return [Message(channel=self, state=state, data=m) for m in data]
+        data = yield from state.http.pins_from(channel.id)
+        return [Message(channel=channel, state=state, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
-        """Return an async iterator that enables receiving the channel's message history.
+        """Return an async iterator that enables receiving the destination's message history.
 
         You must have Read Message History permissions to use this.
 
@@ -734,7 +747,7 @@ class MessageChannel(metaclass=abc.ABCMeta):
                     if message.author == client.user:
                         counter += 1
         """
-        return LogsFromIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
+        return LogsFromIterator(self._get_channel(), limit=limit, before=before, after=after, around=around, reverse=reverse)
 
     @asyncio.coroutine
     def purge(self, *, limit=100, check=None, before=None, after=None, around=None):

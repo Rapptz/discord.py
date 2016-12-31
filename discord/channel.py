@@ -38,7 +38,7 @@ import asyncio
 
 __all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'GroupChannel', '_channel_factory')
 
-class TextChannel(discord.abc.MessageChannel, discord.abc.GuildChannel, Hashable):
+class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
 
     Supported Operations:
@@ -88,8 +88,11 @@ class TextChannel(discord.abc.MessageChannel, discord.abc.GuildChannel, Hashable
         self.position = data['position']
         self._fill_overwrites(data)
 
-    def _get_destination(self):
-        return self.id, self.guild.id
+    def _get_channel(self):
+        return self
+
+    def _get_guild_id(self):
+        return self.guild.id
 
     @asyncio.coroutine
     def edit(self, **options):
@@ -224,7 +227,7 @@ class VoiceChannel(discord.abc.GuildChannel, Hashable):
             data = yield from self._state.http.edit_channel(self.id, **options)
             self._update(self.guild, data)
 
-class DMChannel(discord.abc.MessageChannel, Hashable):
+class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
     Supported Operations:
@@ -259,8 +262,11 @@ class DMChannel(discord.abc.MessageChannel, Hashable):
         self.me = me
         self.id = int(data['id'])
 
-    def _get_destination(self):
-        return self.id, None
+    def _get_channel(self):
+        return self
+
+    def _get_guild_id(self):
+        return None
 
     def __str__(self):
         return 'Direct Message with %s' % self.recipient
@@ -302,7 +308,7 @@ class DMChannel(discord.abc.MessageChannel, Hashable):
         base.manage_messages = False
         return base
 
-class GroupChannel(discord.abc.MessageChannel, Hashable):
+class GroupChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord group channel.
 
     Supported Operations:
@@ -354,8 +360,11 @@ class GroupChannel(discord.abc.MessageChannel, Hashable):
         else:
             self.owner = discord.utils.find(lambda u: u.id == owner_id, self.recipients)
 
-    def _get_destination(self):
-        return self.id, None
+    def _get_channel(self):
+        return self
+
+    def _get_guild_id(self):
+        return None
 
     def __str__(self):
         if self.name:

@@ -27,14 +27,14 @@ import asyncio
 import discord.abc
 import discord.utils
 
-class Context(discord.abc.MessageChannel):
+class Context(discord.abc.Messageable):
     """Represents the context in which a command is being invoked under.
 
     This class contains a lot of meta data to help you understand more about
     the invocation context. This class is not created manually and is instead
     passed around to commands by passing in :attr:`Command.pass_context`.
 
-    This class implements the :class:`abc.MessageChannel` ABC.
+    This class implements the :class:`abc.Messageable` ABC.
 
     Attributes
     -----------
@@ -117,8 +117,12 @@ class Context(discord.abc.MessageChannel):
         ret = yield from command.callback(*arguments, **kwargs)
         return ret
 
-    def _get_destination(self):
-        return self.channel.id, getattr(self.guild, 'id', None)
+    def _get_channel(self):
+        return self.channel
+
+    def _get_guild_id(self):
+        g = self.guild
+        return g.id if g is not None else None
 
     @property
     def cog(self):
@@ -127,13 +131,6 @@ class Context(discord.abc.MessageChannel):
         if self.command is None:
             return None
         return self.command.instance
-
-    @discord.utils.cached_property
-    def id(self):
-        # we need this to meet MessageChannel abc
-        # it is purposefully undocumented because it makes no logistic sense
-        # outside of providing the sugar of the main class.
-        return self.channel.id
 
     @discord.utils.cached_property
     def guild(self):
