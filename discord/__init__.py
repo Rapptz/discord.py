@@ -34,7 +34,6 @@ from .invite import Invite
 from .object import Object
 from .reaction import Reaction
 from . import utils, opus, compat, abc
-from .voice_client import VoiceClient
 from .enums import ChannelType, GuildRegion, Status, MessageType, VerificationLevel
 from collections import namedtuple
 from .embeds import Embed

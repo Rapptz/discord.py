@@ -30,7 +30,6 @@ from .object import Object
 from .errors import *
 from .permissions import Permissions, PermissionOverwrite
 from .enums import ChannelType, Status
-from .voice_client import VoiceClient
 from .gateway import *
 from .emoji import Emoji
 from .http import HTTPClient
@@ -152,9 +151,9 @@ class Client:
         self._is_logged_in = asyncio.Event(loop=self.loop)
         self._is_ready = asyncio.Event(loop=self.loop)
 
-        if VoiceClient.warn_nacl:
-            VoiceClient.warn_nacl = False
-            log.warning("PyNaCl is not installed, voice will NOT be supported")
+        # if VoiceClient.warn_nacl:
+        #     VoiceClient.warn_nacl = False
+        #     log.warning("PyNaCl is not installed, voice will NOT be supported")
 
     # internals
 
@@ -1270,135 +1269,6 @@ class Client:
             Deleting channel specific permissions failed.
         """
         yield from self.http.delete_channel_permissions(channel.id, target.id)
-
-    # Voice management
-
-    @asyncio.coroutine
-    def join_voice_channel(self, channel):
-        """|coro|
-
-        Joins a voice channel and creates a :class:`VoiceClient` to
-        establish your connection to the voice guild.
-
-        After this function is successfully called, :attr:`voice` is
-        set to the returned :class:`VoiceClient`.
-
-        Parameters
-        ----------
-        channel : :class:`Channel`
-            The voice channel to join to.
-
-        Raises
-        -------
-        InvalidArgument
-            The channel was not a voice channel.
-        asyncio.TimeoutError
-            Could not connect to the voice channel in time.
-        ClientException
-            You are already connected to a voice channel.
-        OpusNotLoaded
-            The opus library has not been loaded.
-
-        Returns
-        -------
-        :class:`VoiceClient`
-            A voice client that is fully connected to the voice guild.
-        """
-        if isinstance(channel, Object):
-            channel = self.get_channel(channel.id)
-
-        if getattr(channel, 'type', ChannelType.text) != ChannelType.voice:
-            raise InvalidArgument('Channel passed must be a voice channel')
-
-        guild = channel.guild
-
-        if self.is_voice_connected(guild):
-            raise ClientException('Already connected to a voice channel in this guild')
-
-        log.info('attempting to join voice channel {0.name}'.format(channel))
-
-        def session_id_found(data):
-            user_id = data.get('user_id')
-            guild_id = data.get('guild_id')
-            return user_id == self.user.id and guild_id == guild.id
-
-        # register the futures for waiting
-        session_id_future = self.ws.wait_for('VOICE_STATE_UPDATE', session_id_found)
-        voice_data_future = self.ws.wait_for('VOICE_SERVER_UPDATE', lambda d: d.get('guild_id') == guild.id)
-
-        # request joining
-        yield from self.ws.voice_state(guild.id, channel.id)
-        session_id_data = yield from asyncio.wait_for(session_id_future, timeout=10.0, loop=self.loop)
-        data = yield from asyncio.wait_for(voice_data_future, timeout=10.0, loop=self.loop)
-
-        kwargs = {
-            'user': self.user,
-            'channel': channel,
-            'data': data,
-            'loop': self.loop,
-            'session_id': session_id_data.get('session_id'),
-            'main_ws': self.ws
-        }
-
-        voice = VoiceClient(**kwargs)
-        try:
-            yield from voice.connect()
-        except asyncio.TimeoutError as e:
-            try:
-                yield from voice.disconnect()
-            except:
-                # we don't care if disconnect failed because connection failed
-                pass
-            raise e # re-raise
-
-        self.connection._add_voice_client(guild.id, voice)
-        return voice
-
-    def is_voice_connected(self, guild):
-        """Indicates if we are currently connected to a voice channel in the
-        specified guild.
-
-        Parameters
-        -----------
-        guild : :class:`Guild`
-            The guild to query if we're connected to it.
-        """
-        voice = self.voice_client_in(guild)
-        return voice is not None
-
-    def voice_client_in(self, guild):
-        """Returns the voice client associated with a guild.
-
-        If no voice client is found then ``None`` is returned.
-
-        Parameters
-        -----------
-        guild : :class:`Guild`
-            The guild to query if we have a voice client for.
-
-        Returns
-        --------
-        :class:`VoiceClient`
-            The voice client associated with the guild.
-        """
-        return self.connection._get_voice_client(guild.id)
-
-    def group_call_in(self, channel):
-        """Returns the :class:`GroupCall` associated with a private channel.
-
-        If no group call is found then ``None`` is returned.
-
-        Parameters
-        -----------
-        channel: :class:`PrivateChannel`
-            The group private channel to query the group call for.
-
-        Returns
-        --------
-        Optional[:class:`GroupCall`]
-            The group call.
-        """
-        return self.connection._calls.get(channel.id)
 
     # Miscellaneous stuff
 
