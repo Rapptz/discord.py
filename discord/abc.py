@@ -34,7 +34,17 @@ from collections import namedtuple
 from .message import Message
 from .iterators import LogsFromIterator
 from .context_managers import Typing
-from .errors import ClientException, NoMoreMessages
+from .errors import ClientException, NoMoreMessages, InvalidArgument
+from .permissions import PermissionOverwrite, Permissions
+from .role import Role
+
+import discord.utils
+
+class _Undefined:
+    def __repr__(self):
+        return 'see-below'
+
+_undefined = _Undefined()
 
 class Snowflake(metaclass=abc.ABCMeta):
     __slots__ = ()
@@ -236,16 +246,16 @@ class GuildChannel:
             The channel's permission overwrites.
         """
         ret = []
-        for ow in self._permission_overwrites:
+        for ow in self._overwrites:
             allow = Permissions(ow.allow)
             deny = Permissions(ow.deny)
             overwrite = PermissionOverwrite.from_pair(allow, deny)
 
             if ow.type == 'role':
                 # accidentally quadratic
-                target = discord.utils.find(lambda r: r.id == ow.id, self.server.roles)
+                target = discord.utils.find(lambda r: r.id == ow.id, self.guild.roles)
             elif ow.type == 'member':
-                target = self.server.get_member(ow.id)
+                target = self.guild.get_member(ow.id)
 
             ret.append((target, overwrite))
         return ret
@@ -363,6 +373,98 @@ class GuildChannel:
             Deleting the channel failed.
         """
         yield from self._state.http.delete_channel(self.id)
+
+    @asyncio.coroutine
+    def set_permissions(self, target, *, overwrite=_undefined, **permissions):
+        """|coro|
+
+        Sets the channel specific permission overwrites for a target in the
+        channel.
+
+        The ``target`` parameter should either be a :class:`Member` or a
+        :class:`Role` that belongs to guild.
+
+        The ``overwrite`` parameter, if given, must either be ``None`` or
+        :class:`PermissionOverwrite`. For convenience, you can pass in
+        keyword arguments denoting :class:`Permissions` attributes. If this is
+        done, then you cannot mix the keyword arguments with the ``overwrite``
+        parameter.
+
+        If the ``overwrite`` parameter is ``None``, then the permission
+        overwrites are deleted.
+
+        You must have :attr:`Permissions.manage_roles` permission to use this.
+
+        Examples
+        ----------
+
+        Setting allow and deny: ::
+
+            await message.channel.set_permissions(message.author, read_messages=True,
+                                                                  send_messages=False)
+
+        Deleting overwrites ::
+
+            await channel.set_permissions(member, overwrite=None)
+
+        Using :class:`PermissionOverwrite` ::
+
+            overwrite = discord.PermissionOverwrite()
+            overwrite.send_messages = False
+            overwrite.read_messages = True
+            await channel.set_permissions(member, overwrite=overwrite)
+
+        Parameters
+        -----------
+        target
+            The :class:`Member` or :class:`Role` to overwrite permissions for.
+        overwrite: :class:`PermissionOverwrite`
+            The permissions to allow and deny to the target.
+        \*\*permissions
+            A keyword argument list of permissions to set for ease of use.
+            Cannot be mixed with ``overwrite``.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit channel specific permissions.
+        HTTPException
+            Editing channel specific permissions failed.
+        InvalidArgument
+            The overwrite parameter invalid or the target type was not
+            :class:`Role` or :class:`Member`.
+        """
+
+        http = self._state.http
+
+        if isinstance(target, User):
+            perm_type = 'member'
+        elif isinstance(target, Role):
+            perm_type = 'role'
+        else:
+            raise InvalidArgument('target parameter must be either Member or Role')
+
+        if isinstance(overwrite, _Undefined):
+            if len(permissions) == 0:
+                raise InvalidArgument('No overwrite provided.')
+            try:
+                overwrite = PermissionOverwrite(**permissions)
+            except:
+                raise InvalidArgument('Invalid permissions given to keyword arguments.')
+        else:
+            if len(permissions) > 0:
+                raise InvalidArgument('Cannot mix overwrite and keyword arguments.')
+
+        # TODO: wait for event
+
+        if overwrite is None:
+            yield from http.delete_channel_permissions(self.id, target.id)
+        elif isinstance(overwrite, PermissionOverwrite):
+            (allow, deny) = overwrite.pair()
+            yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type)
+        else:
+            raise InvalidArgument('Invalid overwrite type provided.')
+
 
 class MessageChannel(metaclass=abc.ABCMeta):
     __slots__ = ()
