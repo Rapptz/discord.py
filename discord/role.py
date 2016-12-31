@@ -150,6 +150,19 @@ class Role(Hashable):
         """Returns a string that allows you to mention a role."""
         return '<@&{}>'.format(self.id)
 
+    @property
+    def members(self):
+        """Returns a list of :class:`Member` with this role."""
+        all_members = self.guild.members
+        if self.is_everyone:
+            return all_members
+
+        ret = []
+        for member in all_members:
+            if self in member.roles:
+                ret.append(member)
+        return ret
+
     @asyncio.coroutine
     def _move(self, position):
         if position <= 0:
