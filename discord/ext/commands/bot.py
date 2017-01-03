@@ -95,7 +95,7 @@ def _default_help_command(ctx, *commands : str):
         else:
             command = bot.commands.get(name)
             if command is None:
-                yield from bot.send_message(destination, bot.command_not_found.format(name))
+                yield from destination.send(bot.command_not_found.format(name))
                 return
 
         pages = bot.formatter.format_help_for(ctx, command)
@@ -103,7 +103,7 @@ def _default_help_command(ctx, *commands : str):
         name = _mention_pattern.sub(repl, commands[0])
         command = bot.commands.get(name)
         if command is None:
-            yield from bot.send_message(destination, bot.command_not_found.format(name))
+            yield from destination.send(bot.command_not_found.format(name))
             return
 
         for key in commands[1:]:
@@ -111,10 +111,10 @@ def _default_help_command(ctx, *commands : str):
                 key = _mention_pattern.sub(repl, key)
                 command = command.commands.get(key)
                 if command is None:
-                    yield from bot.send_message(destination, bot.command_not_found.format(key))
+                    yield from destination.send(bot.command_not_found.format(key))
                     return
             except AttributeError:
-                yield from bot.send_message(destination, bot.command_has_no_subcommands.format(command, key))
+                yield from destination.send(bot.command_has_no_subcommands.format(command, key))
                 return
 
         pages = bot.formatter.format_help_for(ctx, command)
@@ -126,7 +126,7 @@ def _default_help_command(ctx, *commands : str):
             destination = ctx.message.author
 
     for page in pages:
-        yield from bot.send_message(destination, page)
+        yield from destination.send(page)
 
 
 class Bot(GroupMixin, discord.Client):
