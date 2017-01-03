@@ -26,6 +26,8 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 
+import discord.abc
+
 from . import utils
 from .user import User
 from .game import Game
@@ -100,7 +102,7 @@ def flatten_user(cls):
     return cls
 
 @flatten_user
-class Member:
+class Member(discord.abc.Messageable):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -166,6 +168,14 @@ class Member:
 
     def __hash__(self):
         return hash(self._user.id)
+
+    @asyncio.coroutine
+    def _get_channel(self):
+        ch = yield from self.create_dm()
+        return ch
+
+    def _get_guild_id(self):
+        return None
 
     def _update(self, data, user=None):
         if user:

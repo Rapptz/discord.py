@@ -27,7 +27,10 @@ DEALINGS IN THE SOFTWARE.
 from .utils import snowflake_time
 from .enums import DefaultAvatar
 
-class User:
+import discord.abc
+import asyncio
+
+class User(discord.abc.Messageable):
     """Represents a Discord user.
 
     Supported Operations:
@@ -82,6 +85,38 @@ class User:
 
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
+
+    @asyncio.coroutine
+    def _get_channel(self):
+        ch = yield from self.create_dm()
+        return ch
+
+    def _get_guild_id(self):
+        return None
+
+    @property
+    def dm_channel(self):
+        """Returns the :class:`DMChannel` associated with this user if it exists.
+
+        If this returns ``None``, you can create a DM channel by calling the
+        :meth:`create_dm` coroutine function.
+        """
+        return self._state._get_private_channel_by_user(self.id)
+
+    @asyncio.coroutine
+    def create_dm(self):
+        """Creates a :class:`DMChannel` with this user.
+
+        This should be rarely called, as this is done transparently for most
+        people.
+        """
+        found = self.dm_channel
+        if found is not None:
+            return found
+
+        state = self._state
+        data = yield from state.http.start_private_message(self.id)
+        return state.add_dm_channel(data)
 
     @property
     def avatar_url(self):

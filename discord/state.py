@@ -169,6 +169,11 @@ class ConnectionState:
         if isinstance(channel, DMChannel):
             self._private_channels_by_user[channel.recipient.id] = channel
 
+    def add_dm_channel(self, data):
+        channel = DMChannel(me=self.user, state=self, data=data)
+        self._add_private_channel(channel)
+        return channel
+
     def _remove_private_channel(self, channel):
         self._private_channels.pop(channel.id, None)
         if isinstance(channel, DMChannel):
