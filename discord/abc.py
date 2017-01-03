@@ -31,14 +31,12 @@ import asyncio
 
 from collections import namedtuple
 
-from .message import Message
 from .iterators import LogsFromIterator
 from .context_managers import Typing
 from .errors import ClientException, NoMoreMessages, InvalidArgument
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
-
-import discord.utils
+from . import utils, compat
 
 class _Undefined:
     def __repr__(self):
@@ -178,7 +176,7 @@ class GuildChannel:
         their default values in the :attr:`Guild.roles` attribute."""
         ret = []
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
-            role = discord.utils.get(self.guild.roles, id=overwrite.id)
+            role = utils.get(self.guild.roles, id=overwrite.id)
             if role is None:
                 continue
 
@@ -200,7 +198,7 @@ class GuildChannel:
     @property
     def created_at(self):
         """Returns the channel's creation time in UTC."""
-        return discord.utils.snowflake_time(self.id)
+        return utils.snowflake_time(self.id)
 
     def overwrites_for(self, obj):
         """Returns the channel-specific overwrites for a member or a role.
@@ -253,7 +251,7 @@ class GuildChannel:
 
             if ow.type == 'role':
                 # accidentally quadratic
-                target = discord.utils.find(lambda r: r.id == ow.id, self.guild.roles)
+                target = utils.find(lambda r: r.id == ow.id, self.guild.roles)
             elif ow.type == 'member':
                 target = self.guild.get_member(ow.id)
 
@@ -409,7 +407,7 @@ class GuildChannel:
 
         Using :class:`PermissionOverwrite` ::
 
-            overwrite = discord.PermissionOverwrite()
+            overwrite = PermissionOverwrite()
             overwrite.send_messages = False
             overwrite.read_messages = True
             await channel.set_permissions(member, overwrite=overwrite)
@@ -557,7 +555,7 @@ class Messageable(metaclass=abc.ABCMeta):
         else:
             data = yield from state.http.send_message(channel.id, content, guild_id=guild_id, tts=tts, embed=embed)
 
-        ret = Message(channel=channel, state=state, data=data)
+        ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
             @asyncio.coroutine
             def delete():
@@ -566,7 +564,7 @@ class Messageable(metaclass=abc.ABCMeta):
                     yield from ret.delete()
                 except:
                     pass
-            discord.compat.create_task(delete(), loop=state.loop)
+            compat.create_task(delete(), loop=state.loop)
         return ret
 
     @asyncio.coroutine
@@ -630,7 +628,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         channel = self._get_channel()
         data = yield from self._state.http.get_message(channel.id, id)
-        return Message(channel=channel, state=self._state, data=data)
+        return state.create_message(channel=channel, data=data)
 
     @asyncio.coroutine
     def delete_messages(self, messages):
@@ -682,7 +680,7 @@ class Messageable(metaclass=abc.ABCMeta):
         channel = self._get_channel()
         state = self._state
         data = yield from state.http.pins_from(channel.id)
-        return [Message(channel=channel, state=state, data=m) for m in data]
+        return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
         """Return an async iterator that enables receiving the destination's message history.

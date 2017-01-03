@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 from collections import namedtuple
 
-import discord.utils
+from . import utils
 from .mixins import Hashable
 
 PartialEmoji = namedtuple('PartialEmoji', 'id name')
@@ -109,7 +109,7 @@ class Emoji(Hashable):
     @property
     def created_at(self):
         """Returns the emoji's creation time in UTC."""
-        return discord.utils.snowflake_time(self.id)
+        return utils.snowflake_time(self.id)
 
     @property
     def url(self):

@@ -25,8 +25,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
-import discord.utils
 
+from . import utils
 from .enums import GuildRegion, try_enum
 from .member import VoiceState
 
@@ -48,7 +48,7 @@ class CallMessage:
 
     def __init__(self, message, **kwargs):
         self.message = message
-        self.ended_timestamp = discord.utils.parse_time(kwargs.get('ended_timestamp'))
+        self.ended_timestamp = utils.parse_time(kwargs.get('ended_timestamp'))
         self.participants = kwargs.get('participants')
 
     @property

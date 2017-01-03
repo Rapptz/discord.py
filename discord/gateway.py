@@ -29,9 +29,7 @@ import websockets
 import asyncio
 import aiohttp
 
-import discord.utils
-import discord.compat
-
+from . import utils, compat
 from .enums import Status, try_enum
 from .game import Game
 from .errors import GatewayNotFound, ConnectionClosed, InvalidArgument
@@ -73,7 +71,7 @@ class KeepAliveHandler(threading.Thread):
             data = self.get_payload()
             log.debug(self.msg.format(data))
             coro = self.ws.send_as_json(data)
-            f = discord.compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+            f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
                 # block until sending is complete
                 f.result()
@@ -403,7 +401,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     @asyncio.coroutine
     def send_as_json(self, data):
         try:
-            yield from super().send(discord.utils.to_json(data))
+            yield from super().send(utils.to_json(data))
         except websockets.exceptions.ConnectionClosed as e:
             if not self._can_handle_close(e.code):
                 raise ConnectionClosed(e) from e
@@ -431,7 +429,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             }
         }
 
-        sent = discord.utils.to_json(payload)
+        sent = utils.to_json(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         yield from self.send(sent)
 
@@ -513,7 +511,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     @asyncio.coroutine
     def send_as_json(self, data):
-        yield from self.send(discord.utils.to_json(data))
+        yield from self.send(utils.to_json(data))
 
     @classmethod
     @asyncio.coroutine

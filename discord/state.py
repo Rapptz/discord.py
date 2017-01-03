@@ -35,9 +35,7 @@ from .member import Member
 from .role import Role
 from .enums import Status, ChannelType, try_enum
 from .calls import GroupCall
-
-import discord.utils
-import discord.compat
+from . import utils, compat
 
 from collections import deque, namedtuple
 import copy, enum, math
@@ -177,7 +175,7 @@ class ConnectionState:
             self._private_channels_by_user.pop(channel.recipient.id, None)
 
     def _get_message(self, msg_id):
-        return discord.utils.find(lambda m: m.id == msg_id, self.messages)
+        return utils.find(lambda m: m.id == msg_id, self.messages)
 
     def _add_guild_from_data(self, guild):
         guild = Guild(data=guild, state=self)
@@ -247,7 +245,7 @@ class ConnectionState:
             factory, _ = _channel_factory(pm['type'])
             self._add_private_channel(factory(me=self.user, data=pm, state=self))
 
-        discord.compat.create_task(self._delay_ready(), loop=self.loop)
+        compat.create_task(self._delay_ready(), loop=self.loop)
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
@@ -313,7 +311,7 @@ class ConnectionState:
                 self.dispatch('reaction_remove', reaction, user)
 
     def parse_presence_update(self, data):
-        guild = self._get_guild(discord.utils._get_as_snowflake(data, 'guild_id'))
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         if guild is None:
             return
 
@@ -338,7 +336,7 @@ class ConnectionState:
         self.user = User(state=self, data=data)
 
     def parse_channel_delete(self, data):
-        guild =  self._get_guild(discord.utils._get_as_snowflake(data, 'guild_id'))
+        guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = int(data['id'])
         if guild is not None:
             channel = guild.get_channel(channel_id)
@@ -361,7 +359,7 @@ class ConnectionState:
             self.dispatch('channel_update', old_channel, channel)
             return
 
-        guild = self._get_guild(discord.utils._get_as_snowflake(data, 'guild_id'))
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         if guild is not None:
             channel = guild.get_channel(channel_id)
             if channel is not None:
@@ -376,7 +374,7 @@ class ConnectionState:
             channel = factory(me=self.user, data=data, state=self)
             self._add_private_channel(channel)
         else:
-            guild = self._get_guild(discord.utils._get_as_snowflake(data, 'guild_id'))
+            guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
             if guild is not None:
                 channel = factory(guild=guild, state=self, data=data)
                 guild._add_channel(channel)
@@ -402,7 +400,7 @@ class ConnectionState:
     def _make_member(self, guild, data):
         roles = [guild.default_role]
         for roleid in data.get('roles', []):
-            role = discord.utils.get(guild.roles, id=roleid)
+            role = utils.get(guild.roles, id=roleid)
             if role is not None:
                 roles.append(role)
 
@@ -510,7 +508,7 @@ class ConnectionState:
 
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here
-            discord.compat.create_task(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
+            compat.create_task(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
             return
 
         # Dispatch available if newly available
@@ -557,7 +555,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             user_id = data.get('user', {}).get('id')
-            member = discord.utils.get(guild.members, id=user_id)
+            member = utils.get(guild.members, id=user_id)
             if member is not None:
                 self.dispatch('member_ban', member)
 
@@ -579,7 +577,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             role_id = int(data['role_id'])
-            role = discord.utils.find(lambda r: r.id == role_id, guild.roles)
+            role = utils.find(lambda r: r.id == role_id, guild.roles)
             try:
                 guild._remove_role(role)
             except ValueError:
@@ -592,7 +590,7 @@ class ConnectionState:
         if guild is not None:
             role_data = data['role']
             role_id = int(role_data['id'])
-            role = discord.utils.find(lambda r: r.id == role_id, guild.roles)
+            role = utils.find(lambda r: r.id == role_id, guild.roles)
             if role is not None:
                 old_role = copy.copy(role)
                 role._update(role_data)
@@ -611,8 +609,8 @@ class ConnectionState:
         self.process_listeners(ListenerType.chunk, guild, len(members))
 
     def parse_voice_state_update(self, data):
-        guild = self._get_guild(discord.utils._get_as_snowflake(data, 'guild_id'))
-        channel_id = discord.utils._get_as_snowflake(data, 'channel_id')
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        channel_id = utils._get_as_snowflake(data, 'channel_id')
         if guild is not None:
             if int(data['user_id']) == self.user.id:
                 voice = self._get_voice_client(guild.id)
@@ -632,13 +630,13 @@ class ConnectionState:
         channel = self.get_channel(int(data['channel_id']))
         if channel is not None:
             member = None
-            user_id = discord.utils._get_as_snowflake(data, 'user_id')
+            user_id = utils._get_as_snowflake(data, 'user_id')
             if isinstance(channel, DMChannel):
                 member = channel.recipient
             elif isinstance(channel, TextChannel):
                 member = channel.guild.get_member(user_id)
             elif isinstance(channel, GroupChannel):
-                member = discord.utils.find(lambda x: x.id == user_id, channel.recipients)
+                member = utils.find(lambda x: x.id == user_id, channel.recipients)
 
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
@@ -669,12 +667,12 @@ class ConnectionState:
         elif isinstance(channel, TextChannel):
             return channel.guild.get_member(user_id)
         elif isinstance(channel, GroupChannel):
-            return discord.utils.find(lambda m: m.id == user_id, channel.recipients)
+            return utils.find(lambda m: m.id == user_id, channel.recipients)
         else:
             return None
 
     def get_reaction_emoji(self, data):
-        emoji_id = discord.utils._get_as_snowflake(data, 'id')
+        emoji_id = utils._get_as_snowflake(data, 'id')
 
         if not emoji_id:
             return data['name']
@@ -696,6 +694,9 @@ class ConnectionState:
         pm = self._get_private_channel(id)
         if pm is not None:
             return pm
+
+    def create_message(self, *, channel, data):
+        return Message(state=self, channel=channel, data=data)
 
     def receive_chunk(self, guild_id):
         future = asyncio.Future(loop=self.loop)

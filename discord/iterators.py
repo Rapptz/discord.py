@@ -31,7 +31,6 @@ import datetime
 
 from .errors import NoMoreMessages
 from .utils import time_snowflake
-from .message import Message
 from .object import Object
 
 PY35 = sys.version_info >= (3, 5)
@@ -143,8 +142,11 @@ class LogsFromIterator:
                 data = reversed(data)
             if self._filter:
                 data = filter(self._filter, data)
+
+            channel = self.channel
+            state = self.ctx
             for element in data:
-                yield from self.messages.put(Message(channel=self.channel, state=self.ctx, data=element))
+                yield from self.messages.put(state.create_message(channel=channel, data=element))
 
     @asyncio.coroutine
     def _retrieve_messages(self, retrieve):

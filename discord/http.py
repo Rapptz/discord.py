@@ -36,9 +36,7 @@ from random import randint as random_integer
 log = logging.getLogger(__name__)
 
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
-from . import __version__
-
-import discord.utils
+from . import __version__, utils
 
 @asyncio.coroutine
 def json_or_text(response):
@@ -99,7 +97,7 @@ class HTTPClient:
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
-            kwargs['data'] = discord.utils.to_json(kwargs.pop('json'))
+            kwargs['data'] = utils.to_json(kwargs.pop('json'))
 
         kwargs['headers'] = headers
         with (yield from lock):
@@ -246,7 +244,7 @@ class HTTPClient:
         if embed:
             payload['embed'] = embed
 
-        form.add_field('payload_json', discord.utils.to_json(payload))
+        form.add_field('payload_json', utils.to_json(payload))
         form.add_field('file', buffer, filename=filename, content_type='application/octet-stream')
 
         return self.post(url, data=form, bucket='messages:' + str(guild_id))

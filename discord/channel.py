@@ -29,8 +29,8 @@ from .mixins import Hashable
 from .role import Role
 from .user import User
 from .member import Member
+from . import utils
 
-import discord.utils
 import discord.abc
 
 import copy
@@ -277,7 +277,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
     @property
     def created_at(self):
         """Returns the direct message channel's creation time in UTC."""
-        return discord.utils.snowflake_time(self.id)
+        return utils.snowflake_time(self.id)
 
     def permissions_for(self, user=None):
         """Handles permission resolution for a :class:`User`.
@@ -351,14 +351,14 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         self._update_group(data)
 
     def _update_group(self, data):
-        owner_id = discord.utils._get_as_snowflake(data, 'owner_id')
+        owner_id = utils._get_as_snowflake(data, 'owner_id')
         self.icon = data.get('icon')
         self.name = data.get('name')
 
         if owner_id == self.me.id:
             self.owner = self.me
         else:
-            self.owner = discord.utils.find(lambda u: u.id == owner_id, self.recipients)
+            self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
     def _get_channel(self):
         return self
@@ -389,7 +389,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     @property
     def created_at(self):
         """Returns the channel's creation time in UTC."""
-        return discord.utils.snowflake_time(self.id)
+        return utils.snowflake_time(self.id)
 
     def permissions_for(self, user):
         """Handles permission resolution for a :class:`User`.
