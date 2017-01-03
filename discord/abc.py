@@ -467,6 +467,7 @@ class GuildChannel:
 class Messageable(metaclass=abc.ABCMeta):
     __slots__ = ()
 
+    @asyncio.coroutine
     @abc.abstractmethod
     def _get_channel(self):
         raise NotImplementedError
@@ -534,7 +535,7 @@ class Messageable(metaclass=abc.ABCMeta):
             The message that was sent.
         """
 
-        channel = self._get_channel()
+        channel = yield from self._get_channel()
         guild_id = self._get_guild_id()
         state = self._state
         content = str(content) if content else None
@@ -576,7 +577,7 @@ class Messageable(metaclass=abc.ABCMeta):
         *Typing* indicator will go away after 10 seconds, or after a message is sent.
         """
 
-        channel = self._get_channel()
+        channel = yield from self._get_channel()
         yield from self._state.http.send_typing(channel.id)
 
     def typing(self):
@@ -596,7 +597,8 @@ class Messageable(metaclass=abc.ABCMeta):
                 await channel.send_message('done!')
 
         """
-        return Typing(self._get_channel())
+        channel = yield from self._get_channel()
+        return Typing(channel)
 
     @asyncio.coroutine
     def get_message(self, id):
@@ -626,7 +628,7 @@ class Messageable(metaclass=abc.ABCMeta):
             Retrieving the message failed.
         """
 
-        channel = self._get_channel()
+        channel = yield from self._get_channel()
         data = yield from self._state.http.get_message(channel.id, id)
         return state.create_message(channel=channel, data=data)
 
@@ -660,7 +662,7 @@ class Messageable(metaclass=abc.ABCMeta):
             raise ClientException('Can only delete messages in the range of [2, 100]')
 
         message_ids = [m.id for m in messages]
-        channel = self._get_channel()
+        channel = yield from self._get_channel()
         guild_id = self._get_guild_id()
 
         yield from self._state.http.delete_messages(channel.id, message_ids, guild_id)
@@ -677,7 +679,7 @@ class Messageable(metaclass=abc.ABCMeta):
             Retrieving the pinned messages failed.
         """
 
-        channel = self._get_channel()
+        channel = yield from self._get_channel()
         state = self._state
         data = yield from state.http.pins_from(channel.id)
         return [state.create_message(channel=channel, data=m) for m in data]
@@ -745,7 +747,7 @@ class Messageable(metaclass=abc.ABCMeta):
                     if message.author == client.user:
                         counter += 1
         """
-        return LogsFromIterator(self._get_channel(), limit=limit, before=before, after=after, around=around, reverse=reverse)
+        return LogsFromIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
     @asyncio.coroutine
     def purge(self, *, limit=100, check=None, before=None, after=None, around=None):

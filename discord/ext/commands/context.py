@@ -117,6 +117,7 @@ class Context(discord.abc.Messageable):
         ret = yield from command.callback(*arguments, **kwargs)
         return ret
 
+    @asyncio.coroutine
     def _get_channel(self):
         return self.channel
 

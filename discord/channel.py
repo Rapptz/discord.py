@@ -88,6 +88,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.position = data['position']
         self._fill_overwrites(data)
 
+    @asyncio.coroutine
     def _get_channel(self):
         return self
 
@@ -262,6 +263,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.me = me
         self.id = int(data['id'])
 
+    @asyncio.coroutine
     def _get_channel(self):
         return self
 
@@ -360,6 +362,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         else:
             self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
+    @asyncio.coroutine
     def _get_channel(self):
         return self
 

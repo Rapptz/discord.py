@@ -70,7 +70,7 @@ class LogsFromIterator:
         will be out of order.
     """
 
-    def __init__(self, channel, limit,
+    def __init__(self, messageable, limit,
                  before=None, after=None, around=None, reverse=None):
 
         if isinstance(before, datetime.datetime):
@@ -80,9 +80,7 @@ class LogsFromIterator:
         if isinstance(around, datetime.datetime):
             around = Object(id=time_snowflake(around))
 
-        self.channel = channel
-        self.ctx = channel._state
-        self.logs_from = channel._state.http.logs_from
+        self.messageable = messageable
         self.limit = limit
         self.before = before
         self.after = after
@@ -135,6 +133,13 @@ class LogsFromIterator:
 
     @asyncio.coroutine
     def fill_messages(self):
+        if not hasattr(self, 'channel'):
+            # do the required set up
+            channel = yield from self.messageable._get_channel()
+            self.channel = channel
+            self.state = channel._state
+            self.logs_from = channel._state.http.logs_from
+
         if self.limit > 0:
             retrieve = self.limit if self.limit <= 100 else 100
             data = yield from self._retrieve_messages(retrieve)
@@ -144,9 +149,8 @@ class LogsFromIterator:
                 data = filter(self._filter, data)
 
             channel = self.channel
-            state = self.ctx
             for element in data:
-                yield from self.messages.put(state.create_message(channel=channel, data=element))
+                yield from self.messages.put(self.state.create_message(channel=channel, data=element))
 
     @asyncio.coroutine
     def _retrieve_messages(self, retrieve):
