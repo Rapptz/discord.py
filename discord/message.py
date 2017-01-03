@@ -135,7 +135,7 @@ class Message:
             setattr(self, key, transform(value))
 
     def _add_reaction(self, data):
-        emoji = self._state.reaction_emoji(data['emoji'])
+        emoji = self._state.get_reaction_emoji(data['emoji'])
         reaction = discord.utils.find(lambda r: r.emoji == emoji, self.reactions)
         is_me = data['me'] = int(data['user_id']) == self._state.self_id
 
@@ -150,7 +150,7 @@ class Message:
         return reaction
 
     def _remove_reaction(self, data):
-        emoji = self._state.reaction_emoji(data['emoji'])
+        emoji = self._state.get_reaction_emoji(data['emoji'])
         reaction = discord.utils.find(lambda r: r.emoji == emoji, self.reactions)
 
         if reaction is None:

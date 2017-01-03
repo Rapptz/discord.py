@@ -63,7 +63,7 @@ class Reaction:
 
     def __init__(self, *, message, data, emoji=None):
         self.message = message
-        self.emoji = message._state.reaction_emoji(data['emoji']) if emoji is None else emoji
+        self.emoji = message._state.get_reaction_emoji(data['emoji']) if emoji is None else emoji
         self.count = data.get('count', 1)
         self.me = data.get('me')
 

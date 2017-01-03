@@ -1201,7 +1201,7 @@ class Client:
         data = yield from self.http.application_info()
         return AppInfo(id=data['id'], name=data['name'],
                        description=data['description'], icon=data['icon'],
-                       owner=User(state=self.connection.ctx, data=data['owner']))
+                       owner=User(state=self.connection, data=data['owner']))
 
     @asyncio.coroutine
     def get_user_info(self, user_id):
@@ -1230,4 +1230,4 @@ class Client:
             Fetching the user failed.
         """
         data = yield from self.http.get_user_info(user_id)
-        return User(state=self.connection.ctx, data=data)
+        return User(state=self.connection, data=data)
