@@ -95,6 +95,16 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def _get_guild_id(self):
         return self.guild.id
 
+    def permissions_for(self, member):
+        base = super().permissions_for(member)
+
+        # text channels do not have voice related permissions
+        denied = Permissions.voice()
+        base.value &= ~denied.value
+        return base
+
+    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
+
     @asyncio.coroutine
     def edit(self, **options):
         """|coro|
