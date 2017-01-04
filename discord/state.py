@@ -330,7 +330,7 @@ class ConnectionState:
                 # skip these useless cases.
                 return
 
-            member = self._make_member(guild, data)
+            member = Member(guild=guild, data=data, state=self)
             guild._add_member(member)
 
         old_member = copy.copy(member)
@@ -402,19 +402,9 @@ class ConnectionState:
         else:
             self.dispatch('group_remove', channel, user)
 
-    def _make_member(self, guild, data):
-        roles = [guild.default_role]
-        for roleid in data.get('roles', []):
-            role = utils.get(guild.roles, id=roleid)
-            if role is not None:
-                roles.append(role)
-
-        data['roles'] = sorted(roles, key=lambda r: r.id)
-        return Member(guild=guild, data=data, state=self)
-
     def parse_guild_member_add(self, data):
         guild = self._get_guild(int(data['guild_id']))
-        member = self._make_member(guild, data)
+        member = Member(guild=guild, data=data, state=self)
         guild._add_member(member)
         guild._member_count += 1
         self.dispatch('member_join', member)
@@ -605,7 +595,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         members = data.get('members', [])
         for member in members:
-            m = self._make_member(guild, member)
+            m = Member(guild=guild, data=member, state=self)
             existing = guild.get_member(m.id)
             if existing is None or existing.joined_at is None:
                 guild._add_member(m)

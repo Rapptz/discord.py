@@ -145,12 +145,12 @@ class Member(discord.abc.Messageable):
     def __init__(self, *, data, guild, state):
         self._state = state
         self._user = state.store_user(data['user'])
+        self.guild = guild
         self.joined_at = utils.parse_time(data.get('joined_at'))
-        self.roles = data.get('roles', [])
+        self._update_roles(data)
         self.status = Status.offline
         game = data.get('game', {})
         self.game = Game(**game) if game else None
-        self.guild = guild
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -177,6 +177,22 @@ class Member(discord.abc.Messageable):
     def _get_guild_id(self):
         return None
 
+    def _update_roles(self, data):
+        # update the roles
+        self.roles = [self.guild.default_role]
+        for role in self.guild.roles:
+            if role.id in data['roles']:
+                self.roles.append(role)
+
+        self.roles = [self.guild.default_role]
+        for roleid in map(int, data['roles']):
+            role = utils.find(lambda r: r.id == roleid, self.guild.roles)
+            if role is not None:
+                self.roles.append(role)
+
+        # sort the roles by ID since they can be "randomised"
+        self.roles.sort(key=lambda r: r.id)
+
     def _update(self, data, user=None):
         if user:
             self._user.name = user['username']
@@ -191,14 +207,7 @@ class Member(discord.abc.Messageable):
         except KeyError:
             pass
 
-        # update the roles
-        self.roles = [self.guild.default_role]
-        for role in self.guild.roles:
-            if role.id in data['roles']:
-                self.roles.append(role)
-
-        # sort the roles by ID since they can be "randomised"
-        self.roles.sort(key=lambda r: int(r.id))
+        self._update_roles(data)
 
     def _presence_update(self, data, user):
         self.status = try_enum(Status, data['status'])

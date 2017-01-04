@@ -226,13 +226,6 @@ class Guild(Hashable):
         self.splash = guild.get('splash')
 
         for mdata in guild.get('members', []):
-            roles = [self.default_role]
-            for role_id in mdata['roles']:
-                role = utils.find(lambda r: r.id == role_id, self.roles)
-                if role is not None:
-                    roles.append(role)
-
-            mdata['roles'] = roles
             member = Member(data=mdata, guild=self, state=self._state)
             self._add_member(member)
 
