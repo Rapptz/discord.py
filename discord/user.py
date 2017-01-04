@@ -61,7 +61,7 @@ class User(discord.abc.Messageable):
         Specifies if the user is a bot account.
     """
 
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state', '__weakref__')
 
     def __init__(self, *, state, data):
         self._state = state

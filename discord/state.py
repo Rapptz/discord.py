@@ -42,6 +42,7 @@ import copy, enum, math
 import datetime
 import asyncio
 import logging
+import weakref
 
 class ListenerType(enum.Enum):
     chunk = 0
@@ -66,8 +67,8 @@ class ConnectionState:
         self.user = None
         self.sequence = None
         self.session_id = None
+        self._users = weakref.WeakValueDictionary()
         self._calls = {}
-        self._users = {}
         self._emojis = {}
         self._guilds = {}
         self._voice_clients = {}
@@ -132,6 +133,9 @@ class ConnectionState:
         except KeyError:
             self._users[user_id] = user = User(state=self, data=data)
             return user
+
+    def get_user(self, id):
+        return self._users.get(id)
 
     def store_emoji(self, guild, data):
         emoji_id = int(data['id'])

@@ -507,13 +507,25 @@ class Client:
 
     # helpers/getters
 
+    @property
+    def users(self):
+        """Returns a list of all the :class:`User` the bot can see."""
+        return list(self.connection._users.values())
+
     def get_channel(self, id):
-        """Returns a :class:`Channel` or :class:`PrivateChannel` with the following ID. If not found, returns None."""
+        """Returns a :class:`abc.GuildChannel` or :class:`abc.PrivateChannel` with the following ID.
+
+        If not found, returns None.
+        """
         return self.connection.get_channel(id)
 
     def get_guild(self, id):
         """Returns a :class:`Guild` with the given ID. If not found, returns None."""
         return self.connection._get_guild(id)
+
+    def get_user(self, id):
+        """Returns a :class:`User` with the given ID. If not found, returns None."""
+        return self.connection.get_user(id)
 
     def get_all_emojis(self):
         """Returns a generator with every :class:`Emoji` the client can see."""
