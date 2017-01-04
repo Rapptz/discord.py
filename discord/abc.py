@@ -592,8 +592,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 await channel.send_message('done!')
 
         """
-        channel = yield from self._get_channel()
-        return Typing(channel)
+        return Typing(self)
 
     @asyncio.coroutine
     def get_message(self, id):

@@ -29,16 +29,17 @@ import asyncio
 from .compat import create_task
 
 class Typing:
-    def __init__(self, channel):
-        http = channel._state.http
-        self.loop = http.loop
-        self.channel = channel
-        self.typing = http.send_typing
+    def __init__(self, messageable):
+        self.loop = messageable._state.loop
+        self.messageable = messageable
 
     @asyncio.coroutine
     def do_typing(self):
+        channel = yield from self.messageable._get_channel()
+        typing = channel._state.http.send_typing
+
         while True:
-            yield from self.typing(self.channel.id)
+            yield from typing(channel.id)
             yield from asyncio.sleep(5)
 
     def __enter__(self):
