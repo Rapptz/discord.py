@@ -1,18 +1,15 @@
 import discord
 
-client = discord.Client()
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('------')
 
-@client.event
-async def on_member_join(member):
-    server = member.server
-    fmt = 'Welcome {0.mention} to {1.name}!'
-    await client.send_message(server, fmt.format(member, server))
+    async def on_member_join(self, member):
+        guild = member.guild
+        await guild.default_channel.send('Welcome {0.mention} to {1.name}!'.format(member, guild))
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
-
+client = MyClient()
 client.run('token')
