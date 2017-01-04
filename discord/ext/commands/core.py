@@ -321,7 +321,7 @@ class Command:
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
 
-        if self.no_pm and ctx.message.channel.is_private:
+        if self.no_pm and not isinstance(ctx.channel, discord.abc.GuildChannel):
             raise NoPrivateMessage('This command cannot be used in private messages.')
 
         if not ctx.bot.can_run(ctx):
@@ -762,12 +762,10 @@ def has_role(name):
     """
 
     def predicate(ctx):
-        msg = ctx.message
-        ch = msg.channel
-        if ch.is_private:
+        if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return False
 
-        role = discord.utils.get(msg.author.roles, name=name)
+        role = discord.utils.get(ctx.author.roles, name=name)
         return role is not None
 
     return check(predicate)
@@ -795,12 +793,10 @@ def has_any_role(*names):
             await bot.say('You are cool indeed')
     """
     def predicate(ctx):
-        msg = ctx.message
-        ch = msg.channel
-        if ch.is_private:
+        if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return False
 
-        getter = functools.partial(discord.utils.get, msg.author.roles)
+        getter = functools.partial(discord.utils.get, ctx.author.roles)
         return any(getter(name=name) is not None for name in names)
     return check(predicate)
 
@@ -828,9 +824,8 @@ def has_permissions(**perms):
 
     """
     def predicate(ctx):
-        msg = ctx.message
-        ch = msg.channel
-        permissions = ch.permissions_for(msg.author)
+        ch = ctx.channel
+        permissions = ch.permissions_for(ctx.author)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
 
     return check(predicate)
@@ -841,8 +836,8 @@ def bot_has_role(name):
     """
 
     def predicate(ctx):
-        ch = ctx.message.channel
-        if ch.is_private:
+        ch = ctx.channel
+        if not isinstance(ch, discord.abc.GuildChannel):
             return False
         me = ch.guild.me
         role = discord.utils.get(me.roles, name=name)
@@ -854,8 +849,8 @@ def bot_has_any_role(*names):
     any of the roles listed.
     """
     def predicate(ctx):
-        ch = ctx.message.channel
-        if ch.is_private:
+        ch = ctx.channel
+        if not isinstance(ch, discord.abc.GuildChannel):
             return False
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
@@ -867,9 +862,9 @@ def bot_has_permissions(**perms):
     the permissions listed.
     """
     def predicate(ctx):
-        ch = ctx.message.channel
-        me = ch.guild.me if not ch.is_private else ctx.bot.user
-        permissions = ch.permissions_for(me)
+        guild = ctx.guild
+        me = guild.me if guild is not None else ctx.bot.user
+        permissions = ctx.channel.permissions_for(me)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
     return check(predicate)
 
