@@ -242,15 +242,14 @@ class ConnectionState:
     def parse_ready(self, data):
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
         self.user = self.store_user(data['user'])
-        guilds = data.get('guilds')
 
         guilds = self._ready_state.guilds
-        for guild_data in guilds:
-            guild = self._add_server_from_data(guild_data)
+        for guild_data in data['guilds']:
+            guild = self._add_guild_from_data(guild_data)
             if not self.is_bot or guild.large:
                 guilds.append(guild)
 
-        for pm in data.get('private_channels'):
+        for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
             self._add_private_channel(factory(me=self.user, data=pm, state=self))
 
