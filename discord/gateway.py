@@ -412,12 +412,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 raise ConnectionClosed(e, shard_id=self.shard_id) from e
 
     @asyncio.coroutine
-    def change_presence(self, *, game=None, status=None, afk=False, since=0.0, idle=None):
+    def change_presence(self, *, game=None, status=None, afk=False, since=0.0):
         if game is not None and not isinstance(game, Game):
             raise InvalidArgument('game must be of type Game or None')
-
-        if idle:
-            status = 'idle'
 
         if status == 'idle':
             since = int(time.time() * 1000)
@@ -437,18 +434,6 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         sent = utils.to_json(payload)
         log.debug('Sending "{}" to change status'.format(sent))
         yield from self.send(sent)
-
-        status_enum = try_enum(Status, status)
-        if status_enum is Status.invisible:
-            status_enum = Status.offline
-
-        for guild in self._connection.guilds:
-            me = guild.me
-            if me is None:
-                continue
-
-            me.game = game
-            me.status = status_enum
 
     @asyncio.coroutine
     def request_sync(self, guild_ids):

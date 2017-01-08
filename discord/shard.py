@@ -29,6 +29,7 @@ from .client import Client
 from .gateway import *
 from .errors import ConnectionClosed
 from . import compat
+from .enums import Status
 
 import asyncio
 import logging
@@ -224,3 +225,62 @@ class AutoShardedClient(Client):
         yield from self.http.close()
         self._closed.set()
         self._is_ready.clear()
+
+    @asyncio.coroutine
+    def change_presence(self, *, game=None, status=None, afk=False, shard_id=None):
+        """|coro|
+
+        Changes the client's presence.
+
+        The game parameter is a Game object (not a string) that represents
+        a game being played currently.
+
+        Parameters
+        ----------
+        game: Optional[:class:`Game`]
+            The game being played. None if no game is being played.
+        status: Optional[:class:`Status`]
+            Indicates what status to change to. If None, then
+            :attr:`Status.online` is used.
+        afk: bool
+            Indicates if you are going AFK. This allows the discord
+            client to know how to handle push notifications better
+            for you in case you are actually idle and not lying.
+        shard_id: Optional[int]
+            The shard_id to change the presence to. If not specified
+            or ``None``, then it will change the presence of every
+            shard the bot can see.
+
+        Raises
+        ------
+        InvalidArgument
+            If the ``game`` parameter is not :class:`Game` or None.
+        """
+
+        if status is None:
+            status = 'online'
+            status_enum = Status.online
+        elif status is Status.offline:
+            status = 'invisible'
+            status_enum = Status.offline
+        else:
+            status_enum = status
+            status = str(status)
+
+        if shard_id is None:
+            for shard in self.shards.values():
+                yield from shard.ws.change_presence(game=game, status=status, afk=afk)
+
+            guilds = self.connection.guilds
+        else:
+            shard = self.shards[shard_id]
+            yield from shard.ws.change_presence(game=game, status=status, afk=afk)
+            guilds = [g for g in self.connection.guilds if g.shard_id == shard_id]
+
+        for guild in guilds:
+            me = guild.me
+            if me is None:
+                continue
+
+            me.game = game
+            me.status = status_enum

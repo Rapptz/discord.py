@@ -1006,12 +1006,23 @@ class Client:
 
         if status is None:
             status = 'online'
+            status_enum = Status.online
         elif status is Status.offline:
             status = 'invisible'
+            status_enum = Status.offline
         else:
+            status_enum = status
             status = str(status)
 
         yield from self.ws.change_presence(game=game, status=status, afk=afk)
+
+        for guild in self.connection.guilds:
+            me = guild.me
+            if me is None:
+                continue
+
+            me.game = game
+            me.status = status_enum
 
     # Invite management
 
