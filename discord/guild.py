@@ -32,6 +32,8 @@ from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
 from .game import Game
+from .permissions import PermissionOverwrite
+from .errors import InvalidArgument
 from .channel import *
 from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
@@ -389,6 +391,101 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
+    def _create_channel(self, name, overwrites, type):
+        if overwrites is None:
+            overwrites = {}
+        elif not isinstance(overwrites, dict):
+            raise InvalidArgument('overwrites parameter expects a dict.')
+
+        perms = []
+        for target, perm in overwrites.items():
+            if not isinstance(perm, PermissionOverwrite):
+                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+
+            allow, deny = perm.pair()
+            payload = {
+                'allow': allow.value,
+                'deny': deny.value,
+                'id': target.id
+            }
+
+            if isinstance(target, Role):
+                payload['type'] = 'role'
+            else:
+                payload['type'] = 'member'
+
+            perms.append(payload)
+
+        return self._state.http.create_channel(self.id, name, str(type), permission_overwrites=perms)
+
+    @asyncio.coroutine
+    def create_text_channel(self, name, *, overwrites=None):
+        """|coro|
+
+        Creates a :class:`TextChannel` for the guild.
+
+        Note that you need the proper permissions to create the channel.
+
+        The ``overwrites`` parameter can be used to create a 'secret'
+        channel upon creation. This parameter expects a `dict` of
+        overwrites with the target (either a :class:`Member` or a :class:`Role`)
+        as the key and a :class:`PermissionOverwrite` as the value.
+
+        Examples
+        ----------
+
+        Creating a basic channel:
+
+        .. code-block:: python
+
+            channel = await guild.create_text_channel('cool-channel')
+
+        Creating a "secret" channel:
+
+        .. code-block:: python
+
+            overwrites = {
+                guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                guild.me: discord.PermissionOverwrite(read_messages=True)
+            }
+
+            channel = await guild.create_text_channel('secret', overwrites=overwrites)
+
+        Parameters
+        -----------
+        name: str
+            The channel's name.
+        overwrites
+            A `dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply upon creation of a channel.
+            Useful for creating secret channels.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`TextChannel`
+            The channel that was just created.
+        """
+        data = yield from self._create_channel(name, overwrites, ChannelType.text)
+        return TextChannel(state=self._state, guild=self, data=data)
+
+    @asyncio.coroutine
+    def create_voice_channel(self, name, *, overwrites=None):
+        """|coro|
+
+        Same as :meth:`create_text_channel` except makes a
+        :class:`VoiceChannel` instead.
+        """
+        data = yield from self._create_channel(name, overwrites, ChannelType.voice)
+        return VoiceChannel(state=self._state, guild=self, data=data)
 
     @asyncio.coroutine
     def leave(self):
