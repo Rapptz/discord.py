@@ -37,6 +37,7 @@ from . import utils, opus, compat, abc
 from .enums import ChannelType, GuildRegion, Status, MessageType, VerificationLevel
 from collections import namedtuple
 from .embeds import Embed
+from .shard import AutoShardedClient
 
 import logging
 

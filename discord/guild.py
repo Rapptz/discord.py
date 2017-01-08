@@ -325,6 +325,14 @@ class Guild(Hashable):
         return self._member_count
 
     @property
+    def shard_id(self):
+        """Returns the shard ID for this guild if applicable."""
+        count = self._state.shard_count
+        if count is None:
+            return None
+        return (self.id >> 22) % count
+
+    @property
     def created_at(self):
         """Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)

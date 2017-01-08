@@ -37,6 +37,9 @@ Client
 .. autoclass:: Client
     :members:
 
+.. autoclass:: AutoShardedClient
+    :members:
+
 
 Voice
 -----

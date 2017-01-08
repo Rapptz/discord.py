@@ -118,14 +118,17 @@ class ConnectionClosed(ClientException):
 
     Attributes
     -----------
-    code : int
+    code: int
         The close code of the websocket.
-    reason : str
+    reason: str
         The reason provided for the closure.
+    shard_id: Optional[int]
+        The shard ID that got closed if applicable.
     """
-    def __init__(self, original):
+    def __init__(self, original, *, shard_id):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
         self.code = original.code
         self.reason = original.reason
+        self.shard_id = shard_id
         super().__init__(str(original))

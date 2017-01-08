@@ -142,6 +142,7 @@ class Client:
         self.connection = ConnectionState(dispatch=self.dispatch, chunker=self.request_offline_members,
                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
+        self.connection.shard_count = self.shard_count
         self._closed = asyncio.Event(loop=self.loop)
         self._is_logged_in = asyncio.Event(loop=self.loop)
         self._is_ready = asyncio.Event(loop=self.loop)
@@ -405,11 +406,14 @@ class Client:
 
         while not self.is_closed:
             try:
-                yield from self.ws.poll_event()
+                yield from ws.poll_event()
             except (ReconnectWebSocket, ResumeWebSocket) as e:
                 resume = type(e) is ResumeWebSocket
                 log.info('Got ' + type(e).__name__)
-                self.ws = yield from DiscordWebSocket.from_client(self, resume=resume)
+                self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id,
+                                                                        session=self.ws.session_id,
+                                                                        sequence=self.ws.sequence,
+                                                                        resume=resume)
             except ConnectionClosed as e:
                 yield from self.close()
                 if e.code != 1000:
