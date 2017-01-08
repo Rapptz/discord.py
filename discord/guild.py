@@ -441,6 +441,11 @@ class Guild(Hashable):
         icon: bytes
             A *bytes-like* object representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
+        splash: bytes
+            A *bytes-like* object representing the invite splash.
+            Only PNG/JPEG supported. Could be ``None`` to denote removing the
+            splash. Only available for partnered guilds with ``INVITE_SPLASH``
+            feature.
         region: :class:`GuildRegion`
             The new region for the guild's voice communication.
         afk_channel: :class:`VoiceChannel`
@@ -475,7 +480,18 @@ class Guild(Hashable):
             else:
                 icon = None
 
+        try:
+            splash_bytes = fields['splash']
+        except KeyError:
+            splash = self.splash
+        else:
+            if splash_bytes is not None:
+                splash = utils._bytes_to_base64_data(splash_bytes)
+            else:
+                splash = None
+
         fields['icon'] = icon
+        fields['splash'] = splash
         if 'afk_channel' in fields:
             fields['afk_channel_id'] = fields['afk_channel'].id
 
