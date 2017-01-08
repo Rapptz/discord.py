@@ -31,6 +31,7 @@ from . import utils
 from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
+from .errors import InvalidArgument
 from .game import Game
 from .channel import *
 from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
