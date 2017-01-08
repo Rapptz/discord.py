@@ -179,7 +179,7 @@ class Guild(Hashable):
                 finally:
                     # we switched channels
                     if channel is not None:
-                        channel.voice_members.append(self)
+                        channel.voice_members.append(member)
 
         return member, before, after
 
