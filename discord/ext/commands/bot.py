@@ -128,67 +128,7 @@ def _default_help_command(ctx, *commands : str):
     for page in pages:
         yield from destination.send(page)
 
-
-class Bot(GroupMixin, discord.Client):
-    """Represents a discord bot.
-
-    This class is a subclass of :class:`discord.Client` and as a result
-    anything that you can do with a :class:`discord.Client` you can do with
-    this bot.
-
-    This class also subclasses :class:`GroupMixin` to provide the functionality
-    to manage commands.
-
-    Attributes
-    -----------
-    command_prefix
-        The command prefix is what the message content must contain initially
-        to have a command invoked. This prefix could either be a string to
-        indicate what the prefix should be, or a callable that takes in the bot
-        as its first parameter and :class:`discord.Message` as its second
-        parameter and returns the prefix. This is to facilitate "dynamic"
-        command prefixes. This callable can be either a regular function or
-        a coroutine.
-
-        The command prefix could also be a list or a tuple indicating that
-        multiple checks for the prefix should be used and the first one to
-        match will be the invocation prefix. You can get this prefix via
-        :attr:`Context.prefix`.
-    description : str
-        The content prefixed into the default help message.
-    self_bot : bool
-        If ``True``, the bot will only listen to commands invoked by itself rather
-        than ignoring itself. If ``False`` (the default) then the bot will ignore
-        itself. This cannot be changed once initialised.
-    formatter : :class:`HelpFormatter`
-        The formatter used to format the help message. By default, it uses a
-        the :class:`HelpFormatter`. Check it for more info on how to override it.
-        If you want to change the help command completely (add aliases, etc) then
-        a call to :meth:`remove_command` with 'help' as the argument would do the
-        trick.
-    pm_help : Optional[bool]
-        A tribool that indicates if the help command should PM the user instead of
-        sending it to the channel it received it from. If the boolean is set to
-        ``True``, then all help output is PM'd. If ``False``, none of the help
-        output is PM'd. If ``None``, then the bot will only PM when the help
-        message becomes too long (dictated by more than 1000 characters).
-        Defaults to ``False``.
-    help_attrs : dict
-        A dictionary of options to pass in for the construction of the help command.
-        This allows you to change the command behaviour without actually changing
-        the implementation of the command. The attributes will be the same as the
-        ones passed in the :class:`Command` constructor. Note that ``pass_context``
-        will always be set to ``True`` regardless of what you pass in.
-    command_not_found : str
-        The format string used when the help command is invoked with a command that
-        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
-        The only format argument is the name of the command passed.
-    command_has_no_subcommands : str
-        The format string used when the help command is invoked with requests for a
-        subcommand but the command does not have any subcommands. Defaults to
-        ``"Command {0.name} has no subcommands."``. The first format argument is the
-        :class:`Command` attempted to get a subcommand and the second is the name.
-    """
+class BotBase(GroupMixin):
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
@@ -683,3 +623,71 @@ class Bot(GroupMixin, discord.Client):
     @asyncio.coroutine
     def on_message(self, message):
         yield from self.process_commands(message)
+
+class Bot(BotBase, discord.Client):
+    """Represents a discord bot.
+
+    This class is a subclass of :class:`discord.Client` and as a result
+    anything that you can do with a :class:`discord.Client` you can do with
+    this bot.
+
+    This class also subclasses :class:`GroupMixin` to provide the functionality
+    to manage commands.
+
+    Attributes
+    -----------
+    command_prefix
+        The command prefix is what the message content must contain initially
+        to have a command invoked. This prefix could either be a string to
+        indicate what the prefix should be, or a callable that takes in the bot
+        as its first parameter and :class:`discord.Message` as its second
+        parameter and returns the prefix. This is to facilitate "dynamic"
+        command prefixes. This callable can be either a regular function or
+        a coroutine.
+
+        The command prefix could also be a list or a tuple indicating that
+        multiple checks for the prefix should be used and the first one to
+        match will be the invocation prefix. You can get this prefix via
+        :attr:`Context.prefix`.
+    description : str
+        The content prefixed into the default help message.
+    self_bot : bool
+        If ``True``, the bot will only listen to commands invoked by itself rather
+        than ignoring itself. If ``False`` (the default) then the bot will ignore
+        itself. This cannot be changed once initialised.
+    formatter : :class:`HelpFormatter`
+        The formatter used to format the help message. By default, it uses a
+        the :class:`HelpFormatter`. Check it for more info on how to override it.
+        If you want to change the help command completely (add aliases, etc) then
+        a call to :meth:`remove_command` with 'help' as the argument would do the
+        trick.
+    pm_help : Optional[bool]
+        A tribool that indicates if the help command should PM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is PM'd. If ``False``, none of the help
+        output is PM'd. If ``None``, then the bot will only PM when the help
+        message becomes too long (dictated by more than 1000 characters).
+        Defaults to ``False``.
+    help_attrs : dict
+        A dictionary of options to pass in for the construction of the help command.
+        This allows you to change the command behaviour without actually changing
+        the implementation of the command. The attributes will be the same as the
+        ones passed in the :class:`Command` constructor. Note that ``pass_context``
+        will always be set to ``True`` regardless of what you pass in.
+    command_not_found : str
+        The format string used when the help command is invoked with a command that
+        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
+        The only format argument is the name of the command passed.
+    command_has_no_subcommands : str
+        The format string used when the help command is invoked with requests for a
+        subcommand but the command does not have any subcommands. Defaults to
+        ``"Command {0.name} has no subcommands."``. The first format argument is the
+        :class:`Command` attempted to get a subcommand and the second is the name.
+    """
+    pass
+
+class AutoShardedBot(BotBase, discord.AutoShardedClient):
+    """This is similar to :class:`Bot` except that it is derived from
+    :class:`discord.AutoShardedClient` instead.
+    """
+    pass
