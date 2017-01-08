@@ -214,35 +214,6 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         else:
             return ws
 
-    @classmethod
-    @asyncio.coroutine
-    def from_sharded_client(cls, client):
-        if client.shard_count is None:
-            client.shard_count, gateway = yield from client.http.get_bot_gateway()
-        else:
-            gateway = yield from client.http.get_gateway()
-
-        ret = []
-        client.connection.shard_count = client.shard_count
-
-        for shard_id in range(client.shard_count):
-            ws = yield from websockets.connect(gateway, loop=client.loop, klass=cls)
-            ws.token = client.http.token
-            ws._connection = client.connection
-            ws._dispatch = client.dispatch
-            ws.gateway = gateway
-            ws.shard_id = shard_id
-            ws.shard_count = client.shard_count
-
-            # OP HELLO
-            yield from ws.poll_event()
-            yield from ws.identify()
-            ret.append(ws)
-            log.info('Sent IDENTIFY payload to create the websocket for shard_id: %s' % shard_id)
-            yield from asyncio.sleep(5.0, loop=client.loop)
-
-        return ret
-
     def wait_for(self, event, predicate, result=None):
         """Waits for a DISPATCH'd event that meets the predicate.
 
