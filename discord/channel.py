@@ -174,20 +174,17 @@ class VoiceChannel(discord.abc.GuildChannel, Hashable):
         top channel is position 0.
     bitrate: int
         The channel's preferred audio bitrate in bits per second.
-    voice_members
-        A list of :class:`Members` that are currently inside this voice channel.
     user_limit: int
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = ( 'voice_members', 'name', 'id', 'guild', 'bitrate',
-                  'user_limit', '_state', 'position', '_overwrites' )
+    __slots__ = ('name', 'id', 'guild', 'bitrate',  'user_limit',
+                 '_state', 'position', '_overwrites' )
 
     def __init__(self, *, state, guild, data):
         self._state = state
         self.id = int(data['id'])
         self._update(guild, data)
-        self.voice_members = []
 
     def __repr__(self):
         return '<VoiceChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
@@ -199,6 +196,17 @@ class VoiceChannel(discord.abc.GuildChannel, Hashable):
         self.bitrate = data.get('bitrate')
         self.user_limit = data.get('user_limit')
         self._fill_overwrites(data)
+
+    @property
+    def voice_members(self):
+        """Returns a list of :class:`Member` that are currently inside this voice channel."""
+        ret = []
+        for user_id, state in self.guild._voice_states.items():
+            if state.channel.id == self.id:
+                member = self.guild.get_member(user_id)
+                if member is not None:
+                    ret.append(member)
+        return ret
 
     @asyncio.coroutine
     def edit(self, **options):

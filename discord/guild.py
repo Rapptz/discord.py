@@ -164,23 +164,6 @@ class Guild(Hashable):
             self._voice_states[user_id] = after
 
         member = self.get_member(user_id)
-        if member is not None:
-            old = before.channel
-            # update the references pointed to by the voice channels
-            if old is None and channel is not None:
-                # we joined a channel
-                channel.voice_members.append(member)
-            elif old is not None:
-                try:
-                    # we either left a channel or switched channels
-                    old.voice_members.remove(member)
-                except ValueError:
-                    pass
-                finally:
-                    # we switched channels
-                    if channel is not None:
-                        channel.voice_members.append(member)
-
         return member, before, after
 
     def _add_role(self, role):

@@ -50,7 +50,7 @@ class VoiceState:
         Indicates if the user is currently deafened by their own accord.
     is_afk: bool
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: Optional[Union[:class:`Channel`, :class:`PrivateChannel`]]
+    channel: :class:`VoiceChannel`
         The voice channel that the user is currently connected to. None if the user
         is not currently in a voice channel.
     """
@@ -69,6 +69,9 @@ class VoiceState:
         self.mute = data.get('mute', False)
         self.deaf = data.get('deaf', False)
         self.channel = channel
+
+    def __repr__(self):
+        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} channel={0.channel!r}>'.format(self)
 
 def flatten_user(cls):
     for attr, value in User.__dict__.items():
