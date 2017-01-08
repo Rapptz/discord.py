@@ -406,7 +406,7 @@ class Client:
 
         while not self.is_closed:
             try:
-                yield from ws.poll_event()
+                yield from self.ws.poll_event()
             except (ReconnectWebSocket, ResumeWebSocket) as e:
                 resume = type(e) is ResumeWebSocket
                 log.info('Got ' + type(e).__name__)

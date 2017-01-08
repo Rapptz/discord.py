@@ -743,9 +743,6 @@ class AutoShardedConnectionState(ConnectionState):
 
             self.dispatch('shard_ready', shard_id)
 
-            # sleep a second for every shard ID.
-            # yield from asyncio.sleep(1.0, loop=self.loop)
-
         # remove the state
         try:
             del self._ready_state
