@@ -169,8 +169,6 @@ class AutoShardedClient(Client):
         try:
             ws = yield from websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket)
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             log.info('Failed to connect for shard_id: %s. Retrying...' % shard_id)
             yield from asyncio.sleep(5.0, loop=self.loop)
             yield from self.launch_shard(gateway, shard_id)
