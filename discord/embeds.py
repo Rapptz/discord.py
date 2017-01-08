@@ -132,7 +132,7 @@ class Embed:
         except KeyError:
             pass
 
-        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields'):
+        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields', 'image', 'footer'):
             try:
                 value = data[attr]
             except KeyError:
