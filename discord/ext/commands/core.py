@@ -316,7 +316,7 @@ class Command:
             if not view.eof:
                 raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-
+    @asyncio.coroutine
     def _verify_checks(self, ctx):
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
@@ -324,16 +324,16 @@ class Command:
         if self.no_pm and not isinstance(ctx.channel, discord.abc.GuildChannel):
             raise NoPrivateMessage('This command cannot be used in private messages.')
 
-        if not ctx.bot.can_run(ctx):
+        if not (yield from ctx.bot.can_run(ctx)):
             raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
 
-        if not self.can_run(ctx):
+        if not (yield from self.can_run(ctx)):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
     @asyncio.coroutine
     def prepare(self, ctx):
         ctx.command = self
-        self._verify_checks(ctx)
+        yield from self._verify_checks(ctx)
         yield from self._parse_arguments(ctx)
 
         if self._buckets.valid:
@@ -408,6 +408,7 @@ class Command:
             return self.help.split('\n', 1)[0]
         return ''
 
+    @asyncio.coroutine
     def can_run(self, context):
         """Checks if the command can be executed by checking all the predicates
         inside the :attr:`checks` attribute.
@@ -427,7 +428,10 @@ class Command:
         if not predicates:
             # since we have no checks, then we just return True.
             return True
-        return all(predicate(context) for predicate in predicates)
+        return all(
+            (yield from predicate(context)) if asyncio.iscoroutinefunction(predicate) else predicate(context)
+            for predicate in predicates
+        )
 
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave

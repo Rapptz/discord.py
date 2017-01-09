@@ -290,8 +290,12 @@ class BotBase(GroupMixin):
         except ValueError:
             pass
 
+    @asyncio.coroutine
     def can_run(self, ctx):
-        return all(f(ctx) for f in self._checks)
+        return all(
+            (yield from f(ctx)) if asyncio.iscoroutinefunction(f) else f(ctx)
+            for f in self._checks
+        )
 
     # listener registration
 
