@@ -74,7 +74,7 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
-class DefaultMessageNotifications(Enum):
+class MsgNotifications(Enum):
     all_messages  = 0
     only_mentions = 1
 
