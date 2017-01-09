@@ -533,7 +533,7 @@ class Messageable(metaclass=abc.ABCMeta):
         channel = yield from self._get_channel()
         guild_id = self._get_guild_id()
         state = self._state
-        content = str(content) if content else None
+        content = str(content) if content is not None else None
         if embed is not None:
             embed = embed.to_dict()
 
