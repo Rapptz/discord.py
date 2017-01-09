@@ -390,6 +390,11 @@ class ConnectionState:
 
         self.dispatch('channel_create', channel)
 
+    def parse_channel_pins_update(self, data):
+        channel = self.get_channel(int(data['channel_id']))
+        last_pin = utils.parse_time(data['last_pin_timestamp']) if data['last_pin_timestamp'] else None
+        self.dispatch('channel_pins_update', channel, last_pin)
+
     def parse_channel_recipient_add(self, data):
         channel = self._get_private_channel(int(data['channel_id']))
         user = self.store_user(data['user'])
