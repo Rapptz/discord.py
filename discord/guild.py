@@ -730,7 +730,7 @@ class Guild(Hashable):
             The list of invites that are currently active.
         """
 
-        data = yield from self._state.http.invites_from(guild.id)
+        data = yield from self._state.http.invites_from(self.id)
         result = []
         for invite in data:
             channel = self.get_channel(int(invite['channel']['id']))
