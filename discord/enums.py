@@ -74,6 +74,13 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
+class DefaultMessageNotifications(Enum):
+    all_messages  = 0
+    only_mentions = 1
+
+    def __str__(self):
+        return self.name
+
 class Status(Enum):
     online = 'online'
     offline = 'offline'
