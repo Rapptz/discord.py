@@ -616,7 +616,7 @@ class Guild(Hashable):
 
         try:
             if not isinstance(fields['default_message_notifications'], MsgNotifications):
-                raise InvalidArgument('default_message_notifications field must of type DefaultMessageNotifications')
+                raise InvalidArgument('default_message_notifications field must of type MsgNotifications')
 
             fields['default_message_notifications'] = fields['default_message_notifications'].value
         except KeyError:
