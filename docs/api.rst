@@ -263,6 +263,14 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: The :class:`Channel` that got updated with the old info.
     :param after: The :class:`Channel` that got updated with the updated info.
 
+.. function:: on_channel_pins_update(channel, last_pin)
+
+    Called whenever a message is pinned or unpinned from a channel.
+
+    :param channel: The :class:`Channel` that had it's pins updated.
+    :param last_pin: A ``datetime.datetime`` object representing when the latest message
+    was pinned or ``None`` if there are no pins.
+
 .. function:: on_member_join(member)
               on_member_remove(member)
 
