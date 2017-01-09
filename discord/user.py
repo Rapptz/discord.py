@@ -120,12 +120,15 @@ class User(discord.abc.Messageable):
 
     @property
     def avatar_url(self):
-        """Returns a friendly URL version of the avatar variable the user has. An empty string if
-        the user has no avatar."""
-        if self.avatar is None:
-            return ''
+        """Returns a friendly URL version of the avatar the user has.
 
-        url = 'https://images.discordapp.net/avatars/{0.id}/{0.avatar}.{1}?size=1024'
+        If the user does not have a traditional avatar, their default
+        avatar URL is returned instead.
+        """
+        if self.avatar is None:
+            return self.default_avatar_url
+
+        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size=1024'
         if self.avatar.startswith('a_'):
             return url.format(self, 'gif')
         else:
