@@ -35,7 +35,7 @@ from .game import Game
 from .permissions import PermissionOverwrite
 from .errors import InvalidArgument
 from .channel import *
-from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel, MsgNotifications
+from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel, MessageNotifications
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
@@ -102,7 +102,7 @@ class Guild(Hashable):
         1 then they do.
     verification_level: :class:`VerificationLevel`
         The guild's verification level.
-    default_message_notifications: :class:`MsgNotifications`
+    default_message_notifications: :class:`MessageNotifications`
         The guild's default message notification setting.
     features: List[str]
         A list of features that the guild has. They are currently as follows:
@@ -202,7 +202,7 @@ class Guild(Hashable):
         self.name = guild.get('name')
         self.region = try_enum(GuildRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
-        self.default_message_notifications = try_enum(MsgNotifications,
+        self.default_message_notifications = try_enum(MessageNotifications,
                                                       guild.get('default_message_notifications'))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
@@ -559,7 +559,7 @@ class Guild(Hashable):
             be owner of the guild to do this.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
-        default_message_notifications: :class:`MsgNotifications`
+        default_message_notifications: :class:`MessageNotifications`
             The new default message notification setting.
 
         Raises
@@ -614,13 +614,11 @@ class Guild(Hashable):
 
         fields['verification_level'] = level.value
 
-        try:
-            if not isinstance(fields['default_message_notifications'], MsgNotifications):
-                raise InvalidArgument('default_message_notifications field must of type MsgNotifications')
+        notifications = fields.get('default_message_notifications', self.default_message_notifications)
+        if not isinstance(notifications, MessageNotifications):
+            raise InvalidArgument('default_message_notifications field must be of type MessageNotifications')
 
-            fields['default_message_notifications'] = fields['default_message_notifications'].value
-        except KeyError:
-            pass
+        fields['default_message_notifications'] = notifications.value
 
         yield from self._state.http.edit_guild(self.id, **fields)
 
