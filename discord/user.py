@@ -139,7 +139,7 @@ class User(discord.abc.Messageable):
     @property
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
-        return 'https://discordapp.com/assets/{0.url}.png'.format(self.default_avatar)
+        return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
 
     @property
     def mention(self):
