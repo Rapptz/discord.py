@@ -294,7 +294,7 @@ class Guild(Hashable):
         """Returns the URL version of the guild's icon. Returns an empty string if it has no icon."""
         if self.icon is None:
             return ''
-        return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.jpg'.format(self)
+        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
 
     @property
     def splash_url(self):
