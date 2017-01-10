@@ -81,7 +81,7 @@ class User(discord.abc.Messageable):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash(self.id)
+        return self.id >> 22
 
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)

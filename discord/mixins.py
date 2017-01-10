@@ -39,4 +39,4 @@ class Hashable(EqualityComparable):
     __slots__ = ()
 
     def __hash__(self):
-        return hash(self.id)
+        return self.id >> 22
