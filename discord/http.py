@@ -632,7 +632,7 @@ class HTTPClient:
     # Misc
 
     def application_info(self):
-        return self.request(Route('GET', '/oauth/applications/@me'))
+        return self.request(Route('GET', '/oauth2/applications/@me'))
 
     @asyncio.coroutine
     def get_gateway(self):
