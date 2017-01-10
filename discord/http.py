@@ -463,7 +463,7 @@ class HTTPClient:
 
     def edit_member(self, guild_id, user_id, **fields):
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
-        return self.request(r, json=fields, bucket=bucket)
+        return self.request(r, json=fields)
 
     # Channel management
 
@@ -632,7 +632,7 @@ class HTTPClient:
     # Misc
 
     def application_info(self):
-        return self.request(Route('GET', '/oauth/applications/@me'))
+        return self.request(Route('GET', '/oauth2/applications/@me'))
 
     @asyncio.coroutine
     def get_gateway(self):
