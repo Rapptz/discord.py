@@ -86,18 +86,12 @@ class Status(Enum):
         return self.value
 
 class DefaultAvatar(Enum):
-    blurple = "6debd47ed13483642cf09e832ed0bc1b"
-    grey = "322c936a8c8be1b803cd94861bdfa868"
-    green = "dd4dbc0016779df1378e7812eabaa04d"
-    orange = "0e291f67c9274a1abdddeb3fd919cbaa"
-    red = "1cbd08c76f8af6dddce02c5138971129"
-
-    def __new__(cls, url):
-        value = len(cls.__members__)
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.url = url
-        return obj
+    blurple = 0
+    grey    = 1
+    gray    = 1
+    green   = 2
+    orange  = 3
+    red     = 4
 
     def __str__(self):
         return self.name
