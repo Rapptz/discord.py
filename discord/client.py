@@ -1144,7 +1144,7 @@ class Client:
 
         channel_id, guild_id = yield from self._resolve_destination(destination)
 
-        content = str(content) if content else None
+        content = str(content) if content is not None else None
 
         if embed is not None:
             embed = embed.to_dict()
@@ -1230,6 +1230,7 @@ class Client:
         except TypeError:
             buffer = fp
 
+        content = str(content) if content is not None else None
         data = yield from self.http.send_file(channel_id, buffer, guild_id=guild_id,
                                               filename=filename, content=content, tts=tts)
         channel = self.get_channel(data.get('channel_id'))
