@@ -8,6 +8,22 @@ What's New
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp0p16p1:
+
+v0.16.1
+--------
+
+This release is just a bug fix release with some better rate limit implementation.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Servers are now properly chunked for user bots.
+- The CDN URL is now used instead of the API URL for assets.
+- Rate limit implementation now tries to use header information if possible.
+- Event loop is now properly propagated (:issue:`420`)
+- Allow falsey values in :meth:`Client.send_message` and :meth:`Client.send_file`.
+
 .. _vp0p16p0:
 
 v0.16.0
