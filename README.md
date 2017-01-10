@@ -56,29 +56,28 @@ Please note that on Linux installing voice you must install the following packag
 import discord
 import asyncio
 
-client = discord.Client()
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('------')
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    async def on_message(self, message):
+        if message.content.startswith('!test'):
+            counter = 0
+            tmp = await message.channel.send('Calculating messages...')
+            async for msg in message.channel.history(limit=100):
+                if msg.author == message.author:
+                    counter += 1
 
-@client.event
-async def on_message(message):
-    if message.content.startswith('!test'):
-        counter = 0
-        tmp = await client.send_message(message.channel, 'Calculating messages...')
-        async for log in client.logs_from(message.channel, limit=100):
-            if log.author == message.author:
-                counter += 1
+            await tmp.edit(content='You have {} messages.'.format(counter))
+        elif message.content.startswith('!sleep'):
+            with message.channel.typing():
+                await asyncio.sleep(5.0)
+                await message.channel.send('Done sleeping.')
 
-        await client.edit_message(tmp, 'You have {} messages.'.format(counter))
-    elif message.content.startswith('!sleep'):
-        await asyncio.sleep(5)
-        await client.send_message(message.channel, 'Done sleeping')
-
+client = MyClient()
 client.run('token')
 ```
 
