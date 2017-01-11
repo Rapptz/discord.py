@@ -31,7 +31,7 @@ import asyncio
 
 from collections import namedtuple
 
-from .iterators import LogsFromIterator
+from .iterators import HistoryIterator
 from .context_managers import Typing
 from .errors import ClientException, NoMoreMessages, InvalidArgument
 from .permissions import PermissionOverwrite, Permissions
@@ -728,6 +728,11 @@ class Messageable(metaclass=abc.ABCMeta):
                 if message.author == client.user:
                     counter += 1
 
+        Flattening into a list: ::
+
+            messages = await channel.history(limit=123).flatten()
+            # messages is now a list of Message...
+
         Python 3.4 Usage ::
 
             count = 0
@@ -741,7 +746,7 @@ class Messageable(metaclass=abc.ABCMeta):
                     if message.author == client.user:
                         counter += 1
         """
-        return LogsFromIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
+        return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
     @asyncio.coroutine
     def purge(self, *, limit=100, check=None, before=None, after=None, around=None):

@@ -35,8 +35,8 @@ from .object import Object
 
 PY35 = sys.version_info >= (3, 5)
 
-class LogsFromIterator:
-    """Iterator for receiving logs.
+class HistoryIterator:
+    """Iterator for receiving a channel's message history.
 
     The messages endpoint has two behaviours we care about here:
     If `before` is specified, the messages endpoint returns the `limit`
@@ -53,8 +53,8 @@ class LogsFromIterator:
 
     Parameters
     -----------
-    channel: class:`Channel`
-        Channel from which to request logs
+    messageable: :class:`abc.Messageable`
+        Messageable class to retrieve message history fro.
     limit : int
         Maximum number of messages to retrieve
     before : :class:`Message` or id-like
@@ -135,6 +135,25 @@ class LogsFromIterator:
             raise NoMoreMessages()
 
     @asyncio.coroutine
+    def flatten(self):
+        # this is similar to fill_messages except it uses a list instead
+        # of a queue to place the messages in.
+        result = []
+        channel = yield from self.messageable._get_channel()
+        self.channel = channel
+        while self.limit > 0:
+            retrieve = self.limit if self.limit <= 100 else 100
+            data = yield from self._retrieve_messages(retrieve)
+            if self.reverse:
+                data = reversed(data)
+            if self._filter:
+                data = filter(self._filter, data)
+
+            for element in data:
+                result.append(self.state.create_message(channel=channel, data=element))
+        return result
+
+    @asyncio.coroutine
     def fill_messages(self):
         if not hasattr(self, 'channel'):
             # do the required set up
@@ -161,7 +180,8 @@ class LogsFromIterator:
     @asyncio.coroutine
     def _retrieve_messages_before_strategy(self, retrieve):
         """Retrieve messages using before parameter."""
-        data = yield from self.logs_from(self.channel.id, retrieve, before=getattr(self.before, 'id', None))
+        before = self.before.id if self.before else None
+        data = yield from self.logs_from(self.channel.id, retrieve, before=before)
         if len(data):
             self.limit -= retrieve
             self.before = Object(id=int(data[-1]['id']))
@@ -170,7 +190,8 @@ class LogsFromIterator:
     @asyncio.coroutine
     def _retrieve_messages_after_strategy(self, retrieve):
         """Retrieve messages using after parameter."""
-        data = yield from self.logs_from(self.channel.id, retrieve, after=getattr(self.after, 'id', None))
+        after = self.after.id if self.after else None
+        data = yield from self.logs_from(self.channel.id, retrieve, after=after)
         if len(data):
             self.limit -= retrieve
             self.after = Object(id=int(data[0]['id']))
@@ -180,7 +201,8 @@ class LogsFromIterator:
     def _retrieve_messages_around_strategy(self, retrieve):
         """Retrieve messages using around parameter."""
         if self.around:
-            data = yield from self.logs_from(self.channel.id, retrieve, around=getattr(self.around, 'id', None))
+            after = self.after.id if self.after else None
+            data = yield from self.logs_from(self.channel.id, retrieve, around=around)
             self.around = None
             return data
         return []
