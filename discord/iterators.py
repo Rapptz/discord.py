@@ -92,7 +92,10 @@ class LogsFromIterator:
             self.reverse = reverse
 
         self._filter = None  # message dict -> bool
-        self.messages = asyncio.Queue()
+
+        self.state = self.messageable._state
+        self.logs_from = self.state.http.logs_from
+        self.messages = asyncio.Queue(loop=self.state.loop)
 
         if self.around:
             if self.limit > 101:
@@ -137,8 +140,6 @@ class LogsFromIterator:
             # do the required set up
             channel = yield from self.messageable._get_channel()
             self.channel = channel
-            self.state = channel._state
-            self.logs_from = channel._state.http.logs_from
 
         if self.limit > 0:
             retrieve = self.limit if self.limit <= 100 else 100
