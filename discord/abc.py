@@ -33,7 +33,7 @@ from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .errors import ClientException, NoMoreMessages, InvalidArgument
+from .errors import ClientException, NoMoreItems, InvalidArgument
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from . import utils, compat
@@ -740,7 +740,7 @@ class Messageable(metaclass=abc.ABCMeta):
             while True:
                 try:
                     message = yield from iterator.get()
-                except discord.NoMoreMessages:
+                except discord.NoMoreItems:
                     break
                 else:
                     if message.author == client.user:
@@ -813,7 +813,7 @@ class Messageable(metaclass=abc.ABCMeta):
         while True:
             try:
                 msg = yield from iterator.get()
-            except NoMoreMessages:
+            except NoMoreItems:
                 # no more messages to poll
                 if count >= 2:
                     # more than 2 messages -> bulk delete

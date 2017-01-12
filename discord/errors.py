@@ -38,9 +38,10 @@ class ClientException(DiscordException):
     """
     pass
 
-class NoMoreMessages(DiscordException):
-    """Exception that is thrown when a ``history`` operation has no more
-    messages. This is only exposed for Python 3.4 only.
+class NoMoreItems(DiscordException):
+    """Exception that is thrown when an async iteration operation has no more
+    items. This is mainly exposed for Python 3.4 support where `StopAsyncIteration`
+    is not provided.
     """
     pass
 

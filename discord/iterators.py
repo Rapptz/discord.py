@@ -29,7 +29,7 @@ import asyncio
 import aiohttp
 import datetime
 
-from .errors import NoMoreMessages
+from .errors import NoMoreItems
 from .utils import time_snowflake
 from .object import Object
 
@@ -132,7 +132,7 @@ class HistoryIterator:
         try:
             return self.messages.get_nowait()
         except asyncio.QueueEmpty:
-            raise NoMoreMessages()
+            raise NoMoreItems()
 
     @asyncio.coroutine
     def flatten(self):
@@ -217,7 +217,7 @@ class HistoryIterator:
             try:
                 msg = yield from self.get()
                 return msg
-            except NoMoreMessages:
+            except NoMoreItems:
                 # if we're still empty at this point...
                 # we didn't get any new messages so stop looping
                 raise StopAsyncIteration()

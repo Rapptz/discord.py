@@ -782,6 +782,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: LoginFailure
 
+.. autoexception:: NoMoreItems
+
 .. autoexception:: HTTPException
     :members:
 
