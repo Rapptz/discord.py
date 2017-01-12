@@ -624,7 +624,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         channel = yield from self._get_channel()
         data = yield from self._state.http.get_message(channel.id, id)
-        return state.create_message(channel=channel, data=data)
+        return self._state.create_message(channel=channel, data=data)
 
     @asyncio.coroutine
     def delete_messages(self, messages):
