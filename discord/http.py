@@ -403,7 +403,7 @@ class HTTPClient:
                             channel_id=channel_id, message_id=message_id))
 
     def pins_from(self, channel_id):
-        return self.request(Route('GET', '/channels/{channel_id}/pins/', channel_id=channel_id))
+        return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
     # Member management
 
@@ -597,7 +597,7 @@ class HTTPClient:
         return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids)
 
     def create_role(self, guild_id):
-        r = Route('POST', '/guilds/{guild_id}/roles/', guild_id=guild_id)
+        r = Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id)
         return self.request(r)
 
     def add_role(self, guild_id, user_id, role_id):
