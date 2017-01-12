@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 
-from .user import User
+from .iterators import ReactionIterator
 
 class Reaction:
     """Represents a reaction to a message.
@@ -86,11 +86,11 @@ class Reaction:
     def __repr__(self):
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
 
-    @asyncio.coroutine
-    def users(self, limit=100, after=None):
+    def users(self, limit=None, after=None):
         """|coro|
 
-        Get the users that added this reaction.
+        Returns an asynchronous iterator representing the
+        users that have reacted to the message.
 
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.
@@ -99,6 +99,8 @@ class Reaction:
         ------------
         limit: int
             The maximum number of results to return.
+            If not provided, returns all the users who
+            reacted to the message.
         after: :class:`abc.Snowflake`
             For pagination, reactions are sorted by member.
 
@@ -107,23 +109,48 @@ class Reaction:
         HTTPException
             Getting the users for the reaction failed.
 
-        Returns
-        --------
-        List[:class:`User`]
-            A list of users who reacted to the message.
-        """
+        Examples
+        ---------
 
-        # TODO: Return an iterator a la `Messageable.history`?
+        Usage ::
+
+            # I do not actually recommend doing this.
+            async for user in reaction.users():
+                await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
+
+        Flattening into a list: ::
+
+            users = await reaction.users().flatten()
+            # users is now a list...
+            winner = random.choice(users)
+            await channel.send('{} has won the raffle.'.format(winner))
+
+        Python 3.4 Usage ::
+
+            iterator = reaction.users()
+            while True:
+                try:
+                    user = yield from iterator.get()
+                except discord.NoMoreItems:
+                    break
+                else:
+                    await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
+
+        Yields
+        --------
+        Union[:class:`User`, :class:`Member`]
+            The member (if retrievable) or the user that has reacted
+            to this message. The case where it can be a :class:`Member` is
+            in a guild message context. Sometimes it can be a :class:`User`
+            if the member has left the guild.
+        """
 
         if self.custom_emoji:
             emoji = '{0.name}:{0.id}'.format(self.emoji)
         else:
             emoji = self.emoji
 
-        if after:
-            after = after.id
+        if limit is None:
+            limit = self.count
 
-        msg = self.message
-        state = msg._state
-        data = yield from state.http.get_reaction_users(msg.id, msg.channel.id, emoji, limit, after=after)
-        return [User(state=state, data=user) for user in data]
+        return ReactionIterator(self.message, emoji, limit, after)

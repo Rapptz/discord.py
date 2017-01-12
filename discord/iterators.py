@@ -35,6 +35,81 @@ from .object import Object
 
 PY35 = sys.version_info >= (3, 5)
 
+class ReactionIterator:
+    def __init__(self, message, emoji, limit=100, after=None):
+        self.message = message
+        self.limit = limit
+        self.after = after
+        state = message._state
+        self.getter = state.http.get_reaction_users
+        self.state = state
+        self.emoji = emoji
+        self.guild = message.guild
+        self.channel_id = message.channel.id
+        self.users = asyncio.Queue(loop=state.loop)
+
+    @asyncio.coroutine
+    def get(self):
+        if self.users.empty():
+            yield from self.fill_users()
+
+        try:
+            return self.users.get_nowait()
+        except asyncio.QueueEmpty:
+            raise NoMoreItems()
+
+    @asyncio.coroutine
+    def fill_users(self):
+        # this is a hack because >circular imports<
+        from .user import User
+
+        if self.limit > 0:
+            retrieve = self.limit if self.limit <= 100 else 100
+
+            after = self.after.id if self.after else None
+            data = yield from self.getter(self.message.id, self.channel_id, self.emoji, retrieve, after=after)
+
+            if data:
+                self.limit -= retrieve
+                self.after = Object(id=int(data[0]['id']))
+
+            if self.guild is None:
+                for element in reversed(data):
+                    yield from self.users.put(User(state=self.state, data=element))
+            else:
+                for element in reversed(data):
+                    member_id = int(element['id'])
+                    member = self.guild.get_member(member_id)
+                    if member is not None:
+                        yield from self.users.put(member)
+                    else:
+                        yield from self.users.put(User(state=self.state, data=element))
+
+    @asyncio.coroutine
+    def flatten(self):
+        ret = []
+        while True:
+            try:
+                user = yield from self.get()
+            except NoMoreItems:
+                return ret
+            else:
+                ret.append(user)
+
+    if PY35:
+        @asyncio.coroutine
+        def __aiter__(self):
+            return self
+
+        @asyncio.coroutine
+        def __anext__(self):
+            try:
+                msg = yield from self.get()
+            except NoMoreItems:
+                raise StopAsyncIteration()
+            else:
+                return msg
+
 class HistoryIterator:
     """Iterator for receiving a channel's message history.
 
