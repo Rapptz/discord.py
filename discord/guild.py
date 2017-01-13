@@ -33,6 +33,7 @@ from .member import Member, VoiceState
 from .emoji import Emoji
 from .game import Game
 from .permissions import PermissionOverwrite
+from .colour import Colour
 from .errors import InvalidArgument
 from .channel import *
 from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
@@ -784,22 +785,60 @@ class Guild(Hashable):
 
         Creates a :class:`Role` for the guild.
 
-        This function is similar to :meth:`Role.edit` in both
-        the fields taken and exceptions thrown.
+        All fields are optional.
+
+        Parameters
+        -----------
+        name: str
+            The role name. Defaults to 'new role'.
+        permissions: :class:`Permissions`
+            The permissions to have. Defaults to no permissions.
+        colour: :class:`Colour`
+            The colour for the role. Defaults to :meth:`Colour.default`.
+            This is aliased to ``color`` as well.
+        hoist: bool
+            Indicates if the role should be shown separately in the member list.
+            Defaults to False.
+        mentionable: bool
+            Indicates if the role should be mentionable by others.
+            Defaults to False.
 
         Returns
         --------
         :class:`Role`
             The newly created role.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to change the role.
+        HTTPException
+            Editing the role failed.
+        InvalidArgument
+            An invalid keyword argument was given.
         """
 
-        data = yield from self._state.http.create_role(self.id)
-        role = Role(guild=self, data=data, state=self._state)
+        try:
+            perms = fields.pop('permissions')
+        except KeyError:
+            fields['permissions'] = 0
+        else:
+            fields['permissions'] = perms.value
 
-        if fields:
-            # we have to call edit because you can't pass a payload to the
-            # http request currently.
-            yield from role.edit(**fields)
+        try:
+            colour = fields.pop('colour')
+        except KeyError:
+            colour = fields.get('color', Colour.default())
+        finally:
+            fields['color'] = colour.value
+
+        valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
+        for key in fields:
+            if key not in valid_keys:
+                raise InvalidArgument('%r is not a valid field.' % key)
+
+        data = yield from self._state.http.create_role(self.id, **fields)
+        role = Role(guild=self, data=data, state=self._state)
 
         # TODO: add to cache
         return role

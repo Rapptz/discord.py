@@ -596,9 +596,9 @@ class HTTPClient:
     def replace_roles(self, user_id, guild_id, role_ids):
         return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids)
 
-    def create_role(self, guild_id):
+    def create_role(self, guild_id, **fields):
         r = Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id)
-        return self.request(r)
+        return self.request(r, json=fields)
 
     def add_role(self, guild_id, user_id, role_id):
         r = Route('PUT', '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
