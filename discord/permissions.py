@@ -68,7 +68,7 @@ class Permissions:
     """
 
     __slots__ = ('value',)
-    def __init__(self, permissions=0, **kwargs):
+    def __init__(self, permissions=0):
         self.value = permissions
 
     def __eq__(self, other):
