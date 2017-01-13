@@ -689,6 +689,8 @@ class ConnectionState:
 
     def _get_member(self, channel, id):
         if channel.is_private:
+            if id == self.user.id:
+                return self.user
             return utils.get(channel.recipients, id=id)
         else:
             return channel.server.get_member(id)
