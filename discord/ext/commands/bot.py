@@ -417,7 +417,6 @@ class BotBase(GroupMixin):
         for name, member in members:
             # register commands the cog has
             if isinstance(member, Command):
-                member.instance = cog
                 if member.parent is None:
                     self.add_command(member)
                 continue
@@ -465,7 +464,6 @@ class BotBase(GroupMixin):
         for name, member in members:
             # remove commands the cog has
             if isinstance(member, Command):
-                member.instance = None
                 if member.parent is None:
                     self.remove_command(member.name)
                 continue
