@@ -650,6 +650,7 @@ User
 
 .. autoclass:: User
     :members:
+    :inherited-members:
 
 Message
 ~~~~~~~
@@ -692,6 +693,7 @@ Member
 
 .. autoclass:: Member
     :members:
+    :inherited-members:
 
 VoiceState
 ~~~~~~~~~~~
