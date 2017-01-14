@@ -626,9 +626,9 @@ class Client:
             @client.event
             async def on_message(message):
                 if message.content.startswith('$greet'):
-                    await client.send_message(message.channel, 'Say hello')
+                    await message.channel.send('Say hello')
                     msg = await client.wait_for_message(author=message.author, content='hello')
-                    await client.send_message(message.channel, 'Hello.')
+                    await message.channel.send('Hello.')
 
         Asking for a follow-up question:
 
@@ -638,13 +638,13 @@ class Client:
             @client.event
             async def on_message(message):
                 if message.content.startswith('$start'):
-                    await client.send_message(message.channel, 'Type $stop 4 times.')
+                    await message.channel.send('Type $stop 4 times.')
                     for i in range(4):
                         msg = await client.wait_for_message(author=message.author, content='$stop')
                         fmt = '{} left to go...'
-                        await client.send_message(message.channel, fmt.format(3 - i))
+                        await message.channel.send(fmt.format(3 - i))
 
-                    await client.send_message(message.channel, 'Good job!')
+                    await message.channel.send('Good job!')
 
         Advanced filters using ``check``:
 
@@ -654,14 +654,14 @@ class Client:
             @client.event
             async def on_message(message):
                 if message.content.startswith('$cool'):
-                    await client.send_message(message.channel, 'Who is cool? Type $name namehere')
+                    await message.channel.send('Who is cool? Type $name namehere')
 
                     def check(msg):
                         return msg.content.startswith('$name')
 
                     message = await client.wait_for_message(author=message.author, check=check)
                     name = message.content[len('$name'):].strip()
-                    await client.send_message(message.channel, '{} is cool indeed'.format(name))
+                    await message.channel.send('{} is cool indeed'.format(name))
 
 
         Parameters
@@ -747,9 +747,9 @@ class Client:
             @client.event
             async def on_message(message):
                 if message.content.startswith('$react'):
-                    msg = await client.send_message(message.channel, 'React with thumbs up or thumbs down.')
+                    msg = await message.channel.send('React with thumbs up or thumbs down.')
                     res = await client.wait_for_reaction(['\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'], message=msg)
-                    await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(res))
+                    await message.channel.send('{0.user} reacted with {0.reaction.emoji}!'.format(res))
 
         Checking for reaction emoji regardless of skin tone:
 
@@ -758,14 +758,14 @@ class Client:
             @client.event
             async def on_message(message):
                 if message.content.startswith('$react'):
-                    msg = await client.send_message(message.channel, 'React with thumbs up or thumbs down.')
+                    msg = await message.channel.send('React with thumbs up or thumbs down.')
 
                     def check(reaction, user):
                         e = str(reaction.emoji)
                         return e.startswith(('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'))
 
                     res = await client.wait_for_reaction(message=msg, check=check)
-                    await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(res))
+                    await message.channel.send('{0.user} reacted with {0.reaction.emoji}!'.format(res))
 
         Parameters
         -----------

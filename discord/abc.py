@@ -589,7 +589,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
             with channel.typing():
                 # do expensive stuff here
-                await channel.send_message('done!')
+                await channel.send('done!')
 
         """
         return Typing(self)
