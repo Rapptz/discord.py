@@ -126,10 +126,6 @@ class Context(discord.abc.Messageable):
     def _get_channel(self):
         return self.channel
 
-    def _get_guild_id(self):
-        g = self.guild
-        return g.id if g is not None else None
-
     @property
     def cog(self):
         """Returns the cog associated with this context's command. None if it does not exist."""

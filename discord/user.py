@@ -91,9 +91,6 @@ class User(discord.abc.Messageable):
         ch = yield from self.create_dm()
         return ch
 
-    def _get_guild_id(self):
-        return None
-
     @property
     def dm_channel(self):
         """Returns the :class:`DMChannel` associated with this user if it exists.

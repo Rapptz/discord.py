@@ -467,10 +467,6 @@ class Messageable(metaclass=abc.ABCMeta):
     def _get_channel(self):
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def _get_guild_id(self):
-        raise NotImplementedError
-
     @asyncio.coroutine
     def send(self, content=None, *, tts=False, embed=None, file=None, filename=None, delete_after=None):
         """|coro|
@@ -531,7 +527,6 @@ class Messageable(metaclass=abc.ABCMeta):
         """
 
         channel = yield from self._get_channel()
-        guild_id = self._get_guild_id()
         state = self._state
         content = str(content) if content is not None else None
         if embed is not None:
@@ -546,10 +541,10 @@ class Messageable(metaclass=abc.ABCMeta):
             except TypeError:
                 buffer = file
 
-            data = yield from state.http.send_file(channel.id, buffer, guild_id=guild_id, filename=filename,
-                                                   content=content, tts=tts, embed=embed)
+            data = yield from state.http.send_file(channel.id, buffer, filename=filename, content=content,
+                                                   tts=tts, embed=embed)
         else:
-            data = yield from state.http.send_message(channel.id, content, guild_id=guild_id, tts=tts, embed=embed)
+            data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
@@ -657,9 +652,8 @@ class Messageable(metaclass=abc.ABCMeta):
 
         message_ids = [m.id for m in messages]
         channel = yield from self._get_channel()
-        guild_id = self._get_guild_id()
 
-        yield from self._state.http.delete_messages(channel.id, message_ids, guild_id)
+        yield from self._state.http.delete_messages(channel.id, message_ids)
 
     @asyncio.coroutine
     def pins(self):

@@ -177,9 +177,6 @@ class Member(discord.abc.Messageable):
         ch = yield from self.create_dm()
         return ch
 
-    def _get_guild_id(self):
-        return None
-
     def _update_roles(self, data):
         # update the roles
         self.roles = [self.guild.default_role]

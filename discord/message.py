@@ -413,7 +413,7 @@ class Message:
         HTTPException
             Deleting the message failed.
         """
-        yield from self._state.http.delete_message(self.channel.id, self.id, getattr(self.guild, 'id', None))
+        yield from self._state.http.delete_message(self.channel.id, self.id)
 
     @asyncio.coroutine
     def edit(self, *, content: str = None, embed: Embed = None):
@@ -436,10 +436,9 @@ class Message:
             Editing the message failed.
         """
 
-        guild_id = getattr(self.guild, 'id', None)
         content = str(content) if content else None
         embed = embed.to_dict() if embed else None
-        data = yield from self._state.http.edit_message(self.id, self.channel.id, content, guild_id=guild_id, embed=embed)
+        data = yield from self._state.http.edit_message(self.id, self.channel.id, content, embed=embed)
         self._update(channel=self.channel, data=data)
 
     @asyncio.coroutine

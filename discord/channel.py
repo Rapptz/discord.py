@@ -92,9 +92,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def _get_channel(self):
         return self
 
-    def _get_guild_id(self):
-        return self.guild.id
-
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -285,9 +282,6 @@ class DMChannel(discord.abc.Messageable, Hashable):
     def _get_channel(self):
         return self
 
-    def _get_guild_id(self):
-        return None
-
     def __str__(self):
         return 'Direct Message with %s' % self.recipient
 
@@ -383,9 +377,6 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     @asyncio.coroutine
     def _get_channel(self):
         return self
-
-    def _get_guild_id(self):
-        return None
 
     def __str__(self):
         if self.name:

@@ -287,9 +287,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload)
 
-    # TODO: remove guild_id parameters here
-
-    def send_message(self, channel_id, content, *, guild_id=None, tts=False, embed=None):
+    def send_message(self, channel_id, content, *, tts=False, embed=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {
             'nonce': random_integer(-2**63, 2**63 - 1)
@@ -309,7 +307,7 @@ class HTTPClient:
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_file(self, channel_id, buffer, *, guild_id=None, filename=None, content=None, tts=False, embed=None):
+    def send_file(self, channel_id, buffer, *, filename=None, content=None, tts=False, embed=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
@@ -324,12 +322,12 @@ class HTTPClient:
 
         return self.request(r, data=form)
 
-    def delete_message(self, channel_id, message_id, guild_id=None):
+    def delete_message(self, channel_id, message_id):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
                                                                             message_id=message_id)
         return self.request(r)
 
-    def delete_messages(self, channel_id, message_ids, guild_id=None):
+    def delete_messages(self, channel_id, message_ids):
         r = Route('POST', '/channels/{channel_id}/messages/bulk_delete', channel_id=channel_id)
         payload = {
             'messages': message_ids
@@ -337,7 +335,7 @@ class HTTPClient:
 
         return self.request(r, json=payload)
 
-    def edit_message(self, message_id, channel_id, content, *, guild_id=None, embed=None):
+    def edit_message(self, message_id, channel_id, content, *, embed=None):
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
                                                                            message_id=message_id)
         payload = {}
