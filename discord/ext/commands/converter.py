@@ -101,7 +101,33 @@ class MemberConverter(IDConverter):
 
         return result
 
-UserConverter = MemberConverter
+class UserConverter(IDConverter):
+    def convert(self):
+        match = self._get_id_match() or re.match(r'<@!?([0-9]+)>$', self.argument)
+        result = None
+        state = self.ctx._state
+
+        if match is not None:
+            user_id = int(match.group(1))
+            result = self.bot.get_user(user_id)
+        else:
+            arg = self.argument
+            # check for discriminator if it exists
+            if len(arg) > 5 and arg[-5] == '#':
+                discrim = arg[-4:]
+                name = arg[:-5]
+                predicate = lambda u: u.name == name and u.discriminator == discrim
+                result = discord.utils.find(predicate, state._users.values())
+                if result is not None:
+                    return result
+
+            predicate = lambda u: u.name == arg
+            result = discord.utils.find(predicate, state._users.values())
+
+        if result is None:
+            raise BadArgument('User "{}" not found'.format(self.argument))
+
+        return result
 
 class TextChannelConverter(IDConverter):
     def convert(self):
