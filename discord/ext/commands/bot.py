@@ -165,17 +165,6 @@ class BotBase(GroupMixin):
     # internal helpers
 
     @asyncio.coroutine
-    def _get_prefix(self, message):
-        prefix = self.command_prefix
-        if callable(prefix):
-            ret = prefix(self, message)
-            if asyncio.iscoroutine(ret):
-                ret = yield from ret
-            return ret
-        else:
-            return prefix
-
-    @asyncio.coroutine
     def _run_extra(self, coro, event_name, *args, **kwargs):
         try:
             yield from coro(*args, **kwargs)
@@ -552,6 +541,105 @@ class BotBase(GroupMixin):
     # command processing
 
     @asyncio.coroutine
+    def get_prefix(self, message):
+        """|coro|
+
+        Retrieves the prefix the bot is listening to
+        with the message as a context.
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message context to get the prefix of.
+
+        Returns
+        --------
+        Union[List[str], str]
+            A list of prefixes or a single prefix that the bot is
+            listening for.
+        """
+        prefix = self.command_prefix
+        if callable(prefix):
+            ret = prefix(self, message)
+            if asyncio.iscoroutine(ret):
+                ret = yield from ret
+            return ret
+        else:
+            return prefix
+
+    @asyncio.coroutine
+    def get_context(self, message):
+        """|coro|
+
+        Returns the invocation context from the message.
+
+        This is a more low-level counter-part for :meth:`process_message`
+        to allow users more fine grained control over the processing.
+
+        The returned context is not guaranteed to be a valid invocation
+        context, :attr:`Context.valid` must be checked to make sure it is.
+        If the context is not valid then it is not a valid candidate to be
+        invoked under :meth:`invoke`.
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message to get the invocation context from.
+
+        Returns
+        --------
+        :class:`Context`
+            The invocation context.
+        """
+
+        view = StringView(message.content)
+        ctx = Context(prefix=None, view=view, bot=self, message=message)
+
+        if self._skip_check(message.author.id, self.user.id):
+            return ctx
+
+        prefix = yield from self.get_prefix(message)
+        invoked_prefix = prefix
+
+        if not isinstance(prefix, (tuple, list)):
+            if not view.skip_string(prefix):
+                return ctx
+        else:
+            invoked_prefix = discord.utils.find(view.skip_string, prefix)
+            if invoked_prefix is None:
+                return ctx
+
+        invoker = view.get_word()
+        ctx.invoked_with = invoker
+        ctx.prefix = invoked_prefix
+        ctx.command = self.commands.get(invoker)
+        return ctx
+
+    @asyncio.coroutine
+    def invoke(self, ctx):
+        """|coro|
+
+        Invokes the command given under the invocation context and
+        handles all the internal event dispatch mechanisms.
+
+        Parameters
+        -----------
+        ctx: :class:`Context`
+            The invocation context to invoke.
+        """
+        if ctx.command is not None:
+            self.dispatch('command', ctx)
+            try:
+                yield from ctx.command.invoke(ctx)
+            except CommandError as e:
+                ctx.command.dispatch_error(e, ctx)
+            else:
+                self.dispatch('command_completion', ctx)
+        elif ctx.invoked_with:
+            exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            self.dispatch('command_error', exc, ctx)
+
+    @asyncio.coroutine
     def process_commands(self, message):
         """|coro|
 
@@ -563,60 +651,16 @@ class BotBase(GroupMixin):
         event. If you choose to override the :func:`on_message` event, then
         you should invoke this coroutine as well.
 
-        Warning
-        --------
-        This function is necessary for :meth:`say`, :meth:`whisper`,
-        :meth:`type`, :meth:`reply`, and :meth:`upload` to work due to the
-        way they are written. It is also required for the :func:`on_command`
-        and :func:`on_command_completion` events.
+        This is built using other low level tools, and is equivalent to a
+        call to :meth:`get_context` followed by a call to :meth:`invoke`.
 
         Parameters
         -----------
         message : discord.Message
             The message to process commands for.
         """
-        _internal_channel = message.channel
-        _internal_author = message.author
-
-        view = StringView(message.content)
-        if self._skip_check(message.author.id, self.user.id):
-            return
-
-        prefix = yield from self._get_prefix(message)
-        invoked_prefix = prefix
-
-        if not isinstance(prefix, (tuple, list)):
-            if not view.skip_string(prefix):
-                return
-        else:
-            invoked_prefix = discord.utils.find(view.skip_string, prefix)
-            if invoked_prefix is None:
-                return
-
-
-        invoker = view.get_word()
-        tmp = {
-            'bot': self,
-            'invoked_with': invoker,
-            'message': message,
-            'view': view,
-            'prefix': invoked_prefix
-        }
-        ctx = Context(**tmp)
-        del tmp
-
-        if invoker in self.commands:
-            command = self.commands[invoker]
-            self.dispatch('command', command, ctx)
-            try:
-                yield from command.invoke(ctx)
-            except CommandError as e:
-                ctx.command.dispatch_error(e, ctx)
-            else:
-                self.dispatch('command_completion', command, ctx)
-        elif invoker:
-            exc = CommandNotFound('Command "{}" is not found'.format(invoker))
-            self.dispatch('command_error', exc, ctx)
+        ctx = yield from self.get_context(message)
+        yield from self.invoke(ctx)
 
     @asyncio.coroutine
     def on_message(self, message):
