@@ -175,7 +175,6 @@ class Role(Hashable):
             return  # Save discord the extra request.
 
         http = self._state.http
-        url = '{0}/{1}/roles'.format(http.GUILDS, self.guild.id)
 
         change_range = range(min(self.position, position), max(self.position, position) + 1)
         sorted_roles = sorted((x for x in self.guild.roles if x.position in change_range and x.id != self.id),
@@ -189,7 +188,7 @@ class Role(Hashable):
             roles.append(self.id)
 
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
-        yield from http.patch(url, json=payload, bucket='move_role')
+        yield from http.move_role_position(role.guild.id, payload)
 
     @asyncio.coroutine
     def edit(self, **fields):

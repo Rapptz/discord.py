@@ -124,8 +124,8 @@ class GuildChannel:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
         http = self._state.http
-        url = '{0}/{1.guild.id}/channels'.format(http.GUILDS, self)
-        channels = [c for c in self.guild.channels if isinstance(c, type(self))]
+        cls = type(self)
+        channels = [c for c in self.guild.channels if isinstance(c, cls)]
 
         if position >= len(channels):
             raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
@@ -143,7 +143,7 @@ class GuildChannel:
             channels.insert(position, self)
 
         payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
-        yield from http.patch(url, json=payload, bucket='move_channel')
+        yield from http.move_channel_position(self.guild.id, payload)
 
     def _fill_overwrites(self, data):
         self._overwrites = []
