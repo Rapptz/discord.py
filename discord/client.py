@@ -2042,7 +2042,6 @@ class Client:
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
-        url = '{0}/{1.server.id}/channels'.format(self.http.GUILDS, channel)
         channels = [c for c in channel.server.channels if c.type is channel.type]
 
         if position >= len(channels):
@@ -2061,7 +2060,7 @@ class Client:
             channels.insert(position, channel)
 
         payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
-        yield from self.http.patch(url, json=payload, bucket='move_channel')
+        yield from self.http.move_channel_position(channel.server.id, payload)
 
     @asyncio.coroutine
     def create_channel(self, server, name, *overwrites, type=None):
@@ -2781,8 +2780,6 @@ class Client:
         if role.position == position:
             return  # Save discord the extra request.
 
-        url = '{0}/{1.id}/roles'.format(self.http.GUILDS, server)
-
         change_range = range(min(role.position, position), max(role.position, position) + 1)
 
         roles = [r.id for r in sorted(filter(lambda x: (x.position in change_range) and x != role, server.roles), key=lambda x: x.position)]
@@ -2793,7 +2790,7 @@ class Client:
             roles.append(role.id)
 
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
-        yield from self.http.patch(url, json=payload, bucket='move_role')
+        yield from self.http.move_role_position(server.id, payload)
 
     @asyncio.coroutine
     def edit_role(self, server, role, **fields):

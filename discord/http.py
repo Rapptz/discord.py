@@ -468,14 +468,16 @@ class HTTPClient:
     # Channel management
 
     def edit_channel(self, channel_id, **options):
-        url = '{0.CHANNELS}/{1}'.format(self, channel_id)
-
         valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }
 
         return self.request(Route('PATCH', '/channels/{channel_id}', channel_id=channel_id), json=payload)
+
+    def move_channel_position(self, guild_id, positions):
+        r = Route('PATCH', '/guilds/{guild_id}/channels', guild_id=guild_id)
+        return self.request(r, json=positions)
 
     def create_channel(self, guild_id, name, channe_type, permission_overwrites=None):
         payload = {
@@ -599,6 +601,10 @@ class HTTPClient:
     def create_role(self, guild_id):
         r = Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id)
         return self.request(r)
+
+    def move_role_position(self, guild_id, positions):
+        r = Route('PATCH', '/guilds/{guild_id}/roles', guild_id=guild_id)
+        return self.request(r, json=positions)
 
     def add_role(self, guild_id, user_id, role_id):
         r = Route('PUT', '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
