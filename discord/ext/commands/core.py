@@ -145,18 +145,18 @@ class Command:
         self.parent = None
         self._buckets = CooldownMapping(kwargs.get('cooldown'))
 
+    @asyncio.coroutine
     def dispatch_error(self, error, ctx):
         try:
             coro = self.on_error
         except AttributeError:
             pass
         else:
-            loop = ctx.bot.loop
             injected = wrap_callback(coro)
             if self.instance is not None:
-                discord.compat.create_task(injected(self.instance, error, ctx), loop=loop)
+                yield from injected(self.instance, error, ctx)
             else:
-                discord.compat.create_task(injected(error, ctx), loop=loop)
+                yield from injected(error, ctx)
         finally:
             ctx.bot.dispatch('command_error', error, ctx)
 

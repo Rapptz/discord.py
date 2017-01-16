@@ -632,7 +632,7 @@ class BotBase(GroupMixin):
             try:
                 yield from ctx.command.invoke(ctx)
             except CommandError as e:
-                ctx.command.dispatch_error(e, ctx)
+                yield from ctx.command.dispatch_error(e, ctx)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
