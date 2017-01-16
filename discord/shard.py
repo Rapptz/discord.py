@@ -90,7 +90,7 @@ class AutoShardedClient(Client):
     If a ``shard_ids`` parameter is given, then those shard IDs will be used
     to launch the internal shards. Note that :attr:`shard_count` must be provided
     if this is used. By default, when omitted, the client will launch shards from
-    0 to ``shard_count - ``\.
+    0 to ``shard_count - 1``.
 
     Attributes
     ------------
