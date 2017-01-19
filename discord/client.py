@@ -42,7 +42,6 @@ import websockets
 
 import logging, traceback
 import sys, re, io, enum
-import tempfile, os, hashlib
 import itertools
 import datetime
 from collections import namedtuple
@@ -90,10 +89,6 @@ class Client:
     loop : Optional[event loop].
         The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
         in which case the default event loop is used via ``asyncio.get_event_loop()``.
-    cache_auth : Optional[bool]
-        Indicates if :meth:`login` should cache the authentication tokens. Defaults
-        to ``True``. The method in which the cache is written is done by writing to
-        disk to a temporary directory.
     connector : aiohttp.BaseConnector
         The `connector`_ to use for connection pooling. Useful for proxies, e.g.
         with a `ProxyConnector`_.
@@ -132,7 +127,6 @@ class Client:
         self.email = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = []
-        self.cache_auth = options.get('cache_auth', True)
         self.shard_id = options.get('shard_id')
         self.shard_count = options.get('shard_count')
 
@@ -156,37 +150,6 @@ class Client:
     @asyncio.coroutine
     def _syncer(self, guilds):
         yield from self.ws.request_sync(guilds)
-
-    def _get_cache_filename(self, email):
-        filename = hashlib.md5(email.encode('utf-8')).hexdigest()
-        return os.path.join(tempfile.gettempdir(), 'discord_py', filename)
-
-    def _get_cache_token(self, email, password):
-        try:
-            log.info('attempting to login via cache')
-            cache_file = self._get_cache_filename(email)
-            self.email = email
-            with open(cache_file, 'r') as f:
-                log.info('login cache file found')
-                return f.read()
-
-            # at this point our check failed
-            # so we have to login and get the proper token and then
-            # redo the cache
-        except OSError:
-            log.info('a problem occurred while opening login cache')
-            return None # file not found et al
-
-    def _update_cache(self, email, password):
-        try:
-            cache_file = self._get_cache_filename(email)
-            os.makedirs(os.path.dirname(cache_file), exist_ok=True)
-            with os.fdopen(os.open(cache_file, os.O_WRONLY | os.O_CREAT, 0o0600), 'w') as f:
-                log.info('updating login cache')
-                f.write(self.http.token)
-        except OSError:
-            log.info('a problem occurred while updating the login cache')
-            pass
 
     def handle_reaction_add(self, reaction, user):
         removed = []
@@ -301,64 +264,21 @@ class Client:
     # login state management
 
     @asyncio.coroutine
-    def _login_1(self, token, **kwargs):
-        log.info('logging in using static token')
-        is_bot = kwargs.pop('bot', True)
-        data = yield from self.http.static_login(token, bot=is_bot)
-        self.email = data.get('email', None)
-        self.connection.is_bot = is_bot
-        self._is_logged_in.set()
-
-    @asyncio.coroutine
-    def _login_2(self, email, password, **kwargs):
-        # attempt to read the token from cache
-        self.connection.is_bot = False
-
-        if self.cache_auth:
-            token = self._get_cache_token(email, password)
-            try:
-                yield from self.http.static_login(token, bot=False)
-            except:
-                log.info('cache auth token is out of date')
-            else:
-                self._is_logged_in.set()
-                return
-
-
-        yield from self.http.email_login(email, password)
-        self.email = email
-        self._is_logged_in.set()
-
-        # since we went through all this trouble
-        # let's make sure we don't have to do it again
-        if self.cache_auth:
-            self._update_cache(email, password)
-
-    @asyncio.coroutine
-    def login(self, *args, **kwargs):
+    def login(self, token, *, bot=True):
         """|coro|
 
         Logs in the client with the specified credentials.
 
         This function can be used in two different ways.
 
-        .. code-block:: python
-
-            await client.login('token')
-
-            # or
-
-            await client.login('email', 'password')
-
-        More than 2 parameters or less than 1 parameter raises a
-        :exc:`TypeError`.
-
         Parameters
         -----------
-        bot : bool
+        token: str
+            The authentication token. Do not prefix this token with
+            anything as the library will do it for you.
+        bot: bool
             Keyword argument that specifies if the account logging on is a bot
-            token or not. Only useful for logging in with a static token.
-            Ignored for the email and password combo. Defaults to ``True``.
+            token or not.
 
         Raises
         ------
@@ -368,15 +288,13 @@ class Client:
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
-        TypeError
-            The incorrect number of parameters is passed.
         """
 
-        n = len(args)
-        if n in (2, 1):
-            yield from getattr(self, '_login_' + str(n))(*args, **kwargs)
-        else:
-            raise TypeError('login() takes 1 or 2 positional arguments but {} were given'.format(n))
+        log.info('logging in using static token')
+        data = yield from self.http.static_login(token, bot=bot)
+        self.email = data.get('email', None)
+        self.connection.is_bot = bot
+        self._is_logged_in.set()
 
     @asyncio.coroutine
     def logout(self):
@@ -973,9 +891,6 @@ class Client:
             self.email = data['email']
             if 'token' in data:
                 self.http._token(data['token'], bot=False)
-
-            if self.cache_auth:
-                self._update_cache(self.email, password)
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False):

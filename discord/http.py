@@ -244,23 +244,6 @@ class HTTPClient:
     # login management
 
     @asyncio.coroutine
-    def email_login(self, email, password):
-        payload = {
-            'email': email,
-            'password': password
-        }
-
-        try:
-            data = yield from self.request(Route('POST', '/auth/login'), json=payload)
-        except HTTPException as e:
-            if e.response.status == 400:
-                raise LoginFailure('Improper credentials have been passed.') from e
-            raise
-
-        self._token(data['token'], bot=False)
-        return data
-
-    @asyncio.coroutine
     def static_login(self, token, *, bot):
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
