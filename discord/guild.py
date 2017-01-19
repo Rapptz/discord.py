@@ -64,9 +64,6 @@ class Guild(Hashable):
     ----------
     name: str
         The guild name.
-    me: :class:`Member`
-        Similar to :attr:`Client.user` except an instance of :class:`Member`.
-        This is essentially used to get the member version of yourself.
     roles
         A list of :class:`Role` that the guild has available.
     emojis
@@ -94,9 +91,6 @@ class Guild(Hashable):
         Indicates if the guild is a 'large' guild. A large guild is defined as having
         more than ``large_threshold`` count members, which for this library is set to
         the maximum of 250.
-    voice_client: Optional[:class:`VoiceClient`]
-        The VoiceClient associated with this guild. A shortcut for the
-        :meth:`Client.voice_client_in` call.
     mfa_level: int
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
@@ -256,6 +250,14 @@ class Guild(Hashable):
     def voice_channels(self):
         """List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild."""
         return [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+
+    @property
+    def me(self):
+        """Similar to :attr:`Client.user` except an instance of :class:`Member`.
+        This is essentially used to get the member version of yourself.
+        """
+        self_id = self._state.user.id
+        return self.get_member(self_id)
 
     @property
     def text_channels(self):

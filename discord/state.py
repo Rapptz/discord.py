@@ -188,8 +188,6 @@ class ConnectionState:
 
     def _add_guild_from_data(self, guild):
         guild = Guild(data=guild, state=self)
-        Guild.me = property(lambda s: s.get_member(self.user.id))
-        Guild.voice_client = property(lambda s: self._get_voice_client(s.id))
         self._add_guild(guild)
         return guild
 
