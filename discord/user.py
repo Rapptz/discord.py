@@ -171,14 +171,17 @@ class ClientUser(BaseUser):
         The email the user used when registering.
     mfa_enabled: bool
         Specifies if the user has MFA turned on and working.
+    premium: bool
+        Specifies if the user is a premium user (e.g. has Discord Nitro).
     """
-    __slots__ = ('email', 'verified', 'mfa_enabled')
+    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
         self.verified = data.get('verified', False)
         self.email = data.get('email')
         self.mfa_enabled = data.get('mfa_enabled', False)
+        self.premium = data.get('premium', False)
 
     def __repr__(self):
         return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
