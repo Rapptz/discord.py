@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .guild import Guild
-from .user import User
+from .user import User, ClientUser
 from .game import Game
 from .emoji import Emoji, PartialEmoji
 from .reaction import Reaction
@@ -239,7 +239,7 @@ class ConnectionState:
 
     def parse_ready(self, data):
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
-        self.user = self.store_user(data['user'])
+        self.user = ClientUser(state=self, data=data['user'])
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -339,7 +339,7 @@ class ConnectionState:
         self.dispatch('member_update', old_member, member)
 
     def parse_user_update(self, data):
-        self.user = User(state=self, data=data)
+        self.user = ClientUser(state=self, data=data)
 
     def parse_channel_delete(self, data):
         guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))

@@ -99,7 +99,7 @@ class Client:
 
     Attributes
     -----------
-    user : Optional[:class:`User`]
+    user : Optional[:class:`ClientUser`]
         Represents the connected client. None if not logged in.
     voice_clients: List[:class:`VoiceClient`]
         Represents a list of voice connections. To connect to voice use
@@ -813,84 +813,6 @@ class Client:
         }
 
         yield from self.ws.send_as_json(payload)
-
-    @asyncio.coroutine
-    def edit_profile(self, password=None, **fields):
-        """|coro|
-
-        Edits the current profile of the client.
-
-        If a bot account is used then the password field is optional,
-        otherwise it is required.
-
-        The :attr:`Client.user` object is not modified directly afterwards until the
-        corresponding WebSocket event is received.
-
-        Note
-        -----
-        To upload an avatar, a *bytes-like object* must be passed in that
-        represents the image being uploaded. If this is done through a file
-        then the file must be opened via ``open('some_filename', 'rb')`` and
-        the *bytes-like object* is given through the use of ``fp.read()``.
-
-        The only image formats supported for uploading is JPEG and PNG.
-
-        Parameters
-        -----------
-        password : str
-            The current password for the client's account. Not used
-            for bot accounts.
-        new_password : str
-            The new password you wish to change to.
-        email : str
-            The new email you wish to change to.
-        username :str
-            The new username you wish to change to.
-        avatar : bytes
-            A *bytes-like object* representing the image to upload.
-            Could be ``None`` to denote no avatar.
-
-        Raises
-        ------
-        HTTPException
-            Editing your profile failed.
-        InvalidArgument
-            Wrong image format passed for ``avatar``.
-        ClientException
-            Password is required for non-bot accounts.
-        """
-
-        try:
-            avatar_bytes = fields['avatar']
-        except KeyError:
-            avatar = self.user.avatar
-        else:
-            if avatar_bytes is not None:
-                avatar = utils._bytes_to_base64_data(avatar_bytes)
-            else:
-                avatar = None
-
-        not_bot_account = not self.user.bot
-        if not_bot_account and password is None:
-            raise ClientException('Password is required for non-bot accounts.')
-
-        args = {
-            'password': password,
-            'username': fields.get('username', self.user.name),
-            'avatar': avatar
-        }
-
-        if not_bot_account:
-            args['email'] = fields.get('email', self.email)
-
-            if 'new_password' in fields:
-                args['new_password'] = fields['new_password']
-
-        data = yield from self.http.edit_profile(**args)
-        if not_bot_account:
-            self.email = data['email']
-            if 'token' in data:
-                self.http._token(data['token'], bot=False)
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False):

@@ -18,7 +18,7 @@ __copyright__ = 'Copyright 2015-2016 Rapptz'
 __version__ = '1.0.0a0'
 
 from .client import Client, AppInfo, ChannelPermissions
-from .user import User
+from .user import User, ClientUser
 from .game import Game
 from .emoji import Emoji, PartialEmoji
 from .channel import *

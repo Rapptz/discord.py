@@ -645,6 +645,13 @@ Object
 .. autoclass:: Object
     :members:
 
+ClientUser
+~~~~~~~~~~~~
+
+.. autoclass:: ClientUser
+    :members:
+    :inherited-members:
+
 User
 ~~~~~
 

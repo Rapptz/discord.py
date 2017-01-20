@@ -24,44 +24,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time
+from .utils import snowflake_time, _bytes_to_base64_data
 from .enums import DefaultAvatar
+from .errors import ClientException
 
 import discord.abc
 import asyncio
 
-class User(discord.abc.Messageable):
-    """Represents a Discord user.
-
-    Supported Operations:
-
-    +-----------+---------------------------------------------+
-    | Operation |                 Description                 |
-    +===========+=============================================+
-    | x == y    | Checks if two users are equal.              |
-    +-----------+---------------------------------------------+
-    | x != y    | Checks if two users are not equal.          |
-    +-----------+---------------------------------------------+
-    | hash(x)   | Return the user's hash.                     |
-    +-----------+---------------------------------------------+
-    | str(x)    | Returns the user's name with discriminator. |
-    +-----------+---------------------------------------------+
-
-    Attributes
-    -----------
-    name: str
-        The user's username.
-    id: int
-        The user's unique ID.
-    discriminator: str
-        The user's discriminator. This is given when the username has conflicts.
-    avatar: str
-        The avatar hash the user has. Could be None.
-    bot: bool
-        Specifies if the user is a bot account.
-    """
-
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state', '__weakref__')
+class BaseUser:
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -75,45 +46,13 @@ class User(discord.abc.Messageable):
         return '{0.name}#{0.discriminator}'.format(self)
 
     def __eq__(self, other):
-        return isinstance(other, User) and other.id == self.id
+        return isinstance(other, BaseUser) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __hash__(self):
         return self.id >> 22
-
-    def __repr__(self):
-        return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
-
-    @asyncio.coroutine
-    def _get_channel(self):
-        ch = yield from self.create_dm()
-        return ch
-
-    @property
-    def dm_channel(self):
-        """Returns the :class:`DMChannel` associated with this user if it exists.
-
-        If this returns ``None``, you can create a DM channel by calling the
-        :meth:`create_dm` coroutine function.
-        """
-        return self._state._get_private_channel_by_user(self.id)
-
-    @asyncio.coroutine
-    def create_dm(self):
-        """Creates a :class:`DMChannel` with this user.
-
-        This should be rarely called, as this is done transparently for most
-        people.
-        """
-        found = self.dm_channel
-        if found is not None:
-            return found
-
-        state = self._state
-        data = yield from state.http.start_private_message(self.id)
-        return state.add_dm_channel(data)
 
     @property
     def avatar_url(self):
@@ -191,7 +130,207 @@ class User(discord.abc.Messageable):
         if message.mention_everyone:
             return True
 
-        if self in message.mentions:
-            return True
+        for user in message.mentions:
+            if user.id == self.id:
+                return True
 
         return False
+
+class ClientUser(BaseUser):
+    """Represents your Discord user.
+
+    Supported Operations:
+
+    +-----------+---------------------------------------------+
+    | Operation |                 Description                 |
+    +===========+=============================================+
+    | x == y    | Checks if two users are equal.              |
+    +-----------+---------------------------------------------+
+    | x != y    | Checks if two users are not equal.          |
+    +-----------+---------------------------------------------+
+    | hash(x)   | Return the user's hash.                     |
+    +-----------+---------------------------------------------+
+    | str(x)    | Returns the user's name with discriminator. |
+    +-----------+---------------------------------------------+
+
+    Attributes
+    -----------
+    name: str
+        The user's username.
+    id: int
+        The user's unique ID.
+    discriminator: str
+        The user's discriminator. This is given when the username has conflicts.
+    avatar: str
+        The avatar hash the user has. Could be None.
+    bot: bool
+        Specifies if the user is a bot account.
+    verified: bool
+        Specifies if the user is a verified account.
+    email: Optional[str]
+        The email the user used when registering.
+    mfa_enabled: bool
+        Specifies if the user has MFA turned on and working.
+    """
+    __slots__ = ('email', 'verified', 'mfa_enabled')
+
+    def __init__(self, *, state, data):
+        super().__init__(state=state, data=data)
+        self.verified = data.get('verified', False)
+        self.email = data.get('email')
+        self.mfa_enabled = data.get('mfa_enabled', False)
+
+    def __repr__(self):
+        return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
+               ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
+
+
+    @asyncio.coroutine
+    def edit(self, **fields):
+        """|coro|
+
+        Edits the current profile of the client.
+
+        If a bot account is used then a password field is optional,
+        otherwise it is required.
+
+        Note
+        -----
+        To upload an avatar, a *bytes-like object* must be passed in that
+        represents the image being uploaded. If this is done through a file
+        then the file must be opened via ``open('some_filename', 'rb')`` and
+        the *bytes-like object* is given through the use of ``fp.read()``.
+
+        The only image formats supported for uploading is JPEG and PNG.
+
+        Parameters
+        -----------
+        password : str
+            The current password for the client's account.
+            Only applicable to user accounts.
+        new_password: str
+            The new password you wish to change to.
+            Only applicable to user accounts.
+        email: str
+            The new email you wish to change to.
+            Only applicable to user accounts.
+        username :str
+            The new username you wish to change to.
+        avatar: bytes
+            A *bytes-like object* representing the image to upload.
+            Could be ``None`` to denote no avatar.
+
+        Raises
+        ------
+        HTTPException
+            Editing your profile failed.
+        InvalidArgument
+            Wrong image format passed for ``avatar``.
+        ClientException
+            Password is required for non-bot accounts.
+        """
+
+        try:
+            avatar_bytes = fields['avatar']
+        except KeyError:
+            avatar = self.avatar
+        else:
+            if avatar_bytes is not None:
+                avatar = _bytes_to_base64_data(avatar_bytes)
+            else:
+                avatar = None
+
+        not_bot_account = not self.bot
+        password = fields.get('password')
+        if not_bot_account and password is None:
+            raise ClientException('Password is required for non-bot accounts.')
+
+        args = {
+            'password': password,
+            'username': fields.get('username', self.name),
+            'avatar': avatar
+        }
+
+        if not_bot_account:
+            args['email'] = fields.get('email', self.email)
+
+            if 'new_password' in fields:
+                args['new_password'] = fields['new_password']
+
+        http = self._state.http
+
+        data = yield from http.edit_profile(**args)
+        if not_bot_account:
+            self.email = data['email']
+            try:
+                http._token(data['token'], bot=False)
+            except KeyError:
+                pass
+
+        # manually update data by calling __init__ explicitly.
+        self.__init__(state=self._state, data=data)
+
+class User(BaseUser, discord.abc.Messageable):
+    """Represents a Discord user.
+
+    Supported Operations:
+
+    +-----------+---------------------------------------------+
+    | Operation |                 Description                 |
+    +===========+=============================================+
+    | x == y    | Checks if two users are equal.              |
+    +-----------+---------------------------------------------+
+    | x != y    | Checks if two users are not equal.          |
+    +-----------+---------------------------------------------+
+    | hash(x)   | Return the user's hash.                     |
+    +-----------+---------------------------------------------+
+    | str(x)    | Returns the user's name with discriminator. |
+    +-----------+---------------------------------------------+
+
+    Attributes
+    -----------
+    name: str
+        The user's username.
+    id: int
+        The user's unique ID.
+    discriminator: str
+        The user's discriminator. This is given when the username has conflicts.
+    avatar: str
+        The avatar hash the user has. Could be None.
+    bot: bool
+        Specifies if the user is a bot account.
+    """
+
+    __slots__ = ('__weakref__')
+
+    def __repr__(self):
+        return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
+
+    @asyncio.coroutine
+    def _get_channel(self):
+        ch = yield from self.create_dm()
+        return ch
+
+    @property
+    def dm_channel(self):
+        """Returns the :class:`DMChannel` associated with this user if it exists.
+
+        If this returns ``None``, you can create a DM channel by calling the
+        :meth:`create_dm` coroutine function.
+        """
+        return self._state._get_private_channel_by_user(self.id)
+
+    @asyncio.coroutine
+    def create_dm(self):
+        """Creates a :class:`DMChannel` with this user.
+
+        This should be rarely called, as this is done transparently for most
+        people.
+        """
+        found = self.dm_channel
+        if found is not None:
+            return found
+
+        state = self._state
+        data = yield from state.http.start_private_message(self.id)
+        return state.add_dm_channel(data)
