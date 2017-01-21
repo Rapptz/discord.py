@@ -245,7 +245,7 @@ class ConnectionState:
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
             guild = self._add_guild_from_data(guild_data)
-            if not self.is_bot or guild.large:
+            if (not self.is_bot and not guild.unavailable) or guild.large:
                 guilds.append(guild)
 
         for relationship in data.get('relationships', []):
@@ -794,7 +794,7 @@ class AutoShardedConnectionState(ConnectionState):
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
             guild = self._add_guild_from_data(guild_data)
-            if not self.is_bot or guild.large:
+            if guild.large:
                 guilds.append(guild)
 
         for pm in data.get('private_channels', []):
