@@ -896,8 +896,10 @@ class Client:
         temporary : bool
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to False.
-        xkcd : bool
-            Indicates if the invite URL is human readable. Defaults to False.
+        unique: bool
+            Indicates if a unique invite URL should be created. Defaults to True.
+            If this is set to False then it will return a previously created
+            invite.
 
         Raises
         -------

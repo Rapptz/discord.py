@@ -544,7 +544,8 @@ class HTTPClient:
         payload = {
             'max_age': options.get('max_age', 0),
             'max_uses': options.get('max_uses', 0),
-            'temporary': options.get('temporary', False)
+            'temporary': options.get('temporary', False),
+            'unique': options.get('unique', True)
         }
 
         return self.request(r, json=payload)
