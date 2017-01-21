@@ -213,7 +213,7 @@ class ConnectionState:
         servers = self._ready_state.servers
         for guild in guilds:
             server = self._add_server_from_data(guild)
-            if not self.is_bot or server.large:
+            if (not self.is_bot and not server.unavailable) or server.large:
                 servers.append(server)
 
         for pm in data.get('private_channels'):
