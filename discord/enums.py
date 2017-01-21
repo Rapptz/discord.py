@@ -96,6 +96,12 @@ class DefaultAvatar(Enum):
     def __str__(self):
         return self.name
 
+class RelationshipType(Enum):
+    friend           = 1
+    blocked          = 2
+    incoming_request = 3
+    outgoing_request = 4
+
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
 

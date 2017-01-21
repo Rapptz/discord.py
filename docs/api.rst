@@ -409,6 +409,22 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param channel: The group that the user joined or left.
     :param user: The user that joined or left.
 
+.. function:: on_relationship_add(relationship)
+              on_relationship_remove(relationship)
+
+    Called when a :class:`Relationship` is added or removed from the
+    :class:`ClientUser`.
+
+    :param relationship: The relationship that was added or removed.
+
+.. function:: on_relationship_update(before, after)
+
+    Called when a :class:`Relationship` is updated, e.g. when you
+    block a friend or a friendship is accepted.
+
+    :param before: The previous relationship status.
+    :param after: The updated relationship status.
+
 .. _discord-api-utils:
 
 Utility Functions
@@ -607,6 +623,23 @@ All enumerations are subclasses of `enum`_.
         a presence a la :meth:`Client.change_presence`. When you receive a
         user's presence this will be :attr:`offline` instead.
 
+.. class:: RelationshipType
+
+    Specifies the type of :class:`Relationship`
+
+    .. attribute:: friend
+
+        You are friends with this user.
+    .. attribute:: blocked
+
+        You have blocked this user.
+    .. attribute:: incoming_request
+
+        The user has sent you a friend request.
+    .. attribute:: outgoing_request
+
+        You have sent a friend request to this user.
+
 .. _discord_api_data:
 
 Data Classes
@@ -651,6 +684,12 @@ ClientUser
 .. autoclass:: ClientUser
     :members:
     :inherited-members:
+
+Relationship
+~~~~~~~~~~~~~~
+
+.. autoclass:: Relationship
+    :members:
 
 User
 ~~~~~

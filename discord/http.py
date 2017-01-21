@@ -618,6 +618,29 @@ class HTTPClient:
     def move_member(self, user_id, guild_id, channel_id):
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id)
 
+
+    # Relationship related
+
+    def remove_relationship(self, user_id):
+        r = Route('DELETE', '/users/@me/relationships/{user_id}', user_id=user_id)
+        return self.request(r)
+
+    def add_relationship(self, user_id, type=None):
+        r = Route('PUT', '/users/@me/relationships/{user_id}', user_id=user_id)
+        payload = {}
+        if type is not None:
+            payload['type'] = type
+
+        return self.request(r, json=payload)
+
+    def send_friend_request(self, username, discriminator):
+        r = Route('POST', '/users/@me/relationships')
+        payload = {
+            'username': username,
+            'discriminator': int(discriminator)
+        }
+        return self.request(r, json=payload)
+
     # Misc
 
     def application_info(self):

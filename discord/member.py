@@ -25,11 +25,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import itertools
 
 import discord.abc
 
 from . import utils
-from .user import BaseUser
+from .user import BaseUser, User
 from .game import Game
 from .permissions import Permissions
 from .enums import Status, ChannelType, try_enum
@@ -74,7 +75,7 @@ class VoiceState:
         return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} channel={0.channel!r}>'.format(self)
 
 def flatten_user(cls):
-    for attr, value in BaseUser.__dict__.items():
+    for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # ignore private/special methods
         if attr.startswith('_'):
             continue

@@ -23,6 +23,7 @@ from .game import Game
 from .emoji import Emoji, PartialEmoji
 from .channel import *
 from .guild import Guild
+from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message
 from .errors import *

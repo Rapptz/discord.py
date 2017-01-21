@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .utils import snowflake_time, _bytes_to_base64_data
-from .enums import DefaultAvatar
+from .enums import DefaultAvatar, RelationshipType
 from .errors import ClientException
 
 import discord.abc
@@ -174,7 +174,7 @@ class ClientUser(BaseUser):
     premium: bool
         Specifies if the user is a premium user (e.g. has Discord Nitro).
     """
-    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium')
+    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', '_relationships')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
@@ -182,11 +182,32 @@ class ClientUser(BaseUser):
         self.email = data.get('email')
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium = data.get('premium', False)
+        self._relationships = {}
 
     def __repr__(self):
         return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
                ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
 
+
+    def get_relationship(self, user_id):
+        """Retrieves the :class:`Relationship` if applicable.
+
+        Parameters
+        -----------
+        user_id: int
+            The user ID to check if we have a relationship with them.
+
+        Returns
+        --------
+        Optional[:class:`Relationship`]
+            The relationship if available or ``None``
+        """
+        return self._relationships.get(user_id)
+
+    @property
+    def relationships(self):
+        """Returns a list of :class:`Relationship` that the user has."""
+        return list(self._relationships.values())
 
     @asyncio.coroutine
     def edit(self, **fields):
@@ -337,3 +358,69 @@ class User(BaseUser, discord.abc.Messageable):
         state = self._state
         data = yield from state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
+
+    @property
+    def relationship(self):
+        """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
+        return self._state.user.get_relationship(self.id)
+
+    @asyncio.coroutine
+    def block(self):
+        """|coro|
+
+        Blocks the user.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to block this user.
+        HTTPException
+            Blocking the user failed.
+        """
+
+        yield from self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
+
+    @asyncio.coroutine
+    def unblock(self):
+        """|coro|
+
+        Unblocks the user.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to unblock this user.
+        HTTPException
+            Unblocking the user failed.
+        """
+        yield from self._state.http.remove_relationship(self.id)
+
+    @asyncio.coroutine
+    def remove_friend(self):
+        """|coro|
+
+        Removes the user as a friend.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to remove this user as a friend.
+        HTTPException
+            Removing the user as a friend failed.
+        """
+        yield from self._state.http.remove_relationship(self.id)
+
+    @asyncio.coroutine
+    def send_friend_request(self):
+        """|coro|
+
+        Sends the user a friend request.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to send a friend request to the user.
+        HTTPException
+            Sending the friend request failed.
+        """
+        yield from self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
