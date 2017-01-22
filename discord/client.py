@@ -2242,6 +2242,9 @@ class Client:
 
         Creates a :class:`Server`.
 
+        Bot accounts generally are not allowed to create servers.
+        See Discord's official documentation for more info.
+
         Parameters
         ----------
         name : str
@@ -2270,9 +2273,9 @@ class Client:
             icon = utils._bytes_to_base64_data(icon)
 
         if region is None:
-            region = ServerRegion.us_west.name
+            region = ServerRegion.us_west.value
         else:
-            region = region.name
+            region = region.value
 
         data = yield from self.http.create_server(name, region, icon)
         return Server(**data)
