@@ -487,8 +487,8 @@ class ConnectionState:
 
     @asyncio.coroutine
     def _chunk_and_dispatch(self, server, unavailable):
-        yield from self.chunker(server)
         chunks = list(self.chunks_needed(server))
+        yield from self.chunker(server)
         if chunks:
             try:
                 yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
