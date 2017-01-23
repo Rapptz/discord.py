@@ -27,13 +27,14 @@ DEALINGS IN THE SOFTWARE.
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
-from .errors import ConnectionClosed, ClientException
+from .errors import ConnectionClosed, ClientException, InvalidArgument
 from . import compat
 from .enums import Status
 
 import asyncio
 import logging
 import websockets
+import itertools
 
 log = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class AutoShardedClient(Client):
             elif not isinstance(self.shard_ids, (list, tuple)):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
-        self.connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self.request_offline_members,
+        self.connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
                                                      syncer=self._syncer, http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
@@ -118,26 +119,7 @@ class AutoShardedClient(Client):
         self._still_sharding = True
 
     @asyncio.coroutine
-    def request_offline_members(self, guild, *, shard_id=None):
-        """|coro|
-
-        Requests previously offline members from the guild to be filled up
-        into the :attr:`Guild.members` cache. This function is usually not
-        called.
-
-        When the client logs on and connects to the websocket, Discord does
-        not provide the library with offline members if the number of members
-        in the guild is larger than 250. You can check if a guild is large
-        if :attr:`Guild.large` is ``True``.
-
-        Parameters
-        -----------
-        guild: :class:`Guild` or list
-            The guild to request offline members for. If this parameter is a
-            list then it is interpreted as a list of guilds to request offline
-            members for.
-        """
-
+    def _chunker(self, guild, *, shard_id=None):
         try:
             guild_id = guild.id
             shard_id = shard_id or guild.shard_id
@@ -155,6 +137,38 @@ class AutoShardedClient(Client):
 
         ws = self.shards[shard_id].ws
         yield from ws.send_as_json(payload)
+
+    @asyncio.coroutine
+    def request_offline_members(self, *guilds):
+        """|coro|
+
+        Requests previously offline members from the guild to be filled up
+        into the :attr:`Guild.members` cache. This function is usually not
+        called. It should only be used if you have the ``fetch_offline_members``
+        parameter set to ``False``.
+
+        When the client logs on and connects to the websocket, Discord does
+        not provide the library with offline members if the number of members
+        in the guild is larger than 250. You can check if a guild is large
+        if :attr:`Guild.large` is ``True``.
+
+        Parameters
+        -----------
+        \*guilds
+            An argument list of guilds to request offline members for.
+
+        Raises
+        -------
+        InvalidArgument
+            If any guild is unavailable or not large in the collection.
+        """
+        if any(not g.large or g.unavailable for g in guilds):
+            raise InvalidArgument('An unavailable or non-large guild was passed.')
+
+        _guilds = sorted(guilds, key=lambda g: g.shard_id)
+        for shard_id, sub_guilds in itertools.groupby(_guilds, key=lambda g: g.shard_id):
+            sub_guilds = list(sub_guilds)
+            yield from self.connection.request_offline_members(sub_guilds, shard_id=shard_id)
 
     @asyncio.coroutine
     def pending_reads(self, shard):

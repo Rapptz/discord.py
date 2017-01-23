@@ -96,6 +96,11 @@ class Client:
         Integer starting at 0 and less than shard_count.
     shard_count : Optional[int]
         The total number of shards.
+    fetch_offline_members: bool
+        Indicates if :func:`on_ready` should be delayed to fetch all offline
+        members from the guilds the bot belongs to. If this is ``False``\, then
+        no offline members are received and :meth:`request_offline_members`
+        must be used to fetch the offline members of the guild.
 
     Attributes
     -----------
@@ -120,7 +125,6 @@ class Client:
         The websocket gateway the client is currently connected to. Could be None.
     loop
         The `event loop`_ that the client uses for HTTP requests and websocket operations.
-
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
@@ -133,7 +137,7 @@ class Client:
         connector = options.pop('connector', None)
         self.http = HTTPClient(connector, loop=self.loop)
 
-        self.connection = ConnectionState(dispatch=self.dispatch, chunker=self.request_offline_members,
+        self.connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self.connection.shard_count = self.shard_count
@@ -150,6 +154,24 @@ class Client:
     @asyncio.coroutine
     def _syncer(self, guilds):
         yield from self.ws.request_sync(guilds)
+
+    @asyncio.coroutine
+    def _chunker(self, guild):
+        if hasattr(guild, 'id'):
+            guild_id = guild.id
+        else:
+            guild_id = [s.id for s in guild]
+
+        payload = {
+            'op': 8,
+            'd': {
+                'guild_id': guild_id,
+                'query': '',
+                'limit': 0
+            }
+        }
+
+        yield from self.ws.send_as_json(payload)
 
     def handle_reaction_add(self, reaction, user):
         removed = []
@@ -260,6 +282,35 @@ class Client:
         """
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
+
+    @asyncio.coroutine
+    def request_offline_members(self, *guilds):
+        """|coro|
+
+        Requests previously offline members from the guild to be filled up
+        into the :attr:`Guild.members` cache. This function is usually not
+        called. It should only be used if you have the ``fetch_offline_members``
+        parameter set to ``False``.
+
+        When the client logs on and connects to the websocket, Discord does
+        not provide the library with offline members if the number of members
+        in the guild is larger than 250. You can check if a guild is large
+        if :attr:`Guild.large` is ``True``.
+
+        Parameters
+        -----------
+        \*guilds
+            An argument list of guilds to request offline members for.
+
+        Raises
+        -------
+        InvalidArgument
+            If any guild is unavailable or not large in the collection.
+        """
+        if any(not g.large or g.unavailable for g in guilds):
+            raise InvalidArgument('An unavailable or non-large guild was passed.')
+
+        yield from self.connection.request_offline_members(guilds)
 
     # login state management
 
@@ -776,43 +827,6 @@ class Client:
             coro = asyncio.coroutine(coro)
 
         return self.event(coro)
-
-    @asyncio.coroutine
-    def request_offline_members(self, guild):
-        """|coro|
-
-        Requests previously offline members from the guild to be filled up
-        into the :attr:`Guild.members` cache. This function is usually not
-        called.
-
-        When the client logs on and connects to the websocket, Discord does
-        not provide the library with offline members if the number of members
-        in the guild is larger than 250. You can check if a guild is large
-        if :attr:`Guild.large` is ``True``.
-
-        Parameters
-        -----------
-        guild : :class:`Guild` or iterable
-            The guild to request offline members for. If this parameter is a
-            iterable then it is interpreted as an iterator of guilds to
-            request offline members for.
-        """
-
-        if hasattr(guild, 'id'):
-            guild_id = guild.id
-        else:
-            guild_id = [s.id for s in guild]
-
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
-
-        yield from self.ws.send_as_json(payload)
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False):

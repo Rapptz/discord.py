@@ -102,6 +102,13 @@ to handle it, which defaults to print a traceback and ignore the exception.
 .. versionadded:: 0.7.0
     Subclassing to listen to events.
 
+.. function:: on_connect()
+
+    Called when the client has successfully connected to Discord. This is not
+    the same as the client being fully prepared, see :func:`on_ready` for that.
+
+    The warnings on :func:`on_ready` also apply.
+
 .. function:: on_ready()
 
     Called when the client is done preparing the data received from Discord. Usually after login is successful
@@ -113,6 +120,13 @@ to handle it, which defaults to print a traceback and ignore the exception.
         Likewise, this function is **not** guaranteed to only be called
         once. This library implements reconnection logic and thus will
         end up calling this event whenever a RESUME request fails.
+
+.. function:: on_shard_ready(shard_id)
+
+    Similar to :func:`on_ready` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has become ready.
+
+    :param shard_id: The shard ID that is ready.
 
 .. function:: on_resumed()
 
