@@ -66,9 +66,6 @@ class WaitForType(enum.Enum):
     message  = 0
     reaction = 1
 
-ChannelPermissions = namedtuple('ChannelPermissions', 'target overwrite')
-ChannelPermissions.__new__.__defaults__ = (PermissionOverwrite(),)
-
 class Client:
     """Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
