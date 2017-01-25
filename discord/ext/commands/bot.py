@@ -164,25 +164,12 @@ class BotBase(GroupMixin):
 
     # internal helpers
 
-    @asyncio.coroutine
-    def _run_extra(self, coro, event_name, *args, **kwargs):
-        try:
-            yield from coro(*args, **kwargs)
-        except asyncio.CancelledError:
-            pass
-        except Exception:
-            try:
-                yield from self.on_error(event_name, *args, **kwargs)
-            except asyncio.CancelledError:
-                pass
-
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
         ev = 'on_' + event_name
-        if ev in self.extra_events:
-            for event in self.extra_events[ev]:
-                coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.compat.create_task(coro, loop=self.loop)
+        for event in self.extra_events.get(ev, []):
+            coro = self._run_event(event, event_name, *args, **kwargs)
+            discord.compat.create_task(coro, loop=self.loop)
 
     @asyncio.coroutine
     def close(self):

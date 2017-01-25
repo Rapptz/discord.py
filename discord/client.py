@@ -248,14 +248,14 @@ class Client:
             object.__setattr__(self, name, value)
 
     @asyncio.coroutine
-    def _run_event(self, event, *args, **kwargs):
+    def _run_event(self, coro, event_name, *args, **kwargs):
         try:
-            yield from getattr(self, event)(*args, **kwargs)
+            yield from coro(*args, **kwargs)
         except asyncio.CancelledError:
             pass
         except Exception:
             try:
-                yield from self.on_error(event, *args, **kwargs)
+                yield from self.on_error(event_name, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
 
@@ -264,11 +264,19 @@ class Client:
         method = 'on_' + event
         handler = 'handle_' + event
 
-        if hasattr(self, handler):
-            getattr(self, handler)(*args, **kwargs)
+        try:
+            actual_handler = getattr(self, handler)
+        except AttributeError:
+            pass
+        else:
+            actual_handler(*args, **kwargs)
 
-        if hasattr(self, method):
-            compat.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
+        try:
+            coro = getattr(self, method)
+        except AttributeError:
+            pass
+        else:
+            compat.create_task(self._run_event(coro, method, *args, **kwargs), loop=self.loop)
 
     @asyncio.coroutine
     def on_error(self, event_method, *args, **kwargs):
