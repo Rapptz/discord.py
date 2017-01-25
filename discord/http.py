@@ -666,3 +666,6 @@ class HTTPClient:
 
     def get_user_info(self, user_id):
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
+
+    def get_user_profile(self, user_id):
+        return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))

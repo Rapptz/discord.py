@@ -481,6 +481,35 @@ Application Info
         The owner of the application. This is a :class:`User` instance
         with the owner's information at the time of the call.
 
+Profile
+---------
+
+.. class:: Profile
+
+    A namedtuple representing a user's Discord public profile.
+
+    .. attribute:: user
+
+        The :class:`User` the profile belongs to.
+    .. attribute:: premium
+
+        A boolean indicating if the user has premium (i.e. Discord Nitro).
+    .. attribute:: premium_since
+
+        A naive UTC datetime indicating how long the user has been premium since.
+        This could be ``None`` if not applicable.
+    .. attribute:: mutual_guilds
+
+        A list of :class:`Guild` that the :class:`ClientUser` shares with this
+        user.
+    .. attribute:: connected_accounts
+
+        A list of dict objects indicating the accounts the user has connected.
+
+        An example entry can be seen below: ::
+
+            {type: "twitch", id: "92473777", name: "discordapp"}
+
 .. _discord-api-enums:
 
 Enumerations

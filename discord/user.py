@@ -24,12 +24,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time, _bytes_to_base64_data
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time
 from .enums import DefaultAvatar, RelationshipType
 from .errors import ClientException
 
+from collections import namedtuple
+
 import discord.abc
 import asyncio
+
+Profile = namedtuple('Profile', 'premium user mutual_guilds connected_accounts premium_since')
 
 class BaseUser:
     __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
@@ -424,3 +428,35 @@ class User(BaseUser, discord.abc.Messageable):
             Sending the friend request failed.
         """
         yield from self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
+
+    @asyncio.coroutine
+    def profile(self):
+        """|coro|
+
+        Gets the user's profile. This can only be used by non-bot accounts.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to fetch profiles.
+        HTTPException
+            Fetching the profile failed.
+
+        Returns
+        --------
+        :class:`Profile`
+            The profile of the user.
+        """
+
+        state = self._state
+        data = yield from state.http.get_user_profile(self.id)
+
+        def transform(d):
+            return state._get_guild(int(d['id']))
+
+        mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
+        return Profile(premium=data['premium'],
+                       premium_since=parse_time(data.get('premium_since')),
+                       mutual_guilds=mutual_guilds,
+                       user=self,
+                       connected_accounts=data['connected_accounts'])
