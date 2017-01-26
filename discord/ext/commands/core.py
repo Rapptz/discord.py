@@ -428,6 +428,16 @@ class Command:
             A boolean indicating if the command can be invoked.
         """
 
+        cog = self.instance
+        if cog is not None:
+            try:
+                local_check = getattr(cog, '_{0.__class__.__name__}__local_check'.format(cog))
+            except AttributeError:
+                pass
+            else:
+                if not local_check(context):
+                    return False
+
         predicates = self.checks
         if not predicates:
             # since we have no checks, then we just return True.
