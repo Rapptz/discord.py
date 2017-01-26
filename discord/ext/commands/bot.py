@@ -369,7 +369,7 @@ class BotBase(GroupMixin):
         They are meant as a way to organize multiple relevant commands
         into a singular class that shares some state or no state at all.
 
-        The cog can also have a ``__check`` member function that allows
+        The cog can also have a ``__global_check`` member function that allows
         you to define a global check. See :meth:`check` for more info.
 
         More information will be documented soon.
@@ -383,7 +383,7 @@ class BotBase(GroupMixin):
         self.cogs[type(cog).__name__] = cog
 
         try:
-            check = getattr(cog, '_{.__class__.__name__}__check'.format(cog))
+            check = getattr(cog, '_{.__class__.__name__}__global_check'.format(cog))
         except AttributeError:
             pass
         else:
@@ -449,7 +449,7 @@ class BotBase(GroupMixin):
                 self.remove_listener(member)
 
         try:
-            check = getattr(cog, '_{0.__class__.__name__}__check'.format(cog))
+            check = getattr(cog, '_{0.__class__.__name__}__global_check'.format(cog))
         except AttributeError:
             pass
         else:
