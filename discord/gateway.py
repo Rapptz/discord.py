@@ -234,7 +234,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             A future to wait for.
         """
 
-        future = asyncio.Future(loop=self.loop)
+        future = compat.create_future(self.loop)
         entry = EventListener(event=event, predicate=predicate, result=result, future=future)
         self._dispatch_listeners.append(entry)
         return future

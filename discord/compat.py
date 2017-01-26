@@ -32,6 +32,15 @@ except AttributeError:
     create_task = asyncio.async
 
 try:
+    _create_future = asyncio.AbstractEventLoop.create_future
+except AttributeError:
+    def create_future(loop):
+        return asyncio.Future(loop=loop)
+else:
+    def create_future(loop):
+        return loop.create_future()
+
+try:
     run_coroutine_threadsafe = asyncio.run_coroutine_threadsafe
 except AttributeError:
     # the following code is slightly modified from the

@@ -678,7 +678,7 @@ class Client:
 
             return result
 
-        future = asyncio.Future(loop=self.loop)
+        future = compat.create_future(self.loop)
         self._listeners.append((predicate, future, WaitForType.message))
         try:
             message = yield from asyncio.wait_for(future, timeout, loop=self.loop)
@@ -788,7 +788,7 @@ class Client:
 
             return result
 
-        future = asyncio.Future(loop=self.loop)
+        future = compat.create_future(self.loop)
         self._listeners.append((predicate, future, WaitForType.reaction))
         try:
             return (yield from asyncio.wait_for(future, timeout, loop=self.loop))

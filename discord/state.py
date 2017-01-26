@@ -739,7 +739,7 @@ class ConnectionState:
         return Message(state=self, channel=channel, data=data)
 
     def receive_chunk(self, guild_id):
-        future = asyncio.Future(loop=self.loop)
+        future = compat.create_future(self.loop)
         listener = Listener(ListenerType.chunk, future, lambda s: s.id == guild_id)
         self._listeners.append(listener)
         return future
