@@ -1,5 +1,6 @@
 import discord
 import random
+import asyncio
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -15,13 +16,16 @@ class MyClient(discord.Client):
 
         if message.content.startswith('$guess'):
             await message.channel.send('Guess a number between 1 and 10.')
-            check = lambda m: m.content.isdigit()
-            guess = await self.wait_for_message(author=message.author, check=check, timeout=5.0)
+
+            def is_correct(m):
+                return m.author == message.author and m.content.isdigit()
 
             answer = random.randint(1, 10)
-            if guess is not None:
-                await message.channel.send('Sorry, you took too long it was {}.'.format(answer))
-                return
+
+            try:
+                guess = await self.wait_for('message', check=is_correct, timeout=5.0)
+            except asyncio.TimeoutError:
+                return await message.channel.send('Sorry, you took too long it was {}.'.format(answer))
 
             if int(guess.content) == answer:
                 await message.channel.send('You are right!')

@@ -15,7 +15,7 @@ class MyClient(discord.Client):
         print('------')
 
     async def my_background_task(self):
-        await self.wait_until_ready()
+        await self.wait_for('ready')
         counter = 0
         channel = self.get_channel(1234567) # channel ID goes here
         while not self.is_closed:
