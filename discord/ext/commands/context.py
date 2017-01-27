@@ -38,35 +38,38 @@ class Context(discord.abc.Messageable):
 
     Attributes
     -----------
-    message : :class:`discord.Message`
+    message: :class:`discord.Message`
         The message that triggered the command being executed.
-    bot : :class:`Bot`
+    bot: :class:`Bot`
         The bot that contains the command being executed.
-    args : list
+    args: list
         The list of transformed arguments that were passed into the command.
         If this is accessed during the :func:`on_command_error` event
         then this list could be incomplete.
-    kwargs : dict
+    kwargs: dict
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
         :func:`on_command_error` event then this dict could be incomplete.
-    prefix : str
+    prefix: str
         The prefix that was used to invoke the command.
     command
         The command (i.e. :class:`Command` or its superclasses) that is being
         invoked currently.
-    invoked_with : str
+    invoked_with: str
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
     invoked_subcommand
         The subcommand (i.e. :class:`Command` or its superclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
         `None`.
-    subcommand_passed : Optional[str]
+    subcommand_passed: Optional[str]
         The string that was attempted to call a subcommand. This does not have
         to point to a valid registered subcommand and could just point to a
         nonsense string. If nothing was passed to attempt a call to a
         subcommand then this is set to `None`.
+    command_failed: bool
+        A boolean that indicates if the command failed to be parsed, checked,
+        or invoked.
     """
 
     def __init__(self, **attrs):
@@ -80,6 +83,7 @@ class Context(discord.abc.Messageable):
         self.invoked_with = attrs.pop('invoked_with', None)
         self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
         self.subcommand_passed = attrs.pop('subcommand_passed', None)
+        self.command_failed = attrs.pop('command_failed', True)
         self._state = self.message._state
 
     @asyncio.coroutine

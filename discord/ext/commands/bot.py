@@ -627,6 +627,7 @@ class BotBase(GroupMixin):
             except CommandError as e:
                 yield from ctx.command.dispatch_error(e, ctx)
             else:
+                ctx.command_failed = False
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
             exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
