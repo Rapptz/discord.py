@@ -213,6 +213,16 @@ class ClientUser(BaseUser):
         """Returns a list of :class:`Relationship` that the user has."""
         return list(self._relationships.values())
 
+    @property
+    def friends(self):
+        """Returns a list of :class:`User`\s that the user is friends with."""
+        return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
+
+    @property
+    def blocked(self):
+        """Returns a list of :class:`User`\s that the user has blocked."""
+        return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
+
     @asyncio.coroutine
     def edit(self, **fields):
         """|coro|
