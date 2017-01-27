@@ -136,6 +136,8 @@ class BotBase(GroupMixin):
         self.cogs = {}
         self.extensions = {}
         self._checks = []
+        self._before_invoke = None
+        self._after_invoke = None
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
@@ -268,6 +270,71 @@ class BotBase(GroupMixin):
 
     def can_run(self, ctx):
         return all(f(ctx) for f in self._checks)
+
+    def before_invoke(self, coro):
+        """A decorator that registers a coroutine as a pre-invoke hook.
+
+        A pre-invoke hook is called directly before the command is
+        called. This makes it a useful function to set up database
+        connections or any type of set up required.
+
+        This pre-invoke hook takes a sole parameter, a :class:`Context`.
+
+        .. note::
+
+            The :meth:`before_invoke` and :meth:`after_invoke` hooks are
+            only called if all checks and argument parsing procedures pass
+            without error. If any check or argument parsing procedures fail
+            then the hooks are not called.
+
+        Parameters
+        -----------
+        coro
+            The coroutine to register as the pre-invoke hook.
+
+        Raises
+        -------
+        discord.ClientException
+            The coroutine is not actually a coroutine.
+        """
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The error handler must be a coroutine.')
+
+        self._before_invoke = coro
+        return coro
+
+    def after_invoke(self, coro):
+        """A decorator that registers a coroutine as a post-invoke hook.
+
+        A post-invoke hook is called directly after the command is
+        called. This makes it a useful function to clean-up database
+        connections or any type of clean up required.
+
+        This post-invoke hook takes a sole parameter, a :class:`Context`.
+
+        .. note::
+
+            Similar to :meth:`before_invoke`\, this is not called unless
+            checks and argument parsing procedures succeed. This hook is,
+            however, **always** called regardless of the internal command
+            callback raising an error (i.e. :exc:`CommandInvokeError`\).
+            This makes it ideal for clean-up scenarios.
+
+        Parameters
+        -----------
+        coro
+            The coroutine to register as the post-invoke hook.
+
+        Raises
+        -------
+        discord.ClientException
+            The coroutine is not actually a coroutine.
+        """
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The error handler must be a coroutine.')
+
+        self._after_invoke = coro
+        return coro
 
     # listener registration
 
