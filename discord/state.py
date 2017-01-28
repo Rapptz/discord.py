@@ -317,7 +317,7 @@ class ConnectionState:
             self.dispatch('reaction_add', reaction, user)
 
     def parse_message_reaction_remove_all(self, data):
-        message =  self._get_message(data['message_id'])
+        message =  self._get_message(int(data['message_id']))
         if message is not None:
             old_reactions = message.reactions.copy()
             message.reactions.clear()
@@ -341,7 +341,7 @@ class ConnectionState:
 
         status = data.get('status')
         user = data['user']
-        member_id = user['id']
+        member_id = int(user['id'])
         member = guild.get_member(member_id)
         if member is None:
             if 'username' not in user:
@@ -437,7 +437,7 @@ class ConnectionState:
     def parse_guild_member_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            user_id = data['user']['id']
+            user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
             if member is not None:
                 guild._remove_member(member)
@@ -458,7 +458,7 @@ class ConnectionState:
     def parse_guild_member_update(self, data):
         guild = self._get_guild(int(data['guild_id']))
         user = data['user']
-        user_id = user['id']
+        user_id = int(user['id'])
         member = guild.get_member(user_id)
         if member is not None:
             old_member = copy.copy(member)
@@ -476,7 +476,7 @@ class ConnectionState:
             # GUILD_CREATE with unavailable in the response
             # usually means that the guild has become available
             # and is therefore in the cache
-            guild = self._get_guild(data.get('id'))
+            guild = self._get_guild(int(data['id']))
             if guild is not None:
                 guild.unavailable = False
                 guild._from_data(data)
@@ -575,10 +575,14 @@ class ConnectionState:
         # is mainly to dispatch to another event worth listening to for logging
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            user_id = data.get('user', {}).get('id')
-            member = utils.get(guild.members, id=user_id)
-            if member is not None:
-                self.dispatch('member_ban', member)
+            try:
+                user_id = int(data['user']['id'])
+            except KeyError:
+                pass
+            else:
+                member = guild.get_member(user_id)
+                if member is not None:
+                    self.dispatch('member_ban', member)
 
     def parse_guild_ban_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
