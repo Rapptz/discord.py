@@ -318,18 +318,10 @@ class HTTPClient:
 
         return self.request(r, json=payload)
 
-    def edit_message(self, message_id, channel_id, content, *, embed=None):
+    def edit_message(self, message_id, channel_id, **fields):
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
                                                                            message_id=message_id)
-        payload = {}
-
-        if content:
-            payload['content'] = content
-
-        if embed:
-            payload['embed'] = embed
-
-        return self.request(r, json=payload)
+        return self.request(r, json=fields)
 
     def add_reaction(self, message_id, channel_id, emoji):
         r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
