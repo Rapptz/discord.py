@@ -120,6 +120,7 @@ class Client:
 
         self.connection.shard_count = self.shard_count
         self._closed = asyncio.Event(loop=self.loop)
+        self._ready = asyncio.Event(loop=self.loop)
 
         # if VoiceClient.warn_nacl:
         #     VoiceClient.warn_nacl = False
@@ -148,6 +149,9 @@ class Client:
         }
 
         yield from self.ws.send_as_json(payload)
+
+    def handle_ready(self):
+        self._ready.set()
 
     def _resolve_invite(self, invite):
         if isinstance(invite, Invite) or isinstance(invite, Object):
@@ -188,6 +192,11 @@ class Client:
     def voice_clients(self):
         """List[:class:`VoiceClient`]: Represents a list of voice connections."""
         return self.connection.voice_clients
+
+    @property
+    def is_ready(self):
+        """bool: Specifies if the client's internal cache is ready for use."""
+        return self._ready.is_set()
 
     @asyncio.coroutine
     def _run_event(self, coro, event_name, *args, **kwargs):
@@ -356,6 +365,10 @@ class Client:
             except (ReconnectWebSocket, ResumeWebSocket) as e:
                 resume = type(e) is ResumeWebSocket
                 log.info('Got ' + type(e).__name__)
+
+                if not resume:
+                    self._ready.clear()
+
                 self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id,
                                                                         session=self.ws.session_id,
                                                                         sequence=self.ws.sequence,
@@ -389,6 +402,7 @@ class Client:
 
         yield from self.http.close()
         self._closed.set()
+        self._ready.clear()
 
     @asyncio.coroutine
     def start(self, *args, **kwargs):
@@ -512,6 +526,14 @@ class Client:
                 yield member
 
     # listeners/waiters
+
+    @asyncio.coroutine
+    def wait_until_ready(self):
+        """|coro|
+
+        Waits until the client's internal cache is all ready.
+        """
+        yield from self._ready.wait()
 
     def wait_for(self, event, *, check=None, timeout=None):
         """|coro|
