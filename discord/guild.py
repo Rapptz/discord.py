@@ -73,7 +73,7 @@ class Guild(Hashable):
         will be a ``str`` if the value is not recognised by the enumerator.
     afk_timeout: int
         The timeout to get sent to the AFK channel.
-    afk_channel: :class:`Channel`
+    afk_channel: Optional[:class:`VoiceChannel`]
         The channel that denotes the AFK channel. None if it doesn't exist.
     icon: str
         The guild's icon.
@@ -265,7 +265,7 @@ class Guild(Hashable):
         return [ch for ch in self._channels.values() if isinstance(ch, TextChannel)]
 
     def get_channel(self, channel_id):
-        """Returns a :class:`Channel` with the given ID. If not found, returns None."""
+        """Returns a :class:`abc.GuildChannel` with the given ID. If not found, returns None."""
         return self._channels.get(channel_id)
 
     @property
@@ -280,12 +280,12 @@ class Guild(Hashable):
     @utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_everyone, self.roles)
+        return utils.find(lambda r: r.is_default(), self.roles)
 
     @utils.cached_slot_property('_default_channel')
     def default_channel(self):
-        """Gets the default :class:`Channel` for the guild."""
-        return utils.find(lambda c: c.is_default, self.channels)
+        """Gets the default :class:`TextChannel` for the guild."""
+        return utils.find(lambda c: c.is_default(), self.text_channels)
 
     @property
     def owner(self):
