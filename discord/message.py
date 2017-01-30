@@ -333,23 +333,6 @@ class Message:
         pattern = re.compile('|'.join(transformations.keys()))
         return pattern.sub(repl2, result)
 
-    def _handle_upgrades(self, channel_id):
-        self.guild = None
-        if isinstance(self.channel, Object):
-            return
-
-        if self.channel is None:
-            if channel_id is not None:
-                self.channel = Object(id=channel_id)
-                self.channel.is_private = True
-            return
-
-        if isinstance(self.channel, discord.abc.GuildChannel):
-            self.guild = self.channel.guild
-            found = self.guild.get_member(self.author.id)
-            if found is not None:
-                self.author = found
-
     @property
     def created_at(self):
         """Returns the message's creation time in UTC."""
