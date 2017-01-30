@@ -237,7 +237,7 @@ class AutoShardedClient(Client):
         """
         yield from self.launch_shards()
 
-        while not self.is_closed:
+        while not self.is_closed():
             pollers = [shard.get_future() for shard in self.shards.values()]
             yield from asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
 
@@ -247,7 +247,7 @@ class AutoShardedClient(Client):
 
         Closes the connection to discord.
         """
-        if self.is_closed:
+        if self.is_closed():
             return
 
         for shard in self.shards.values():
@@ -255,7 +255,6 @@ class AutoShardedClient(Client):
 
         yield from self.http.close()
         self._closed.set()
-        self._is_ready.clear()
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False, shard_id=None):

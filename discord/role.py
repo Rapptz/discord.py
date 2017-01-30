@@ -135,7 +135,6 @@ class Role(Hashable):
         self.mentionable = data.get('mentionable', False)
         self.color = self.colour
 
-    @property
     def is_everyone(self):
         """Checks if the role is the @everyone role."""
         return self.guild.id == self.id
@@ -154,7 +153,7 @@ class Role(Hashable):
     def members(self):
         """Returns a list of :class:`Member` with this role."""
         all_members = self.guild.members
-        if self.is_everyone:
+        if self.is_everyone():
             return all_members
 
         ret = []
@@ -168,7 +167,7 @@ class Role(Hashable):
         if position <= 0:
             raise InvalidArgument("Cannot move role to position 0 or below")
 
-        if self.is_everyone:
+        if self.is_everyone():
             raise InvalidArgument("Cannot move default role")
 
         if self.position == position:

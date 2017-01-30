@@ -193,7 +193,6 @@ class Client:
         """List[:class:`VoiceClient`]: Represents a list of voice connections."""
         return self.connection.voice_clients
 
-    @property
     def is_ready(self):
         """bool: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
@@ -359,7 +358,7 @@ class Client:
         """
         self.ws = yield from DiscordWebSocket.from_client(self)
 
-        while not self.is_closed:
+        while not self.is_closed():
             try:
                 yield from self.ws.poll_event()
             except (ReconnectWebSocket, ResumeWebSocket) as e:
@@ -384,7 +383,7 @@ class Client:
 
         Closes the connection to discord.
         """
-        if self.is_closed:
+        if self.is_closed():
             return
 
         for voice in list(self.voice_clients):
@@ -458,7 +457,6 @@ class Client:
 
     # properties
 
-    @property
     def is_closed(self):
         """bool: Indicates if the websocket connection is closed."""
         return self._closed.is_set()

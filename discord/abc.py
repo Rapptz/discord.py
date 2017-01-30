@@ -185,7 +185,6 @@ class GuildChannel:
             ret.append(role)
         return ret
 
-    @property
     def is_default(self):
         """bool : Indicates if this is the default channel for the :class:`Guild` it belongs to."""
         return self.guild.id == self.id
@@ -330,7 +329,7 @@ class GuildChannel:
                 break
 
         # default channels can always be read
-        if self.is_default:
+        if self.is_default():
             base.read_messages = True
 
         # if you can't send a message in a channel then you can't have certain

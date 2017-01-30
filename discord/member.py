@@ -49,7 +49,7 @@ class VoiceState:
         Indicates if the user is currently muted by their own accord.
     self_deaf: bool
         Indicates if the user is currently deafened by their own accord.
-    is_afk: bool
+    afk: bool
         Indicates if the user is currently in the AFK channel in the guild.
     channel: :class:`VoiceChannel`
         The voice channel that the user is currently connected to. None if the user
@@ -57,7 +57,7 @@ class VoiceState:
     """
 
     __slots__ = ( 'session_id', 'deaf', 'mute', 'self_mute',
-                  'self_deaf', 'is_afk', 'channel' )
+                  'self_deaf', 'afk', 'channel' )
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -66,7 +66,7 @@ class VoiceState:
     def _update(self, data, channel):
         self.self_mute = data.get('self_mute', False)
         self.self_deaf = data.get('self_deaf', False)
-        self.is_afk = data.get('suppress', False)
+        self.afk = data.get('suppress', False)
         self.mute = data.get('mute', False)
         self.deaf = data.get('deaf', False)
         self.channel = channel
