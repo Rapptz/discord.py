@@ -110,8 +110,8 @@ class Guild(Hashable):
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'unavailable', 'name', 'region', '_state',
-                 '_default_role', '_default_channel', 'roles', '_member_count',
-                 'large', 'owner_id', 'mfa_level', 'emojis', 'features',
+                 '_default_role', 'roles', '_member_count', 'large',
+                 'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'splash', '_voice_states' )
 
     def __init__(self, *, data, state):
@@ -282,10 +282,10 @@ class Guild(Hashable):
         """Gets the @everyone role that all members have by default."""
         return utils.find(lambda r: r.is_default(), self.roles)
 
-    @utils.cached_slot_property('_default_channel')
+    @property
     def default_channel(self):
         """Gets the default :class:`TextChannel` for the guild."""
-        return utils.find(lambda c: c.is_default(), self.text_channels)
+        return self.get_channel(self.id)
 
     @property
     def owner(self):
