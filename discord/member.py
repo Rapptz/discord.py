@@ -264,6 +264,22 @@ class Member(discord.abc.Messageable):
 
         return False
 
+    def permissions_in(self, channel):
+        """An alias for :meth:`Channel.permissions_for`.
+
+        Basically equivalent to:
+
+        .. code-block:: python
+
+            channel.permissions_for(self)
+
+        Parameters
+        -----------
+        channel
+            The channel to check your permissions for.
+        """
+        return channel.permissions_for(self)
+
     @property
     def top_role(self):
         """Returns the member's highest role.
