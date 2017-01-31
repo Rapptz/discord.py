@@ -53,7 +53,7 @@ class Invite(Hashable):
     max_age: int
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
     code: str
-        The URL fragment used for the invite. :attr:`xkcd` is also a possible fragment.
+        The URL fragment used for the invite.
     guild: :class:`Guild`
         The guild the invite is for.
     revoked: bool
@@ -89,7 +89,7 @@ class Invite(Hashable):
         self.max_uses = data.get('max_uses')
 
         inviter_data = data.get('inviter')
-        self.inviter = None if inviter_data is None else User(state=state, data=data)
+        self.inviter = None if inviter_data is None else User(state=state, data=inviter_data)
         self.channel = data.get('channel')
 
     def __str__(self):
