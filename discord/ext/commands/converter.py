@@ -152,7 +152,7 @@ class TextChannelConverter(IDConverter):
             else:
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
-        if result is None:
+        if not isinstance(result, discord.TextChannel):
             raise BadArgument('Channel "{}" not found.'.format(self.argument))
 
         return result
@@ -180,7 +180,7 @@ class VoiceChannelConverter(IDConverter):
             else:
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
-        if result is None:
+        if not isinstance(result, discord.VoiceChannel):
             raise BadArgument('Channel "{}" not found.'.format(self.argument))
 
         return result
