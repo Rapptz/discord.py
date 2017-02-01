@@ -787,7 +787,7 @@ class Client:
         invite_id = self._resolve_invite(url)
         data = yield from self.http.get_invite(invite_id)
         self._fill_invite_data(data)
-        return Invite(**data)
+        return Invite(state=self.connection, data=data)
 
     @asyncio.coroutine
     def invites_from(self, guild):
@@ -821,7 +821,7 @@ class Client:
             channel = guild.get_channel(invite['channel']['id'])
             invite['channel'] = channel
             invite['guild'] = guild
-            result.append(Invite(**invite))
+            result.append(Invite(state=self.connection, data=invite))
 
         return result
 
