@@ -752,7 +752,7 @@ class Client:
 
         data = yield from self.http.create_invite(destination.id, **options)
         self._fill_invite_data(data)
-        return Invite(**data)
+        return Invite(state=self.connection, data=data)
 
     @asyncio.coroutine
     def get_invite(self, url):
