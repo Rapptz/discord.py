@@ -648,15 +648,26 @@ class GroupMixin:
             self.commands.pop(alias, None)
         return command
 
+    def walk_commands(self):
+        """An iterator that recursively walks through all commands and subcommands."""
+        for command in tuple(self.commands.values()):
+            yield command
+            if isinstance(command, GroupMixin):
+                yield from command.walk_commands()
+
     def get_command(self, name):
         """Get a :class:`Command` or subclasses from the internal list
         of commands.
 
         This could also be used as a way to get aliases.
 
+        The name could be fully qualified (e.g. ``'foo bar'``) will get
+        the subcommand ``bar`` of the group command ``foo``. If a
+        subcommand is not found then ``None`` is returned just as usual.
+
         Parameters
         -----------
-        name : str
+        name: str
             The name of the command to get.
 
         Returns
@@ -664,7 +675,19 @@ class GroupMixin:
         Command or subclass
             The command that was requested. If not found, returns ``None``.
         """
-        return self.commands.get(name, None)
+
+        names = name.split()
+        obj = self.commands.get(names[0])
+        if not isinstance(obj, GroupMixin):
+            return obj
+
+        for name in names[1:]:
+            try:
+                obj = obj.commands[name]
+            except (AttributeError, KeyError):
+                return None
+
+        return obj
 
     def command(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`command` and adds it to
