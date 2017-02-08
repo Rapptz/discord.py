@@ -154,7 +154,7 @@ class HTTPClient:
 
                     # check if we have rate limit header information
                     remaining = r.headers.get('X-Ratelimit-Remaining')
-                    if remaining == '0':
+                    if remaining == '0' and r.status != 429:
                         # we've depleted our current bucket
                         if header_bypass_delay is None:
                             now = parsedate_to_datetime(r.headers['Date'])
