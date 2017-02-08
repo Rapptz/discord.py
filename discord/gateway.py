@@ -41,14 +41,8 @@ import struct
 
 log = logging.getLogger(__name__)
 
-__all__ = [ 'ReconnectWebSocket', 'DiscordWebSocket',
-            'KeepAliveHandler', 'VoiceKeepAliveHandler',
+__all__ = [ 'DiscordWebSocket', 'KeepAliveHandler', 'VoiceKeepAliveHandler',
             'DiscordVoiceWebSocket', 'ResumeWebSocket' ]
-
-class ReconnectWebSocket(Exception):
-    """Signals to handle the RECONNECT opcode."""
-    def __init__(self, shard_id):
-        self.shard_id = shard_id
 
 class ResumeWebSocket(Exception):
     """Signals to initialise via RESUME opcode instead of IDENTIFY."""
@@ -128,8 +122,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     REQUEST_MEMBERS
         Send only. Asks for the full member list of a guild.
     INVALIDATE_SESSION
-        Receive only. Tells the client to invalidate the session and IDENTIFY
-        again.
+        Receive only. Tells the client to optionally invalidate the session
+        and IDENTIFY again.
     HELLO
         Receive only. Tells the client the heartbeat interval.
     HEARTBEAT_ACK
@@ -306,7 +300,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             # internal exception signalling to reconnect.
             log.info('Received RECONNECT opcode.')
             yield from self.close()
-            raise ReconnectWebSocket(self.shard_id)
+            raise ResumeWebSocket(self.shard_id)
 
         if op == self.HEARTBEAT_ACK:
             return # disable noisy logging for now
@@ -323,12 +317,13 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             return
 
         if op == self.INVALIDATE_SESSION:
-            self.sequence = None
-            self.session_id = None
             if data == True:
                 yield from self.close()
                 raise ResumeWebSocket(self.shard_id)
 
+            self.sequence = None
+            self.session_id = None
+            log.info('Shard ID %s has either failed a RESUME request or needed to invalidate its session.' % self.shard_id)
             yield from self.identify()
             return
 

@@ -54,10 +54,9 @@ class Shard:
     def poll(self):
         try:
             yield from self.ws.poll_event()
-        except (ReconnectWebSocket, ResumeWebSocket) as e:
-            resume = type(e) is ResumeWebSocket
-            log.info('Got ' + type(e).__name__)
-            self.ws = yield from DiscordWebSocket.from_client(self._client, resume=resume,
+        except ResumeWebSocket as e:
+            log.info('Got a request to RESUME the websocket.')
+            self.ws = yield from DiscordWebSocket.from_client(self._client, resume=True,
                                                                             shard_id=self.id,
                                                                             session=self.ws.session_id,
                                                                             sequence=self.ws.sequence)
