@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import sys
+import time
 import websockets
 import asyncio
 import aiohttp
@@ -55,15 +56,31 @@ class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
         ws = kwargs.pop('ws', None)
         interval = kwargs.pop('interval', None)
+        shard_id = kwargs.pop('shard_id', None)
         threading.Thread.__init__(self, *args, **kwargs)
         self.ws = ws
         self.interval = interval
         self.daemon = True
+        self.shard_id = shard_id
         self.msg = 'Keeping websocket alive with sequence {0[d]}'
         self._stop_ev = threading.Event()
+        self._last_ack = time.time()
 
     def run(self):
         while not self._stop_ev.wait(self.interval):
+            if self._last_ack + 2 * self.interval < time.time():
+                log.warn("Shard ID %s has stopped responding to the gateway." % self.shard_id)
+                coro = self.ws.close(1006)
+                f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+
+                try:
+                    f.result()
+                except:
+                    pass
+                finally:
+                    self.stop()
+                    return
+
             data = self.get_payload()
             log.debug(self.msg.format(data))
             coro = self.ws.send_as_json(data)
@@ -83,12 +100,16 @@ class KeepAliveHandler(threading.Thread):
     def stop(self):
         self._stop_ev.set()
 
+    def ack(self):
+        self._last_ack = time.time()
+
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.msg = 'Keeping voice websocket alive with timestamp {0[d]}'
 
     def get_payload(self):
+        self.ack()
         return {
             'op': self.ws.HEARTBEAT,
             'd': int(time.time() * 1000)
@@ -303,7 +324,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             raise ResumeWebSocket(self.shard_id)
 
         if op == self.HEARTBEAT_ACK:
-            return # disable noisy logging for now
+            self._keep_alive.ack()
+            return
 
         if op == self.HEARTBEAT:
             beat = self._keep_alive.get_payload()
@@ -312,7 +334,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         if op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
+            self._keep_alive = KeepAliveHandler(ws=self, interval=interval, shard_id=self.shard_id)
             self._keep_alive.start()
             return
 
