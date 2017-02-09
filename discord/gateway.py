@@ -355,6 +355,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             future = entry.future
             if future.cancelled():
                 removed.append(index)
+                continue
 
             try:
                 valid = entry.predicate(data)
