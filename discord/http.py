@@ -341,7 +341,6 @@ class HTTPClient:
         return self.request(r)
 
     def logs_from(self, channel_id, limit, before=None, after=None, around=None):
-        url = '{0.CHANNELS}/{1}/messages'.format(self, channel_id)
         params = {
             'limit': limit
         }
@@ -429,8 +428,6 @@ class HTTPClient:
     # Channel management
 
     def edit_channel(self, channel_id, **options):
-        url = '{0.CHANNELS}/{1}'.format(self, channel_id)
-
         valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
