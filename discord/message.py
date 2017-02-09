@@ -172,12 +172,6 @@ class Message:
 
     def _update(self, channel, data):
         self.channel = channel
-        for handler in ('author', 'mentions', 'mention_roles', 'call'):
-            try:
-                getattr(self, '_handle_%s' % handler)(data[handler])
-            except KeyError:
-                continue
-
         self._try_patch(data, 'edited_timestamp', utils.parse_time)
         self._try_patch(data, 'pinned', bool)
         self._try_patch(data, 'mention_everyone', bool)
@@ -187,6 +181,12 @@ class Message:
         self._try_patch(data, 'attachments', lambda x: x)
         self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
         self._try_patch(data, 'nonce', lambda x: x)
+
+        for handler in ('author', 'mentions', 'mention_roles', 'call'):
+            try:
+                getattr(self, '_handle_%s' % handler)(data[handler])
+            except KeyError:
+                continue
 
         # clear the cached properties
         cached = filter(lambda attr: attr.startswith('_cs_'), self.__slots__)
