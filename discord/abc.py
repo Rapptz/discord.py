@@ -36,6 +36,7 @@ from .context_managers import Typing
 from .errors import ClientException, NoMoreItems, InvalidArgument
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
+from .invite import Invite
 from . import utils, compat
 
 class _Undefined:
@@ -457,6 +458,73 @@ class GuildChannel:
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
+    @asyncio.coroutine
+    def create_invite(self, **fields):
+        """|coro|
+
+        Creates an instant invite.
+
+        Parameters
+        ------------
+        max_age : int
+            How long the invite should last. If it's 0 then the invite
+            doesn't expire. Defaults to 0.
+        max_uses : int
+            How many uses the invite could be used for. If it's 0 then there
+            are unlimited uses. Defaults to 0.
+        temporary : bool
+            Denotes that the invite grants temporary membership
+            (i.e. they get kicked after they disconnect). Defaults to False.
+        unique: bool
+            Indicates if a unique invite URL should be created. Defaults to True.
+            If this is set to False then it will return a previously created
+            invite.
+
+        Raises
+        -------
+        HTTPException
+            Invite creation failed.
+
+        Returns
+        --------
+        :class:`Invite`
+            The invite that was created.
+        """
+
+        data = yield from self._state.http.create_invite(self.id, **fields)
+        return Invite.from_incomplete(data=data, state=self._state)
+
+    @asyncio.coroutine
+    def invites(self):
+        """|coro|
+
+        Returns a list of all active instant invites from this channel.
+
+        You must have proper permissions to get this information.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to get the information.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        -------
+        List[:class:`Invite`]
+            The list of invites that are currently active.
+        """
+
+        state = self._state
+        data = yield from state.http.invites_from_channel(self.id)
+        result = []
+
+        for invite in data:
+            invite['channel'] = self
+            invite['guild'] = self.guild
+            result.append(Invite(state=state, data=invite))
+
+        return result
 
 class Messageable(metaclass=abc.ABCMeta):
     __slots__ = ()

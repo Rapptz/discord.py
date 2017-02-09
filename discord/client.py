@@ -696,59 +696,6 @@ class Client:
 
     # Invite management
 
-    def _fill_invite_data(self, data):
-        guild = self.connection._get_guild(data['guild']['id'])
-        if guild is not None:
-            ch_id = data['channel']['id']
-            channel = guild.get_channel(ch_id)
-        else:
-            guild = Object(id=data['guild']['id'])
-            guild.name = data['guild']['name']
-            channel = Object(id=data['channel']['id'])
-            channel.name = data['channel']['name']
-        data['guild'] = guild
-        data['channel'] = channel
-
-    @asyncio.coroutine
-    def create_invite(self, destination, **options):
-        """|coro|
-
-        Creates an invite for the destination which could be either a
-        :class:`Guild` or :class:`Channel`.
-
-        Parameters
-        ------------
-        destination
-            The :class:`Guild` or :class:`Channel` to create the invite to.
-        max_age : int
-            How long the invite should last. If it's 0 then the invite
-            doesn't expire. Defaults to 0.
-        max_uses : int
-            How many uses the invite could be used for. If it's 0 then there
-            are unlimited uses. Defaults to 0.
-        temporary : bool
-            Denotes that the invite grants temporary membership
-            (i.e. they get kicked after they disconnect). Defaults to False.
-        unique: bool
-            Indicates if a unique invite URL should be created. Defaults to True.
-            If this is set to False then it will return a previously created
-            invite.
-
-        Raises
-        -------
-        HTTPException
-            Invite creation failed.
-
-        Returns
-        --------
-        :class:`Invite`
-            The invite that was created.
-        """
-
-        data = yield from self.http.create_invite(destination.id, **options)
-        self._fill_invite_data(data)
-        return Invite(**data)
-
     @asyncio.coroutine
     def get_invite(self, url):
         """|coro|
@@ -781,44 +728,7 @@ class Client:
 
         invite_id = self._resolve_invite(url)
         data = yield from self.http.get_invite(invite_id)
-        self._fill_invite_data(data)
-        return Invite(**data)
-
-    @asyncio.coroutine
-    def invites_from(self, guild):
-        """|coro|
-
-        Returns a list of all active instant invites from a :class:`Guild`.
-
-        You must have proper permissions to get this information.
-
-        Parameters
-        ----------
-        guild : :class:`Guild`
-            The guild to get invites from.
-
-        Raises
-        -------
-        Forbidden
-            You do not have proper permissions to get the information.
-        HTTPException
-            An error occurred while fetching the information.
-
-        Returns
-        -------
-        list of :class:`Invite`
-            The list of invites that are currently active.
-        """
-
-        data = yield from self.http.invites_from(guild.id)
-        result = []
-        for invite in data:
-            channel = guild.get_channel(invite['channel']['id'])
-            invite['channel'] = channel
-            invite['guild'] = guild
-            result.append(Invite(**invite))
-
-        return result
+        return Invite.from_incomplete(state=self._connection, data=data)
 
     @asyncio.coroutine
     def accept_invite(self, invite):

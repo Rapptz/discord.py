@@ -24,9 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .user import User
+import asyncio
+
 from .utils import parse_time
 from .mixins import Hashable
+from .object import Object
 
 class Invite(Hashable):
     """Represents a Discord :class:`Guild` or :class:`Channel` invite.
@@ -89,8 +91,25 @@ class Invite(Hashable):
         self.max_uses = data.get('max_uses')
 
         inviter_data = data.get('inviter')
-        self.inviter = None if inviter_data is None else User(state=state, data=inviter_data)
+        self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
         self.channel = data.get('channel')
+
+    @classmethod
+    def from_incomplete(cls, *, state, data):
+        guild_id = int(data['guild']['id'])
+        channel_id = int(data['channel']['id'])
+        guild = state._get_guild(guild_id)
+        if guild is not None:
+            channel = guild.get_channel(channel_id)
+        else:
+            guild = Object(id=guild_id)
+            channel = Object(id=channel_id)
+            guild.name = data['guild']['name']
+            channel.name = data['channel']['name']
+
+        data['guild'] = guild
+        data['channel'] = channel
+        return cls(state=state, data=data)
 
     def __str__(self):
         return self.url
@@ -106,5 +125,41 @@ class Invite(Hashable):
     @property
     def url(self):
         """A property that retrieves the invite URL."""
-        return 'http://discord.gg/{}'.format(self.id)
+        return 'http://discord.gg/' + self.code
 
+    @asyncio.coroutine
+    def accept(self):
+        """|coro|
+
+        Accepts the instant invite and adds you to the guild
+        the invite is in.
+
+        Raises
+        -------
+        HTTPException
+            Accepting the invite failed.
+        NotFound
+            The invite is invalid or expired.
+        Forbidden
+            You are a bot user and cannot use this endpoint.
+        """
+
+        yield from self._state.http.accept_invite(self.code)
+
+    @asyncio.coroutine
+    def delete(self):
+        """|coro|
+
+        Revokes the instant invite.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to revoke invites.
+        NotFound
+            The invite is invalid or expired.
+        HTTPException
+            Revoking the invite failed.
+        """
+
+        yield from self._state.http.delete_invite(self.code)
