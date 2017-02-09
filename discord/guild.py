@@ -301,7 +301,7 @@ class Guild(Hashable):
 
     @property
     def splash_url(self):
-        """Returns the URL version of the server's invite splash. Returns an empty string if it has no splash."""
+        """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
         if self.splash is None:
             return ''
         return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(self)

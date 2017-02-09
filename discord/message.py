@@ -486,7 +486,7 @@ class Message:
 
         Add a reaction to the message.
 
-        The emoji may be a unicode emoji or a custom server :class:`Emoji`.
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
         You must have the :attr:`Permissions.add_reactions` permission to
         add new reactions to a message.
@@ -523,7 +523,7 @@ class Message:
 
         Remove a reaction by the member from the message.
 
-        The emoji may be a unicode emoji or a custom server :class:`Emoji`.
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
         If the reaction is not your own (i.e. ``member`` parameter is not you) then
         the :attr:`Permissions.manage_messages` permission is needed.
