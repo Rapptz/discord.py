@@ -93,6 +93,8 @@ class Command:
     brief : str
         The short help text for the command. If this is not specified
         then the first line of the long help text is used instead.
+    usage : str
+        A replacement for arguments in the default help text.
     aliases : list
         The list of aliases the command can be invoked under.
     pass_context : bool
@@ -145,6 +147,7 @@ class Command:
         self.enabled = kwargs.get('enabled', True)
         self.help = kwargs.get('help')
         self.brief = kwargs.get('brief')
+        self.usage = kwargs.get('usage')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
         self.pass_context = kwargs.get('pass_context', True)

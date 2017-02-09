@@ -203,7 +203,9 @@ class HelpFormatter:
             result.append(name)
 
         params = cmd.clean_params
-        if len(params) > 0:
+        if cmd.usage:
+            result.append(cmd.usage)
+        elif len(params) > 0:
             for name, param in params.items():
                 if param.default is not param.empty:
                     # We don't want None or '' to trigger the [name=value] case and instead it should
