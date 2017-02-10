@@ -249,6 +249,37 @@ class HTTPClient:
     def logout(self):
         return self.request(Route('POST', '/auth/logout'))
 
+    # Group functionality
+
+    def start_group(self, user_id, recipients):
+        payload = {
+            'recipients': recipients
+        }
+
+        return self.request(Route('POST', '/users/{user_id}/channels', user_id=user_id), json=payload)
+
+    def leave_group(self, channel_id):
+        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
+
+    def add_group_recipient(self, channel_id, user_id):
+        r = Route('PUT', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id)
+        return self.request(r)
+
+    def remove_group_recipient(self, channel_id, user_id):
+        r = Route('DELETE', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id)
+        return self.request(r)
+
+    def edit_group(self, channel_id, **options):
+        valid_keys = ('name', 'icon')
+        payload = {
+            k: v for k, v in options.items() if k in valid_keys
+        }
+
+        return self.request(Route('PATCH', '/channels/{channel_id}', channel_id=channel_id), json=payload)
+
+    def convert_group(self, channel_id):
+        return self.request(Route('POST', '/channels/{channel_id}/convert', channel_id=channel_id))
+
     # Message management
 
     def start_private_message(self, user_id):

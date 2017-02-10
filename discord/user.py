@@ -308,6 +308,45 @@ class ClientUser(BaseUser):
         # manually update data by calling __init__ explicitly.
         self.__init__(state=self._state, data=data)
 
+    @asyncio.coroutine
+    def create_group(self, *recipients):
+        """|coro|
+
+        Creates a group direct message with the recipients
+        provided. These recipients must be have a relationship
+        of type :attr:`RelationshipType.friend`.
+
+        Bot accounts cannot create a group.
+
+        Parameters
+        -----------
+        \*recipients
+            An argument list of :class:`User` to have in
+            your group.
+
+        Return
+        -------
+        :class:`GroupChannel`
+            The new group channel.
+
+        Raises
+        -------
+        HTTPException
+            Failed to create the group direct message.
+        ClientException
+            Attempted to create a group with only one recipient.
+            This does not include yourself.
+        """
+
+        from .channel import GroupChannel
+
+        if len(recipients) < 2:
+            raise ClientException('You must have two or more recipients to create a group.')
+
+        users = [str(u.id) for u in recipients]
+        data = yield from self._state.http.create_group(self.id, users)
+        return GroupChannel(me=self, data=data, state=self._state)
+
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
 

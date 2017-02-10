@@ -359,7 +359,6 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     def __init__(self, *, me, state, data):
         self._state = state
-        self.recipients = [state.store_user(u) for u in data['recipients']]
         self.id = int(data['id'])
         self.me = me
         self._update_group(data)
@@ -368,6 +367,11 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         owner_id = utils._get_as_snowflake(data, 'owner_id')
         self.icon = data.get('icon')
         self.name = data.get('name')
+
+        try:
+            self.recipients = [state.store_user(u) for u in data['recipients']]
+        except KeyError:
+            pass
 
         if owner_id == self.me.id:
             self.owner = self.me
@@ -437,6 +441,105 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             base.kick_members = True
 
         return base
+
+    @asyncio.coroutine
+    def add_recipients(self, *recipients):
+        """|coro|
+
+        Adds recipients to this group.
+
+        A group can only have a maximum of 10 members.
+        Attempting to add more ends up in an exception. To
+        add a recipient to the group, you must have a relationship
+        with the user of type :attr:`RelationshipType.friend`.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument list of users to add to this group.
+
+        Raises
+        -------
+        HTTPException
+            Adding a recipient to this group failed.
+        """
+
+        # TODO: wait for the corresponding WS event
+
+        req = self._state.http.add_group_recipient
+        for recipient in recipients:
+            yield from req(self.id, recipient.id)
+
+    @asyncio.coroutine
+    def remove_recipients(self, *recipients):
+        """|coro|
+
+        Removes recipients from this group.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument list of users to remove from this group.
+
+        Raises
+        -------
+        HTTPException
+            Removing a recipient from this group failed.
+        """
+
+        # TODO: wait for the corresponding WS event
+
+        req = self._state.http.remove_group_recipient
+        for recipient in recipients:
+            yield from req(self.id, recipient.id)
+
+    @asyncio.coroutine
+    def edit(self, **fields):
+        """|coro|
+
+        Edits the group.
+
+        Parameters
+        -----------
+        name: Optional[str]
+            The new name to change the group to.
+            Could be ``None`` to remove the name.
+        icon: Optional[bytes]
+            A bytes-like object representing the new icon.
+            Could be ``None`` to remove the icon.
+
+        Raises
+        -------
+        HTTPException
+            Editing the group failed.
+        """
+
+        try:
+            icon_bytes = fields['icon']
+        except KeyError:
+            pass
+        else:
+            if icon_bytes is not None:
+                fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
+
+        data = yield from self._state.http.edit_group(self.id, **fields)
+        self._update_group(data)
+
+    @asyncio.coroutine
+    def leave(self):
+        """|coro|
+
+        Leave the group.
+
+        If you are the only one in the group, this deletes it as well.
+
+        Raises
+        -------
+        HTTPException
+            Leaving the group failed.
+        """
+
+        yield from self._state.http.leave_group(self.id)
 
 def _channel_factory(channel_type):
     value = try_enum(ChannelType, channel_type)
