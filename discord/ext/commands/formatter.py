@@ -203,7 +203,7 @@ class HelpFormatter:
             result.append(name)
 
         params = cmd.clean_params
-        if cmd.usage is not None:
+        if cmd.usage:
             result.append(cmd.usage)
         elif len(params) > 0:
             for name, param in params.items():
