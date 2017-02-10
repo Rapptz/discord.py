@@ -369,7 +369,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         self.name = data.get('name')
 
         try:
-            self.recipients = [state.store_user(u) for u in data['recipients']]
+            self.recipients = [self._state.store_user(u) for u in data['recipients']]
         except KeyError:
             pass
 
