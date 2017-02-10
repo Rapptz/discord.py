@@ -728,7 +728,7 @@ class Client:
 
         invite_id = self._resolve_invite(url)
         data = yield from self.http.get_invite(invite_id)
-        return Invite.from_incomplete(state=self._connection, data=data)
+        return Invite.from_incomplete(state=self.connection, data=data)
 
     @asyncio.coroutine
     def accept_invite(self, invite):
