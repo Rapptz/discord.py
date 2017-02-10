@@ -120,7 +120,7 @@ class BaseUser:
         if they have a guild specific nickname then that
         is returned instead.
         """
-        return getattr(self, 'nick', None) or self.name
+        return self.name
 
     def mentioned_in(self, message):
         """Checks if the user is mentioned in the specified message.

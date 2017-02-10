@@ -246,6 +246,16 @@ class Member(discord.abc.Messageable):
             return '<@!{}>'.format(self.id)
         return '<@{}>'.format(self.id)
 
+    @property
+    def display_name(self):
+        """Returns the user's display name.
+
+        For regular users this is just their username, but
+        if they have a guild specific nickname then that
+        is returned instead.
+        """
+        return self.nick if self.nick is not None else self.name
+
     def mentioned_in(self, message):
         """Checks if the member is mentioned in the specified message.
 
