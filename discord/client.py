@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .user import User
+from .user import User, Profile
 from .invite import Invite
 from .object import Object
 from .errors import *
@@ -834,3 +834,40 @@ class Client:
         """
         data = yield from self.http.get_user_info(user_id)
         return User(state=self.connection, data=data)
+
+    @asyncio.coroutine
+    def get_user_profile(self, user_id):
+        """|coro|
+
+        Gets an arbitrary user's profile. This can only be used by non-bot accounts.
+
+        Parameters
+        ------------
+        user_id: int
+            The ID of the user to fetch their profile for.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to fetch profiles.
+        HTTPException
+            Fetching the profile failed.
+
+        Returns
+        --------
+        :class:`Profile`
+            The profile of the user.
+        """
+
+        state = self.connection
+        data = yield from self.http.get_user_profile(user_id)
+
+        def transform(d):
+            return state._get_guild(int(d['id']))
+
+        mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
+        return Profile(premium=data['premium'],
+                       premium_since=utils.parse_time(data.get('premium_since')),
+                       mutual_guilds=mutual_guilds,
+                       user=User(data=data['user'], state=state),
+                       connected_accounts=data['connected_accounts'])
