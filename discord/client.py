@@ -174,6 +174,11 @@ class Client:
         return self.connection.guilds
 
     @property
+    def emojis(self):
+        """List[:class:`Emoji`]: The emojis that the connected client has."""
+        return self.connection.emojis
+
+    @property
     def private_channels(self):
         """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on."""
         return self.connection.private_channels
@@ -477,12 +482,6 @@ class Client:
     def get_user(self, id):
         """Returns a :class:`User` with the given ID. If not found, returns None."""
         return self.connection.get_user(id)
-
-    def get_all_emojis(self):
-        """Returns a generator with every :class:`Emoji` the client can see."""
-        for guild in self.guilds:
-            for emoji in guild.emojis:
-                yield emoji
 
     def get_all_channels(self):
         """A generator that retrieves every :class:`Channel` the client can 'access'.

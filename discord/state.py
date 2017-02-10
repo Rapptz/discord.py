@@ -161,6 +161,10 @@ class ConnectionState:
         self._guilds.pop(guild.id, None)
 
     @property
+    def emojis(self):
+        return list(self._emojis)
+
+    @property
     def private_channels(self):
         return list(self._private_channels.values())
 
