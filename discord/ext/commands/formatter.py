@@ -26,9 +26,11 @@ DEALINGS IN THE SOFTWARE.
 
 import itertools
 import inspect
+import asyncio
 
 from .core import GroupMixin, Command
 from .errors import CommandError
+# from discord.iterators import _FilteredAsyncIterator
 
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
@@ -227,6 +229,7 @@ class HelpFormatter:
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
 
+    @asyncio.coroutine
     def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
         provided, :attr:`show_check_failure` and :attr:`show_hidden`. Also
@@ -238,8 +241,9 @@ class HelpFormatter:
             An iterable with the filter being applied. The resulting value is
             a (key, value) tuple of the command name and the command itself.
         """
-        def predicate(tuple):
-            cmd = tuple[1]
+
+        def sane_no_suspension_point_predicate(tup):
+            cmd = tup[1]
             if self.is_cog():
                 # filter commands that don't exist to this cog.
                 if cmd.instance is not self.command:
@@ -248,18 +252,31 @@ class HelpFormatter:
             if cmd.hidden and not self.show_hidden:
                 return False
 
-            if self.show_check_failure:
-                # we don't wanna bother doing the checks if the user does not
-                # care about them, so just return true.
-                return True
+            return True
 
+        @asyncio.coroutine
+        def predicate(tup):
+            if sane_no_suspension_point_predicate(tup) is False:
+                return False
+
+            cmd = tup[1]
             try:
-                return cmd.can_run(self.context) and self.context.bot.can_run(self.context)
+                return (yield from cmd.can_run(self.context))
             except CommandError:
                 return False
 
         iterator = self.command.commands.items() if not self.is_cog() else self.context.bot.commands.items()
-        return filter(predicate, iterator)
+        if not self.show_check_failure:
+            return filter(sane_no_suspension_point_predicate, iterator)
+
+        # Gotta run every check and verify it
+        ret = []
+        for elem in iterator:
+            valid = yield from predicate(elem)
+            if valid:
+                ret.append(elem)
+
+        return ret
 
     def _add_subcommands_to_page(self, max_width, commands):
         for name, command in commands:
@@ -271,6 +288,7 @@ class HelpFormatter:
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 
+    @asyncio.coroutine
     def format_help_for(self, context, command_or_bot):
         """Formats the help page and handles the actual heavy lifting of how
         the help command looks like. To change the behaviour, override the
@@ -290,8 +308,9 @@ class HelpFormatter:
         """
         self.context = context
         self.command = command_or_bot
-        return self.format()
+        return (yield from self.format())
 
+    @asyncio.coroutine
     def format(self):
         """Handles the actual behaviour involved with formatting.
 
@@ -334,18 +353,19 @@ class HelpFormatter:
             # last place sorting position.
             return cog + ':' if cog is not None else '\u200bNo Category:'
 
+        filtered = yield from self.filter_command_list()
         if self.is_bot():
-            data = sorted(self.filter_command_list(), key=category)
+            data = sorted(filtered, key=category)
             for category, commands in itertools.groupby(data, key=category):
                 # there simply is no prettier way of doing this.
-                commands = list(commands)
+                commands = sorted(commands)
                 if len(commands) > 0:
                     self._paginator.add_line(category)
 
                 self._add_subcommands_to_page(max_width, commands)
         else:
             self._paginator.add_line('Commands:')
-            self._add_subcommands_to_page(max_width, self.filter_command_list())
+            self._add_subcommands_to_page(max_width, sorted(filtered))
 
         # add the ending note
         self._paginator.add_line()

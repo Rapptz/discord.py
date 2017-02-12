@@ -30,17 +30,10 @@ import aiohttp
 import datetime
 
 from .errors import NoMoreItems
-from .utils import time_snowflake
+from .utils import time_snowflake, maybe_coroutine
 from .object import Object
 
 PY35 = sys.version_info >= (3, 5)
-
-@asyncio.coroutine
-def _probably_coroutine(f, e):
-    if asyncio.iscoroutinefunction(f):
-        return (yield from f(e))
-    else:
-        return f(e)
 
 class _AsyncIterator:
     __slots__ = ()
@@ -67,7 +60,7 @@ class _AsyncIterator:
             except NoMoreItems:
                 return None
 
-            ret = yield from _probably_coroutine(predicate, elem)
+            ret = yield from maybe_coroutine(predicate, elem)
             if ret:
                 return elem
 
@@ -114,7 +107,7 @@ class _MappedAsyncIterator(_AsyncIterator):
     def get(self):
         # this raises NoMoreItems and will propagate appropriately
         item = yield from self.iterator.get()
-        return (yield from _probably_coroutine(self.func, item))
+        return (yield from maybe_coroutine(self.func, item))
 
 class _FilteredAsyncIterator(_AsyncIterator):
     def __init__(self, iterator, predicate):
@@ -132,7 +125,7 @@ class _FilteredAsyncIterator(_AsyncIterator):
         while True:
             # propagate NoMoreItems similar to _MappedAsyncIterator
             item = yield from getter()
-            ret = yield from _probably_coroutine(pred, item)
+            ret = yield from maybe_coroutine(pred, item)
             if ret:
                 return item
 

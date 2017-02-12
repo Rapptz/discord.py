@@ -85,7 +85,7 @@ def _default_help_command(ctx, *commands : str):
 
     # help by itself just lists our own commands.
     if len(commands) == 0:
-        pages = bot.formatter.format_help_for(ctx, bot)
+        pages = yield from bot.formatter.format_help_for(ctx, bot)
     elif len(commands) == 1:
         # try to see if it is a cog name
         name = _mention_pattern.sub(repl, commands[0])
@@ -98,7 +98,7 @@ def _default_help_command(ctx, *commands : str):
                 yield from destination.send(bot.command_not_found.format(name))
                 return
 
-        pages = bot.formatter.format_help_for(ctx, command)
+        pages = yield from bot.formatter.format_help_for(ctx, command)
     else:
         name = _mention_pattern.sub(repl, commands[0])
         command = bot.commands.get(name)
@@ -117,7 +117,7 @@ def _default_help_command(ctx, *commands : str):
                 yield from destination.send(bot.command_has_no_subcommands.format(command, key))
                 return
 
-        pages = bot.formatter.format_help_for(ctx, command)
+        pages = yield from bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
         characters = sum(map(lambda l: len(l), pages))
@@ -218,9 +218,9 @@ class BotBase(GroupMixin):
         on a per command basis except it is run before any command checks
         have been verified and applies to every command the bot has.
 
-        .. warning::
+        .. info::
 
-            This function must be a *regular* function and not a coroutine.
+            This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`check`\, this takes a single parameter
         of type :class:`Context` and can only raise exceptions derived from
@@ -268,8 +268,12 @@ class BotBase(GroupMixin):
         except ValueError:
             pass
 
+    @asyncio.coroutine
     def can_run(self, ctx):
-        return all(f(ctx) for f in self._checks)
+        if len(self._checks) == 0:
+            return True
+
+        return (yield from discord.utils.async_all(f(ctx) for f in self._checks))
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.

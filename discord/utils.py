@@ -260,3 +260,19 @@ def _bytes_to_base64_data(data):
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
+@asyncio.coroutine
+def maybe_coroutine(f, e):
+    if asyncio.iscoroutinefunction(f):
+        return (yield from f(e))
+    else:
+        return f(e)
+
+@asyncio.coroutine
+def async_all(gen):
+    check = asyncio.iscoroutine
+    for elem in gen:
+        if check(elem):
+            elem = yield from elem
+        if not elem:
+            return False
+    return True
