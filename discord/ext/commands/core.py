@@ -167,16 +167,25 @@ class Command:
 
     @asyncio.coroutine
     def dispatch_error(self, error, ctx):
+        cog = self.instance
         try:
             coro = self.on_error
         except AttributeError:
             pass
         else:
             injected = wrap_callback(coro)
-            if self.instance is not None:
-                yield from injected(self.instance, error, ctx)
+            if cog is not None:
+                yield from injected(cog, error, ctx)
             else:
                 yield from injected(error, ctx)
+
+        try:
+            local = getattr(cog, '_{0.__class__.__name__}__error'.format(cog))
+        except AttributeError:
+            pass
+        else:
+            wrapped = wrap_callback(local)
+            yield from wrapped(error, ctx)
         finally:
             ctx.bot.dispatch('command_error', error, ctx)
 
