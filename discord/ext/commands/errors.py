@@ -68,8 +68,15 @@ class CommandNotFound(CommandError):
 class MissingRequiredArgument(UserInputError):
     """Exception raised when parsing a command and a parameter
     that is required is not encountered.
+
+    Attributes
+    -----------
+    param: str
+        The argument that is missing.
     """
-    pass
+    def __init__(self, param):
+        self.param = param.name
+        super().__init__('{0.name} is a required argument that is missing.'.format(param))
 
 class TooManyArguments(UserInputError):
     """Exception raised when the command was passed too many arguments and its
