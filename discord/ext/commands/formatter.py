@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import itertools
 import inspect
 
+from discord import compat
 from .core import GroupMixin, Command
 from .errors import CommandError
 
@@ -253,8 +254,10 @@ class HelpFormatter:
                 # care about them, so just return true.
                 return True
 
+            loop = self.context.bot.loop
             try:
-                return cmd.can_run(self.context) and self.context.bot.can_run(self.context)
+                return compat.run_coroutine_threadsafe(cmd.can_run(self.context), loop=loop) \
+                       and compat.run_coroutine_threadsafe(self.context.bot.can_run(self.context), loop=loop)
             except CommandError:
                 return False
 

@@ -268,8 +268,12 @@ class BotBase(GroupMixin):
         except ValueError:
             pass
 
+    @asyncio.coroutine
     def can_run(self, ctx):
-        return all(f(ctx) for f in self._checks)
+        return all(
+            (yield from f(ctx)) if asyncio.iscoroutinefunction(f) else f(ctx)
+            for f in self._checks
+        )
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
