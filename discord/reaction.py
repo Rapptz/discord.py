@@ -89,7 +89,7 @@ class Reaction:
     def users(self, limit=None, after=None):
         """|coro|
 
-        Returns an asynchronous iterator representing the
+        Returns an :class:`AsyncIterator` representing the
         users that have reacted to the message.
 
         The ``after`` parameter must represent a member

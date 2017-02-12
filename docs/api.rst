@@ -40,14 +40,6 @@ Client
 .. autoclass:: AutoShardedClient
     :members:
 
-
-Voice
------
-
-.. autoclass:: VoiceClient
-    :members:
-
-
 Opus Library
 ~~~~~~~~~~~~~
 
@@ -682,6 +674,82 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: outgoing_request
 
         You have sent a friend request to this user.
+
+Async Iterator
+----------------
+
+Some API functions return an "async iterator". An async iterator is something that is
+capable of being used in an `async for <https://docs.python.org/3/reference/compound_stmts.html#the-async-for-statement>`_
+statement.
+
+These async iterators can be used as follows in 3.5 or higher: ::
+
+    async for elem in channel.history():
+        # do stuff with elem here
+
+If you are using 3.4 however, you will have to use the more verbose way: ::
+
+    iterator = channel.history() # or whatever returns an async iterator
+    while True:
+        try:
+            item = yield from iterator.get()
+        except discord.NoMoreItems:
+            break
+
+        # do stuff with item here
+
+Certain utilities make working with async iterators easier, detailed below.
+
+.. class:: AsyncIterator
+
+    Represents the "AsyncIterator" concept. Note that no such class exists,
+    it is purely abstract.
+
+    .. method:: get(**attrs)
+
+        |coro|
+
+        Similar to :func:`utils.get` except run over the async iterator.
+
+    .. method:: find(predicate)
+
+        |coro|
+
+        Similar to :func:`utils.find` except run over the async iterator.
+
+        Unlike :func:`utils.find`\, the predicate provided can be a
+        coroutine.
+
+        :param predicate: The predicate to use. Can be a coroutine.
+        :return: The first element that returns ``True`` for the predicate or ``None``.
+
+    .. method:: flatten()
+
+        |coro|
+
+        Flattens the async iterator into a ``list`` with all the elements.
+
+        :return: A list of every element in the async iterator.
+        :rtype: list
+
+    .. method:: map(func)
+
+        This is similar to the built-in ``map`` function. Another
+        :class:`AsyncIterator` is returned that executes the function on
+        every element it is iterating over. This function can either be a
+        regular function or a coroutine.
+
+        :param func: The function to call on every element. Could be a coroutine.
+        :return: An async iterator.
+
+    .. method:: filter(predicate)
+
+        This is similar to the built-in ``filter`` function. Another
+        :class:`AsyncIterator` is returned that filters over the original
+        async iterator. This predicate can be a regular function or a coroutine.
+
+        :param predicate: The predicate to call on every element. Could be a coroutine.
+        :return: An async iterator.
 
 .. _discord_api_data:
 
