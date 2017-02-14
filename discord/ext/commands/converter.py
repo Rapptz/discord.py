@@ -54,6 +54,9 @@ class Converter:
     to do its conversion logic. This method could be a coroutine or a regular
     function.
 
+    Before the convert method is called, :meth:`prepare` is called. This
+    method must set the attributes below if overwritten.
+
     Attributes
     -----------
     ctx: :class:`Context`
@@ -61,7 +64,7 @@ class Converter:
     argument: str
         The argument that is being converted.
     """
-    def __init__(self, ctx, argument):
+    def prepare(self, ctx, argument):
         self.ctx = ctx
         self.argument = argument
 
@@ -69,8 +72,7 @@ class Converter:
         raise NotImplementedError('Derived classes need to implement this.')
 
 class IDConverter(Converter):
-    def __init__(self, ctx, argument):
-        super().__init__(ctx, argument)
+    def __init__(self):
         self._id_regex = re.compile(r'([0-9]{15,21})$')
 
     def _get_id_match(self):
