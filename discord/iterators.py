@@ -242,8 +242,10 @@ class HistoryIterator(_AsyncIterator):
         self.messages = asyncio.Queue(loop=self.state.loop)
 
         if self.around:
+            if self.limit is None:
+                raise ValueError('history does not support around with limit=None')
             if self.limit > 101:
-                raise ValueError("LogsFrom max limit 101 when specifying around parameter")
+                raise ValueError("history max limit 101 when specifying around parameter")
             elif self.limit == 101:
                 self.limit = 100  # Thanks discord
             elif self.limit == 1:
@@ -278,6 +280,18 @@ class HistoryIterator(_AsyncIterator):
         except asyncio.QueueEmpty:
             raise NoMoreItems()
 
+    def _get_retrieve(self):
+        l = self.limit
+        if l is None:
+            r = 100
+        elif l <= 100:
+            r = l
+        else:
+            r = 100
+
+        self.retrieve = r
+        return r > 0
+
     @asyncio.coroutine
     def flatten(self):
         # this is similar to fill_messages except it uses a list instead
@@ -285,9 +299,11 @@ class HistoryIterator(_AsyncIterator):
         result = []
         channel = yield from self.messageable._get_channel()
         self.channel = channel
-        while self.limit > 0:
-            retrieve = self.limit if self.limit <= 100 else 100
-            data = yield from self._retrieve_messages(retrieve)
+        while self._get_retrieve():
+            data = yield from self._retrieve_messages(self.retrieve)
+            if self.limit is None and len(data) < 100:
+                self.limit = 0 # terminate the infinite loop
+
             if self.reverse:
                 data = reversed(data)
             if self._filter:
@@ -304,9 +320,11 @@ class HistoryIterator(_AsyncIterator):
             channel = yield from self.messageable._get_channel()
             self.channel = channel
 
-        if self.limit > 0:
-            retrieve = self.limit if self.limit <= 100 else 100
-            data = yield from self._retrieve_messages(retrieve)
+        if self._get_retrieve():
+            data = yield from self._retrieve_messages(self.retrieve)
+            if self.limit is None and len(data) < 100:
+                self.limit = 0 # terminate the infinite loop
+
             if self.reverse:
                 data = reversed(data)
             if self._filter:
@@ -327,7 +345,8 @@ class HistoryIterator(_AsyncIterator):
         before = self.before.id if self.before else None
         data = yield from self.logs_from(self.channel.id, retrieve, before=before)
         if len(data):
-            self.limit -= retrieve
+            if self.limit is not None:
+                self.limit -= retrieve
             self.before = Object(id=int(data[-1]['id']))
         return data
 
@@ -337,7 +356,8 @@ class HistoryIterator(_AsyncIterator):
         after = self.after.id if self.after else None
         data = yield from self.logs_from(self.channel.id, retrieve, after=after)
         if len(data):
-            self.limit -= retrieve
+            if self.limit is not None:
+                self.limit -= retrieve
             self.after = Object(id=int(data[0]['id']))
         return data
 
@@ -345,7 +365,7 @@ class HistoryIterator(_AsyncIterator):
     def _retrieve_messages_around_strategy(self, retrieve):
         """Retrieve messages using around parameter."""
         if self.around:
-            after = self.after.id if self.after else None
+            around = self.around.id if self.around else None
             data = yield from self.logs_from(self.channel.id, retrieve, around=around)
             self.around = None
             return data

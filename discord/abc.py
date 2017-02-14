@@ -748,8 +748,10 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Parameters
         -----------
-        limit: int
+        limit: Optional[int]
             The number of messages to retrieve.
+            If ``None``, retrieves every message in the channel. Note, however,
+            that this would make it a slow operation.
         before: :class:`Message` or `datetime`
             Retrieve messages before this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
