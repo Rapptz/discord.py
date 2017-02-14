@@ -118,9 +118,10 @@ class StreamPlayer(threading.Thread):
         except Exception as e:
             self._current_error = e
             self.stop()
+        finally:
+            self._call_after()
 
-    def stop(self):
-        self._end.set()
+    def _call_after(self):
         if self.after is not None:
             try:
                 arg_count = len(inspect.signature(self.after).parameters)
@@ -135,6 +136,9 @@ class StreamPlayer(threading.Thread):
                     self.after(self)
             except:
                 pass
+
+    def stop(self):
+        self._end.set()
 
     @property
     def error(self):
