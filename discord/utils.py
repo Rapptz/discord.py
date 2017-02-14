@@ -261,11 +261,11 @@ def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
 @asyncio.coroutine
-def maybe_coroutine(f, e):
+def maybe_coroutine(f, *args, **kwargs):
     if asyncio.iscoroutinefunction(f):
-        return (yield from f(e))
+        return (yield from f(*args, **kwargs))
     else:
-        return f(e)
+        return f(*args, **kwargs)
 
 @asyncio.coroutine
 def async_all(gen):
