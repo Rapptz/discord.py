@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import time
 import sys
 import websockets
 import asyncio
@@ -61,12 +62,20 @@ class KeepAliveHandler(threading.Thread):
         threading.Thread.__init__(self, *args, **kwargs)
         self.ws = ws
         self.interval = interval
+        self._last_heartbeat_ack = time.time()
         self.daemon = True
         self.msg = 'Keeping websocket alive with sequence {0[d]}'
         self._stop_ev = threading.Event()
 
     def run(self):
         while not self._stop_ev.wait(self.interval):
+            if self._last_heartbeat_ack + 2 * self.interval < time.time():
+                log.warn("Gateway not responding to heartbeat, reconnecting.")
+                coro = self.ws.close(1006)  # Closed abnormally
+                compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+                self.stop()
+                return
+
             data = self.get_payload()
             log.debug(self.msg.format(data))
             coro = self.ws.send_as_json(data)
@@ -76,6 +85,9 @@ class KeepAliveHandler(threading.Thread):
                 f.result()
             except Exception:
                 self.stop()
+
+    def handle_heartbeat_ack(self):
+        self._last_heartbeat_ack = time.time()
 
     def get_payload(self):
         return {
@@ -302,7 +314,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             raise ReconnectWebSocket()
 
         if op == self.HEARTBEAT_ACK:
-            return # disable noisy logging for now
+            self._keep_alive.handle_heartbeat_ack()
+            return
 
         if op == self.HEARTBEAT:
             beat = self._keep_alive.get_payload()
