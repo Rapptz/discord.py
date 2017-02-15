@@ -395,7 +395,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             del self._dispatch_listeners[index]
 
     def _can_handle_close(self, code):
-        return code not in (1000, 4004)
+        return code not in (1000, 4004, 4010, 4011)
 
     @asyncio.coroutine
     def poll_event(self):
