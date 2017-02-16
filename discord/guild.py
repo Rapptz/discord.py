@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 import copy
 import asyncio
 
+from collections import namedtuple
+
 from . import utils
 from .role import Role
 from .member import Member, VoiceState
@@ -40,6 +42,8 @@ from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
+
+BanEntry = namedtuple('BanEntry', 'reason user')
 
 class Guild(Hashable):
     """Represents a Discord guild.
@@ -616,7 +620,12 @@ class Guild(Hashable):
     def bans(self):
         """|coro|
 
-        Retrieves all the :class:`User`\s that are banned from the guild.
+        Retrieves all the users that are banned from the guild.
+
+        This coroutine returns a list of BanEntry objects. Which is a
+        namedtuple with a ``user`` field to denote the :class:`User`
+        that got banned along with a ``reason`` field specifying
+        why the user was banned that could be set to ``None``.
 
         You must have :attr:`Permissions.ban_members` permission
         to get this information.
@@ -630,12 +639,14 @@ class Guild(Hashable):
 
         Returns
         --------
-        list
-            A list of :class:`User` that have been banned.
+        List[BanEntry]
+            A list of BanEntry objects.
         """
 
         data = yield from self._state.http.get_bans(self.id)
-        return [User(state=self._state, data=user) for user in data]
+        return [BanEntry(user=User(state=self._state, data=e['user']),
+                         reason=e['reason'])
+                for e in data]
 
     @asyncio.coroutine
     def prune_members(self, *, days):
