@@ -60,11 +60,6 @@ class Shard:
                                                                             shard_id=self.id,
                                                                             session=self.ws.session_id,
                                                                             sequence=self.ws.sequence)
-        except ConnectionClosed as e:
-            yield from self._client.close()
-            if e.code != 1000:
-                raise
-
     def get_future(self):
         if self._current.done():
             self._current = compat.create_task(self.poll(), loop=self.loop)
@@ -220,25 +215,15 @@ class AutoShardedClient(Client):
         self._still_sharding = False
 
     @asyncio.coroutine
-    def connect(self):
-        """|coro|
-
-        Creates a websocket connection and lets the websocket listen
-        to messages from discord.
-
-        Raises
-        -------
-        GatewayNotFound
-            If the gateway to connect to discord is not found. Usually if this
-            is thrown then there is a discord API outage.
-        ConnectionClosed
-            The websocket connection has been terminated.
-        """
+    def _connect(self):
         yield from self.launch_shards()
 
-        while not self.is_closed():
+        while True:
             pollers = [shard.get_future() for shard in self.shards.values()]
-            yield from asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = yield from asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
+            for f in done:
+                # we wanna re-raise to the main Client.connect handler if applicable
+                f.result()
 
     @asyncio.coroutine
     def close(self):

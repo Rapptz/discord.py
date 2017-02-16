@@ -35,6 +35,7 @@ from .emoji import Emoji
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils, compat
+from .backoff import ExponentialBackoff
 
 import asyncio
 import aiohttp
@@ -347,11 +348,35 @@ class Client:
         yield from self.close()
 
     @asyncio.coroutine
-    def connect(self):
+    def _connect(self):
+        self.ws = yield from DiscordWebSocket.from_client(self)
+
+        while True:
+            try:
+                yield from self.ws.poll_event()
+            except ResumeWebSocket as e:
+                log.info('Got a request to RESUME the websocket.')
+                self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id,
+                                                                        session=self.ws.session_id,
+                                                                        sequence=self.ws.sequence,
+                                                                        resume=True)
+
+    @asyncio.coroutine
+    def connect(self, *, reconnect=True):
         """|coro|
 
         Creates a websocket connection and lets the websocket listen
-        to messages from discord.
+        to messages from discord. This is a loop that runs the entire
+        event system and miscellaneous aspects of the library. Control
+        is not resumed until the WebSocket connection is terminated.
+
+        Parameters
+        -----------
+        reconnect: bool
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
 
         Raises
         -------
@@ -361,21 +386,31 @@ class Client:
         ConnectionClosed
             The websocket connection has been terminated.
         """
-        self.ws = yield from DiscordWebSocket.from_client(self)
 
+        backoff = ExponentialBackoff()
         while not self.is_closed():
             try:
-                yield from self.ws.poll_event()
-            except ResumeWebSocket as e:
-                log.info('Got a request to RESUME the websocket.')
-                self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id,
-                                                                        session=self.ws.session_id,
-                                                                        sequence=self.ws.sequence,
-                                                                        resume=True)
+                yield from self._connect()
             except ConnectionClosed as e:
+                # We should only get this when an unhandled close code happens,
+                # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
+                # in both cases we should just terminate our connection.
                 yield from self.close()
                 if e.code != 1000:
                     raise
+            except (HTTPException,
+                    GatewayNotFound,
+                    aiohttp.ClientError,
+                    websockets.InvalidHandshake,
+                    websockets.WebSocketProtocolError) as e:
+
+                if not reconnect:
+                    yield from self.close()
+                    raise
+
+                retry = backoff.delay()
+                log.exception("Attempting a reconnect in {:.2f}s".format(retry))
+                yield from asyncio.sleep(retry, loop=self.loop)
 
     @asyncio.coroutine
     def close(self):
@@ -409,8 +444,11 @@ class Client:
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
         """
-        yield from self.login(*args, **kwargs)
-        yield from self.connect()
+
+        bot = kwargs.pop('bot', True)
+        reconnect = kwargs.pop('reconnect', True)
+        yield from self.login(*args, bot=bot)
+        yield from self.connect(reconnect=reconnect)
 
     def run(self, *args, **kwargs):
         """A blocking call that abstracts away the `event loop`_
