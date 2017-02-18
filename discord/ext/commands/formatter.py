@@ -266,7 +266,7 @@ class HelpFormatter:
                 return False
 
         iterator = self.command.commands.items() if not self.is_cog() else self.context.bot.commands.items()
-        if not self.show_check_failure:
+        if self.show_check_failure:
             return filter(sane_no_suspension_point_predicate, iterator)
 
         # Gotta run every check and verify it
