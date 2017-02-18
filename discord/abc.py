@@ -206,7 +206,7 @@ class GuildChannel:
         Parameters
         -----------
         obj
-            The :class:`Role` or :class:`Member` or :class:`Object` denoting
+            The :class:`Role` or :class:`abc.User` denoting
             whose overwrite to get.
 
         Returns
@@ -215,7 +215,7 @@ class GuildChannel:
             The permission overwrites for this object.
         """
 
-        if isinstance(obj, Member):
+        if isinstance(obj, User):
             predicate = lambda p: p.type == 'member'
         elif isinstance(obj, Role):
             predicate = lambda p: p.type == 'role'
