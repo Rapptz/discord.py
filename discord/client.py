@@ -401,6 +401,7 @@ class Client:
             except (HTTPException,
                     GatewayNotFound,
                     aiohttp.ClientError,
+                    asyncio.TimeoutError,
                     websockets.InvalidHandshake,
                     websockets.WebSocketProtocolError) as e:
 
