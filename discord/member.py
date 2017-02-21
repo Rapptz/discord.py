@@ -335,12 +335,12 @@ class Member(discord.abc.Messageable):
         return self.guild._voice_state_for(self._user.id)
 
     @asyncio.coroutine
-    def ban(self):
+    def ban(self, **kwargs):
         """|coro|
 
         Bans this member. Equivalent to :meth:`Guild.ban`
         """
-        yield from self.guild.ban(self)
+        yield from self.guild.ban(self, **kwargs)
 
     @asyncio.coroutine
     def unban(self):
