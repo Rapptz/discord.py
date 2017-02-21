@@ -162,7 +162,7 @@ class ConnectionState:
 
     @property
     def emojis(self):
-        return list(self._emojis)
+        return list(self._emojis.values())
 
     @property
     def private_channels(self):
