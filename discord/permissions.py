@@ -69,6 +69,9 @@ class Permissions:
 
     __slots__ = ('value',)
     def __init__(self, permissions=0):
+        if not isinstance(permissions, int):
+            raise TypeError('Expected int parameter, received %s instead.' % permissions.__class__.__name__)
+
         self.value = permissions
 
     def __eq__(self, other):

@@ -46,13 +46,16 @@ class Colour:
 
     Attributes
     ------------
-    value : int
+    value: int
         The raw integer colour value.
     """
 
     __slots__ = ('value',)
 
     def __init__(self, value):
+        if not isinstance(value, int):
+            raise TypeError('Expected int parameter, received %s instead.' % value.__class__.__name__)
+
         self.value = value
 
     def _get_byte(self, byte):
