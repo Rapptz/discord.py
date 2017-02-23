@@ -64,15 +64,47 @@ class BaseUser:
 
         If the user does not have a traditional avatar, their default
         avatar URL is returned instead.
+
+        This is equivalent to calling :meth:`avatar_url_as` with
+        the default parameters (i.e. webp/gif detection and a size of 1024).
         """
+        return self.avatar_url_as(format=None, size=1024)
+
+    def avatar_url_as(self, *, format, size=1024):
+        """Returns a friendly URL version of the avatar the user has.
+
+        If the user does not have a traditional avatar, their default
+        avatar URL is returned instead.
+
+        The format must be one of 'webp', 'jpeg', 'png' or 'gif'. The
+        size must be a power of 2 (128, 256, 512, 1024).
+
+        Parameters
+        -----------
+        format: Optional[str]
+            The format to attempt to convert the avatar to.
+            If the format is ``None``, then it is automatically
+            detected into either 'gif' or 'webp' depending on the
+            avatar being animated or not.
+        size: int
+            The size of the image to display.
+
+        Returns
+        --------
+        str
+            The resulting CDN URL.
+        """
+
         if self.avatar is None:
             return self.default_avatar_url
 
-        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size=1024'
-        if self.avatar.startswith('a_'):
-            return url.format(self, 'gif')
-        else:
-            return url.format(self, 'webp')
+        if format is None:
+            if self.avatar.startswith('a_'):
+                format = 'gif'
+            else:
+                format = 'webp'
+
+        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
 
     @property
     def default_avatar(self):
