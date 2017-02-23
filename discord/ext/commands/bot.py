@@ -470,7 +470,7 @@ class BotBase(GroupMixin):
 
             # register event listeners the cog has
             if name.startswith('on_'):
-                self.add_listener(member)
+                self.add_listener(member, name)
 
     def get_cog(self, name):
         """Gets the cog instance requested.
