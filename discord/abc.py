@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import abc
 import io
 import os
+import time
 import asyncio
 
 from collections import namedtuple
@@ -44,6 +45,11 @@ class _Undefined:
         return 'see-below'
 
 _undefined = _Undefined()
+
+@asyncio.coroutine
+def _single_delete_strategy(messages):
+    for m in messages:
+        yield from m.delete()
 
 class Snowflake(metaclass=abc.ABCMeta):
     __slots__ = ()
@@ -819,12 +825,14 @@ class Messageable(metaclass=abc.ABCMeta):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        You must have :attr:`Permissions.manage_messages` permission to
-        delete messages even if they are your own. The
-        :attr:`Permissions.read_message_history` permission is also needed to
-        retrieve message history.
+        You must have :attr:`Permissions.manage_messages` permission to delete
+        messages even if they are your own (unless you are a user account).
+        The :attr:`Permissions.read_message_history` permission is also needed
+        to retrieve message history.
 
-        Usable only by bot accounts.
+        Internally, this employs a different number of strategies depending
+        on the conditions met such as if a bulk delete is possible or if
+        the account is a user bot or not.
 
         Parameters
         -----------
@@ -844,8 +852,7 @@ class Messageable(metaclass=abc.ABCMeta):
         Raises
         -------
         Forbidden
-            You do not have proper permissions to do the actions required or
-            you're not using a bot account.
+            You do not have proper permissions to do the actions required.
         HTTPException
             Purging the messages failed.
 
@@ -873,6 +880,9 @@ class Messageable(metaclass=abc.ABCMeta):
         ret = []
         count = 0
 
+        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
+        strategy = self.delete_messages if self._state.is_bot else _single_delete_strategy
+
         while True:
             try:
                 msg = yield from iterator.get()
@@ -881,7 +891,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 if count >= 2:
                     # more than 2 messages -> bulk delete
                     to_delete = ret[-count:]
-                    yield from self.delete_messages(to_delete)
+                    yield from strategy(to_delete)
                 elif count == 1:
                     # delete a single message
                     yield from ret[-1].delete()
@@ -891,10 +901,21 @@ class Messageable(metaclass=abc.ABCMeta):
                 if count == 100:
                     # we've reached a full 'queue'
                     to_delete = ret[-100:]
-                    yield from self.delete_messages(to_delete)
+                    yield from strategy(to_delete)
                     count = 0
                     yield from asyncio.sleep(1)
 
                 if check(msg):
+                    if msg.id < minimum_time:
+                        # older than 14 days old
+                        if count == 1:
+                            yield from ret[-1].delete()
+                        elif count >= 2:
+                            to_delete = ret[-count:]
+                            yield from strategy(to_delete)
+
+                        count = 0
+                        strategy = _single_delete_strategy
+
                     count += 1
                     ret.append(msg)
