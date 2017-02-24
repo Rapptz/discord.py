@@ -414,6 +414,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 log.info('Websocket closed with {0.code} ({0.reason}), attempting a reconnect.'.format(e))
                 raise ResumeWebSocket(self.shard_id) from e
             else:
+                log.info('Websocket closed with {0.code} ({0.reason}), cannot reconnect.'.format(e))
                 raise ConnectionClosed(e, shard_id=self.shard_id) from e
 
     @asyncio.coroutine
