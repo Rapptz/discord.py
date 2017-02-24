@@ -97,9 +97,6 @@ class Client:
 
     Attributes
     -----------
-    email
-        The email used to login. This is only set if login is successful,
-        otherwise it's None.
     ws
         The websocket gateway the client is currently connected to. Could be None.
     loop
@@ -107,7 +104,6 @@ class Client:
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
-        self.email = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = {}
         self.shard_id = options.get('shard_id')
@@ -336,7 +332,6 @@ class Client:
 
         log.info('logging in using static token')
         data = yield from self.http.static_login(token, bot=bot)
-        self.email = data.get('email', None)
         self.connection.is_bot = bot
 
     @asyncio.coroutine
