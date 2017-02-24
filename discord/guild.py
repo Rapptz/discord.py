@@ -91,10 +91,6 @@ class Guild(Hashable):
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
-    large: bool
-        Indicates if the guild is a 'large' guild. A large guild is defined as having
-        more than ``large_threshold`` count members, which for this library is set to
-        the maximum of 250.
     mfa_level: int
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
@@ -114,7 +110,7 @@ class Guild(Hashable):
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'unavailable', 'name', 'region', '_state',
-                 '_default_role', 'roles', '_member_count', 'large',
+                 '_default_role', 'roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'splash', '_voice_states' )
 
@@ -213,7 +209,7 @@ class Guild(Hashable):
             self._add_member(member)
 
         self._sync(guild)
-        self.large = None if member_count is None else self._member_count >= 250
+        self._large = None if member_count is None else self._member_count >= 250
 
         self.owner_id = utils._get_as_snowflake(guild, 'owner_id')
         self.afk_channel = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))
@@ -223,7 +219,7 @@ class Guild(Hashable):
 
     def _sync(self, data):
         try:
-            self.large = data['large']
+            self._large = data['large']
         except KeyError:
             pass
 
@@ -249,6 +245,20 @@ class Guild(Hashable):
     def channels(self):
         """List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
         return list(self._channels.values())
+
+    @property
+    def large(self):
+        """bool: Indicates if the guild is a 'large' guild.
+
+        A large guild is defined as having more than ``large_threshold`` count
+        members, which for this library is set to the maximum of 250.
+        """
+        if self._large is None:
+            try:
+                return self._member_count >= 250
+            except AttributeError:
+                return len(self._members) >= 250
+        return self._large
 
     @property
     def voice_channels(self):
