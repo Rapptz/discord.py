@@ -266,14 +266,14 @@ class Server(Hashable):
         """Returns the URL version of the server's icon. Returns an empty string if it has no icon."""
         if self.icon is None:
             return ''
-        return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.jpg'.format(self)
+        return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.png'.format(self)
 
     @property
     def splash_url(self):
         """Returns the URL version of the server's invite splash. Returns an empty string if it has no splash."""
         if self.splash is None:
             return ''
-        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(self)
+        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.png?size=2048'.format(self)
 
     @property
     def member_count(self):
