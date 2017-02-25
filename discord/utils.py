@@ -276,3 +276,10 @@ def async_all(gen):
         if not elem:
             return False
     return True
+
+@asyncio.coroutine
+def sane_wait_for(futures, *, timeout, loop):
+    done, pending = yield from asyncio.wait(futures, timeout=timeout, loop=loop)
+
+    if len(pending) != 0:
+        raise asyncio.TimeoutError()

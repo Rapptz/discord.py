@@ -216,7 +216,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                yield from asyncio.wait(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                yield from utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -494,7 +494,7 @@ class ConnectionState:
         yield from self.chunker(guild)
         if chunks:
             try:
-                yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
+                yield from utils.sane_wait_for(chunks, timeout=len(chunks), loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -773,7 +773,7 @@ class AutoShardedConnectionState(ConnectionState):
         # wait for the chunks
         if chunks:
             try:
-                yield from asyncio.wait(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                yield from utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
