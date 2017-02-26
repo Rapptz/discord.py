@@ -734,14 +734,14 @@ class ConnectionState:
         if id is None:
             return None
 
+        pm = self._get_private_channel(id)
+        if pm is not None:
+            return pm
+
         for guild in self.guilds:
             channel = guild.get_channel(id)
             if channel is not None:
                 return channel
-
-        pm = self._get_private_channel(id)
-        if pm is not None:
-            return pm
 
     def create_message(self, *, channel, data):
         return Message(state=self, channel=channel, data=data)
