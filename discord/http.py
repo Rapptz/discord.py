@@ -32,7 +32,6 @@ import logging
 import weakref
 import datetime
 from email.utils import parsedate_to_datetime
-from random import randint as random_integer
 
 log = logging.getLogger(__name__)
 
@@ -291,9 +290,7 @@ class HTTPClient:
 
     def send_message(self, channel_id, content, *, tts=False, embed=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
-        payload = {
-            'nonce': random_integer(-2**63, 2**63 - 1)
-        }
+        payload = {}
 
         if content:
             payload['content'] = content
