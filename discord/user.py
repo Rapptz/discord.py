@@ -449,6 +449,20 @@ class User(BaseUser, discord.abc.Messageable):
         """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
         return self._state.user.get_relationship(self.id)
 
+    def is_friend(self):
+        """bool: Checks if the user is your friend."""
+        r = self.relationship
+        if r is None:
+            return False
+        return r.type is RelationshipType.friend
+
+    def is_blocked(self):
+        """bool: Checks if the user is blocked."""
+        r = self.relationship
+        if r is None:
+            return False
+        return r.type is RelationshipType.blocked
+
     @asyncio.coroutine
     def block(self):
         """|coro|
