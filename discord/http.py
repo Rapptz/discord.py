@@ -227,6 +227,7 @@ class HTTPClient:
     def _token(self, token, *, bot=True):
         self.token = token
         self.bot_token = bot
+        self._ack_token = None
 
     # login management
 
@@ -320,6 +321,16 @@ class HTTPClient:
         form.add_field('file', buffer, filename=filename, content_type='application/octet-stream')
 
         return self.request(r, data=form)
+
+    @asyncio.coroutine
+    def ack_message(self, channel_id, message_id):
+        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id,
+                                                                          message_id=message_id)
+        data = yield from self.request(r, json={'token': self._ack_token})
+        self._ack_token = data['token']
+
+    def ack_guild(self, guild_id):
+        return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
 
     def delete_message(self, channel_id, message_id):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,

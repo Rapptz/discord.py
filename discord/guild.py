@@ -36,7 +36,7 @@ from .emoji import Emoji
 from .game import Game
 from .permissions import PermissionOverwrite
 from .colour import Colour
-from .errors import InvalidArgument
+from .errors import InvalidArgument, ClientException
 from .channel import *
 from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
@@ -979,3 +979,23 @@ class Guild(Hashable):
             Unbanning failed.
         """
         yield from self._state.http.unban(user.id, self.id)
+
+    def ack(self):
+        """|coro|
+
+        Marks every message in this guild as read.
+
+        The user must not be a bot user.
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        ClientException
+            You must not be a bot user.
+        """
+
+        state = self._state
+        if state.is_bot:
+            raise ClientException('Must not be a bot account to ack messages.')
+        return state.http.ack_guild(self.id)

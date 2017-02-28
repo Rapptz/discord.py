@@ -36,7 +36,7 @@ from .emoji import Emoji
 from .object import Object
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument
+from .errors import InvalidArgument, ClientException
 from .embeds import Embed
 
 class Message:
@@ -576,3 +576,23 @@ class Message:
             You do not have the proper permissions to remove all the reactions.
         """
         yield from self._state.http.clear_reactions(self.id, self.channel.id)
+
+    def ack(self):
+        """|coro|
+
+        Marks this message as read.
+
+        The user must not be a bot user.
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        ClientException
+            You must not be a bot user.
+        """
+
+        state = self._state
+        if state.is_bot:
+            raise ClientException('Must not be a bot account to ack messages.')
+        return state.http.ack_message(self.channel.id, self.id)
