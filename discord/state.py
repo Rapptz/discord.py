@@ -446,17 +446,6 @@ class ConnectionState:
             if member is not None:
                 guild._remove_member(member)
                 guild._member_count -= 1
-
-                # remove them from the voice channel member list
-                vc = guild._voice_state_for(user_id)
-                if vc:
-                    voice_channel = vc.channel
-                    if voice_channel is not None:
-                        try:
-                            voice_channel.voice_members.remove(member)
-                        except ValueError:
-                            pass
-
                 self.dispatch('member_remove', member)
 
     def parse_guild_member_update(self, data):
