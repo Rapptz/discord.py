@@ -96,7 +96,7 @@ class Role(Hashable):
         return '<Role id={0.id} name={0.name!r}>'.format(self)
 
     def __lt__(self, other):
-        if not isinstance(other, Role) or  not isinstance(self, Role):
+        if not isinstance(other, Role) or not isinstance(self, Role):
             return NotImplemented
 
         if self.guild != other.guild:
