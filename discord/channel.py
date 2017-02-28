@@ -109,6 +109,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
+    @property
+    def members(self):
+        """Returns a list of :class:`Member` that can see this channel."""
+        return [m for m in self.guild.members if self.permissions_for(m).read_messages]
+
     @asyncio.coroutine
     def edit(self, **options):
         """|coro|
