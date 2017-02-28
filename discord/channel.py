@@ -339,7 +339,7 @@ class VoiceChannel(discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
-    def voice_members(self):
+    def members(self):
         """Returns a list of :class:`Member` that are currently inside this voice channel."""
         ret = []
         for user_id, state in self.guild._voice_states.items():
