@@ -152,3 +152,8 @@ class Context(discord.abc.Messageable):
     def author(self):
         """Returns the author associated with this context's command. Shorthand for :attr:`Message.author`"""
         return self.message.author
+
+    @discord.utils.cached_property
+    def me(self):
+        """Similar to :attr:`Guild.me` except it may return the :class:`ClientUser` in private message contexts."""
+        return self.guild.me if self.guild is not None else self.bot.user
