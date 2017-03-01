@@ -386,15 +386,9 @@ class Client:
         while not self.is_closed():
             try:
                 yield from self._connect()
-            except ConnectionClosed as e:
-                # We should only get this when an unhandled close code happens,
-                # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
-                # in both cases we should just terminate our connection.
-                yield from self.close()
-                if e.code != 1000:
-                    raise
             except (HTTPException,
                     GatewayNotFound,
+                    ConnectionClosed,
                     aiohttp.ClientError,
                     asyncio.TimeoutError,
                     websockets.InvalidHandshake,
@@ -403,6 +397,15 @@ class Client:
                 if not reconnect:
                     yield from self.close()
                     raise
+
+                # We should only get this when an unhandled close code happens,
+                # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
+                # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
+                # regardless and rely on is_closed instead
+                if isinstance(e, ConnectionClosed):
+                    if e.code != 1000:
+                        yield from self.close()
+                        raise
 
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in {:.2f}s".format(retry))
