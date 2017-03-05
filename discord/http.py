@@ -581,9 +581,6 @@ class HTTPClient:
     def invites_from_channel(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
-    def accept_invite(self, invite_id):
-        return self.request(Route('POST', '/invite/{invite_id}', invite_id=invite_id))
-
     def delete_invite(self, invite_id):
         return self.request(Route('DELETE', '/invite/{invite_id}', invite_id=invite_id))
 
