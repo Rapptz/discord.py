@@ -356,7 +356,7 @@ class ConnectionState:
             member = Member(guild=guild, data=data, state=self)
             guild._add_member(member)
 
-        old_member = copy.copy(member)
+        old_member = member._copy()
         member._presence_update(data=data, user=user)
         self.dispatch('member_update', old_member, member)
 

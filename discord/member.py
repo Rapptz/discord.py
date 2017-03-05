@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import itertools
+import copy
 
 import discord.abc
 
@@ -213,6 +214,11 @@ class Member(discord.abc.Messageable):
         u.name = user.get('username', u.name)
         u.avatar = user.get('avatar', u.avatar)
         u.discriminator = user.get('discriminator', u.discriminator)
+
+    def _copy(self):
+        c = copy.copy(self)
+        c._user = copy.copy(self._user)
+        return c
 
     @property
     def colour(self):
