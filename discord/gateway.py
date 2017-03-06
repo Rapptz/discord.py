@@ -55,6 +55,16 @@ class ResumeWebSocket(Exception):
 
 EventListener = namedtuple('EventListener', 'predicate event result future')
 
+@asyncio.coroutine
+def _ensure_coroutine_connect(gateway, *, loop, klass):
+    # In 3.5+ websockets.connect does not return a coroutine, but an awaitable.
+    # The problem is that in 3.5.0 and in some cases 3.5.1, asyncio.ensure_future and
+    # by proxy, asyncio.wait_for, do not accept awaitables, but rather futures or coroutines.
+    # By wrapping it up into this function we ensure that it's in a coroutine and not an awaitable
+    # even for 3.5.0 users.
+    ws = yield from websockets.connect(gateway, loop=loop, klass=klass)
+    return ws
+
 class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
         ws = kwargs.pop('ws', None)
@@ -71,7 +81,7 @@ class KeepAliveHandler(threading.Thread):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + 2 * self.interval < time.time():
                 log.warn("We have stopped responding to the gateway.")
-                coro = self.ws.close(1006)
+                coro = self.ws.close(1001)
                 f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
                 try:
@@ -191,7 +201,13 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         This is for internal use only.
         """
         gateway = yield from client.http.get_gateway()
-        ws = yield from websockets.connect(gateway, loop=client.loop, klass=cls)
+        try:
+            ws = yield from asyncio.wait_for(
+                    _ensure_coroutine_connect(gateway, loop=client.loop, klass=cls),
+                    timeout=60, loop=client.loop)
+        except asyncio.TimeoutError:
+            log.warn('timed out waiting for client connect')
+            return (yield from cls.from_client(client, resume=resume))
 
         # dynamically add attributes needed
         ws.token = client.http.token
@@ -206,7 +222,12 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         log.info('Created websocket connected to {}'.format(gateway))
 
         # poll event for OP Hello
-        yield from ws.poll_event()
+        try:
+            yield from asyncio.wait_for(ws.poll_event(), timeout=60, loop=client.loop)
+        except asyncio.TimeoutError:
+            log.warn("timed out waiting for client HELLO")
+            yield from ws.close(1001)
+            return (yield from cls.from_client(client, resume=resume))
 
         if not resume:
             yield from ws.identify()
@@ -219,7 +240,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             yield from ws.ensure_open()
         except websockets.exceptions.ConnectionClosed:
             # ws got closed so let's just do a regular IDENTIFY connect.
-            log.info('RESUME failure.')
+            log.warn('RESUME failure.')
             return (yield from cls.from_client(client))
         else:
             return ws
@@ -525,6 +546,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     HEARTBEAT           = 3
     SESSION_DESCRIPTION = 4
     SPEAKING            = 5
+    HELLO               = 8
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -540,7 +562,14 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     def from_client(cls, client):
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint
-        ws = yield from websockets.connect(gateway, loop=client.loop, klass=cls)
+        try:
+            ws = yield from asyncio.wait_for(
+                    _ensure_coroutine_connect(gateway, loop=client.loop, klass=cls),
+                    timeout=60, loop=client.loop)
+        except asyncio.TimeoutError:
+            log.warn("timed out waiting for voice client connect")
+            return (yield from cls.from_client(client))
+
         ws.gateway = gateway
         ws._connection = client
 
@@ -555,6 +584,16 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         }
 
         yield from ws.send_as_json(identify)
+
+        try:
+            # Wait until we have processed READY and keep alive is running
+            while not ws._keep_alive:
+                yield from asyncio.wait_for(ws.poll_event(), timeout=60, loop=client.loop)
+        except asyncio.TimeoutError:
+            log.warn("timed out waiting for voice client READY")
+            yield from ws.close(1001)
+            return (yield from cls.from_client(client))
+
         return ws
 
     @asyncio.coroutine
