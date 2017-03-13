@@ -549,9 +549,10 @@ class User(BaseUser, discord.abc.Messageable):
         def transform(d):
             return state._get_guild(int(d['id']))
 
+        since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        return Profile(premium=data['premium'],
-                       premium_since=parse_time(data.get('premium_since')),
+        return Profile(premium=since is not None,
+                       premium_since=parse_time(since),
                        mutual_guilds=mutual_guilds,
                        user=self,
                        connected_accounts=data['connected_accounts'])
