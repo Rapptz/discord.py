@@ -3185,9 +3185,9 @@ class Client:
         try:
             session_id_data = yield from asyncio.wait_for(session_id_future, timeout=10.0, loop=self.loop)
             data = yield from asyncio.wait_for(voice_data_future, timeout=10.0, loop=self.loop)
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as e:
             yield from self.ws.voice_state(server.id, None, self_mute=True)
-            return None
+            raise e
 
         kwargs = {
             'user': self.user,
