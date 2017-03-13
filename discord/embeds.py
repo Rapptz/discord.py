@@ -74,7 +74,7 @@ class Embed:
     url: str
         The URL of the embed.
     timestamp: `datetime.datetime`
-        The timestamp of the embed content.
+        The timestamp of the embed content. This could be a naive or aware datetime.
     colour: :class:`Colour` or int
         The colour code of the embed. Aliased to ``color`` as well.
     Empty
@@ -457,7 +457,14 @@ class Embed:
             pass
         else:
             if timestamp:
-                result['timestamp'] = timestamp.isoformat()
+                try:
+                    aware = timestamp.astimezone(datetime.timezone.utc)
+                except ValueError:
+                    # naive date time
+                    result['timestamp'] = timestamp.isoformat()
+                else:
+                    result['timestamp'] = aware.isoformat().replace('+00:00', 'Z')
+
 
         # add in the non raw attribute ones
         if self.type:
