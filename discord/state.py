@@ -660,25 +660,6 @@ class ConnectionState:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
                 self.dispatch('typing', channel, member, timestamp)
 
-    def parse_call_create(self, data):
-        message = self._get_message(int(data['message_id']))
-        if message is not None:
-            call = GroupCall(call=message, **data)
-            self._calls[int(data['channel_id'])] = call
-            self.dispatch('call', call)
-
-    def parse_call_update(self, data):
-        call = self._calls.get(int(data['channel_id']))
-        if call is not None:
-            before = copy.copy(call)
-            call._update(**data)
-            self.dispatch('call_update', before, call)
-
-    def parse_call_delete(self, data):
-        call = self._calls.pop(int(data['channel_id']), None)
-        if call is not None:
-            self.dispatch('call_remove', call)
-
     def parse_relationship_add(self, data):
         key = int(data['id'])
         old = self.user.get_relationship(key)
