@@ -46,8 +46,6 @@ class Message:
 
     Attributes
     -----------
-    edited_timestamp: Optional[datetime.datetime]
-        A naive UTC datetime object containing the edited time of the message.
     tts: bool
         Specifies if the message was done with text-to-speech.
     type: :class:`MessageType`
@@ -111,7 +109,7 @@ class Message:
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
     """
 
-    __slots__ = ( 'edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
+    __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
                   'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                   '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
@@ -172,7 +170,7 @@ class Message:
 
     def _update(self, channel, data):
         self.channel = channel
-        self._try_patch(data, 'edited_timestamp', utils.parse_time)
+        self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
         self._try_patch(data, 'pinned', bool)
         self._try_patch(data, 'mention_everyone', bool)
         self._try_patch(data, 'tts', bool)
@@ -335,8 +333,13 @@ class Message:
 
     @property
     def created_at(self):
-        """Returns the message's creation time in UTC."""
+        """datetime.datetime: The message's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def edited_at(self):
+        """Optional[datetime.datetime]: A naive UTC datetime object containing the edited time of the message."""
+        return self._edited_timestamp
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
