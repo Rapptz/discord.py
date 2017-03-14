@@ -125,13 +125,16 @@ class Message:
     def __repr__(self):
         return '<Message id={0.id} pinned={0.pinned} author={0.author!r}>'.format(self)
 
-    def _try_patch(self, data, key, transform):
+    def _try_patch(self, data, key, transform=None):
         try:
             value = data[key]
         except KeyError:
             pass
         else:
-            setattr(self, key, transform(value))
+            if transform is None:
+                setattr(self, key, value)
+            else:
+                setattr(self, key, transform(value))
 
     def _add_reaction(self, data):
         emoji = self._state.get_reaction_emoji(data['emoji'])
@@ -171,14 +174,14 @@ class Message:
     def _update(self, channel, data):
         self.channel = channel
         self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
-        self._try_patch(data, 'pinned', bool)
-        self._try_patch(data, 'mention_everyone', bool)
-        self._try_patch(data, 'tts', bool)
+        self._try_patch(data, 'pinned')
+        self._try_patch(data, 'mention_everyone')
+        self._try_patch(data, 'tts')
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
-        self._try_patch(data, 'content', str)
-        self._try_patch(data, 'attachments', lambda x: x)
+        self._try_patch(data, 'content')
+        self._try_patch(data, 'attachments')
         self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
-        self._try_patch(data, 'nonce', lambda x: x)
+        self._try_patch(data, 'nonce')
 
         for handler in ('author', 'mentions', 'mention_roles', 'call'):
             try:
