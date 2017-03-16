@@ -344,7 +344,7 @@ class Client:
 
     @asyncio.coroutine
     def _connect(self):
-        self.ws = yield from DiscordWebSocket.from_client(self)
+        self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id)
 
         while True:
             try:
