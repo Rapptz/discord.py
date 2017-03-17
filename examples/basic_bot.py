@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import random
+python3 -m pip install -U discord.py
 
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
