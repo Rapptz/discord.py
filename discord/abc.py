@@ -777,25 +777,3 @@ class Messageable(metaclass=abc.ABCMeta):
                         counter += 1
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
-
-    @asyncio.coroutine
-    def ack(self):
-        """|coro|
-
-        Marks this channel as read.
-
-        The user must not be a bot user.
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        channel = yield from self._get_channel()
-        yield from state.http.ack_channel(channel.id)

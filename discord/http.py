@@ -326,12 +326,6 @@ class HTTPClient:
         data = yield from self.request(r, json={'token': self._ack_token})
         self._ack_token = data['token']
 
-    @asyncio.coroutine
-    def ack_channel(self, channel_id):
-        r = Route('POST', '/channels/{channel_id}/ack', channel_id=channel_id)
-        data = yield from self.request(r, json={'token': self._ack_token})
-        self._ack_token = data['token']
-
     def ack_guild(self, guild_id):
         return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
 
