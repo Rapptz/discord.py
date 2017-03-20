@@ -386,11 +386,9 @@ class Client:
         while not self.is_closed():
             try:
                 yield from self._connect()
-            except (TimeoutError,
+            except (OSError,
                     HTTPException,
                     GatewayNotFound,
-                    BlockingIOError,
-                    ConnectionError,
                     ConnectionClosed,
                     aiohttp.ClientError,
                     asyncio.TimeoutError,
