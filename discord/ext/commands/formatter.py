@@ -171,7 +171,7 @@ class HelpFormatter:
         """int : Returns the largest name length of a command or if it has subcommands
         the largest subcommand name."""
         try:
-            commands = self.command.commands if not self.is_cog() else self.context.bot.commands
+            commands = self.command.all_commands if not self.is_cog() else self.context.bot.all_commands
             if commands:
                 return max(map(lambda c: len(c.name) if self.show_hidden or not c.hidden else 0, commands.values()))
             return 0
@@ -265,7 +265,7 @@ class HelpFormatter:
             except CommandError:
                 return False
 
-        iterator = self.command.commands.items() if not self.is_cog() else self.context.bot.commands.items()
+        iterator = self.command.all_commands.items() if not self.is_cog() else self.context.bot.all_commands.items()
         if self.show_check_failure:
             return filter(sane_no_suspension_point_predicate, iterator)
 
