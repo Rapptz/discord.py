@@ -399,6 +399,9 @@ class Client:
                     yield from self.close()
                     raise
 
+                if self.is_closed():
+                    return
+
                 # We should only get this when an unhandled close code happens,
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect

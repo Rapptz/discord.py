@@ -234,11 +234,12 @@ class AutoShardedClient(Client):
         if self.is_closed():
             return
 
+        self._closed.set()
+
         for shard in self.shards.values():
             yield from shard.ws.close()
 
         yield from self.http.close()
-        self._closed.set()
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False, shard_id=None):
