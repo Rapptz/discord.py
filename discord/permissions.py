@@ -133,7 +133,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110001111111)
+        return cls(0b01111111111101111111110011111111)
 
     @classmethod
     def all_channel(cls):
@@ -154,7 +154,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to True."""
-        return cls(0b01111100000000000000000000111111)
+        return cls(0b01111100000000000000000010111111)
 
     @classmethod
     def text(cls):
@@ -283,7 +283,16 @@ class Permissions:
     def add_reactions(self, value):
         self._set(6, value)
 
-    # 4 unused
+    @property
+    def view_audit_log(self):
+        """Returns True if a user can view the guild's audit log."""
+        return self._bit(7)
+
+    @view_audit_log.setter
+    def view_audit_logs(self, value):
+        self._set(7, value)
+
+    # 2 unused
 
     @property
     def read_messages(self):
