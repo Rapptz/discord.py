@@ -190,39 +190,9 @@ class HelpFormatter:
 
     def get_command_signature(self):
         """Retrieves the signature portion of the help page."""
-        result = []
         prefix = self.clean_prefix
         cmd = self.command
-        parent = cmd.full_parent_name
-        if len(cmd.aliases) > 0:
-            aliases = '|'.join(cmd.aliases)
-            fmt = '{0}[{1.name}|{2}]'
-            if parent:
-                fmt = '{0}{3} [{1.name}|{2}]'
-            result.append(fmt.format(prefix, cmd, aliases, parent))
-        else:
-            name = prefix + cmd.name if not parent else prefix + parent + ' ' + cmd.name
-            result.append(name)
-
-        params = cmd.clean_params
-        if cmd.usage:
-            result.append(cmd.usage)
-        elif len(params) > 0:
-            for name, param in params.items():
-                if param.default is not param.empty:
-                    # We don't want None or '' to trigger the [name=value] case and instead it should
-                    # do [name] since [name=None] or [name=] are not exactly useful for the user.
-                    should_print = param.default if isinstance(param.default, str) else param.default is not None
-                    if should_print:
-                        result.append('[{}={}]'.format(name, param.default))
-                    else:
-                        result.append('[{}]'.format(name))
-                elif param.kind == param.VAR_POSITIONAL:
-                    result.append('[{}...]'.format(name))
-                else:
-                    result.append('<{}>'.format(name))
-
-        return ' '.join(result)
+        return prefix + cmd.signature
 
     def get_ending_note(self):
         command_name = self.context.invoked_with
