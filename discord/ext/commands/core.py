@@ -553,7 +553,7 @@ class Command:
             aliases = '|'.join(self.aliases)
             fmt = '[%s|%s]' % (self.name, aliases)
             if parent:
-                fmt = parent + fmt
+                fmt = parent + ' ' + fmt
             result.append(fmt)
         else:
             name = self.name if not parent else parent + ' ' + self.name
