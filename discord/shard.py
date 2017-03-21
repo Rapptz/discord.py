@@ -236,9 +236,8 @@ class AutoShardedClient(Client):
 
         self._closed.set()
 
-        for shard in self.shards.values():
-            yield from shard.ws.close()
-
+        to_close = [shard.ws.close() for shard in self.shards.values()]
+        yield from asyncio.wait(to_close, loop=self.loop)
         yield from self.http.close()
 
     @asyncio.coroutine
