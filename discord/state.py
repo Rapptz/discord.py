@@ -133,7 +133,7 @@ class ConnectionState:
         try:
             return self._users[user_id]
         except KeyError:
-            self._users[user_id] = user = User(state=self, data=data)
+            self._users[user_id] = user = User(state=weakref.proxy(self), data=data)
             return user
 
     def get_user(self, id):
@@ -144,7 +144,7 @@ class ConnectionState:
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
+            self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=weakref.proxy(self), data=data)
             return emoji
 
     @property
@@ -180,7 +180,7 @@ class ConnectionState:
             self._private_channels_by_user[channel.recipient.id] = channel
 
     def add_dm_channel(self, data):
-        channel = DMChannel(me=self.user, state=self, data=data)
+        channel = DMChannel(me=self.user, state=weakref.proxy(self), data=data)
         self._add_private_channel(channel)
         return channel
 
@@ -193,7 +193,7 @@ class ConnectionState:
         return utils.find(lambda m: m.id == msg_id, self.messages)
 
     def _add_guild_from_data(self, guild):
-        guild = Guild(data=guild, state=self)
+        guild = Guild(data=guild, state=weakref.proxy(self))
         self._add_guild(guild)
         return guild
 
@@ -252,7 +252,7 @@ class ConnectionState:
 
     def parse_ready(self, data):
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
-        self.user = ClientUser(state=self, data=data['user'])
+        self.user = ClientUser(state=weakref.proxy(self), data=data['user'])
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -266,11 +266,11 @@ class ConnectionState:
             except KeyError:
                 continue
             else:
-                self.user._relationships[r_id] = Relationship(state=self, data=relationship)
+                self.user._relationships[r_id] = Relationship(state=weakref.proxy(self), data=relationship)
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
-            self._add_private_channel(factory(me=self.user, data=pm, state=self))
+            self._add_private_channel(factory(me=self.user, data=pm, state=weakref.proxy(self)))
 
         self.dispatch('connect')
         compat.create_task(self._delay_ready(), loop=self.loop)
@@ -280,7 +280,7 @@ class ConnectionState:
 
     def parse_message_create(self, data):
         channel = self.get_channel(int(data['channel_id']))
-        message = Message(channel=channel, data=data, state=self)
+        message = Message(channel=channel, data=data, state=weakref.proxy(self))
         self.dispatch('message', message)
         self.messages.append(message)
 
@@ -355,7 +355,7 @@ class ConnectionState:
                 # skip these useless cases.
                 return
 
-            member = Member(guild=guild, data=data, state=self)
+            member = Member(guild=guild, data=data, state=weakref.proxy(self))
             guild._add_member(member)
 
         old_member = member._copy()
@@ -363,7 +363,7 @@ class ConnectionState:
         self.dispatch('member_update', old_member, member)
 
     def parse_user_update(self, data):
-        self.user = ClientUser(state=self, data=data)
+        self.user = ClientUser(state=weakref.proxy(self), data=data)
 
     def parse_channel_delete(self, data):
         guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -407,13 +407,13 @@ class ConnectionState:
         factory, ch_type = _channel_factory(data['type'])
         channel = None
         if ch_type in (ChannelType.group, ChannelType.private):
-            channel = factory(me=self.user, data=data, state=self)
+            channel = factory(me=self.user, data=data, state=weakref.proxy(self))
             self._add_private_channel(channel)
         else:
             guild_id = utils._get_as_snowflake(data, 'guild_id')
             guild = self._get_guild(guild_id)
             if guild is not None:
-                channel = factory(guild=guild, state=self, data=data)
+                channel = factory(guild=guild, state=weakref.proxy(self), data=data)
                 guild._add_channel(channel)
             else:
                 log.warning('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
@@ -448,7 +448,7 @@ class ConnectionState:
             log.warning('GUILD_MEMBER_ADD referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
-        member = Member(guild=guild, data=data, state=self)
+        member = Member(guild=guild, data=data, state=weakref.proxy(self))
         guild._add_member(member)
         guild._member_count += 1
         self.dispatch('member_join', member)
@@ -621,7 +621,7 @@ class ConnectionState:
             return
 
         role_data = data['role']
-        role = Role(guild=guild, data=role_data, state=self)
+        role = Role(guild=guild, data=role_data, state=weakref.proxy(self))
         guild._add_role(role)
         self.dispatch('guild_role_create', role)
 
@@ -656,7 +656,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         members = data.get('members', [])
         for member in members:
-            m = Member(guild=guild, data=member, state=self)
+            m = Member(guild=guild, data=member, state=weakref.proxy(self))
             existing = guild.get_member(m.id)
             if existing is None or existing.joined_at is None:
                 guild._add_member(m)
@@ -701,7 +701,7 @@ class ConnectionState:
     def parse_relationship_add(self, data):
         key = int(data['id'])
         old = self.user.get_relationship(key)
-        new = Relationship(state=self, data=data)
+        new = Relationship(state=weakref.proxy(self), data=data)
         self.user._relationships[key] = new
         if old is not None:
             self.dispatch('relationship_update', old, new)
@@ -752,7 +752,7 @@ class ConnectionState:
                 return channel
 
     def create_message(self, *, channel, data):
-        return Message(state=self, channel=channel, data=data)
+        return Message(state=weakref.proxy(self), channel=channel, data=data)
 
     def receive_chunk(self, guild_id):
         future = compat.create_future(self.loop)
@@ -821,7 +821,7 @@ class AutoShardedConnectionState(ConnectionState):
         if not hasattr(self, '_ready_state'):
             self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
 
-        self.user = ClientUser(state=self, data=data['user'])
+        self.user = ClientUser(state=weakref.proxy(self), data=data['user'])
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -831,7 +831,7 @@ class AutoShardedConnectionState(ConnectionState):
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
-            self._add_private_channel(factory(me=self.user, data=pm, state=self))
+            self._add_private_channel(factory(me=self.user, data=pm, state=weakref.proxy(self)))
 
         self.dispatch('connect')
         if self._ready_task is None:
