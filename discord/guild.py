@@ -262,8 +262,13 @@ class Guild(Hashable):
 
     @property
     def voice_channels(self):
-        """List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild."""
-        return [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+        """List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild.
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+        r.sort(key=lambda c: c.position)
+        return r
 
     @property
     def me(self):
@@ -275,8 +280,13 @@ class Guild(Hashable):
 
     @property
     def text_channels(self):
-        """List[:class:`TextChannel`]: A list of text channels that belongs to this guild."""
-        return [ch for ch in self._channels.values() if isinstance(ch, TextChannel)]
+        """List[:class:`TextChannel`]: A list of text channels that belongs to this guild.
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, TextChannel)]
+        r.sort(key=lambda c: c.position)
+        return r
 
     def get_channel(self, channel_id):
         """Returns a :class:`abc.GuildChannel` with the given ID. If not found, returns None."""
