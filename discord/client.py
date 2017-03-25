@@ -45,6 +45,7 @@ import logging, traceback
 import sys, re, io
 import itertools
 import datetime
+import signal
 from collections import namedtuple
 from os.path import split as path_split
 
@@ -207,7 +208,7 @@ class Client:
             pass
         except Exception:
             try:
-                yield from self.on_error(event_name, *args, **kwargs)
+                yield from asyncio.shield(self.on_error(event_name, *args, **kwargs))
             except asyncio.CancelledError:
                 pass
 
@@ -453,6 +454,23 @@ class Client:
         yield from self.login(*args, bot=bot)
         yield from self.connect(reconnect=reconnect)
 
+
+    def _do_cleanup(self):
+        self.loop.run_until_complete(self.close())
+        pending = asyncio.Task.all_tasks(loop=self.loop)
+        if pending:
+            log.info('Cleaning up after %s tasks', len(pending))
+            gathered = asyncio.gather(*pending, loop=self.loop)
+            try:
+                gathered.cancel()
+                self.loop.run_until_complete(gathered)
+
+                # we want to retrieve any exceptions to make sure that
+                # they don't nag us about it being un-retrieved.
+                gathered.exception()
+            except:
+                pass
+
     def run(self, *args, **kwargs):
         """A blocking call that abstracts away the `event loop`_
         initialisation from you.
@@ -477,23 +495,16 @@ class Client:
         is blocking. That means that registration of events or anything being
         called after this function call will not execute until it returns.
         """
+        if sys.platform != 'win32':
+            self.loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
+            self.loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
         try:
             self.loop.run_until_complete(self.start(*args, **kwargs))
         except KeyboardInterrupt:
-            self.loop.run_until_complete(self.logout())
-            pending = asyncio.Task.all_tasks(loop=self.loop)
-            gathered = asyncio.gather(*pending, loop=self.loop)
-            try:
-                gathered.cancel()
-                self.loop.run_until_complete(gathered)
-
-                # we want to retrieve any exceptions to make sure that
-                # they don't nag us about it being un-retrieved.
-                gathered.exception()
-            except:
-                pass
+            pass
         finally:
+            self._do_cleanup()
             self.loop.close()
 
     # properties

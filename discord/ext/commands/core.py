@@ -47,6 +47,8 @@ def wrap_callback(coro):
             ret = yield from coro(*args, **kwargs)
         except CommandError:
             raise
+        except asyncio.CancelledError:
+            return
         except Exception as e:
             raise CommandInvokeError(e) from e
         return ret
@@ -60,6 +62,8 @@ def hooked_wrapped_callback(command, ctx, coro):
             ret = yield from coro(*args, **kwargs)
         except CommandError:
             raise
+        except asyncio.CancelledError:
+            return
         except Exception as e:
             raise CommandInvokeError(e) from e
         finally:
