@@ -156,11 +156,7 @@ class Role(Hashable):
         if self.is_default():
             return all_members
 
-        ret = []
-        for member in all_members:
-            if self in member.roles:
-                ret.append(member)
-        return ret
+        return [member for member in all_members if self in member.roles]
 
     @asyncio.coroutine
     def _move(self, position):
