@@ -208,7 +208,7 @@ class Client:
             pass
         except Exception:
             try:
-                yield from asyncio.shield(self.on_error(event_name, *args, **kwargs))
+                yield from self.on_error(event_name, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
 
