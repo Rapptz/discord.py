@@ -425,6 +425,8 @@ class Client:
         if self.is_closed():
             return
 
+        self._closed.set()
+
         for voice in list(self.voice_clients):
             try:
                 yield from voice.disconnect()
@@ -439,7 +441,6 @@ class Client:
 
 
         yield from self.http.close()
-        self._closed.set()
         self._ready.clear()
 
     @asyncio.coroutine
