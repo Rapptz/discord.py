@@ -70,8 +70,8 @@ class ConnectionState:
     def clear(self):
         self.user = None
         self._users = weakref.WeakValueDictionary()
+        self._emojis = weakref.WeakValueDictionary()
         self._calls = {}
-        self._emojis = {}
         self._guilds = {}
         self._voice_clients = {}
         self._private_channels = {}
