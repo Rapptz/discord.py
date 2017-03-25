@@ -73,7 +73,7 @@ class Emoji(Hashable):
         A list of :class:`Role` that is allowed to use this emoji. If roles is empty,
         the emoji is unrestricted.
     """
-    __slots__ = ('require_colons', 'managed', 'id', 'name', 'roles', 'guild', '_state')
+    __slots__ = ('require_colons', 'managed', 'id', 'name', 'roles', 'guild', '_state', '__weakref__')
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
