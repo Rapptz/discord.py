@@ -141,11 +141,8 @@ class ConnectionState:
 
     def store_emoji(self, guild, data):
         emoji_id = int(data['id'])
-        try:
-            return self._emojis[emoji_id]
-        except KeyError:
-            self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
-            return emoji
+        self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
+        return emoji
 
     @property
     def guilds(self):
