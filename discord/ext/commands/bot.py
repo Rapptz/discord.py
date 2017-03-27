@@ -140,6 +140,7 @@ class BotBase(GroupMixin):
         self._after_invoke = None
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+        self.owner_id = options.get('owner_id')
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
@@ -274,6 +275,26 @@ class BotBase(GroupMixin):
             return True
 
         return (yield from discord.utils.async_all(f(ctx) for f in self._checks))
+
+    @asyncio.coroutine
+    def is_owner(self, user):
+        """Checks if a :class:`User` or :class:`Member` is the owner of
+        this bot.
+
+        If an :attr:`owner_id` is not set, it is fetched automatically
+        through the use of :meth:`application_info`.
+
+        Parameters
+        -----------
+        user: :class:`abc.User`
+            The user to check for.
+        """
+
+        if self.owner_id is None:
+            app = yield from self.application_info()
+            self.owner_id = owner_id = app.owner.id
+            return user.id == owner_id
+        return user.id == self.owner_id
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
@@ -815,6 +836,10 @@ class Bot(BotBase, discord.Client):
         subcommand but the command does not have any subcommands. Defaults to
         ``"Command {0.name} has no subcommands."``. The first format argument is the
         :class:`Command` attempted to get a subcommand and the second is the name.
+    owner_id: Optional[int]
+        The ID that owns the bot. If this is not set and is then queried via
+        :meth:`is_owner` then it is fetched automatically using
+        :meth:`application_info`.
     """
     pass
 

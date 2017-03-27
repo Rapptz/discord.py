@@ -37,7 +37,7 @@ from . import converter as converters
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check',
             'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown', 'guild_only', ]
+            'cooldown', 'guild_only', 'is_owner']
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -1100,6 +1100,24 @@ def guild_only():
     def predicate(ctx):
         if ctx.guild is None:
             raise NoPrivateMessage('This command cannot be used in private messages.')
+        return True
+
+    return check(predicate)
+
+def is_owner():
+    """A :func:`check` that checks if the person invoking this command is the
+    owner of the bot.
+
+    This is powered by :meth:`Bot.is_owner`.
+
+    This check raises a special exception, :exc:`NotOwner` that is derived
+    from :exc:`CheckFailure`.
+    """
+
+    @asyncio.coroutine
+    def predicate(ctx):
+        if not (yield from ctx.bot.is_owner(ctx.author)):
+            raise NotOwner('You do not own this bot.')
         return True
 
     return check(predicate)

@@ -29,7 +29,7 @@ from discord.errors import DiscordException
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
-           'UserInputError', 'CommandOnCooldown' ]
+           'UserInputError', 'CommandOnCooldown', 'NotOwner' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -98,6 +98,10 @@ class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
     contexts.
     """
+    pass
+
+class NotOwner(CheckFailure):
+    """Exception raised when the message author is not the owner of the bot."""
     pass
 
 class DisabledCommand(CommandError):
