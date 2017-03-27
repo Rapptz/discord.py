@@ -37,7 +37,7 @@ from . import converter as converters
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check',
             'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown' ]
+            'cooldown', 'guild_only', ]
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -124,11 +124,6 @@ class Command:
     hidden : bool
         If ``True``\, the default help command does not show this in the
         help output.
-    no_pm : bool
-        If ``True``\, then the command is not allowed to be executed in
-        private messages. Defaults to ``False``. Note that if it is executed
-        in private messages, then :func:`on_command_error` and local error handlers
-        are called with the :exc:`NoPrivateMessage` error.
     rest_is_raw : bool
         If ``False`` and a keyword-only argument is provided then the keyword
         only argument is stripped and handled as if it was a regular argument
@@ -161,7 +156,6 @@ class Command:
         self.params = signature.parameters.copy()
         self.checks = kwargs.get('checks', [])
         self.module = inspect.getmodule(callback)
-        self.no_pm = kwargs.get('no_pm', False)
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
@@ -363,9 +357,6 @@ class Command:
     def _verify_checks(self, ctx):
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
-
-        if self.no_pm and not isinstance(ctx.channel, discord.abc.GuildChannel):
-            raise NoPrivateMessage('This command cannot be used in private messages.')
 
         if not (yield from self.can_run(ctx)):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
@@ -1095,6 +1086,22 @@ def bot_has_permissions(**perms):
         me = guild.me if guild is not None else ctx.bot.user
         permissions = ctx.channel.permissions_for(me)
         return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
+    return check(predicate)
+
+def guild_only():
+    """A :func:`check` that indicates this command must only be used in a
+    guild context only. Basically, no private messages are allowed when
+    using the command.
+
+    This check raises a special exception, :exc:`NoPrivateMessage`
+    that is derived from :exc:`CheckFailure`.
+    """
+
+    def predicate(ctx):
+        if ctx.guild is None:
+            raise NoPrivateMessage('This command cannot be used in private messages.')
+        return True
+
     return check(predicate)
 
 def cooldown(rate, per, type=BucketType.default):

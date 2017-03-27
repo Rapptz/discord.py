@@ -90,14 +90,14 @@ class BadArgument(UserInputError):
     """
     pass
 
-class NoPrivateMessage(CommandError):
+class CheckFailure(CommandError):
+    """Exception raised when the predicates in :attr:`Command.checks` have failed."""
+    pass
+
+class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
     contexts.
     """
-    pass
-
-class CheckFailure(CommandError):
-    """Exception raised when the predicates in :attr:`Command.checks` have failed."""
     pass
 
 class DisabledCommand(CommandError):
