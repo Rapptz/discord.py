@@ -113,7 +113,7 @@ class UserConverter(IDConverter):
 
         if match is not None:
             user_id = int(match.group(1))
-            result = self.bot.get_user(user_id)
+            result = self.ctx.bot.get_user(user_id)
         else:
             arg = self.argument
             # check for discriminator if it exists
