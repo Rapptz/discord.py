@@ -70,7 +70,7 @@ class ConnectionState:
     def clear(self):
         self.user = None
         self._users = weakref.WeakValueDictionary()
-        self._emojis = weakref.WeakValueDictionary()
+        self._emojis = {}
         self._calls = {}
         self._guilds = {}
         self._voice_clients = {}
@@ -156,6 +156,11 @@ class ConnectionState:
 
     def _remove_guild(self, guild):
         self._guilds.pop(guild.id, None)
+
+        for emoji in guild.emojis:
+            self._emojis.pop(emoji.id, None)
+
+        del guild
 
     @property
     def emojis(self):
@@ -249,6 +254,7 @@ class ConnectionState:
 
     def parse_ready(self, data):
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
+        self.clear()
         self.user = ClientUser(state=self, data=data['user'])
 
         guilds = self._ready_state.guilds
@@ -760,7 +766,6 @@ class ConnectionState:
 class AutoShardedConnectionState(ConnectionState):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
         self._ready_task = None
 
     @asyncio.coroutine
@@ -817,6 +822,7 @@ class AutoShardedConnectionState(ConnectionState):
     def parse_ready(self, data):
         if not hasattr(self, '_ready_state'):
             self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
+            self.clear()
 
         self.user = ClientUser(state=self, data=data['user'])
 
