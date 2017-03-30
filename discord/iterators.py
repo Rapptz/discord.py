@@ -301,7 +301,7 @@ class HistoryIterator(_AsyncIterator):
         self.channel = channel
         while self._get_retrieve():
             data = yield from self._retrieve_messages(self.retrieve)
-            if self.limit is None and len(data) < 100:
+            if len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
             if self.reverse:
