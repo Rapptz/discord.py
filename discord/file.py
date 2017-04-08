@@ -61,6 +61,8 @@ class File:
                 _, self.filename = os.path.split(fp)
             else:
                 self.filename = getattr(fp, 'name', None)
+        else:
+            self.filename = filename
 
     def open_file(self):
         fp = self.fp
