@@ -827,6 +827,12 @@ Embed
 .. autoclass:: Embed
     :members:
 
+File
+~~~~~
+
+.. autoclass:: File
+    :members:
+
 CallMessage
 ~~~~~~~~~~~~
 

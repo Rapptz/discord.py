@@ -306,7 +306,7 @@ class HTTPClient:
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_file(self, channel_id, buffer, *, filename=None, content=None, tts=False, embed=None):
+    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
@@ -317,7 +317,12 @@ class HTTPClient:
             payload['embed'] = embed
 
         form.add_field('payload_json', utils.to_json(payload))
-        form.add_field('file', buffer, filename=filename, content_type='application/octet-stream')
+        if len(files) == 1:
+            fp = files[0]
+            form.add_field('file', fp[0], filename=fp[1], content_type='application/octet-stream')
+        else:
+            for index, (buffer, filename) in enumerate(files):
+                form.add_field('file%s' % index, buffer, filename=filename, content_type='application/octet-stream')
 
         return self.request(r, data=form)
 

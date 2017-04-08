@@ -37,6 +37,7 @@ from .errors import InvalidArgument
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
+from .file import File
 from . import utils, compat
 
 class _Undefined:
@@ -536,7 +537,7 @@ class Messageable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, filename=None, delete_after=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -545,19 +546,10 @@ class Messageable(metaclass=abc.ABCMeta):
         If the content is set to ``None`` (the default), then the ``embed`` parameter must
         be provided.
 
-        The ``file`` parameter should be either a string denoting the location for a
-        file or a *file-like object*. The *file-like object* passed is **not closed**
-        at the end of execution. You are responsible for closing it yourself.
-
-        .. note::
-
-            If the file-like object passed is opened via ``open`` then the modes
-            'rb' should be used.
-
-        The ``filename`` parameter is the filename of the file.
-        If this is not given then it defaults to ``file.name`` or if ``file`` is a string
-        then the ``filename`` will default to the string given. You can overwrite
-        this value by passing this in.
+        To upload a single file, the ``file`` parameter should be used with a
+        single :class:`File` object. To upload multiple files, the ``files``
+        parameter should be used with a list of :class:`File` objects.
+        **Specifying both parameters will lead to an exception**.
 
         If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
         it must be a rich embed type.
@@ -570,12 +562,11 @@ class Messageable(metaclass=abc.ABCMeta):
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`Embed`
             The rich embed for the content.
-        file: file-like object or filename
-            The *file-like object* or file path to send.
-        filename: str
-            The filename of the file. Defaults to ``file.name`` if it's available.
-            If this is provided, you must also provide the ``file`` parameter or it
-            is silently ignored.
+        file: :class:`File`
+            The file to upload.
+        files: List[:class:`File`]
+            A list of files to upload. Must be a minimum of 2 and a
+            maximum of 10.
         delete_after: float
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
@@ -587,6 +578,9 @@ class Messageable(metaclass=abc.ABCMeta):
             Sending the message failed.
         Forbidden
             You do not have the proper permissions to send the message.
+        InvalidArgument
+            The ``files`` list is not of the appropriate size or
+            you specified both ``file`` and ``files``.
 
         Returns
         ---------
@@ -600,17 +594,29 @@ class Messageable(metaclass=abc.ABCMeta):
         if embed is not None:
             embed = embed.to_dict()
 
-        if file is not None:
-            try:
-                with open(file, 'rb') as f:
-                    buffer = io.BytesIO(f.read())
-                    if filename is None:
-                        _, filename = os.path.split(file)
-            except TypeError:
-                buffer = file
+        if file is not None and files is not None:
+            raise InvalidArgument('cannot pass both file and files parameter to send()')
 
-            data = yield from state.http.send_file(channel.id, buffer, filename=filename, content=content,
-                                                   tts=tts, embed=embed)
+        if file is not None:
+            if not isinstance(file, File):
+                raise InvalidArgument('file parameter must be File')
+
+            try:
+                data = yield from state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
+                                                        content=content, tts=tts, embed=embed)
+            finally:
+                file.close()
+
+        elif files is not None:
+            if len(files) < 2 or len(files) > 10:
+                raise InvalidArgument('files parameter must be a list of 2 to 10 elements')
+
+            try:
+                param = [(f.open_file(), f.filename) for f in files]
+                data = yield from state.http.send_files(channel.id, files=param, content=content, tts=tts, embed=embed)
+            finally:
+                for f in files:
+                    f.close()
         else:
             data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed)
 

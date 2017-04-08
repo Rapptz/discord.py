@@ -30,6 +30,7 @@ from .errors import *
 from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role
+from .file import File
 from .colour import Color, Colour
 from .invite import Invite
 from .object import Object
