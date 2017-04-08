@@ -572,12 +572,12 @@ class ConnectionState:
             guild._from_data(data)
             self.dispatch('guild_update', old_guild, guild)
         else:
-            log.warning('GUILD_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.warning('GUILD_UPDATE referencing an unknown guild ID: %s. Discarding.', data['id'])
 
     def parse_guild_delete(self, data):
         guild = self._get_guild(int(data['id']))
         if guild is None:
-            log.warning('GUILD_DELETE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.warning('GUILD_DELETE referencing an unknown guild ID: %s. Discarding.', data['id'])
             return
 
         if data.get('unavailable', False) and guild is not None:
