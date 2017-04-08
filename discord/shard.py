@@ -179,7 +179,7 @@ class AutoShardedClient(Client):
         except Exception as e:
             log.info('Failed to connect for shard_id: %s. Retrying...' % shard_id)
             yield from asyncio.sleep(5.0, loop=self.loop)
-            yield from self.launch_shard(gateway, shard_id)
+            return (yield from self.launch_shard(gateway, shard_id))
 
         ws.token = self.http.token
         ws._connection = self.connection
