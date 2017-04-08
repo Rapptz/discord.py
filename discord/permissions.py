@@ -289,7 +289,7 @@ class Permissions:
         return self._bit(7)
 
     @view_audit_log.setter
-    def view_audit_logs(self, value):
+    def view_audit_log(self, value):
         self._set(7, value)
 
     # 2 unused
