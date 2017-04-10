@@ -321,7 +321,8 @@ class ConnectionState:
         if message is not None:
             reaction = message._add_reaction(data)
             user = self._get_reaction_user(message.channel, int(data['user_id']))
-            self.dispatch('reaction_add', reaction, user)
+            if user:
+                self.dispatch('reaction_add', reaction, user)
 
     def parse_message_reaction_remove_all(self, data):
         message =  self._get_message(int(data['message_id']))
@@ -339,7 +340,8 @@ class ConnectionState:
                 pass
             else:
                 user = self._get_reaction_user(message.channel, int(data['user_id']))
-                self.dispatch('reaction_remove', reaction, user)
+                if user:
+                    self.dispatch('reaction_remove', reaction, user)
 
     def parse_presence_update(self, data):
         guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -721,14 +723,9 @@ class ConnectionState:
             self.dispatch('relationship_remove', old)
 
     def _get_reaction_user(self, channel, user_id):
-        if isinstance(channel, DMChannel) and user_id == channel.recipient.id:
-            return channel.recipient
-        elif isinstance(channel, TextChannel):
+        if isinstance(channel, TextChannel):
             return channel.guild.get_member(user_id)
-        elif isinstance(channel, GroupChannel):
-            return utils.find(lambda m: m.id == user_id, channel.recipients)
-        else:
-            return None
+        return self.get_user(user_id)
 
     def get_reaction_emoji(self, data):
         emoji_id = utils._get_as_snowflake(data, 'id')
