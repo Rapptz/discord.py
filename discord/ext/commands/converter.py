@@ -245,7 +245,7 @@ class EmojiConverter(IDConverter):
                 result = discord.utils.get(guild.emojis, name=self.argument)
 
             if result is None:
-                result = discord.utils.get(bot.get_all_emojis(), name=self.argument)
+                result = discord.utils.get(bot.emojis, name=self.argument)
         else:
             emoji_id = int(match.group(1))
 
@@ -254,7 +254,7 @@ class EmojiConverter(IDConverter):
                 result = discord.utils.get(guild.emojis, id=emoji_id)
 
             if result is None:
-                result = discord.utils.get(bot.get_all_emojis(), id=emoji_id)
+                result = discord.utils.get(bot.emojis, id=emoji_id)
 
         if result is None:
             raise BadArgument('Emoji "{}" not found.'.format(self.argument))
