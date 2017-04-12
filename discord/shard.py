@@ -43,7 +43,7 @@ class Shard:
         self.ws = ws
         self._client = client
         self.loop = self._client.loop
-        self._current = asyncio.Future(loop=self.loop)
+        self._current = compat.create_future(self.loop)
         self._current.set_result(None) # we just need an already done future
 
     @property
