@@ -69,7 +69,7 @@ class KeepAliveHandler(threading.Thread):
     def run(self):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + 2 * self.interval < time.time():
-                log.warn("Shard ID %s has stopped responding to the gateway." % self.shard_id)
+                log.warn("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
                 coro = self.ws.close(1006)
                 f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
@@ -215,16 +215,14 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         if not resume:
             yield from ws.identify()
-            log.info('sent the identify payload to create the websocket')
             return ws
 
         yield from ws.resume()
-        log.info('sent the resume payload to create the websocket')
         try:
             yield from ws.ensure_open()
         except websockets.exceptions.ConnectionClosed:
             # ws got closed so let's just do a regular IDENTIFY connect.
-            log.info('RESUME failure.')
+            log.info('RESUME failed (the websocket decided to close) for Shard ID %s. Retrying.', shard_id)
             return (yield from cls.from_client(client))
         else:
             return ws
@@ -281,6 +279,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             payload['d']['shard'] = [self.shard_id, self.shard_count]
 
         yield from self.send_as_json(payload)
+        log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
 
     @asyncio.coroutine
     def resume(self):
@@ -295,6 +294,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         }
 
         yield from self.send_as_json(payload)
+        log.info('Shard ID %s has sent the RESUME payload.', self.shard_id)
 
     @asyncio.coroutine
     def received_message(self, msg):
@@ -306,7 +306,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         msg = json.loads(msg)
 
-        log.debug('For Shard ID {}: WebSocket Event: {}'.format(self.shard_id, msg))
+        log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
         self._dispatch('socket_response', msg)
 
         op = msg.get('op')
@@ -345,27 +345,34 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
             self.sequence = None
             self.session_id = None
-            log.info('Shard ID %s has either failed a RESUME request or needed to invalidate its session.' % self.shard_id)
+            log.info('Shard ID %s session has been invalidated.' % self.shard_id)
             yield from self.identify()
             return
 
         if op != self.DISPATCH:
-            log.info('Unhandled op {}'.format(op))
+            log.warning('Unknown OP code %s.', op)
             return
 
         event = msg.get('t')
-        is_ready = event == 'READY'
 
-        if is_ready:
+        if event == 'READY':
+            self._trace = trace = data.get('_trace', [])
             self.sequence = msg['s']
             self.session_id = data['session_id']
+            log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
+                      self.shard_id, ', '.join(trace), self.session_id)
+
+        if event == 'RESUMED':
+            self._trace = trace = data.get('_trace', [])
+            log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
+                     self.shard_id, self.session_id, ', '.join(trace))
 
         parser = 'parse_' + event.lower()
 
         try:
             func = getattr(self._connection, parser)
         except AttributeError:
-            log.info('Unhandled event {}'.format(event))
+            log.warning('Unknown event %s.', event)
         else:
             func(data)
 

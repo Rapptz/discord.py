@@ -55,7 +55,7 @@ class Shard:
         try:
             yield from self.ws.poll_event()
         except ResumeWebSocket as e:
-            log.info('Got a request to RESUME the websocket.')
+            log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
             self.ws = yield from DiscordWebSocket.from_client(self._client, resume=True,
                                                                             shard_id=self.id,
                                                                             session=self.ws.session_id,
@@ -191,7 +191,6 @@ class AutoShardedClient(Client):
         # OP HELLO
         yield from ws.poll_event()
         yield from ws.identify()
-        log.info('Sent IDENTIFY payload to create the websocket for shard_id: %s' % shard_id)
 
         # keep reading the shard while others connect
         self.shards[shard_id] = ret = Shard(ws, self)

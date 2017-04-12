@@ -658,7 +658,8 @@ class ConnectionState:
             log.warning('GUILD_ROLE_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_members_chunk(self, data):
-        guild = self._get_guild(int(data['guild_id']))
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
         members = data.get('members', [])
         for member in members:
             m = Member(guild=guild, data=member, state=self)
@@ -666,7 +667,7 @@ class ConnectionState:
             if existing is None or existing.joined_at is None:
                 guild._add_member(m)
 
-        log.info('processed a chunk for {} members.'.format(len(members)))
+        log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         self.process_listeners(ListenerType.chunk, guild, len(members))
 
     def parse_voice_state_update(self, data):
