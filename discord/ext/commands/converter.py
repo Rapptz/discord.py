@@ -35,7 +35,7 @@ from .view import StringView
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'clean_content' ]
+            'EmojiConverter', 'IDConverter', 'clean_content' ]
 
 def _get_from_guilds(bot, getter, argument):
     result = None
