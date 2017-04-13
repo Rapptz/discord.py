@@ -26,6 +26,9 @@ DEALINGS IN THE SOFTWARE.
 
 from enum import Enum
 
+__all__ = ['ChannelType', 'MessageType', 'GuildRegion', 'VerificationLevel',
+           'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType' ]
+
 class ChannelType(Enum):
     text    = 0
     private = 1
