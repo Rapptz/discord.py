@@ -28,6 +28,13 @@ import asyncio
 
 from .compat import create_task
 
+def _typing_done_callback(fut):
+    # just retrieve any exception and call it a day
+    try:
+        fut.exception()
+    except:
+        pass
+
 class Typing:
     def __init__(self, messageable):
         self.loop = messageable._state.loop
@@ -35,7 +42,11 @@ class Typing:
 
     @asyncio.coroutine
     def do_typing(self):
-        channel = yield from self.messageable._get_channel()
+        try:
+            channel = self._channel
+        except AttributeError:
+            channel = yield from self.messageable._get_channel()
+
         typing = channel._state.http.send_typing
 
         while True:
@@ -44,18 +55,18 @@ class Typing:
 
     def __enter__(self):
         self.task = create_task(self.do_typing(), loop=self.loop)
+        self.task.add_done_callback(_typing_done_callback)
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        try:
-            self.task.cancel()
-        except:
-            pass
+        self.task.cancel()
 
     @asyncio.coroutine
     def __aenter__(self):
+        self._channel = channel = yield from self.messageable._get_channel()
+        yield from channel._state.http.send_typing(channel.id)
         return self.__enter__()
 
     @asyncio.coroutine
     def __aexit__(self, exc_type, exc, tb):
-        self.__exit__(exc_type, exc, tb)
+        self.task.cancel()
