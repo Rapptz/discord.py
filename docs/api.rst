@@ -633,6 +633,22 @@ All enumerations are subclasses of `enum`_.
 
         An alias for :attr:`high`.
 
+.. class:: ContentFilter
+
+    Specifies a :class:`Guild`\'s explicit content filter, which is the machine
+    learning algorithms that Discord uses to detect if an image contains
+    pornography or otherwise explicit content.
+
+    .. attribute:: disabled
+
+        The guild does not have the content filter enabled.
+    .. attribute:: no_role
+
+        The guild has the content filter enabled for members without a role.
+    .. attribute:: all_members
+
+        The guild has the content filter enabled for every member.
+
 .. class:: Status
 
     Specifies a :class:`Member` 's status.

@@ -74,6 +74,14 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
+class ContentFilter(Enum):
+    disabled    = 0
+    no_role     = 1
+    all_members = 2
+
+    def __str__(self):
+        return self.name
+
 class Status(Enum):
     online = 'online'
     offline = 'offline'

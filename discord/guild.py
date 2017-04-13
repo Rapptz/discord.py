@@ -38,7 +38,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel
+from .enums import GuildRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
@@ -97,6 +97,8 @@ class Guild(Hashable):
         1 then they do.
     verification_level: :class:`VerificationLevel`
         The guild's verification level.
+    explicit_content_filter: :class:`ContentFilter`
+        The guild's explicit content filter.
     features: List[str]
         A list of features that the guild has. They are currently as follows:
 
@@ -112,7 +114,8 @@ class Guild(Hashable):
                  'name', 'id', 'unavailable', 'name', 'region', '_state',
                  '_default_role', 'roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
-                 'verification_level', 'splash', '_voice_states' )
+                 'verification_level', 'explicit_content_filter', 'splash',
+                 '_voice_states' )
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -194,6 +197,7 @@ class Guild(Hashable):
         self.name = guild.get('name')
         self.region = try_enum(GuildRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
+        self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
