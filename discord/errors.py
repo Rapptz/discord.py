@@ -52,28 +52,58 @@ class GatewayNotFound(DiscordException):
         message = 'The gateway to connect to discord was not found.'
         super(GatewayNotFound, self).__init__(message)
 
+def flatten_error_dict(d, key=''):
+    items = []
+    for k, v in d.items():
+        new_key = key + '.' + k if key else k
+
+        if isinstance(v, dict):
+            try:
+                _errors = v['_errors']
+            except Exception:
+                items.extend(flatten_error_dict(v, new_key).items())
+            else:
+                items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
+        else:
+            items.append((new_key, v))
+
+    return dict(items)
+
 class HTTPException(DiscordException):
     """Exception that's thrown when an HTTP request operation fails.
 
-    .. attribute:: response
-
+    Attributes
+    ------------
+    response: aiohttp.ClientResponse
         The response of the failed HTTP request. This is an
         instance of `aiohttp.ClientResponse`__.
 
         __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
 
-    .. attribute:: text
-
+    text: str
         The text of the error. Could be an empty string.
+    status: int
+        The status code of the HTTP request.
+    code: int
+        The Discord specific error code for the failure.
     """
 
     def __init__(self, response, message):
         self.response = response
-        if type(message) is dict:
-            self.text = message.get('message', '')
+        self.status = response.status
+        if isinstance(message, dict):
             self.code = message.get('code', 0)
+            base = message.get('message', '')
+            errors = message.get('errors')
+            if errors:
+                errors = flatten_error_dict(errors)
+                helpful = '\n'.join('In %s: %s' % t for t in errors.items())
+                self.text = base + '\n' + helpful
+            else:
+                self.text = base
         else:
             self.text = message
+            self.code = 0
 
         fmt = '{0.reason} (status code: {0.status})'
         if len(self.text):
