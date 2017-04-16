@@ -820,7 +820,6 @@ class AutoShardedConnectionState(ConnectionState):
     def parse_ready(self, data):
         if not hasattr(self, '_ready_state'):
             self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
-            self.clear()
 
         self.user = ClientUser(state=self, data=data['user'])
 
