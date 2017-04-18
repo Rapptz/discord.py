@@ -93,10 +93,13 @@ class VoiceClient:
         self.channel = channel
         self.main_ws = None
         self.timeout = timeout
+        self.ws = None
         self.loop = state.loop
         self._state = state
         # this will be used in the AudioPlayer thread
         self._connected = threading.Event()
+        self._handshake_complete = asyncio.Event(loop=self.loop)
+
         self._connections = 0
         self.sequence = 0
         self.timestamp = 0
@@ -135,38 +138,21 @@ class VoiceClient:
         self.main_ws = ws = state._get_websocket(guild_id)
         self._connections += 1
 
-        def session_id_found(data):
-            user_id = data.get('user_id', 0)
-            _guild_id = data.get(key_name)
-            return int(user_id) == state.self_id and int(_guild_id) == key_id
-
-        # register the futures for waiting
-        session_id_future = ws.wait_for('VOICE_STATE_UPDATE', session_id_found)
-        voice_data_future = ws.wait_for('VOICE_SERVER_UPDATE', lambda d: int(d.get(key_name, 0)) == key_id)
-
         # request joining
         yield from ws.voice_state(guild_id, channel_id)
 
         try:
-            session_id_data = yield from asyncio.wait_for(session_id_future, timeout=self.timeout, loop=self.loop)
-            data = yield from asyncio.wait_for(voice_data_future, timeout=self.timeout, loop=state.loop)
+            yield from asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout, loop=self.loop)
         except asyncio.TimeoutError as e:
             yield from ws.voice_state(guild_id, None, self_mute=True)
             raise e
-
-        self.session_id = session_id_data.get('session_id')
-        self.server_id = data.get(key_name)
-        self.token = data.get('token')
-        self.endpoint = data.get('endpoint', '').replace(':80', '')
-        self.endpoint_ip = socket.gethostbyname(self.endpoint)
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.setblocking(False)
 
         log.info('Voice handshake complete. Endpoint found %s (IP: %s)', self.endpoint, self.endpoint_ip)
 
     @asyncio.coroutine
     def terminate_handshake(self, *, remove=False):
         guild_id, _ = self.channel._get_voice_state_pair()
+        self._handshake_complete.clear()
         yield from self.main_ws.voice_state(guild_id, None, self_mute=True)
 
         if remove:
@@ -174,10 +160,30 @@ class VoiceClient:
             self._state._remove_voice_client(key_id)
 
     @asyncio.coroutine
-    def _switch_regions(self):
-        # just reconnect when we're requested to switch voice regions
-        # signal the reconnect loop
-        yield from self.ws.close(1006)
+    def _create_socket(self, server_id, data):
+        self._connected.clear()
+        self.session_id = self.main_ws.session_id
+        self.server_id = server_id
+        self.token = data.get('token')
+        endpoint = data.get('endpoint')
+
+        if endpoint is None or self.token is None:
+            log.warning('Awaiting endpoint... This requires waiting. ' \
+                        'If timeout occurred considering raising the timeout and reconnecting.')
+            return
+
+        self.endpoint = endpoint.replace(':80', '')
+        self.endpoint_ip = socket.gethostbyname(self.endpoint)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setblocking(False)
+
+        if self._handshake_complete.is_set():
+            # terminate the websocket and handle the reconnect loop if necessary.
+            self._handshake_complete.clear()
+            yield from self.ws.close(1006)
+            return
+
+        self._handshake_complete.set()
 
     @asyncio.coroutine
     def connect(self, *, reconnect=True, _tries=0, do_handshake=True):

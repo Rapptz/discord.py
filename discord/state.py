@@ -695,8 +695,8 @@ class ConnectionState:
             key_id = int(data['channel_id'])
 
         vc = self._get_voice_client(key_id)
-        if vc is not None and vc.is_connected():
-            compat.create_task(vc._switch_regions())
+        if vc is not None:
+            compat.create_task(vc._create_socket(key_id, data))
 
     def parse_typing_start(self, data):
         channel = self.get_channel(int(data['channel_id']))

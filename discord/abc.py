@@ -796,7 +796,7 @@ class Callable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def connect(self, *, timeout=10.0, reconnect=True):
+    def connect(self, *, timeout=60.0, reconnect=True):
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
@@ -805,8 +805,7 @@ class Callable(metaclass=abc.ABCMeta):
         Parameters
         -----------
         timeout: float
-            The timeout in seconds to wait for the
-            initial handshake to be completed.
+            The timeout in seconds to wait for the voice endpoint.
         reconnect: bool
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
@@ -833,6 +832,7 @@ class Callable(metaclass=abc.ABCMeta):
             raise ClientException('Already connected to a voice channel.')
 
         voice = VoiceClient(state=state, timeout=timeout, channel=self)
+        state._add_voice_client(key_id, voice)
 
         try:
             yield from voice.connect(reconnect=reconnect)
@@ -844,5 +844,4 @@ class Callable(metaclass=abc.ABCMeta):
                 pass
             raise e # re-raise
 
-        state._add_voice_client(key_id, voice)
         return voice
