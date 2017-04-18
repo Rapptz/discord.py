@@ -240,6 +240,12 @@ class AutoShardedClient(Client):
 
         self._closed.set()
 
+        for vc in self.voice_clients:
+            try:
+                yield from vc.disconnect()
+            except:
+                pass
+
         to_close = [shard.ws.close() for shard in self.shards.values()]
         yield from asyncio.wait(to_close, loop=self.loop)
         yield from self.http.close()

@@ -429,14 +429,12 @@ class Client:
 
         self._closed.set()
 
-        for voice in list(self.voice_clients):
+        for voice in self.voice_clients:
             try:
                 yield from voice.disconnect()
             except:
                 # if an error happens during disconnects, disregard it.
                 pass
-
-            self.connection._remove_voice_client(voice.guild.id)
 
         if self.ws is not None and self.ws.open:
             yield from self.ws.close()
