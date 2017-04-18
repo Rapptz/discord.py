@@ -25,19 +25,18 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import abc
-import io
-import os
 import asyncio
 
 from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .errors import InvalidArgument
+from .errors import InvalidArgument, ClientException
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
 from .file import File
+from .voice_client import VoiceClient
 from . import utils, compat
 
 class _Undefined:
@@ -783,3 +782,67 @@ class Messageable(metaclass=abc.ABCMeta):
                         counter += 1
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
+
+
+class Callable(metaclass=abc.ABCMeta):
+    __slots__ = ()
+
+    @abc.abstractmethod
+    def _get_voice_client_key(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_voice_state_pair(self):
+        raise NotImplementedError
+
+    @asyncio.coroutine
+    def connect(self, *, timeout=10.0, reconnect=True):
+        """|coro|
+
+        Connects to voice and creates a :class:`VoiceClient` to establish
+        your connection to the voice server.
+
+        Parameters
+        -----------
+        timeout: float
+            The timeout in seconds to wait for the
+            initial handshake to be completed.
+        reconnect: bool
+            Whether the bot should automatically attempt
+            a reconnect if a part of the handshake fails
+            or the gateway goes down.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            Could not connect to the voice channel in time.
+        ClientException
+            You are already connected to a voice channel.
+        OpusNotLoaded
+            The opus library has not been loaded.
+
+        Returns
+        -------
+        :class:`VoiceClient`
+            A voice client that is fully connected to the voice server.
+        """
+        key_id, key_name = self._get_voice_client_key()
+        state = self._state
+
+        if state._get_voice_client(key_id):
+            raise ClientException('Already connected to a voice channel.')
+
+        voice = VoiceClient(state=state, timeout=timeout, channel=self)
+
+        try:
+            yield from voice.connect(reconnect=reconnect)
+        except asyncio.TimeoutError as e:
+            try:
+                yield from voice.disconnect()
+            except:
+                # we don't care if disconnect failed because connection failed
+                pass
+            raise e # re-raise
+
+        state._add_voice_client(key_id, voice)
+        return voice

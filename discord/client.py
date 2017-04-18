@@ -31,6 +31,7 @@ from .errors import *
 from .permissions import Permissions, PermissionOverwrite
 from .enums import ChannelType, Status
 from .gateway import *
+from .voice_client import VoiceClient
 from .emoji import Emoji
 from .http import HTTPClient
 from .state import ConnectionState
@@ -119,10 +120,11 @@ class Client:
         self.connection.shard_count = self.shard_count
         self._closed = asyncio.Event(loop=self.loop)
         self._ready = asyncio.Event(loop=self.loop)
+        self.connection._get_websocket = lambda g: self.ws
 
-        # if VoiceClient.warn_nacl:
-        #     VoiceClient.warn_nacl = False
-        #     log.warning("PyNaCl is not installed, voice will NOT be supported")
+        if VoiceClient.warn_nacl:
+            VoiceClient.warn_nacl = False
+            log.warning("PyNaCl is not installed, voice will NOT be supported")
 
     # internals
 

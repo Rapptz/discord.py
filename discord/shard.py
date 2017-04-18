@@ -110,6 +110,11 @@ class AutoShardedClient(Client):
         # the key is the shard_id
         self.shards = {}
 
+        def _get_websocket(guild_id):
+            i = (guild_id >> 22) % self.shard_count
+            return self.shards[i].ws
+
+        self.connection._get_websocket = _get_websocket
         self._still_sharding = True
 
     @asyncio.coroutine

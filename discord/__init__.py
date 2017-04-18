@@ -40,6 +40,8 @@ from .enums import *
 from collections import namedtuple
 from .embeds import Embed
 from .shard import AutoShardedClient
+from .player import *
+from .voice_client import VoiceClient
 
 import logging
 

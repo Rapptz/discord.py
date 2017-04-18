@@ -40,6 +40,21 @@ Client
 .. autoclass:: AutoShardedClient
     :members:
 
+Voice
+------
+
+.. autoclass:: VoiceClient
+    :members:
+
+.. autoclass:: AudioSource
+    :members:
+
+.. autoclass:: PCMAudio
+    :members:
+
+.. autoclass:: FFmpegPCMAudio
+    :members:
+
 Opus Library
 ~~~~~~~~~~~~~
 

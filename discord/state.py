@@ -688,6 +688,16 @@ class ConnectionState:
             if call is not None:
                 call._update_voice_state(data)
 
+    def parse_voice_server_update(self, data):
+        try:
+            key_id = int(data['guild_id'])
+        except KeyError:
+            key_id = int(data['channel_id'])
+
+        vc = self._get_voice_client(key_id)
+        if vc is not None and vc.is_connected():
+            compat.create_task(vc._switch_regions())
+
     def parse_typing_start(self, data):
         channel = self.get_channel(int(data['channel_id']))
         if channel is not None:

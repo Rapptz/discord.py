@@ -183,15 +183,16 @@ signal_ctl = {
 }
 
 class Encoder:
-    def __init__(self, sampling, channels, application=APPLICATION_AUDIO):
-        self.sampling_rate = sampling
-        self.channels = channels
-        self.application = application
+    SAMPLING_RATE = 48000
+    CHANNELS = 2
+    FRAME_LENGTH = 20
+    SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
+    SAMPLES_PER_FRAME = int(SAMPLING_RATE / 1000 * FRAME_LENGTH)
 
-        self.frame_length = 20
-        self.sample_size = 2 * self.channels  # (bit_rate / 8) but bit_rate == 16
-        self.samples_per_frame = int(self.sampling_rate / 1000 * self.frame_length)
-        self.frame_size = self.samples_per_frame * self.sample_size
+    FRAME_SIZE = SAMPLES_PER_FRAME * SAMPLE_SIZE
+
+    def __init__(self, application=APPLICATION_AUDIO):
+        self.application = application
 
         if not is_loaded():
             raise OpusNotLoaded()
@@ -210,7 +211,7 @@ class Encoder:
 
     def _create_state(self):
         ret = ctypes.c_int()
-        result = _lib.opus_encoder_create(self.sampling_rate, self.channels, self.application, ctypes.byref(ret))
+        result = _lib.opus_encoder_create(self.SAMPLING_RATE, self.CHANNELS, self.application, ctypes.byref(ret))
 
         if ret.value != 0:
             log.info('error has happened in state creation')

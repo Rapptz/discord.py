@@ -290,7 +290,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                     count += 1
                     ret.append(msg)
 
-class VoiceChannel(discord.abc.GuildChannel, Hashable):
+class VoiceChannel(discord.abc.Callable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 
     Supported Operations:
@@ -334,6 +334,12 @@ class VoiceChannel(discord.abc.GuildChannel, Hashable):
 
     def __repr__(self):
         return '<VoiceChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+
+    def _get_voice_client_key(self):
+        return self.guild.id, 'guild_id'
+
+    def _get_voice_state_pair(self):
+        return self.guild.id, self.id
 
     def _update(self, guild, data):
         self.guild = guild
