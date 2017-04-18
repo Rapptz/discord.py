@@ -32,7 +32,6 @@ from collections import namedtuple
 from . import utils
 from .role import Role
 from .member import Member, VoiceState
-from .emoji import Emoji
 from .game import Game
 from .permissions import PermissionOverwrite
 from .colour import Colour
@@ -281,6 +280,11 @@ class Guild(Hashable):
         """
         self_id = self._state.user.id
         return self.get_member(self_id)
+
+    @property
+    def voice_client(self):
+        """Returns the :class:`VoiceClient` associated with this guild, if any."""
+        return self._state._get_voice_client(self.id)
 
     @property
     def text_channels(self):
