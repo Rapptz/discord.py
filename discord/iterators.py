@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 import sys
 import asyncio
-import aiohttp
 import datetime
 
 from .errors import NoMoreItems

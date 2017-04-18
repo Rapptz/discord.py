@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
-from .errors import ConnectionClosed, ClientException, InvalidArgument
+from .errors import ClientException, InvalidArgument
 from . import compat
 from .enums import Status
 

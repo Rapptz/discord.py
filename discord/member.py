@@ -34,7 +34,7 @@ from . import utils
 from .user import BaseUser, User
 from .game import Game
 from .permissions import Permissions
-from .enums import Status, ChannelType, try_enum
+from .enums import Status, try_enum
 from .colour import Colour
 
 class VoiceState:

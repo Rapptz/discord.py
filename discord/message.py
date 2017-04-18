@@ -27,13 +27,9 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import re
 
-import discord.abc
-
 from . import utils
-from .user import User
 from .reaction import Reaction
 from .emoji import Emoji
-from .object import Object
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException
@@ -62,11 +58,8 @@ class Message:
     embeds: List[:class:`Embed`]
         A list embeds the message has.
     channel
-        The :class:`Channel` that the message was sent from.
-        Could be a :class:`PrivateChannel` if it's a private message.
-        In :issue:`very rare cases <21>` this could be a :class:`Object` instead.
-
-        For the sake of convenience, this :class:`Object` instance has an attribute ``is_private`` set to ``True``.
+        The :class:`TextChannel` that the message was sent from.
+        Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.

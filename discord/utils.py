@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
-from .errors import HTTPException, Forbidden, NotFound, InvalidArgument
+from .errors import InvalidArgument
 import datetime
 from base64 import b64encode
 import asyncio

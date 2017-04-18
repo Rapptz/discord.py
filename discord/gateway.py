@@ -28,14 +28,12 @@ import sys
 import time
 import websockets
 import asyncio
-import aiohttp
 
 from . import utils, compat
-from .enums import Status, try_enum
 from .game import Game
-from .errors import GatewayNotFound, ConnectionClosed, InvalidArgument
+from .errors import ConnectionClosed, InvalidArgument
 import logging
-import zlib, time, json
+import zlib, json
 from collections import namedtuple
 import threading
 import struct

@@ -23,18 +23,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .permissions import Permissions, PermissionOverwrite
+from .permissions import Permissions
 from .enums import ChannelType, try_enum
 from .mixins import Hashable
-from .role import Role
-from .user import User
-from .member import Member
 from . import utils
 from .errors import ClientException, NoMoreItems
 
 import discord.abc
 
-import copy
 import time
 import asyncio
 

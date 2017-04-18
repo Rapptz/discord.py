@@ -28,11 +28,9 @@ from .user import User, Profile
 from .invite import Invite
 from .object import Object
 from .errors import *
-from .permissions import Permissions, PermissionOverwrite
-from .enums import ChannelType, Status
+from .enums import Status
 from .gateway import *
 from .voice_client import VoiceClient
-from .emoji import Emoji
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils, compat
@@ -43,12 +41,9 @@ import aiohttp
 import websockets
 
 import logging, traceback
-import sys, re, io
-import itertools
-import datetime
+import sys, re
 import signal
 from collections import namedtuple
-from os.path import split as path_split
 
 PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
