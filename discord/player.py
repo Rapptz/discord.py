@@ -138,7 +138,7 @@ class FFmpegPCMAudio(AudioSource):
             args.extend(shlex.split(before_options))
 
         args.append('-i')
-        args.append('-' if pipe else shlex.quote(source))
+        args.append('-' if pipe else source)
         args.extend(('-f', 's16le', '-ar', '48000', '-ac', '2', '-loglevel', 'warning'))
 
         if isinstance(options, str):
