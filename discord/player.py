@@ -180,6 +180,9 @@ class PCMVolumeTransformer(AudioSource):
     ------------
     original: :class:`AudioSource`
         The original AudioSource to transform.
+    volume: float
+        The initial volume to set it to.
+        See :attr:`volume` for more info.
 
     Raises
     -------
@@ -189,7 +192,7 @@ class PCMVolumeTransformer(AudioSource):
         The audio source is opus encoded.
     """
 
-    def __init__(self, original):
+    def __init__(self, original, volume=1.0):
         if not isinstance(original, AudioSource):
             raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(original))
 
@@ -197,7 +200,7 @@ class PCMVolumeTransformer(AudioSource):
             raise ClientException('AudioSource must not be Opus encoded.')
 
         self.original = original
-        self._volume = 1.0
+        self.volume = volume
 
     @property
     def volume(self):
