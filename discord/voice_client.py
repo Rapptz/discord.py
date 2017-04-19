@@ -337,6 +337,10 @@ class VoiceClient:
         """Indicates if we're currently playing audio."""
         return self._player is not None and self._player.is_playing()
 
+    def is_paused(self):
+        """Indicates if we're playing audio, but if we're paused."""
+        return self._player is not None and self._player.is_paused()
+
     def stop(self):
         """Stops playing audio."""
         if self._player:

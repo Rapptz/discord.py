@@ -252,3 +252,6 @@ class AudioPlayer(threading.Thread):
 
     def is_playing(self):
         return self._resumed.is_set() and not self._end.is_set()
+
+    def is_paused(self):
+        return not self._end.is_set() and not self._resumed.is_set()
