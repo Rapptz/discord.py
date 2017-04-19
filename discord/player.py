@@ -92,7 +92,10 @@ class PCMAudio(AudioSource):
         self.stream = stream
 
     def read(self):
-        return self.stream.read(OpusEncoder.FRAME_SIZE)
+        ret = self.stream.read(OpusEncoder.FRAME_SIZE)
+        if len(ret) != OpusEncoder.FRAME_SIZE:
+            return b''
+        return ret
 
 class FFmpegPCMAudio(AudioSource):
     """An audio source from FFmpeg (or AVConv).
@@ -155,7 +158,10 @@ class FFmpegPCMAudio(AudioSource):
             raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(e)) from e
 
     def read(self):
-        return self._stdout.read(OpusEncoder.FRAME_SIZE)
+        ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
+        if len(ret) != OpusEncoder.FRAME_SIZE:
+            return b''
+        return ret
 
     def cleanup(self):
         proc = self._process
