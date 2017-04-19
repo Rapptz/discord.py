@@ -55,6 +55,9 @@ Voice
 .. autoclass:: FFmpegPCMAudio
     :members:
 
+.. autoclass:: PCMVolumeTransformer
+    :members:
+
 Opus Library
 ~~~~~~~~~~~~~
 

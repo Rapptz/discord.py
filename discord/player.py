@@ -26,13 +26,14 @@ DEALINGS IN THE SOFTWARE.
 
 import threading
 import subprocess
+import audioop
 import shlex
 import time
 
 from .errors import ClientException
 from .opus import Encoder as OpusEncoder
 
-__all__ = [ 'AudioSource', 'PCMAudio', 'FFmpegPCMAudio' ]
+__all__ = [ 'AudioSource', 'PCMAudio', 'FFmpegPCMAudio', 'PCMVolumeTransformer' ]
 
 class AudioSource:
     """Represents an audio stream.
@@ -169,6 +170,51 @@ class FFmpegPCMAudio(AudioSource):
         if proc.poll() is None:
             proc.communicate()
 
+class PCMVolumeTransformer(AudioSource):
+    """Transforms a previous :class:`AudioSource` to have volume controls.
+
+    This does not work on audio sources that have :meth:`AudioSource.is_opus`
+    set to ``True``.
+
+    Parameters
+    ------------
+    original: :class:`AudioSource`
+        The original AudioSource to transform.
+
+    Raises
+    -------
+    TypeError
+        Not an audio source.
+    ClientException
+        The audio source is opus encoded.
+    """
+
+    def __init__(self, original):
+        if not isinstance(original, AudioSource):
+            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(original))
+
+        if original.is_opus():
+            raise ClientException('AudioSource must not be Opus encoded.')
+
+        self.original = original
+        self._volume = 1.0
+
+    @property
+    def volume(self):
+        """Retrieves or sets the volume as a floating point percentage (e.g. 1.0 for 100%)."""
+        return self._volume
+
+    @volume.setter
+    def volume(self, value):
+        self._volume = max(value, 0.0)
+
+    def cleanup(self):
+        self.original.cleanup()
+
+    def read(self):
+        ret = self.original.read()
+        return audioop.mul(ret, 2, min(self._volume, 2.0))
+
 class AudioPlayer(threading.Thread):
     DELAY = OpusEncoder.FRAME_LENGTH / 1000.0
 
@@ -184,6 +230,7 @@ class AudioPlayer(threading.Thread):
         self._resumed.set() # we are not paused
         self._current_error = None
         self._connected = client._connected
+        self._lock = threading.Lock()
 
         if after is not None and not callable(after):
             raise TypeError('Expected a callable for the "after" parameter.')
@@ -191,7 +238,6 @@ class AudioPlayer(threading.Thread):
     def _do_run(self):
         self.loops = 0
         self._start = time.time()
-        is_opus = self.source.is_opus()
 
         # getattr lookup speed ups
         play_audio = self.client.send_audio_packet
@@ -217,7 +263,7 @@ class AudioPlayer(threading.Thread):
                 self.stop()
                 break
 
-            play_audio(data, encode=not is_opus)
+            play_audio(data, encode=not self.source.is_opus())
             next_time = self._start + self.DELAY * self.loops
             delay = max(0, self.DELAY + (next_time - time.time()))
             time.sleep(delay)
@@ -255,3 +301,9 @@ class AudioPlayer(threading.Thread):
 
     def is_paused(self):
         return not self._end.is_set() and not self._resumed.is_set()
+
+    def _set_source(self, source):
+        with self._lock:
+            self.pause()
+            self.source = source
+            self.resume()

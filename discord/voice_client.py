@@ -359,8 +359,21 @@ class VoiceClient:
 
     @property
     def source(self):
-        """Optional[:class:`AudioSource`]: The audio source being played, if playing."""
+        """Optional[:class:`AudioSource`]: The audio source being played, if playing.
+
+        This property can also be used to change the audio source currently being played.
+        """
         return self._player.source if self._player else None
+
+    @source.setter
+    def source(self, value):
+        if not isinstance(value, AudioSource):
+            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(value))
+
+        if self._player is None:
+            raise ValueError('Not playing anything.')
+
+        self._player._set_source(value)
 
     def send_audio_packet(self, data, *, encode=True):
         """Sends an audio packet composed of the data.
