@@ -353,6 +353,11 @@ class VoiceClient:
         if self._player:
             self._player.resume()
 
+    @property
+    def source(self):
+        """Optional[:class:`AudioSource`]: The audio source being played, if playing."""
+        return self._player.source if self._player else None
+
     def send_audio_packet(self, data, *, encode=True):
         """Sends an audio packet composed of the data.
 
