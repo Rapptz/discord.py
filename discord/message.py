@@ -520,7 +520,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: :class:`Emoji` or str
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, str]
             The emoji to react with.
 
         Raises
@@ -535,12 +535,14 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Emoji):
+        if isinstance(emoji, Reaction):
+            emoji = str(emoji.emoji)
+        elif isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
         elif isinstance(emoji, str):
             pass # this is okay
         else:
-            raise InvalidArgument('emoji argument must be a string or discord.Emoji')
+            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
         yield from self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
@@ -560,7 +562,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: :class:`Emoji` or str
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, str]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.
@@ -577,12 +579,14 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Emoji):
+        if isinstance(emoji, Reaction):
+            emoji = str(emoji.emoji)
+        elif isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
         elif isinstance(emoji, str):
             pass # this is okay
         else:
-            raise InvalidArgument('emoji argument must be a string or discord.Emoji')
+            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
         yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
 
