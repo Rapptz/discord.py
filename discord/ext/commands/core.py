@@ -155,7 +155,7 @@ class Command:
         signature = inspect.signature(callback)
         self.params = signature.parameters.copy()
         self.checks = kwargs.get('checks', [])
-        self.module = inspect.getmodule(callback)
+        self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None

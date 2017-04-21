@@ -602,26 +602,27 @@ class BotBase(GroupMixin):
         if lib is None:
             return
 
+        lib_name = lib.__name__
+
         # find all references to the module
 
         # remove the cogs registered from the module
         for cogname, cog in self.cogs.copy().items():
-            if inspect.getmodule(cog) is lib:
+            if cog.__module__.startswith(lib_name):
                 self.remove_cog(cogname)
 
         # first remove all the commands from the module
-        for command in self.all_commands.copy().values():
-            if command.module is lib:
-                command.module = None
-                if isinstance(command, GroupMixin):
-                    command.recursively_remove_all_commands()
-                self.remove_command(command.name)
+        for cmd in self.all_commands.copy().values():
+            if cmd.module.startswith(lib_name):
+                if isinstance(cmd, GroupMixin):
+                    cmd.recursively_remove_all_commands()
+                self.remove_command(cmd.name)
 
         # then remove all the listeners from the module
         for event_list in self.extra_events.copy().values():
             remove = []
             for index, event in enumerate(event_list):
-                if inspect.getmodule(event) is lib:
+                if event.__module__.startswith(lib_name):
                     remove.append(index)
 
             for index in reversed(remove):
