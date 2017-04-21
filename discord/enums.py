@@ -46,6 +46,7 @@ class MessageType(Enum):
     channel_name_change = 4
     channel_icon_change = 5
     pins_add            = 6
+    new_member          = 7
 
 class GuildRegion(Enum):
     us_west       = 'us-west'
