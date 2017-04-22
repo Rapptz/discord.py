@@ -56,10 +56,12 @@ class Shard:
             yield from self.ws.poll_event()
         except ResumeWebSocket as e:
             log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
-            self.ws = yield from DiscordWebSocket.from_client(self._client, resume=True,
-                                                                            shard_id=self.id,
-                                                                            session=self.ws.session_id,
-                                                                            sequence=self.ws.sequence)
+            coro = DiscordWebSocket.from_client(self._client, resume=True,
+                                                              shard_id=self.id,
+                                                              session=self.ws.session_id,
+                                                              sequence=self.ws.sequence)
+            self.ws = yield from asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+
     def get_future(self):
         if self._current.done():
             self._current = compat.create_task(self.poll(), loop=self.loop)
@@ -180,9 +182,10 @@ class AutoShardedClient(Client):
     @asyncio.coroutine
     def launch_shard(self, gateway, shard_id):
         try:
-            ws = yield from websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket)
+            ws = yield from asyncio.wait_for(websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket),
+                                             loop=self.loop, timeout=180.0)
         except Exception as e:
-            log.info('Failed to connect for shard_id: %s. Retrying...' % shard_id)
+            log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
             yield from asyncio.sleep(5.0, loop=self.loop)
             return (yield from self.launch_shard(gateway, shard_id))
 
@@ -193,9 +196,14 @@ class AutoShardedClient(Client):
         ws.shard_id = shard_id
         ws.shard_count = self.shard_count
 
-        # OP HELLO
-        yield from ws.poll_event()
-        yield from ws.identify()
+        try:
+            # OP HELLO
+            yield from asyncio.wait_for(ws.poll_event(), loop=self.loop, timeout=180.0)
+            yield from asyncio.wait_for(ws.identify(), loop=self.loop, timeout=180.0)
+        except asyncio.TimeoutError:
+            log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
+            yield from asyncio.sleep(5.0, loop=self.loop)
+            return (yield from self.launch_shard(gateway, shard_id))
 
         # keep reading the shard while others connect
         self.shards[shard_id] = ret = Shard(ws, self)

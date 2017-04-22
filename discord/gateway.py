@@ -220,7 +220,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         except websockets.exceptions.ConnectionClosed:
             # ws got closed so let's just do a regular IDENTIFY connect.
             log.info('RESUME failed (the websocket decided to close) for Shard ID %s. Retrying.', shard_id)
-            return (yield from cls.from_client(client))
+            return (yield from cls.from_client(client, shard_id=shard_id))
         else:
             return ws
 

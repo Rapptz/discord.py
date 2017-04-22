@@ -342,17 +342,18 @@ class Client:
 
     @asyncio.coroutine
     def _connect(self):
-        self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id)
-
+        coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
+        self.ws = yield from asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
         while True:
             try:
                 yield from self.ws.poll_event()
             except ResumeWebSocket as e:
                 log.info('Got a request to RESUME the websocket.')
-                self.ws = yield from DiscordWebSocket.from_client(self, shard_id=self.shard_id,
-                                                                        session=self.ws.session_id,
-                                                                        sequence=self.ws.sequence,
-                                                                        resume=True)
+                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id,
+                                                          session=self.ws.session_id,
+                                                          sequence=self.ws.sequence,
+                                                          resume=True)
+                self.ws = yield from asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     @asyncio.coroutine
     def connect(self, *, reconnect=True):
