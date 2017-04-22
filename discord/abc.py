@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import abc
+import copy
 import asyncio
 
 from collections import namedtuple
