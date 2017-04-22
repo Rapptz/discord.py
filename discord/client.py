@@ -329,7 +329,7 @@ class Client:
         """
 
         log.info('logging in using static token')
-        data = yield from self.http.static_login(token, bot=bot)
+        yield from self.http.static_login(token, bot=bot)
         self.connection.is_bot = bot
 
     @asyncio.coroutine

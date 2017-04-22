@@ -26,15 +26,13 @@ DEALINGS IN THE SOFTWARE.
 
 from .guild import Guild
 from .user import User, ClientUser
-from .game import Game
 from .emoji import Emoji, PartialEmoji
-from .reaction import Reaction
 from .message import Message
 from .relationship import Relationship
 from .channel import *
 from .member import Member
 from .role import Role
-from .enums import Status, ChannelType, try_enum
+from .enums import ChannelType, try_enum
 from .calls import GroupCall
 from . import utils, compat
 
@@ -350,7 +348,6 @@ class ConnectionState:
             log.warning('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
-        status = data.get('status')
         user = data['user']
         member_id = int(user['id'])
         member = guild.get_member(member_id)
