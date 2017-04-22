@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 
 from .permissions import Permissions
+from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time
