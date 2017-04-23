@@ -347,11 +347,13 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             return
 
         if op == self.INVALIDATE_SESSION:
-            state.sequence = None
-            state.session_id = None
             if data == True:
+                yield from asyncio.sleep(5.0, loop=self.loop)
                 yield from self.close()
                 raise ResumeWebSocket()
+
+            state.sequence = None
+            state.session_id = None
 
             yield from self.identify()
             return
