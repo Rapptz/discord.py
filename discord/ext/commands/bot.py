@@ -41,7 +41,7 @@ from .formatter import HelpFormatter
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent
     to being mentioned, e.g. ``@bot ``."""
-    return [bot.user.mention, '<@!%s>' % bot.user.id]
+    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
