@@ -157,3 +157,9 @@ class Context(discord.abc.Messageable):
     def me(self):
         """Similar to :attr:`Guild.me` except it may return the :class:`ClientUser` in private message contexts."""
         return self.guild.me if self.guild is not None else self.bot.user
+
+    @property
+    def voice_client(self):
+        """Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
+        g = self.guild
+        return g.voice_client if g else None
