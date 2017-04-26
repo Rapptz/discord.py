@@ -674,7 +674,9 @@ class ConnectionState:
             if int(data['user_id']) == self.user.id:
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
-                    voice.channel = guild.get_channel(channel_id)
+                    ch = guild.get_channel(channel_id)
+                    if ch is not None:
+                        voice.channel = ch
 
             member, before, after = guild._update_voice_state(data, channel_id)
             if after is not None:
