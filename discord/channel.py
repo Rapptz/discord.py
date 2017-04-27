@@ -110,6 +110,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """Returns a list of :class:`Member` that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
+    def is_nsfw(self):
+        """Checks if the channel is NSFW."""
+        n = self.name
+        return n == 'nsfw' if len(n) < 5 else n[:5] == 'nsfw-'
+
     @asyncio.coroutine
     def edit(self, **options):
         """|coro|
