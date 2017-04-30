@@ -113,7 +113,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
         n = self.name
-        return n == 'nsfw' if len(n) < 5 else n[:5] == 'nsfw-'
+        return n == 'nsfw' or n[:5] == 'nsfw-'
 
     @asyncio.coroutine
     def edit(self, **options):
