@@ -164,6 +164,9 @@ class ConnectionState:
     def emojis(self):
         return list(self._emojis.values())
 
+    def get_emoji(self, emoji_id):
+        return self._emojis.get(emoji_id)
+
     @property
     def private_channels(self):
         return list(self._private_channels.values())

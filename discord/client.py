@@ -532,6 +532,10 @@ class Client:
         """Returns a :class:`User` with the given ID. If not found, returns None."""
         return self.connection.get_user(id)
 
+    def get_emoji(self, id):
+        """Returns a :class:`Emoji` with the given ID. If not found, returns None."""
+        return self.connection.get_emoji(id)
+
     def get_all_channels(self):
         """A generator that retrieves every :class:`Channel` the client can 'access'.
 
