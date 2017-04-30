@@ -410,15 +410,20 @@ class HTTPClient:
 
     # Member management
 
-    def kick(self, user_id, guild_id):
+    def kick(self, user_id, guild_id, reason=None):
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
-        return self.request(r)
+        if reason:
+            return self.request(r, params={'reason': reason })
+        return self.request(r, params=params)
 
-    def ban(self, user_id, guild_id, delete_message_days=1):
+    def ban(self, user_id, guild_id, delete_message_days=1, reason=None):
         r = Route('PUT', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         params = {
-            'delete-message-days': delete_message_days
+            'delete-message-days': delete_message_days,
         }
+        if reason:
+            params['reason'] = reason
+
         return self.request(r, params=params)
 
     def unban(self, user_id, guild_id):
@@ -556,6 +561,20 @@ class HTTPClient:
         }
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload)
+
+    def get_audit_logs(self, guild_id, limit=100, before=None, after=None, user_id=None, action_type=None):
+        params = { 'limit': limit }
+        if before:
+            params['before'] = before
+        if after:
+            params['after'] = after
+        if user_id:
+            params['user_id'] = user_id
+        if action_type:
+            params['action_type'] = action_type
+
+        r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
+        return self.request(r, params=params)
 
     # Invite management
 

@@ -709,6 +709,400 @@ All enumerations are subclasses of `enum`_.
 
         You have sent a friend request to this user.
 
+
+.. class:: AuditLogAction
+
+    Represents the type of action being done for a :class:`AuditLogEntry`\,
+    which is retrievable via :meth:`Guild.audit_log`.
+
+    .. attribute:: guild_update
+
+        The guild has updated. Things that trigger this include:
+
+        - Changing the guild vanity URL
+        - Changing the guild invite splash
+        - Changing the guild AFK channel or timeout
+        - Changing the guild voice server region
+        - Changing the guild icon
+        - Changing the guild moderation settings
+        - Changing things related to the guild widget
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Guild`.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.afk_channel`
+        - :attr:`~AuditLogDiff.afk_timeout`
+        - :attr:`~AuditLogDiff.default_message_notifications`
+        - :attr:`~AuditLogDiff.explicit_content_filter`
+        - :attr:`~AuditLogDiff.mfa_level`
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.owner`
+        - :attr:`~AuditLogDiff.splash`
+        - :attr:`~AuditLogDiff.vanity_url_code`
+
+    .. attribute:: channel_create
+
+        A new channel was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either a :class:`abc.GuildChannel` or :class:`Object` with an ID.
+
+        A more filled out object in the :class:`Object` case can be found
+        by using :attr:`~AuditLogEntry.after`.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.overwrites`
+
+    .. attribute:: channel_update
+
+        A channel was updated. Things that trigger this include:
+
+        - The channel name or topic was changed
+        - The channel bitrate was changed
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`abc.GuildChannel` or :class:`Object` with an ID.
+
+        A more filled out object in the :class:`Object` case can be found
+        by using :attr:`~AuditLogEntry.after` or :attr:`~AuditLogEntry.before`.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.position`
+        - :attr:`~AuditLogDiff.overwrites`
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.bitrate`
+
+    .. attribute:: channel_delete
+
+        A channel was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        an :class:`Object` with an ID.
+
+        A more filled out object can be found by using the
+        :attr:`~AuditLogEntry.before` object.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.overwrites`
+
+    .. attribute:: overwrite_create
+
+        A channel permission overwrite was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`abc.GuildChannel` or :class:`Object` with an ID.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        either a :class:`Role` or :class:`Member`. If the object is not found
+        then it is a :class:`Object` with an ID being filled, a name, and a
+        ``type`` attribute set to either ``'role'`` or ``'member'`` to help
+        dictate what type of ID it is.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.deny`
+        - :attr:`~AuditLogDiff.allow`
+        - :attr:`~AuditLogDiff.id`
+        - :attr:`~AuditLogDiff.type`
+
+    .. attribute:: overwrite_update
+
+        A channel permission overwrite was changed, this is typically
+        when the permission values change.
+
+        See :attr:`overwrite_create` for more information on how the
+        :attr:`~AuditLogEntry.target` and :attr:`~AuditLogEntry.extra` fields
+        are set.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.deny`
+        - :attr:`~AuditLogDiff.allow`
+        - :attr:`~AuditLogDiff.id`
+        - :attr:`~AuditLogDiff.type`
+
+    .. attribute:: overwrite_delete
+
+        A channel permission overwrite was deleted.
+
+        See :attr:`overwrite_create` for more information on how the
+        :attr:`~AuditLogEntry.target` and :attr:`~AuditLogEntry.extra` fields
+        are set.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.deny`
+        - :attr:`~AuditLogDiff.allow`
+        - :attr:`~AuditLogDiff.id`
+        - :attr:`~AuditLogDiff.type`
+
+    .. attribute:: kick
+
+        A member was kicked.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`User` who got kicked.
+
+        When this is the action, :attr:`~AuditLogEntry.changes` is empty.
+
+    .. attribute:: member_prune
+
+        A member prune was triggered.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        set to `None`.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``delete_members_days``: An integer specifying how far the prune was.
+        - ``members_removed``: An integer specifying how many members were removed.
+
+        When this is the action, :attr:`~AuditLogEntry.changes` is empty.
+
+    .. attribute:: ban
+
+        A member was banned.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`User` who got banned.
+
+        When this is the action, :attr:`~AuditLogEntry.changes` is empty.
+
+    .. attribute:: unban
+
+        A member was unbanned.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`User` who got unbanned.
+
+        When this is the action, :attr:`~AuditLogEntry.changes` is empty.
+
+    .. attribute:: member_update
+
+        A member has updated. This triggers in the following situations:
+
+        - A nickname was changed
+        - They were server muted or deafened (or it was undo'd)
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who got updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.nick`
+        - :attr:`~AuditLogDiff.mute`
+        - :attr:`~AuditLogDiff.deaf`
+
+    .. attribute:: member_role_update
+
+        A member's role has been updated. This triggers when a member
+        either gains a role or losses a role.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who got the role.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.role`
+
+    .. attribute:: role_create
+
+        A new role was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Role` or a :class:`Object` with the ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.colour`
+        - :attr:`~AuditLogDiff.mentionable`
+        - :attr:`~AuditLogDiff.hoist`
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.permissions`
+
+    .. attribute:: role_update
+
+        A role was updated. This triggers in the following situations:
+
+        - The name has changed
+        - The permissions have changed
+        - The colour has changed
+        - Its hoist/mentionable state has changed
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Role` or a :class:`Object` with the ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.colour`
+        - :attr:`~AuditLogDiff.mentionable`
+        - :attr:`~AuditLogDiff.hoist`
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.permissions`
+
+    .. attribute:: role_delete
+
+        A role was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Role` or a :class:`Object` with the ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.colour`
+        - :attr:`~AuditLogDiff.mentionable`
+        - :attr:`~AuditLogDiff.hoist`
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.permissions`
+
+    .. attribute:: invite_create
+
+        An invite was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Invite` that was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.max_age`
+        - :attr:`~AuditLogDiff.code`
+        - :attr:`~AuditLogDiff.temporary`
+        - :attr:`~AuditLogDiff.inviter`
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.uses`
+        - :attr:`~AuditLogDiff.max_uses`
+
+    .. attribute:: invite_update
+
+        An invite was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Invite` that was updated.
+
+    .. attribute:: invite_delete
+
+        An invite was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Invite` that was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.max_age`
+        - :attr:`~AuditLogDiff.code`
+        - :attr:`~AuditLogDiff.temporary`
+        - :attr:`~AuditLogDiff.inviter`
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.uses`
+        - :attr:`~AuditLogDiff.max_uses`
+
+    .. attribute:: webhook_create
+
+        A webhook was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the webhook ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.type` (always set to ``1`` if so)
+
+    .. attribute:: webhook_update
+
+        A webhook was updated. This trigger in the following situations:
+
+        - The webhook name changed
+        - The webhook channel changed
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the webhook ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.name`
+
+    .. attribute:: webhook_delete
+
+        A webhook was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the webhook ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.type` (always set to ``1`` if so)
+
+    .. attribute:: emoji_create
+
+        An emoji was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Emoji` or :class:`Object` with the emoji ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+
+    .. attribute:: emoji_update
+
+        An emoji was updated. This triggers when the name has changed.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Emoji` or :class:`Object` with the emoji ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+
+    .. attribute:: emoji_delete
+
+        An emoji was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the emoji ID.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+
+
+.. class:: AuditLogActionCategory
+
+    Represents the category that the :class:`AuditLogAction` belongs to.
+
+    This can be retrieved via :attr:`AuditLogEntry.category`.
+
+    .. attribute:: create
+
+        The action is the creation of something.
+
+    .. attribute:: delete
+
+        The action is the deletion of something.
+
+    .. attribute:: update
+
+        The action is the update of something.
+
+
+
 Async Iterator
 ----------------
 
@@ -784,6 +1178,297 @@ Certain utilities make working with async iterators easier, detailed below.
 
         :param predicate: The predicate to call on every element. Could be a coroutine.
         :return: An async iterator.
+
+
+Audit Log Data
+----------------
+
+Working with :meth:`Guild.audit_logs` is a complicated process with a lot of machinery
+involved. The library attempts to make it easy to use and friendly. In order to accomplish
+this goal, it must make use of a couple of data classes that aid in this goal.
+
+.. autoclass:: AuditLogEntry
+    :members:
+
+.. class:: AuditLogChanges
+
+    An audit log change set.
+
+    .. attribute:: before
+
+        The old value. The attribute has the type of :class:`AuditLogDiff`.
+
+        Depending on the :class:`AuditLogActionCategory` retrieved by
+        :attr:`~AuditLogEntry.category`\, the data retrieved by this
+        attribute differs:
+
+        +----------------------------------------+---------------------------------------------------+
+        |                Category                |                    Description                    |
+        +----------------------------------------+---------------------------------------------------+
+        | :attr:`~AuditLogActionCategory.create` | All attributes are set to ``None``.               |
+        +----------------------------------------+---------------------------------------------------+
+        | :attr:`~AuditLogActionCategory.delete` | All attributes are set the value before deletion. |
+        +----------------------------------------+---------------------------------------------------+
+        | :attr:`~AuditLogActionCategory.update` | All attributes are set the value before updating. |
+        +----------------------------------------+---------------------------------------------------+
+        | ``None``                               | No attributes are set.                            |
+        +----------------------------------------+---------------------------------------------------+
+
+    .. attribute:: after
+
+        The new value. The attribute has the type of :class:`AuditLogDiff`.
+
+        Depending on the :class:`AuditLogActionCategory` retrieved by
+        :attr:`~AuditLogEntry.category`\, the data retrieved by this
+        attribute differs:
+
+        +----------------------------------------+--------------------------------------------------+
+        |                Category                |                   Description                    |
+        +----------------------------------------+--------------------------------------------------+
+        | :attr:`~AuditLogActionCategory.create` | All attributes are set to the created value      |
+        +----------------------------------------+--------------------------------------------------+
+        | :attr:`~AuditLogActionCategory.delete` | All attributes are set to ``None``               |
+        +----------------------------------------+--------------------------------------------------+
+        | :attr:`~AuditLogActionCategory.update` | All attributes are set the value after updating. |
+        +----------------------------------------+--------------------------------------------------+
+        | ``None``                               | No attributes are set.                           |
+        +----------------------------------------+--------------------------------------------------+
+
+.. class:: AuditLogDiff
+
+    Represents an audit log "change" object. A change object has dynamic
+    attributes that depend on the type of action being done. Certain actions
+    map to certain attributes being set.
+
+    Note that accessing an attribute that does not match the specified action
+    will lead to an attribute error.
+
+    To get a list of attributes that have been set, you can iterate over
+    them. To see a list of all possible attributes that could be set based
+    on the action being done, check the documentation for :class:`AuditLogAction`,
+    otherwise check the documentation below for all attributes that are possible.
+
+    .. describe:: iter(diff)
+
+        Return an iterator over (attribute, value) tuple of this diff.
+
+    .. attribute:: name
+
+        *str* – A name of something.
+
+    .. attribute:: icon
+
+        *str* – A guild's icon hash. See also :attr:`Guild.icon`.
+
+    .. attribute:: splash
+
+        *str* – The guild's invite splash hash. See also :attr:`Guild.splash`.
+
+    .. attribute:: owner
+
+        *Union[:class:`Member`, :class:`User`]`* – The guild's owner. See also :attr:`Guild.owner`
+
+    .. attribute:: region
+
+        *:class:`GuildRegion`* – The guild's voice region. See also :attr:`Guild.region`.
+
+    .. attribute:: afk_channel
+
+        *Union[:class:`VoiceChannel`, :class:`Object`]* – The guild's AFK channel.
+
+        If this could not be found, then it falls back to a :class:`Object`
+        with the ID being set.
+
+        See :attr:`Guild.afk_channel`.
+
+    .. attribute:: afk_timeout
+
+        *int* – The guild's AFK timeout. See :attr:`Guild.afk_timeout`.
+
+    .. attribute:: mfa_level
+
+        *int* - The guild's MFA level. See :attr:`Guild.mfa_level`.
+
+    .. attribute:: widget_enabled
+
+        *bool* – The guild's widget has been enabled or disabled.
+
+    .. attribute:: widget_channel
+
+        *Union[:class:`TextChannel`, :class:`Object`]* – The widget's channel.
+
+        If this could not be found then it falls back to a :class:`Object`
+        with the ID being set.
+
+    .. attribute:: verification_level
+
+        *:class:`VerificationLevel`* – The guild's verification level.
+
+        See also :attr:`Guild.verification_level`.
+
+    .. attribute:: explicit_content_filter
+
+        *:class:`ContentFilter`* – The guild's content filter.
+
+        See also :attr:`Guild.explicit_content_filter`.
+
+    .. attribute:: default_message_notifications
+
+        *int* – The guild's default message notification setting.
+
+    .. attribute:: vanity_url_code
+
+        *str* – The guild's vanity URL.
+
+    .. attribute:: position
+
+        *int* – The position of a :class:`Role` or :class:`abc.GuildChannel`.
+
+    .. attribute:: type
+
+        *Union[int, str]* – The type of channel or channel permission overwrite.
+
+        If the type is an ``int``, then it is a type of channel which can be either
+        ``0`` to indicate a text channel or ``1`` to indicate a voice channel.
+
+        If the type is a ``str``, then it is a type of permission overwrite which
+        can be either ``'role'`` or ``'member'``.
+
+    .. attribute:: topic
+
+        *str* – The topic of a :class:`TextChannel`.
+
+        See also :attr:`TextChannel.topic`.
+
+    .. attribute:: bitrate
+
+        *int* – The bitrate of a :class:`VoiceChannel`.
+
+        See also :attr:`VoiceChannel.bitrate`.
+
+    .. attribute:: overwrites
+
+        *List[Tuple[target, :class:`PermissionOverwrite`]]* – A list of
+        permission overwrite tuples that represents a target and a
+        :class:`PermissionOverwrite` for said target.
+
+        The first element is the object being targeted, which can either
+        be a :class:`Member` or :class:`User` or :class:`Role`. If this object
+        is not found then it is a :class:`Object` with an ID being filled and
+        a ``type`` attribute set to either ``'role'`` or ``'member'`` to help
+        decide what type of ID it is.
+
+    .. attribute:: role
+
+        *Union[:class:`Role`, :class:`Object`]* – A role being added or removed
+        from a member.
+
+        If the role is not found then it is a :class:`Object` with the ID being
+        filled in.
+
+    .. attribute:: nick
+
+        *Optional[str]* – The nickname of a member.
+
+        See also :attr:`Member.nick`
+
+    .. attribute:: deaf
+
+        *bool* – Whether the member is being server deafened.
+
+        See also :attr:`VoiceState.deaf`.
+
+    .. attribute:: mute
+
+        *bool* – Whether the member is being server muted.
+
+        See also :attr:`VoiceState.mute`.
+
+    .. attribute:: permissions
+
+        *:class:`Permissions`* – The permissions of a role.
+
+        See also :attr:`Role.permissions`.
+
+    .. attribute:: colour
+                   color
+
+        *:class:`Colour`* – The colour of a role.
+
+        See also :attr:`Role.colour`
+
+    .. attribute:: hoist
+
+        *bool* – Whether the role is being hoisted or not.
+
+        See also :attr:`Role.hoist`
+
+    .. attribute:: mentionable
+
+        *bool* – Whether the role is mentionable or not.
+
+        See also :attr:`Role.mentionable`
+
+    .. attribute:: code
+
+        *str* – The invite's code.
+
+        See also :attr:`Invite.code`
+
+    .. attribute:: channel
+
+        *Union[:class:`abc.GuildChannel`, :class:`Object`]* – A guild channel.
+
+        If the channel is not found then it is a :class:`Object` with the ID
+        being set. In some cases the channel name is also set.
+
+    .. attribute:: inviter
+
+        *:class:`User`* – The user who created the invite.
+
+        See also :attr:`Invite.inviter`.
+
+    .. attribute:: max_uses
+
+        *int* – The invite's max uses.
+
+        See also :attr:`Invite.max_uses`.
+
+    .. attribute:: uses
+
+        *int* – The invite's current uses.
+
+        See also :attr:`Invite.uses`.
+
+    .. attribute:: max_age
+
+        *int* – The invite's max age in seconds.
+
+        See also :attr:`Invite.max_age`.
+
+    .. attribute:: temporary
+
+        *bool* – If the invite is a temporary invite.
+
+        See also :attr:`Invite.temporary`.
+
+    .. attribute:: allow
+                   deny
+
+        *:class:`Permissions`* – The permissions being allowed or denied.
+
+    .. attribute:: id
+
+        *int* – The ID of the object being changed.
+
+    .. attribute:: avatar
+
+        *str* – The avatar hash of a member.
+
+        See also :attr:`User.avatar`.
+
+.. this is currently missing the following keys: reason and application_id
+   I'm not sure how to about porting these
 
 .. _discord_api_data:
 

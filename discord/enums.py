@@ -27,7 +27,8 @@ DEALINGS IN THE SOFTWARE.
 from enum import Enum
 
 __all__ = ['ChannelType', 'MessageType', 'GuildRegion', 'VerificationLevel',
-           'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType' ]
+           'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
+           'AuditLogAction', 'AuditLogActionCategory', ]
 
 class ChannelType(Enum):
     text    = 0
@@ -113,6 +114,90 @@ class RelationshipType(Enum):
     blocked          = 2
     incoming_request = 3
     outgoing_request = 4
+
+class AuditLogActionCategory(Enum):
+    create = 1
+    delete = 2
+    update = 3
+
+class AuditLogAction(Enum):
+    guild_update             = 1
+    channel_create           = 10
+    channel_update           = 11
+    channel_delete           = 12
+    overwrite_create         = 13
+    overwrite_update         = 14
+    overwrite_delete         = 15
+    kick                     = 20
+    member_prune             = 21
+    ban                      = 22
+    unban                    = 23
+    member_update            = 24
+    member_role_update       = 25
+    role_create              = 30
+    role_update              = 31
+    role_delete              = 32
+    invite_create            = 40
+    invite_update            = 41
+    invite_delete            = 42
+    webhook_create           = 50
+    webhook_update           = 51
+    webhook_delete           = 52
+    emoji_create             = 60
+    emoji_update             = 61
+    emoji_delete             = 62
+
+    @property
+    def category(self):
+        lookup = {
+            AuditLogAction.guild_update:       AuditLogActionCategory.update,
+            AuditLogAction.channel_create:     AuditLogActionCategory.create,
+            AuditLogAction.channel_update:     AuditLogActionCategory.update,
+            AuditLogAction.channel_delete:     AuditLogActionCategory.delete,
+            AuditLogAction.overwrite_create:   AuditLogActionCategory.create,
+            AuditLogAction.overwrite_update:   AuditLogActionCategory.update,
+            AuditLogAction.overwrite_delete:   AuditLogActionCategory.delete,
+            AuditLogAction.kick:               None,
+            AuditLogAction.member_prune:       None,
+            AuditLogAction.ban:                None,
+            AuditLogAction.unban:              None,
+            AuditLogAction.member_update:      AuditLogActionCategory.update,
+            AuditLogAction.member_role_update: AuditLogActionCategory.update,
+            AuditLogAction.role_create:        AuditLogActionCategory.create,
+            AuditLogAction.role_update:        AuditLogActionCategory.update,
+            AuditLogAction.role_delete:        AuditLogActionCategory.delete,
+            AuditLogAction.invite_create:      AuditLogActionCategory.create,
+            AuditLogAction.invite_update:      AuditLogActionCategory.update,
+            AuditLogAction.invite_delete:      AuditLogActionCategory.delete,
+            AuditLogAction.webhook_create:     AuditLogActionCategory.create,
+            AuditLogAction.webhook_update:     AuditLogActionCategory.update,
+            AuditLogAction.webhook_delete:     AuditLogActionCategory.delete,
+            AuditLogAction.emoji_create:       AuditLogActionCategory.create,
+            AuditLogAction.emoji_update:       AuditLogActionCategory.update,
+            AuditLogAction.emoji_delete:       AuditLogActionCategory.delete,
+        }
+        return lookup[self]
+
+    @property
+    def target_type(self):
+        v = self.value
+        if v == -1:
+            return 'all'
+        elif v < 10:
+            return 'guild'
+        elif v < 20:
+            return 'channel'
+        elif v < 30:
+            return 'user'
+        elif v < 40:
+            return 'role'
+        elif v < 50:
+            return 'invite'
+        elif v < 60:
+            return 'webhook'
+        elif v < 70:
+            return 'emoji'
+
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

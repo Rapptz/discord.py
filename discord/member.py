@@ -357,12 +357,12 @@ class Member(discord.abc.Messageable):
         yield from self.guild.unban(self)
 
     @asyncio.coroutine
-    def kick(self):
+    def kick(self, *, reason=None):
         """|coro|
 
         Kicks this member. Equivalent to :meth:`Guild.kick`
         """
-        yield from self.guild.kick(self)
+        yield from self.guild.kick(self, reason=reason)
 
     @asyncio.coroutine
     def edit(self, **fields):
