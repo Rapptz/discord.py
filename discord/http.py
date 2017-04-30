@@ -531,6 +531,13 @@ class HTTPClient:
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
+    def get_vanity_code(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
+
+    def change_vanity_code(self, guild_id, code):
+        payload = { 'code': code }
+        return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload)
+
     def prune_members(self, guild_id, days):
         params = {
             'days': days

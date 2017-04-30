@@ -1003,6 +1003,61 @@ class Guild(Hashable):
         """
         yield from self._state.http.unban(user.id, self.id)
 
+    @asyncio.coroutine
+    def vanity_invite(self):
+        """|coro|
+
+        Returns the guild's special vanity invite.
+
+        The guild must be partnered, i.e. have 'VANITY_URL' in
+        :attr:`~Guild.features`.
+
+        You must have :attr:`Permissions.manage_guild` to use this as well.
+
+        Returns
+        --------
+        :class:`Invite`
+            The special vanity invite.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to get this.
+        HTTPException
+            Retrieving the vanity invite failed.
+        """
+
+        # we start with { code: abc }
+        payload = yield from self._state.http.get_vanity_code(self.id)
+        payload['guild'] = self
+        payload['channel'] = self.default_channel
+        payload['revoked'] = False
+        payload['temporary'] = False
+        payload['max_uses'] = 0
+        payload['max_age'] = 0
+        return Invite(state=self._state, data=payload)
+
+    @asyncio.coroutine
+    def change_vanity_invite(self, new_code):
+        """|coro|
+
+        Changes the guild's special vanity invite.
+
+        The guild must be partnered, i.e. have 'VANITY_URL' in
+        :attr:`~Guild.features`.
+
+        You must have :attr:`Permissions.manage_guild` to use this as well.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to set this.
+        HTTPException
+            Setting the vanity invite failed.
+        """
+
+        yield from self._state.http.change_vanity_code(self.id, new_code)
+
     def ack(self):
         """|coro|
 

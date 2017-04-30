@@ -1320,6 +1320,8 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
         *str* – The guild's vanity URL.
 
+        See also :meth:`Guild.vanity_invite` and :meth:`Guild.change_vanity_invite`.
+
     .. attribute:: position
 
         *int* – The position of a :class:`Role` or :class:`abc.GuildChannel`.
