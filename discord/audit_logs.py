@@ -172,7 +172,7 @@ class AuditLogChanges:
 class AuditLogEntry:
     """Represents an Audit Log entry.
 
-    You retrieve these via :meth:`Guild.audit_log`.
+    You retrieve these via :meth:`Guild.audit_logs`.
 
     Attributes
     -----------

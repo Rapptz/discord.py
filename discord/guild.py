@@ -1026,7 +1026,7 @@ class Guild(Hashable):
     def audit_logs(self, *, limit=100, before=None, after=None, reverse=None, user=None, action=None):
         """Return an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
-        You must have :attr:`Permissions.view_audit_log` permission to use this.
+        You must have :attr:`Permissions.view_audit_logs` permission to use this.
 
         Parameters
         -----------
