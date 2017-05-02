@@ -1122,6 +1122,12 @@ def is_owner():
 
     return check(predicate)
 
+def is_nsfw():
+    """A :func:`check` that checks if the channel is a NSFW channel."""
+    def pred(ctx):
+        return isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw()
+    return check(pred)
+
 def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`Command`
     or its subclasses.
