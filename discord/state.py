@@ -61,6 +61,7 @@ class ConnectionState:
         self.syncer = syncer
         self.is_bot = None
         self.shard_count = None
+        self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
         self._listeners = []
         self.clear()
@@ -225,35 +226,43 @@ class ConnectionState:
 
     @asyncio.coroutine
     def _delay_ready(self):
-        launch = self._ready_state.launch
-
-        # only real bots wait for GUILD_CREATE streaming
-        if self.is_bot:
-            while not launch.is_set():
-                # this snippet of code is basically waiting 2 seconds
-                # until the last GUILD_CREATE was sent
-                launch.set()
-                yield from asyncio.sleep(2, loop=self.loop)
-
-        guilds = self._ready_state.guilds
-        if self._fetch_offline:
-            yield from self.request_offline_members(guilds)
-
-        # remove the state
         try:
-            del self._ready_state
-        except AttributeError:
-            pass # already been deleted somehow
+            launch = self._ready_state.launch
 
-        # call GUILD_SYNC after we're done chunking
-        if not self.is_bot:
-            log.info('Requesting GUILD_SYNC for %s guilds' % len(self.guilds))
-            yield from self.syncer([s.id for s in self.guilds])
+            # only real bots wait for GUILD_CREATE streaming
+            if self.is_bot:
+                while not launch.is_set():
+                    # this snippet of code is basically waiting 2 seconds
+                    # until the last GUILD_CREATE was sent
+                    launch.set()
+                    yield from asyncio.sleep(2, loop=self.loop)
 
-        # dispatch the event
-        self.dispatch('ready')
+            guilds = self._ready_state.guilds
+            if self._fetch_offline:
+                yield from self.request_offline_members(guilds)
+
+            # remove the state
+            try:
+                del self._ready_state
+            except AttributeError:
+                pass # already been deleted somehow
+
+            # call GUILD_SYNC after we're done chunking
+            if not self.is_bot:
+                log.info('Requesting GUILD_SYNC for %s guilds' % len(self.guilds))
+                yield from self.syncer([s.id for s in self.guilds])
+        except asyncio.CancelledError:
+            pass
+        else:
+            # dispatch the event
+            self.dispatch('ready')
+        finally:
+            self._ready_task = None
 
     def parse_ready(self, data):
+        if self._ready_task is not None:
+            self._ready_task.cancel()
+
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
         self.clear()
         self.user = ClientUser(state=self, data=data['user'])
@@ -277,7 +286,7 @@ class ConnectionState:
             self._add_private_channel(factory(me=self.user, data=pm, state=self))
 
         self.dispatch('connect')
-        compat.create_task(self._delay_ready(), loop=self.loop)
+        self._ready_task = compat.create_task(self._delay_ready(), loop=self.loop)
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
