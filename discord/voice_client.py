@@ -94,6 +94,7 @@ class VoiceClient:
         self.main_ws = None
         self.timeout = timeout
         self.ws = None
+        self.socket = None
         self.loop = state.loop
         self._state = state
         # this will be used in the AudioPlayer thread
@@ -174,6 +175,13 @@ class VoiceClient:
 
         self.endpoint = endpoint.replace(':80', '')
         self.endpoint_ip = socket.gethostbyname(self.endpoint)
+
+        if self.socket:
+            try:
+                self.socket.close()
+            except:
+                pass
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
 
@@ -254,7 +262,8 @@ class VoiceClient:
             yield from self.ws.close()
             yield from self.terminate_handshake(remove=True)
         finally:
-            self.socket.close()
+            if self.socket:
+                self.socket.close()
 
     @asyncio.coroutine
     def move_to(self, channel):
