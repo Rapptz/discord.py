@@ -1082,6 +1082,21 @@ All enumerations are subclasses of `enum`_.
 
         - :attr:`~AuditLogDiff.name`
 
+    .. attribute:: message_delete
+
+        A message was deleted by a moderator. Note that this
+        only triggers if the message was deleted by either bulk delete
+        or deletion by someone other than the author.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who had their message deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``count``: An integer specifying how many messages were deleted.
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message got deleted.
+
 
 .. class:: AuditLogActionCategory
 

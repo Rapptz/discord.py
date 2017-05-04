@@ -213,6 +213,13 @@ class AuditLogEntry:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
                 self.extra = type('_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()})()
+            elif self.action is enums.AuditLogAction.message_delete:
+                channel_id = int(self.extra['channel_id'])
+                elems = {
+                    'count': int(self.extra['count']),
+                    'channel': self.guild.get_channel(channel_id) or discord.Object(id=channel_id)
+                }
+                self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
@@ -317,3 +324,6 @@ class AuditLogEntry:
 
     def _convert_target_emoji(self, target_id):
         return self._state.get_emoji(target_id) or Object(id=target_id)
+
+    def _convert_target_message(self, target_id):
+        return self._get_member(target_id)

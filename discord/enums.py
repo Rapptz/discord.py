@@ -146,6 +146,7 @@ class AuditLogAction(Enum):
     emoji_create             = 60
     emoji_update             = 61
     emoji_delete             = 62
+    message_delete           = 72
 
     @property
     def category(self):
@@ -175,6 +176,7 @@ class AuditLogAction(Enum):
             AuditLogAction.emoji_create:       AuditLogActionCategory.create,
             AuditLogAction.emoji_update:       AuditLogActionCategory.update,
             AuditLogAction.emoji_delete:       AuditLogActionCategory.delete,
+            AuditLogAction.message_delete:     AuditLogActionCategory.delete,
         }
         return lookup[self]
 
@@ -197,7 +199,8 @@ class AuditLogAction(Enum):
             return 'webhook'
         elif v < 70:
             return 'emoji'
-
+        elif v < 80:
+            return 'message'
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
