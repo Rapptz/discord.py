@@ -210,7 +210,7 @@ class Client:
                 pass
 
     def dispatch(self, event, *args, **kwargs):
-        log.debug('Dispatching event {}'.format(event))
+        log.debug('Dispatching event %s', event)
         method = 'on_' + event
         handler = 'handle_' + event
 

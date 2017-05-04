@@ -285,18 +285,18 @@ class Message:
         """
 
         transformations = {
-            re.escape('<#{0.id}>'.format(channel)): '#' + channel.name
+            re.escape('<#%s>' % channel.id): '#' + channel.name
             for channel in self.channel_mentions
         }
 
         mention_transforms = {
-            re.escape('<@{0.id}>'.format(member)): '@' + member.display_name
+            re.escape('<@%s>' % member.id): '@' + member.display_name
             for member in self.mentions
         }
 
         # add the <@!user_id> cases as well..
         second_mention_transforms = {
-            re.escape('<@!{0.id}>'.format(member)): '@' + member.display_name
+            re.escape('<@!%s>' % member.id): '@' + member.display_name
             for member in self.mentions
         }
 
@@ -305,7 +305,7 @@ class Message:
 
         if self.guild is not None:
             role_transforms = {
-                re.escape('<@&{0.id}>'.format(role)): '@' + role.name
+                re.escape('<@&%s>' % role.id): '@' + role.name
                 for role in self.role_mentions
             }
             transformations.update(role_transforms)

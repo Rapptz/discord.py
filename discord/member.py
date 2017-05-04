@@ -249,8 +249,8 @@ class Member(discord.abc.Messageable):
     def mention(self):
         """Returns a string that mentions the member."""
         if self.nick:
-            return '<@!{}>'.format(self.id)
-        return '<@{}>'.format(self.id)
+            return '<@!%s>' % self.id
+        return '<@%s>' % self.id
 
     @property
     def display_name(self):

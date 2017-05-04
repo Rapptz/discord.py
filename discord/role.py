@@ -148,7 +148,7 @@ class Role(Hashable):
     @property
     def mention(self):
         """Returns a string that allows you to mention a role."""
-        return '<@&{}>'.format(self.id)
+        return '<@&%s>' % self.id
 
     @property
     def members(self):

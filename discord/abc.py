@@ -194,7 +194,7 @@ class GuildChannel:
     @property
     def mention(self):
         """str : The string that allows you to mention the channel."""
-        return '<#{0.id}>'.format(self)
+        return '<#%s>' % self.id
 
     @property
     def created_at(self):
