@@ -129,9 +129,9 @@ class Client:
 
     @asyncio.coroutine
     def _chunker(self, guild):
-        if hasattr(guild, 'id'):
+        try:
             guild_id = guild.id
-        else:
+        except AttributeError:
             guild_id = [s.id for s in guild]
 
         payload = {
