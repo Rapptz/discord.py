@@ -386,13 +386,14 @@ class ConnectionState:
             channel = guild.get_channel(channel_id)
             if channel is not None:
                 guild._remove_channel(channel)
-                self.dispatch('channel_delete', channel)
+                self.dispatch('guild_channel_delete', channel)
         else:
             # the reason we're doing this is so it's also removed from the
             # private channel by user cache as well
             channel = self._get_private_channel(channel_id)
             if channel is not None:
                 self._remove_private_channel(channel)
+                self.dispatch('private_channel_delete', channel)
 
     def parse_channel_update(self, data):
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -401,7 +402,7 @@ class ConnectionState:
             channel = self._get_private_channel(channel_id)
             old_channel = copy.copy(channel)
             channel._update_group(data)
-            self.dispatch('channel_update', old_channel, channel)
+            self.dispatch('private_channel_update', old_channel, channel)
             return
 
         guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -411,7 +412,7 @@ class ConnectionState:
             if channel is not None:
                 old_channel = copy.copy(channel)
                 channel._update(guild, data)
-                self.dispatch('channel_update', old_channel, channel)
+                self.dispatch('guild_channel_update', old_channel, channel)
             else:
                 log.warning('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
         else:
@@ -423,17 +424,18 @@ class ConnectionState:
         if ch_type in (ChannelType.group, ChannelType.private):
             channel = factory(me=self.user, data=data, state=self)
             self._add_private_channel(channel)
+            self.dispatch('private_channel_create', channel)
         else:
             guild_id = utils._get_as_snowflake(data, 'guild_id')
             guild = self._get_guild(guild_id)
             if guild is not None:
                 channel = factory(guild=guild, state=self, data=data)
                 guild._add_channel(channel)
+                self.dispatch('guild_channel_create', channel)
             else:
                 log.warning('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
                 return
 
-        self.dispatch('channel_create', channel)
 
     def parse_channel_pins_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
@@ -503,7 +505,7 @@ class ConnectionState:
 
         before_emojis = guild.emojis
         guild.emojis = tuple(map(lambda d: self.store_emoji(guild, d), data['emojis']))
-        self.dispatch('guild_emojis_update', before_emojis, guild.emojis)
+        self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
 
     def _get_create_guild(self, data):
         if data.get('unavailable') == False:
@@ -613,13 +615,12 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             try:
-                user_id = int(data['user']['id'])
+                user = User(data=data['user'], state=self)
             except KeyError:
                 pass
             else:
-                member = guild.get_member(user_id)
-                if member is not None:
-                    self.dispatch('member_ban', member)
+                member = guild.get_member(user.id) or user
+                self.dispatch('member_ban', guild, member)
 
     def parse_guild_ban_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
