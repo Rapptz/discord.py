@@ -438,9 +438,23 @@ class ConnectionState:
 
 
     def parse_channel_pins_update(self, data):
-        channel = self.get_channel(int(data['channel_id']))
+        channel_id = int(data['channel_id'])
+        channel = self.get_channel(channel_id)
+        if channel is None:
+            log.warning('CHANNEL_PINS_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
+            return
+
         last_pin = utils.parse_time(data['last_pin_timestamp']) if data['last_pin_timestamp'] else None
-        self.dispatch('channel_pins_update', channel, last_pin)
+
+        try:
+            # I have not imported discord.abc in this file
+            # the isinstance check is also 2x slower than just checking this attribute
+            # so we're just gonna check it since it's easier and faster and lazier
+            channel.guild
+        except AttributeError:
+            self.dispatch('private_channel_pins_update', channel, last_pin)
+        else:
+            self.dispatch('guild_channel_pins_update', channel, last_pin)
 
     def parse_channel_recipient_add(self, data):
         channel = self._get_private_channel(int(data['channel_id']))
