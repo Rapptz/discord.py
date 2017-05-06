@@ -121,10 +121,10 @@ class AuditLogChanges:
 
             # special cases for role add/remove
             if attr == '$add':
-                self._handle_role(self.before, self.after, entry, elem)
+                self._handle_role(self.before, self.after, entry, elem['new_value'])
                 continue
             elif attr == '$remove':
-                self._handle_role(self.after, self.before, entry, elem)
+                self._handle_role(self.after, self.before, entry, elem['new_value'])
                 continue
 
             transformer = self.TRANSFORMERS.get(attr)
@@ -157,17 +157,22 @@ class AuditLogChanges:
             self.before.color = self.before.colour
 
     def _handle_role(self, first, second, entry, elem):
-        setattr(first, 'role', None)
+        setattr(first, 'roles', None)
 
-        # TODO: partial data?
-        role_id = int(elem['id'])
-        role = utils.find(lambda r: r.id == role_id, entry.guild.roles)
+        data = []
+        roles = entry.guild.roles
 
-        if role is None:
-            role = discord.Object(id=role_id)
-            role.name = elem['name']
+        for e in elem:
+            role_id = int(e['id'])
+            role = utils.find(lambda r: r.id == role_id, roles)
 
-        setattr(second, 'role', role)
+            if role is None:
+                role = discord.Object(id=role_id)
+                role.name = e['name']
+
+            data.append(role)
+
+        setattr(second, 'roles', data)
 
 class AuditLogEntry:
     """Represents an Audit Log entry.

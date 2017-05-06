@@ -915,7 +915,7 @@ All enumerations are subclasses of `enum`_.
 
         Possible attributes for :class:`AuditLogDiff`:
 
-        - :attr:`~AuditLogDiff.role`
+        - :attr:`~AuditLogDiff.roles`
 
     .. attribute:: role_create
 
@@ -1375,12 +1375,12 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         a ``type`` attribute set to either ``'role'`` or ``'member'`` to help
         decide what type of ID it is.
 
-    .. attribute:: role
+    .. attribute:: roles
 
-        *Union[:class:`Role`, :class:`Object`]* – A role being added or removed
+        *List[Union[:class:`Role`, :class:`Object`]]* – A list of roles being added or removed
         from a member.
 
-        If the role is not found then it is a :class:`Object` with the ID being
+        If a role is not found then it is a :class:`Object` with the ID being
         filled in.
 
     .. attribute:: nick
