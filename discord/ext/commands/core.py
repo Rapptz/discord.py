@@ -37,7 +37,7 @@ from . import converter as converters
 __all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
             'has_role', 'has_permissions', 'has_any_role', 'check',
             'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown', 'guild_only', 'is_owner']
+            'cooldown', 'guild_only', 'is_owner', 'is_nsfw', ]
 
 def wrap_callback(coro):
     @functools.wraps(coro)
