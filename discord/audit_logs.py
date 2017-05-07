@@ -167,7 +167,7 @@ class AuditLogChanges:
             role = utils.find(lambda r: r.id == role_id, roles)
 
             if role is None:
-                role = discord.Object(id=role_id)
+                role = Object(id=role_id)
                 role.name = e['name']
 
             data.append(role)
@@ -222,7 +222,7 @@ class AuditLogEntry:
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
-                    'channel': self.guild.get_channel(channel_id) or discord.Object(id=channel_id)
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
