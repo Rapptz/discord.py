@@ -121,7 +121,7 @@ class GuildChannel:
         return self.name
 
     @asyncio.coroutine
-    def _move(self, position):
+    def _move(self, position, *, reason):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
@@ -145,7 +145,7 @@ class GuildChannel:
             channels.insert(position, self)
 
         payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
-        yield from http.move_channel_position(self.guild.id, payload)
+        yield from http.move_channel_position(self.guild.id, payload, reason=reason)
 
     def _fill_overwrites(self, data):
         self._overwrites = []
@@ -351,12 +351,18 @@ class GuildChannel:
         return base
 
     @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Deletes the channel.
 
         You must have Manage Channel permission to use this.
+
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this channel.
+            Shows up on the audit log.
 
         Raises
         -------
@@ -367,10 +373,10 @@ class GuildChannel:
         HTTPException
             Deleting the channel failed.
         """
-        yield from self._state.http.delete_channel(self.id)
+        yield from self._state.http.delete_channel(self.id, reason=reason)
 
     @asyncio.coroutine
-    def set_permissions(self, target, *, overwrite=_undefined, **permissions):
+    def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
         """|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -418,6 +424,8 @@ class GuildChannel:
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
             Cannot be mixed with ``overwrite``.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
@@ -453,15 +461,15 @@ class GuildChannel:
         # TODO: wait for event
 
         if overwrite is None:
-            yield from http.delete_channel_permissions(self.id, target.id)
+            yield from http.delete_channel_permissions(self.id, target.id, reason=reason)
         elif isinstance(overwrite, PermissionOverwrite):
             (allow, deny) = overwrite.pair()
-            yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type)
+            yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
     @asyncio.coroutine
-    def create_invite(self, **fields):
+    def create_invite(self, *, reason=None, **fields):
         """|coro|
 
         Creates an instant invite.
@@ -481,6 +489,8 @@ class GuildChannel:
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to False then it will return a previously created
             invite.
+        reason: Optional[str]
+            The reason for creating this invite. Shows up on the audit log.
 
         Raises
         -------
@@ -493,7 +503,7 @@ class GuildChannel:
             The invite that was created.
         """
 
-        data = yield from self._state.http.create_invite(self.id, **fields)
+        data = yield from self._state.http.create_invite(self.id, reason=reason, **fields)
         return Invite.from_incomplete(data=data, state=self._state)
 
     @asyncio.coroutine
@@ -537,7 +547,7 @@ class Messageable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, reason=None, delete_after=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -571,6 +581,9 @@ class Messageable(metaclass=abc.ABCMeta):
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
+        reason: Optional[str]
+            The reason for deleting the message, if necessary.
+            Shows up on the audit log.
 
         Raises
         --------
@@ -626,7 +639,7 @@ class Messageable(metaclass=abc.ABCMeta):
             def delete():
                 yield from asyncio.sleep(delete_after, loop=state.loop)
                 try:
-                    yield from ret.delete()
+                    yield from ret.delete(reason=reason)
                 except:
                     pass
             compat.create_task(delete(), loop=state.loop)

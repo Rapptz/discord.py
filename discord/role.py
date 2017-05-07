@@ -160,7 +160,7 @@ class Role(Hashable):
         return [member for member in all_members if self in member.roles]
 
     @asyncio.coroutine
-    def _move(self, position):
+    def _move(self, position, reason):
         if position <= 0:
             raise InvalidArgument("Cannot move role to position 0 or below")
 
@@ -184,10 +184,10 @@ class Role(Hashable):
             roles.append(self.id)
 
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
-        yield from http.move_role_position(self.guild.id, payload)
+        yield from http.move_role_position(self.guild.id, payload, reason=reason)
 
     @asyncio.coroutine
-    def edit(self, **fields):
+    def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the role.
@@ -212,6 +212,8 @@ class Role(Hashable):
         position: int
             The new role's position. This must be below your top role's
             position or it will fail.
+        reason: Optional[str]
+            The reason for editing this role. Shows up on the audit log.
 
         Raises
         -------
@@ -226,7 +228,7 @@ class Role(Hashable):
 
         position = fields.get('position')
         if position is not None:
-            yield from self._move(position)
+            yield from self._move(position, reason=reason)
             self.position = position
 
         try:
@@ -242,17 +244,22 @@ class Role(Hashable):
             'mentionable': fields.get('mentionable', self.mentionable)
         }
 
-        data = yield from self._state.http.edit_role(self.guild.id, self.id, **payload)
+        data = yield from self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         self._update(data)
 
     @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Deletes the role.
 
         You must have the :attr:`Permissions.manage_roles` permission to
         use this.
+
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this role. Shows up on the audit log.
 
         Raises
         --------
@@ -262,4 +269,4 @@ class Role(Hashable):
             Deleting the role failed.
         """
 
-        yield from self._state.http.delete_role(self.guild.id, self.id)
+        yield from self._state.http.delete_role(self.guild.id, self.id, reason=reason)

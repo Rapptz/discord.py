@@ -147,10 +147,15 @@ class Invite(Hashable):
         yield from self._state.http.accept_invite(self.code)
 
     @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Revokes the instant invite.
+
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this invite. Shows up on the audit log.
 
         Raises
         -------
@@ -162,4 +167,4 @@ class Invite(Hashable):
             Revoking the invite failed.
         """
 
-        yield from self._state.http.delete_invite(self.code)
+        yield from self._state.http.delete_invite(self.code, reason=reason)

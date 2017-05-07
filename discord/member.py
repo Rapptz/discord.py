@@ -349,12 +349,12 @@ class Member(discord.abc.Messageable):
         yield from self.guild.ban(self, **kwargs)
 
     @asyncio.coroutine
-    def unban(self):
+    def unban(self, *, reason=None):
         """|coro|
 
         Unbans this member. Equivalent to :meth:`Guild.unban`
         """
-        yield from self.guild.unban(self)
+        yield from self.guild.unban(self, reason=reason)
 
     @asyncio.coroutine
     def kick(self, *, reason=None):
@@ -365,7 +365,7 @@ class Member(discord.abc.Messageable):
         yield from self.guild.kick(self, reason=reason)
 
     @asyncio.coroutine
-    def edit(self, **fields):
+    def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the member's data.
@@ -400,6 +400,8 @@ class Member(discord.abc.Messageable):
             The member's new list of roles. This *replaces* the roles.
         voice_channel: :class:`VoiceChannel`
             The voice channel to move the member to.
+        reason: Optional[str]
+            The reason for editing this member. Shows up on the audit log.
 
         Raises
         -------
@@ -420,7 +422,7 @@ class Member(discord.abc.Messageable):
         else:
             nick = nick if nick else ''
             if self._state.self_id == self.id:
-                yield from http.change_my_nickname(guild_id, nick)
+                yield from http.change_my_nickname(guild_id, nick, reason=reason)
             else:
                 payload['nick'] = nick
 
@@ -446,12 +448,12 @@ class Member(discord.abc.Messageable):
         else:
             payload['roles'] = tuple(r.id for r in roles)
 
-        yield from http.edit_member(guild_id, self.id, **payload)
+        yield from http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         # TODO: wait for WS event for modify-in-place behaviour
 
     @asyncio.coroutine
-    def move_to(self, channel):
+    def move_to(self, channel, *, reason=None):
         """|coro|
 
         Moves a member to a new voice channel (they must be connected first).
@@ -465,11 +467,13 @@ class Member(discord.abc.Messageable):
         -----------
         channel: :class:`VoiceChannel`
             The new voice channel to move the member to.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
         """
-        yield from self.edit(voice_channel=channel)
+        yield from self.edit(voice_channel=channel, reason=reason)
 
     @asyncio.coroutine
-    def add_roles(self, *roles):
+    def add_roles(self, *roles, reason=None):
         """|coro|
 
         Gives the member a number of :class:`Role`\s.
@@ -481,6 +485,8 @@ class Member(discord.abc.Messageable):
         -----------
         \*roles
             An argument list of :class:`Role`\s to give the member.
+        reason: Optional[str]
+            The reason for adding these roles. Shows up on the audit log.
 
         Raises
         -------
@@ -491,10 +497,10 @@ class Member(discord.abc.Messageable):
         """
 
         new_roles = utils._unique(r for s in (self.roles[1:], roles) for r in s)
-        yield from self.edit(roles=new_roles)
+        yield from self.edit(roles=new_roles, reason=reason)
 
     @asyncio.coroutine
-    def remove_roles(self, *roles):
+    def remove_roles(self, *roles, reason=None):
         """|coro|
 
         Removes :class:`Role`\s from this member.
@@ -506,6 +512,8 @@ class Member(discord.abc.Messageable):
         -----------
         \*roles
             An argument list of :class:`Role`\s to remove from the member.
+        reason: Optional[str]
+            The reason for removing these roles. Shows up on the audit log.
 
         Raises
         -------
@@ -522,4 +530,4 @@ class Member(discord.abc.Messageable):
             except ValueError:
                 pass
 
-        yield from self.edit(roles=new_roles)
+        yield from self.edit(roles=new_roles, reason=reason)

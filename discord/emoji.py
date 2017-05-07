@@ -118,7 +118,7 @@ class Emoji(Hashable):
 
 
     @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Deletes the custom emoji.
@@ -128,6 +128,11 @@ class Emoji(Hashable):
 
         Guild local emotes can only be deleted by user bots.
 
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this emoji. Shows up on the audit log.
+
         Raises
         -------
         Forbidden
@@ -136,10 +141,10 @@ class Emoji(Hashable):
             An error occurred deleting the emoji.
         """
 
-        yield from self._state.http.delete_custom_emoji(self.guild.id, self.id)
+        yield from self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
     @asyncio.coroutine
-    def edit(self, *, name):
+    def edit(self, *, name, reason=None):
         """|coro|
 
         Edits the custom emoji.
@@ -153,6 +158,8 @@ class Emoji(Hashable):
         -----------
         name: str
             The new emoji name.
+        reason: Optional[str]
+            The reason for editing this emoji. Shows up on the audit log.
 
         Raises
         -------
@@ -162,4 +169,4 @@ class Emoji(Hashable):
             An error occurred editing the emoji.
         """
 
-        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name)
+        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, reason=reason)

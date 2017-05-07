@@ -427,7 +427,7 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
-    def _create_channel(self, name, overwrites, type):
+    def _create_channel(self, name, overwrites, type, reason):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
@@ -452,10 +452,10 @@ class Guild(Hashable):
 
             perms.append(payload)
 
-        return self._state.http.create_channel(self.id, name, str(type), permission_overwrites=perms)
+        return self._state.http.create_channel(self.id, name, str(type), permission_overwrites=perms, reason=reason)
 
     @asyncio.coroutine
-    def create_text_channel(self, name, *, overwrites=None):
+    def create_text_channel(self, name, *, overwrites=None, reason=None):
         """|coro|
 
         Creates a :class:`TextChannel` for the guild.
@@ -495,6 +495,8 @@ class Guild(Hashable):
             A `dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply upon creation of a channel.
             Useful for creating secret channels.
+        reason: Optional[str]
+            The reason for creating this channel. Shows up on the audit log.
 
         Raises
         -------
@@ -510,17 +512,17 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.text)
+        data = yield from self._create_channel(name, overwrites, ChannelType.text, reason=reason)
         return TextChannel(state=self._state, guild=self, data=data)
 
     @asyncio.coroutine
-    def create_voice_channel(self, name, *, overwrites=None):
+    def create_voice_channel(self, name, *, overwrites=None, reason=None):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a
         :class:`VoiceChannel` instead.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.voice)
+        data = yield from self._create_channel(name, overwrites, ChannelType.voice, reason=reason)
         return VoiceChannel(state=self._state, guild=self, data=data)
 
     @asyncio.coroutine
@@ -559,7 +561,7 @@ class Guild(Hashable):
         yield from self._state.http.delete_guild(self.id)
 
     @asyncio.coroutine
-    def edit(self, **fields):
+    def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the guild.
@@ -590,6 +592,8 @@ class Guild(Hashable):
             be owner of the guild to do this.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
+        reason: Optional[str]
+            The reason for editing this guild. Shows up on the audit log.
 
         Raises
         -------
@@ -642,7 +646,8 @@ class Guild(Hashable):
             raise InvalidArgument('verification_level field must of type VerificationLevel')
 
         fields['verification_level'] = level.value
-        yield from self._state.http.edit_guild(self.id, **fields)
+
+        yield from self._state.http.edit_guild(self.id, reason=reason, **fields)
 
 
     @asyncio.coroutine
@@ -678,7 +683,7 @@ class Guild(Hashable):
                 for e in data]
 
     @asyncio.coroutine
-    def prune_members(self, *, days):
+    def prune_members(self, *, days, reason=None):
         """|coro|
 
         Prunes the guild from its inactive members.
@@ -696,6 +701,8 @@ class Guild(Hashable):
         -----------
         days: int
             The number of days before counting as inactive.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
@@ -715,7 +722,7 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = yield from self._state.http.prune_members(self.id, days)
+        data = yield from self._state.http.prune_members(self.id, days, reason=reason)
         return data['pruned']
 
     @asyncio.coroutine
@@ -784,7 +791,7 @@ class Guild(Hashable):
         return result
 
     @asyncio.coroutine
-    def create_invite(self, **fields):
+    def create_invite(self, *, reason=None, **fields):
         """|coro|
 
         Creates an instant invite.
@@ -804,6 +811,8 @@ class Guild(Hashable):
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to False then it will return a previously created
             invite.
+        reason: Optional[str]
+            The reason for creating this invite. Shows up on the audit log.
 
         Raises
         -------
@@ -816,11 +825,11 @@ class Guild(Hashable):
             The invite that was created.
         """
 
-        data = yield from self._state.http.create_invite(self.id, **fields)
+        data = yield from self._state.http.create_invite(self.id, reason=reason, **fields)
         return Invite.from_incomplete(data=data, state=self._state)
 
     @asyncio.coroutine
-    def create_custom_emoji(self, *, name, image):
+    def create_custom_emoji(self, *, name, image, reason=None):
         """|coro|
 
         Creates a custom :class:`Emoji` for the guild.
@@ -839,6 +848,8 @@ class Guild(Hashable):
         image: bytes
             The *bytes-like* object representing the image data to use.
             Only JPG and PNG images are supported.
+        reason: Optional[str]
+            The reason for creating this emoji. Shows up on the audit log.
 
         Returns
         --------
@@ -854,11 +865,11 @@ class Guild(Hashable):
         """
 
         img = utils._bytes_to_base64_data(image)
-        data = yield from self._state.http.create_custom_emoji(self.id, name, img)
+        data = yield from self._state.http.create_custom_emoji(self.id, name, img, reason=reason)
         return self._state.store_emoji(self, data)
 
     @asyncio.coroutine
-    def create_role(self, **fields):
+    def create_role(self, *, reason=None, **fields):
         """|coro|
 
         Creates a :class:`Role` for the guild.
@@ -880,6 +891,8 @@ class Guild(Hashable):
         mentionable: bool
             Indicates if the role should be mentionable by others.
             Defaults to False.
+        reason: Optional[str]
+            The reason for creating this role. Shows up on the audit log.
 
         Returns
         --------
@@ -915,7 +928,7 @@ class Guild(Hashable):
             if key not in valid_keys:
                 raise InvalidArgument('%r is not a valid field.' % key)
 
-        data = yield from self._state.http.create_role(self.id, **fields)
+        data = yield from self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)
 
         # TODO: add to cache
@@ -979,7 +992,7 @@ class Guild(Hashable):
         yield from self._state.http.ban(user.id, self.id, delete_message_days, reason=reason)
 
     @asyncio.coroutine
-    def unban(self, user):
+    def unban(self, user, *, reason=None):
         """|coro|
 
         Unbans a user from the guild.
@@ -993,6 +1006,8 @@ class Guild(Hashable):
         -----------
         user: :class:`abc.Snowflake`
             The user to unban.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
@@ -1001,7 +1016,7 @@ class Guild(Hashable):
         HTTPException
             Unbanning failed.
         """
-        yield from self._state.http.unban(user.id, self.id)
+        yield from self._state.http.unban(user.id, self.id, reason=reason)
 
     @asyncio.coroutine
     def vanity_invite(self):
@@ -1038,7 +1053,7 @@ class Guild(Hashable):
         return Invite(state=self._state, data=payload)
 
     @asyncio.coroutine
-    def change_vanity_invite(self, new_code):
+    def change_vanity_invite(self, new_code, *, reason=None):
         """|coro|
 
         Changes the guild's special vanity invite.
@@ -1048,6 +1063,13 @@ class Guild(Hashable):
 
         You must have :attr:`Permissions.manage_guild` to use this as well.
 
+        Parameters
+        -----------
+        new_code: str
+            The new vanity URL code.
+        reason: Optional[str]
+            The reason for changing the vanity invite. Shows up on the audit log.
+
         Raises
         -------
         Forbidden
@@ -1056,7 +1078,7 @@ class Guild(Hashable):
             Setting the vanity invite failed.
         """
 
-        yield from self._state.http.change_vanity_code(self.id, new_code)
+        yield from self._state.http.change_vanity_code(self.id, new_code, reason=reason)
 
     def ack(self):
         """|coro|

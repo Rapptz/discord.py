@@ -37,9 +37,9 @@ import asyncio
 __all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'GroupChannel', '_channel_factory')
 
 @asyncio.coroutine
-def _single_delete_strategy(messages):
+def _single_delete_strategy(messages, *, reason):
     for m in messages:
-        yield from m.delete()
+        yield from m.delete(reason=reason)
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
@@ -116,7 +116,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return n == 'nsfw' or n[:5] == 'nsfw-'
 
     @asyncio.coroutine
-    def edit(self, **options):
+    def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
@@ -132,6 +132,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The new channel's topic.
         position: int
             The new channel's position.
+        reason: Optional[str]
+            The reason for editing this channel. Shows up on the audit log.
 
         Raises
         ------
@@ -147,15 +149,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         except KeyError:
             pass
         else:
-            yield from self._move(position)
+            yield from self._move(position, reason=reason)
             self.position = position
 
         if options:
-            data = yield from self._state.http.edit_channel(self.id, **options)
+            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
             self._update(self.guild, data)
 
     @asyncio.coroutine
-    def delete_messages(self, messages):
+    def delete_messages(self, messages, *, reason=None):
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -165,8 +167,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -----------
-        messages : iterable of :class:`Message`
+        messages: iterable of :class:`Message`
             An iterable of messages denoting which ones to bulk delete.
+        reason: Optional[str]
+            The reason for bulk deleting these messages. Shows up on the audit log.
 
         Raises
         ------
@@ -186,10 +190,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         message_ids = [m.id for m in messages]
         channel = yield from self._get_channel()
 
-        yield from self._state.http.delete_messages(channel.id, message_ids)
+        yield from self._state.http.delete_messages(channel.id, message_ids, reason=reason)
 
     @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None):
+    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reason=None):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -219,6 +223,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``after`` in :meth:`history`.
         around
             Same as ``around`` in :meth:`history`.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
@@ -262,17 +268,17 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 if count >= 2:
                     # more than 2 messages -> bulk delete
                     to_delete = ret[-count:]
-                    yield from strategy(to_delete)
+                    yield from strategy(to_delete, reason=reason)
                 elif count == 1:
                     # delete a single message
-                    yield from ret[-1].delete()
+                    yield from ret[-1].delete(reason=reason)
 
                 return ret
             else:
                 if count == 100:
                     # we've reached a full 'queue'
                     to_delete = ret[-100:]
-                    yield from strategy(to_delete)
+                    yield from strategy(to_delete, reason=reason)
                     count = 0
                     yield from asyncio.sleep(1)
 
@@ -283,7 +289,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                             yield from ret[-1].delete()
                         elif count >= 2:
                             to_delete = ret[-count:]
-                            yield from strategy(to_delete)
+                            yield from strategy(to_delete, reason=reason)
 
                         count = 0
                         strategy = _single_delete_strategy
@@ -362,7 +368,7 @@ class VoiceChannel(discord.abc.Callable, discord.abc.GuildChannel, Hashable):
         return ret
 
     @asyncio.coroutine
-    def edit(self, **options):
+    def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
@@ -378,6 +384,8 @@ class VoiceChannel(discord.abc.Callable, discord.abc.GuildChannel, Hashable):
             The new channel's user limit.
         position: int
             The new channel's position.
+        reason: Optional[str]
+            The reason for editing this channel. Shows up on the audit log.
 
         Raises
         ------
@@ -392,11 +400,11 @@ class VoiceChannel(discord.abc.Callable, discord.abc.GuildChannel, Hashable):
         except KeyError:
             pass
         else:
-            yield from self._move(position)
+            yield from self._move(position, reason=reason)
             self.position = position
 
         if options:
-            data = yield from self._state.http.edit_channel(self.id, **options)
+            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
             self._update(self.guild, data)
 
 class DMChannel(discord.abc.Messageable, Hashable):

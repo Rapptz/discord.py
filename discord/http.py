@@ -125,6 +125,14 @@ class HTTPClient:
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = utils.to_json(kwargs.pop('json'))
 
+        try:
+            reason = kwargs.pop('reason')
+        except KeyError:
+            pass
+        else:
+            if reason:
+                headers['X-Audit-Log-Reason'] = reason
+
         kwargs['headers'] = headers
 
         if not self._global_over.is_set():
@@ -336,18 +344,18 @@ class HTTPClient:
     def ack_guild(self, guild_id):
         return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
 
-    def delete_message(self, channel_id, message_id):
+    def delete_message(self, channel_id, message_id, *, reason=None):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
                                                                             message_id=message_id)
-        return self.request(r)
+        return self.request(r, reason=reason)
 
-    def delete_messages(self, channel_id, message_ids):
+    def delete_messages(self, channel_id, message_ids, *, reason=None):
         r = Route('POST', '/channels/{channel_id}/messages/bulk_delete', channel_id=channel_id)
         payload = {
             'messages': message_ids
         }
 
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
     def edit_message(self, message_id, channel_id, **fields):
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
@@ -426,11 +434,11 @@ class HTTPClient:
 
         return self.request(r, params=params)
 
-    def unban(self, user_id, guild_id):
+    def unban(self, user_id, guild_id, *, reason=None):
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
-        return self.request(r)
+        return self.request(r, reason=reason)
 
-    def guild_voice_state(self, user_id, guild_id, *, mute=None, deafen=None):
+    def guild_voice_state(self, user_id, guild_id, *, mute=None, deafen=None, reason=None):
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         payload = {}
         if mute is not None:
@@ -439,7 +447,7 @@ class HTTPClient:
         if deafen is not None:
             payload['deaf'] = deafen
 
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
     def edit_profile(self, password, username, avatar, **fields):
         payload = {
@@ -456,38 +464,40 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/users/@me'), json=payload)
 
-    def change_my_nickname(self, guild_id, nickname):
+    def change_my_nickname(self, guild_id, nickname, *, reason=None):
+        r = Route('PATCH', '/guilds/{guild_id}/members/@me/nick', guild_id=guild_id)
         payload = {
             'nick': nickname
         }
-        return self.request(Route('PATCH', '/guilds/{guild_id}/members/@me/nick', guild_id=guild_id), json=payload)
+        return self.request(r, json=payload, reason=reason)
 
-    def change_nickname(self, guild_id, user_id, nickname):
+    def change_nickname(self, guild_id, user_id, nickname, *, reason=None):
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         payload = {
             'nick': nickname
         }
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
-    def edit_member(self, guild_id, user_id, **fields):
+    def edit_member(self, guild_id, user_id, *, reason=None, **fields):
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
-        return self.request(r, json=fields)
+        return self.request(r, json=fields, reason=reason)
 
     # Channel management
 
-    def edit_channel(self, channel_id, **options):
+    def edit_channel(self, channel_id, *, reason=None, **options):
+        r = Route('PATCH', '/channels/{channel_id}', channel_id=channel_id)
         valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }
 
-        return self.request(Route('PATCH', '/channels/{channel_id}', channel_id=channel_id), json=payload)
+        return self.request(r, reason=reason, json=payload)
 
-    def move_channel_position(self, guild_id, positions):
+    def move_channel_position(self, guild_id, positions, *, reason=None):
         r = Route('PATCH', '/guilds/{guild_id}/channels', guild_id=guild_id)
-        return self.request(r, json=positions)
+        return self.request(r, json=positions, reason=reason)
 
-    def create_channel(self, guild_id, name, channe_type, permission_overwrites=None):
+    def create_channel(self, guild_id, name, channe_type, permission_overwrites=None, *, reason=None):
         payload = {
             'name': name,
             'type': channe_type
@@ -496,10 +506,10 @@ class HTTPClient:
         if permission_overwrites is not None:
             payload['permission_overwrites'] = permission_overwrites
 
-        return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload)
+        return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload, reason=reason)
 
-    def delete_channel(self, channel_id):
-        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
+    def delete_channel(self, channel_id, *, reason=None):
+        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
 
     # Guild management
 
@@ -518,7 +528,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds'), json=payload)
 
-    def edit_guild(self, guild_id, **fields):
+    def edit_guild(self, guild_id, *, reason=None, **fields):
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level')
 
@@ -526,7 +536,7 @@ class HTTPClient:
             k: v for k, v in fields.items() if k in valid_keys
         }
 
-        return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload)
+        return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
@@ -534,15 +544,15 @@ class HTTPClient:
     def get_vanity_code(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
 
-    def change_vanity_code(self, guild_id, code):
+    def change_vanity_code(self, guild_id, code, *, reason=None):
         payload = { 'code': code }
-        return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload)
+        return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
 
-    def prune_members(self, guild_id, days):
+    def prune_members(self, guild_id, days, *, reason=None):
         params = {
             'days': days
         }
-        return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
+        return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params, reason=reason)
 
     def estimate_pruned_members(self, guild_id, days):
         params = {
@@ -550,24 +560,25 @@ class HTTPClient:
         }
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
-    def create_custom_emoji(self, guild_id, name, image):
+    def create_custom_emoji(self, guild_id, name, image, *, reason=None):
         payload = {
             'name': name,
             'image': image
         }
 
         r = Route('POST', '/guilds/{guild_id}/emojis', guild_id=guild_id)
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
-    def delete_custom_emoji(self, guild_id, emoji_id):
-        return self.request(Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id))
+    def delete_custom_emoji(self, guild_id, emoji_id, *, reason=None):
+        r = Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
+        return self.request(r, reason=reason)
 
-    def edit_custom_emoji(self, guild_id, emoji_id, *, name):
+    def edit_custom_emoji(self, guild_id, emoji_id, *, name, reason=None):
         payload = {
             'name': name
         }
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
     def get_audit_logs(self, guild_id, limit=100, before=None, after=None, user_id=None, action_type=None):
         params = { 'limit': limit }
@@ -585,7 +596,7 @@ class HTTPClient:
 
     # Invite management
 
-    def create_invite(self, channel_id, **options):
+    def create_invite(self, channel_id, *, reason=None, **options):
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
             'max_age': options.get('max_age', 0),
@@ -594,7 +605,7 @@ class HTTPClient:
             'unique': options.get('unique', True)
         }
 
-        return self.request(r, json=payload)
+        return self.request(r, reason=reason, json=payload)
 
     def get_invite(self, invite_id):
         return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id))
@@ -605,45 +616,45 @@ class HTTPClient:
     def invites_from_channel(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
-    def delete_invite(self, invite_id):
-        return self.request(Route('DELETE', '/invite/{invite_id}', invite_id=invite_id))
+    def delete_invite(self, invite_id, *, reason=None):
+        return self.request(Route('DELETE', '/invite/{invite_id}', invite_id=invite_id), reason=reason)
 
     # Role management
 
-    def edit_role(self, guild_id, role_id, **fields):
+    def edit_role(self, guild_id, role_id, *, reason=None, **fields):
         r = Route('PATCH', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         payload = {
             k: v for k, v in fields.items() if k in valid_keys
         }
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
-    def delete_role(self, guild_id, role_id):
+    def delete_role(self, guild_id, role_id, *, reason=None):
         r = Route('DELETE', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
-        return self.request(r)
+        return self.request(r, reason=reason)
 
-    def replace_roles(self, user_id, guild_id, role_ids):
-        return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids)
+    def replace_roles(self, user_id, guild_id, role_ids, *, reason=None):
+        return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids, reason=reason)
 
-    def create_role(self, guild_id, **fields):
+    def create_role(self, guild_id, *, reason=None, **fields):
         r = Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id)
-        return self.request(r, json=fields)
+        return self.request(r, json=fields, reason=reason)
 
-    def move_role_position(self, guild_id, positions):
+    def move_role_position(self, guild_id, positions, *, reason=None):
         r = Route('PATCH', '/guilds/{guild_id}/roles', guild_id=guild_id)
-        return self.request(r, json=positions)
+        return self.request(r, json=positions, reason=reason)
 
-    def add_role(self, guild_id, user_id, role_id):
+    def add_role(self, guild_id, user_id, role_id, *, reason=None):
         r = Route('PUT', '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
                   guild_id=guild_id, user_id=user_id, role_id=role_id)
-        return self.request(r)
+        return self.request(r, reason=reason)
 
-    def remove_role(self, guild_id, user_id, role_id):
+    def remove_role(self, guild_id, user_id, role_id, *, reason=None):
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
                   guild_id=guild_id, user_id=user_id, role_id=role_id)
-        return self.request(r)
+        return self.request(r, reason=reason)
 
-    def edit_channel_permissions(self, channel_id, target, allow, deny, type):
+    def edit_channel_permissions(self, channel_id, target, allow, deny, type, *, reason=None):
         payload = {
             'id': target,
             'allow': allow,
@@ -651,16 +662,16 @@ class HTTPClient:
             'type': type
         }
         r = Route('PUT', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
-        return self.request(r, json=payload)
+        return self.request(r, json=payload, reason=reason)
 
-    def delete_channel_permissions(self, channel_id, target):
+    def delete_channel_permissions(self, channel_id, target, *, reason=None):
         r = Route('DELETE', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
-        return self.request(r)
+        return self.request(r, reason=reason)
 
     # Voice management
 
-    def move_member(self, user_id, guild_id, channel_id):
-        return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id)
+    def move_member(self, user_id, guild_id, channel_id, *, reason=None):
+        return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
 
 
     # Relationship related
