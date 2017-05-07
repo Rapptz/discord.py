@@ -1380,7 +1380,7 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         *List[Union[:class:`Role`, :class:`Object`]]* – A list of roles being added or removed
         from a member.
 
-        If a role is not found then it is a :class:`Object` with the ID being
+        If a role is not found then it is a :class:`Object` with the ID and name being
         filled in.
 
     .. attribute:: nick
