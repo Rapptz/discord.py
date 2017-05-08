@@ -416,22 +416,25 @@ class AuditLogIterator(_AsyncIterator):
         before = self.before.id if self.before else None
         data = yield from self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
                                        action_type=self.action_type, before=before)
-        if len(data):
+
+        entries = data.get('audit_log_entries', [])
+        if len(data) and entries:
             if self.limit is not None:
                 self.limit -= retrieve
-            self.before = Object(id=int(data['audit_log_entries'][-1]['id']))
-        return data
+            self.before = Object(id=int(entries[-1]['id']))
+        return data.get('users', []), entries
 
     @asyncio.coroutine
     def _after_strategy(self, retrieve):
         after = self.after.id if self.after else None
         data = yield from self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
                                        action_type=self.action_type, after=after)
-        if len(data):
+        entries = data.get('audit_log_entries', [])
+        if len(data) and entries:
             if self.limit is not None:
                 self.limit -= retrieve
-            self.after = Object(id=int(data['audit_log_entries'][0]['id']))
-        return data
+            self.after = Object(id=int(entries[0]['id']))
+        return data.get('users', []), entries
 
     @asyncio.coroutine
     def get(self):
@@ -460,10 +463,7 @@ class AuditLogIterator(_AsyncIterator):
         from .user import User
 
         if self._get_retrieve():
-            data = yield from self._strategy(self.retrieve)
-            users = data.get('users', [])
-            data = data.get('audit_log_entries', [])
-
+            users, data = yield from self._strategy(self.retrieve)
             if self.limit is None and len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
