@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from enum import Enum
 
-__all__ = ['ChannelType', 'MessageType', 'GuildRegion', 'VerificationLevel',
+__all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
            'AuditLogAction', 'AuditLogActionCategory', ]
 
@@ -49,7 +49,7 @@ class MessageType(Enum):
     pins_add            = 6
     new_member          = 7
 
-class GuildRegion(Enum):
+class VoiceRegion(Enum):
     us_west       = 'us-west'
     us_east       = 'us-east'
     us_south      = 'us-south'

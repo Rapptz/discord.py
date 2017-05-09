@@ -579,9 +579,9 @@ All enumerations are subclasses of `enum`_.
 
         The system message denoting that a pinned message has been added to a channel.
 
-.. class:: GuildRegion
+.. class:: VoiceRegion
 
-    Specifies the region a :class:`Guild`'s voice server belongs to.
+    Specifies the region a voice server belongs to.
 
     .. attribute:: us_west
 
