@@ -27,8 +27,9 @@ DEALINGS IN THE SOFTWARE.
 from .user import User, Profile
 from .invite import Invite
 from .object import Object
+from .guild import Guild
 from .errors import *
-from .enums import Status
+from .enums import Status, VoiceRegion
 from .gateway import *
 from .voice_client import VoiceClient
 from .http import HTTPClient
@@ -748,6 +749,51 @@ class Client:
 
             me.game = game
             me.status = status_enum
+
+    # Guild stuff
+
+    @asyncio.coroutine
+    def create_guild(self, name, region=None, icon=None):
+        """|coro|
+
+        Creates a :class:`Guild`.
+
+        Bot accounts generally are not allowed to create servers.
+
+        Parameters
+        ----------
+        name: str
+            The name of the guild.
+        region: :class:`VoiceRegion`
+            The region for the voice communication server.
+            Defaults to :attr:`VoiceRegion.us_west`.
+        icon: bytes
+            The *bytes-like* object representing the icon. See :meth:`~ClientUser.edit`
+            for more details on what is expected.
+
+        Raises
+        ------
+        HTTPException
+            Guild creation failed.
+        InvalidArgument
+            Invalid icon image format given. Must be PNG or JPG.
+
+        Returns
+        -------
+        :class:`Guild`
+            The guild created. This is not the same guild that is
+            added to cache.
+        """
+        if icon is not None:
+            icon = utils._bytes_to_base64_data(icon)
+
+        if region is None:
+            region = VoiceRegion.us_west.value
+        else:
+            region = region.value
+
+        data = yield from self.http.create_guild(name, region, icon)
+        return Guild(data=data, state=self.connection)
 
     # Invite management
 
