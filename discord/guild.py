@@ -592,6 +592,8 @@ class Guild(Hashable):
             be owner of the guild to do this.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
+        vanity_code: str
+            The new vanity code for the guild.
         reason: Optional[str]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -607,6 +609,7 @@ class Guild(Hashable):
             guild and request an ownership transfer.
         """
 
+        http = self._state.http
         try:
             icon_bytes = fields['icon']
         except KeyError:
@@ -616,6 +619,13 @@ class Guild(Hashable):
                 icon = utils._bytes_to_base64_data(icon_bytes)
             else:
                 icon = None
+
+        try:
+            vanity_code = fields['vanity_code']
+        except KeyError:
+            pass
+        else:
+            yield from http.change_vanity_code(self.id, vanity_code, reason=reason)
 
         try:
             splash_bytes = fields['splash']
@@ -647,7 +657,7 @@ class Guild(Hashable):
 
         fields['verification_level'] = level.value
 
-        yield from self._state.http.edit_guild(self.id, reason=reason, **fields)
+        yield from http.edit_guild(self.id, reason=reason, **fields)
 
 
     @asyncio.coroutine
@@ -1051,34 +1061,6 @@ class Guild(Hashable):
         payload['max_uses'] = 0
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
-
-    @asyncio.coroutine
-    def change_vanity_invite(self, new_code, *, reason=None):
-        """|coro|
-
-        Changes the guild's special vanity invite.
-
-        The guild must be partnered, i.e. have 'VANITY_URL' in
-        :attr:`~Guild.features`.
-
-        You must have :attr:`Permissions.manage_guild` to use this as well.
-
-        Parameters
-        -----------
-        new_code: str
-            The new vanity URL code.
-        reason: Optional[str]
-            The reason for changing the vanity invite. Shows up on the audit log.
-
-        Raises
-        -------
-        Forbidden
-            You do not have the proper permissions to set this.
-        HTTPException
-            Setting the vanity invite failed.
-        """
-
-        yield from self._state.http.change_vanity_code(self.id, new_code, reason=reason)
 
     def ack(self):
         """|coro|
