@@ -188,7 +188,7 @@ class BotBase(GroupMixin):
         yield from super().close()
 
     @asyncio.coroutine
-    def on_command_error(self, exception, context):
+    def on_command_error(self, context, exception):
         """|coro|
 
         The default command error handler provided by the bot.
