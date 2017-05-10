@@ -129,7 +129,9 @@ class AuditLogChanges:
 
             transformer = self.TRANSFORMERS.get(attr)
             if transformer:
-                attr, transformer = transformer
+                key, transformer = transformer
+                if key:
+                    attr = key
 
             try:
                 before = elem['old_value']
