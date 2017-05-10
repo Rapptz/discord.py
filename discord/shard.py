@@ -68,6 +68,16 @@ class Shard:
 
         return self._current
 
+@asyncio.coroutine
+def _ensure_coroutine_connect(gateway, loop):
+    # In 3.5+ websockets.connect does not return a coroutine, but an awaitable.
+    # The problem is that in 3.5.0 and in some cases 3.5.1, asyncio.ensure_future and
+    # by proxy, asyncio.wait_for, do not accept awaitables, but rather futures or coroutines.
+    # By wrapping it up into this function we ensure that it's in a coroutine and not an awaitable
+    # even for 3.5.0 users.
+    ws = yield from websockets.connect(gateway, loop=loop, klass=DiscordWebSocket)
+    return ws
+
 class AutoShardedClient(Client):
     """A client similar to :class:`Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
@@ -182,8 +192,7 @@ class AutoShardedClient(Client):
     @asyncio.coroutine
     def launch_shard(self, gateway, shard_id):
         try:
-            ws = yield from asyncio.wait_for(websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket),
-                                             loop=self.loop, timeout=180.0)
+            ws = yield from asyncio.wait_for(_ensure_coroutine_connect(gateway, self.loop), loop=self.loop, timeout=180.0)
         except Exception as e:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
             yield from asyncio.sleep(5.0, loop=self.loop)
