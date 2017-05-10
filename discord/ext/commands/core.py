@@ -164,7 +164,7 @@ class Command:
         self._after_invoke = None
 
     @asyncio.coroutine
-    def dispatch_error(self, error, ctx):
+    def dispatch_error(self, ctx, error):
         cog = self.instance
         try:
             coro = self.on_error
@@ -173,9 +173,9 @@ class Command:
         else:
             injected = wrap_callback(coro)
             if cog is not None:
-                yield from injected(cog, error, ctx)
+                yield from injected(cog, ctx, error)
             else:
-                yield from injected(error, ctx)
+                yield from injected(ctx, error)
 
         try:
             local = getattr(cog, '_{0.__class__.__name__}__error'.format(cog))
@@ -183,9 +183,9 @@ class Command:
             pass
         else:
             wrapped = wrap_callback(local)
-            yield from wrapped(error, ctx)
+            yield from wrapped(ctx, error)
         finally:
-            ctx.bot.dispatch('command_error', error, ctx)
+            ctx.bot.dispatch('command_error', ctx, error)
 
     def __get__(self, instance, owner):
         if instance is not None:
