@@ -798,7 +798,7 @@ class Messageable(metaclass=abc.ABCMeta):
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
 
-class Callable(metaclass=abc.ABCMeta):
+class Connectable(metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod

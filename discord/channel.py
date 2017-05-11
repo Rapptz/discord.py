@@ -297,7 +297,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                     count += 1
                     ret.append(msg)
 
-class VoiceChannel(discord.abc.Callable, discord.abc.GuildChannel, Hashable):
+class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 
     Supported Operations:
