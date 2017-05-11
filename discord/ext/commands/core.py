@@ -202,13 +202,10 @@ class Command:
 
         if inspect.isclass(converter) and issubclass(converter, converters.Converter):
             instance = converter()
-            instance.prepare(ctx, argument)
-            ret = yield from discord.utils.maybe_coroutine(instance.convert)
+            ret = yield from instance.convert(ctx, argument)
             return ret
-
-        if isinstance(converter, converters.Converter):
-            converter.prepare(ctx, argument)
-            ret = yield from discord.utils.maybe_coroutine(converter.convert)
+        elif isinstance(converter, converters.Converter):
+            ret = yield from converter.convert(ctx, argument)
             return ret
 
         return converter(argument)
@@ -220,9 +217,6 @@ class Command:
                 converter = str if param.default is None else type(param.default)
             else:
                 converter = str
-        elif not inspect.isclass(type(converter)):
-            raise discord.ClientException('Function annotation must be a type')
-
         return converter
 
     @asyncio.coroutine
