@@ -43,3 +43,12 @@ code.xref {
 div#welcome-to-discord-py > h1 {
   display: none;
 }
+
+/* no disgusting background in FAQ */
+div.topic {
+  background-color: transparent;
+}
+
+div.topic {
+  border: none;
+}
