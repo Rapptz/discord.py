@@ -200,5 +200,14 @@ class Colour:
         """A factory method that returns a :class:`Colour` with a value of ``0x546e7a``."""
         return cls(0x546e7a)
 
+    @classmethod
+    def blurple(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x7289da``."""
+        return cls(0x7289da)
+
+    @classmethod
+    def greyple(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x99aab5``."""
+        return cls(0x99aab5)
 
 Color = Colour
