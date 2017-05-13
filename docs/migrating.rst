@@ -806,7 +806,7 @@ Along with this change, a couple new checks were added.
 - :func:`~ext.commands.is_owner` uses the :meth:`Client.application_info` endpoint by default to fetch owner ID.
 
     - This is actually powered by a different function, :meth:`~ext.commands.Bot.is_owner`.
-    - You can set the owner ID yourself by setting :attr:`Bot.owner_id <ext.commands.Bot.owner_id>`.
+    - You can set the owner ID yourself by setting :attr:`.Bot.owner_id`.
 
 - :func:`~ext.commands.is_nsfw` checks if the channel the command is in is a NSFW channel.
 
@@ -831,10 +831,10 @@ After: ::
 
 The extraneous ``command`` parameter in :func:`~ext.commands.on_command` and :func:`~ext.commands.on_command_completion`
 have been removed. The :class:`~ext.commands.Command` instance was not kept up-to date so it was incorrect. In order to get
-the up to date :class:`~ext.commands.Command` instance, use the :attr:`Context.command <ext.commands.Context.command>`
+the up to date :class:`~ext.commands.Command` instance, use the :attr:`.Context.command`
 attribute.
 
-The error handlers, either :attr:`Command.error <ext.commands.Command.error>` or :func:`~ext.commands.on_command_error`,
+The error handlers, either :attr:`.Command.error` or :func:`~ext.commands.on_command_error`,
 have been re-ordered to use the :class:`~ext.commands.Context` as its first parameter to be consistent with other events
 and commands.
 
@@ -935,7 +935,7 @@ The special cog method for these is ``__before_invoke`` and ``__after_invoke``, 
             await ctx.send(ctx.secret_cog_data)
 
 To check if a command failed in the after invocation hook, you can use
-:attr:`Context.command_failed <ext.commands.Context.command_failed>`.
+:attr:`.Context.command_failed`.
 
 The invocation order is as follows:
 
