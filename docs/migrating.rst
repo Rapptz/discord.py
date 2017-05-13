@@ -274,16 +274,16 @@ property to help differentiate between them.
 
 In order to save memory the channels have been split into 4 different types:
 
-- :class:`TextChannel` for guild text channels
-- :class:`VoiceChannel` for guild voice channels
-- :class:`DMChannel` for DM channels with members
-- :class:`GroupChannel` for Group DM channels with members
+- :class:`TextChannel` for guild text channels.
+- :class:`VoiceChannel` for guild voice channels.
+- :class:`DMChannel` for DM channels with members.
+- :class:`GroupChannel` for Group DM channels with members.
 
 With this split came the removal of the ``is_private`` attribute. You should now use ``isinstance``.
 
 The types are split into two different :ref:`discord_api_abcs`:
 
-- :class:`abc.GuildChannel` for guild channels
+- :class:`abc.GuildChannel` for guild channels.
 - :class:`abc.PrivateChannel` for private channels (DMs and group DMs).
 
 So to check if something is a guild channel you would do: ::
@@ -312,13 +312,13 @@ They will be enumerated here.
 
 - :meth:`Client.login` no longer accepts email and password logins.
 
-    - Use a token and ``bot=False``
+    - Use a token and ``bot=False``.
 
 - ``Client.get_all_emojis``
 
     - Use :attr:`Client.emojis` instead.
 
-- ``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone
+- ``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone.
 
     - Use :meth:`Client.wait_for` instead.
 
@@ -351,7 +351,7 @@ They will be enumerated here.
 - :attr:`Guild.text_channels` for fetching text channels only.
 - :attr:`Guild.voice_channels` for fetching voice channels only.
 - :attr:`Guild.chunked` to check member chunking status.
-- :attr:`Guild.explicit_content_filter` to fetch the content filter
+- :attr:`Guild.explicit_content_filter` to fetch the content filter.
 - :attr:`Guild.shard_id` to get a guild's Shard ID if you're sharding.
 - :attr:`Client.users` to get all visible :class:`User` instances.
 - :meth:`Client.get_user` to get a :class:`User` by ID.
@@ -532,11 +532,11 @@ In particular:
 - Connection is done through :meth:`VoiceChannel.connect` instead of ``Client.join_voice_channel``.
 - You no longer create players and operate on them (you no longer store them).
 - You instead request :class:`VoiceClient` to play an :class:`AudioSource` via :meth:`VoiceClient.play`.
-- There are different built-in :class:`AudioSource`\s
+- There are different built-in :class:`AudioSource`\s.
 
   - :class:`FFmpegPCMAudio` is the equivalent of ``create_ffmpeg_player``
 
-- create_ffmpeg_player/create_stream_player/create_ytdl_player have all been removed
+- create_ffmpeg_player/create_stream_player/create_ytdl_player have all been removed.
 
   - The goal is to create :class:`AudioSource` instead.
 
@@ -581,7 +581,7 @@ For example, you can add a :class:`PCMVolumeTransformer` to allow changing the v
 An added benefit of the redesign is that it will be much more resilient towards reconnections:
 
 - The voice websocket will now automatically re-connect and re-do the handshake when disconnected.
-- The initial connect handshake will now retry up to 5 times so you no longer get as many ``asyncio.TimeoutError``
+- The initial connect handshake will now retry up to 5 times so you no longer get as many ``asyncio.TimeoutError``.
 - Audio will now stop and resume when a disconnect is found.
 
   - This includes changing voice regions etc.
@@ -714,9 +714,9 @@ Since the :class:`~ext.commands.Context` is now by default passed, several short
 
 **New Shortcuts**
 
-- :attr:`~ext.commands.Context.author` is a shortcut for ``ctx.message.author``
-- :attr:`~ext.commands.Context.guild` is a shortcut for ``ctx.message.guild``
-- :attr:`~ext.commands.Context.channel` is a shortcut for ``ctx.message.channel``
+- :attr:`~ext.commands.Context.author` is a shortcut for ``ctx.message.author``.
+- :attr:`~ext.commands.Context.guild` is a shortcut for ``ctx.message.guild``.
+- :attr:`~ext.commands.Context.channel` is a shortcut for ``ctx.message.channel``.
 - :attr:`~ext.commands.Context.me` is a shortcut for ``ctx.message.guild.me`` or ``ctx.bot.user``.
 - :attr:`~ext.commands.Context.voice_client` is a shortcut for ``ctx.message.guild.voice_client``.
 
@@ -802,7 +802,7 @@ Prior to v1.0, :func:`~ext.command.check`\s could only be synchronous. As of v1.
 
 Along with this change, a couple new checks were added.
 
-- :func:`~ext.commands.guild_only` replaces the old ``no_pm=True`` functionality
+- :func:`~ext.commands.guild_only` replaces the old ``no_pm=True`` functionality.
 - :func:`~ext.commands.is_owner` uses the :meth:`Client.application_info` endpoint by default to fetch owner ID.
 
     - This is actually powered by a different function, :meth:`~ext.commands.Bot.is_owner`.
@@ -810,7 +810,7 @@ Along with this change, a couple new checks were added.
 
 - :func:`~ext.commands.is_nsfw` checks if the channel the command is in is a NSFW channel.
 
-    - This is powered by the new :meth:`TextChannel.is_nsfw` check.
+    - This is powered by the new :meth:`TextChannel.is_nsfw` method.
 
 Event Changes
 ~~~~~~~~~~~~~~~
@@ -977,7 +977,7 @@ The command framework also got a couple new converters:
 
 - :class:`~ext.commands.clean_content` this is akin to :attr:`Message.clean_content` which scrubs mentions.
 - :class:`~ext.commands.UserConverter` will now appropriately convert :class:`User` only.
-- ``ChannelConverter`` is now split into two different converters
+- ``ChannelConverter`` is now split into two different converters.
 
-    - :class:`~ext.commands.TextChannelConverter` for :class:`TextChannel`
-    - :class:`~ext.commands.VoiceChannelConverter` for :class:`VoiceChannel`
+    - :class:`~ext.commands.TextChannelConverter` for :class:`TextChannel`.
+    - :class:`~ext.commands.VoiceChannelConverter` for :class:`VoiceChannel`.
