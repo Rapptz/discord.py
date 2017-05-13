@@ -81,7 +81,7 @@ class VoiceClient:
         The voice connection token.
     endpoint: str
         The endpoint we are connecting to.
-    channel: :class:`Channel`
+    channel: :class:`abc.Connectable`
         The voice channel connected to.
     loop
         The event loop that the voice client is running on.
@@ -152,11 +152,13 @@ class VoiceClient:
 
     @asyncio.coroutine
     def terminate_handshake(self, *, remove=False):
-        guild_id, _ = self.channel._get_voice_state_pair()
+        guild_id, channel_id = self.channel._get_voice_state_pair()
         self._handshake_complete.clear()
         yield from self.main_ws.voice_state(guild_id, None, self_mute=True)
 
+        log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', channel_id, guild_id)
         if remove:
+            log.info('The voice client has been removed for Channel ID %s (Guild ID %s)', channel_id, guild_id)
             key_id, _ = self.channel._get_voice_client_key()
             self._state._remove_voice_client(key_id)
 
@@ -247,19 +249,21 @@ class VoiceClient:
                 yield from self.connect(reconnect=True)
 
     @asyncio.coroutine
-    def disconnect(self):
+    def disconnect(self, *, force=False):
         """|coro|
 
         Disconnects all connections to the voice client.
         """
-        if not self._connected.is_set():
+        if not force and not self._connected.is_set():
             return
 
         self.stop()
         self._connected.clear()
 
         try:
-            yield from self.ws.close()
+            if self.ws:
+                yield from self.ws.close()
+
             yield from self.terminate_handshake(remove=True)
         finally:
             if self.socket:

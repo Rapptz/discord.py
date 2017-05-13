@@ -940,7 +940,7 @@ class Connectable(metaclass=abc.ABCMeta):
             yield from voice.connect(reconnect=reconnect)
         except asyncio.TimeoutError as e:
             try:
-                yield from voice.disconnect()
+                yield from voice.disconnect(force=True)
             except:
                 # we don't care if disconnect failed because connection failed
                 pass
