@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the discord.py documentation
-=========================================
+Welcome to discord.py
+===========================
 
 .. image:: /images/snake.png
 

@@ -38,3 +38,8 @@ code.xref {
   background-color: #ecf0f3;
   border-bottom: 1px dotted #222;
 }
+
+/* hide the welcome text */
+div#welcome-to-discord-py > h1 {
+  display: none;
+}
