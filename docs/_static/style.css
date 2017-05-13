@@ -47,8 +47,10 @@ div#welcome-to-discord-py > h1 {
 /* no disgusting background in FAQ */
 div.topic {
   background-color: transparent;
+  border: none;
 }
 
-div.topic {
-  border: none;
+/* give images some breathing room */
+img {
+  padding-bottom: 10px;
 }

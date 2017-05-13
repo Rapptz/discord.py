@@ -11,7 +11,7 @@ Creating a Bot account is a pretty straightforward process.
 2. Navigate to the `application page <https://discordapp.com/developers/applications/me>`_
 3. Click on the "New App" button.
 
-    .. image:: /images/discord_create_new_app_button.png
+    .. image:: /images/discord_create_app_button.png
         :alt: The new app button.
 
 4. Give the application a name and a description if wanted and click "Create App".
@@ -19,28 +19,24 @@ Creating a Bot account is a pretty straightforward process.
     - You can also put an avatar you want your bot to use, don't worry you can change this later.
     - **Leave the Redirect URI(s) blank** unless are creating a service.
 
-    .. image:: /images/discord_new_app_form.png
+    .. image:: /images/discord_create_app_form.png
         :alt: The new application form filled in.
 5. Create a Bot User by clicking on the accompanying button and confirming it.
 
-    .. image:: /images/discord_create_bot_user_button.png
+    .. image:: /images/discord_create_bot_user.png
         :alt: The Create a Bot User button.
 6. Make sure that **Public Bot** is ticked if you want others to invite your bot.
 
     - You should also make sure that **Require OAuth2 Code Grant** is unchecked unless you
       are developing a service that needs it. If you're unsure, then **leave it unchecked**.
 
-    .. figure:: /images/discord_finished_bot_user.png
-
-        How the Bot User options should look like for most people.
+    .. image:: /images/discord_bot_user_options.png
+        :alt: How the Bot User options should look like for most people.
 
 7. Click to reveal the token.
 
     - **This is not the Client Secret**
-
-    .. figure:: /images/discord_reveal_token.png
-
-        How the token reveal button looks like.
+    - Look at the image above to see where the **Token** is.
 
 And that's it. You now have a bot account and you can login with that token.
 
@@ -65,8 +61,8 @@ Copy paste that into the pre-formatted URL:
     https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot&permissions=0
 
 Replace ``YOUR_CLIENT_ID`` with the Client ID we got in the previous step. For example,
-in the image above our client ID is 312718641634213889 so the resulting URL would be
-https://discordapp.com/oauth2/authorize?client_id=312718641634213889&scope=bot&permissions=0
+in the image above our client ID is 312777964700041216 so the resulting URL would be
+https://discordapp.com/oauth2/authorize?client_id=312777964700041216&scope=bot&permissions=0
 (note that this bot has been deleted).
 
 Now you can click the link and invite your bot to any server you have "Manage Server" permissions on.
@@ -81,7 +77,7 @@ the guild, they will be granted a managed role that contains the permissions you
 If the permissions is 0, then no special role is created.
 
 This ``permissions`` value is calculated based on bit-wise arithmetic. Thankfully, people have
-created a calculate that makes it easy to calculate the permissions necessary visually.
+created a calculator that makes it easy to calculate the permissions necessary visually.
 
 - https://discordapi.com/permissions.html
 - https://finitereality.github.io/permissions/

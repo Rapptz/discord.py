@@ -238,7 +238,7 @@ Earlier, in v0.11.0 a :class:`VoiceState` class was added to refer to voice stat
 However, it was transparent to the user. In an effort to make the library save more memory, the
 voice state change is now more visible.
 
-The only way to access voice attributes if via the :attr:`Member.voice` attribute. Note that if
+The only way to access voice attributes is via the :attr:`Member.voice` attribute. Note that if
 the member does not have a voice state this attribute can be ``None``.
 
 Quick example: ::
