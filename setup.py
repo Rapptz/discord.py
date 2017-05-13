@@ -9,6 +9,7 @@ with open('requirements.txt') as f:
 
 if on_rtd:
   requirements.append('sphinxcontrib-napoleon')
+  requirements.append('sphinxcontrib-asyncio')
 
 version = ''
 with open('discord/__init__.py') as f:
@@ -35,6 +36,7 @@ with open('README.md') as f:
 
 extras_require = {
     'voice': ['PyNaCl==1.0.1'],
+    'docs': ['sphinxcontrib-asyncio']
 }
 
 setup(name='discord.py',

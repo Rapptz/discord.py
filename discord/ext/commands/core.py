@@ -88,54 +88,54 @@ class Command:
 
     Attributes
     -----------
-    name : str
+    name: str
         The name of the command.
-    callback : coroutine
+    callback: coroutine
         The coroutine that is executed when the command is called.
-    help : str
+    help: str
         The long help text for the command.
-    brief : str
+    brief: str
         The short help text for the command. If this is not specified
         then the first line of the long help text is used instead.
-    usage : str
+    usage: str
         A replacement for arguments in the default help text.
-    aliases : list
+    aliases: list
         The list of aliases the command can be invoked under.
-    pass_context : bool
-        A boolean that indicates that the current :class:`Context` should
+    pass_context: bool
+        A boolean that indicates that the current :class:`.Context` should
         be passed as the **first parameter**. Defaults to `True`.
-    enabled : bool
+    enabled: bool
         A boolean that indicates if the command is currently enabled.
         If the command is invoked while it is disabled, then
-        :exc:`DisabledCommand` is raised to the :func:`on_command_error`
+        :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
-    parent : Optional[command]
+    parent: Optional[command]
         The parent command that this command belongs to. ``None`` is there
         isn't one.
     checks
         A list of predicates that verifies if the command could be executed
-        with the given :class:`Context` as the sole parameter. If an exception
+        with the given :class:`.Context` as the sole parameter. If an exception
         is necessary to be thrown to signal failure, then one derived from
-        :exc:`CommandError` should be used. Note that if the checks fail then
-        :exc:`CheckFailure` exception is raised to the :func:`on_command_error`
+        :exc:`.CommandError` should be used. Note that if the checks fail then
+        :exc:`.CheckFailure` exception is raised to the :func:`.on_command_error`
         event.
-    description : str
+    description: str
         The message prefixed into the default help command.
-    hidden : bool
+    hidden: bool
         If ``True``\, the default help command does not show this in the
         help output.
-    rest_is_raw : bool
+    rest_is_raw: bool
         If ``False`` and a keyword-only argument is provided then the keyword
         only argument is stripped and handled as if it was a regular argument
-        that handles :exc:`MissingRequiredArgument` and default values in a
+        that handles :exc:`.MissingRequiredArgument` and default values in a
         regular matter rather than passing the rest completely raw. If ``True``
         then the keyword-only argument will pass in the rest of the arguments
         in a completely raw matter. Defaults to ``False``.
-    ignore_extra : bool
+    ignore_extra: bool
         If ``True``\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
-        and ``b``). Otherwise :func:`on_command_error` and local error handlers
-        are called with :exc:`TooManyArguments`. Defaults to ``True``.
+        and ``b``). Otherwise :func:`.on_command_error` and local error handlers
+        are called with :exc:`.TooManyArguments`. Defaults to ``True``.
     """
     def __init__(self, name, callback, **kwargs):
         self.name = name
@@ -418,7 +418,7 @@ class Command:
 
         Parameters
         -----------
-        ctx: :class:`Context`
+        ctx: :class:`.Context`
             The invocation context to reset the cooldown under.
         """
         if self._buckets.valid:
@@ -439,8 +439,8 @@ class Command:
     def error(self, coro):
         """A decorator that registers a coroutine as a local error handler.
 
-        A local error handler is an :func:`on_command_error` event limited to
-        a single command. However, the :func:`on_command_error` is still
+        A local error handler is an :func:`.on_command_error` event limited to
+        a single command. However, the :func:`.on_command_error` is still
         invoked afterwards as the catch-all.
 
         Parameters
@@ -463,13 +463,13 @@ class Command:
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
 
-        A pre-invoke hook is called directly before :meth:`invoke` is
+        A pre-invoke hook is called directly before the command is
         called. This makes it a useful function to set up database
         connections or any type of set up required.
 
-        This pre-invoke hook takes a sole parameter, a :class:`Context`.
+        This pre-invoke hook takes a sole parameter, a :class:`.Context`.
 
-        See :meth:`Bot.before_invoke` for more info.
+        See :meth:`.Bot.before_invoke` for more info.
 
         Parameters
         -----------
@@ -478,7 +478,7 @@ class Command:
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
@@ -490,13 +490,13 @@ class Command:
     def after_invoke(self, coro):
         """A decorator that registers a coroutine as a post-invoke hook.
 
-        A post-invoke hook is called directly after :meth:`invoke` is
+        A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
         connections or any type of clean up required.
 
-        This post-invoke hook takes a sole parameter, a :class:`Context`.
+        This post-invoke hook takes a sole parameter, a :class:`.Context`.
 
-        See :meth:`Bot.after_invoke` for more info.
+        See :meth:`.Bot.after_invoke` for more info.
 
         Parameters
         -----------
@@ -505,7 +505,7 @@ class Command:
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
@@ -577,11 +577,11 @@ class Command:
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`checks` attribute.
+        inside the :attr:`.checks` attribute.
 
         Parameters
         -----------
-        ctx: :class:`Context`
+        ctx: :class:`.Context`
             The ctx of the command currently being invoked.
 
         Returns
@@ -613,12 +613,12 @@ class Command:
 
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
-    similar to :class:`Group` and are allowed to register commands.
+    similar to :class:`.Group` and are allowed to register commands.
 
     Attributes
     -----------
     all_commands: dict
-        A mapping of command name to :class:`Command` or superclass
+        A mapping of command name to :class:`.Command` or superclass
         objects.
     """
     def __init__(self, **kwargs):
@@ -627,7 +627,7 @@ class GroupMixin:
 
     @property
     def commands(self):
-        """Set[:class:`Command`]: A unique set of commands without aliases that are registered."""
+        """Set[:class:`.Command`]: A unique set of commands without aliases that are registered."""
         return set(self.all_commands.values())
 
     def recursively_remove_all_commands(self):
@@ -637,11 +637,11 @@ class GroupMixin:
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`Command` or its superclasses into the internal list
+        """Adds a :class:`.Command` or its superclasses into the internal list
         of commands.
 
-        This is usually not called, instead the :meth:`command` or
-        :meth:`group` shortcut decorators are used instead.
+        This is usually not called, instead the :meth:`~.GroupMixin.command` or
+        :meth:`~.GroupMixin.group` shortcut decorators are used instead.
 
         Parameters
         -----------
@@ -650,10 +650,10 @@ class GroupMixin:
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             If the command is already registered.
         TypeError
-            If the command passed is not a subclass of :class:`Command`.
+            If the command passed is not a subclass of :class:`.Command`.
         """
 
         if not isinstance(command, Command):
@@ -672,19 +672,19 @@ class GroupMixin:
             self.all_commands[alias] = command
 
     def remove_command(self, name):
-        """Remove a :class:`Command` or subclasses from the internal list
+        """Remove a :class:`.Command` or subclasses from the internal list
         of commands.
 
         This could also be used as a way to remove aliases.
 
         Parameters
         -----------
-        name : str
+        name: str
             The name of the command to remove.
 
         Returns
         --------
-        Command or subclass
+        :class:`.Command` or subclass
             The command that was removed. If the name is not valid then
             `None` is returned instead.
         """
@@ -711,7 +711,7 @@ class GroupMixin:
                 yield from command.walk_commands()
 
     def get_command(self, name):
-        """Get a :class:`Command` or subclasses from the internal list
+        """Get a :class:`.Command` or subclasses from the internal list
         of commands.
 
         This could also be used as a way to get aliases.
@@ -745,8 +745,8 @@ class GroupMixin:
         return obj
 
     def command(self, *args, **kwargs):
-        """A shortcut decorator that invokes :func:`command` and adds it to
-        the internal command list via :meth:`add_command`.
+        """A shortcut decorator that invokes :func:`.command` and adds it to
+        the internal command list via :meth:`~.GroupMixin.add_command`.
         """
         def decorator(func):
             result = command(*args, **kwargs)(func)
@@ -756,8 +756,8 @@ class GroupMixin:
         return decorator
 
     def group(self, *args, **kwargs):
-        """A shortcut decorator that invokes :func:`group` and adds it to
-        the internal command list via :meth:`add_command`.
+        """A shortcut decorator that invokes :func:`.group` and adds it to
+        the internal command list via :meth:`~.GroupMixin.add_command`.
         """
         def decorator(func):
             result = group(*args, **kwargs)(func)
@@ -770,12 +770,12 @@ class Group(GroupMixin, Command):
     """A class that implements a grouping protocol for commands to be
     executed as subcommands.
 
-    This class is a subclass of :class:`Command` and thus all options
-    valid in :class:`Command` are valid in here as well.
+    This class is a subclass of :class:`.Command` and thus all options
+    valid in :class:`.Command` are valid in here as well.
 
     Attributes
     -----------
-    invoke_without_command : bool
+    invoke_without_command: bool
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -820,25 +820,25 @@ class Group(GroupMixin, Command):
 # Decorators
 
 def command(name=None, cls=None, **attrs):
-    """A decorator that transforms a function into a :class:`Command`
-    or if called with :func:`group`, :class:`Group`.
+    """A decorator that transforms a function into a :class:`.Command`
+    or if called with :func:`.group`, :class:`.Group`.
 
     By default the ``help`` attribute is received automatically from the
     docstring of the function and is cleaned up with the use of
     ``inspect.cleandoc``. If the docstring is ``bytes``, then it is decoded
     into ``str`` using utf-8 encoding.
 
-    All checks added using the :func:`check` & co. decorators are added into
+    All checks added using the :func:`.check` & co. decorators are added into
     the function. There is no way to supply your own checks through this
     decorator.
 
     Parameters
     -----------
-    name : str
+    name: str
         The name to create the command with. By default this uses the
         function name unchanged.
     cls
-        The class to construct with. By default this is :class:`Command`.
+        The class to construct with. By default this is :class:`.Command`.
         You usually do not change this.
     attrs
         Keyword arguments to pass into the construction of the class denoted
@@ -886,28 +886,28 @@ def command(name=None, cls=None, **attrs):
     return decorator
 
 def group(name=None, **attrs):
-    """A decorator that transforms a function into a :class:`Group`.
+    """A decorator that transforms a function into a :class:`.Group`.
 
-    This is similar to the :func:`command` decorator but creates a
-    :class:`Group` instead of a :class:`Command`.
+    This is similar to the :func:`.command` decorator but creates a
+    :class:`.Group` instead of a :class:`.Command`.
     """
     return command(name=name, cls=Group, **attrs)
 
 def check(predicate):
-    """A decorator that adds a check to the :class:`Command` or its
-    subclasses. These checks could be accessed via :attr:`Command.checks`.
+    """A decorator that adds a check to the :class:`.Command` or its
+    subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
     These checks should be predicates that take in a single parameter taking
-    a :class:`Context`. If the check returns a ``False``\-like value then
-    during invocation a :exc:`CheckFailure` exception is raised and sent to
-    the :func:`on_command_error` event.
+    a :class:`.Context`. If the check returns a ``False``\-like value then
+    during invocation a :exc:`.CheckFailure` exception is raised and sent to
+    the :func:`.on_command_error` event.
 
     If an exception should be thrown in the predicate then it should be a
-    subclass of :exc:`CommandError`. Any exception not subclassed from it
+    subclass of :exc:`.CommandError`. Any exception not subclassed from it
     will be propagated while those subclassed will be sent to
-    :func:`on_command_error`.
+    :func:`.on_command_error`.
 
-    .. info::
+    .. note::
 
         These functions can either be regular functions or coroutines.
 
@@ -960,7 +960,7 @@ def check(predicate):
     return decorator
 
 def has_role(name):
-    """A :func:`check` that is added that checks if the member invoking the
+    """A :func:`.check` that is added that checks if the member invoking the
     command has the role specified via the name specified.
 
     The name is case sensitive and must be exact. No normalisation is done in
@@ -971,7 +971,7 @@ def has_role(name):
 
     Parameters
     -----------
-    name : str
+    name: str
         The name of the role to check.
     """
 
@@ -985,11 +985,11 @@ def has_role(name):
     return check(predicate)
 
 def has_any_role(*names):
-    """A :func:`check` that is added that checks if the member invoking the
+    """A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
-    Similar to :func:`has_role`\, the names passed in must be exact.
+    Similar to :func:`.has_role`\, the names passed in must be exact.
 
     Parameters
     -----------
@@ -1015,11 +1015,11 @@ def has_any_role(*names):
     return check(predicate)
 
 def has_permissions(**perms):
-    """A :func:`check` that is added that checks if the member has any of
+    """A :func:`.check` that is added that checks if the member has any of
     the permissions necessary.
 
     The permissions passed in must be exactly like the properties shown under
-    :class:`discord.Permissions`.
+    :class:`.discord.Permissions`.
 
     Parameters
     ------------
@@ -1045,7 +1045,7 @@ def has_permissions(**perms):
     return check(predicate)
 
 def bot_has_role(name):
-    """Similar to :func:`has_role` except checks if the bot itself has the
+    """Similar to :func:`.has_role` except checks if the bot itself has the
     role.
     """
 
@@ -1059,7 +1059,7 @@ def bot_has_role(name):
     return check(predicate)
 
 def bot_has_any_role(*names):
-    """Similar to :func:`has_any_role` except checks if the bot itself has
+    """Similar to :func:`.has_any_role` except checks if the bot itself has
     any of the roles listed.
     """
     def predicate(ctx):
@@ -1072,7 +1072,7 @@ def bot_has_any_role(*names):
     return check(predicate)
 
 def bot_has_permissions(**perms):
-    """Similar to :func:`has_permissions` except checks if the bot itself has
+    """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
     """
     def predicate(ctx):
@@ -1083,12 +1083,12 @@ def bot_has_permissions(**perms):
     return check(predicate)
 
 def guild_only():
-    """A :func:`check` that indicates this command must only be used in a
+    """A :func:`.check` that indicates this command must only be used in a
     guild context only. Basically, no private messages are allowed when
     using the command.
 
-    This check raises a special exception, :exc:`NoPrivateMessage`
-    that is derived from :exc:`CheckFailure`.
+    This check raises a special exception, :exc:`.NoPrivateMessage`
+    that is derived from :exc:`.CheckFailure`.
     """
 
     def predicate(ctx):
@@ -1099,13 +1099,13 @@ def guild_only():
     return check(predicate)
 
 def is_owner():
-    """A :func:`check` that checks if the person invoking this command is the
+    """A :func:`.check` that checks if the person invoking this command is the
     owner of the bot.
 
-    This is powered by :meth:`Bot.is_owner`.
+    This is powered by :meth:`.Bot.is_owner`.
 
-    This check raises a special exception, :exc:`NotOwner` that is derived
-    from :exc:`CheckFailure`.
+    This check raises a special exception, :exc:`.NotOwner` that is derived
+    from :exc:`.CheckFailure`.
     """
 
     @asyncio.coroutine
@@ -1117,13 +1117,13 @@ def is_owner():
     return check(predicate)
 
 def is_nsfw():
-    """A :func:`check` that checks if the channel is a NSFW channel."""
+    """A :func:`.check` that checks if the channel is a NSFW channel."""
     def pred(ctx):
         return isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw()
     return check(pred)
 
 def cooldown(rate, per, type=BucketType.default):
-    """A decorator that adds a cooldown to a :class:`Command`
+    """A decorator that adds a cooldown to a :class:`.Command`
     or its subclasses.
 
     A cooldown allows a command to only be used a specific amount
@@ -1137,8 +1137,8 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.guild`` for a per-guild basis.
     - ``BucketType.channel`` for a per-channel basis.
 
-    If a cooldown is triggered, then :exc:`CommandOnCooldown` is triggered in
-    :func:`on_command_error` and the local error handler.
+    If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
+    :func:`.on_command_error` and the local error handler.
 
     A command can only have a single cooldown.
 

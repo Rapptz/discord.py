@@ -79,21 +79,22 @@ overriding the specific events. For example: ::
     import discord
 
     class MyClient(discord.Client):
+        async def on_message(self, message):
+            if message.author != self.user:
+                return
 
-        @asyncio.coroutine
-        def on_message(self, message):
-            yield from self.send_message(message.channel, 'Hello World!')
+            if message.content.startswith('$hello'):
+                await message.channel.send('Hello World!')
 
 
 If an event handler raises an exception, :func:`on_error` will be called
-to handle it, which defaults to print a traceback and ignore the exception.
+to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. warning::
 
     All the events must be a |corourl|_. If they aren't, then you might get unexpected
-    errors. In order to turn a function into a coroutine they must either be decorated
-    with ``@asyncio.coroutine`` or in Python 3.5+ be defined using the ``async def``
-    declaration.
+    errors. In order to turn a function into a coroutine they must either be ``async def``
+    functions or in 3.4 decorated with ``@asyncio.coroutine``.
 
     The following two functions are examples of coroutine functions: ::
 
@@ -103,14 +104,6 @@ to handle it, which defaults to print a traceback and ignore the exception.
         @asyncio.coroutine
         def on_ready():
             pass
-
-    Since this can be a potentially common mistake, there is a helper
-    decorator, :meth:`Client.async_event` to convert a basic function
-    into a coroutine and an event at the same time. Note that it is
-    not necessary if you use ``async def``.
-
-.. versionadded:: 0.7.0
-    Subclassing to listen to events.
 
 .. function:: on_connect()
 
@@ -164,47 +157,70 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param kwargs: The keyword arguments for the event that raised the
         execption.
 
-.. function:: on_message(message)
-
-    Called when a message is created and sent to a guild.
-
-    :param message: A :class:`Message` of the current message.
-
 .. function:: on_socket_raw_receive(msg)
 
-    Called whenever a message is received from the websocket, before
-    it's processed.This event is always dispatched when a message is
+    Called whenever a message is received from the WebSocket, before
+    it's processed. This event is always dispatched when a message is
     received and the passed data is not processed in any way.
 
-    This is only really useful for grabbing the websocket stream and
+    This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
 
     .. note::
 
         This is only for the messages received from the client
-        websocket. The voice websocket will not trigger this event.
+        WebSocket. The voice WebSocket will not trigger this event.
 
-    :param msg: The message passed in from the websocket library.
+    :param msg: The message passed in from the WebSocket library.
                 Could be ``bytes`` for a binary message or ``str``
                 for a regular message.
 
 .. function:: on_socket_raw_send(payload)
 
-    Called whenever a send operation is done on the websocket before the
-    message is sent. The passed parameter is the message that is to
-    sent to the websocket.
+    Called whenever a send operation is done on the WebSocket before the
+    message is sent. The passed parameter is the message that is being
+    sent to the WebSocket.
 
-    This is only really useful for grabbing the websocket stream and
+    This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
 
     .. note::
 
         This is only for the messages received from the client
-        websocket. The voice websocket will not trigger this event.
+        WebSocket. The voice WebSocket will not trigger this event.
 
     :param payload: The message that is about to be passed on to the
-                    websocket library. It can be ``bytes`` to denote a binary
+                    WebSocket library. It can be ``bytes`` to denote a binary
                     message or ``str`` to denote a regular text message.
+
+.. function:: on_typing(channel, user, when)
+
+    Called when someone begins typing a message.
+
+    The ``channel`` parameter can be a :class:`abc.Messageable` instance.
+    Which could either be :class:`TextChannel`, :class:`GroupChannel`, or
+    :class:`DMChannel`.
+
+    If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
+    is a :class:`Member`, otherwise it is a :class:`User`.
+
+    :param channel: The location where the typing originated from.
+    :param user: The user that started typing.
+    :param when: A ``datetime.datetime`` object representing when typing started.
+
+.. function:: on_message(message)
+
+    Called when a :class:`Message` is created and sent.
+
+    .. warning::
+
+        Your bot's own messages and private messages are sent through this
+        event. This can lead cases of 'recursion' depending on how your bot was
+        programmed. If you want the bot to not reply to itself, consider
+        checking the user IDs. Note that :class:`~ext.commands.Bot` does not
+        have this problem.
+
+    :param message: A :class:`Message` of the current message.
 
 .. function:: on_message_delete(message)
 
@@ -218,7 +234,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
 .. function:: on_message_edit(before, after)
 
-    Called when a message receives an update event. If the message is not found
+    Called when a :class:`Message` receives an update event. If the message is not found
     in the :attr:`Client.messages` cache, then these events will not be called.
     This happens if the message is too old or the client is participating in high
     traffic guilds. To fix this, increase the ``max_messages`` option of :class:`Client`.
@@ -228,7 +244,9 @@ to handle it, which defaults to print a traceback and ignore the exception.
     - A message has been pinned or unpinned.
     - The message content has been changed.
     - The message has received an embed.
-        - For performance reasons, the embed guild does not do this in a "consistent" manner.
+
+        - For performance reasons, the embed server does not do this in a "consistent" manner.
+
     - A call message has received an update to its participants or ending time.
 
     :param before: A :class:`Message` of the previous version of the message.
@@ -242,7 +260,7 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     .. note::
 
-        To get the message being reacted, access it via :attr:`Reaction.message`.
+        To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
 
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who added the reaction.
@@ -269,31 +287,51 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param message: The :class:`Message` that had its reactions cleared.
     :param reactions: A list of :class:`Reaction`\s that were removed.
 
-.. function:: on_channel_delete(channel)
-              on_channel_create(channel)
+.. function:: on_private_channel_delete(channel)
+              on_private_channel_create(channel)
 
-    Called whenever a channel is removed or added from a guild.
+    Called whenever a private channel is deleted or created.
 
-    Note that you can get the guild from :attr:`Channel.guild`.
-    :func:`on_channel_create` could also pass in a :class:`PrivateChannel` depending
-    on the value of :attr:`Channel.is_private`.
+    :param channel: The :class:`abc.PrivateChannel` that got created or deleted.
 
-    :param channel: The :class:`Channel` that got added or deleted.
+.. function:: on_private_channel_update(before, after)
 
-.. function:: on_channel_update(before, after)
+    Called whenever a private group DM is updated. e.g. changed name or topic.
 
-    Called whenever a channel is updated. e.g. changed name, topic, permissions.
+    :param before: The :class:`GroupChannel` that got updated with the old info.
+    :param after: The :class:`GroupChannel` that got updated with the updated info.
 
-    :param before: The :class:`Channel` that got updated with the old info.
-    :param after: The :class:`Channel` that got updated with the updated info.
+.. function:: on_private_channel_pins_update(channel, last_pin)
 
-.. function:: on_channel_pins_update(channel, last_pin)
+    Called whenever a message is pinned or unpinned from a private channel.
 
-    Called whenever a message is pinned or unpinned from a channel.
-
-    :param channel: The :class:`Channel` that had it's pins updated.
+    :param channel: The :class:`abc.PrivateChannel` that had it's pins updated.
     :param last_pin: A ``datetime.datetime`` object representing when the latest message
-    was pinned or ``None`` if there are no pins.
+                     was pinned or ``None`` if there are no pins.
+
+.. function:: on_guild_channel_delete(channel)
+              on_guild_channel_create(channel)
+
+    Called whenever a guild channel is deleted or created.
+
+    Note that you can get the guild from :attr:`~abc.GuildChannel.guild`.
+
+    :param channel: The :class:`abc.GuildChannel` that got created or deleted.
+
+.. function:: on_guild_channel_update(before, after)
+
+    Called whenever a guild channel is updated. e.g. changed name, topic, permissions.
+
+    :param before: The :class:`abc.GuildChannel` that got updated with the old info.
+    :param after: The :class:`abc.GuildChannel` that got updated with the updated info.
+
+.. function:: on_guild_channel_pins_update(channel, last_pin)
+
+    Called whenever a message is pinned or unpinned from a guild channel.
+
+    :param channel: The :class:`abc.GuildChannel` that had it's pins updated.
+    :param last_pin: A ``datetime.datetime`` object representing when the latest message
+                     was pinned or ``None`` if there are no pins.
 
 .. function:: on_member_join(member)
               on_member_remove(member)
@@ -368,10 +406,11 @@ to handle it, which defaults to print a traceback and ignore the exception.
     :param before: The :class:`Role` that updated with the old info.
     :param after: The :class:`Role` that updated with the updated info.
 
-.. function:: on_guild_emojis_update(before, after)
+.. function:: on_guild_emojis_update(guild, before, after)
 
     Called when a :class:`Guild` adds or removes :class:`Emoji`.
 
+    :param guild: The :class:`Guild` who got their emojis updated.
     :param before: A list of :class:`Emoji` before the update.
     :param after: A list of :class:`Emoji` after the update.
 
@@ -383,9 +422,9 @@ to handle it, which defaults to print a traceback and ignore the exception.
 
     :param guild: The :class:`Guild` that has changed availability.
 
-.. function:: on_voice_state_update(before, after)
+.. function:: on_voice_state_update(member, before, after)
 
-    Called when a :class:`Member` changes their voice state.
+    Called when a :class:`Member` changes their :class:`VoiceState`.
 
     The following, but not limited to, examples illustrate when this event is called:
 
@@ -394,35 +433,25 @@ to handle it, which defaults to print a traceback and ignore the exception.
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a guild administrator.
 
-    :param before: The :class:`Member` whose voice state changed prior to the changes.
-    :param after: The :class:`Member` whose voice state changed after the changes.
+    :param member: The :class:`Member` whose voice states changed.
+    :param before: The :class:`VoiceState` prior to the changes.
+    :param after: The :class:`VoiceState` after to the changes.
 
-.. function:: on_member_ban(member)
+.. function:: on_member_ban(guild, user)
 
-    Called when a :class:`Member` gets banned from a :class:`Guild`.
+    Called when user gets banned from a :class:`Guild`.
 
-    You can access the guild that the member got banned from via :attr:`Member.guild`.
-
-    :param member: The member that got banned.
+    :param guild: The :class:`Guild` the user got banned from.
+    :param user: The user that got banned.
+                 Can be either :class:`User` or :class:`Member` depending if
+                 the user was in the guild or not at the time of removal.
 
 .. function:: on_member_unban(guild, user)
 
     Called when a :class:`User` gets unbanned from a :class:`Guild`.
 
-    :param guild: The guild the user got unbanned from.
-    :param user: The user that got unbanned.
-
-.. function:: on_typing(channel, user, when)
-
-    Called when someone begins typing a message.
-
-    The ``channel`` parameter could either be a :class:`PrivateChannel` or a
-    :class:`Channel`. If ``channel`` is a :class:`PrivateChannel` then the
-    ``user`` parameter is a :class:`User`, otherwise it is a :class:`Member`.
-
-    :param channel: The location where the typing originated from.
-    :param user: The user that started typing.
-    :param when: A ``datetime.datetime`` object representing when typing started.
+    :param guild: The :class:`Guild` the user got unbanned from.
+    :param user: The :class:`User` that got unbanned.
 
 .. function:: on_group_join(channel, user)
               on_group_remove(channel, user)
@@ -1281,15 +1310,15 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: owner
 
-        *Union[:class:`Member`, :class:`User`]`* – The guild's owner. See also :attr:`Guild.owner`
+        Union[:class:`Member`, :class:`User`] – The guild's owner. See also :attr:`Guild.owner`
 
     .. attribute:: region
 
-        *:class:`GuildRegion`* – The guild's voice region. See also :attr:`Guild.region`.
+        :class:`GuildRegion` – The guild's voice region. See also :attr:`Guild.region`.
 
     .. attribute:: afk_channel
 
-        *Union[:class:`VoiceChannel`, :class:`Object`]* – The guild's AFK channel.
+        Union[:class:`VoiceChannel`, :class:`Object`] – The guild's AFK channel.
 
         If this could not be found, then it falls back to a :class:`Object`
         with the ID being set.
@@ -1310,20 +1339,20 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: widget_channel
 
-        *Union[:class:`TextChannel`, :class:`Object`]* – The widget's channel.
+        Union[:class:`TextChannel`, :class:`Object`] – The widget's channel.
 
         If this could not be found then it falls back to a :class:`Object`
         with the ID being set.
 
     .. attribute:: verification_level
 
-        *:class:`VerificationLevel`* – The guild's verification level.
+        :class:`VerificationLevel` – The guild's verification level.
 
         See also :attr:`Guild.verification_level`.
 
     .. attribute:: explicit_content_filter
 
-        *:class:`ContentFilter`* – The guild's content filter.
+        :class:`ContentFilter` – The guild's content filter.
 
         See also :attr:`Guild.explicit_content_filter`.
 
@@ -1365,7 +1394,7 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: overwrites
 
-        *List[Tuple[target, :class:`PermissionOverwrite`]]* – A list of
+        List[Tuple[target, :class:`PermissionOverwrite`]] – A list of
         permission overwrite tuples that represents a target and a
         :class:`PermissionOverwrite` for said target.
 
@@ -1377,7 +1406,7 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: roles
 
-        *List[Union[:class:`Role`, :class:`Object`]]* – A list of roles being added or removed
+        List[Union[:class:`Role`, :class:`Object`]] – A list of roles being added or removed
         from a member.
 
         If a role is not found then it is a :class:`Object` with the ID and name being
@@ -1403,14 +1432,14 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: permissions
 
-        *:class:`Permissions`* – The permissions of a role.
+        :class:`Permissions` – The permissions of a role.
 
         See also :attr:`Role.permissions`.
 
     .. attribute:: colour
                    color
 
-        *:class:`Colour`* – The colour of a role.
+        :class:`Colour` – The colour of a role.
 
         See also :attr:`Role.colour`
 
@@ -1434,14 +1463,14 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: channel
 
-        *Union[:class:`abc.GuildChannel`, :class:`Object`]* – A guild channel.
+        Union[:class:`abc.GuildChannel`, :class:`Object`] – A guild channel.
 
         If the channel is not found then it is a :class:`Object` with the ID
         being set. In some cases the channel name is also set.
 
     .. attribute:: inviter
 
-        *:class:`User`* – The user who created the invite.
+        :class:`User` – The user who created the invite.
 
         See also :attr:`Invite.inviter`.
 
@@ -1472,7 +1501,7 @@ this goal, it must make use of a couple of data classes that aid in this goal.
     .. attribute:: allow
                    deny
 
-        *:class:`Permissions`* – The permissions being allowed or denied.
+        :class:`Permissions` – The permissions being allowed or denied.
 
     .. attribute:: id
 
@@ -1487,43 +1516,72 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
 
-.. _discord_api_data:
+.. _discord_api_abcs:
 
-Data Classes
---------------
+Abstract Base Classes
+-----------------------
 
-Some classes are just there to be data containers, this lists them.
+An abstract base class (also known as an ``abc``) is a class that models can inherit
+to get their behaviour. The Python implementation of an `abc <https://docs.python.org/3/library/abc.html>`_ is
+slightly different in that you can register them at run-time. **Abstract base classes cannot be instantiated**.
+They are mainly there for usage with ``isinstance`` and ``issubclass``\.
 
-.. note::
+This library has a module related to abstract base classes, some of which are actually from the ``abc`` standard
+module, others which are not.
 
-    With the exception of :class:`Object`, :class:`Colour`, and :class:`Permissions` the
-    data classes listed below are **not intended to be created by users** and are also
+.. autoclass:: discord.abc.Snowflake
+    :members:
+
+.. autoclass:: discord.abc.User
+    :members:
+
+.. autoclass:: discord.abc.PrivateChannel
+    :members:
+
+.. autoclass:: discord.abc.GuildChannel
+    :members:
+
+.. autoclass:: discord.abc.Messageable
+    :members:
+    :exclude-members: history typing
+
+    .. autocomethod:: discord.abc.Messageable.history
+        :async-for:
+
+    .. autocomethod:: discord.abc.Messageable.typing
+        :async-with:
+
+.. autoclass:: discord.abc.Connectable
+
+.. _discord_api_models:
+
+Discord Models
+---------------
+
+Models are classes that are received from Discord and are not meant to be created by
+the user of the library.
+
+.. danger::
+
+    The classes listed below are **not intended to be created by users** and are also
     **read-only**.
 
     For example, this means that you should not make your own :class:`User` instances
     nor should you modify the :class:`User` instance yourself.
 
-    If you want to get one of these data classes instances they'd have to be through
+    If you want to get one of these model classes instances they'd have to be through
     the cache, and a common way of doing so is through the :func:`utils.find` function
-    or attributes of data classes that you receive from the events specified in the
+    or attributes of model classes that you receive from the events specified in the
     :ref:`discord-api-events`.
 
+.. note::
 
-.. warning::
-
-    Nearly all data classes here have ``__slots__`` defined which means that it is
-    impossible to have dynamic attributes to the data classes. The only exception
-    to this rule is :class:`Object` which was designed with dynamic attributes in
-    mind.
+    Nearly all classes here have ``__slots__`` defined which means that it is
+    impossible to have dynamic attributes to the data classes.
 
     More information about ``__slots__`` can be found
     `in the official python documentation <https://docs.python.org/3/reference/datamodel.html#slots>`_.
 
-Object
-~~~~~~~
-
-.. autoclass:: Object
-    :members:
 
 ClientUser
 ~~~~~~~~~~~~
@@ -1544,6 +1602,13 @@ User
 .. autoclass:: User
     :members:
     :inherited-members:
+    :exclude-members: history typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 Message
 ~~~~~~~
@@ -1556,18 +1621,10 @@ Reaction
 
 .. autoclass:: Reaction
     :members:
+    :exclude-members: users
 
-Embed
-~~~~~~
-
-.. autoclass:: Embed
-    :members:
-
-File
-~~~~~
-
-.. autoclass:: File
-    :members:
+    .. autocomethod:: users
+        :async-for:
 
 CallMessage
 ~~~~~~~~~~~~
@@ -1586,6 +1643,10 @@ Guild
 
 .. autoclass:: Guild
     :members:
+    :exclude-members: audit_logs
+
+    .. autocomethod:: audit_logs
+        :async-for:
 
 Member
 ~~~~~~
@@ -1593,23 +1654,18 @@ Member
 .. autoclass:: Member
     :members:
     :inherited-members:
+    :exclude-members: history typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 VoiceState
 ~~~~~~~~~~~
 
 .. autoclass:: VoiceState
-    :members:
-
-Colour
-~~~~~~
-
-.. autoclass:: Colour
-    :members:
-
-Game
-~~~~
-
-.. autoclass:: Game
     :members:
 
 Emoji
@@ -1624,25 +1680,19 @@ Role
 .. autoclass:: Role
     :members:
 
-Permissions
-~~~~~~~~~~~~
-
-.. autoclass:: Permissions
-    :members:
-
-PermissionOverwrite
-~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: PermissionOverwrite
-    :members:
-
-
 TextChannel
 ~~~~~~~~~~~~
 
 .. autoclass:: TextChannel
     :members:
     :inherited-members:
+    :exclude-members: history typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 VoiceChannel
 ~~~~~~~~~~~~~
@@ -1657,6 +1707,13 @@ DMChannel
 .. autoclass:: DMChannel
     :members:
     :inherited-members:
+    :exclude-members: history typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 GroupChannel
 ~~~~~~~~~~~~
@@ -1664,6 +1721,13 @@ GroupChannel
 .. autoclass:: GroupChannel
     :members:
     :inherited-members:
+    :exclude-members: history typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 
 Invite
@@ -1671,6 +1735,69 @@ Invite
 
 .. autoclass:: Invite
     :members:
+
+.. _discord_api_data:
+
+Data Classes
+--------------
+
+Some classes are just there to be data containers, this lists them.
+
+Unlike :ref:`models <discord_api_models>` you are allowed to create
+these yourself, even if they can also be used to hold attributes.
+
+Nearly all classes here have ``__slots__`` defined which means that it is
+impossible to have dynamic attributes to the data classes.
+
+The only exception to this rule is :class:`Object`, which is made with
+dynamic attributes in mind.
+
+More information about ``__slots__`` can be found
+`in the official python documentation <https://docs.python.org/3/reference/datamodel.html#slots>`_.
+
+
+Object
+~~~~~~~
+
+.. autoclass:: Object
+    :members:
+
+Embed
+~~~~~~
+
+.. autoclass:: Embed
+    :members:
+
+File
+~~~~~
+
+.. autoclass:: File
+    :members:
+
+Colour
+~~~~~~
+
+.. autoclass:: Colour
+    :members:
+
+Game
+~~~~
+
+.. autoclass:: Game
+    :members:
+
+Permissions
+~~~~~~~~~~~~
+
+.. autoclass:: Permissions
+    :members:
+
+PermissionOverwrite
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PermissionOverwrite
+    :members:
+
 
 Exceptions
 ------------

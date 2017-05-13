@@ -55,7 +55,7 @@ def when_mentioned_or(*prefixes):
 
     See Also
     ----------
-    :func:`when_mentioned`
+    :func:`.when_mentioned`
     """
     def inner(bot, msg):
         r = list(prefixes)
@@ -212,17 +212,17 @@ class BotBase(GroupMixin):
     def check(self, func):
         """A decorator that adds a global check to the bot.
 
-        A global check is similar to a :func:`check` that is applied
+        A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
         have been verified and applies to every command the bot has.
 
-        .. info::
+        .. note::
 
             This function can either be a regular function or a coroutine.
 
-        Similar to a command :func:`check`\, this takes a single parameter
-        of type :class:`Context` and can only raise exceptions derived from
-        :exc:`CommandError`.
+        Similar to a command :func:`.check`\, this takes a single parameter
+        of type :class:`.Context` and can only raise exceptions derived from
+        :exc:`.CommandError`.
 
         Example
         ---------
@@ -240,7 +240,7 @@ class BotBase(GroupMixin):
     def add_check(self, func):
         """Adds a global check to the bot.
 
-        This is the non-decorator interface to :meth:`check`.
+        This is the non-decorator interface to :meth:`.check`.
 
         Parameters
         -----------
@@ -275,15 +275,15 @@ class BotBase(GroupMixin):
 
     @asyncio.coroutine
     def is_owner(self, user):
-        """Checks if a :class:`User` or :class:`Member` is the owner of
+        """Checks if a :class:`.User` or :class:`.Member` is the owner of
         this bot.
 
         If an :attr:`owner_id` is not set, it is fetched automatically
-        through the use of :meth:`application_info`.
+        through the use of :meth:`~.Bot.application_info`.
 
         Parameters
         -----------
-        user: :class:`abc.User`
+        user: :class:`.abc.User`
             The user to check for.
         """
 
@@ -300,11 +300,11 @@ class BotBase(GroupMixin):
         called. This makes it a useful function to set up database
         connections or any type of set up required.
 
-        This pre-invoke hook takes a sole parameter, a :class:`Context`.
+        This pre-invoke hook takes a sole parameter, a :class:`.Context`.
 
         .. note::
 
-            The :meth:`before_invoke` and :meth:`after_invoke` hooks are
+            The :meth:`~.Bot.before_invoke` and :meth:`~.Bot.after_invoke` hooks are
             only called if all checks and argument parsing procedures pass
             without error. If any check or argument parsing procedures fail
             then the hooks are not called.
@@ -316,7 +316,7 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
@@ -332,14 +332,14 @@ class BotBase(GroupMixin):
         called. This makes it a useful function to clean-up database
         connections or any type of clean up required.
 
-        This post-invoke hook takes a sole parameter, a :class:`Context`.
+        This post-invoke hook takes a sole parameter, a :class:`.Context`.
 
         .. note::
 
-            Similar to :meth:`before_invoke`\, this is not called unless
+            Similar to :meth:`~.Bot.before_invoke`\, this is not called unless
             checks and argument parsing procedures succeed. This hook is,
             however, **always** called regardless of the internal command
-            callback raising an error (i.e. :exc:`CommandInvokeError`\).
+            callback raising an error (i.e. :exc:`.CommandInvokeError`\).
             This makes it ideal for clean-up scenarios.
 
         Parameters
@@ -349,7 +349,7 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
@@ -361,7 +361,7 @@ class BotBase(GroupMixin):
     # listener registration
 
     def add_listener(self, func, name=None):
-        """The non decorator alternative to :meth:`listen`.
+        """The non decorator alternative to :meth:`.listen`.
 
         Parameters
         -----------
@@ -415,7 +415,7 @@ class BotBase(GroupMixin):
     def listen(self, name=None):
         """A decorator that registers another function as an external
         event listener. Basically this allows you to listen to multiple
-        events from different places e.g. such as :func:`discord.on_ready`
+        events from different places e.g. such as :func:`.on_ready`
 
         The functions being listened to must be a coroutine.
 
@@ -438,7 +438,7 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             The function being listened to is not a coroutine.
         """
 
@@ -459,7 +459,7 @@ class BotBase(GroupMixin):
         into a singular class that shares some state or no state at all.
 
         The cog can also have a ``__global_check`` member function that allows
-        you to define a global check. See :meth:`check` for more info.
+        you to define a global check. See :meth:`.check` for more info.
 
         More information will be documented soon.
 
@@ -515,7 +515,7 @@ class BotBase(GroupMixin):
 
         Returns
         ---------
-        Set[:class:`Command`]
+        Set[:class:`.Command`]
             A unique set of commands without aliases that belong
             to the cog.
         """
@@ -675,27 +675,27 @@ class BotBase(GroupMixin):
 
         Returns the invocation context from the message.
 
-        This is a more low-level counter-part for :meth:`process_message`
+        This is a more low-level counter-part for :meth:`.process_commands`
         to allow users more fine grained control over the processing.
 
         The returned context is not guaranteed to be a valid invocation
-        context, :attr:`Context.valid` must be checked to make sure it is.
+        context, :attr:`.Context.valid` must be checked to make sure it is.
         If the context is not valid then it is not a valid candidate to be
-        invoked under :meth:`invoke`.
+        invoked under :meth:`~.Bot.invoke`.
 
         Parameters
         -----------
         message: :class:`discord.Message`
             The message to get the invocation context from.
-        cls: type
+        cls
             The factory class that will be used to create the context.
-            By default, this is :class:`Context`. Should a custom
-            class be provided, it must be similar enough to :class:`Context`\'s
+            By default, this is :class:`.Context`. Should a custom
+            class be provided, it must be similar enough to :class:`.Context`\'s
             interface.
 
         Returns
         --------
-        :class:`Context`
+        :class:`.Context`
             The invocation context. The type of this can change via the
             ``cls`` parameter.
         """
@@ -732,7 +732,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        ctx: :class:`Context`
+        ctx: :class:`.Context`
             The invocation context to invoke.
         """
         if ctx.command is not None:
@@ -756,12 +756,12 @@ class BotBase(GroupMixin):
         to the bot and other groups. Without this coroutine, none of the
         commands will be triggered.
 
-        By default, this coroutine is called inside the :func:`on_message`
-        event. If you choose to override the :func:`on_message` event, then
+        By default, this coroutine is called inside the :func:`.on_message`
+        event. If you choose to override the :func:`.on_message` event, then
         you should invoke this coroutine as well.
 
         This is built using other low level tools, and is equivalent to a
-        call to :meth:`get_context` followed by a call to :meth:`invoke`.
+        call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
         Parameters
         -----------
@@ -782,7 +782,10 @@ class Bot(BotBase, discord.Client):
     anything that you can do with a :class:`discord.Client` you can do with
     this bot.
 
-    This class also subclasses :class:`GroupMixin` to provide the functionality
+    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
+    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
+
+    This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.
 
     Attributes
@@ -799,18 +802,18 @@ class Bot(BotBase, discord.Client):
         The command prefix could also be a list or a tuple indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`Context.prefix`.
+        :attr:`.Context.prefix`.
     description : str
         The content prefixed into the default help message.
     self_bot : bool
         If ``True``, the bot will only listen to commands invoked by itself rather
         than ignoring itself. If ``False`` (the default) then the bot will ignore
         itself. This cannot be changed once initialised.
-    formatter : :class:`HelpFormatter`
+    formatter : :class:`.HelpFormatter`
         The formatter used to format the help message. By default, it uses a
-        the :class:`HelpFormatter`. Check it for more info on how to override it.
+        the :class:`.HelpFormatter`. Check it for more info on how to override it.
         If you want to change the help command completely (add aliases, etc) then
-        a call to :meth:`remove_command` with 'help' as the argument would do the
+        a call to :meth:`~.Bot.remove_command` with 'help' as the argument would do the
         trick.
     pm_help : Optional[bool]
         A tribool that indicates if the help command should PM the user instead of
@@ -823,7 +826,7 @@ class Bot(BotBase, discord.Client):
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing
         the implementation of the command. The attributes will be the same as the
-        ones passed in the :class:`Command` constructor. Note that ``pass_context``
+        ones passed in the :class:`.Command` constructor. Note that ``pass_context``
         will always be set to ``True`` regardless of what you pass in.
     command_not_found : str
         The format string used when the help command is invoked with a command that
@@ -833,16 +836,16 @@ class Bot(BotBase, discord.Client):
         The format string used when the help command is invoked with requests for a
         subcommand but the command does not have any subcommands. Defaults to
         ``"Command {0.name} has no subcommands."``. The first format argument is the
-        :class:`Command` attempted to get a subcommand and the second is the name.
+        :class:`.Command` attempted to get a subcommand and the second is the name.
     owner_id: Optional[int]
         The ID that owns the bot. If this is not set and is then queried via
-        :meth:`is_owner` then it is fetched automatically using
-        :meth:`application_info`.
+        :meth:`.is_owner` then it is fetched automatically using
+        :meth:`~.Bot.application_info`.
     """
     pass
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`Bot` except that it is derived from
+    """This is similar to :class:`.Bot` except that it is derived from
     :class:`discord.AutoShardedClient` instead.
     """
     pass

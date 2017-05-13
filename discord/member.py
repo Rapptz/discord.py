@@ -458,7 +458,7 @@ class Member(discord.abc.Messageable):
 
         Moves a member to a new voice channel (they must be connected first).
 
-        You must have the :attr:`Permissions.move_members` permission to
+        You must have the :attr:`~Permissions.move_members` permission to
         use this.
 
         This raises the same exceptions as :meth:`edit`.
@@ -478,7 +478,7 @@ class Member(discord.abc.Messageable):
 
         Gives the member a number of :class:`Role`\s.
 
-        You must have the :attr:`Permissions.manage_roles` permission to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
 
         Parameters
@@ -505,7 +505,7 @@ class Member(discord.abc.Messageable):
 
         Removes :class:`Role`\s from this member.
 
-        You must have the :attr:`Permissions.manage_roles` permission to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
 
         Parameters

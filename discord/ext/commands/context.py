@@ -40,7 +40,7 @@ class Context(discord.abc.Messageable):
     -----------
     message: :class:`discord.Message`
         The message that triggered the command being executed.
-    bot: :class:`Bot`
+    bot: :class:`.Bot`
         The bot that contains the command being executed.
     args: list
         The list of transformed arguments that were passed into the command.
@@ -53,13 +53,13 @@ class Context(discord.abc.Messageable):
     prefix: str
         The prefix that was used to invoke the command.
     command
-        The command (i.e. :class:`Command` or its superclasses) that is being
+        The command (i.e. :class:`.Command` or its superclasses) that is being
         invoked currently.
     invoked_with: str
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
     invoked_subcommand
-        The subcommand (i.e. :class:`Command` or its superclasses) that was
+        The subcommand (i.e. :class:`.Command` or its superclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
         `None`.
     subcommand_passed: Optional[str]
@@ -93,7 +93,7 @@ class Context(discord.abc.Messageable):
         Calls a command with the arguments given.
 
         This is useful if you want to just call the callback that a
-        :class:`Command` holds internally.
+        :class:`.Command` holds internally.
 
         Note
         ------
@@ -101,7 +101,7 @@ class Context(discord.abc.Messageable):
 
         Parameters
         -----------
-        command : :class:`Command`
+        command : :class:`.Command`
             A command or superclass of a command that is going to be called.
         \*args
             The arguments to to use.

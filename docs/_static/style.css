@@ -1,0 +1,40 @@
+body {
+  font-family: Georgia, 'Hiragino Mincho Pro', serif;
+  font-size: 16px;
+}
+
+pre, code {
+  font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+  font-size: 0.9em;
+}
+
+code.descname, code.descclassname {
+  font-size: 0.95em;
+}
+
+code.descname {
+  background-color: transparent;
+  font-weight: bold;
+}
+
+pre, * pre {
+  padding: 7px 0 7px 30px !important;
+  margin: 15px 0 !important;
+  line-height: 1.3;
+}
+
+div.warning {
+  background-color: #ffe6cc;
+  border: 1px solid #ffd5aa;
+}
+
+/* don't link-ify the FAQ page */
+a.toc-backref {
+  text-decoration: none;
+  color: #3E4349;
+}
+
+code.xref {
+  background-color: #ecf0f3;
+  border-bottom: 1px dotted #222;
+}

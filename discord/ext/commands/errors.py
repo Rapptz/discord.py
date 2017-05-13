@@ -38,7 +38,7 @@ class CommandError(DiscordException):
 
     This exception and exceptions derived from it are handled
     in a special way as they are caught and passed into a special event
-    from :class:`Bot`\, :func:`on_command_error`.
+    from :class:`.Bot`\, :func:`on_command_error`.
     """
     def __init__(self, message=None, *args):
         if message is not None:
@@ -52,7 +52,7 @@ class UserInputError(CommandError):
     """The base exception type for errors that involve errors
     regarding user input.
 
-    This inherits from :exc:`CommandError`.
+    This inherits from :exc:`.CommandError`.
     """
     pass
 
@@ -80,7 +80,7 @@ class MissingRequiredArgument(UserInputError):
 
 class TooManyArguments(UserInputError):
     """Exception raised when the command was passed too many arguments and its
-    :attr:`Command.ignore_extra` attribute was not set to ``True``.
+    :attr:`.Command.ignore_extra` attribute was not set to ``True``.
     """
     pass
 
@@ -91,7 +91,7 @@ class BadArgument(UserInputError):
     pass
 
 class CheckFailure(CommandError):
-    """Exception raised when the predicates in :attr:`Command.checks` have failed."""
+    """Exception raised when the predicates in :attr:`.Command.checks` have failed."""
     pass
 
 class NoPrivateMessage(CheckFailure):
@@ -128,7 +128,7 @@ class CommandOnCooldown(CommandError):
     -----------
     cooldown: Cooldown
         A class with attributes ``rate``, ``per``, and ``type`` similar to
-        the :func:`cooldown` decorator.
+        the :func:`.cooldown` decorator.
     retry_after: float
         The amount of seconds to wait before you can retry again.
     """

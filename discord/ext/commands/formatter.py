@@ -127,19 +127,19 @@ class HelpFormatter:
     """The default base implementation that handles formatting of the help
     command.
 
-    To override the behaviour of the formatter, :meth:`format`
+    To override the behaviour of the formatter, :meth:`~.HelpFormatter.format`
     should be overridden. A number of utility functions are provided for use
     inside that method.
 
-    Parameters
+    Attributes
     -----------
-    show_hidden : bool
+    show_hidden: bool
         Dictates if hidden commands should be shown in the output.
         Defaults to ``False``.
-    show_check_failure : bool
-        Dictates if commands that have their :attr:`Command.checks` failed
+    show_check_failure: bool
+        Dictates if commands that have their :attr:`.Command.checks` failed
         shown. Defaults to ``False``.
-    width : int
+    width: int
         The maximum number of characters that fit in a line.
         Defaults to 80.
     """
@@ -149,15 +149,15 @@ class HelpFormatter:
         self.show_check_failure = show_check_failure
 
     def has_subcommands(self):
-        """bool : Specifies if the command has subcommands."""
+        """bool: Specifies if the command has subcommands."""
         return isinstance(self.command, GroupMixin)
 
     def is_bot(self):
-        """bool : Specifies if the command being formatted is the bot itself."""
+        """bool: Specifies if the command being formatted is the bot itself."""
         return self.command is self.context.bot
 
     def is_cog(self):
-        """bool : Specifies if the command being formatted is actually a cog."""
+        """bool: Specifies if the command being formatted is actually a cog."""
         return not self.is_bot() and not isinstance(self.command, Command)
 
     def shorten(self, text):
@@ -168,7 +168,7 @@ class HelpFormatter:
 
     @property
     def max_name_size(self):
-        """int : Returns the largest name length of a command or if it has subcommands
+        """int: Returns the largest name length of a command or if it has subcommands
         the largest subcommand name."""
         try:
             commands = self.command.all_commands if not self.is_cog() else self.context.bot.all_commands
@@ -202,8 +202,8 @@ class HelpFormatter:
     @asyncio.coroutine
     def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
-        provided, :attr:`show_check_failure` and :attr:`show_hidden`. Also
-        filters based on if :meth:`is_cog` is valid.
+        provided, :attr:`show_check_failure` and :attr:`show_hidden`.
+        Also filters based on if :meth:`~.HelpFormatter.is_cog` is valid.
 
         Returns
         --------
@@ -262,13 +262,13 @@ class HelpFormatter:
     def format_help_for(self, context, command_or_bot):
         """Formats the help page and handles the actual heavy lifting of how
         the help command looks like. To change the behaviour, override the
-        :meth:`format` method.
+        :meth:`~.HelpFormatter.format` method.
 
         Parameters
         -----------
-        context : :class:`Context`
+        context: :class:`.Context`
             The context of the invoked help command.
-        command_or_bot : :class:`Command` or :class:`Bot`
+        command_or_bot: :class:`.Command` or :class:`.Bot`
             The bot or command that we are getting the help of.
 
         Returns

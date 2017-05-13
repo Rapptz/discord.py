@@ -123,7 +123,7 @@ class Emoji(Hashable):
 
         Deletes the custom emoji.
 
-        You must have :attr:`Permissions.manage_emojis` permission to
+        You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
 
         Guild local emotes can only be deleted by user bots.
@@ -149,7 +149,7 @@ class Emoji(Hashable):
 
         Edits the custom emoji.
 
-        You must have :attr:`Permissions.manage_emojis` permission to
+        You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
 
         Guild local emotes can only be edited by user bots.

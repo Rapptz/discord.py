@@ -197,7 +197,7 @@ class ClientUser(BaseUser):
         The user's unique ID.
     discriminator: str
         The user's discriminator. This is given when the username has conflicts.
-    avatar: str
+    avatar: Optional[str]
         The avatar hash the user has. Could be None.
     bot: bool
         Specifies if the user is a bot account.
@@ -404,7 +404,7 @@ class User(BaseUser, discord.abc.Messageable):
         The user's unique ID.
     discriminator: str
         The user's discriminator. This is given when the username has conflicts.
-    avatar: str
+    avatar: Optional[str]
         The avatar hash the user has. Could be None.
     bot: bool
         Specifies if the user is a bot account.

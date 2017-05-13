@@ -413,7 +413,7 @@ class Message:
         Deletes the message.
 
         Your own messages could be deleted without any proper permissions. However to
-        delete other people's messages, you need the :attr:`Permissions.manage_messages`
+        delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
         Parameters
@@ -475,7 +475,7 @@ class Message:
     def pin(self):
         """|coro|
 
-        Pins the message. You must have :attr:`Permissions.manage_messages`
+        Pins the message. You must have :attr:`~Permissions.manage_messages`
         permissions to do this in a non-private channel context.
 
         Raises
@@ -496,7 +496,7 @@ class Message:
     def unpin(self):
         """|coro|
 
-        Unpins the message. You must have :attr:`Permissions.manage_messages`
+        Unpins the message. You must have :attr:`~Permissions.manage_messages`
         permissions to do this in a non-private channel context.
 
         Raises
@@ -520,8 +520,8 @@ class Message:
 
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
-        You must have the :attr:`Permissions.add_reactions` permission to
-        add new reactions to a message.
+        You must have the :attr:`~Permissions.add_reactions` and
+        :attr:`~Permissions.read_message_history` permissions to use this.
 
         Parameters
         ------------
@@ -560,7 +560,7 @@ class Message:
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
         If the reaction is not your own (i.e. ``member`` parameter is not you) then
-        the :attr:`Permissions.manage_messages` permission is needed.
+        the :attr:`~Permissions.manage_messages` permission is needed.
 
         The ``member`` parameter must represent a member and meet
         the :class:`abc.Snowflake` abc.
@@ -601,7 +601,7 @@ class Message:
 
         Removes all the reactions from the message.
 
-        You need :attr:`Permissions.manage_messages` permission
+        You need :attr:`~Permissions.manage_messages` permission
         to use this.
 
         Raises

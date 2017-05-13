@@ -47,11 +47,22 @@ class _Undefined:
 _undefined = _Undefined()
 
 class Snowflake(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a Discord model.
+
+    Almost all :ref:`Discord models <discord_api_models>` meet this
+    abstract base class.
+
+    Attributes
+    -----------
+    id: int
+        The model's unique ID.
+    """
     __slots__ = ()
 
     @property
     @abc.abstractmethod
     def created_at(self):
+        """Returns the model's creation time in UTC."""
         raise NotImplementedError
 
     @classmethod
@@ -68,16 +79,39 @@ class Snowflake(metaclass=abc.ABCMeta):
         return NotImplemented
 
 class User(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a Discord user.
+
+    The following implement this ABC:
+
+    - :class:`User`
+    - :class:`ClientUser`
+    - :class:`Member`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+
+    Attributes
+    -----------
+    name: str
+        The user's username.
+    discriminator: str
+        The user's discriminator.
+    avatar: Optional[str]
+        The avatar hash the user has.
+    bot: bool
+        If the user is a bot account.
+    """
     __slots__ = ()
 
     @property
     @abc.abstractmethod
     def display_name(self):
+        """Returns the user's display name."""
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
     def mention(self):
+        """Returns a string that allows you to mention the given user."""
         raise NotImplementedError
 
     @classmethod
@@ -97,6 +131,20 @@ class User(metaclass=abc.ABCMeta):
         return NotImplemented
 
 class PrivateChannel(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a private Discord channel.
+
+    The follow implement this ABC:
+
+    - :class:`DMChannel`
+    - :class:`GroupChannel`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+
+    Attributes
+    -----------
+    me: :class:`ClientUser`
+        The user presenting yourself.
+    """
     __slots__ = ()
 
     @classmethod
@@ -115,6 +163,25 @@ class PrivateChannel(metaclass=abc.ABCMeta):
 _Overwrites = namedtuple('_Overwrites', 'id allow deny type')
 
 class GuildChannel:
+    """An ABC that details the common operations on a Discord guild channel.
+
+    The follow implement this ABC:
+
+    - :class:`TextChannel`
+    - :class:`VoiceChannel`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+
+    Attributes
+    -----------
+    name: str
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    position: int
+        The position in the channel list. This is a number that starts at 0.
+        e.g. the top channel is position 0.
+    """
     __slots__ = ()
 
     def __str__(self):
@@ -539,6 +606,20 @@ class GuildChannel:
         return result
 
 class Messageable(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a model that can send messages.
+
+    The follow implement this ABC:
+
+    - :class:`TextChannel`
+    - :class:`DMChannel`
+    - :class:`GroupChannel`
+    - :class:`User`
+    - :class:`Member`
+    - :class:`~ext.commands.Context`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+    """
+
     __slots__ = ()
 
     @asyncio.coroutine
@@ -728,7 +809,7 @@ class Messageable(metaclass=abc.ABCMeta):
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
         """Return an :class:`AsyncIterator` that enables receiving the destination's message history.
 
-        You must have Read Message History permissions to use this.
+        You must have :attr:`~Permissions.read_message_history` permissions to use this.
 
         All parameters are optional.
 
@@ -799,6 +880,13 @@ class Messageable(metaclass=abc.ABCMeta):
 
 
 class Connectable(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a channel that can
+    connect to a voice server.
+
+    The follow implement this ABC:
+
+    - :class:`VoiceChannel`
+    """
     __slots__ = ()
 
     @abc.abstractmethod

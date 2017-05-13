@@ -428,7 +428,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
     ----------
     recipient: :class:`User`
         The user you are participating with in the direct message channel.
-    me: :class:`User`
+    me: :class:`ClientUser`
         The user presenting yourself.
     id: int
         The direct message channel ID.
@@ -507,7 +507,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     ----------
     recipients: list of :class:`User`
         The users you are participating with in the group channel.
-    me: :class:`User`
+    me: :class:`ClientUser`
         The user presenting yourself.
     id: int
         The group channel ID.

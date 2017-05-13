@@ -62,8 +62,8 @@ from .player import AudioPlayer, AudioSource
 class VoiceClient:
     """Represents a Discord voice connection.
 
-    This client is created solely through :meth:`Client.join_voice_channel`
-    and its only purpose is to transmit voice.
+    You do not create these, you typically get them from
+    e.g. :meth:`VoiceChannel.connect`.
 
     Warning
     --------

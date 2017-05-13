@@ -2,11 +2,25 @@
 
 .. _whats_new:
 
-What's New
+Changelog
 ============
 
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
+
+.. _vp0p16p6:
+
+v0.16.6
+--------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix issue with :meth:`Client.create_server` that made it stop working.
+- Fix main thread being blocked upon calling ``StreamPlayer.stop``.
+- Handle HEARTBEAT_ACK and resume gracefully when it occurs.
+- Fix race condition when pre-emptively rate limiting that caused releasing an already released lock.
+- Fix invalid state errors when immediately cancelling a coroutine.
 
 .. _vp0p16p1:
 

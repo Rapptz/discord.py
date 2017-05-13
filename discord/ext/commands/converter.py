@@ -46,14 +46,14 @@ def _get_from_guilds(bot, getter, argument):
     return result
 
 class Converter:
-    """The base class of custom converters that require the :class:`Context`
+    """The base class of custom converters that require the :class:`.Context`
     to be passed to be useful.
 
     This allows you to implement converters that function similar to the
     special cased ``discord`` classes.
 
-    Classes that derive from this should override the :meth:`convert` method
-    to do its conversion logic. This method must be a coroutine.
+    Classes that derive from this should override the :meth:`~.Converter.convert`
+    method to do its conversion logic. This method must be a coroutine.
     """
 
     @asyncio.coroutine
@@ -62,15 +62,13 @@ class Converter:
 
         The method to override to do conversion logic.
 
-        This can either be a coroutine or a regular function.
-
         If an error is found while converting, it is recommended to
-        raise a :class:`CommandError` derived exception as it will
+        raise a :exc:`.CommandError` derived exception as it will
         properly propagate to the error handlers.
 
         Parameters
         -----------
-        ctx: :class:`Context`
+        ctx: :class:`.Context`
             The invocation context that the argument is being used in.
         argument: str
             The argument that is being converted.
@@ -86,6 +84,20 @@ class IDConverter(Converter):
         return self._id_regex.match(argument)
 
 class MemberConverter(IDConverter):
+    """Converts to a :class:`Member`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name#discrim
+    4. Lookup by name
+    5. Lookup by nickname
+    """
+
     @asyncio.coroutine
     def convert(self, ctx, argument):
         message = ctx.message
@@ -112,6 +124,17 @@ class MemberConverter(IDConverter):
         return result
 
 class UserConverter(IDConverter):
+    """Converts to a :class:`User`.
+
+    All lookups are via the global user cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name#discrim
+    4. Lookup by name
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -141,6 +164,17 @@ class UserConverter(IDConverter):
         return result
 
 class TextChannelConverter(IDConverter):
+    """Converts to a :class:`TextChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         bot = ctx.bot
@@ -170,6 +204,17 @@ class TextChannelConverter(IDConverter):
         return result
 
 class VoiceChannelConverter(IDConverter):
+    """Converts to a :class:`VoiceChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         bot = ctx.bot
@@ -198,6 +243,17 @@ class VoiceChannelConverter(IDConverter):
         return result
 
 class ColourConverter(Converter):
+    """Converts to a :class:`Colour`.
+
+    The following formats are accepted:
+
+    - ``0x<hex>``
+    - ``#<hex>``
+    - ``0x#<hex>``
+    - Any of the ``classmethod`` in :class:`Colour`
+
+        - The ``_`` in the name can be optionally replaced with spaces.
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         arg = argument.replace('0x', '').lower()
@@ -208,12 +264,24 @@ class ColourConverter(Converter):
             value = int(arg, base=16)
             return discord.Colour(value=value)
         except ValueError:
-            method = getattr(discord.Colour, arg, None)
+            method = getattr(discord.Colour, arg.replace(' ', '_'), None)
             if method is None or not inspect.ismethod(method):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return method()
 
 class RoleConverter(IDConverter):
+    """Converts to a :class:`Role`.
+
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         guild = ctx.message.guild
@@ -228,11 +296,16 @@ class RoleConverter(IDConverter):
         return result
 
 class GameConverter(Converter):
+    """Converts to :class:`Game`."""
     @asyncio.coroutine
     def convert(self, ctx, argument):
         return discord.Game(name=argument)
 
 class InviteConverter(Converter):
+    """Converts to a :class:`Invite`.
+
+    This is done via an HTTP request using :meth:`.Bot.get_invite`.
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         try:
@@ -242,6 +315,18 @@ class InviteConverter(Converter):
             raise BadArgument('Invite is invalid or expired') from e
 
 class EmojiConverter(IDConverter):
+    """Converts to a :class:`Emoji`.
+
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by extracting ID from the emoji.
+    3. Lookup by name
+    """
     @asyncio.coroutine
     def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<:[a-zA-Z0-9]+:([0-9]+)>$', argument)
@@ -272,6 +357,18 @@ class EmojiConverter(IDConverter):
         return result
 
 class clean_content(Converter):
+    """Converts the argument to mention scrubbed version of
+    said content.
+
+    This behaves similarly to :attr:`.Message.clean_content`.
+
+    Attributes
+    ------------
+    fix_channel_mentions: bool
+        Whether to clean channel mentions.
+    use_nicknames: bool
+        Whether to use nicknames when transforming mentions.
+    """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True):
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
