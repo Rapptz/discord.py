@@ -242,7 +242,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 return m.author == client.user
 
             deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send_message('Deleted {} message(s)'.format(len(deleted)))
+            await channel.send('Deleted {} message(s)'.format(len(deleted)))
 
         Returns
         --------

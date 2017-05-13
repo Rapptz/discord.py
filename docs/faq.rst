@@ -287,7 +287,7 @@ This will allow you to use ``?echo a b c`` without needing the quotes.
 How do I get the original ``message``\?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`~ext.commands.Context` contains an attribute, :attr:`~ext.commands.Context.message` to get the original
+The :class:`~ext.commands.Context` contains an attribute, :attr:`~.Context.message` to get the original
 message.
 
 Example: ::
@@ -308,7 +308,7 @@ Example: ::
     @bot.group()
     async def git(ctx):
         if ctx.invoked_subcommand is None:
-            await bot.say('Invalid git command passed...')
+            await ctx.send('Invalid git command passed...')
 
     @git.command()
     async def push(ctx, remote: str, branch: str):
