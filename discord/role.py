@@ -35,27 +35,37 @@ from .utils import snowflake_time
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.
 
-    Supported Operations:
+    .. describe:: x == y
 
-    +-----------+------------------------------------------------------------------+
-    | Operation |                           Description                            |
-    +===========+==================================================================+
-    | x == y    | Checks if two roles are equal.                                   |
-    +-----------+------------------------------------------------------------------+
-    | x != y    | Checks if two roles are not equal.                               |
-    +-----------+------------------------------------------------------------------+
-    | x > y     | Checks if a role is higher than another in the hierarchy.        |
-    +-----------+------------------------------------------------------------------+
-    | x < y     | Checks if a role is lower than another in the hierarchy.         |
-    +-----------+------------------------------------------------------------------+
-    | x >= y    | Checks if a role is higher or equal to another in the hierarchy. |
-    +-----------+------------------------------------------------------------------+
-    | x <= y    | Checks if a role is lower or equal to another in the hierarchy.  |
-    +-----------+------------------------------------------------------------------+
-    | hash(x)   | Return the role's hash.                                          |
-    +-----------+------------------------------------------------------------------+
-    | str(x)    | Returns the role's name.                                         |
-    +-----------+------------------------------------------------------------------+
+        Checks if two roles are equal.
+
+    .. describe:: x != y
+
+        Checks if two roles are not equal.
+
+    .. describe:: x > y
+
+        Checks if a role is higher than another in the hierarchy.
+
+    .. describe:: x < y
+
+        Checks if a role is lower than another in the hierarchy.
+
+    .. describe:: x >= y
+
+        Checks if a role is higher or equal to another in the hierarchy.
+
+    .. describe:: x <= y
+
+        Checks if a role is lower or equal to another in the hierarchy.
+
+    .. describe:: hash(x)
+
+        Return the role's hash.
+
+    .. describe:: str(x)
+
+        Returns the role's name.
 
     Attributes
     ----------

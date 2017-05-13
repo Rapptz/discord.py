@@ -27,19 +27,21 @@ DEALINGS IN THE SOFTWARE.
 class Game:
     """Represents a Discord game.
 
-    Supported Operations:
+    .. describe:: x == y
 
-    +-----------+------------------------------------+
-    | Operation |            Description             |
-    +===========+====================================+
-    | x == y    | Checks if two games are equal.     |
-    +-----------+------------------------------------+
-    | x != y    | Checks if two games are not equal. |
-    +-----------+------------------------------------+
-    | hash(x)   | Return the games's hash.           |
-    +-----------+------------------------------------+
-    | str(x)    | Returns the games's name.          |
-    +-----------+------------------------------------+
+        Checks if two games are equal.
+
+    .. describe:: x != y
+
+        Checks if two games are not equal.
+
+    .. describe:: hash(x)
+
+        Returns the game's hash.
+
+    .. describe:: str(x)
+
+        Returns the game's name.
 
     Attributes
     -----------

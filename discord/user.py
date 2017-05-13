@@ -175,19 +175,21 @@ class BaseUser:
 class ClientUser(BaseUser):
     """Represents your Discord user.
 
-    Supported Operations:
+    .. describe:: x == y
 
-    +-----------+---------------------------------------------+
-    | Operation |                 Description                 |
-    +===========+=============================================+
-    | x == y    | Checks if two users are equal.              |
-    +-----------+---------------------------------------------+
-    | x != y    | Checks if two users are not equal.          |
-    +-----------+---------------------------------------------+
-    | hash(x)   | Return the user's hash.                     |
-    +-----------+---------------------------------------------+
-    | str(x)    | Returns the user's name with discriminator. |
-    +-----------+---------------------------------------------+
+        Checks if two users are equal.
+
+    .. describe:: x != y
+
+        Checks if two users are not equal.
+
+    .. describe:: hash(x)
+
+        Return the user's hash.
+
+    .. describe:: str(x)
+
+        Returns the user's name with discriminator.
 
     Attributes
     -----------
@@ -382,19 +384,21 @@ class ClientUser(BaseUser):
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
 
-    Supported Operations:
+    .. describe:: x == y
 
-    +-----------+---------------------------------------------+
-    | Operation |                 Description                 |
-    +===========+=============================================+
-    | x == y    | Checks if two users are equal.              |
-    +-----------+---------------------------------------------+
-    | x != y    | Checks if two users are not equal.          |
-    +-----------+---------------------------------------------+
-    | hash(x)   | Return the user's hash.                     |
-    +-----------+---------------------------------------------+
-    | str(x)    | Returns the user's name with discriminator. |
-    +-----------+---------------------------------------------+
+        Checks if two users are equal.
+
+    .. describe:: x != y
+
+        Checks if two users are not equal.
+
+    .. describe:: hash(x)
+
+        Return the user's hash.
+
+    .. describe:: str(x)
+
+        Returns the user's name with discriminator.
 
     Attributes
     -----------

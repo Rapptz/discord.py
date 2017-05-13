@@ -36,19 +36,21 @@ class Invite(Hashable):
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    Supported Operations:
+    .. describe:: x == y
 
-    +-----------+--------------------------------------+
-    | Operation |             Description              |
-    +===========+======================================+
-    | x == y    | Checks if two invites are equal.     |
-    +-----------+--------------------------------------+
-    | x != y    | Checks if two invites are not equal. |
-    +-----------+--------------------------------------+
-    | hash(x)   | Return the invite's hash.            |
-    +-----------+--------------------------------------+
-    | str(x)    | Returns the invite's URL.            |
-    +-----------+--------------------------------------+
+        Checks if two invites are equal.
+
+    .. describe:: x != y
+
+        Checks if two invites are not equal.
+
+    .. describe:: hash(x)
+
+        Returns the invite hash.
+
+    .. describe:: str(x)
+
+        Returns the invite URL.
 
     Attributes
     -----------

@@ -112,19 +112,23 @@ class Member(discord.abc.Messageable):
 
     This implements a lot of the functionality of :class:`User`.
 
-    Supported Operations:
+    .. describe:: x == y
 
-    +-----------+-----------------------------------------------+
-    | Operation |                  Description                  |
-    +===========+===============================================+
-    | x == y    | Checks if two members are equal.              |
-    +-----------+-----------------------------------------------+
-    | x != y    | Checks if two members are not equal.          |
-    +-----------+-----------------------------------------------+
-    | hash(x)   | Return the member's hash.                     |
-    +-----------+-----------------------------------------------+
-    | str(x)    | Returns the member's name with discriminator. |
-    +-----------+-----------------------------------------------+
+        Checks if two members are equal.
+        Note that this works with :class:`User` instances too.
+
+    .. describe:: x != y
+
+        Checks if two members are not equal.
+        Note that this works with :class:`User` instances too.
+
+    .. describe:: hash(x)
+
+        Returns the member's hash.
+
+    .. describe:: str(x)
+
+        Returns the member's name with the discriminator.
 
     Attributes
     ----------

@@ -32,19 +32,23 @@ class Reaction:
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    Similar to members, the same reaction to a different message are equal.
+    .. describe:: x == y
 
-    Supported Operations:
+        Checks if two reactions are equal. This works by checking if the emoji
+        is the same. So two messages with the same reaction will be considered
+        "equal".
 
-    +-----------+-------------------------------------------+
-    | Operation |               Description                 |
-    +===========+===========================================+
-    | x == y    | Checks if two reactions are the same.     |
-    +-----------+-------------------------------------------+
-    | x != y    | Checks if two reactions are not the same. |
-    +-----------+-------------------------------------------+
-    | hash(x)   | Return the emoji's hash.                  |
-    +-----------+-------------------------------------------+
+    .. describe:: x != y
+
+        Checks if two reactions are not equal.
+
+    .. describe:: hash(x)
+
+        Returns the reaction's hash.
+
+    .. describe:: str(x)
+
+        Returns the channel's name.
 
     Attributes
     -----------
