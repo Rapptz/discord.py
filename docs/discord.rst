@@ -38,6 +38,15 @@ Creating a Bot account is a pretty straightforward process.
     - **This is not the Client Secret**
     - Look at the image above to see where the **Token** is.
 
+    .. warning::
+
+        It should be worth noting that this token is essentially your bot's
+        password. You should **never** share this to someone else. In doing so,
+        someone can log in to your bot and do malicious things, such as leaving
+        servers, ban all members inside a server, or pinging everyone maliciously.
+
+        The possibilities are endless, so **do not share this token.**
+
 And that's it. You now have a bot account and you can login with that token.
 
 .. _discord_invite_bot:
