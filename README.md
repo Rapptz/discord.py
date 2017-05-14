@@ -50,6 +50,8 @@ Please note that on Linux installing voice you must install the following packag
 - libffi-dev (or `libffi-devel` on some systems)
 - python<version>-dev (e.g. `python3.5-dev` for Python 3.5)
 
+Also note that for voice support on macOS, you must install the opus codec. This can be done using Homebrew (e.g `brew install opus`).
+
 ## Quick Example
 
 ```py
