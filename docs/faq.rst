@@ -106,7 +106,7 @@ How do I send a message to a specific channel?
 
 You must fetch the channel directly and then call the appropriate method. Example: ::
 
-    channel = client.get_channel('12324234183172')
+    channel = client.get_channel(12324234183172)
     await channel.send('hello')
 
 How do I upload an image?
