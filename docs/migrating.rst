@@ -634,6 +634,35 @@ when reached instead of setting the return to ``None``. For example:
     else:
         await channel.send('You said {0.content}, {0.author}.'.format(msg))
 
+Upgraded Dependencies
+-----------------------
+
+Following v1.0 of the library, we've updated our requirements to ``aiohttp`` v2.0 or higher.
+
+Since this is a backwards incompatible change, it is recommended that you see the
+`changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ and the
+`migrating <http://aiohttp.readthedocs.io/en/stable/migration.html>`_ pages for details on the breaking changes in
+``aiohttp``.
+
+Of the most significant for common users is the removal of helper functions such as:
+
+- ``aiohttp.get``
+- ``aiohttp.post``
+- ``aiohttp.delete``
+- ``aiohttp.patch``
+- ``aiohttp.head``
+- ``aiohttp.put``
+- ``aiohttp.request``
+
+It is recommended that you create a session instead: ::
+
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get('url') as resp:
+            # work with resp
+
+Since it is better to not create a session for every request, you should store it in a variable and then call
+``session.close`` on it when it needs to be disposed.
+
 Sharding
 ----------
 
