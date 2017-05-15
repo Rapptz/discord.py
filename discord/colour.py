@@ -93,7 +93,7 @@ class Colour:
         """Returns the blue component of the colour."""
         return self._get_byte(0)
 
-    def to_tuple(self):
+    def to_rgb(self):
         """Returns an (r, g, b) tuple representing the colour."""
         return (self.r, self.g, self.b)
 

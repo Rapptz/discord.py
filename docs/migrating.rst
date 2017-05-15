@@ -343,6 +343,10 @@ They will be enumerated here.
 
     - Use :attr:`Message.created_at` instead.
 
+- ``Colour.to_tuple()``
+
+    - Use :meth:`Colour.to_rgb` instead.
+
 **Added**
 
 - :attr:`VoiceChannel.members` for fetching members connected to a voice channel.
@@ -360,6 +364,7 @@ They will be enumerated here.
 - :meth:`Guild.audit_logs` to fetch the guild's audit logs.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
+- :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
 
 .. _migrating_1_0_sending_messages:
 
