@@ -98,6 +98,11 @@ class Colour:
         return (self.r, self.g, self.b)
 
     @classmethod
+    def from_rgb(cls, r, g, b):
+        """Constructs a :class:`Colour` from an RGB tuple."""
+        return cls((r << 16) + (g << 8) + b)
+
+    @classmethod
     def default(cls):
         """A factory method that returns a :class:`Colour` with a value of 0."""
         return cls(0)
