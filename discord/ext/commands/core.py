@@ -924,12 +924,12 @@ def check(predicate):
     .. code-block:: python
 
         def check_if_it_is_me(ctx):
-            return ctx.message.author.id == 'my-user-id'
+            return ctx.message.author.id == 85309593344815104
 
         @bot.command()
         @commands.check(check_if_it_is_me)
-        async def only_for_me():
-            await bot.say('I know you!')
+        async def only_for_me(ctx):
+            await ctx.send('I know you!')
 
     Transforming common checks into its own decorator:
 
@@ -937,13 +937,13 @@ def check(predicate):
 
         def is_me():
             def predicate(ctx):
-                return ctx.message.author.id == 'my-user-id'
+                return ctx.message.author.id == 85309593344815104
             return commands.check(predicate)
 
         @bot.command()
         @is_me()
-        async def only_me():
-            await bot.say('Only you!')
+        async def only_me(ctx):
+            await ctx.send('Only you!')
 
     """
 
@@ -1003,8 +1003,8 @@ def has_any_role(*names):
 
         @bot.command()
         @commands.has_any_role('Library Devs', 'Moderators')
-        async def cool():
-            await bot.say('You are cool indeed')
+        async def cool(ctx):
+            await ctx.send('You are cool indeed')
     """
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
@@ -1033,8 +1033,8 @@ def has_permissions(**perms):
 
         @bot.command()
         @commands.has_permissions(manage_messages=True)
-        async def test():
-            await bot.say('You can manage messages.')
+        async def test(ctx):
+            await ctx.send('You can manage messages.')
 
     """
     def predicate(ctx):
