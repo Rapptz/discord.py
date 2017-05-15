@@ -115,10 +115,6 @@ div.sphinxsidebar a {
   color: #444;
 }
 
-div.sphinxsidebar a:hover {
-  color: #d00;
-}
-
 div.sphinxsidebar input {
   border: 1px solid #ccc;
   font-family: sans-serif;
@@ -183,14 +179,14 @@ div.body h5 { font-size: 105%; }
 div.body h6 { font-size: 100%; }
 
 a.headerlink {
-  color: #c60f0f;
+  color: #3e4349;
   font-size: 0.8em;
   padding: 0 4px 0 4px;
   text-decoration: none;
 }
 
 a.headerlink:hover {
-  background-color: #c60f0f;
+  background-color: #3e4349;
   color: #fff;
 }
 
