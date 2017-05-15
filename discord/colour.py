@@ -30,19 +30,21 @@ class Colour:
 
     There is an alias for this called Color.
 
-    Supported operations:
+    .. describe:: x == y
 
-    +-----------+----------------------------------------+
-    | Operation |              Description               |
-    +===========+========================================+
-    | x == y    | Checks if two colours are equal.       |
-    +-----------+----------------------------------------+
-    | x != y    | Checks if two colours are not equal.   |
-    +-----------+----------------------------------------+
-    | hash(x)   | Return the colour's hash.              |
-    +-----------+----------------------------------------+
-    | str(x)    | Returns the hex format for the colour. |
-    +-----------+----------------------------------------+
+         Checks if two colours are equal.
+
+    .. describe:: x != y
+
+         Checks if two colours are not equal.
+
+    .. describe:: hash(x)
+
+         Return the colour's hash.
+
+    .. describe:: str(x)
+
+         Returns the hex format for the colour.
 
     Attributes
     ------------
