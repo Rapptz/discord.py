@@ -123,6 +123,7 @@ div.sphinxsidebar input {
   border: 1px solid #ccc;
   font-family: sans-serif;
   font-size: 1em;
+  margin-top: 10px;
 }
 
 /* -- body styles --------------------------------------------------------- */
