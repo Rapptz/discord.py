@@ -53,7 +53,7 @@ A list of changes is as follows:
 +-------------------------------+----------------------------------+
 | ``Message.server``            | :attr:`Message.guild`            |
 +-------------------------------+----------------------------------+
-| ``Channel.server``            | :attr:`abc.GuildChannel.guild`   |
+| ``Channel.server``            | :attr:`.GuildChannel.guild`      |
 +-------------------------------+----------------------------------+
 | ``Client.servers``            | :attr:`Client.guilds`            |
 +-------------------------------+----------------------------------+
@@ -167,7 +167,7 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.prune_members``              | :meth:`Guild.prune_members`                                                  |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.purge_from``                 | :meth:`abc.Messageable.purge`                                                |
+| ``Client.purge_from``                 | :meth:`TextChannel.purge`                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.remove_reaction``            | :meth:`Message.remove_reaction`                                              |
 +---------------------------------------+------------------------------------------------------------------------------+
@@ -296,7 +296,7 @@ And to check if it's a private channel you would do: ::
 
 Of course, if you're looking for only a specific type you can pass that too, e.g. ::
 
-    isintance(channel, discord.TextChannel)
+    isinstance(channel, discord.TextChannel)
 
 With this type split also came event changes, which are enumerated in :ref:`migrating_1_0_event_changes`.
 
