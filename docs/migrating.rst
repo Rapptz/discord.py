@@ -818,12 +818,12 @@ The ``commands`` attribute of :class:`~ext.commands.Bot` and :class:`~ext.comman
 dictionary to a set that does not have aliases. To retrieve the previous dictionary behaviour, use ``all_commands`` instead.
 
 Command instances have gained a new property, :attr:`~ext.commands.Command.signature` to get the signature of command along
-with a :attr:`~ext.commands.Command.usage` attribute to override the default signature.
+with a :attr:`~.Command.usage` attribute to override the default signature.
 
 Check Changes
 ~~~~~~~~~~~~~~~
 
-Prior to v1.0, :func:`~ext.command.check`\s could only be synchronous. As of v1.0 checks can now be coroutines.
+Prior to v1.0, :func:`~ext.commands.check`\s could only be synchronous. As of v1.0 checks can now be coroutines.
 
 Along with this change, a couple new checks were added.
 
@@ -854,12 +854,12 @@ After: ::
     on_command_completion(ctx)
     on_command_error(ctx, error)
 
-The extraneous ``command`` parameter in :func:`~ext.commands.on_command` and :func:`~ext.commands.on_command_completion`
+The extraneous ``command`` parameter in :func:`.on_command` and :func:`.on_command_completion`
 have been removed. The :class:`~ext.commands.Command` instance was not kept up-to date so it was incorrect. In order to get
 the up to date :class:`~ext.commands.Command` instance, use the :attr:`.Context.command`
 attribute.
 
-The error handlers, either :attr:`.Command.error` or :func:`~ext.commands.on_command_error`,
+The error handlers, either :meth:`.Command.error` or :func:`.on_command_error`,
 have been re-ordered to use the :class:`~ext.commands.Context` as its first parameter to be consistent with other events
 and commands.
 
