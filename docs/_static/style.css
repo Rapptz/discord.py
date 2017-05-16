@@ -278,12 +278,30 @@ div.danger, div.error, div.warning {
   border: 1px solid #f66;
 }
 
+div.admonition {
+  padding: 10px;
+}
+
 p.admonition-title {
   display: inline;
 }
 
 p.admonition-title:after {
   content: ':';
+}
+
+/* helpful admonitions */
+div.helpful {
+  background-color: #e4f2ff;
+  border: 1px solid #66b3ff;
+}
+
+div.helpful > p.admonition-title {
+  display: block;
+}
+
+div.helpful > p.admonition-title:after {
+  content: unset;
 }
 
 pre {
