@@ -421,6 +421,11 @@ div#welcome-to-discord-py > h1 {
   display: none;
 }
 
+.active {
+  background-color: #dbdbdb;
+  border-left: 5px solid #dbdbdb;
+}
+
 @media screen and (max-width: 870px) {
 
   div.document {
