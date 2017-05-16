@@ -892,7 +892,7 @@ class Client:
 
         Parameters
         -----------
-        user_id: str
+        user_id: int
             The user's ID to fetch from.
 
         Returns
