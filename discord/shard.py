@@ -115,8 +115,8 @@ class AutoShardedClient(Client):
             elif not isinstance(self.shard_ids, (list, tuple)):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
-        self.connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
-                                                     syncer=self._syncer, http=self.http, loop=self.loop, **kwargs)
+        self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+                                                      syncer=self._syncer, http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
@@ -126,7 +126,7 @@ class AutoShardedClient(Client):
             i = (guild_id >> 22) % self.shard_count
             return self.shards[i].ws
 
-        self.connection._get_websocket = _get_websocket
+        self._connection._get_websocket = _get_websocket
         self._still_sharding = True
 
     @asyncio.coroutine
@@ -179,7 +179,7 @@ class AutoShardedClient(Client):
         _guilds = sorted(guilds, key=lambda g: g.shard_id)
         for shard_id, sub_guilds in itertools.groupby(_guilds, key=lambda g: g.shard_id):
             sub_guilds = list(sub_guilds)
-            yield from self.connection.request_offline_members(sub_guilds, shard_id=shard_id)
+            yield from self._connection.request_offline_members(sub_guilds, shard_id=shard_id)
 
     @asyncio.coroutine
     def pending_reads(self, shard):
@@ -199,7 +199,7 @@ class AutoShardedClient(Client):
             return (yield from self.launch_shard(gateway, shard_id))
 
         ws.token = self.http.token
-        ws._connection = self.connection
+        ws._connection = self._connection
         ws._dispatch = self.dispatch
         ws.gateway = gateway
         ws.shard_id = shard_id
@@ -226,7 +226,7 @@ class AutoShardedClient(Client):
         else:
             gateway = yield from self.http.get_gateway()
 
-        self.connection.shard_count = self.shard_count
+        self._connection.shard_count = self.shard_count
 
         shard_ids = self.shard_ids if self.shard_ids else range(self.shard_count)
 
@@ -312,11 +312,11 @@ class AutoShardedClient(Client):
             for shard in self.shards.values():
                 yield from shard.ws.change_presence(game=game, status=status, afk=afk)
 
-            guilds = self.connection.guilds
+            guilds = self._connection.guilds
         else:
             shard = self.shards[shard_id]
             yield from shard.ws.change_presence(game=game, status=status, afk=afk)
-            guilds = [g for g in self.connection.guilds if g.shard_id == shard_id]
+            guilds = [g for g in self._connection.guilds if g.shard_id == shard_id]
 
         for guild in guilds:
             me = guild.me

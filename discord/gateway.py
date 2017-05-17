@@ -195,15 +195,15 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         # dynamically add attributes needed
         ws.token = client.http.token
-        ws._connection = client.connection
+        ws._connection = client._connection
         ws._dispatch = client.dispatch
         ws.gateway = gateway
         ws.shard_id = shard_id
-        ws.shard_count = client.connection.shard_count
+        ws.shard_count = client._connection.shard_count
         ws.session_id = session
         ws.sequence = sequence
 
-        client.connection._update_references(ws)
+        client._connection._update_references(ws)
 
         log.info('Created websocket connected to {}'.format(gateway))
 

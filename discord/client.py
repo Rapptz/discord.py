@@ -110,13 +110,13 @@ class Client:
         connector = options.pop('connector', None)
         self.http = HTTPClient(connector, loop=self.loop)
 
-        self.connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
-                                          syncer=self._syncer, http=self.http, loop=self.loop, **options)
+        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
-        self.connection.shard_count = self.shard_count
+        self._connection.shard_count = self.shard_count
         self._closed = asyncio.Event(loop=self.loop)
         self._ready = asyncio.Event(loop=self.loop)
-        self.connection._get_websocket = lambda g: self.ws
+        self._connection._get_websocket = lambda g: self.ws
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -162,22 +162,22 @@ class Client:
     @property
     def user(self):
         """Optional[:class:`ClientUser`]: Represents the connected client. None if not logged in."""
-        return self.connection.user
+        return self._connection.user
 
     @property
     def guilds(self):
         """List[:class:`Guild`]: The guilds that the connected client is a member of."""
-        return self.connection.guilds
+        return self._connection.guilds
 
     @property
     def emojis(self):
         """List[:class:`Emoji`]: The emojis that the connected client has."""
-        return self.connection.emojis
+        return self._connection.emojis
 
     @property
     def private_channels(self):
         """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on."""
-        return self.connection.private_channels
+        return self._connection.private_channels
 
     @property
     def messages(self):
@@ -187,12 +187,12 @@ class Client:
         The number of messages stored in this deque is controlled by the
         ``max_messages`` parameter.
         """
-        return self.connection.messages
+        return self._connection.messages
 
     @property
     def voice_clients(self):
         """List[:class:`VoiceClient`]: Represents a list of voice connections."""
-        return self.connection.voice_clients
+        return self._connection.voice_clients
 
     def is_ready(self):
         """bool: Specifies if the client's internal cache is ready for use."""
@@ -298,7 +298,7 @@ class Client:
         if any(not g.large or g.unavailable for g in guilds):
             raise InvalidArgument('An unavailable or non-large guild was passed.')
 
-        yield from self.connection.request_offline_members(guilds)
+        yield from self._connection.request_offline_members(guilds)
 
     # login state management
 
@@ -331,7 +331,7 @@ class Client:
 
         log.info('logging in using static token')
         yield from self.http.static_login(token, bot=bot)
-        self.connection.is_bot = bot
+        self._connection.is_bot = bot
 
     @asyncio.coroutine
     def logout(self):
@@ -516,26 +516,26 @@ class Client:
     @property
     def users(self):
         """Returns a list of all the :class:`User` the bot can see."""
-        return list(self.connection._users.values())
+        return list(self._connection._users.values())
 
     def get_channel(self, id):
         """Returns a :class:`abc.GuildChannel` or :class:`abc.PrivateChannel` with the following ID.
 
         If not found, returns None.
         """
-        return self.connection.get_channel(id)
+        return self._connection.get_channel(id)
 
     def get_guild(self, id):
         """Returns a :class:`Guild` with the given ID. If not found, returns None."""
-        return self.connection._get_guild(id)
+        return self._connection._get_guild(id)
 
     def get_user(self, id):
         """Returns a :class:`User` with the given ID. If not found, returns None."""
-        return self.connection.get_user(id)
+        return self._connection.get_user(id)
 
     def get_emoji(self, id):
         """Returns a :class:`Emoji` with the given ID. If not found, returns None."""
-        return self.connection.get_emoji(id)
+        return self._connection.get_emoji(id)
 
     def get_all_channels(self):
         """A generator that retrieves every :class:`Channel` the client can 'access'.
@@ -742,7 +742,7 @@ class Client:
 
         yield from self.ws.change_presence(game=game, status=status, afk=afk)
 
-        for guild in self.connection.guilds:
+        for guild in self._connection.guilds:
             me = guild.me
             if me is None:
                 continue
@@ -793,7 +793,7 @@ class Client:
             region = region.value
 
         data = yield from self.http.create_guild(name, region, icon)
-        return Guild(data=data, state=self.connection)
+        return Guild(data=data, state=self._connection)
 
     # Invite management
 
@@ -829,7 +829,7 @@ class Client:
 
         invite_id = self._resolve_invite(url)
         data = yield from self.http.get_invite(invite_id)
-        return Invite.from_incomplete(state=self.connection, data=data)
+        return Invite.from_incomplete(state=self._connection, data=data)
 
     @asyncio.coroutine
     def delete_invite(self, invite):
@@ -879,7 +879,7 @@ class Client:
         data = yield from self.http.application_info()
         return AppInfo(id=data['id'], name=data['name'],
                        description=data['description'], icon=data['icon'],
-                       owner=User(state=self.connection, data=data['owner']))
+                       owner=User(state=self._connection, data=data['owner']))
 
     @asyncio.coroutine
     def get_user_info(self, user_id):
@@ -908,7 +908,7 @@ class Client:
             Fetching the user failed.
         """
         data = yield from self.http.get_user_info(user_id)
-        return User(state=self.connection, data=data)
+        return User(state=self._connection, data=data)
 
     @asyncio.coroutine
     def get_user_profile(self, user_id):
@@ -934,7 +934,7 @@ class Client:
             The profile of the user.
         """
 
-        state = self.connection
+        state = self._connection
         data = yield from self.http.get_user_profile(user_id)
 
         def transform(d):
