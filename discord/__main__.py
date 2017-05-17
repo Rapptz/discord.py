@@ -51,7 +51,7 @@ class Bot(commands.{base}):
                 print('Could not load extension {{0}} due to {{1.__class__.__name__}}: {{1}}'.format(cog, e))
 
     async def on_ready(self):
-        print('Logged on as {{0}} (ID: {{0.id}})'.format(self))
+        print('Logged on as {{0}} (ID: {{0.id}})'.format(self.user))
 
 
 bot = Bot()
