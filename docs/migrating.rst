@@ -887,6 +887,9 @@ The final addition is cog-local error handler, ``__error``, that is run on every
 An example cog with every special method registered is as follows: ::
 
     class Cog:
+        def __unload(self):
+            print('cleanup goes here')
+
         def __global_check(self, ctx):
             print('cog global check')
             return True
