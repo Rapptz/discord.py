@@ -35,7 +35,9 @@ import asyncio
 
 Profile = namedtuple('Profile', 'premium user mutual_guilds connected_accounts premium_since')
 
-class BaseUser(discord.abc.User):
+_BaseUser = discord.abc.User
+
+class BaseUser(_BaseUser):
     __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
 
     def __init__(self, *, state, data):
@@ -50,7 +52,7 @@ class BaseUser(discord.abc.User):
         return '{0.name}#{0.discriminator}'.format(self)
 
     def __eq__(self, other):
-        return isinstance(other, discord.abc.User) and other.id == self.id
+        return isinstance(other, _BaseUser) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
