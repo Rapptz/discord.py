@@ -496,4 +496,8 @@ div#welcome-to-discord-py > h1 {
     color: #fff;
   }
 
+  .active {
+    background-color: transparent;
+    border-left: none;
+  }
 }
