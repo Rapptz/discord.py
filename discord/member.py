@@ -107,7 +107,7 @@ def flatten_user(cls):
     return cls
 
 @flatten_user
-class Member(discord.abc.Messageable):
+class Member(discord.abc.Messageable, discord.abc.User):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -170,7 +170,7 @@ class Member(discord.abc.Messageable):
                ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
 
     def __eq__(self, other):
-        return isinstance(other, (BaseUser, Member)) and other.id == self.id
+        return isinstance(other, discord.abc.User) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
