@@ -83,7 +83,7 @@ class Context(discord.abc.Messageable):
         self.invoked_with = attrs.pop('invoked_with', None)
         self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
         self.subcommand_passed = attrs.pop('subcommand_passed', None)
-        self.command_failed = attrs.pop('command_failed', True)
+        self.command_failed = attrs.pop('command_failed', False)
         self._state = self.message._state
 
     @asyncio.coroutine

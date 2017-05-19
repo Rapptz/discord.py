@@ -61,10 +61,13 @@ def hooked_wrapped_callback(command, ctx, coro):
         try:
             ret = yield from coro(*args, **kwargs)
         except CommandError:
+            ctx.command_failed = True
             raise
         except asyncio.CancelledError:
+            ctx.command_failed = True
             return
         except Exception as e:
+            ctx.command_failed = True
             raise CommandInvokeError(e) from e
         finally:
             yield from command.call_after_hooks(ctx)
@@ -165,6 +168,7 @@ class Command:
 
     @asyncio.coroutine
     def dispatch_error(self, ctx, error):
+        ctx.command_failed = True
         cog = self.instance
         try:
             coro = self.on_error
