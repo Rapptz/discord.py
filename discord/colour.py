@@ -30,21 +30,23 @@ class Colour:
 
     There is an alias for this called Color.
 
-    .. describe:: x == y
+    .. container:: operations
 
-         Checks if two colours are equal.
+        .. describe:: x == y
 
-    .. describe:: x != y
+             Checks if two colours are equal.
 
-         Checks if two colours are not equal.
+        .. describe:: x != y
 
-    .. describe:: hash(x)
+             Checks if two colours are not equal.
 
-         Return the colour's hash.
+        .. describe:: hash(x)
 
-    .. describe:: str(x)
+             Return the colour's hash.
 
-         Returns the hex format for the colour.
+        .. describe:: str(x)
+
+             Returns the hex format for the colour.
 
     Attributes
     ------------

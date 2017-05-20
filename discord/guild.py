@@ -50,21 +50,23 @@ class Guild(Hashable):
 
     This is referred to as a "server" in the official Discord UI.
 
-    .. describe:: x == y
+    .. container:: operations
 
-        Checks if two guilds are equal.
+        .. describe:: x == y
 
-    .. describe:: x != y
+            Checks if two guilds are equal.
 
-        Checks if two guilds are not equal.
+        .. describe:: x != y
 
-    .. describe:: hash(x)
+            Checks if two guilds are not equal.
 
-        Returns the guild's hash.
+        .. describe:: hash(x)
 
-    .. describe:: str(x)
+            Returns the guild's hash.
 
-        Returns the guild's name.
+        .. describe:: str(x)
+
+            Returns the guild's name.
 
     Attributes
     ----------

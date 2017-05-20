@@ -351,6 +351,20 @@ dl.exception > dt {
   padding: 1px 10px;
 }
 
+.container.operations {
+  background-color: #fcfcfc;
+  padding: 10px;
+}
+
+.container.operations::before {
+  content: 'Supported Operations';
+  font-weight: bold;
+}
+
+.container.operations > dl.describe > dt {
+  background-color: transparent;
+}
+
 table.docutils {
   width: 100%;
 }

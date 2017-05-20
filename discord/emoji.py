@@ -38,26 +38,28 @@ class Emoji(Hashable):
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    .. describe:: x == y
+    .. container:: operations
 
-        Checks if two emoji are the same.
+        .. describe:: x == y
 
-    .. describe:: x != y
+            Checks if two emoji are the same.
 
-        Checks if two emoji are not the same.
+        .. describe:: x != y
 
-    .. describe:: hash(x)
+            Checks if two emoji are not the same.
 
-        Return the emoji's hash.
+        .. describe:: hash(x)
 
-    .. describe:: iter(x)
+            Return the emoji's hash.
 
-        Returns an iterator of ``(field, value)`` pairs. This allows this class
-        to be used as an iterable in list/dict/etc constructions.
+        .. describe:: iter(x)
 
-    .. describe:: str(x)
+            Returns an iterator of ``(field, value)`` pairs. This allows this class
+            to be used as an iterable in list/dict/etc constructions.
 
-        Returns the emoji rendered for discord.
+        .. describe:: str(x)
+
+            Returns the emoji rendered for discord.
 
     Attributes
     -----------

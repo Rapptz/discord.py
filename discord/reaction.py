@@ -32,23 +32,25 @@ class Reaction:
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    .. describe:: x == y
+    .. container:: operations
 
-        Checks if two reactions are equal. This works by checking if the emoji
-        is the same. So two messages with the same reaction will be considered
-        "equal".
+        .. describe:: x == y
 
-    .. describe:: x != y
+            Checks if two reactions are equal. This works by checking if the emoji
+            is the same. So two messages with the same reaction will be considered
+            "equal".
 
-        Checks if two reactions are not equal.
+        .. describe:: x != y
 
-    .. describe:: hash(x)
+            Checks if two reactions are not equal.
 
-        Returns the reaction's hash.
+        .. describe:: hash(x)
 
-    .. describe:: str(x)
+            Returns the reaction's hash.
 
-        Returns the channel's name.
+        .. describe:: str(x)
+
+            Returns the channel's name.
 
     Attributes
     -----------

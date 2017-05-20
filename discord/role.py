@@ -35,37 +35,39 @@ from .utils import snowflake_time
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.
 
-    .. describe:: x == y
+    .. container:: operations
 
-        Checks if two roles are equal.
+        .. describe:: x == y
 
-    .. describe:: x != y
+            Checks if two roles are equal.
 
-        Checks if two roles are not equal.
+        .. describe:: x != y
 
-    .. describe:: x > y
+            Checks if two roles are not equal.
 
-        Checks if a role is higher than another in the hierarchy.
+        .. describe:: x > y
 
-    .. describe:: x < y
+            Checks if a role is higher than another in the hierarchy.
 
-        Checks if a role is lower than another in the hierarchy.
+        .. describe:: x < y
 
-    .. describe:: x >= y
+            Checks if a role is lower than another in the hierarchy.
 
-        Checks if a role is higher or equal to another in the hierarchy.
+        .. describe:: x >= y
 
-    .. describe:: x <= y
+            Checks if a role is higher or equal to another in the hierarchy.
 
-        Checks if a role is lower or equal to another in the hierarchy.
+        .. describe:: x <= y
 
-    .. describe:: hash(x)
+            Checks if a role is lower or equal to another in the hierarchy.
 
-        Return the role's hash.
+        .. describe:: hash(x)
 
-    .. describe:: str(x)
+            Return the role's hash.
 
-        Returns the role's name.
+        .. describe:: str(x)
+
+            Returns the role's name.
 
     Attributes
     ----------
