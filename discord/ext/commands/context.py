@@ -121,6 +121,59 @@ class Context(discord.abc.Messageable):
         ret = yield from command.callback(*arguments, **kwargs)
         return ret
 
+    @asyncio.coroutine
+    def reinvoke(self, *, call_hooks=False, restart=True):
+        """|coro|
+
+        Calls the command again.
+
+        This is similar to :meth:`~.Context.invoke` except that it bypasses
+        checks, cooldowns, and error handlers.
+
+        .. note::
+
+            If you want to bypass :exc:`.UserInputError` derived exceptions,
+            it is recommended to use the regular :meth:`~.Context.invoke`
+            as it will work more naturally. After all, this will end up
+            using the old arguments the user has used and will thus just
+            fail again.
+
+        Parameters
+        ------------
+        call_hooks: bool
+            Whether to call the before and after invoke hooks.
+        restart: bool
+            Whether to start the call chain from the very beginning
+            or where we left off (i.e. the command that caused the error).
+        """
+        cmd = self.command
+        view = self.view
+        if cmd is None:
+            raise ValueError('This context is not valid.')
+
+        # some state to revert to when we're done
+        index, previous = view.index, view.previous
+        invoked_with = self.invoked_with
+        invoked_subcommand = self.invoked_subcommand
+        subcommand_passed = self.subcommand_passed
+
+        if restart:
+            to_call = cmd.root_parent or cmd
+            view.index = len(self.prefix) + 1
+            view.previous = 0
+        else:
+            to_call = cmd
+
+        try:
+            yield from to_call.reinvoke(self, call_hooks=call_hooks)
+        finally:
+            self.command = cmd
+            view.index = index
+            view.previous = previous
+            self.invoked_with = invoked_with
+            self.invoked_subcommand = invoked_subcommand
+            self.subcommand_passed = subcommand_passed
+
     @property
     def valid(self):
         """Checks if the invocation context is valid to be invoked with."""

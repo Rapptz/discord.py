@@ -283,6 +283,24 @@ class Command:
         return ' '.join(reversed(entries))
 
     @property
+    def root_parent(self):
+        """Retrieves the root parent of this command.
+
+        If the command has no parents then it returns ``None``.
+
+        For example in commands ``?a b c test``, the root parent is
+        ``a``.
+        """
+        entries = []
+        command = self
+        while command.parent is not None:
+            command = command.parent
+            entries.append(command)
+        entries.append(None)
+        entries.reverse()
+        return entries[-1]
+
+    @property
     def qualified_name(self):
         """Retrieves the fully qualified command name.
 
@@ -350,7 +368,6 @@ class Command:
             if not view.eof:
                 raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-
     @asyncio.coroutine
     def _verify_checks(self, ctx):
         if not self.enabled:
@@ -407,7 +424,6 @@ class Command:
     def prepare(self, ctx):
         ctx.command = self
         yield from self._verify_checks(ctx)
-        yield from self._parse_arguments(ctx)
 
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx)
@@ -415,6 +431,7 @@ class Command:
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
+        yield from self._parse_arguments(ctx)
         yield from self.call_before_hooks(ctx)
 
     def reset_cooldown(self, ctx):
@@ -439,6 +456,24 @@ class Command:
         ctx.invoked_subcommand = None
         injected = hooked_wrapped_callback(self, ctx, self.callback)
         yield from injected(*ctx.args, **ctx.kwargs)
+
+    @asyncio.coroutine
+    def reinvoke(self, ctx, *, call_hooks=False):
+        ctx.command = self
+        yield from self._parse_arguments(ctx)
+
+        if call_hooks:
+            yield from self.call_before_hooks(ctx)
+
+        ctx.invoked_subcommand = None
+        try:
+            yield from self.callback(*ctx.args, **ctx.kwargs)
+        except:
+            ctx.command_failed = True
+            raise
+        finally:
+            if call_hooks:
+                yield from self.call_after_hooks(ctx)
 
     def error(self, coro):
         """A decorator that registers a coroutine as a local error handler.
@@ -820,6 +855,44 @@ class Group(GroupMixin, Command):
             view.index = previous
             view.previous = previous
             yield from super().invoke(ctx)
+
+    @asyncio.coroutine
+    def reinvoke(self, ctx, *, call_hooks=False):
+        early_invoke = not self.invoke_without_command
+        if early_invoke:
+            ctx.command = self
+            yield from self._parse_arguments(ctx)
+
+            if call_hooks:
+                yield from self.call_before_hooks(ctx)
+
+        view = ctx.view
+        previous = view.index
+        view.skip_ws()
+        trigger = view.get_word()
+
+        if trigger:
+            ctx.subcommand_passed = trigger
+            ctx.invoked_subcommand = self.all_commands.get(trigger, None)
+
+        if early_invoke:
+            try:
+                yield from self.callback(*ctx.args, **ctx.kwargs)
+            except:
+                ctx.command_failed = True
+                raise
+            finally:
+                if call_hooks:
+                    yield from self.call_after_hooks(ctx)
+
+        if trigger and ctx.invoked_subcommand:
+            ctx.invoked_with = trigger
+            yield from ctx.invoked_subcommand.reinvoke(ctx, call_hooks=call_hooks)
+        elif not early_invoke:
+            # undo the trigger parsing
+            view.index = previous
+            view.previous = previous
+            yield from super().reinvoke(ctx, call_hooks=call_hooks)
 
 # Decorators
 
