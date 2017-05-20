@@ -454,17 +454,21 @@ class Client:
 
 
     def _do_cleanup(self):
-        if self.loop.is_closed():
+        loop = self.loop
+        if loop.is_closed():
             return # we're already cleaning up
 
-        self.loop.run_until_complete(self.close())
-        pending = asyncio.Task.all_tasks(loop=self.loop)
+        if loop.is_running():
+            loop.stop()
+
+        loop.run_until_complete(self.close())
+        pending = asyncio.Task.all_tasks(loop=loop)
         if pending:
             log.info('Cleaning up after %s tasks', len(pending))
-            gathered = asyncio.gather(*pending, loop=self.loop)
+            gathered = asyncio.gather(*pending, loop=loop)
             try:
                 gathered.cancel()
-                self.loop.run_until_complete(gathered)
+                loop.run_until_complete(gathered)
 
                 # we want to retrieve any exceptions to make sure that
                 # they don't nag us about it being un-retrieved.
@@ -472,7 +476,7 @@ class Client:
             except:
                 pass
 
-        self.loop.close()
+        loop.close()
 
     def run(self, *args, **kwargs):
         """A blocking call that abstracts away the `event loop`_
@@ -506,24 +510,23 @@ class Client:
 
         task = compat.create_task(self.start(*args, **kwargs), loop=loop)
 
-        def kill_loop_on_finish(fut):
-            try:
-                fut.result()
-            except:
-                pass # don't care
-            finally:
-                loop.stop()
+        def stop_loop_on_finish(fut):
+            loop.stop()
 
-        task.add_done_callback(kill_loop_on_finish)
+        task.add_done_callback(stop_loop_on_finish)
 
         try:
             loop.run_forever()
         except KeyboardInterrupt:
             pass
         finally:
-            task.remove_done_callback(kill_loop_on_finish)
+            task.remove_done_callback(stop_loop_on_finish)
             if is_windows:
                 self._do_cleanup()
+
+            if task.cancelled():
+                return None
+            return task.result()
 
     # properties
 
