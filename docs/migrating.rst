@@ -754,6 +754,12 @@ Since the :class:`~ext.commands.Context` is now by default passed, several short
 - :attr:`~ext.commands.Context.me` is a shortcut for ``ctx.message.guild.me`` or ``ctx.bot.user``.
 - :attr:`~ext.commands.Context.voice_client` is a shortcut for ``ctx.message.guild.voice_client``.
 
+**New Functionality**
+
+- :meth:`~.Context.reinvoke` to invoke a command again.
+
+    - This is useful for bypassing cooldowns.
+
 Subclassing Context
 ++++++++++++++++++++
 
@@ -822,8 +828,17 @@ check.
 The ``commands`` attribute of :class:`~ext.commands.Bot` and :class:`~ext.commands.Group` have been changed from a
 dictionary to a set that does not have aliases. To retrieve the previous dictionary behaviour, use ``all_commands`` instead.
 
-Command instances have gained a new property, :attr:`~ext.commands.Command.signature` to get the signature of command along
-with a :attr:`~.Command.usage` attribute to override the default signature.
+Command instances have gained new attributes and properties:
+
+1. :attr:`~ext.commands.Command.signature` to get the signature of the command.
+2. :attr:`~.Command.usage`, an attribute to override the default signature.
+3. :attr:`~.Command.root_parent` to get the root parent group of a subcommand.
+
+For :class:`~ext.commands.Group` and :class:`~ext.commands.Bot` the following changed:
+
+- Changed :attr:`~.GroupMixin.commands` to be a ``set`` without aliases.
+
+    - Use :attr:`~.GroupMixin.all_commands` to get the old ``dict`` with all commands.
 
 Check Changes
 ~~~~~~~~~~~~~~~
