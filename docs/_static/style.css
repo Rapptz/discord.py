@@ -352,17 +352,17 @@ dl.exception > dt {
 }
 
 .container.operations {
-  background-color: #fcfcfc;
   padding: 10px;
+  border: 1px solid #ddd;
 }
 
 .container.operations::before {
   content: 'Supported Operations';
-  font-weight: bold;
+  color: #212224;
 }
 
 .container.operations > dl.describe > dt {
-  background-color: transparent;
+  background-color: #f8f8f8;
 }
 
 table.docutils {
