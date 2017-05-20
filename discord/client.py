@@ -452,31 +452,46 @@ class Client:
         yield from self.login(*args, bot=bot)
         yield from self.connect(reconnect=reconnect)
 
-
     def _do_cleanup(self):
+        log.info('Cleaning up event loop.')
         loop = self.loop
         if loop.is_closed():
             return # we're already cleaning up
 
-        if loop.is_running():
-            loop.stop()
+        task = compat.create_task(self.close(), loop=loop)
 
-        loop.run_until_complete(self.close())
-        pending = asyncio.Task.all_tasks(loop=loop)
-        if pending:
-            log.info('Cleaning up after %s tasks', len(pending))
-            gathered = asyncio.gather(*pending, loop=loop)
+        def _silence_gathered(fut):
             try:
-                gathered.cancel()
-                loop.run_until_complete(gathered)
-
-                # we want to retrieve any exceptions to make sure that
-                # they don't nag us about it being un-retrieved.
-                gathered.exception()
+                fut.result()
             except:
                 pass
+            finally:
+                loop.stop()
 
-        loop.close()
+        def when_future_is_done(fut):
+            pending = asyncio.Task.all_tasks(loop=loop)
+            if pending:
+                log.info('Cleaning up after %s tasks', len(pending))
+                gathered = asyncio.gather(*pending, loop=loop)
+                gathered.cancel()
+                gathered.add_done_callback(_silence_gathered)
+            else:
+                loop.stop()
+
+        task.add_done_callback(when_future_is_done)
+        if not loop.is_running():
+            loop.run_forever()
+        else:
+            # on Linux, we're still running because we got triggered via
+            # the signal handler rather than the natural KeyboardInterrupt
+            # Since that's the case, we're going to return control after
+            # registering the task for the event loop to handle later
+            return None
+
+        try:
+            return task.result() # suppress unused task warning
+        except:
+            return None
 
     def run(self, *args, **kwargs):
         """A blocking call that abstracts away the `event loop`_
@@ -524,7 +539,8 @@ class Client:
             if is_windows:
                 self._do_cleanup()
 
-            if task.cancelled():
+            loop.close()
+            if task.cancelled() or not task.done():
                 return None
             return task.result()
 
