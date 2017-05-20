@@ -538,7 +538,7 @@ class Client:
         return self._connection.get_emoji(id)
 
     def get_all_channels(self):
-        """A generator that retrieves every :class:`Channel` the client can 'access'.
+        """A generator that retrieves every :class:`abc.GuildChannel` the client can 'access'.
 
         This is equivalent to: ::
 
@@ -548,8 +548,8 @@ class Client:
 
         Note
         -----
-        Just because you receive a :class:`Channel` does not mean that
-        you can communicate in said channel. :meth:`Channel.permissions_for` should
+        Just because you receive a :class:`abc.GuildChannel` does not mean that
+        you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
         be used for that.
         """
 

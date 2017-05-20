@@ -563,7 +563,7 @@ All enumerations are subclasses of `enum`_.
 
 .. class:: ChannelType
 
-    Specifies the type of :class:`Channel`.
+    Specifies the type of channel.
 
     .. attribute:: text
 
