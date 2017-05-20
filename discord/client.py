@@ -498,7 +498,8 @@ class Client:
         is blocking. That means that registration of events or anything being
         called after this function call will not execute until it returns.
         """
-        if sys.platform != 'win32':
+        is_windows = sys.platform == 'win32'
+        if not is_windows:
             self.loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
             self.loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
@@ -507,7 +508,8 @@ class Client:
         except KeyboardInterrupt:
             pass
         finally:
-            self._do_cleanup()
+            if is_windows:
+                self._do_cleanup()
 
     # properties
 
