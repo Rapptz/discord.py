@@ -289,7 +289,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         return False
 
     def permissions_in(self, channel):
-        """An alias for :meth:`Channel.permissions_for`.
+        """An alias for :meth:`abc.GuildChannel.permissions_for`.
 
         Basically equivalent to:
 
@@ -325,7 +325,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
         calculation, please use either :meth:`permissions_in` or
-        :meth:`Channel.permissions_for`.
+        :meth:`abc.GuildChannel.permissions_for`.
 
         This does take into consideration guild ownership and the
         administrator implication.

@@ -124,7 +124,7 @@ class BaseUser(_BaseUser):
         return '<@{0.id}>'.format(self)
 
     def permissions_in(self, channel):
-        """An alias for :meth:`Channel.permissions_for`.
+        """An alias for :meth:`abc.GuildChannel.permissions_for`.
 
         Basically equivalent to:
 
