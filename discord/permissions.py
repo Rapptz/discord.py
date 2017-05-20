@@ -27,42 +27,42 @@ DEALINGS IN THE SOFTWARE.
 class Permissions:
     """Wraps up the Discord permission value.
 
-    Supported operations:
+    The properties provided are two way. You can set and retrieve individual
+    bits using the properties as if they were regular bools. This allows
+    you to edit permissions.
 
-    +-----------+------------------------------------------+
-    | Operation |               Description                |
-    +===========+==========================================+
-    | x == y    | Checks if two permissions are equal.     |
-    +-----------+------------------------------------------+
-    | x != y    | Checks if two permissions are not equal. |
-    +-----------+------------------------------------------+
-    | x <= y    | Checks if a permission is a subset       |
-    |           | of another permission.                   |
-    +-----------+------------------------------------------+
-    | x >= y    | Checks if a permission is a superset     |
-    |           | of another permission.                   |
-    +-----------+------------------------------------------+
-    | x < y     | Checks if a permission is a strict       |
-    |           | subset of another permission.            |
-    +-----------+------------------------------------------+
-    | x > y     | Checks if a permission is a strict       |
-    |           | superset of another permission.          |
-    +-----------+------------------------------------------+
-    | hash(x)   | Return the permission's hash.            |
-    +-----------+------------------------------------------+
-    | iter(x)   | Returns an iterator of (perm, value)     |
-    |           | pairs. This allows this class to be used |
-    |           | as an iterable in e.g. set/list/dict     |
-    |           | constructions.                           |
-    +-----------+------------------------------------------+
+    .. container:: operations
 
-    The properties provided are two way. You can set and retrieve individual bits using the properties as if they
-    were regular bools. This allows you to edit permissions.
+        .. describe:: x == y
+
+            Checks if two permissions are equal.
+        .. describe:: x != y
+
+            Checks if two permissions are not equal.
+        .. describe:: x <= y
+
+            Checks if a permission is a subset of another permission.
+        .. describe:: x >= y
+
+            Checks if a permission is a superset of another permission.
+        .. describe:: x < y
+
+             Checks if a permission is a strict subset of another permission.
+        .. describe:: x > y
+
+             Checks if a permission is a strict superset of another permission.
+        .. describe:: hash(x)
+
+               Return the permission's hash.
+        .. describe:: iter(x)
+
+               Returns an iterator of ``(perm, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
 
     Attributes
     -----------
     value
-        The raw value. This value is a bit array field of a 32-bit integer
+        The raw value. This value is a bit array field of a 53-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
     """
