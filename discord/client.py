@@ -454,6 +454,9 @@ class Client:
 
 
     def _do_cleanup(self):
+        if self.loop.is_closed() or not self.loop.is_running():
+            return # we're already cleaning up
+
         self.loop.run_until_complete(self.close())
         pending = asyncio.Task.all_tasks(loop=self.loop)
         if pending:
@@ -468,6 +471,8 @@ class Client:
                 gathered.exception()
             except:
                 pass
+
+        self.loop.close()
 
     def run(self, *args, **kwargs):
         """A blocking call that abstracts away the `event loop`_
@@ -503,7 +508,6 @@ class Client:
             pass
         finally:
             self._do_cleanup()
-            self.loop.close()
 
     # properties
 
