@@ -454,7 +454,7 @@ class Client:
 
 
     def _do_cleanup(self):
-        if self.loop.is_closed() or not self.loop.is_running():
+        if self.loop.is_closed():
             return # we're already cleaning up
 
         self.loop.run_until_complete(self.close())
@@ -499,15 +499,29 @@ class Client:
         called after this function call will not execute until it returns.
         """
         is_windows = sys.platform == 'win32'
+        loop = self.loop
         if not is_windows:
-            self.loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
-            self.loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
+            loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
+            loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
+
+        task = compat.create_task(self.start(*args, **kwargs), loop=loop)
+
+        def kill_loop_on_finish(fut):
+            try:
+                fut.result()
+            except:
+                pass # don't care
+            finally:
+                loop.stop()
+
+        task.add_done_callback(kill_loop_on_finish)
 
         try:
-            self.loop.run_until_complete(self.start(*args, **kwargs))
+            loop.run_forever()
         except KeyboardInterrupt:
             pass
         finally:
+            task.remove_done_callback(kill_loop_on_finish)
             if is_windows:
                 self._do_cleanup()
 
