@@ -251,12 +251,12 @@ div.highlight {
   background-color: #fff;
 }
 
-div.important, div.note {
+div.important, div.note, div.hint, div.tip {
   background-color: #eee;
   border: 1px solid #ccc;
 }
 
-div.attention, div.caution, div.hint, div.seealso, div.tip {
+div.attention, div.warning, div.caution, div.seealso {
   background-color: #fef9e9;
   border: 1px solid #fbe091;
 }
@@ -273,7 +273,7 @@ a.toc-backref {
   color: #3e4349;
 }
 
-div.danger, div.error, div.warning {
+div.danger, div.error {
   background-color: #ffe4e4;
   border: 1px solid #f66;
 }
