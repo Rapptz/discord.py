@@ -275,6 +275,15 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         if self.shard_id is not None and self.shard_count is not None:
             payload['d']['shard'] = [self.shard_id, self.shard_count]
 
+        state = self._connection
+        if state._game is not None or state._status is not None:
+            payload['d']['presence'] = {
+                'status': state._status,
+                'game': state._game,
+                'since': 0,
+                'afk': False
+            }
+
         yield from self.send_as_json(payload)
         log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
 

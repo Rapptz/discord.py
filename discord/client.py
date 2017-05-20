@@ -92,6 +92,10 @@ class Client:
         members from the guilds the bot belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
+    game: Optional[:class:`Game`]
+        A game to start your presence with upon logging on to Discord.
+    status: Optional[:class:`Status`]
+        A status to start your presence with upon logging on to Discord.
 
     Attributes
     -----------

@@ -32,7 +32,7 @@ from .relationship import Relationship
 from .channel import *
 from .member import Member
 from .role import Role
-from .enums import ChannelType, try_enum
+from .enums import ChannelType, try_enum, Status
 from .calls import GroupCall
 from . import utils, compat
 
@@ -64,6 +64,21 @@ class ConnectionState:
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
         self._listeners = []
+
+        game = options.get('game', None)
+        if game:
+            game = dict(game)
+
+        status = options.get('status', None)
+        if status:
+            if status is Status.offline:
+                status = 'invisible'
+            else:
+                status = str(status)
+
+        self._game = game
+        self._status = status
+
         self.clear()
 
     def clear(self):
