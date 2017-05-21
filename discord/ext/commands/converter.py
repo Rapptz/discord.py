@@ -35,7 +35,7 @@ from .view import StringView
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter', 'IDConverter', 'clean_content' ]
+            'EmojiConverter', 'IDConverter', 'clean_content', 'GuildConverter' ]
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -239,6 +239,35 @@ class VoiceChannelConverter(IDConverter):
 
         if not isinstance(result, discord.VoiceChannel):
             raise BadArgument('Channel "{}" not found.'.format(argument))
+
+        return result
+
+class GuildConverter(IDConverter):
+    """Converts to a :class:`Guild`.
+
+        All lookups are via the global guild cache.
+
+        The lookup strategy is as follows (in order):
+
+        1. Lookup by ID.
+        2. Lookup by name
+        """
+    @asyncio.coroutine
+    def convert(self, ctx, argument):
+        bot = ctx.bot
+
+        match = self._get_id_match(argument)
+        result = None
+
+        if match is None:
+            # not an id
+            result = discord.utils.get(bot.guilds, name=argument)
+        else:
+            guild_id = int(match.group(1))
+            result = bot.get_guild(guild_id)
+
+        if not isinstance(result, discord.Guild):
+            raise BadArgument('Guild "{}" not found.'.format(argument))
 
         return result
 
