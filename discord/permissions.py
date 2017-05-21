@@ -91,14 +91,14 @@ class Permissions:
         return self._perm_iterator()
 
     def is_subset(self, other):
-        """Returns True if other has the same or fewer permissions as self."""
+        """Returns True if self has the same or fewer permissions as other."""
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
             raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
 
     def is_superset(self, other):
-        """Returns True if other has the same or more permissions as self."""
+        """Returns True if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
