@@ -476,13 +476,13 @@ class Guild(Hashable):
 
         Creating a basic channel:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             channel = await guild.create_text_channel('cool-channel')
 
         Creating a "secret" channel:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             overwrites = {
                 guild.default_role: discord.PermissionOverwrite(read_messages=False),

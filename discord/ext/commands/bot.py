@@ -49,7 +49,7 @@ def when_mentioned_or(*prefixes):
     Example
     --------
 
-    .. code-block:: python
+    .. code-block:: python3
 
         bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'))
 
@@ -227,7 +227,7 @@ class BotBase(GroupMixin):
         Example
         ---------
 
-        .. code-block:: python
+        .. code-block:: python3
 
             @bot.check
             def whitelist(ctx):
@@ -373,7 +373,7 @@ class BotBase(GroupMixin):
         Example
         --------
 
-        .. code-block:: python
+        .. code-block:: python3
 
             async def on_ready(): pass
             async def my_message(message): pass
@@ -422,7 +422,7 @@ class BotBase(GroupMixin):
         Example
         --------
 
-        .. code-block:: python
+        .. code-block:: python3
 
             @bot.listen()
             async def on_message(message):

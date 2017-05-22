@@ -96,7 +96,7 @@ happens, you will receive an event about it and you can then respond to it.
 
 A quick example to showcase how events work:
 
-.. code-block:: python
+.. code-block:: python3
 
     import discord
 

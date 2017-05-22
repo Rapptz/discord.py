@@ -15,7 +15,7 @@ Let's make a bot that replies to a specific message and walk you through it.
 
 It looks something like this:
 
-.. code-block:: python
+.. code-block:: python3
 
     import discord
 

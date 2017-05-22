@@ -998,7 +998,7 @@ def check(predicate):
 
     Creating a basic check to see if the command invoker is you.
 
-    .. code-block:: python
+    .. code-block:: python3
 
         def check_if_it_is_me(ctx):
             return ctx.message.author.id == 85309593344815104
@@ -1010,7 +1010,7 @@ def check(predicate):
 
     Transforming common checks into its own decorator:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         def is_me():
             def predicate(ctx):
@@ -1076,7 +1076,7 @@ def has_any_role(*names):
     Example
     --------
 
-    .. code-block:: python
+    .. code-block:: python3
 
         @bot.command()
         @commands.has_any_role('Library Devs', 'Moderators')
@@ -1106,7 +1106,7 @@ def has_permissions(**perms):
     Example
     ---------
 
-    .. code-block:: python
+    .. code-block:: python3
 
         @bot.command()
         @commands.has_permissions(manage_messages=True)

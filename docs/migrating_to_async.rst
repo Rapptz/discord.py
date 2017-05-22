@@ -25,7 +25,7 @@ possible, the events must be decorated with ``@asyncio.coroutine``.
 
 Before:
 
-.. code-block:: python
+.. code-block:: python3
 
     @client.event
     def on_message(message):
@@ -33,7 +33,7 @@ Before:
 
 After:
 
-.. code-block:: python
+.. code-block:: python3
 
     @client.event
     @asyncio.coroutine
@@ -42,7 +42,7 @@ After:
 
 Or in Python 3.5+:
 
-.. code-block:: python
+.. code-block:: python3
 
     @client.event
     async def on_message(message):
@@ -51,7 +51,7 @@ Or in Python 3.5+:
 Because there is a lot of typing, a utility decorator (:meth:`Client.async_event`) is provided
 for easier registration. For example:
 
-.. code-block:: python
+.. code-block:: python3
 
     @client.async_event
     def on_message(message):
@@ -70,7 +70,7 @@ was changed.
 
 Before:
 
-.. code-block:: python
+.. code-block:: python3
 
     def on_channel_update(channel): pass
     def on_member_update(member): pass
@@ -82,7 +82,7 @@ Before:
 
 After:
 
-.. code-block:: python
+.. code-block:: python3
 
     def on_channel_update(before, after): pass
     def on_member_update(before, after): pass
@@ -104,13 +104,13 @@ for the computation to be done. For example...
 
 Before:
 
-.. code-block:: python
+.. code-block:: python3
 
     client.send_message(message.channel, 'Hello')
 
 After:
 
-.. code-block:: python
+.. code-block:: python3
 
     yield from client.send_message(message.channel, 'Hello')
 
@@ -137,7 +137,7 @@ The affected attributes are as follows:
 
 Some examples of previously valid behaviour that is now invalid
 
-.. code-block:: python
+.. code-block:: python3
 
     if client.servers[0].name == "test":
         # do something
@@ -145,7 +145,7 @@ Some examples of previously valid behaviour that is now invalid
 Since they are no longer ``list``\s, they no longer support indexing or any operation other than iterating.
 In order to get the old behaviour you should explicitly cast it to a list.
 
-.. code-block:: python
+.. code-block:: python3
 
     servers = list(client.servers)
     # work with servers
@@ -165,7 +165,7 @@ The common places where this was changed was in the server region, member status
 
 Before:
 
-.. code-block:: python
+.. code-block:: python3
 
     server.region == 'us-west'
     member.status == 'online'
@@ -173,7 +173,7 @@ Before:
 
 After:
 
-.. code-block:: python
+.. code-block:: python3
 
     server.region == discord.ServerRegion.us_west
     member.status = discord.Status.online
@@ -276,14 +276,14 @@ However, in order to do that you must pass in your credentials to :meth:`Client.
 
 Basically, before:
 
-.. code-block:: python
+.. code-block:: python3
 
     client.login('token')
     client.run()
 
 After:
 
-.. code-block:: python
+.. code-block:: python3
 
     client.run('token')
 
@@ -298,7 +298,7 @@ This is a utility function that abstracts the event loop for you. There's no nee
 the run call to be blocking and out of your control. Indeed, if you want control of the
 event loop then doing so is quite straightforward:
 
-.. code-block:: python
+.. code-block:: python3
 
     import discord
     import asyncio

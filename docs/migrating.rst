@@ -626,7 +626,7 @@ For example, to wait for a reaction: ::
 Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a ``asyncio.TimeoutError``
 when reached instead of setting the return to ``None``. For example:
 
-.. code-block:: python
+.. code-block:: python3
 
     def pred(m):
         return m.author == message.author and m.channel == message.channel
@@ -726,7 +726,7 @@ In v1.0, the :class:`.Context` has received a lot of changes with how it's retri
 
 The biggest change is that ``pass_context=True`` is now the default behaviour. Ergo:
 
-.. code-block:: python
+.. code-block:: python3
 
     # before
     @bot.command()
@@ -768,7 +768,7 @@ provided one.
 
 For example, if you want to add some functionality to the context:
 
-.. code-block:: python
+.. code-block:: python3
 
     class MyContext(commands.Context):
         @property
@@ -778,7 +778,7 @@ For example, if you want to add some functionality to the context:
 Then you can use :meth:`~ext.commands.Bot.get_context` inside :func:`on_message` with combination with
 :meth:`~ext.commands.Bot.invoke` to use your custom context:
 
-.. code-block:: python
+.. code-block:: python3
 
     class MyBot(commands.Bot):
         async def on_message(self, message):
@@ -787,7 +787,7 @@ Then you can use :meth:`~ext.commands.Bot.get_context` inside :func:`on_message`
 
 Now inside your commands you will have access to your custom context:
 
-.. code-block:: python
+.. code-block:: python3
 
     @bot.command()
     async def secret(ctx):

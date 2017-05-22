@@ -128,7 +128,7 @@ class BaseUser(_BaseUser):
 
         Basically equivalent to:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             channel.permissions_for(self)
 

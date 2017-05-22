@@ -188,19 +188,19 @@ def get(iterable, **attrs):
 
     Basic usage:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         member = discord.utils.get(message.guild.members, name='Foo')
 
     Multiple attribute matching:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         channel = discord.utils.get(guild.channels, name='Foo', type=ChannelType.voice)
 
     Nested attribute matching:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         channel = discord.utils.get(client.get_all_channels(), guild__name='Cool', name='general')
 
