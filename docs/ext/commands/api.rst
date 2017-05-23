@@ -5,6 +5,8 @@ API Reference
 
 The following section outlines the API of discord.py's command extension module.
 
+.. _ext_commands_api_bot:
+
 Bot
 ----
 
@@ -14,6 +16,8 @@ Bot
 
 .. autoclass:: discord.ext.commands.AutoShardedBot
     :members:
+
+.. _ext_commands_api_events:
 
 Event Reference
 -----------------
@@ -54,6 +58,7 @@ are custom to the command extension module.
     :param ctx: The invocation context.
     :type ctx: :class:`Context`
 
+.. _ext_commands_api_command:
 
 Command
 --------
@@ -72,6 +77,7 @@ Command
 .. autoclass:: discord.ext.commands.GroupMixin
     :members:
 
+.. _ext_commands_api_formatters:
 
 Formatters
 -----------
@@ -81,6 +87,8 @@ Formatters
 
 .. autoclass:: discord.ext.commands.HelpFormatter
     :members:
+
+.. _ext_commands_api_checks:
 
 Checks
 -------
@@ -107,6 +115,8 @@ Checks
 
 .. autofunction:: discord.ext.commands.is_nsfw
 
+.. _ext_commands_api_context:
+
 Context
 --------
 
@@ -120,6 +130,8 @@ Context
 
     .. autocomethod:: discord.ext.commands.Context.typing
         :async-with:
+
+.. _ext_commands_api_converters:
 
 Converters
 ------------
@@ -156,6 +168,8 @@ Converters
 
 .. autoclass:: discord.ext.commands.clean_content
     :members:
+
+.. _ext_commands_api_errors:
 
 Errors
 -------
