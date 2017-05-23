@@ -721,8 +721,10 @@ class ConnectionState:
                         voice.channel = ch
 
             member, before, after = guild._update_voice_state(data, channel_id)
-            if after is not None:
+            if member is not None:
                 self.dispatch('voice_state_update', member, before, after)
+            else:
+                log.warning('VOICE_STATE_UPDATE referencing an unknown member ID: %s. Discarding.', data['user_id'])
         else:
             # in here we're either at private or group calls
             call = self._calls.get(channel_id)
