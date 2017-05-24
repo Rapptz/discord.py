@@ -725,11 +725,12 @@ class Bot(GroupMixin, discord.Client):
 
     # extensions
 
-    def load_extension(self, name):
+    def load_extension(self, name, lib=None):
         if name in self.extensions:
             return
 
-        lib = importlib.import_module(name)
+        if lib is None:
+            lib = importlib.import_module(name)
         if not hasattr(lib, 'setup'):
             del lib
             del sys.modules[name]
