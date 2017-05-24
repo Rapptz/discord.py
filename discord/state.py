@@ -336,7 +336,7 @@ class ConnectionState:
             pass
 
         game = data.get('game', {})
-        member.game = Game(**game) if game else None
+        member.game = Game(**game) if (game and game.get('name') is not None) else None
         member.name = user.get('username', member.name)
         member.avatar = user.get('avatar', member.avatar)
         member.discriminator = user.get('discriminator', member.discriminator)
