@@ -187,6 +187,15 @@ class Bot(GroupMixin, discord.Client):
         output is PM'd. If ``None``, then the bot will only PM when the help
         message becomes too long (dictated by more than 1000 characters).
         Defaults to ``False``.
+    listen_to_pm: Optional[bool]
+        A tribool that determines whether or not the bot should respond to **any**
+        private message commands sent to it. If ``True``, then the bot will not 
+        respond to any command sent to it in a private messages. If ``False``, the 
+        bot will respond to commands sent in private messages (unless otherwise 
+        prevented by user code) but will warn the sender of such. If ``None``, the 
+        bot will not respond to private message commands nor will it give a response 
+        to the sender when they try.
+        Defaults to ``True``
     help_attrs : dict
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing
@@ -203,7 +212,7 @@ class Bot(GroupMixin, discord.Client):
         ``"Command {0.name} has no subcommands."``. The first format argument is the
         :class:`Command` attempted to get a subcommand and the second is the name.
     """
-    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
+    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, listen_to_pm=True, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
@@ -212,6 +221,7 @@ class Bot(GroupMixin, discord.Client):
         self._checks = []
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+        self.listen_to_pm = listen_to_pm
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
@@ -841,6 +851,12 @@ class Bot(GroupMixin, discord.Client):
 
         if invoker in self.commands:
             command = self.commands[invoker]
+            if _internal_channel.is_private and not self.listen_to_pm:
+                if self.listen_to_pm is False:
+                  yield from self.send_message(_internal_author, 'This bot does not accept private message commands')
+                self.dispatch('command_ignored', command, ctx)
+                return
+            
             self.dispatch('command', command, ctx)
             try:
                 yield from command.invoke(ctx)
