@@ -335,7 +335,7 @@ span.pre {
   padding: 0 2px;
 }
 
-dl.class, dl.function {
+dl.class {
   margin-bottom: 50px;
 }
 
@@ -347,9 +347,13 @@ dl.method > dt,
 dl.class > dt,
 dl.exception > dt {
   background-color: #f5f5f5;
-  margin: 25px 0 10px 0;
   padding: 1px 10px;
 }
+
+dd {
+  margin-top: 10px;
+}
+
 
 .container.operations {
   padding: 10px;
