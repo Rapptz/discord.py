@@ -347,6 +347,10 @@ They will be enumerated here.
 
     - Use :meth:`Colour.to_rgb` instead.
 
+**Changed**
+
+- :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
+
 **Added**
 
 - :attr:`VoiceChannel.members` for fetching members connected to a voice channel.
