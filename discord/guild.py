@@ -1116,6 +1116,13 @@ class Guild(Hashable):
         :class:`AuditLogEntry`
             The audit log entry.
 
+        Raises
+        -------
+        Forbidden
+            You are not allowed to fetch audit logs
+        HTTPException
+            An error occurred while fetching the audit logs.
+
         Examples
         ----------
 
