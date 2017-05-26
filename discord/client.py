@@ -537,7 +537,7 @@ class Client:
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            pass
+            log.info('Received signal to terminate bot and event loop.')
         finally:
             task.remove_done_callback(stop_loop_on_finish)
             if is_windows:
