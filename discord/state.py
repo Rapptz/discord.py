@@ -91,7 +91,7 @@ class ConnectionState:
         self._private_channels = {}
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
-        self.messages = deque(maxlen=self.max_messages)
+        self._messages = deque(maxlen=self.max_messages)
 
     def process_listeners(self, listener_type, argument, result):
         removed = []
@@ -209,7 +209,7 @@ class ConnectionState:
             self._private_channels_by_user.pop(channel.recipient.id, None)
 
     def _get_message(self, msg_id):
-        return utils.find(lambda m: m.id == msg_id, self.messages)
+        return utils.find(lambda m: m.id == msg_id, self._messages)
 
     def _add_guild_from_data(self, guild):
         guild = Guild(data=guild, state=self)
@@ -310,21 +310,21 @@ class ConnectionState:
         channel = self.get_channel(int(data['channel_id']))
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
-        self.messages.append(message)
+        self._messages.append(message)
 
     def parse_message_delete(self, data):
         message_id = int(data['id'])
         found = self._get_message(message_id)
         if found is not None:
             self.dispatch('message_delete', found)
-            self.messages.remove(found)
+            self._messages.remove(found)
 
     def parse_message_delete_bulk(self, data):
         message_ids = set(map(int, data.get('ids', [])))
-        to_be_deleted = list(filter(lambda m: m.id in message_ids, self.messages))
+        to_be_deleted = list(filter(lambda m: m.id in message_ids, self._messages))
         for msg in to_be_deleted:
             self.dispatch('message_delete', msg)
-            self.messages.remove(msg)
+            self._messages.remove(msg)
 
     def parse_message_update(self, data):
         message = self._get_message(int(data['id']))
@@ -630,7 +630,7 @@ class ConnectionState:
             return
 
         # do a cleanup of the messages cache
-        self.messages = deque((msg for msg in self.messages if msg.guild != guild), maxlen=self.max_messages)
+        self._messages = deque((msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages)
 
         self._remove_guild(guild)
         self.dispatch('guild_remove', guild)

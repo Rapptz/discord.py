@@ -66,7 +66,6 @@ class Client:
 
     A number of options can be passed to the :class:`Client`.
 
-    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
     .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
     .. _connector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#connectors
     .. _ProxyConnector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#proxyconnector
@@ -74,7 +73,7 @@ class Client:
     Parameters
     ----------
     max_messages : Optional[int]
-        The maximum number of messages to store in :attr:`messages`.
+        The maximum number of messages to store in the internal message cache.
         This defaults to 5000. Passing in `None` or a value less than 100
         will use the default instead of the passed in value.
     loop : Optional[event loop]
@@ -182,16 +181,6 @@ class Client:
     def private_channels(self):
         """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on."""
         return self._connection.private_channels
-
-    @property
-    def messages(self):
-        """A deque_ of :class:`Message` that the client has received from all
-        guilds and private messages.
-
-        The number of messages stored in this deque is controlled by the
-        ``max_messages`` parameter.
-        """
-        return self._connection.messages
 
     @property
     def voice_clients(self):
