@@ -318,8 +318,8 @@ class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.
 
 
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
+    All lookups are done for the local guild first, if available. If that lookup
+    fails, then it checks the client's global cache.
 
     The lookup strategy is as follows (in order):
 
@@ -329,7 +329,7 @@ class EmojiConverter(IDConverter):
     """
     @asyncio.coroutine
     def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<:[a-zA-Z0-9]+:([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild
