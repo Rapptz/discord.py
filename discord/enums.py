@@ -75,7 +75,7 @@ class VerificationLevel(Enum):
     medium            = 2
     high              = 3
     table_flip        = 3
-    highest           = 4
+    extreme           = 4
     double_table_flip = 4
 
     def __str__(self):

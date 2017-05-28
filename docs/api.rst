@@ -679,13 +679,13 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: table_flip
 
         An alias for :attr:`high`.
-    .. attribute:: highest
+    .. attribute:: extreme
 
         Member must have a verified phone on their Discord account.
 
     .. attribute:: double_table_flip
 
-        An alias for :attr:`highest`.
+        An alias for :attr:`extreme`.
 
 .. class:: ContentFilter
 
