@@ -284,12 +284,12 @@ class Permissions:
         self._set(6, value)
 
     @property
-    def view_audit_logs(self):
+    def view_audit_log(self):
         """Returns True if a user can view the guild's audit log."""
         return self._bit(7)
 
-    @view_audit_logs.setter
-    def view_audit_logs(self, value):
+    @view_audit_log.setter
+    def view_audit_log(self, value):
         self._set(7, value)
 
     # 2 unused
