@@ -368,10 +368,13 @@ class clean_content(Converter):
         Whether to clean channel mentions.
     use_nicknames: bool
         Whether to use nicknames when transforming mentions.
+    escape_markdown: bool
+        Whether to also escape special markdown characters.
     """
-    def __init__(self, *, fix_channel_mentions=False, use_nicknames=True):
+    def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False):
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
+        self.escape_markdown = escape_markdown
 
     @asyncio.coroutine
     def convert(self, ctx, argument):
@@ -415,6 +418,18 @@ class clean_content(Converter):
 
         pattern = re.compile('|'.join(transformations.keys()))
         result = pattern.sub(repl, argument)
+
+        if self.escape_markdown:
+            transformations = {
+                re.escape(c): '\\' + c
+                for c in ('*', '`', '_', '~', '\\')
+            }
+
+            def replace(obj):
+                return transformations.get(re.escape(obj.group(0)), '')
+
+            pattern = re.compile('|'.join(transformations.keys()))
+            result = pattern.sub(replace, result)
 
         transformations = {
             '@everyone': '@\u200beveryone',
