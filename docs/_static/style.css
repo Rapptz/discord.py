@@ -358,6 +358,7 @@ dd {
 .container.operations {
   padding: 10px;
   border: 1px solid #ddd;
+  margin-bottom: 20px;
 }
 
 .container.operations::before {
