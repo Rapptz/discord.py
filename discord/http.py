@@ -294,7 +294,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload)
 
-    def send_message(self, channel_id, content, *, tts=False, embed=None):
+    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
 
@@ -307,12 +307,15 @@ class HTTPClient:
         if embed:
             payload['embed'] = embed
 
+        if nonce:
+            payload['nonce'] = nonce
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None):
+    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
@@ -321,6 +324,8 @@ class HTTPClient:
             payload['content'] = content
         if embed:
             payload['embed'] = embed
+        if nonce:
+            payload['nonce'] = nonce
 
         form.add_field('payload_json', utils.to_json(payload))
         if len(files) == 1:

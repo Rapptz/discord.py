@@ -628,7 +628,7 @@ class Messageable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, reason=None, delete_after=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, reason=None, delete_after=None, nonce=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -658,6 +658,9 @@ class Messageable(metaclass=abc.ABCMeta):
         files: List[:class:`File`]
             A list of files to upload. Must be a minimum of 2 and a
             maximum of 10.
+        nonce: int
+            The nonce to use for sending this message. If the message was successfully sent,
+            then the message will have a nonce with this value.
         delete_after: float
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
@@ -697,7 +700,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = yield from state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
-                                                        content=content, tts=tts, embed=embed)
+                                                        content=content, tts=tts, embed=embed, nonce=nonce)
             finally:
                 file.close()
 
@@ -707,12 +710,13 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 param = [(f.open_file(), f.filename) for f in files]
-                data = yield from state.http.send_files(channel.id, files=param, content=content, tts=tts, embed=embed)
+                data = yield from state.http.send_files(channel.id, files=param, content=content, tts=tts,
+                                                        embed=embed, nonce=nonce)
             finally:
                 for f in files:
                     f.close()
         else:
-            data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed)
+            data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
