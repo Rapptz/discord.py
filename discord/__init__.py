@@ -25,7 +25,7 @@ from .channel import *
 from .guild import Guild
 from .relationship import Relationship
 from .member import Member, VoiceState
-from .message import Message
+from .message import Message, Attachment
 from .errors import *
 from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite
