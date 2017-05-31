@@ -638,7 +638,7 @@ For example, to wait for a message: ::
     def pred(m):
         return m.author == message.author and m.channel == message.channel
 
-    msg = await client.wait_for('message', check=m)
+    msg = await client.wait_for('message', check=pred)
 
 To facilitate multiple returns, :meth:`Client.wait_for` returns either a single argument, no arguments, or a tuple of
 arguments.
