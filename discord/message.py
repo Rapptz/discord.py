@@ -99,7 +99,7 @@ class Attachment:
 
         data = yield from self._http.get_attachment(self.url)
         if isinstance(fp, str):
-            with open(fp, 'rb') as f:
+            with open(fp, 'wb') as f:
                 return f.write(data)
         else:
             return fp.write(data)
