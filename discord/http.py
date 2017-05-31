@@ -119,7 +119,6 @@ class HTTPClient:
 
         if self.token is not None:
             headers['Authorization'] = 'Bot ' + self.token if self.bot_token else self.token
-
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
@@ -209,6 +208,20 @@ class HTTPClient:
                 finally:
                     # clean-up just in case
                     yield from r.release()
+
+    def get_attachment(self, url):
+        resp = yield from self._session.get(url)
+        try:
+            if resp.status == 200:
+                return (yield from resp.read())
+            elif resp.status == 404:
+                raise NotFound(resp, 'attachment not found')
+            elif resp.status == 403:
+                raise Forbidden(resp, 'cannot retrieve attachment')
+            else:
+                raise HTTPException(resp, 'failed to get attachment')
+        finally:
+            yield from resp.release()
 
     # state management
 

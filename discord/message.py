@@ -32,8 +32,77 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException
+from .errors import InvalidArgument, ClientException, HTTPException, NotFound
 from .embeds import Embed
+
+class Attachment:
+    """Represents an attachment from Discord.
+
+    Attributes
+    ------------
+    id: int
+        The attachment ID.
+    size: int
+        The attachment size in bytes.
+    height: Optional[int]
+        The attachment's height, in pixels. Only applicable to images.
+    width: Optional[int]
+        The attachment's width, in pixels. Only applicable to images.
+    filename: str
+        The attachment's filename.
+    url: str
+        The attachment URL. If the message this attachment was attached
+        to is deleted, then this will 404.
+    proxy_url: str
+        The proxy URL. This is a cached version of the :attr:`~Attachment.url` in the
+        case of images. When the message is deleted, this URL might be valid for a few
+        minutes or not valid at all.
+    """
+
+    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http')
+
+    def __init__(self, *, data, state):
+        self.id = int(data['id'])
+        self.size = data['size']
+        self.height = data.get('height')
+        self.width = data.get('width')
+        self.filename = data['filename']
+        self.url = data.get('url')
+        self.proxy_url = data.get('proxy_url')
+        self._http = state.http
+
+    @asyncio.coroutine
+    def save(self, fp):
+        """|coro|
+
+        Saves this attachment into a file-like object.
+
+        Parameters
+        -----------
+        fp: Union[BinaryIO, str]
+            The file-like object to save this attachment to or the filename
+            to use. If a filename is passed then a file is created with that
+            filename and used instead.
+
+        Raises
+        --------
+        HTTPException
+            Saving the attachment failed.
+        NotFound
+            The attachment was deleted.
+
+        Returns
+        --------
+        int
+            The number of bytes written.
+        """
+
+        data = yield from self._http.get_attachment(self.url)
+        if isinstance(fp, str):
+            with open(fp, 'rb') as f:
+                return f.write(data)
+        else:
+            return fp.write(data)
 
 class Message:
     """Represents a message from Discord.
@@ -94,7 +163,7 @@ class Message:
     webhook_id: Optional[int]
         If this message was sent by a webhook, then this is the webhook ID's that sent this
         message.
-    attachments: list
+    attachments: List[:class:`Attachment`]
         A list of attachments given to a message.
     pinned: bool
         Specifies if the message is currently pinned.
@@ -172,7 +241,7 @@ class Message:
         self._try_patch(data, 'tts')
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
         self._try_patch(data, 'content')
-        self._try_patch(data, 'attachments')
+        self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
         self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
         self._try_patch(data, 'nonce')
 

@@ -1617,6 +1617,12 @@ User
     .. autocomethod:: typing
         :async-with:
 
+Attachment
+~~~~~~~~~~~
+
+.. autoclass:: Attachment
+    :members:
+
 Message
 ~~~~~~~
 
