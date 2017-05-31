@@ -210,21 +210,6 @@ class HTTPClient:
                     # clean-up just in case
                     yield from r.release()
 
-    def get(self, *args, **kwargs):
-        return self.request('GET', *args, **kwargs)
-
-    def put(self, *args, **kwargs):
-        return self.request('PUT', *args, **kwargs)
-
-    def patch(self, *args, **kwargs):
-        return self.request('PATCH', *args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        return self.request('DELETE', *args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        return self.request('POST', *args, **kwargs)
-
     # state management
 
     @asyncio.coroutine
