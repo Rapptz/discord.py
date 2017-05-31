@@ -326,7 +326,10 @@ class AuditLogEntry:
         }
 
         obj = Invite(state=self._state, data=fake_payload)
-        obj.inviter = changeset.inviter
+        try:
+            obj.inviter = changeset.inviter
+        except AttributeError:
+            pass
         return obj
 
     def _convert_target_emoji(self, target_id):
