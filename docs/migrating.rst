@@ -356,9 +356,12 @@ They will be enumerated here.
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
+- :attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` objects.
+- :attr:`Message.attachments` is now a list of :class:`Attachment` instead of ``dict`` object.
 
 **Added**
 
+- :class:`Attachment` to represent a discord attachment.
 - :attr:`VoiceChannel.members` for fetching members connected to a voice channel.
 - :attr:`TextChannel.members` for fetching members that can see the channel.
 - :attr:`Role.members` for fetching members that have the role.
