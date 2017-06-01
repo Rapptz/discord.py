@@ -204,10 +204,16 @@ class Command:
         if converter.__module__.startswith('discord.') and not converter.__module__.endswith('converter'):
             converter = getattr(converters, converter.__name__ + 'Converter')
 
-        if inspect.isclass(converter) and issubclass(converter, converters.Converter):
-            instance = converter()
-            ret = yield from instance.convert(ctx, argument)
-            return ret
+        if inspect.isclass(converter):
+            if issubclass(converter, converters.Converter):
+                instance = converter()
+                ret = yield from instance.convert(ctx, argument)
+                return ret
+            else:
+                method = getattr(converter, 'convert', None)
+                if method is not None and inspect.ismethod(method):
+                    ret = yield from method(ctx, argument)
+                    return ret
         elif isinstance(converter, converters.Converter):
             ret = yield from converter.convert(ctx, argument)
             return ret
