@@ -528,7 +528,7 @@ After: ::
     async def on_member_ban(guild, user)
 
 As part of the change, the event can either receive a :class:`User` or :class:`Member`. To help in the cases that have
-:class:`User`, the :class:`Guild` is provided as
+:class:`User`, the :class:`Guild` is provided as the first parameter.
 
 The ``on_channel_`` events have received a type level split (see :ref:`migrating_1_0_channel_split`).
 
