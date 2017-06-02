@@ -189,7 +189,7 @@ a coroutine from another thread.
 However, this function returns a ``concurrent.Future`` and to actually call it we have to fetch its result. Putting all of
 this together we can do the following: ::
 
-    def my_after():
+    def my_after(error):
         coro = some_channel.send('Song is done!')
         fut = asyncio.run_coroutine_threadsafe(coro, client.loop)
         try:
