@@ -27,11 +27,14 @@ DEALINGS IN THE SOFTWARE.
 import threading
 import subprocess
 import audioop
+import logging
 import shlex
 import time
 
 from .errors import ClientException
 from .opus import Encoder as OpusEncoder
+
+log = logging.getLogger(__name__)
 
 __all__ = [ 'AudioSource', 'PCMAudio', 'FFmpegPCMAudio', 'PCMVolumeTransformer' ]
 
@@ -286,7 +289,7 @@ class AudioPlayer(threading.Thread):
             try:
                 self.after(self._current_error)
             except:
-                pass
+                log.exception('Calling the after function failed.')
 
     def stop(self):
         self._end.set()
