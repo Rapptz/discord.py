@@ -1550,7 +1550,7 @@ module, others which are not.
 
 .. autoclass:: discord.abc.Messageable
     :members:
-    :exclude-members: history typing
+    :exclude-members: history, typing
 
     .. autocomethod:: discord.abc.Messageable.history
         :async-for:
@@ -1609,7 +1609,7 @@ User
 .. autoclass:: User
     :members:
     :inherited-members:
-    :exclude-members: history typing
+    :exclude-members: history, typing
 
     .. autocomethod:: history
         :async-for:
@@ -1667,7 +1667,7 @@ Member
 .. autoclass:: Member
     :members:
     :inherited-members:
-    :exclude-members: history typing
+    :exclude-members: history, typing
 
     .. autocomethod:: history
         :async-for:
@@ -1699,7 +1699,7 @@ TextChannel
 .. autoclass:: TextChannel
     :members:
     :inherited-members:
-    :exclude-members: history typing
+    :exclude-members: history, typing
 
     .. autocomethod:: history
         :async-for:
@@ -1720,7 +1720,7 @@ DMChannel
 .. autoclass:: DMChannel
     :members:
     :inherited-members:
-    :exclude-members: history typing
+    :exclude-members: history, typing
 
     .. autocomethod:: history
         :async-for:
@@ -1734,7 +1734,7 @@ GroupChannel
 .. autoclass:: GroupChannel
     :members:
     :inherited-members:
-    :exclude-members: history typing
+    :exclude-members: history, typing
 
     .. autocomethod:: history
         :async-for:
