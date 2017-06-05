@@ -87,7 +87,7 @@ class AuditLogDiff:
         return len(self.__dict__)
 
     def __iter__(self):
-        return self.__dict__.items()
+        return iter(self.__dict__.items())
 
     def __repr__(self):
         return '<AuditLogDiff attrs={0!r}>'.format(tuple(self.__dict__))
