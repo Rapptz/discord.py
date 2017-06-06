@@ -582,6 +582,30 @@ class BotBase(GroupMixin):
     # extensions
 
     def load_extension(self, name):
+        """Loads an extension.
+
+        An extension is a python module that contains commands, cogs, or
+        listeners.
+
+        An extension must have a global function, ``setup`` defined as
+        the entry point on what to do when the extension is loaded. This entry
+        point must have a single argument, the ``bot``.
+
+        Parameters
+        ------------
+        name: str
+            The extension name to load. It must be dot separated like
+            regular Python imports if accessing a sub-module. e.g.
+            ``foo.test`` if you want to import ``foo/test.py``.
+
+        Raises
+        --------
+        ClientException
+            The extension does not have a setup function.
+        ImportError
+            The extension could not be imported.
+        """
+
         if name in self.extensions:
             return
 
@@ -595,6 +619,24 @@ class BotBase(GroupMixin):
         self.extensions[name] = lib
 
     def unload_extension(self, name):
+        """Unloads an extension.
+
+        When the extension is unloaded, all commands, listeners, and cogs are
+        removed from the bot and the module is un-imported.
+
+        The extension can provide an optional global function, ``teardown``,
+        to do miscellaneous clean-up if necessary. This function takes a single
+        parameter, the ``bot``, similar to ``setup`` from
+        :func:`~.Bot.load_extension`.
+
+        Parameters
+        ------------
+        name: str
+            The extension name to unload. It must be dot separated like
+            regular Python imports if accessing a sub-module. e.g.
+            ``foo.test`` if you want to import ``foo/test.py``.
+        """
+
         lib = self.extensions.get(name)
         if lib is None:
             return
