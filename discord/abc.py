@@ -656,8 +656,7 @@ class Messageable(metaclass=abc.ABCMeta):
         file: :class:`File`
             The file to upload.
         files: List[:class:`File`]
-            A list of files to upload. Must be a minimum of 2 and a
-            maximum of 10.
+            A list of files to upload. Must be a maximum of 10.
         nonce: int
             The nonce to use for sending this message. If the message was successfully sent,
             then the message will have a nonce with this value.
@@ -705,8 +704,8 @@ class Messageable(metaclass=abc.ABCMeta):
                 file.close()
 
         elif files is not None:
-            if len(files) < 2 or len(files) > 10:
-                raise InvalidArgument('files parameter must be a list of 2 to 10 elements')
+            if len(files) > 10:
+                raise InvalidArgument('files parameter must be a list of up to 10 elements')
 
             try:
                 param = [(f.open_file(), f.filename) for f in files]
