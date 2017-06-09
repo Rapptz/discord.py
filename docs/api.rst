@@ -232,6 +232,23 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param message: A :class:`Message` of the deleted message.
 
+.. function:: on_raw_message_delete(message_id, channel_id)
+
+    Called when a message is deleted. Unlike :func:`on_message_delete`, this is
+    called regardless of the message being in the internal message cache or not.
+
+    :param int message_id: The message ID of the message being deleted.
+    :param int channel_id: The channel ID where the message was deleted.
+
+.. function:: on_raw_bulk_message_delete(message_ids, channel_id)
+
+    Called when a bulk delete is triggered. This event is called regardless
+    of the message IDs being in the internal message cache or not.
+
+    :param message_ids: The message IDs that were bulk deleted.
+    :type message_ids: Set[int]
+    :param int channel_id: The channel ID where the messages were deleted.
+
 .. function:: on_message_edit(before, after)
 
     Called when a :class:`Message` receives an update event. If the message is not found
@@ -252,6 +269,22 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
+.. function:: on_raw_message_edit(message_id, data)
+
+    Called when a message is edited. Unlike :func:`on_message_edit`, this is called
+    regardless of the state of the internal message cache.
+
+    Due to the inherently raw nature of this event, the data parameter coincides with
+    the raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
+
+    Since the data payload can be partial, care must be taken when accessing stuff in the dictionary.
+    One example of a common case of partial data is when the ``'content'`` key is inaccessible. This
+    denotes an "embed" only edit, which is an edit in which only the embeds are updated by the Discord
+    embed server.
+
+    :param int message_id: The message ID of the message being edited.
+    :param dict data: The raw data being passed to the MESSAGE_UPDATE gateway event.
+
 .. function:: on_reaction_add(reaction, user)
 
     Called when a message has a reaction added to it. Similar to on_message_edit,
@@ -264,6 +297,17 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who added the reaction.
+
+.. function:: on_raw_reaction_add(emoji, message_id, channel_id, user_id)
+
+    Called when a reaction has a reaction added. Unlike :func:`on_reaction_add`, this is
+    called regardless of the state of the internal message cache.
+
+    :param emoji: The custom or unicode emoji being reacted to.
+    :type emoji: :class:`PartialReactionEmoji`
+    :param int message_id: The message ID of the message being reacted.
+    :param int channel_id: The channel ID where the message belongs to.
+    :param int user_id: The user ID of the user who did the reaction.
 
 .. function:: on_reaction_remove(reaction, user)
 
@@ -278,14 +322,33 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who removed the reaction.
 
+.. function:: on_raw_reaction_remove(emoji, message_id, channel_id, user_id)
+
+    Called when a reaction has a reaction removed. Unlike :func:`on_reaction_remove`, this is
+    called regardless of the state of the internal message cache.
+
+    :param emoji: The custom or unicode emoji that got un-reacted.
+    :type emoji: :class:`PartialReactionEmoji`
+    :param int message_id: The message ID of the message being un-reacted.
+    :param int channel_id: The channel ID where the message belongs to.
+    :param int user_id: The user ID of the user who removed the reaction.
+
 .. function:: on_reaction_clear(message, reactions)
 
-    Called when a message has all its reactions removed from it. Similar to on_message_edit,
+    Called when a message has all its reactions removed from it. Similar to :func:`on_message_edit`,
     if the message is not found in the :attr:`Client.messages` cache, then this event
     will not be called.
 
     :param message: The :class:`Message` that had its reactions cleared.
     :param reactions: A list of :class:`Reaction`\s that were removed.
+
+.. function:: on_raw_reaction_clear(message_id, channel_id)
+
+    Called when a message has all its reactions removed. Unlike :func:`on_reaction_clear`,
+    this is called regardless of the state of the internal message cache.
+
+    :param int message_id: The message ID of the message having its reactions removed.
+    :param int channel_id: The channel ID of where the message belongs to.
 
 .. function:: on_private_channel_delete(channel)
               on_private_channel_create(channel)
@@ -1685,6 +1748,12 @@ Emoji
 ~~~~~
 
 .. autoclass:: Emoji
+    :members:
+
+PartialReactionEmoji
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PartialReactionEmoji
     :members:
 
 Role

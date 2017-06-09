@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .guild import Guild
 from .user import User, ClientUser
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji, PartialReactionEmoji
 from .message import Message
 from .relationship import Relationship
 from .channel import *
@@ -35,6 +35,7 @@ from .role import Role
 from .enums import ChannelType, try_enum, Status
 from .calls import GroupCall
 from . import utils, compat
+from .embeds import Embed
 
 from collections import deque, namedtuple
 import copy, enum, math
@@ -314,20 +315,27 @@ class ConnectionState:
 
     def parse_message_delete(self, data):
         message_id = int(data['id'])
+        channel_id = int(data['channel_id'])
+        self.dispatch('raw_message_delete', message_id, channel_id)
+
         found = self._get_message(message_id)
         if found is not None:
             self.dispatch('message_delete', found)
             self._messages.remove(found)
 
     def parse_message_delete_bulk(self, data):
-        message_ids = set(map(int, data.get('ids', [])))
-        to_be_deleted = list(filter(lambda m: m.id in message_ids, self._messages))
+        message_ids = { int(x) for x in data.get('ids', []) }
+        channel_id = int(data['channel_id'])
+        self.dispatch('raw_bulk_message_delete', message_ids, channel_id)
+        to_be_deleted = [message for message in self._messages if message.id in message_ids]
         for msg in to_be_deleted:
             self.dispatch('message_delete', msg)
             self._messages.remove(msg)
 
     def parse_message_update(self, data):
-        message = self._get_message(int(data['id']))
+        message_id = int(data['id'])
+        self.dispatch('raw_message_edit', message_id, data)
+        message = self._get_message(message_id)
         if message is not None:
             older_message = copy.copy(message)
             if 'call' in data:
@@ -335,36 +343,61 @@ class ConnectionState:
                 message._handle_call(data['call'])
             elif 'content' not in data:
                 # embed only edit
-                message.embeds = data['embeds']
+                message.embeds = [Embed.from_data(d) for d in data['embeds']]
             else:
                 message._update(channel=message.channel, data=data)
 
             self.dispatch('message_edit', older_message, message)
 
     def parse_message_reaction_add(self, data):
-        message = self._get_message(int(data['message_id']))
+        message_id = int(data['message_id'])
+        user_id = int(data['user_id'])
+        channel_id = int(data['channel_id'])
+
+        emoji_data = data['emoji']
+        emoji_id = utils._get_as_snowflake(emoji_data, 'id')
+        emoji = PartialReactionEmoji(id=emoji_id, name=emoji_data['name'])
+        self.dispatch('raw_reaction_add', emoji, message_id, channel_id, user_id)
+
+        # rich interface here
+        message = self._get_message(message_id)
         if message is not None:
-            reaction = message._add_reaction(data)
-            user = self._get_reaction_user(message.channel, int(data['user_id']))
+            emoji = self._upgrade_partial_emoji(emoji)
+            reaction = message._add_reaction(data, emoji, user_id)
+            user = self._get_reaction_user(message.channel, user_id)
             if user:
                 self.dispatch('reaction_add', reaction, user)
 
     def parse_message_reaction_remove_all(self, data):
-        message =  self._get_message(int(data['message_id']))
+        message_id = int(data['message_id'])
+        channel_id = int(data['channel_id'])
+        self.dispatch('raw_reaction_clear', message_id, channel_id)
+
+        message =  self._get_message(message_id)
         if message is not None:
             old_reactions = message.reactions.copy()
             message.reactions.clear()
             self.dispatch('reaction_clear', message, old_reactions)
 
     def parse_message_reaction_remove(self, data):
-        message = self._get_message(int(data['message_id']))
+        message_id = int(data['message_id'])
+        user_id = int(data['user_id'])
+        channel_id = int(data['channel_id'])
+
+        emoji_data = data['emoji']
+        emoji_id = utils._get_as_snowflake(emoji_data, 'id')
+        emoji = PartialReactionEmoji(id=emoji_id, name=emoji_data['name'])
+        self.dispatch('raw_reaction_remove', emoji, message_id, channel_id, user_id)
+
+        message = self._get_message(message_id)
         if message is not None:
+            emoji = self._upgrade_partial_emoji(emoji)
             try:
-                reaction = message._remove_reaction(data)
+                reaction = message._remove_reaction(data, emoji, user_id)
             except (AttributeError, ValueError) as e: # eventual consistency lol
                 pass
             else:
-                user = self._get_reaction_user(message.channel, int(data['user_id']))
+                user = self._get_reaction_user(message.channel, user_id)
                 if user:
                     self.dispatch('reaction_remove', reaction, user)
 
@@ -790,7 +823,13 @@ class ConnectionState:
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji(id=emoji_id, name=data['name'])
+            return PartialReactionEmoji(id=emoji_id, name=data['name'])
+
+    def _upgrade_partial_emoji(self, emoji):
+        try:
+            return self._emojis[emoji.id]
+        except KeyError:
+            return emoji
 
     def get_channel(self, id):
         if id is None:

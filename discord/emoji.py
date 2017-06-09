@@ -30,7 +30,55 @@ from collections import namedtuple
 from . import utils
 from .mixins import Hashable
 
-PartialEmoji = namedtuple('PartialEmoji', 'id name')
+class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
+    """Represents a "partial" reaction emoji.
+
+    This model will be given in two scenarios:
+
+    - "Raw" data events such as :func:`on_raw_reaction_add`
+    - Custom emoji that the bot cannot see from e.g. :attr:`Message.reactions`
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two emoji are the same.
+
+        .. describe:: x != y
+
+            Checks if two emoji are not the same.
+
+        .. describe:: hash(x)
+
+            Return the emoji's hash.
+
+        .. describe:: str(x)
+
+            Returns the emoji rendered for discord.
+
+    Attributes
+    -----------
+    name: str
+        The custom emoji name, if applicable, or the unicode codepoint
+        of the non-custom emoji.
+    id: Optional[int]
+        The ID of the custom emoji, if applicable.
+    """
+
+    __slots__ = ()
+
+    def __str__(self):
+        if self.id is None:
+            return self.name
+        return '<:%s:%s>' % (self.name, self.id)
+
+    def is_custom_emoji(self):
+        """Checks if this is a custom non-Unicode emoji."""
+        return self.id is not None
+
+    def is_unicode_emoji(self):
+        """Checks if this is a Unicode emoji."""
+        return self.id is None
 
 class Emoji(Hashable):
     """Represents a custom emoji.

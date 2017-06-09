@@ -198,10 +198,9 @@ class Message:
             else:
                 setattr(self, key, transform(value))
 
-    def _add_reaction(self, data):
-        emoji = self._state.get_reaction_emoji(data['emoji'])
+    def _add_reaction(self, data, emoji, user_id):
         reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
-        is_me = data['me'] = int(data['user_id']) == self._state.self_id
+        is_me = data['me'] = user_id == self._state.self_id
 
         if reaction is None:
             reaction = Reaction(message=self, data=data, emoji=emoji)
@@ -213,8 +212,7 @@ class Message:
 
         return reaction
 
-    def _remove_reaction(self, data):
-        emoji = self._state.get_reaction_emoji(data['emoji'])
+    def _remove_reaction(self, data, emoji, user_id):
         reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
 
         if reaction is None:
@@ -225,7 +223,7 @@ class Message:
         # sent bad data, or we stored improperly
         reaction.count -= 1
 
-        if int(data['user_id']) == self._state.self_id:
+        if user_id == self._state.self_id:
             reaction.me = False
         if reaction.count == 0:
             # this raises ValueError if something went wrong as well.
