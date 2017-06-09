@@ -149,7 +149,7 @@ class OpusError(DiscordException):
     def __init__(self, code):
         self.code = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
-        log.info('"{}" has happened'.format(msg))
+        log.info('"%s" has happened', msg)
         super().__init__(msg)
 
 class OpusNotLoaded(DiscordException):

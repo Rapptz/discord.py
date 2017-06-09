@@ -405,7 +405,7 @@ class Client:
                         raise
 
                 retry = backoff.delay()
-                log.exception("Attempting a reconnect in {:.2f}s".format(retry))
+                log.exception("Attempting a reconnect in %.2fs", retry)
                 yield from asyncio.sleep(retry, loop=self.loop)
 
     @asyncio.coroutine
@@ -725,7 +725,7 @@ class Client:
             raise ClientException('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
-        log.info('{0.__name__} has successfully been registered as an event'.format(coro))
+        log.info('%s has successfully been registered as an event', coro.__name__)
         return coro
 
     def async_event(self, coro):

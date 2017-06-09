@@ -227,7 +227,6 @@ class VoiceClient:
     @asyncio.coroutine
     def poll_voice_ws(self, reconnect):
         backoff = ExponentialBackoff()
-        fmt = 'Disconnected from voice... Reconnecting in {:.2f}s.'
         while True:
             try:
                 yield from self.ws.poll_event()
@@ -242,7 +241,7 @@ class VoiceClient:
                     raise e
 
                 retry = backoff.delay()
-                log.exception(fmt.format(retry))
+                log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 self._connected.clear()
                 yield from asyncio.sleep(retry, loop=self.loop)
                 yield from self.terminate_handshake()
@@ -417,6 +416,6 @@ class VoiceClient:
         try:
             self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
         except BlockingIOError:
-            log.warning('A packet has been dropped (seq: {0.sequence}, timestamp: {0.timestamp})'.format(self))
+            log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', self.encoder.SAMPLES_PER_FRAME, 4294967295)

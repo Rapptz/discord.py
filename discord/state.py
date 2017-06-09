@@ -265,7 +265,7 @@ class ConnectionState:
 
             # call GUILD_SYNC after we're done chunking
             if not self.is_bot:
-                log.info('Requesting GUILD_SYNC for %s guilds' % len(self.guilds))
+                log.info('Requesting GUILD_SYNC for %s guilds', len(self.guilds))
                 yield from self.syncer([s.id for s in self.guilds])
         except asyncio.CancelledError:
             pass

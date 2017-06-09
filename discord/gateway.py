@@ -205,7 +205,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         client._connection._update_references(ws)
 
-        log.info('Created websocket connected to {}'.format(gateway))
+        log.info('Created websocket connected to %s', gateway)
 
         # poll event for OP Hello
         yield from ws.poll_event()
@@ -425,10 +425,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             yield from self.received_message(msg)
         except websockets.exceptions.ConnectionClosed as e:
             if self._can_handle_close(e.code):
-                log.info('Websocket closed with {0.code} ({0.reason}), attempting a reconnect.'.format(e))
+                log.info('Websocket closed with %s (%s), attempting a reconnect.', e.code, e.reason)
                 raise ResumeWebSocket(self.shard_id) from e
             else:
-                log.info('Websocket closed with {0.code} ({0.reason}), cannot reconnect.'.format(e))
+                log.info('Websocket closed with %s (%s), cannot reconnect.', e.code, e.reason)
                 raise ConnectionClosed(e, shard_id=self.shard_id) from e
 
     @asyncio.coroutine
@@ -646,7 +646,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         struct.pack_into('>I', packet, 0, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
         recv = yield from self.loop.sock_recv(state.socket, 70)
-        log.debug('received packet in initial_connection: {}'.format(recv))
+        log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
@@ -657,7 +657,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         # yes, this is different endianness from everything else
         state.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
 
-        log.debug('detected ip: {0.ip} port: {0.port}'.format(state))
+        log.debug('detected ip: %s port: %s', state.ip, state.port)
         yield from self.select_protocol(state.ip, state.port)
         log.info('selected the voice protocol for use')
 

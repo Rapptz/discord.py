@@ -142,7 +142,7 @@ class HTTPClient:
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
                 r = yield from self._session.request(method, url, **kwargs)
-                log.debug(self.REQUEST_LOG.format(method=method, url=url, status=r.status, json=kwargs.get('data')))
+                log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
                 try:
                     # even errors have text involved in them so this is safe to call
                     data = yield from json_or_text(r)
@@ -158,28 +158,27 @@ class HTTPClient:
                         else:
                             delta = header_bypass_delay
 
-                        fmt = 'A rate limit bucket has been exhausted (bucket: {bucket}, retry: {delta}).'
-                        log.info(fmt.format(bucket=bucket, delta=delta))
+                        log.info('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                         maybe_lock.defer()
                         self.loop.call_later(delta, lock.release)
 
                     # the request was successful so just return the text/json
                     if 300 > r.status >= 200:
-                        log.debug(self.SUCCESS_LOG.format(method=method, url=url, text=data))
+                        log.debug('%s %s has received %s', method, url, data)
                         return data
 
                     # we are being rate limited
                     if r.status == 429:
-                        fmt = 'We are being rate limited. Retrying in {:.2} seconds. Handled under the bucket "{}"'
+                        fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
 
                         # sleep a bit
                         retry_after = data['retry_after'] / 1000.0
-                        log.info(fmt.format(retry_after, bucket))
+                        log.info(fmt, retry_after, bucket)
 
                         # check if it's a global rate limit
                         is_global = data.get('global', False)
                         if is_global:
-                            log.info('Global rate limit has been hit. Retrying in {:.2} seconds.'.format(retry_after))
+                            log.info('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self._global_over.clear()
 
                         yield from asyncio.sleep(retry_after, loop=self.loop)
