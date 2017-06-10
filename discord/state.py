@@ -826,8 +826,11 @@ class ConnectionState:
             return PartialReactionEmoji(id=emoji_id, name=data['name'])
 
     def _upgrade_partial_emoji(self, emoji):
+        emoji_id = emoji.id
+        if not emoji_id:
+            return emoji.name
         try:
-            return self._emojis[emoji.id]
+            return self._emojis[emoji_id]
         except KeyError:
             return emoji
 
