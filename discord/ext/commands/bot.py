@@ -201,10 +201,16 @@ class BotBase(GroupMixin):
         if self.extra_events.get('on_command_error', None):
             return
 
-        if hasattr(context.command, "on_error"):
+        if hasattr(context.command, 'on_error'):
             return
 
-        print('Ignoring exception in command {}'.format(context.command), file=sys.stderr)
+        cog = context.cog
+        if cog:
+            attr = '__{0.__class__.__name__}_error'.format(cog)
+            if hasattr(cog, attr):
+                return
+
+        print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     # global check registration
