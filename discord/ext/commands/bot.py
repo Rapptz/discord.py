@@ -206,7 +206,7 @@ class BotBase(GroupMixin):
 
         cog = context.cog
         if cog:
-            attr = '__{0.__class__.__name__}_error'.format(cog)
+            attr = '_{0.__class__.__name__}__error'.format(cog)
             if hasattr(cog, attr):
                 return
 
