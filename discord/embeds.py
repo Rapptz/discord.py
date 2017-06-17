@@ -42,6 +42,9 @@ class EmbedProxy:
     def __init__(self, layer):
         self.__dict__.update(layer)
 
+    def __len__(self):
+        return len(self.__dict__)
+
     def __repr__(self):
         return 'EmbedProxy(%s)' % ', '.join(('%s=%r' % (k, v) for k, v in self.__dict__.items() if not k.startswith('_')))
 
