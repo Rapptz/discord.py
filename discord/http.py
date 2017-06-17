@@ -32,6 +32,7 @@ import logging
 import weakref
 import datetime
 from email.utils import parsedate_to_datetime
+from urllib.parse import quote as _uriquote
 
 log = logging.getLogger(__name__)
 
@@ -130,7 +131,7 @@ class HTTPClient:
             pass
         else:
             if reason:
-                headers['X-Audit-Log-Reason'] = reason
+                headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         kwargs['headers'] = headers
 
