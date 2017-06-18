@@ -254,7 +254,12 @@ class Command:
         except CommandError as e:
             raise e
         except Exception as e:
-            raise BadArgument('Converting to "{0.__name__}" failed.'.format(converter)) from e
+            try:
+                name = converter.__name__
+            except AttributeError:
+                name = converter.__class__.__name__
+
+            raise BadArgument('Converting to "{}" failed.'.format(name)) from e
 
     @property
     def clean_params(self):
