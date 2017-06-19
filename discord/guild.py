@@ -587,7 +587,7 @@ class Guild(Hashable):
             feature.
         region: :class:`VoiceRegion`
             The new region for the guild's voice communication.
-        afk_channel: :class:`VoiceChannel`
+        afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: int
             The number of seconds until someone is moved to the AFK channel.
@@ -643,8 +643,16 @@ class Guild(Hashable):
 
         fields['icon'] = icon
         fields['splash'] = splash
-        if 'afk_channel' in fields:
-            fields['afk_channel_id'] = fields['afk_channel'].id
+
+        try:
+            afk_channel = fields.pop('afk_channel')
+        except KeyError:
+            pass
+        else:
+            if afk_channel is None:
+                fields['afk_channel_id'] = afk_channel
+            else:
+                fields['afk_channel_id'] = afk_channel.id
 
         if 'owner' in fields:
             if self.owner != self.me:
