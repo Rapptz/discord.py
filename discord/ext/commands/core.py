@@ -640,26 +640,32 @@ class Command:
             A boolean indicating if the command can be invoked.
         """
 
-        if not (yield from ctx.bot.can_run(ctx)):
-            raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
+        original = ctx.command
+        ctx.command = self
 
-        cog = self.instance
-        if cog is not None:
-            try:
-                local_check = getattr(cog, '_{0.__class__.__name__}__local_check'.format(cog))
-            except AttributeError:
-                pass
-            else:
-                ret = yield from discord.utils.maybe_coroutine(local_check, ctx)
-                if not ret:
-                    return False
+        try:
+            if not (yield from ctx.bot.can_run(ctx)):
+                raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
 
-        predicates = self.checks
-        if not predicates:
-            # since we have no checks, then we just return True.
-            return True
+            cog = self.instance
+            if cog is not None:
+                try:
+                    local_check = getattr(cog, '_{0.__class__.__name__}__local_check'.format(cog))
+                except AttributeError:
+                    pass
+                else:
+                    ret = yield from discord.utils.maybe_coroutine(local_check, ctx)
+                    if not ret:
+                        return False
 
-        return (yield from discord.utils.async_all(predicate(ctx) for predicate in predicates))
+            predicates = self.checks
+            if not predicates:
+                # since we have no checks, then we just return True.
+                return True
+
+            return (yield from discord.utils.async_all(predicate(ctx) for predicate in predicates))
+        finally:
+            ctx.command = original
 
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
