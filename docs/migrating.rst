@@ -918,7 +918,9 @@ The previous ``__check`` special method has been renamed to ``__global_check`` t
 check.
 
 To complement the new ``__global_check`` there is now a new ``__local_check`` to facilitate a check that will run on
-every command in the cog.
+every command in the cog. There is also a ``__global_check_once``, which is similar to a global check instead it is only
+called once per :meth:`.Bot.invoke` call rather than every :meth:`.Command.invoke` call. Practically, the difference is
+only for black-listing users or channels without constantly opening a database connection.
 
 Cogs have also gained a ``__before_invoke`` and ``__after_invoke`` cog local before and after invocation hook, which
 can be seen in :ref:`migrating_1_0_before_after_hook`.

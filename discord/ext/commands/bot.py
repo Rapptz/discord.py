@@ -133,6 +133,7 @@ class BotBase(GroupMixin):
         self.cogs = {}
         self.extensions = {}
         self._checks = []
+        self._check_once = []
         self._before_invoke = None
         self._after_invoke = None
         self.description = inspect.cleandoc(description) if description else ''
@@ -236,24 +237,32 @@ class BotBase(GroupMixin):
         .. code-block:: python3
 
             @bot.check
-            def whitelist(ctx):
-                return ctx.message.author.id in my_whitelist
+            def check_commands(ctx):
+                return ctx.command.qualified_name in allowed_commands
 
         """
         self.add_check(func)
         return func
 
-    def add_check(self, func):
+    def add_check(self, func, *, call_once=False):
         """Adds a global check to the bot.
 
-        This is the non-decorator interface to :meth:`.check`.
+        This is the non-decorator interface to :meth:`.check`
+        and :meth:`.check_once`.
 
         Parameters
         -----------
         func
             The function that was used as a global check.
+        call_once: bool
+            If the function should only be called once per
+            :meth:`.invoke` call.
         """
-        self._checks.append(func)
+
+        if call_once:
+            self._check_once.append(func)
+        else:
+            self._checks.append(func)
 
     def remove_check(self, func):
         """Removes a global check from the bot.
@@ -270,14 +279,51 @@ class BotBase(GroupMixin):
         try:
             self._checks.remove(func)
         except ValueError:
-            pass
+            try:
+                self._check_once.remove(func)
+            except ValueError:
+                pass
+
+    def check_once(self, func):
+        """A decorator that adds a "call once" global check to the bot.
+
+        Unlike regular global checks, this one is called only once
+        per :meth:`.invoke` call.
+
+        Regular global checks are called whenever a command is called
+        or :meth:`.Command.can_run` is called. This type of check
+        bypasses that and ensures that it's called only once, even inside
+        the default help command.
+
+        .. note::
+
+            This function can either be a regular function or a coroutine.
+
+        Similar to a command :func:`.check`\, this takes a single parameter
+        of type :class:`.Context` and can only raise exceptions derived from
+        :exc:`.CommandError`.
+
+        Example
+        ---------
+
+        .. code-block:: python3
+
+            @bot.check_once
+            def whitelist(ctx):
+                return ctx.message.author.id in my_whitelist
+
+        """
+        self.add_check(func, call_once=True)
+        return func
 
     @asyncio.coroutine
-    def can_run(self, ctx):
-        if len(self._checks) == 0:
+    def can_run(self, ctx, *, call_once=False):
+        data = self._check_once if call_once else self._checks
+
+        if len(data) == 0:
             return True
 
-        return (yield from discord.utils.async_all(f(ctx) for f in self._checks))
+        return (yield from discord.utils.async_all(f(ctx) for f in data))
 
     @asyncio.coroutine
     def is_owner(self, user):
@@ -465,7 +511,9 @@ class BotBase(GroupMixin):
         into a singular class that shares some state or no state at all.
 
         The cog can also have a ``__global_check`` member function that allows
-        you to define a global check. See :meth:`.check` for more info.
+        you to define a global check. See :meth:`.check` for more info. If
+        the name is ``__global_check_once`` then it's equivalent to the
+        :meth:`.check_once` decorator.
 
         More information will be documented soon.
 
@@ -483,6 +531,13 @@ class BotBase(GroupMixin):
             pass
         else:
             self.add_check(check)
+
+        try:
+            check = getattr(cog, '_{.__class__.__name__}__global_check_once'.format(cog))
+        except AttributeError:
+            pass
+        else:
+            self.add_check(check, call_once=True)
 
         members = inspect.getmembers(cog)
         for name, member in members:
@@ -570,6 +625,13 @@ class BotBase(GroupMixin):
 
         try:
             check = getattr(cog, '_{0.__class__.__name__}__global_check'.format(cog))
+        except AttributeError:
+            pass
+        else:
+            self.remove_check(check)
+
+        try:
+            check = getattr(cog, '_{0.__class__.__name__}__global_check_once'.format(cog))
         except AttributeError:
             pass
         else:
@@ -786,7 +848,8 @@ class BotBase(GroupMixin):
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
-                yield from ctx.command.invoke(ctx)
+                if (yield from self.can_run(ctx, call_once=True)):
+                    yield from ctx.command.invoke(ctx)
             except CommandError as e:
                 yield from ctx.command.dispatch_error(ctx, e)
             else:
