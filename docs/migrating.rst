@@ -937,6 +937,10 @@ An example cog with every special method registered is as follows: ::
             print('cog global check')
             return True
 
+        def __global_check_once(self, ctx):
+            print('cog global check once')
+            return True
+
         async def __local_check(self, ctx):
             print('cog local check')
             return await ctx.bot.is_owner(ctx.author)

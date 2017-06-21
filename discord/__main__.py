@@ -119,6 +119,10 @@ cog_extras = '''
         # checks that apply to every command to the bot
         return True
 
+    async def __global_check_once(self, ctx):
+        # check that apply to every command but is guaranteed to be called only once
+        return True
+
     async def __error(self, ctx, error):
         # error handling to every command in here
         pass
