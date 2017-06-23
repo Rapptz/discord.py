@@ -160,7 +160,7 @@ class Command:
         self.checks = kwargs.get('checks', [])
         self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
-        self.instance = None
+        self.instances = []
         self.parent = None
         self._buckets = CooldownMapping(kwargs.get('cooldown'))
         self._before_invoke = None
@@ -169,7 +169,7 @@ class Command:
     @asyncio.coroutine
     def dispatch_error(self, ctx, error):
         ctx.command_failed = True
-        cog = self.instance
+        cog = next(instance for instance in self.instances if instance in ctx.bot.cogs)
         try:
             coro = self.on_error
         except AttributeError:
@@ -193,7 +193,7 @@ class Command:
 
     def __get__(self, instance, owner):
         if instance is not None:
-            self.instance = instance
+            self.instances.append(instance)
         return self
 
     @asyncio.coroutine
@@ -268,7 +268,7 @@ class Command:
         Useful for inspecting signature.
         """
         result = self.params.copy()
-        if self.instance is not None:
+        if self.instances:
             # first parameter is self
             result.popitem(last=False)
 
@@ -331,7 +331,7 @@ class Command:
 
     @asyncio.coroutine
     def _parse_arguments(self, ctx):
-        ctx.args = [] if self.instance is None else [self.instance]
+        ctx.args = [] if not self.instances else [next(instance for instance in self.instances if instance in ctx.bot.cogs)]
         ctx.kwargs = {}
         args = ctx.args
         kwargs = ctx.kwargs
@@ -340,7 +340,7 @@ class Command:
         view = ctx.view
         iterator = iter(self.params.items())
 
-        if self.instance is not None:
+        if self.instances:
             # we have 'self' as the first parameter so just advance
             # the iterator and resume parsing
             try:
@@ -391,7 +391,7 @@ class Command:
     def call_before_hooks(self, ctx):
         # now that we're done preparing we can call the pre-command hooks
         # first, call the command local hook:
-        cog = self.instance
+        cog = next(instance for instance in self.instances if instance in ctx.bot.cogs)
         if self._before_invoke is not None:
             if cog is None:
                 yield from self._before_invoke(ctx)
@@ -413,7 +413,7 @@ class Command:
 
     @asyncio.coroutine
     def call_after_hooks(self, ctx):
-        cog = self.instance
+        cog = next(instance for instance in self.instances if instance in ctx.bot.cogs)
         if self._after_invoke is not None:
             if cog is None:
                 yield from self._after_invoke(ctx)
@@ -567,7 +567,7 @@ class Command:
     @property
     def cog_name(self):
         """The name of the cog this command belongs to. None otherwise."""
-        return type(self.instance).__name__ if self.instance is not None else None
+        return type(self.instances[0]).__name__ if self.instances else None
 
     @property
     def short_doc(self):
@@ -647,7 +647,7 @@ class Command:
             if not (yield from ctx.bot.can_run(ctx)):
                 raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
 
-            cog = self.instance
+            cog = next(instance for instance in self.instances if instance in ctx.bot.cogs)
             if cog is not None:
                 try:
                     local_check = getattr(cog, '_{0.__class__.__name__}__local_check'.format(cog))
