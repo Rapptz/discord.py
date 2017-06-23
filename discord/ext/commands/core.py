@@ -209,7 +209,7 @@ class Command:
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError() # break the loop
             if required:
-                raise MissingRequiredArgument('{0.name} is a required argument that is missing.'.format(param))
+                raise MissingRequiredArgument('{0.name} has a required argument that is missing.'.format(param))
             return param.default
 
         if consume_rest_is_special:
