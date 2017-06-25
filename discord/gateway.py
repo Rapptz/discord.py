@@ -60,7 +60,7 @@ class KeepAliveHandler(threading.Thread):
         self.interval = interval
         self.daemon = True
         self.shard_id = shard_id
-        self.msg = 'Keeping websocket alive with sequence {0[d]}'
+        self.msg = 'Keeping websocket alive with sequence %s.'
         self._stop_ev = threading.Event()
         self._last_ack = time.time()
 
@@ -80,7 +80,7 @@ class KeepAliveHandler(threading.Thread):
                     return
 
             data = self.get_payload()
-            log.debug(self.msg.format(data))
+            log.debug(self.msg, data['d'])
             coro = self.ws.send_as_json(data)
             f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
@@ -104,7 +104,7 @@ class KeepAliveHandler(threading.Thread):
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.msg = 'Keeping voice websocket alive with timestamp {0[d]}'
+        self.msg = 'Keeping voice websocket alive with timestamp %s.'
 
     def get_payload(self):
         return {
@@ -465,7 +465,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         }
 
         sent = utils.to_json(payload)
-        log.debug('Sending "{}" to change status'.format(sent))
+        log.debug('Sending "%s" to change status', sent)
         yield from self.send(sent)
 
     @asyncio.coroutine
@@ -619,7 +619,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     @asyncio.coroutine
     def received_message(self, msg):
-        log.debug('Voice websocket frame received: {}'.format(msg))
+        log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
         data = msg.get('d')
 
