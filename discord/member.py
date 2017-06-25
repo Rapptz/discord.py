@@ -238,11 +238,13 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
 
         default_colour = Colour.default()
+        roles = self.roles[1:] # remove @everyone
+
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
         # is chosen instead
-        if self.roles:
-            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
+        if roles:
+            roles = sorted(roles, reverse=True)
             for role in roles:
                 if role.colour == default_colour:
                     continue
