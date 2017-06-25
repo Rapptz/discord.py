@@ -181,6 +181,7 @@ class Message:
     def __init__(self, *, state, channel, data):
         self._state = state
         self.id = int(data['id'])
+        self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
         self._update(channel, data)
 
