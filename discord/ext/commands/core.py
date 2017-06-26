@@ -259,7 +259,7 @@ class Command:
             except AttributeError:
                 name = converter.__class__.__name__
 
-            raise BadArgument('Converting to "{}" failed.'.format(name)) from e
+            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
 
     @property
     def clean_params(self):
