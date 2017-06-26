@@ -50,7 +50,7 @@ class Reaction:
 
         .. describe:: str(x)
 
-            Returns the channel's name.
+            Returns the string form of the reaction's emoji.
 
     Attributes
     -----------
@@ -86,6 +86,9 @@ class Reaction:
 
     def __hash__(self):
         return hash(self.emoji)
+
+    def __str__(self):
+        return str(self.emoji)
 
     def __repr__(self):
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
