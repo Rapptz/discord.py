@@ -87,7 +87,7 @@ class Context(discord.abc.Messageable):
         self._state = self.message._state
 
     @asyncio.coroutine
-    def invoke(self, command, *args, **kwargs):
+    def invoke(self, *args, **kwargs):
         """|coro|
 
         Calls a command with the arguments given.
@@ -99,15 +99,24 @@ class Context(discord.abc.Messageable):
         ------
         You do not pass in the context as it is done for you.
 
+        Warning
+        ---------
+        The first parameter passed **must** be the command being invoked.
+
         Parameters
         -----------
-        command : :class:`.Command`
+        command: :class:`.Command`
             A command or superclass of a command that is going to be called.
         \*args
             The arguments to to use.
         \*\*kwargs
             The keyword arguments to use.
         """
+
+        try:
+            command = args[0]
+        except IndexError:
+            raise TypeError('Missing command to invoke.') from None
 
         arguments = []
         if command.instance is not None:
@@ -116,7 +125,7 @@ class Context(discord.abc.Messageable):
         if command.pass_context:
             arguments.append(self)
 
-        arguments.extend(args)
+        arguments.extend(args[1:])
 
         ret = yield from command.callback(*arguments, **kwargs)
         return ret
