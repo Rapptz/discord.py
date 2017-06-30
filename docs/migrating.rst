@@ -430,14 +430,14 @@ In v1.0, this change has been reverted and will now return a singular type meeti
 
 This allows you to iterate over it like normal in Python 3.5+: ::
 
-    async for msg in channel.history():
-        print(msg)
+    async for message in channel.history():
+        print(message)
 
 Or turn it into a list for either Python 3.4 or 3.5+: ::
 
-    messages = yield from channel.history().flatten()
+    messages = await channel.history().flatten() # use yield from for 3.4!
     for message in messages:
-        print(messages)
+        print(message)
 
 A handy aspect of returning :class:`AsyncIterator` is that it allows you to chain functions together such as
 :meth:`AsyncIterator.map` or :meth:`AsyncIterator.filter`: ::
