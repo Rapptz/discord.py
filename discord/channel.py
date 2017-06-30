@@ -186,7 +186,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Raises
         ------
         ClientException
-            The number of messages to delete more than 100.
+            The number of messages to delete was more than 100.
         Forbidden
             You do not have proper permissions to delete the messages or
             you're not using a bot account.
