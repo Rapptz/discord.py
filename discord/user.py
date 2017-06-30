@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time
-from .enums import DefaultAvatar, RelationshipType
+from .enums import DefaultAvatar, RelationshipType, UserFlags
 from .errors import ClientException
 
 from collections import namedtuple
@@ -33,7 +33,31 @@ from collections import namedtuple
 import discord.abc
 import asyncio
 
-Profile = namedtuple('Profile', 'premium user mutual_guilds connected_accounts premium_since')
+class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
+    __slots__ = ()
+
+    @property
+    def nitro(self):
+        return self.premium_since is not None
+
+    premium = nitro
+
+    def _has_flag(self, o):
+        v = o.value
+        return (self.flags & v) == v
+
+    @property
+    def staff(self):
+        return self._has_flag(UserFlags.staff)
+
+    @property
+    def hypesquad(self):
+        return self._has_flag(UserFlags.hypesquad)
+
+    @property
+    def partner(self):
+        return self._has_flag(UserFlags.partner)
+
 
 _BaseUser = discord.abc.User
 
@@ -561,7 +585,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        return Profile(premium=since is not None,
+        return Profile(flags=data['user'].get('flags', 0),
                        premium_since=parse_time(since),
                        mutual_guilds=mutual_guilds,
                        user=self,

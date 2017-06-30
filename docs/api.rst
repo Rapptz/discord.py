@@ -596,10 +596,22 @@ Profile
     .. attribute:: premium
 
         A boolean indicating if the user has premium (i.e. Discord Nitro).
+    .. attribute:: nitro
+
+        An alias for :attr:`premium`.
     .. attribute:: premium_since
 
         A naive UTC datetime indicating how long the user has been premium since.
         This could be ``None`` if not applicable.
+    .. attribute:: staff
+
+        A boolean indicating if the user is Discord Staff.
+    .. attribute:: partner
+
+        A boolean indicating if the user is a Discord Partner.
+    .. attribute:: hypesquad
+
+        A boolean indicating if the user is in Discord HypeSquad.
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this

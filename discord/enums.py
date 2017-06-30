@@ -28,7 +28,7 @@ from enum import Enum
 
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
-           'AuditLogAction', 'AuditLogActionCategory', ]
+           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags', ]
 
 class ChannelType(Enum):
     text    = 0
@@ -203,6 +203,11 @@ class AuditLogAction(Enum):
             return 'emoji'
         elif v < 80:
             return 'message'
+
+class UserFlags(Enum):
+    staff = 1
+    partner = 2
+    hypesquad = 4
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

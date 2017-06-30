@@ -974,8 +974,9 @@ class Client:
 
         since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        return Profile(premium=since is not None,
+        user = data['user']
+        return Profile(flags=user.get('flags', 0),
                        premium_since=utils.parse_time(since),
                        mutual_guilds=mutual_guilds,
-                       user=User(data=data['user'], state=state),
+                       user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
