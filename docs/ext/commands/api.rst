@@ -17,6 +17,10 @@ Bot
 .. autoclass:: discord.ext.commands.AutoShardedBot
     :members:
 
+.. autofunction:: discord.ext.commands.when_mentioned
+
+.. autofunction:: discord.ext.commands.when_mentioned_or
+
 .. _ext_commands_api_events:
 
 Event Reference
