@@ -39,12 +39,16 @@ from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
 
 def when_mentioned(bot, msg):
-    """A callable that implements a command prefix equivalent
-    to being mentioned, e.g. ``@bot ``."""
+    """A callable that implements a command prefix equivalent to being mentioned.
+
+    These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
+    """
     return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
+
+    These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
 
     Example
     --------
@@ -52,6 +56,19 @@ def when_mentioned_or(*prefixes):
     .. code-block:: python3
 
         bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'))
+
+
+    .. note::
+
+        This callable returns another callable, so if this is done inside a custom
+        callable, you must call the returned callable, for example:
+
+        .. code-block:: python3
+
+            async def get_prefix(bot, message):
+                extras = await prefixes_for(message.guild) # returns a list
+                return commands.when_mentioned_or(*extras)(bot, message)
+
 
     See Also
     ----------
