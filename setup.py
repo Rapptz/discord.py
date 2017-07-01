@@ -35,7 +35,7 @@ with open('README.md') as f:
     readme = f.read()
 
 extras_require = {
-    'voice': ['PyNaCl==1.0.1'],
+    'voice': ['PyNaCl==1.1.2'],
     'docs': ['sphinxcontrib-asyncio']
 }
 
