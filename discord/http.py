@@ -726,3 +726,11 @@ class HTTPClient:
 
     def get_user_profile(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
+
+    def __del__(self):
+        """
+        Closes an aiohttp ClientSession instance any
+        time intepreter exits before it is closed.
+        """
+        if not self._session.closed:
+            self._session.close()
