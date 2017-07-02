@@ -890,8 +890,8 @@ All command extension events have changed.
 
 Before: ::
 
-    on_command(ctx, command)
-    on_command_completion(ctx, command)
+    on_command(command, ctx)
+    on_command_completion(command, ctx)
     on_command_error(error, ctx)
 
 After: ::
