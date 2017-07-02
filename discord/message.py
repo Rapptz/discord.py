@@ -609,8 +609,9 @@ class Message:
         """
 
         if isinstance(emoji, Reaction):
-            emoji = str(emoji.emoji)
-        elif isinstance(emoji, Emoji):
+            emoji = emoji.emoji
+
+        if isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
         elif isinstance(emoji, str):
             pass # this is okay
@@ -653,8 +654,9 @@ class Message:
         """
 
         if isinstance(emoji, Reaction):
-            emoji = str(emoji.emoji)
-        elif isinstance(emoji, Emoji):
+            emoji = emoji.emoji
+
+        if isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
         elif isinstance(emoji, str):
             pass # this is okay
