@@ -80,6 +80,11 @@ class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
         """Checks if this is a Unicode emoji."""
         return self.id is None
 
+    def _as_reaction(self):
+        if self.id is None:
+            return self.name
+        return ':%s:%s' % (self.name, self.id)
+
 class Emoji(Hashable):
     """Represents a custom emoji.
 
