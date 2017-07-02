@@ -728,9 +728,9 @@ class HTTPClient:
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
 
     def __del__(self):
-        """
-        Closes an aiohttp ClientSession instance any
-        time intepreter exits before it is closed.
-        """
         if not self._session.closed:
-            self._session.close()
+            if not asyncio.iscoroutinefunction(self._session.close)
+                self._session.close()
+            else:
+                # close must have been changed back to a coroutine or future then.
+                self.loop.create_task(self._session.close())
