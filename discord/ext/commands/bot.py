@@ -611,8 +611,7 @@ class BotBase(GroupMixin):
         All registered commands and event listeners that the
         cog has registered will be removed as well.
 
-        If no cog is found then ``None`` is returned, otherwise
-        the cog instance that is being removed is returned.
+        If no cog is found then this method has no effect.
 
         If the cog defines a special member function named ``__unload``
         then it is called when removal has completed. This function
@@ -626,7 +625,7 @@ class BotBase(GroupMixin):
 
         cog = self.cogs.pop(name, None)
         if cog is None:
-            return cog
+            return
 
         members = inspect.getmembers(cog)
         for name, member in members:
