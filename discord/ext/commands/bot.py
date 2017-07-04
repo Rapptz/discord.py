@@ -88,6 +88,9 @@ _mentions_transforms = {
 
 _mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
 
+def _is_submodule(parent, child):
+    return parent == child or child.startswith(parent + ".")
+
 @asyncio.coroutine
 def _default_help_command(ctx, *commands : str):
     """Shows this message."""
@@ -731,12 +734,12 @@ class BotBase(GroupMixin):
 
         # remove the cogs registered from the module
         for cogname, cog in self.cogs.copy().items():
-            if cog.__module__.startswith(lib_name):
+            if _is_submodule(lib_name, cog.__module__):
                 self.remove_cog(cogname)
 
         # first remove all the commands from the module
         for cmd in self.all_commands.copy().values():
-            if cmd.module.startswith(lib_name):
+            if _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
                 self.remove_command(cmd.name)
@@ -745,7 +748,7 @@ class BotBase(GroupMixin):
         for event_list in self.extra_events.copy().values():
             remove = []
             for index, event in enumerate(event_list):
-                if event.__module__.startswith(lib_name):
+                if _is_submodule(lib_name, event.__module__):
                     remove.append(index)
 
             for index in reversed(remove):
