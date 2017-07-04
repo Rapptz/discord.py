@@ -1246,7 +1246,7 @@ If you are using 3.4 however, you will have to use the more verbose way: ::
     iterator = channel.history() # or whatever returns an async iterator
     while True:
         try:
-            item = yield from iterator.get()
+            item = yield from iterator.next()
         except discord.NoMoreItems:
             break
 
@@ -1258,6 +1258,19 @@ Certain utilities make working with async iterators easier, detailed below.
 
     Represents the "AsyncIterator" concept. Note that no such class exists,
     it is purely abstract.
+
+    .. container:: operations
+
+        .. describe:: async for x in y
+
+            Iterates over the contents of the async iterator. Note
+            that this is only available in Python 3.5 or higher.
+
+
+    .. method:: next()
+
+        Advances the iterator by one, if possible. If no more items are found
+        then this raises :exc:`NoMoreItems`.
 
     .. method:: get(**attrs)
 

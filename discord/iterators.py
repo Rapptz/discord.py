@@ -56,7 +56,7 @@ class _AsyncIterator:
     def find(self, predicate):
         while True:
             try:
-                elem = yield from self.get()
+                elem = yield from self.next()
             except NoMoreItems:
                 return None
 
@@ -75,7 +75,7 @@ class _AsyncIterator:
         ret = []
         while True:
             try:
-                item = yield from self.get()
+                item = yield from self.next()
             except NoMoreItems:
                 return ret
             else:
@@ -89,7 +89,7 @@ class _AsyncIterator:
         @asyncio.coroutine
         def __anext__(self):
             try:
-                msg = yield from self.get()
+                msg = yield from self.next()
             except NoMoreItems:
                 raise StopAsyncIteration()
             else:
@@ -104,9 +104,9 @@ class _MappedAsyncIterator(_AsyncIterator):
         self.func = func
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         # this raises NoMoreItems and will propagate appropriately
-        item = yield from self.iterator.get()
+        item = yield from self.iterator.next()
         return (yield from maybe_coroutine(self.func, item))
 
 class _FilteredAsyncIterator(_AsyncIterator):
@@ -119,8 +119,8 @@ class _FilteredAsyncIterator(_AsyncIterator):
         self.predicate = predicate
 
     @asyncio.coroutine
-    def get(self):
-        getter = self.iterator.get
+    def next(self):
+        getter = self.iterator.next
         pred = self.predicate
         while True:
             # propagate NoMoreItems similar to _MappedAsyncIterator
@@ -143,7 +143,7 @@ class ReactionIterator(_AsyncIterator):
         self.users = asyncio.Queue(loop=state.loop)
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         if self.users.empty():
             yield from self.fill_users()
 
@@ -271,7 +271,7 @@ class HistoryIterator(_AsyncIterator):
             self._retrieve_messages = self._retrieve_messages_before_strategy
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         if self.messages.empty():
             yield from self.fill_messages()
 
@@ -437,7 +437,7 @@ class AuditLogIterator(_AsyncIterator):
         return data.get('users', []), entries
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         if self.entries.empty():
             yield from self._fill()
 

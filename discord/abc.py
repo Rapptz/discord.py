@@ -872,7 +872,7 @@ class Messageable(metaclass=abc.ABCMeta):
             iterator = channel.history(limit=200)
             while True:
                 try:
-                    message = yield from iterator.get()
+                    message = yield from iterator.next()
                 except discord.NoMoreItems:
                     break
                 else:
