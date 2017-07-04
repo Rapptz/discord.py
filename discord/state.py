@@ -469,10 +469,13 @@ class ConnectionState:
     def parse_channel_create(self, data):
         factory, ch_type = _channel_factory(data['type'])
         channel = None
+
         if ch_type in (ChannelType.group, ChannelType.private):
-            channel = factory(me=self.user, data=data, state=self)
-            self._add_private_channel(channel)
-            self.dispatch('private_channel_create', channel)
+            channel_id = int(data['id'])
+            if self._get_private_channel(channel_id) is None:
+                channel = factory(me=self.user, data=data, state=self)
+                self._add_private_channel(channel)
+                self.dispatch('private_channel_create', channel)
         else:
             guild_id = utils._get_as_snowflake(data, 'guild_id')
             guild = self._get_guild(guild_id)
