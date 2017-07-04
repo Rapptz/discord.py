@@ -63,7 +63,7 @@ class Game:
         self.type = kwargs.get('type')
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def __repr__(self):
         return '<Game name={0.name!r} type={0.type!r} url={0.url!r}>'.format(self)
