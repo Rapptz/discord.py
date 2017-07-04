@@ -148,7 +148,7 @@ class GroupCall:
 
         Returns
         --------
-        Optiona[:class:`VoiceState`]
+        Optional[:class:`VoiceState`]
             The voice state associated with this user.
         """
 
