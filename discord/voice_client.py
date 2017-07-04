@@ -367,7 +367,7 @@ class VoiceClient:
 
         Basic usage: ::
 
-            voice = yield from client.join_voice_channel(channel)
+            voice = await client.join_voice_channel(channel)
             player = voice.create_ffmpeg_player('cool.mp3')
             player.start()
 
