@@ -208,7 +208,6 @@ class ConnectionState:
 
         if len(self._private_channels) > 128:
             _, to_remove = self._private_channels.popitem(last=False)
-            print(to_remove)
             if isinstance(to_remove, DMChannel):
                 self._private_channels_by_user.pop(to_remove.recipient.id, None)
 
