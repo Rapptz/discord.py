@@ -1681,20 +1681,20 @@ the user of the library.
 ClientUser
 ~~~~~~~~~~~~
 
-.. autoclass:: ClientUser
+.. autoclass:: ClientUser()
     :members:
     :inherited-members:
 
 Relationship
 ~~~~~~~~~~~~~~
 
-.. autoclass:: Relationship
+.. autoclass:: Relationship()
     :members:
 
 User
 ~~~~~
 
-.. autoclass:: User
+.. autoclass:: User()
     :members:
     :inherited-members:
     :exclude-members: history, typing
@@ -1708,19 +1708,19 @@ User
 Attachment
 ~~~~~~~~~~~
 
-.. autoclass:: Attachment
+.. autoclass:: Attachment()
     :members:
 
 Message
 ~~~~~~~
 
-.. autoclass:: Message
+.. autoclass:: Message()
     :members:
 
 Reaction
 ~~~~~~~~~
 
-.. autoclass:: Reaction
+.. autoclass:: Reaction()
     :members:
     :exclude-members: users
 
@@ -1730,19 +1730,19 @@ Reaction
 CallMessage
 ~~~~~~~~~~~~
 
-.. autoclass:: CallMessage
+.. autoclass:: CallMessage()
     :members:
 
 GroupCall
 ~~~~~~~~~~
 
-.. autoclass:: GroupCall
+.. autoclass:: GroupCall()
     :members:
 
 Guild
 ~~~~~~
 
-.. autoclass:: Guild
+.. autoclass:: Guild()
     :members:
     :exclude-members: audit_logs
 
@@ -1752,7 +1752,7 @@ Guild
 Member
 ~~~~~~
 
-.. autoclass:: Member
+.. autoclass:: Member()
     :members:
     :inherited-members:
     :exclude-members: history, typing
@@ -1766,31 +1766,31 @@ Member
 VoiceState
 ~~~~~~~~~~~
 
-.. autoclass:: VoiceState
+.. autoclass:: VoiceState()
     :members:
 
 Emoji
 ~~~~~
 
-.. autoclass:: Emoji
+.. autoclass:: Emoji()
     :members:
 
 PartialReactionEmoji
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: PartialReactionEmoji
+.. autoclass:: PartialReactionEmoji()
     :members:
 
 Role
 ~~~~~
 
-.. autoclass:: Role
+.. autoclass:: Role()
     :members:
 
 TextChannel
 ~~~~~~~~~~~~
 
-.. autoclass:: TextChannel
+.. autoclass:: TextChannel()
     :members:
     :inherited-members:
     :exclude-members: history, typing
@@ -1804,14 +1804,14 @@ TextChannel
 VoiceChannel
 ~~~~~~~~~~~~~
 
-.. autoclass:: VoiceChannel
+.. autoclass:: VoiceChannel()
     :members:
     :inherited-members:
 
 DMChannel
 ~~~~~~~~~
 
-.. autoclass:: DMChannel
+.. autoclass:: DMChannel()
     :members:
     :inherited-members:
     :exclude-members: history, typing
@@ -1825,7 +1825,7 @@ DMChannel
 GroupChannel
 ~~~~~~~~~~~~
 
-.. autoclass:: GroupChannel
+.. autoclass:: GroupChannel()
     :members:
     :inherited-members:
     :exclude-members: history, typing
@@ -1840,7 +1840,7 @@ GroupChannel
 Invite
 ~~~~~~~
 
-.. autoclass:: Invite
+.. autoclass:: Invite()
     :members:
 
 .. _discord_api_data:
