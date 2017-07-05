@@ -637,19 +637,19 @@ Object
 User
 ~~~~~
 
-.. autoclass:: User
+.. autoclass:: User()
     :members:
 
 Message
 ~~~~~~~
 
-.. autoclass:: Message
+.. autoclass:: Message()
     :members:
 
 Reaction
 ~~~~~~~~~
 
-.. autoclass:: Reaction
+.. autoclass:: Reaction()
     :members:
 
 Embed
@@ -661,31 +661,31 @@ Embed
 CallMessage
 ~~~~~~~~~~~~
 
-.. autoclass:: CallMessage
+.. autoclass:: CallMessage()
     :members:
 
 GroupCall
 ~~~~~~~~~~
 
-.. autoclass:: GroupCall
+.. autoclass:: GroupCall()
     :members:
 
 Server
 ~~~~~~
 
-.. autoclass:: Server
+.. autoclass:: Server()
     :members:
 
 Member
 ~~~~~~
 
-.. autoclass:: Member
+.. autoclass:: Member()
     :members:
 
 VoiceState
 ~~~~~~~~~~~
 
-.. autoclass:: VoiceState
+.. autoclass:: VoiceState()
     :members:
 
 Colour
@@ -703,13 +703,13 @@ Game
 Emoji
 ~~~~~
 
-.. autoclass:: Emoji
+.. autoclass:: Emoji()
     :members:
 
 Role
 ~~~~~
 
-.. autoclass:: Role
+.. autoclass:: Role()
     :members:
 
 Permissions
@@ -727,19 +727,19 @@ PermissionOverwrite
 Channel
 ~~~~~~~~
 
-.. autoclass:: Channel
+.. autoclass:: Channel()
     :members:
 
 PrivateChannel
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: PrivateChannel
+.. autoclass:: PrivateChannel()
     :members:
 
 Invite
 ~~~~~~~
 
-.. autoclass:: Invite
+.. autoclass:: Invite()
     :members:
 
 Exceptions
