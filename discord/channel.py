@@ -280,7 +280,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         while True:
             try:
-                msg = yield from iterator.get()
+                msg = yield from iterator.next()
             except NoMoreItems:
                 # no more messages to poll
                 if count >= 2:
