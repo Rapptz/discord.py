@@ -768,6 +768,9 @@ class BotBase(GroupMixin):
             del lib
             del self.extensions[name]
             del sys.modules[name]
+            for module in list(sys.modules.keys()):
+                if _is_submodule(lib_name, module):
+                    del sys.modules[module]
 
     # command processing
 
