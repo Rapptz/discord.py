@@ -179,7 +179,13 @@ class Client:
 
     @property
     def private_channels(self):
-        """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on."""
+        """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on.
+
+        .. note::
+
+            This returns only up to 128 most recent private channels due to an internal working
+            on how Discord deals with private channels.
+        """
         return self._connection.private_channels
 
     @property
