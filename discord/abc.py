@@ -380,12 +380,23 @@ class GuildChannel:
         if base.administrator:
             return Permissions.all()
 
+        # Apply @everyone allow/deny first since it's special
+        try:
+            maybe_everyone = self._overwrites[0]
+            if maybe_everyone.id == self.guild.id:
+                base.handle_overwrite(allow=maybe_everyone.allow, deny=maybe_everyone.deny)
+                remaining_overwrites = self._overwrites[1:]
+            else:
+                remaining_overwrites = self._overwrites
+        except IndexError:
+            remaining_overwrites = self._overwrites
+
         member_role_ids = set(map(lambda r: r.id, member.roles))
         denies = 0
         allows = 0
 
         # Apply channel specific role permission overwrites
-        for overwrite in self._overwrites:
+        for overwrite in remaining_overwrites:
             if overwrite.type == 'role' and overwrite.id in member_role_ids:
                 denies |= overwrite.deny
                 allows |= overwrite.allow
@@ -393,7 +404,7 @@ class GuildChannel:
         base.handle_overwrite(allow=allows, deny=denies)
 
         # Apply member specific permission overwrites
-        for overwrite in self._overwrites:
+        for overwrite in remaining_overwrites:
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
