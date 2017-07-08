@@ -8,6 +8,7 @@ extension library that handles this for you.
 
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
+    commands
     api
