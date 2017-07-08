@@ -43,7 +43,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
     @classmethod
     async def from_url(cls, url, *, loop=None):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(ytdl.extract_info, url)
+        data = await loop.run_in_executor(None, ytdl.extract_info, url)
         
         if 'entries' in data:
             # take first item from a playlist
@@ -97,7 +97,7 @@ class Music:
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 
-        player = await YoutubeSource.from_url(query, loop=self.bot.loop)
+        player = await YTDLSource.from_url(url, loop=self.bot.loop)
         ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
         
         await ctx.send('Now playing: {}'.format(player.title))
