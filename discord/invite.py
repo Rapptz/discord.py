@@ -132,25 +132,6 @@ class Invite(Hashable):
         return 'http://discord.gg/' + self.code
 
     @asyncio.coroutine
-    def accept(self):
-        """|coro|
-
-        Accepts the instant invite and adds you to the guild
-        the invite is in.
-
-        Raises
-        -------
-        HTTPException
-            Accepting the invite failed.
-        NotFound
-            The invite is invalid or expired.
-        Forbidden
-            You are a bot user and cannot use this endpoint.
-        """
-
-        yield from self._state.http.accept_invite(self.code)
-
-    @asyncio.coroutine
     def delete(self, *, reason=None):
         """|coro|
 
