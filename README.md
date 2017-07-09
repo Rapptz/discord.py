@@ -31,10 +31,10 @@ Otherwise to get voice support you should run the following command:
 python3 -m pip install -U discord.py[voice]
 ```
 
-To install the development version, do the following:
+To install the development version, do the following (This works for the rewrite branch):
 
 ```
-python3 -m pip install -U https://github.com/Rapptz/discord.py/archive/master.zip#egg=discord.py[voice]
+python3 -m pip install -U https://github.com/Rapptz/discord.py/archive/rewrite.zip#egg=discord.py[voice]
 ```
 
 or the more long winded from cloned source:
