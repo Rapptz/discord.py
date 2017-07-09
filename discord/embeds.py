@@ -460,14 +460,7 @@ class Embed:
             pass
         else:
             if timestamp:
-                try:
-                    aware = timestamp.astimezone(datetime.timezone.utc)
-                except ValueError:
-                    # naive date time
-                    result['timestamp'] = timestamp.isoformat()
-                else:
-                    result['timestamp'] = aware.isoformat().replace('+00:00', 'Z')
-
+                result['timestamp'] = timestamp.isoformat()
 
         # add in the non raw attribute ones
         if self.type:
