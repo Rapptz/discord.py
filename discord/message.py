@@ -508,8 +508,9 @@ class Message:
 
         Parameters
         -----------
-        content: str
+        content: Optional[str]
             The new content to replace the message with.
+            Could be ``None`` to remove the content.
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
