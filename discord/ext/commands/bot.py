@@ -549,7 +549,7 @@ class BotBase(GroupMixin):
         """
 
         if inspect.isclass(cog):
-            raise discord.ClientException('cog passed to add_cog is a class instead of an instance')
+            raise discord.ClientException('cog passed is a class instead of an instance')
 
         self.cogs[type(cog).__name__] = cog
 
