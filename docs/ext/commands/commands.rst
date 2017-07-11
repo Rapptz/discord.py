@@ -129,7 +129,7 @@ at all:
 
 .. image:: /images/commands/variable3.png
 
-Since the ``args`` variable is a `list <https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range>`_,
+Since the ``args`` variable is a `tuple <https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range>`_,
 you can do anything you would usually do with one.
 
 Keyword-Only Arguments
