@@ -139,6 +139,11 @@ class Command:
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
         are called with :exc:`.TooManyArguments`. Defaults to ``True``.
+    separator: Optional[str]
+        The separator to use when parsing the command's arguments. If
+        provided the arguments will also be stripped of white spaces characters.
+        By default this is ``None`` in which case ``str.isspace`` will be used
+        to qualify a character as a separator.
     """
     def __init__(self, name, callback, **kwargs):
         self.name = name
@@ -165,6 +170,7 @@ class Command:
         self._buckets = CooldownMapping(kwargs.get('cooldown'))
         self._before_invoke = None
         self._after_invoke = None
+        self.separator = kwargs.pop('separator', None)
 
     @asyncio.coroutine
     def dispatch_error(self, ctx, error):
@@ -339,6 +345,7 @@ class Command:
         first = True
         view = ctx.view
         iterator = iter(self.params.items())
+        view.separator = ctx.command.separator
 
         if self.instance is not None:
             # we have 'self' as the first parameter so just advance
@@ -606,19 +613,26 @@ class Command:
         if not params:
             return ' '.join(result)
 
+        result_params = []
         for name, param in params.items():
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
                 if should_print:
-                    result.append('[%s=%s]' % (name, param.default))
+                    result_params.append('[%s=%s]' % (name, param.default))
                 else:
-                    result.append('[%s]' % name)
+                    result_params.append('[%s]' % name)
             elif param.kind == param.VAR_POSITIONAL:
-                result.append('[%s...]' % name)
+                result_params.append('[%s...]' % name)
             else:
-                result.append('<%s>' % name)
+                result_params.append('<%s>' % name)
+
+        if self.separator is None:
+            sep = ' '
+        else:
+            sep = ' %s ' % self.separator
+        result.append(sep.join(result_params))
 
         return ' '.join(result)
 

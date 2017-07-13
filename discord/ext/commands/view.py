@@ -31,6 +31,7 @@ class StringView:
         self.buffer = buffer
         self.end = len(buffer)
         self.previous = 0
+        self.separator = None
 
     @property
     def current(self):
@@ -40,6 +41,9 @@ class StringView:
     def eof(self):
         return self.index >= self.end
 
+    def is_separator(self, c):
+        return c.isspace() if self.separator is None else c == self.separator
+
     def undo(self):
         self.index = self.previous
 
@@ -48,7 +52,7 @@ class StringView:
         while not self.eof:
             try:
                 current = self.buffer[self.index + pos]
-                if not current.isspace():
+                if not self.is_separator(current) and not current.isspace():
                     break
                 pos += 1
             except IndexError:
@@ -93,7 +97,7 @@ class StringView:
         while not self.eof:
             try:
                 current = self.buffer[self.index + pos]
-                if current.isspace():
+                if self.is_separator(current):
                     break
                 pos += 1
             except IndexError:
@@ -127,6 +131,8 @@ def quoted_word(view):
 
         # currently we accept strings in the format of "hello world"
         # to embed a quote inside the string you must escape it: "a \"world\""
+        # separator characters (either a white space character or
+        # a custom separator string) can also be escaped : hello\ world
         if current == '\\':
             next_char = view.get()
             if not next_char:
@@ -137,9 +143,9 @@ def quoted_word(view):
                 # if we aren't then we just let it through
                 return ''.join(result)
 
-            if next_char == '"':
-                # escaped quote
-                result.append('"')
+            if next_char == '"' or view.is_separator(next_char):
+                # escaped separator or quote
+                result.append(next_char)
             else:
                 # different escape character, ignore it
                 view.undo()
@@ -149,7 +155,7 @@ def quoted_word(view):
         # closing quote
         if current == '"':
             next_char = view.get()
-            valid_eof = not next_char or next_char.isspace()
+            valid_eof = not next_char or next_char.isspace() or view.is_separator(next_char)
             if is_quoted:
                 if not valid_eof:
                     raise BadArgument('Expected space after closing quotation')
@@ -160,8 +166,8 @@ def quoted_word(view):
                 # we aren't quoted
                 raise BadArgument('Unexpected quote mark in non-quoted string')
 
-        if current.isspace() and not is_quoted:
+        if view.is_separator(current) and not is_quoted:
             # end of word found
-            return ''.join(result)
+            return ''.join(result).strip()
 
         result.append(current)
