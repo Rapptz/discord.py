@@ -211,7 +211,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         yield from self._state.http.delete_messages(self.id, message_ids, reason=reason)
 
     @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reason=None):
+    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, reason=None):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -241,6 +241,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``after`` in :meth:`history`.
         around
             Same as ``around`` in :meth:`history`.
+        reverse
+            Same as ``reverse`` in :meth:`history`.
         reason: Optional[str]
             The reason for doing this action. Shows up on the audit log.
 
@@ -271,7 +273,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if check is None:
             check = lambda m: True
 
-        iterator = self.history(limit=limit, before=before, after=after, around=around)
+        iterator = self.history(limit=limit, before=before, after=after, reverse=reverse, around=around)
         ret = []
         count = 0
 
