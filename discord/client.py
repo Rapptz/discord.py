@@ -396,6 +396,9 @@ class Client:
 
                 if not reconnect:
                     yield from self.close()
+                    if isinstance(e, ConnectionClosed) and e.code == 1000:
+                        # clean close, don't re-raise this
+                        return
                     raise
 
                 if self.is_closed():
