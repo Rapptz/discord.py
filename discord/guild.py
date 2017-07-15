@@ -314,6 +314,11 @@ class Guild(Hashable):
         """Returns a :class:`Member` with the given ID. If not found, returns None."""
         return self._members.get(user_id)
 
+    def get_role(self, role_id):
+        """Returns a :class:`Role` with the given ID. If not found, returns None."""
+        found = [r for r in self.roles if r.id == role_id]
+        return found[0] if found else None
+
     @utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
