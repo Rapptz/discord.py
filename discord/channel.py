@@ -214,7 +214,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         yield from self._state.http.delete_messages(self.id, message_ids, reason=reason)
 
     @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, reason=None):
+    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, reason=None, bulk=True):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -248,6 +248,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``reverse`` in :meth:`history`.
         reason: Optional[str]
             The reason for doing this action. Shows up on the audit log.
+        bulk: bool
+            If True, use bulk delete. bulk=False is useful for mass-deleting
+            a bot's own messages without manage_messages. When True, will fall
+            back to single delete if current account is a user bot, or if
+            messages are older than two weeks.
 
         Raises
         -------
@@ -281,7 +286,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         count = 0
 
         minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if self._state.is_bot else _single_delete_strategy
+        strategy = self.delete_messages if self._state.is_bot and bulk else _single_delete_strategy
 
         while True:
             try:
