@@ -489,7 +489,7 @@ class HTTPClient:
 
     def edit_channel(self, channel_id, *, reason=None, **options):
         r = Route('PATCH', '/channels/{channel_id}', channel_id=channel_id)
-        valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position')
+        valid_keys = ('name', 'topic', 'bitrate', 'nsfw', 'user_limit', 'position')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }

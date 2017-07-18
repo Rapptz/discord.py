@@ -77,7 +77,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         top channel is position 0.
     """
 
-    __slots__ = ( 'name', 'id', 'guild', 'topic', '_state',
+    __slots__ = ( 'name', 'id', 'guild', 'topic', '_state', 'nsfw',
                   'position', '_overwrites' )
 
     def __init__(self, *, state, guild, data):
@@ -93,6 +93,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.name = data['name']
         self.topic = data.get('topic')
         self.position = data['position']
+        self.nsfw = data.get('nsfw', False)
         self._fill_overwrites(data)
 
     @asyncio.coroutine
@@ -117,7 +118,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
         n = self.name
-        return n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
 
     @asyncio.coroutine
     def edit(self, *, reason=None, **options):
@@ -136,6 +137,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The new channel's topic.
         position: int
             The new channel's position.
+        nsfw: bool
+            To mark the channel as NSFW or not.
         reason: Optional[str]
             The reason for editing this channel. Shows up on the audit log.
 
