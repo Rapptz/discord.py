@@ -169,9 +169,15 @@ class FFmpegPCMAudio(AudioSource):
 
     def cleanup(self):
         proc = self._process
+
+        log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
         proc.kill()
         if proc.poll() is None:
+            log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
             proc.communicate()
+            log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
+        else:
+            log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
 
 class PCMVolumeTransformer(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.
@@ -281,8 +287,8 @@ class AudioPlayer(threading.Thread):
             self._current_error = e
             self.stop()
         finally:
-            self._call_after()
             self.source.cleanup()
+            self._call_after()
 
     def _call_after(self):
         if self.after is not None:
