@@ -152,6 +152,7 @@ class Context(discord.abc.Messageable):
         restart: bool
             Whether to start the call chain from the very beginning
             or where we left off (i.e. the command that caused the error).
+            The default is to start where we left off.
         """
         cmd = self.command
         view = self.view
@@ -166,8 +167,9 @@ class Context(discord.abc.Messageable):
 
         if restart:
             to_call = cmd.root_parent or cmd
-            view.index = len(self.prefix) + 1
+            view.index = len(self.prefix)
             view.previous = 0
+            view.get_word() # advance to get the root command
         else:
             to_call = cmd
 
