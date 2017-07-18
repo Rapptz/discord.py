@@ -32,7 +32,7 @@ class Context(discord.abc.Messageable):
 
     This class contains a lot of meta data to help you understand more about
     the invocation context. This class is not created manually and is instead
-    passed around to commands by passing in :attr:`Command.pass_context`.
+    passed around to commands as the first parameter.
 
     This class implements the :class:`abc.Messageable` ABC.
 
@@ -122,9 +122,7 @@ class Context(discord.abc.Messageable):
         if command.instance is not None:
             arguments.append(command.instance)
 
-        if command.pass_context:
-            arguments.append(self)
-
+        arguments.append(self)
         arguments.extend(args[1:])
 
         ret = yield from command.callback(*arguments, **kwargs)

@@ -168,7 +168,6 @@ class BotBase(GroupMixin):
             self._skip_check = lambda x, y: x == y
 
         self.help_attrs = options.pop('help_attrs', {})
-        self.help_attrs['pass_context'] = True
 
         if 'name' not in self.help_attrs:
             self.help_attrs['name'] = 'help'

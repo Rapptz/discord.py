@@ -104,9 +104,6 @@ class Command:
         A replacement for arguments in the default help text.
     aliases: list
         The list of aliases the command can be invoked under.
-    pass_context: bool
-        A boolean that indicates that the current :class:`.Context` should
-        be passed as the **first parameter**. Defaults to `True`.
     enabled: bool
         A boolean that indicates if the command is currently enabled.
         If the command is invoked while it is disabled, then
@@ -152,7 +149,6 @@ class Command:
         self.usage = kwargs.get('usage')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
-        self.pass_context = kwargs.get('pass_context', True)
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
         signature = inspect.signature(callback)
@@ -272,9 +268,11 @@ class Command:
             # first parameter is self
             result.popitem(last=False)
 
-        if self.pass_context:
+        try:
             # first/second parameter is context
             result.popitem(last=False)
+        except Exception as e:
+            raise ValueError('Missing context parameter') from None
 
         return result
 
@@ -331,12 +329,11 @@ class Command:
 
     @asyncio.coroutine
     def _parse_arguments(self, ctx):
-        ctx.args = [] if self.instance is None else [self.instance]
+        ctx.args = [ctx] if self.instance is None else [self.instance, ctx]
         ctx.kwargs = {}
         args = ctx.args
         kwargs = ctx.kwargs
 
-        first = True
         view = ctx.view
         iterator = iter(self.params.items())
 
@@ -349,12 +346,14 @@ class Command:
                 fmt = 'Callback for {0.name} command is missing "self" parameter.'
                 raise discord.ClientException(fmt.format(self))
 
-        for name, param in iterator:
-            if first and self.pass_context:
-                args.append(ctx)
-                first = False
-                continue
+        # next we have the 'ctx' as the next parameter
+        try:
+            next(iterator)
+        except StopIteration:
+            fmt = 'Callback for {0.name} command is missing "ctx" parameter.'
+            raise discord.ClientException(fmt.format(self))
 
+        for name, param in iterator:
             if param.kind == param.POSITIONAL_OR_KEYWORD:
                 transformed = yield from self.transform(ctx, param)
                 args.append(transformed)
