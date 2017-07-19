@@ -84,6 +84,9 @@ class AudioSource:
         """
         pass
 
+    def __del__(self):
+        self.cleanup()
+
 class PCMAudio(AudioSource):
     """Represents raw 16-bit 48KHz stereo PCM audio source.
 
@@ -169,6 +172,8 @@ class FFmpegPCMAudio(AudioSource):
 
     def cleanup(self):
         proc = self._process
+        if proc is None:
+            return
 
         log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
         proc.kill()
@@ -178,6 +183,8 @@ class FFmpegPCMAudio(AudioSource):
             log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
         else:
             log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
+
+        self._process = None
 
 class PCMVolumeTransformer(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.
