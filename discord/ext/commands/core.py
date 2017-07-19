@@ -305,8 +305,10 @@ class Command:
         while command.parent is not None:
             command = command.parent
             entries.append(command)
-        entries.append(None)
-        entries.reverse()
+
+        if len(entries) == 0:
+            return None
+
         return entries[-1]
 
     @property
