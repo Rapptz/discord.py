@@ -266,6 +266,7 @@ class AudioPlayer(threading.Thread):
             if not self._resumed.is_set():
                 # wait until we aren't
                 self._resumed.wait()
+                continue
 
             # are we disconnected from voice?
             if not self._connected.is_set():
@@ -306,6 +307,7 @@ class AudioPlayer(threading.Thread):
 
     def stop(self):
         self._end.set()
+        self._resumed.set()
 
     def pause(self):
         self._resumed.clear()
