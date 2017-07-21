@@ -726,3 +726,7 @@ class HTTPClient:
 
     def get_user_profile(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
+
+    def __del__(self):
+        if not self._session.closed:
+            self._session.close()
