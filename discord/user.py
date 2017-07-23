@@ -24,14 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
 from .enums import DefaultAvatar, RelationshipType, UserFlags
-from .errors import ClientException
+from .errors import ClientException, InvalidArgument
 
 from collections import namedtuple
 
 import discord.abc
 import asyncio
+
+VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
+VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()
@@ -96,22 +99,31 @@ class BaseUser(_BaseUser):
         """
         return self.avatar_url_as(format=None, size=1024)
 
-    def avatar_url_as(self, *, format, size=1024):
+    @property
+    def avatar_is_animated(self):
+        """Returns if the user has an animated avatar."""
+        return self.avatar and self.avatar.startswith('a_')
+
+    def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
         """Returns a friendly URL version of the avatar the user has.
 
         If the user does not have a traditional avatar, their default
         avatar URL is returned instead.
 
-        The format must be one of 'webp', 'jpeg', 'png' or 'gif'. The
-        size must be a power of 2 (128, 256, 512, 1024).
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 1024.
 
         Parameters
         -----------
         format: Optional[str]
             The format to attempt to convert the avatar to.
             If the format is ``None``, then it is automatically
-            detected into either 'gif' or 'webp' depending on the
+            detected into either 'gif' or static_format depending on the
             avatar being animated or not.
+        static_format: 'str'
+            Format to attempt to convert only non-animated avatars to.
+            Defaults to 'webp'
         size: int
             The size of the image to display.
 
@@ -119,16 +131,30 @@ class BaseUser(_BaseUser):
         --------
         str
             The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or ``static_format``, or
+            invalid ``size``.
         """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not self.avatar_is_animated:
+            raise InvalidArgument("non animated avatars do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
 
         if self.avatar is None:
             return self.default_avatar_url
 
         if format is None:
-            if self.avatar.startswith('a_'):
+            if self.avatar_is_animated:
                 format = 'gif'
             else:
-                format = 'webp'
+                format = static_format
 
         return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
 

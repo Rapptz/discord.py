@@ -281,3 +281,7 @@ def sane_wait_for(futures, *, timeout, loop):
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()
+
+def valid_icon_size(size):
+    """Icons must be power of 2 within [16, 1024]."""
+    return ((size != 0) and not (size & (size - 1))) and size in range(16, 1025)
