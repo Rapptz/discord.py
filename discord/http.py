@@ -193,8 +193,8 @@ class HTTPClient:
 
                         continue
 
-                    # we've received a 502, unconditional retry
-                    if r.status == 502 and tries <= 5:
+                    # we've received a 500 or 502, unconditional retry
+                    if r.status in {500, 502} and tries <= 5:
                         yield from asyncio.sleep(1 + tries * 2, loop=self.loop)
                         continue
 
