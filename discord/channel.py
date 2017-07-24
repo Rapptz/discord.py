@@ -144,7 +144,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Raises
         ------
-        InvalidArgument
+        ValueError
             If position is less than 0 or greater than the number of channels.
         Forbidden
             You do not have permissions to edit the channel.

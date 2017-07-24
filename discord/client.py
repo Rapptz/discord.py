@@ -291,11 +291,11 @@ class Client:
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             If any guild is unavailable or not large in the collection.
         """
         if any(not g.large or g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
+            raise ValueError('An unavailable or non-large guild was passed.')
 
         yield from self._connection.request_offline_members(guilds)
 
@@ -767,7 +767,7 @@ class Client:
 
         Raises
         ------
-        InvalidArgument
+        TypeError
             If the ``game`` parameter is not :class:`Game` or None.
         """
 
@@ -816,7 +816,7 @@ class Client:
         ------
         HTTPException
             Guild creation failed.
-        InvalidArgument
+        ValueError
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns

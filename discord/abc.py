@@ -32,7 +32,7 @@ from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .errors import InvalidArgument, ClientException
+from .errors import ClientException
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -190,14 +190,14 @@ class GuildChannel:
     @asyncio.coroutine
     def _move(self, position, *, reason):
         if position < 0:
-            raise InvalidArgument('Channel position cannot be less than 0.')
+            raise ValueError('Channel position cannot be less than 0.')
 
         http = self._state.http
         cls = type(self)
         channels = [c for c in self.guild.channels if isinstance(c, cls)]
 
         if position >= len(channels):
-            raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
+            raise ValueError('Channel position cannot be greater than {}'.format(len(channels) - 1))
 
         channels.sort(key=lambda c: c.position)
 
@@ -511,9 +511,11 @@ class GuildChannel:
             You do not have permissions to edit channel specific permissions.
         HTTPException
             Editing channel specific permissions failed.
-        InvalidArgument
+        TypeError
             The overwrite parameter invalid or the target type was not
             :class:`Role` or :class:`Member`.
+        ValueError
+            Invalid permissions provided
         """
 
         http = self._state.http
@@ -523,18 +525,18 @@ class GuildChannel:
         elif isinstance(target, Role):
             perm_type = 'role'
         else:
-            raise InvalidArgument('target parameter must be either Member or Role')
+            raise TypeError('target parameter must be either Member or Role')
 
         if isinstance(overwrite, _Undefined):
             if len(permissions) == 0:
-                raise InvalidArgument('No overwrite provided.')
+                raise ValueError('No overwrite provided.')
             try:
                 overwrite = PermissionOverwrite(**permissions)
             except:
-                raise InvalidArgument('Invalid permissions given to keyword arguments.')
+                raise ValueError('Invalid permissions given to keyword arguments.')
         else:
             if len(permissions) > 0:
-                raise InvalidArgument('Cannot mix overwrite and keyword arguments.')
+                raise TypeError('Cannot mix overwrite and keyword arguments.')
 
         # TODO: wait for event
 
@@ -544,7 +546,7 @@ class GuildChannel:
             (allow, deny) = overwrite.pair()
             yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
         else:
-            raise InvalidArgument('Invalid overwrite type provided.')
+            raise TypeError('Invalid overwrite type provided.')
 
     @asyncio.coroutine
     def create_invite(self, *, reason=None, **fields):
@@ -685,9 +687,10 @@ class Messageable(metaclass=abc.ABCMeta):
             Sending the message failed.
         Forbidden
             You do not have the proper permissions to send the message.
-        InvalidArgument
-            The ``files`` list is not of the appropriate size or
-            you specified both ``file`` and ``files``.
+        ValueError
+            The ``files`` list is not of the appropriate size or you specified both ``file`` and ``files``
+        TypeError
+            ``file`` is not of type ``File``
 
         Returns
         ---------
@@ -702,11 +705,11 @@ class Messageable(metaclass=abc.ABCMeta):
             embed = embed.to_dict()
 
         if file is not None and files is not None:
-            raise InvalidArgument('cannot pass both file and files parameter to send()')
+            raise ValueError('cannot pass both file and files parameter to send()')
 
         if file is not None:
             if not isinstance(file, File):
-                raise InvalidArgument('file parameter must be File')
+                raise TypeError('file parameter must be File')
 
             try:
                 data = yield from state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
@@ -716,7 +719,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         elif files is not None:
             if len(files) > 10:
-                raise InvalidArgument('files parameter must be a list of up to 10 elements')
+                raise ValueError('files parameter must be a list of up to 10 elements')
 
             try:
                 param = [(f.open_file(), f.filename) for f in files]

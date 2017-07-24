@@ -35,7 +35,7 @@ from .member import Member, VoiceState
 from .game import Game
 from .permissions import PermissionOverwrite
 from .colour import Colour
-from .errors import InvalidArgument, ClientException
+from .errors import ClientException
 from .channel import *
 from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter
 from .mixins import Hashable
@@ -435,12 +435,12 @@ class Guild(Hashable):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
-            raise InvalidArgument('overwrites parameter expects a dict.')
+            raise TypeError('overwrites parameter expects a dict.')
 
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                raise TypeError('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
 
             allow, deny = perm.pair()
             payload = {
@@ -508,7 +508,7 @@ class Guild(Hashable):
             You do not have the proper permissions to create this channel.
         HTTPException
             Creating the channel failed.
-        InvalidArgument
+        ValueError
             The permission overwrite information is not in proper form.
 
         Returns
@@ -607,10 +607,12 @@ class Guild(Hashable):
             You do not have permissions to edit the guild.
         HTTPException
             Editing the guild failed.
-        InvalidArgument
+        ValueError
             The image format passed in to ``icon`` is invalid. It must be
             PNG or JPG. This is also raised if you are not the owner of the
             guild and request an ownership transfer.
+        TypeError
+            ``verification_level`` is not of of type ``VerificationLevel``
         """
 
         http = self._state.http
@@ -656,7 +658,7 @@ class Guild(Hashable):
 
         if 'owner' in fields:
             if self.owner != self.me:
-                raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
+                raise ValueError('To transfer ownership you must be the owner of the guild.')
 
             fields['owner_id'] = fields['owner'].id
 
@@ -665,7 +667,7 @@ class Guild(Hashable):
 
         level = fields.get('verification_level', self.verification_level)
         if not isinstance(level, VerificationLevel):
-            raise InvalidArgument('verification_level field must of type VerificationLevel')
+            raise TypeError('verification_level field must of type VerificationLevel')
 
         fields['verification_level'] = level.value
 
@@ -732,7 +734,7 @@ class Guild(Hashable):
             You do not have permissions to prune members.
         HTTPException
             An error occurred while pruning members.
-        InvalidArgument
+        TypeError
             An integer was not passed for ``days``.
 
         Returns
@@ -742,7 +744,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise TypeError('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
         data = yield from self._state.http.prune_members(self.id, days, reason=reason)
         return data['pruned']
@@ -766,7 +768,7 @@ class Guild(Hashable):
             You do not have permissions to prune members.
         HTTPException
             An error occurred while fetching the prune members estimate.
-        InvalidArgument
+        TypeError
             An integer was not passed for ``days``.
 
         Returns
@@ -776,7 +778,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise TypeError('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
         data = yield from self._state.http.estimate_pruned_members(self.id, days)
         return data['pruned']
@@ -927,7 +929,7 @@ class Guild(Hashable):
             You do not have permissions to change the role.
         HTTPException
             Editing the role failed.
-        InvalidArgument
+        ValueError
             An invalid keyword argument was given.
         """
 
@@ -948,7 +950,7 @@ class Guild(Hashable):
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         for key in fields:
             if key not in valid_keys:
-                raise InvalidArgument('%r is not a valid field.' % key)
+                raise ValueError('%r is not a valid field.' % key)
 
         data = yield from self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)

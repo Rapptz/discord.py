@@ -31,7 +31,7 @@ import asyncio
 
 from . import utils, compat
 from .game import Game
-from .errors import ConnectionClosed, InvalidArgument
+from .errors import ConnectionClosed
 import logging
 import zlib, json
 from collections import namedtuple
@@ -447,7 +447,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False, since=0.0):
         if game is not None and not isinstance(game, Game):
-            raise InvalidArgument('game must be of type Game or None')
+            raise TypeError('game must be of type Game or None')
 
         if status == 'idle':
             since = int(time.time() * 1000)

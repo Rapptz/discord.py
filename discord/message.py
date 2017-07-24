@@ -32,7 +32,7 @@ from .reaction import Reaction
 from .emoji import Emoji, PartialReactionEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException, NotFound
+from .errors import ClientException, HTTPException, NotFound
 from .embeds import Embed
 
 class Attachment:
@@ -605,7 +605,7 @@ class Message:
             You do not have the proper permissions to react to the message.
         NotFound
             The emoji you specified was not found.
-        InvalidArgument
+        TypeError
             The emoji parameter is invalid.
         """
 
@@ -619,7 +619,7 @@ class Message:
         elif isinstance(emoji, str):
             pass # this is okay
         else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+            raise TypeError('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
         yield from self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
@@ -652,7 +652,7 @@ class Message:
             You do not have the proper permissions to remove the reaction.
         NotFound
             The member or emoji you specified was not found.
-        InvalidArgument
+        TypeError
             The emoji parameter is invalid.
         """
 
@@ -666,7 +666,7 @@ class Message:
         elif isinstance(emoji, str):
             pass # this is okay
         else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+            raise TypeError('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
         yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
 

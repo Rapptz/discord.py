@@ -118,24 +118,6 @@ class Forbidden(HTTPException):
     """
     pass
 
-class NotFound(HTTPException):
-    """Exception that's thrown for when status code 404 occurs.
-
-    Subclass of :exc:`HTTPException`
-    """
-    pass
-
-
-class InvalidArgument(ClientException):
-    """Exception that's thrown when an argument to a function
-    is invalid some way (e.g. wrong value or wrong type).
-
-    This could be considered the analogous of ``ValueError`` and
-    ``TypeError`` except derived from :exc:`ClientException` and thus
-    :exc:`DiscordException`.
-    """
-    pass
-
 class LoginFailure(ClientException):
     """Exception that's thrown when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.

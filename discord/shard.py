@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
-from .errors import ClientException, InvalidArgument
+from .errors import ClientException
 from . import compat
 from .enums import Status
 
@@ -170,11 +170,11 @@ class AutoShardedClient(Client):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             If any guild is unavailable or not large in the collection.
         """
         if any(not g.large or g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
+            raise ValueError('An unavailable or non-large guild was passed.')
 
         _guilds = sorted(guilds, key=lambda g: g.shard_id)
         for shard_id, sub_guilds in itertools.groupby(_guilds, key=lambda g: g.shard_id):
@@ -294,7 +294,7 @@ class AutoShardedClient(Client):
 
         Raises
         ------
-        InvalidArgument
+        TypeError
             If the ``game`` parameter is not :class:`Game` or None.
         """
 

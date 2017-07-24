@@ -1926,8 +1926,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: NotFound
 
-.. autoexception:: InvalidArgument
-
 .. autoexception:: GatewayNotFound
 
 .. autoexception:: ConnectionClosed

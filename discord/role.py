@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 
 from .permissions import Permissions
-from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time
@@ -174,10 +173,10 @@ class Role(Hashable):
     @asyncio.coroutine
     def _move(self, position, reason):
         if position <= 0:
-            raise InvalidArgument("Cannot move role to position 0 or below")
+            raise ValueError("Cannot move role to position 0 or below")
 
         if self.is_default():
-            raise InvalidArgument("Cannot move default role")
+            raise ValueError("Cannot move default role")
 
         if self.position == position:
             return  # Save discord the extra request.
@@ -233,7 +232,7 @@ class Role(Hashable):
             You do not have permissions to change the role.
         HTTPException
             Editing the role failed.
-        InvalidArgument
+        ValueError
             An invalid position was given or the default
             role was asked to be moved.
         """

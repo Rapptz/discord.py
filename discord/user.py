@@ -324,7 +324,7 @@ class ClientUser(BaseUser):
         ------
         HTTPException
             Editing your profile failed.
-        InvalidArgument
+        ValueError
             Wrong image format passed for ``avatar``.
         ClientException
             Password is required for non-bot accounts.

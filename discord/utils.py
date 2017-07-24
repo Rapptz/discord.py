@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
-from .errors import InvalidArgument
 import datetime
 from base64 import b64encode
 import asyncio
@@ -247,7 +246,7 @@ def _get_mime_type_for_image(data):
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         return 'image/gif'
     else:
-        raise InvalidArgument('Unsupported image type given')
+        raise ValueError('Unsupported image data provided, must be one of png, jpeg, gif')
 
 def _bytes_to_base64_data(data):
     fmt = 'data:{mime};base64,{data}'
