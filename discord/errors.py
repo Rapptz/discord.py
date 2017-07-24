@@ -118,6 +118,13 @@ class Forbidden(HTTPException):
     """
     pass
 
+class NotFound(HTTPException):
+    """Exception that's thrown for when status code 404 occurs.
+
+    Subclass of :exc:`HTTPException`
+    """
+    pass
+
 class LoginFailure(ClientException):
     """Exception that's thrown when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
