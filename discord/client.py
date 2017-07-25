@@ -878,9 +878,6 @@ class Client:
 
         Revokes an :class:`Invite`, URL, or ID to an invite.
 
-        The ``invite`` parameter follows the same rules as
-        :meth:`accept_invite`.
-
         Parameters
         ----------
         invite
