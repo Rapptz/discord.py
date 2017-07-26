@@ -245,7 +245,12 @@ class VoiceClient:
                 self._connected.clear()
                 yield from asyncio.sleep(retry, loop=self.loop)
                 yield from self.terminate_handshake()
-                yield from self.connect(reconnect=True)
+                try:
+                    yield from self.connect(reconnect=True)
+                except asyncio.TimeoutError:
+                    # at this point we've retried 5 times... let's continue the loop.
+                    log.warning('Could not connect to voice... Retrying...')
+                    continue
 
     @asyncio.coroutine
     def disconnect(self, *, force=False):
