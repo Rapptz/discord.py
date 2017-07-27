@@ -99,9 +99,8 @@ class BaseUser(_BaseUser):
         """
         return self.avatar_url_as(format=None, size=1024)
 
-    @property
-    def avatar_is_animated(self):
-        """Returns if the user has an animated avatar."""
+    def is_avatar_animated(self):
+        """bool: Returns True if the user has an animated avatar."""
         return self.avatar and self.avatar.startswith('a_')
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
@@ -142,7 +141,7 @@ class BaseUser(_BaseUser):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
         if format is not None and format not in VALID_AVATAR_FORMATS:
             raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
-        if format == "gif" and not self.avatar_is_animated:
+        if format == "gif" and not self.is_avatar_animated():
             raise InvalidArgument("non animated avatars do not support gif format")
         if static_format not in VALID_STATIC_FORMATS:
             raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
@@ -151,7 +150,7 @@ class BaseUser(_BaseUser):
             return self.default_avatar_url
 
         if format is None:
-            if self.avatar_is_animated:
+            if self.is_avatar_animated():
                 format = 'gif'
             else:
                 format = static_format
