@@ -1267,18 +1267,20 @@ Certain utilities make working with async iterators easier, detailed below.
             that this is only available in Python 3.5 or higher.
 
 
-    .. method:: next()
+    .. comethod:: next()
+
+        |coro|
 
         Advances the iterator by one, if possible. If no more items are found
         then this raises :exc:`NoMoreItems`.
 
-    .. method:: get(**attrs)
+    .. comethod:: get(**attrs)
 
         |coro|
 
         Similar to :func:`utils.get` except run over the async iterator.
 
-    .. method:: find(predicate)
+    .. comethod:: find(predicate)
 
         |coro|
 
@@ -1290,7 +1292,7 @@ Certain utilities make working with async iterators easier, detailed below.
         :param predicate: The predicate to use. Can be a coroutine.
         :return: The first element that returns ``True`` for the predicate or ``None``.
 
-    .. method:: flatten()
+    .. comethod:: flatten()
 
         |coro|
 
