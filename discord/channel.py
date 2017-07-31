@@ -150,6 +150,12 @@ class Channel(Hashable):
     def is_default(self):
         """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
+    
+    @property
+    def is_nsfw(self):
+        """bool : Indicates if the channel is marked as not safe for work."""
+        n = self.name
+        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
 
     @property
     def mention(self):
