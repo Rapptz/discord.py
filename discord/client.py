@@ -2701,40 +2701,13 @@ class Client:
         return result
 
     @asyncio.coroutine
-    def accept_invite(self, invite):
-        """|coro|
-
-        Accepts an :class:`Invite`, URL or ID to an invite.
-
-        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere".
-        An ID for the invite is just the "codehere" portion of the invite URL.
-
-        Parameters
-        -----------
-        invite
-            The :class:`Invite` or URL to an invite to accept.
-
-        Raises
-        -------
-        HTTPException
-            Accepting the invite failed.
-        NotFound
-            The invite is invalid or expired.
-        Forbidden
-            You are a bot user and cannot use this endpoint.
-        """
-
-        invite_id = self._resolve_invite(invite)
-        yield from self.http.accept_invite(invite_id)
-
-    @asyncio.coroutine
     def delete_invite(self, invite):
         """|coro|
 
         Revokes an :class:`Invite`, URL, or ID to an invite.
 
-        The ``invite`` parameter follows the same rules as
-        :meth:`accept_invite`.
+        The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere".
+        An ID for the invite is just the "codehere" portion of the invite URL.
 
         Parameters
         ----------
