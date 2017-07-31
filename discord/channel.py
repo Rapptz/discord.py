@@ -104,7 +104,7 @@ class Channel(Hashable):
         self.bitrate = kwargs.get('bitrate')
         self.type = kwargs.get('type')
         self.user_limit = kwargs.get('user_limit')
-        self.nsfw = kwargs.get('nsfw')
+        self.nsfw = kwargs.get('nsfw', False)
         try:
             self.type = ChannelType(self.type)
         except:
