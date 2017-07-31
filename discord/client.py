@@ -2707,7 +2707,7 @@ class Client:
         Revokes an :class:`Invite`, URL, or ID to an invite.
 
         The URL must be a discord.gg URL. e.g. "http://discord.gg/codehere".
--       An ID for the invite is just the "codehere" portion of the invite URL.
+        An ID for the invite is just the "codehere" portion of the invite URL.
 
         Parameters
         ----------
