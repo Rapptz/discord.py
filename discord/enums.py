@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from enum import Enum
+from enum import Enum, IntEnum
 
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
@@ -69,7 +69,7 @@ class VoiceRegion(Enum):
     def __str__(self):
         return self.value
 
-class VerificationLevel(Enum):
+class VerificationLevel(IntEnum):
     none              = 0
     low               = 1
     medium            = 2
@@ -81,7 +81,7 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
-class ContentFilter(Enum):
+class ContentFilter(IntEnum):
     disabled    = 0
     no_role     = 1
     all_members = 2
