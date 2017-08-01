@@ -736,6 +736,27 @@ All enumerations are subclasses of `enum`_.
     Specifies a :class:`Guild`\'s verification level, which is the criteria in
     which a member must meet before being able to send messages to the guild.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two verification levels are equal.
+        .. describe:: x != y
+
+            Checks if two verification levels are not equal.
+        .. describe:: x > y
+
+            Checks if a verification level is higher than another.
+        .. describe:: x < y
+
+            Checks if a verification level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a verification level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a verification level is lower or equal to another.
+
     .. attribute:: none
 
         No criteria set.
@@ -767,6 +788,27 @@ All enumerations are subclasses of `enum`_.
     Specifies a :class:`Guild`\'s explicit content filter, which is the machine
     learning algorithms that Discord uses to detect if an image contains
     pornography or otherwise explicit content.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two content filter levels are equal.
+        .. describe:: x != y
+
+            Checks if two content filter levels are not equal.
+        .. describe:: x > y
+
+            Checks if a content filter level is higher than another.
+        .. describe:: x < y
+
+            Checks if a content filter level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a content filter level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a content filter level is lower or equal to another.
 
     .. attribute:: disabled
 
