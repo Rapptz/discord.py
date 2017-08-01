@@ -1322,6 +1322,11 @@ Certain utilities make working with async iterators easier, detailed below.
 
         Similar to :func:`utils.get` except run over the async iterator.
 
+        Example: ::
+
+            msg = await channel.history().get(author__name='Dave')
+            # msg is the last message by a user named 'Dave' or None
+
     .. comethod:: find(predicate)
 
         |coro|
@@ -1331,6 +1336,14 @@ Certain utilities make working with async iterators easier, detailed below.
         Unlike :func:`utils.find`\, the predicate provided can be a
         coroutine.
 
+        Example: ::
+
+            def predicate(event):
+                return event.reason is not None
+
+            event = await guild.audit_logs().find(predicate)
+            # event is the last event that had a reason or None
+
         :param predicate: The predicate to use. Can be a coroutine.
         :return: The first element that returns ``True`` for the predicate or ``None``.
 
@@ -1339,6 +1352,13 @@ Certain utilities make working with async iterators easier, detailed below.
         |coro|
 
         Flattens the async iterator into a ``list`` with all the elements.
+
+        Example: ::
+
+            message_list = await channel.history().flatten()
+
+            last_message = message_list[0]
+            # last_message is the last message seen in that channel
 
         :return: A list of every element in the async iterator.
         :rtype: list
@@ -1350,6 +1370,14 @@ Certain utilities make working with async iterators easier, detailed below.
         every element it is iterating over. This function can either be a
         regular function or a coroutine.
 
+        Example: ::
+
+            def transform(message):
+                return message.clean_content
+
+            async for elem in channel.history().map(transform):
+                # elem is the clean_content of the message
+
         :param func: The function to call on every element. Could be a coroutine.
         :return: An async iterator.
 
@@ -1358,6 +1386,14 @@ Certain utilities make working with async iterators easier, detailed below.
         This is similar to the built-in ``filter`` function. Another
         :class:`AsyncIterator` is returned that filters over the original
         async iterator. This predicate can be a regular function or a coroutine.
+
+        Example: ::
+
+            def predicate(message):
+                return not message.author.bot
+
+            async for elem in channel.history().filter(predicate):
+                # elem will never be a message from a bot account
 
         :param predicate: The predicate to call on every element. Could be a coroutine.
         :return: An async iterator.
