@@ -335,7 +335,6 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
-        - Whether the channel is the default channel.
 
         Parameters
         ----------
@@ -764,7 +763,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Example Usage: ::
 
-            with channel.typing():
+            async with channel.typing():
                 # do expensive stuff here
                 await channel.send('done!')
 
