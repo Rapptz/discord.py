@@ -1322,6 +1322,10 @@ Certain utilities make working with async iterators easier, detailed below.
 
         Similar to :func:`utils.get` except run over the async iterator.
 
+        Getting the last message by a user named 'Dave' or ``None``: ::
+
+            msg = await channel.history().get(author__name='Dave')
+
     .. comethod:: find(predicate)
 
         |coro|
@@ -1330,6 +1334,13 @@ Certain utilities make working with async iterators easier, detailed below.
 
         Unlike :func:`utils.find`\, the predicate provided can be a
         coroutine.
+
+        Getting the last audit log with a reason or ``None``: ::
+
+            def predicate(event):
+                return event.reason is not None
+
+            event = await guild.audit_logs().find(predicate)
 
         :param predicate: The predicate to use. Can be a coroutine.
         :return: The first element that returns ``True`` for the predicate or ``None``.
@@ -1350,6 +1361,14 @@ Certain utilities make working with async iterators easier, detailed below.
         every element it is iterating over. This function can either be a
         regular function or a coroutine.
 
+        Creating a content iterator: ::
+
+            def transform(message):
+                return message.content
+
+            async for content in channel.history().map(transform):
+                message_length = len(content)
+
         :param func: The function to call on every element. Could be a coroutine.
         :return: An async iterator.
 
@@ -1358,6 +1377,14 @@ Certain utilities make working with async iterators easier, detailed below.
         This is similar to the built-in ``filter`` function. Another
         :class:`AsyncIterator` is returned that filters over the original
         async iterator. This predicate can be a regular function or a coroutine.
+
+        Getting messages by non-bot accounts: ::
+
+            def predicate(message):
+                return not message.author.bot
+
+            async for elem in channel.history().filter(predicate):
+                ...
 
         :param predicate: The predicate to call on every element. Could be a coroutine.
         :return: An async iterator.

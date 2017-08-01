@@ -753,6 +753,11 @@ class Client:
         The game parameter is a Game object (not a string) that represents
         a game being played currently.
 
+        Example: ::
+
+            game = discord.Game(name="with the API")
+            await client.change_presence(status=discord.Status.idle, game=game)
+
         Parameters
         ----------
         game: Optional[:class:`Game`]
