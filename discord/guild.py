@@ -842,44 +842,6 @@ class Guild(Hashable):
         return result
 
     @asyncio.coroutine
-    def create_invite(self, *, reason=None, **fields):
-        """|coro|
-
-        Creates an instant invite.
-
-        Parameters
-        ------------
-        max_age : int
-            How long the invite should last. If it's 0 then the invite
-            doesn't expire. Defaults to 0.
-        max_uses : int
-            How many uses the invite could be used for. If it's 0 then there
-            are unlimited uses. Defaults to 0.
-        temporary : bool
-            Denotes that the invite grants temporary membership
-            (i.e. they get kicked after they disconnect). Defaults to False.
-        unique: bool
-            Indicates if a unique invite URL should be created. Defaults to True.
-            If this is set to False then it will return a previously created
-            invite.
-        reason: Optional[str]
-            The reason for creating this invite. Shows up on the audit log.
-
-        Raises
-        -------
-        HTTPException
-            Invite creation failed.
-
-        Returns
-        --------
-        :class:`Invite`
-            The invite that was created.
-        """
-
-        data = yield from self._state.http.create_invite(self.id, reason=reason, **fields)
-        return Invite.from_incomplete(data=data, state=self._state)
-
-    @asyncio.coroutine
     def create_custom_emoji(self, *, name, image, reason=None):
         """|coro|
 
