@@ -323,11 +323,6 @@ class Guild(Hashable):
         return utils.find(lambda r: r.is_default(), self.roles)
 
     @property
-    def default_channel(self):
-        """Gets the default :class:`TextChannel` for the guild."""
-        return self.get_channel(self.id)
-
-    @property
     def owner(self):
         """:class:`Member`: The member that owns the guild."""
         return self.get_member(self.owner_id)
@@ -1100,8 +1095,13 @@ class Guild(Hashable):
 
         # we start with { code: abc }
         payload = yield from self._state.http.get_vanity_code(self.id)
+
+        # get the vanity URL channel since default channels aren't
+        # reliable or a thing anymore
+        data = yield from self._state.http.get_invite(payload['code'])
+
         payload['guild'] = self
-        payload['channel'] = self.default_channel
+        payload['channel'] = self.get_channel(int(data['channel']['id']))
         payload['revoked'] = False
         payload['temporary'] = False
         payload['max_uses'] = 0
@@ -1181,7 +1181,7 @@ class Guild(Hashable):
         Getting entries made by a specific user: ::
 
             entries = await guild.audit_logs(limit=None, user=guild.me).flatten()
-            await guild.default_channel.send('I made {} moderation actions.'.format(len(entries)))
+            await channel.send('I made {} moderation actions.'.format(len(entries)))
         """
         if user:
             user = user.id

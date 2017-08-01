@@ -337,6 +337,11 @@ They will be enumerated here.
 
     - There is no replacement for this one. This functionality is deprecated API wise.
 
+- ``Guild.default_channel`` / ``Server.default_channel``
+
+    - The concept of a default channel was removed from Discord.
+      See `#329 <https://github.com/hammerandchisel/discord-api-docs/pull/329>`_.
+
 - ``Message.edited_timestamp``
 
     - Use :attr:`Message.edited_at` instead.
