@@ -1351,12 +1351,6 @@ Certain utilities make working with async iterators easier, detailed below.
 
         Flattens the async iterator into a ``list`` with all the elements.
 
-        Getting the most recent message in a channel: ::
-
-            message_list = await channel.history().flatten()
-
-            last_message = message_list[0]
-
         :return: A list of every element in the async iterator.
         :rtype: list
 
