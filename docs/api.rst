@@ -1324,8 +1324,8 @@ Certain utilities make working with async iterators easier, detailed below.
 
         Example: ::
 
-            msg = await channel.history().get(author__name='Dave')
             # msg is the last message by a user named 'Dave' or None
+            msg = await channel.history().get(author__name='Dave')
 
     .. comethod:: find(predicate)
 
@@ -1341,8 +1341,8 @@ Certain utilities make working with async iterators easier, detailed below.
             def predicate(event):
                 return event.reason is not None
 
-            event = await guild.audit_logs().find(predicate)
             # event is the last event that had a reason or None
+            event = await guild.audit_logs().find(predicate)
 
         :param predicate: The predicate to use. Can be a coroutine.
         :return: The first element that returns ``True`` for the predicate or ``None``.
@@ -1357,8 +1357,8 @@ Certain utilities make working with async iterators easier, detailed below.
 
             message_list = await channel.history().flatten()
 
-            last_message = message_list[0]
             # last_message is the last message seen in that channel
+            last_message = message_list[0]
 
         :return: A list of every element in the async iterator.
         :rtype: list
