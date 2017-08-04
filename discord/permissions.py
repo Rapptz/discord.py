@@ -538,6 +538,11 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
+    def __setattr__(self, name, value):
+        if name not in self.VALID_NAMES:
+            raise ValueError('{} is not a valid permission.'.format(name))
+        super().__setattr__(name, value)
+
     def _set(self, key, value):
         if value not in (True, None, False):
             raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
