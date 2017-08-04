@@ -530,7 +530,7 @@ class PermissionOverwrite:
     """
 
     def __init__(self, **kwargs):
-        self._values = {}
+        super().__setattr__('_values', {})
 
         for key, value in kwargs.items():
             if key not in self.VALID_NAMES:
