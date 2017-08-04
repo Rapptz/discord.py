@@ -530,7 +530,7 @@ class PermissionOverwrite:
     """
 
     def __init__(self, **kwargs):
-        super().__setattr__('_values', {})
+        self.__dict__['_values'] = {}
 
         for key, value in kwargs.items():
             setattr(self, key, value)
