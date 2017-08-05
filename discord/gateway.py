@@ -192,6 +192,26 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         self._dispatch_listeners = []
         # the keep alive
         self._keep_alive = None
+        self._last_ack = time.time()
+
+    @asyncio.coroutine
+    def _do_keep_alive(self, interval):
+        try:
+            while self.open:
+                if self._last_ack + 2 * interval < time.time():
+                    log.warn("We have stopped responding to the gateway.")
+                    yield from self.ws.close(1001)
+                    break
+
+                payload = {
+                    'op': self.HEARTBEAT,
+                    'd': self._connection.sequence
+                }
+
+                yield from self.send_as_json(payload)
+                yield from asyncio.sleep(interval, loop=self.loop)
+        except asyncio.CancelledError:
+            pass
 
     @classmethod
     @asyncio.coroutine
@@ -342,7 +362,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             raise ReconnectWebSocket()
 
         if op == self.HEARTBEAT_ACK:
-            self._keep_alive.ack()
+            self._last_ack = time.time()
             return
 
         if op == self.HEARTBEAT:
@@ -352,8 +372,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         if op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
-            self._keep_alive.start()
+            self._keep_alive = compat.create_task(self._do_keep_alive(interval))
             return
 
         if op == self.INVALIDATE_SESSION:
@@ -517,7 +536,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     @asyncio.coroutine
     def close_connection(self, force=False):
         if self._keep_alive:
-            self._keep_alive.stop()
+            self._keep_alive.cancel()
 
         yield from super().close_connection(force=force)
 
