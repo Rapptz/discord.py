@@ -254,10 +254,6 @@ class GuildChannel:
             ret.append(role)
         return ret
 
-    def is_default(self):
-        """bool : Indicates if this is the default channel for the :class:`Guild` it belongs to."""
-        return self.guild.id == self.id
-
     @property
     def mention(self):
         """str : The string that allows you to mention the channel."""
@@ -356,9 +352,7 @@ class GuildChannel:
         # have to take into effect.
         # After all that is done.. you have to do the following:
 
-        # If manage permissions is True, then all permissions are set to
-        # True. If the channel is the default channel then everyone gets
-        # read permissions regardless.
+        # If manage permissions is True, then all permissions are set to True.
 
         # The operation first takes into consideration the denied
         # and then the allowed.
@@ -407,10 +401,6 @@ class GuildChannel:
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
-
-        # default channels can always be read
-        if self.is_default():
-            base.read_messages = True
 
         # if you can't send a message in a channel then you can't have certain
         # permissions as well
