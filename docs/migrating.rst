@@ -207,7 +207,6 @@ In order to be a bit more consistent, certain things that were properties were c
 
 The following are now methods instead of properties (requires parentheses):
 
-- :meth:`TextChannel.is_default`
 - :meth:`Role.is_default`
 - :meth:`Client.is_ready`
 - :meth:`Client.is_closed`
@@ -337,7 +336,7 @@ They will be enumerated here.
 
     - There is no replacement for this one. This functionality is deprecated API wise.
 
-- ``Guild.default_channel`` / ``Server.default_channel``
+- ``Guild.default_channel`` / ``Server.default_channel`` and ``Channel.is_default``
 
     - The concept of a default channel was removed from Discord.
       See `#329 <https://github.com/hammerandchisel/discord-api-docs/pull/329>`_.
