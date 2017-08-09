@@ -484,7 +484,8 @@ class Permissions:
     # after these 32 bits, there's 21 more unused ones technically
 
 def augment_from_permissions(cls):
-    cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+    if getattr(cls, 'VALID_NAMES', None) is None:
+        cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
 
     # make descriptors for all the valid names
     for name in cls.VALID_NAMES:
@@ -528,6 +529,8 @@ class PermissionOverwrite:
     \*\*kwargs
         Set the value of permissions by their name.
     """
+    VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+    __slots__ = tuple(VALID_NAMES) + ('_values',)
 
     def __init__(self, **kwargs):
         self._values = {}
