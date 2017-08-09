@@ -597,6 +597,11 @@ class Message:
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialReactionEmoji`, str]
             The emoji to react with.
 
+        Returns
+        ---------
+        Reaction
+            The added reaction.
+
         Raises
         --------
         HTTPException
@@ -622,6 +627,7 @@ class Message:
             raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
         yield from self._state.http.add_reaction(self.id, self.channel.id, emoji)
+        return Reaction(message=self, data={'me': True}, emoji=emoji)
 
     @asyncio.coroutine
     def remove_reaction(self, emoji, member):
