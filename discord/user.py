@@ -523,67 +523,6 @@ class User(BaseUser, discord.abc.Messageable):
         return r.type is RelationshipType.blocked
 
     @asyncio.coroutine
-    def block(self):
-        """|coro|
-
-        Blocks the user.
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to block this user.
-        HTTPException
-            Blocking the user failed.
-        """
-
-        yield from self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
-
-    @asyncio.coroutine
-    def unblock(self):
-        """|coro|
-
-        Unblocks the user.
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to unblock this user.
-        HTTPException
-            Unblocking the user failed.
-        """
-        yield from self._state.http.remove_relationship(self.id)
-
-    @asyncio.coroutine
-    def remove_friend(self):
-        """|coro|
-
-        Removes the user as a friend.
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to remove this user as a friend.
-        HTTPException
-            Removing the user as a friend failed.
-        """
-        yield from self._state.http.remove_relationship(self.id)
-
-    @asyncio.coroutine
-    def send_friend_request(self):
-        """|coro|
-
-        Sends the user a friend request.
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to send a friend request to the user.
-        HTTPException
-            Sending the friend request failed.
-        """
-        yield from self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
-
-    @asyncio.coroutine
     def profile(self):
         """|coro|
 

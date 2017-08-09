@@ -52,31 +52,3 @@ class Relationship:
     def __repr__(self):
         return '<Relationship user={0.user!r} type={0.type!r}>'.format(self)
 
-    @asyncio.coroutine
-    def delete(self):
-        """|coro|
-
-        Deletes the relationship.
-
-        Raises
-        ------
-        HTTPException
-            Deleting the relationship failed.
-        """
-
-        yield from self._state.http.remove_relationship(self.user.id)
-
-    @asyncio.coroutine
-    def accept(self):
-        """|coro|
-
-        Accepts the relationship request. e.g. accepting a
-        friend request.
-
-        Raises
-        -------
-        HTTPException
-            Accepting the relationship failed.
-        """
-
-        yield from self._state.http.add_relationship(self.user.id)
