@@ -530,13 +530,15 @@ class PermissionOverwrite:
     """
 
     def __init__(self, **kwargs):
-        self._values = {}
+        self.__dict__['_values'] = {}
 
         for key, value in kwargs.items():
-            if key not in self.VALID_NAMES:
-                raise ValueError('no permission called {0}.'.format(key))
-
             setattr(self, key, value)
+
+    def __setattr__(self, name, value):
+        if name not in self.VALID_NAMES:
+            raise ValueError('no permission called {0}'.format(name))
+        super().__setattr__(name, value)
 
     def _set(self, key, value):
         if value not in (True, None, False):
