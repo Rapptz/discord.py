@@ -36,6 +36,7 @@ from .game import Game
 from .permissions import Permissions
 from .enums import Status, try_enum
 from .colour import Colour
+from .object import Object
 
 class VoiceState:
     """Represents a Discord user's voice state.
@@ -494,7 +495,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         Parameters
         -----------
         \*roles
-            An argument list of :class:`Role`\s to give the member.
+            An argument list of :class:`abc.Snowflake` representing a :class:`Role`
+            to give to the member.
         reason: Optional[str]
             The reason for adding these roles. Shows up on the audit log.
 
@@ -506,7 +508,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             Adding roles failed.
         """
 
-        new_roles = utils._unique(r for s in (self.roles[1:], roles) for r in s)
+        new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
         yield from self.edit(roles=new_roles, reason=reason)
 
     @asyncio.coroutine
@@ -521,7 +523,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         Parameters
         -----------
         \*roles
-            An argument list of :class:`Role`\s to remove from the member.
+            An argument list of :class:`abc.Snowflake` representing a :class:`Role`
+            to remove from the member.
         reason: Optional[str]
             The reason for removing these roles. Shows up on the audit log.
 
@@ -533,10 +536,10 @@ class Member(discord.abc.Messageable, _BaseUser):
             Removing the roles failed.
         """
 
-        new_roles = self.roles[1:] # remove @everyone
+        new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
         for role in roles:
             try:
-                new_roles.remove(role)
+                new_roles.remove(Object(id=role.id))
             except ValueError:
                 pass
 
