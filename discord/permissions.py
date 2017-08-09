@@ -529,6 +529,8 @@ class PermissionOverwrite:
         Set the value of permissions by their name.
     """
 
+    __slots__ = ('_values',)
+
     def __init__(self, **kwargs):
         self._values = {}
 
