@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import collections
 import discord
 import inspect
 import importlib
@@ -797,6 +798,8 @@ class BotBase(GroupMixin):
             if asyncio.iscoroutine(ret):
                 ret = yield from ret
             return ret
+        elif isinstance(prefix, collections.Iterable) and not isinstance(prefix, str):
+            return list(prefix)
         else:
             return prefix
 
