@@ -540,7 +540,15 @@ class BotBase(GroupMixin):
         -----------
         cog
             The cog to register to the bot.
+
+        Raises
+        --------
+        ClientException
+            The cog passed was a class instead of an instance.
         """
+
+        if inspect.isclass(cog):
+            raise discord.ClientException('cog passed is a class instead of an instance')
 
         self.cogs[type(cog).__name__] = cog
 
