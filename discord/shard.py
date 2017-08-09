@@ -204,6 +204,7 @@ class AutoShardedClient(Client):
         ws.gateway = gateway
         ws.shard_id = shard_id
         ws.shard_count = self.shard_count
+        ws._max_heartbeat_timeout = self._connection.heartbeat_timeout
 
         try:
             # OP HELLO

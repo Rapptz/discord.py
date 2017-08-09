@@ -64,6 +64,7 @@ class ConnectionState:
         self.shard_count = None
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
+        self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self._listeners = []
 
         game = options.get('game', None)
@@ -906,7 +907,6 @@ class AutoShardedConnectionState(ConnectionState):
             # until the last GUILD_CREATE was sent
             launch.set()
             yield from asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
-
 
         if self._fetch_offline:
             guilds = sorted(self._ready_state.guilds, key=lambda g: g.shard_id)

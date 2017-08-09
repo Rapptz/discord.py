@@ -95,6 +95,11 @@ class Client:
         A game to start your presence with upon logging on to Discord.
     status: Optional[:class:`Status`]
         A status to start your presence with upon logging on to Discord.
+    heartbeat_timeout: float
+        The maximum numbers of seconds before timing out and restarting the
+        WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
+        processing the initial packets take too long to the point of disconnecting
+        you. The default timeout is 60 seconds.
 
     Attributes
     -----------
