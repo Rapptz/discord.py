@@ -438,3 +438,29 @@ class clean_content(Converter):
 
         # Completely ensure no mentions escape:
         return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
+
+class Union(Converter):
+    """Tries to convert the argument to each of a list of
+    converters, in order.
+
+    Attributes
+    ------------
+    converters : tuple(:class:`Converter`,any)
+        A sequence of converters to attempt
+    """
+    def __init__(self, *converters):
+        self.converters = converters
+
+    @asyncio.coroutine
+    def convert(self, ctx, argument):
+        for converter in self.converters:
+            try:
+                return (yield from ctx.command.do_conversion(ctx, converter, argument))
+            except (BadArgument, ValueError, TypeError):
+                pass
+        raise BadArgument('Conversion failed for {!r}'.format(self))
+
+    def __repr__(self):
+        names = (getattr(converter, '__name__', type(converter).__name__)
+                 for converter in self.converters)  
+        return '{}({})'.format(type(self).__name__, ', '.join(names))
