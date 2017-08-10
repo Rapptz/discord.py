@@ -436,13 +436,5 @@ class clean_content(Converter):
             pattern = re.compile('|'.join(transformations.keys()))
             result = pattern.sub(replace, result)
 
-        transformations = {
-            '@everyone': '@\u200beveryone',
-            '@here': '@\u200bhere'
-        }
-
-        def repl2(obj):
-            return transformations.get(obj.group(0), '')
-
-        pattern = re.compile('|'.join(transformations.keys()))
-        return pattern.sub(repl2, result)
+        # Completely ensure no mentions escape:
+        return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
