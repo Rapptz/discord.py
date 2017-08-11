@@ -88,7 +88,7 @@ class HTTPClient:
     SUCCESS_LOG = '{method} {url} has received {text}'
     REQUEST_LOG = '{method} {url} with {json} has returned {status}'
 
-    def __init__(self, connector=None, *, loop=None):
+    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
         self._session = aiohttp.ClientSession(connector=connector, loop=self.loop)
@@ -97,6 +97,8 @@ class HTTPClient:
         self._global_over.set()
         self.token = None
         self.bot_token = False
+        self.proxy = proxy
+        self.proxy_auth = proxy_auth
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
@@ -134,6 +136,12 @@ class HTTPClient:
                 headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         kwargs['headers'] = headers
+
+        # Proxy support
+        if self.proxy is not None:
+            kwargs['proxy'] = self.proxy
+        if self.proxy_auth is not None:
+            kwargs['proxy_auth'] = self.proxy_auth
 
         if not self._global_over.is_set():
             # wait until the global lock is complete

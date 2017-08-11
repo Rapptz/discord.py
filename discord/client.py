@@ -80,8 +80,11 @@ class Client:
         The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
         in which case the default event loop is used via ``asyncio.get_event_loop()``.
     connector : aiohttp.BaseConnector
-        The `connector`_ to use for connection pooling. Useful for proxies, e.g.
-        with a `ProxyConnector`_.
+        The `connector`_ to use for connection pooling.
+    proxy : Optional[str]
+        Proxy URL.
+    proxy_auth : Optional[aiohttp.BasicAuth]
+        An object that represents proxy HTTP Basic Authorization.
     shard_id : Optional[int]
         Integer starting at 0 and less than shard_count.
     shard_count : Optional[int]
@@ -116,7 +119,9 @@ class Client:
         self.shard_count = options.get('shard_count')
 
         connector = options.pop('connector', None)
-        self.http = HTTPClient(connector, loop=self.loop)
+        proxy = options.pop('proxy', None)
+        proxy_auth = options.pop('proxy_auth', None)
+        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
 
         self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
