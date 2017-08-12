@@ -462,5 +462,5 @@ class Union(Converter):
 
     def __repr__(self):
         names = (getattr(converter, '__name__', type(converter).__name__)
-                 for converter in self.converters)  
+                 for converter in self.converters)
         return '{}({})'.format(type(self).__name__, ', '.join(names))
