@@ -346,9 +346,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             All webhooks in a channel, empty if none
         """
         webhooks = yield from self._state.http.get_channel_webhooks(self.id)
-        return [Webhook().from_data(wb) for wb in webhooks]
-
-    async def create_webhook(self,name,avatar):
+        return [Webhook().from_data(wb,self._state) for wb in webhooks]
+    @asyncio.coroutine
+    def create_webhook(self,name,avatar):
         """|coro|
         Parameters
         -----------
@@ -369,14 +369,16 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         discord.Webhook - The created webhook
         """
         if isinstance(avatar,str):
-            async with self._state.http._session.get(avatar) as ret:
-                if ret.status not in [200,204]:
-                    raise discord.HTTPException(ret,message=await ret.text())
-                img = io.BytesIO(await ret.read())
-                img.seek(0)
+            ret = yield from self._state.http._session.get(avatar)
+            if ret.status not in [200,204]:
+                m = yield from ret.text()
+                raise discord.HTTPException(ret,message=m)
+            data = yield from ret.read()
+            img = io.BytesIO(data)
+            img.seek(0)
             avatar = utils._bytes_to_base64_data(img.read())
-        webhook = await self._state.http.create_webhook(self.id, name=name, avatar=avatar)
-        return Webhook().from_data(webhook)
+        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        return Webhook().from_data(webhook,self._state)
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 

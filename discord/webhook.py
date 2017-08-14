@@ -4,6 +4,7 @@ from .utils import _bytes_to_base64_data
 import aiohttp
 import io
 import json
+import asyncio
 WEBHOOK_BASE = 'https://discordapp.com/api/webhooks/'
 class Webhook():
     def __init__(self,**kwargs):
@@ -13,7 +14,8 @@ class Webhook():
         self.token = kwargs.get('token','')
         self.url = WEBHOOK_BASE + '{0.id}/{0.token}'.format(self)
         self.webhook = kwargs # Anything we didnt get will be in here
-    def from_data(self,data):
+    def from_data(self,data,state):
+        self._state = data.get('state')
         self.avatar = data.get('avatar','')
         self.name = data.get('name','')
         self.id = data.get('id',0)
@@ -21,8 +23,8 @@ class Webhook():
         self.url = WEBHOOK_BASE + '{0.id}/{0.token}'.format(self)
         self.webhook = data # Anything we didnt get will be in here
         return self
-
-    async def edit(self,*,update=False,**kwargs):
+    @asyncio.coroutine
+    def edit(self,*,update=False,**kwargs):
         """
         Set the webhooks information
 
@@ -32,31 +34,36 @@ class Webhook():
         """
         if kwargs.get('name'): self.name = kwargs.get('name')
         if kwargs.get('avatar'): self.avatar = kwargs.get('avatar')
-        if update: await self.update() # Updates the webhook
+        if update: yield from self.update() # Updates the webhook
         return self
-    async def update(self,**kwargs):
+    @asyncio.coroutine
+    def update(self,**kwargs):
         """|coro|
         Updates the webhook
         """
         avatar = self.avatar
         if self.avatar:
-            async with aiohttp.request('GET',self.avatar) as ret:
-                if ret.status not in [200,204]:
-                    raise HTTPException(await ret.text())
-                img = io.BytesIO(await ret.read())
-                img.seek(0)
+            ret = yield from self._state.http._session.request('GET',self.avatar)
+            if ret.status not in [200,204]:
+                t = yield from ret.text()
+                raise HTTPException(t)
+            d = yield from ret.read()
+            img = io.BytesIO(d)
+            img.seek(0)
             avatar = _bytes_to_base64_data(img.read())
 
         payload = {'name':self.name if not kwargs.get('name') else kwargs.get('name'),
                    'avatar':avatar}
         
         url = WEBHOOK_BASE + '{webhook_id}/{webhook_token}'.format(webhook_id = self.id, webhook_token = self.token)
-        async with aiohttp.request('PATCH',url,data=json.dumps(payload),headers = {'content-type': 'application/json'}) as ret:
-            if ret.status not in [200,204]:
-                raise HTTPException(ret,message=await ret.text())
-            return self.from_data(await ret.json()) # Update the webhook with the new data
-
-    async def make_request(self,method,data):
+        ret = yield from self._state.http._session.request('PATCH',url,data=json.dumps(payload),headers = {'content-type': 'application/json'})
+        d = yield from ret.json()
+        if ret.status not in [200,204]:
+            m = yield from ret.text()
+            raise HTTPException(ret,message=m)
+        return self.from_data() # Update the webhook with the new data
+    @asyncio.coroutine
+    def make_request(self,method,data):
         """|coro|
         Send data to discord
 
@@ -77,11 +84,14 @@ class Webhook():
             data['embeds_cache'] = [data['embeds'].to_dict()]
         data['embeds'] = data['embeds_cache']
         del data['embeds_cache']
-        async with aiohttp.request(method,self.url,data=json.dumps(data),headers = {'content-type': 'application/json'}) as ret:
-            if ret.status not in [200,204]:
-                raise HTTPException(await ret.text())
-            return await ret.json()
-    async def send(self,message,*,embeds=None,tts=False):
+        ret = yield from self._state.http._session.request(method,self.url,data=json.dumps(data),headers = {'content-type': 'application/json'})
+        if ret.status not in [200,204]:
+            m = yield from ret.text()
+            raise HTTPException(ret,message=m)
+        toreturn = yield from ret.json()
+        return toreturn
+    @asyncio.coroutine
+    def send(self,message,*,embeds=None,tts=False):
         """|coro|
 
         Sends a message to the webhook
@@ -98,5 +108,5 @@ class Webhook():
             Raw data from Discord
         """
 
-        return await self.make_request('POST',{'content':message,'embeds':embeds,
+        yield from self.make_request('POST',{'content':message,'embeds':embeds,
                                                 'tts':tts})
