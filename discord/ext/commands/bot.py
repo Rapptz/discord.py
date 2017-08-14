@@ -785,20 +785,33 @@ class BotBase(GroupMixin):
         message: :class:`discord.Message`
             The message context to get the prefix of.
 
+        Raises
+        --------
+        :exc:`.ClientException`
+            The prefix was invalid. This could be if the prefix
+            function returned None, the prefix list returned no
+            elements that aren't None, or the prefix string is
+            empty.
+
         Returns
         --------
         Union[List[str], str]
             A list of prefixes or a single prefix that the bot is
             listening for.
         """
-        prefix = self.command_prefix
+        prefix = ret = self.command_prefix
         if callable(prefix):
             ret = prefix(self, message)
             if asyncio.iscoroutine(ret):
                 ret = yield from ret
-            return ret
-        else:
-            return prefix
+
+        if isinstance(ret, (list, tuple)):
+            ret = [p for p in ret if p]
+
+        if not ret:
+            raise ClientException('invalid prefix (could be an empty string, empty list, or None)')
+
+        return ret
 
     @asyncio.coroutine
     def get_context(self, message, *, cls=Context):
@@ -840,7 +853,7 @@ class BotBase(GroupMixin):
         prefix = yield from self.get_prefix(message)
         invoked_prefix = prefix
 
-        if not isinstance(prefix, (tuple, list)):
+        if isinstance(prefix, str):
             if not view.skip_string(prefix):
                 return ctx
         else:
