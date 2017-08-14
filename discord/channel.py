@@ -32,6 +32,7 @@ from .webhook import Webhook
 
 import discord.abc
 
+import io
 import time
 import asyncio
 
@@ -346,14 +347,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         webhooks = yield from self._state.http.get_channel_webhooks(self.id)
         return [Webhook().from_data(wb) for wb in webhooks]
-    @asyncio.coroutine
-    def create_webhook(self,name,avatar):
-        """
-                Parameters
+
+    async def create_webhook(self,name,avatar):
+        """|coro|
+        Parameters
         -----------
         name: str
             The name of the webhook
-        avatar: url, discord.File or str
+        avatar: url or str
             Avatar of the webhook. If str, it must be a base64 encoded image.
 
         Raises
@@ -367,10 +368,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         --------
         discord.Webhook - The created webhook
         """
-        if isinstance(avatar,discord.File):
-            avatar.file
-
-        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        if isinstance(avatar,str):
+            async with self._state.http._session.get(avatar) as ret:
+                if ret.status not in [200,204]:
+                    raise discord.HTTPException(ret,message=await ret.text())
+                img = io.BytesIO(await ret.read())
+                img.seek(0)
+            avatar = utils._bytes_to_base64_data(img.read())
+        webhook = await self._state.http.create_webhook(self.id, name=name, avatar=avatar)
         return Webhook().from_data(webhook)
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
