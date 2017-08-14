@@ -1163,4 +1163,4 @@ class Guild(Hashable):
                 discord.Webhook
         """
         wb = yield from self._state.http.get_guild_webhooks(self.id)
-        return [Webhook().from_data(w,self._state) for w in wb]
+        return [Webhook._from_data(self._state, w) for w in wb]

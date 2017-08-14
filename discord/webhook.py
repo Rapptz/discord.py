@@ -1,28 +1,32 @@
 from .embeds import Embed
+from .mixins import Hashable
 from .errors import HTTPException
 from .utils import _bytes_to_base64_data
 import aiohttp
 import io
 import json
 import asyncio
+
+# Webhook code made by Cerulean#7014 
+
 WEBHOOK_BASE = 'https://discordapp.com/api/webhooks/'
-class Webhook():
-    def __init__(self,**kwargs):
-        self.avatar = kwargs.get('avatar','')
-        self.name = kwargs.get('name','')
+AVATAR_BASE = 'https://cdn.discordapp.com/avatars/{id}/{avatar}.png'
+class Webhook(Hashable):
+    __slots__ = ( 'name', 'id', 'avatar', 'url', '_state',
+                 'webhook', 'token')
+    def __init__(self,state, **kwargs):
+        self._state = state
+        
+        self.name = kwargs.get('name',None)
         self.id = kwargs.get('id',0)
         self.token = kwargs.get('token','')
         self.url = WEBHOOK_BASE + '{0.id}/{0.token}'.format(self)
+        self.avatar = AVATAR_BASE.format(id=self.id,
+                                         avatar=kwargs.get('avatar',''))
         self.webhook = kwargs # Anything we didnt get will be in here
-    def from_data(self,data,state):
-        self._state = data.get('state')
-        self.avatar = data.get('avatar','')
-        self.name = data.get('name','')
-        self.id = data.get('id',0)
-        self.token = data.get('token','')
-        self.url = WEBHOOK_BASE + '{0.id}/{0.token}'.format(self)
-        self.webhook = data # Anything we didnt get will be in here
-        return self
+    @classmethod
+    def _from_data(cls,state,data):
+        return cls(state,**data)
     @asyncio.coroutine
     def edit(self,*,update=False,**kwargs):
         """
@@ -56,7 +60,7 @@ class Webhook():
                    'avatar':avatar}
         
         url = WEBHOOK_BASE + '{webhook_id}/{webhook_token}'.format(webhook_id = self.id, webhook_token = self.token)
-        ret = yield from self._state.http._session.request('PATCH',url,data=json.dumps(payload),headers = {'content-type': 'application/json'})
+        ret = yield from self._session.request('PATCH',url,data=json.dumps(payload),headers = {'content-type': 'application/json'})
         d = yield from ret.json()
         if ret.status not in [200,204]:
             m = yield from ret.text()
@@ -88,8 +92,11 @@ class Webhook():
         if ret.status not in [200,204]:
             m = yield from ret.text()
             raise HTTPException(ret,message=m)
-        toreturn = yield from ret.json()
-        return toreturn
+        t = yield from ret.text()
+        if t:
+            # We got a response, load into json and return it.
+            j = yield from ret.json()
+            return j
     @asyncio.coroutine
     def send(self,message,*,embeds=None,tts=False):
         """|coro|
