@@ -614,7 +614,7 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
     
-    def get_webhooks(self,guild_id):
+    def get_guild_webhooks(self,guild_id):
         return self.request(Route('GET','/guilds/{guild_id}/webhooks',guild_id=guild_id))
 
 

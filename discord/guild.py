@@ -1153,3 +1153,14 @@ class Guild(Hashable):
 
         return AuditLogIterator(self, before=before, after=after, limit=limit,
                                 reverse=reverse, user_id=user, action_type=action)
+    @asyncio.coroutine
+    def webhooks(self):
+        """
+        Gets all guild webhooks
+
+        Returns:
+            list: 
+                discord.Webhook
+        """
+        wb = yield from self._state.http.get_guild_webhooks(self.id)
+        return [Webhook().from_data(w) for w in wb]
