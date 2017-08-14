@@ -28,6 +28,7 @@ from .enums import ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
 from .errors import ClientException, NoMoreItems
+from .webhook import Webhook
 
 import discord.abc
 
@@ -324,7 +325,53 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
                     count += 1
                     ret.append(msg)
+    @asyncio.coroutine
+    def webhooks(self):
+        """|coro|
+        
+        Gets all webhooks in this channel
 
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to do the actions required.
+        HTTPException
+            Getting webhooks failed
+
+
+        Returns
+        --------
+        List
+            All webhooks in a channel, empty if none
+        """
+        webhooks = yield from self._state.http.get_channel_webhooks(self.id)
+        return [Webhook().from_data(wb) for wb in webhooks]
+    @asyncio.coroutine
+    def create_webhook(self,name,avatar):
+        """
+                Parameters
+        -----------
+        name: str
+            The name of the webhook
+        avatar: url, discord.File or str
+            Avatar of the webhook. If str, it must be a base64 encoded image.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to do the actions required.
+        HTTPException
+            Creating the webhook failed.
+
+        Returns
+        --------
+        discord.Webhook - The created webhook
+        """
+        if isinstance(avatar,discord.File):
+            avatar.file
+
+        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        return Webhook().from_data(webhook)
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 
