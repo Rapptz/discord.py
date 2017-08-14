@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import re
 
-from . import utils
+from . import utils, compat
 from .reaction import Reaction
 from .emoji import Emoji, PartialReactionEmoji
 from .calls import CallMessage
@@ -514,6 +514,10 @@ class Message:
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
+        delete_after: Optional[float]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just edited. If the deletion fails,
+            then it is silently ignored.
 
         Raises
         -------
@@ -539,6 +543,22 @@ class Message:
 
         data = yield from self._state.http.edit_message(self.id, self.channel.id, **fields)
         self._update(channel=self.channel, data=data)
+
+        try:
+            delete_after = fields['delete_after']
+        except KeyError:
+            pass
+        else:
+            if delete_after is not None:
+                @asyncio.coroutine
+                def delete():
+                    yield from asyncio.sleep(delete_after, loop=self._state.loop)
+                    try:
+                        yield from self._state.http.delete_message(self.channel.id, self.id)
+                    except:
+                        pass
+
+                compat.create_task(delete(), loop=self._state.loop)
 
     @asyncio.coroutine
     def pin(self):
