@@ -518,6 +518,9 @@ class Message:
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
+        reason: Optional[str]
+            The reason for deleting the message, if necessary.
+            Shows up on the audit log.
 
         Raises
         -------
@@ -550,14 +553,14 @@ class Message:
             pass
         else:
             if delete_after is not None:
+                reason = fields.get('reason')
                 @asyncio.coroutine
                 def delete():
                     yield from asyncio.sleep(delete_after, loop=self._state.loop)
                     try:
-                        yield from self._state.http.delete_message(self.channel.id, self.id)
+                        yield from self._state.http.delete_message(self.channel.id, self.id, reason=reason)
                     except:
                         pass
-
                 compat.create_task(delete(), loop=self._state.loop)
 
     @asyncio.coroutine
