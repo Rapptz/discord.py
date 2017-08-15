@@ -247,7 +247,7 @@ class AuditLogEntry:
         # into meaningful data when requested
         self._changes = data.get('changes', [])
 
-        self.user = self._get_member(int(data['user_id']))
+        self.user = self._get_member(utils._get_as_snowflake(data, 'user_id'))
         self._target_id = utils._get_as_snowflake(data, 'target_id')
 
     def _get_member(self, user_id):
