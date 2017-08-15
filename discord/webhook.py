@@ -13,49 +13,42 @@ AVATAR_BASE = 'https://cdn.discordapp.com/avatars/{id}/{avatar}.png'
 
 
 class Webhook(Hashable):
-    __slots__ = ('name', 'id', 'avatar', 'url', '_state',
+    __slots__ = ('name', 'id', 'avatar_url', 'url', '_state',
                  'webhook', 'token')
 
     def __init__(self, state, **kwargs):
         self._state = state
         
-        self.name = kwargs.get('name',None)
-        self.id = kwargs.get('id',0)
-        self.token = kwargs.get('token','')
+        self.name = kwargs.get('name', None)
+        self.id = kwargs.get('id', 0)
+        self.token = kwargs.get('token', '')
         self.url = WEBHOOK_BASE + '{0.id}/{0.token}'.format(self)
-        self.avatar = AVATAR_BASE.format(id=self.id,
-                                         avatar=kwargs.get('avatar', ''))
+        self.avatar_url = AVATAR_BASE.format(id=self.id,
+                                         avatar=kwargs.get('avatar_url', ''))
         self.webhook = kwargs  # Anything we didn't get will be in here
 
-    @classmethod
-    def _from_data(cls,state,data):
-        return cls(state,**data)
-
     @asyncio.coroutine
-    def edit(self,*,update=False,**kwargs):
+    def edit(self, *, update=False, **kwargs):
         """
         Set the webhooks information
 
         Returns
         ------
-            Updated discord.Webhook
+            None
         """
-        if kwargs.get('name'):
-            self.name = kwargs.get('name')
-        if kwargs.get('avatar'):
-            self.avatar = kwargs.get('avatar')
+        self.name = kwargs.get('name', self.name)
+        self.avatar_url = kwargs.get('avatar_url', self.avatar_url)
         if update:
             yield from self.update()  # Updates the webhook
-        return self
 
     @asyncio.coroutine
     def update(self, **kwargs):
         """|coro|
         Updates the webhook
         """
-        avatar = self.avatar
-        if self.avatar:
-            ret = yield from self._state.http._session.request('GET', self.avatar)
+        avatar = self.avatar_url
+        if self.avatar_url:
+            ret = yield from self._state.http._session.request('GET', self.avatar_url)
             if ret.status not in [200, 204]:
                 t = yield from ret.text()
                 raise HTTPException(t)
@@ -66,7 +59,7 @@ class Webhook(Hashable):
 
         payload = {
             'name': kwargs.get('name', self.name),
-            'avatar': avatar
+            'avatar_url': avatar
         }
         
         url = WEBHOOK_BASE + '{webhook_id}/{webhook_token}'.format(webhook_id=self.id, webhook_token=self.token)
@@ -98,7 +91,7 @@ class Webhook(Hashable):
         Have done better TBH
         """
         data['username'] = self.name
-        data['avatar_url'] = self.avatar
+        data['avatar_url'] = self.avatar_url
         data['embeds_cache'] = []
         if data.get('embeds') and isinstance(data.get('embeds'),list):
             for em in data['embeds']:
@@ -112,7 +105,7 @@ class Webhook(Hashable):
                                                            self.url,
                                                            data=json.dumps(data),
                                                            headers={'content-type': 'application/json'})
-        if ret.status not in [200,204]:
+        if ret.status not in [200, 204]:
             m = yield from ret.text()
             raise HTTPException(ret,message=m)
         t = yield from ret.text()
@@ -131,9 +124,11 @@ class Webhook(Hashable):
 
             message: str
                 The message you want to send
-            embeds: list [discord.Embed] or discord.Embed
+            embeds: Union[List[discord.Embed], discord.Embed]
                 The embed(s) you want to send
             (Everything else is the same as the standard send_message)
+            tts:    bool
+                Whether or not the message is a text-to-speech message
 
         Returns:
             Raw data from Discord

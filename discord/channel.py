@@ -349,13 +349,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return [Webhook(self._state, **wb) for wb in webhooks]
 
     @asyncio.coroutine
-    def create_webhook(self, name, avatar):
+    def create_webhook(self, name, avatar_url):
         """|coro|
         Parameters
         -----------
         name: str
             The name of the webhook
-        avatar: str
+        avatar_url: str
             Avatar of the webhook. A URL or Base64 encoded image
 
         Raises
@@ -366,19 +366,20 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Creating the webhook failed.
 
         Returns
-        --------
-        discord.Webhook - The created webhook
+        -----------
+        :class:`Webhook`
+            The created webhook.
         """
-        if isinstance(avatar,str):
-            ret = yield from self._state.http._session.get(avatar)
+        if isinstance(avatar_url, str):
+            ret = yield from self._state.http._session.get(avatar_url)
             if ret.status not in [200,204]:
                 m = yield from ret.text()
                 raise discord.HTTPException(ret,message=m)
             data = yield from ret.read()
             img = io.BytesIO(data)
             img.seek(0)
-            avatar = utils._bytes_to_base64_data(img.read())
-        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+            avatar_url = utils._bytes_to_base64_data(img.read())
+        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar_url)
         return Webhook(self._state, **webhook)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
