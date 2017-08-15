@@ -2,7 +2,6 @@ from .embeds import Embed
 from .mixins import Hashable
 from .errors import HTTPException
 from .utils import _bytes_to_base64_data
-import aiohttp
 import io
 import json
 import asyncio
@@ -11,9 +10,12 @@ import asyncio
 
 WEBHOOK_BASE = 'https://discordapp.com/api/webhooks/'
 AVATAR_BASE = 'https://cdn.discordapp.com/avatars/{id}/{avatar}.png'
+
+
 class Webhook(Hashable):
     __slots__ = ( 'name', 'id', 'avatar', 'url', '_state',
                  'webhook', 'token')
+
     def __init__(self,state, **kwargs):
         self._state = state
         
@@ -22,11 +24,13 @@ class Webhook(Hashable):
         self.token = kwargs.get('token','')
         self.url = WEBHOOK_BASE + '{0.id}/{0.token}'.format(self)
         self.avatar = AVATAR_BASE.format(id=self.id,
-                                         avatar=kwargs.get('avatar',''))
-        self.webhook = kwargs # Anything we didnt get will be in here
+                                         avatar=kwargs.get('avatar', ''))
+        self.webhook = kwargs  # Anything we didn't get will be in here
+
     @classmethod
     def _from_data(cls,state,data):
         return cls(state,**data)
+
     @asyncio.coroutine
     def edit(self,*,update=False,**kwargs):
         """
@@ -36,19 +40,23 @@ class Webhook(Hashable):
         ------
             Updated discord.Webhook
         """
-        if kwargs.get('name'): self.name = kwargs.get('name')
-        if kwargs.get('avatar'): self.avatar = kwargs.get('avatar')
-        if update: yield from self.update() # Updates the webhook
+        if kwargs.get('name'):
+            self.name = kwargs.get('name')
+        if kwargs.get('avatar'):
+            self.avatar = kwargs.get('avatar')
+        if update:
+            yield from self.update()  # Updates the webhook
         return self
+
     @asyncio.coroutine
-    def update(self,**kwargs):
+    def update(self, **kwargs):
         """|coro|
         Updates the webhook
         """
         avatar = self.avatar
         if self.avatar:
-            ret = yield from self._state.http._session.request('GET',self.avatar)
-            if ret.status not in [200,204]:
+            ret = yield from self._state.http._session.request('GET', self.avatar)
+            if ret.status not in [200, 204]:
                 t = yield from ret.text()
                 raise HTTPException(t)
             d = yield from ret.read()
@@ -56,16 +64,25 @@ class Webhook(Hashable):
             img.seek(0)
             avatar = _bytes_to_base64_data(img.read())
 
-        payload = {'name':self.name if not kwargs.get('name') else kwargs.get('name'),
-                   'avatar':avatar}
+        payload = {
+            'name': kwargs.get('name', self.name),
+            'avatar': avatar
+        }
         
-        url = WEBHOOK_BASE + '{webhook_id}/{webhook_token}'.format(webhook_id = self.id, webhook_token = self.token)
-        ret = yield from self._session.request('PATCH',url,data=json.dumps(payload),headers = {'content-type': 'application/json'})
-        d = yield from ret.json()
-        if ret.status not in [200,204]:
+        url = WEBHOOK_BASE + '{webhook_id}/{webhook_token}'.format(webhook_id=self.id, webhook_token=self.token)
+        ret = yield from self._state.http._session.request(
+                                                           'PATCH',
+                                                           url,
+                                                           data=json.dumps(payload),
+                                                           headers={'Content-Type': 'application/json'}
+                                                           )
+        yield from ret.json()
+        if ret.status not in [200, 204]:
             m = yield from ret.text()
-            raise HTTPException(ret,message=m)
-        return self.from_data() # Update the webhook with the new data
+            raise HTTPException(ret, message=m)
+
+        return self._from_data(self._state, self.webhook.copy().update(kwargs))  # Update the webhook with the new data
+
     @asyncio.coroutine
     def make_request(self,method,data):
         """|coro|
@@ -74,7 +91,7 @@ class Webhook(Hashable):
         Has to use a different system than discord.py because of how different webhooks
         are to the main client.
 
-        Danny, if you dont like how I did this, feel free to change it. I feel like I could
+        Danny, if you don't like how I did this, feel free to change it. I feel like I could
         Have done better TBH
         """
         data['username'] = self.name
@@ -84,7 +101,7 @@ class Webhook(Hashable):
             for em in data['embeds']:
                 if isinstance(em,Embed):
                     data['embeds_cache'].append(em.to_dict())
-        elif isinstance(data.get('embeds'),Embed):
+        elif isinstance(data.get('embeds'), Embed):
             data['embeds_cache'] = [data['embeds'].to_dict()]
         data['embeds'] = data['embeds_cache']
         del data['embeds_cache']
@@ -97,8 +114,9 @@ class Webhook(Hashable):
             # We got a response, load into json and return it.
             j = yield from ret.json()
             return j
+
     @asyncio.coroutine
-    def send(self,message,*,embeds=None,tts=False):
+    def send(self, message, *, embeds=None, tts=False):
         """|coro|
 
         Sends a message to the webhook
@@ -115,5 +133,8 @@ class Webhook(Hashable):
             Raw data from Discord
         """
 
-        yield from self.make_request('POST',{'content':message,'embeds':embeds,
-                                                'tts':tts})
+        yield from self.make_request('POST',
+                                     {'content': message,
+                                      'embeds': embeds,
+                                      'tts': tts}
+                                     )
