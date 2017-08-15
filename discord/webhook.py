@@ -13,10 +13,10 @@ AVATAR_BASE = 'https://cdn.discordapp.com/avatars/{id}/{avatar}.png'
 
 
 class Webhook(Hashable):
-    __slots__ = ( 'name', 'id', 'avatar', 'url', '_state',
+    __slots__ = ('name', 'id', 'avatar', 'url', '_state',
                  'webhook', 'token')
 
-    def __init__(self,state, **kwargs):
+    def __init__(self, state, **kwargs):
         self._state = state
         
         self.name = kwargs.get('name',None)
@@ -81,10 +81,13 @@ class Webhook(Hashable):
             m = yield from ret.text()
             raise HTTPException(ret, message=m)
 
-        return self._from_data(self._state, self.webhook.copy().update(kwargs))  # Update the webhook with the new data
+        new = self.webhook.copy()
+        new.update(kwargs)
+        Webhook.__init__(self, self._state, **new)
+        return self
 
     @asyncio.coroutine
-    def make_request(self,method,data):
+    def make_request(self, method, data):
         """|coro|
         Send data to discord
 
