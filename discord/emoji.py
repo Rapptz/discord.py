@@ -171,7 +171,7 @@ class Emoji(Hashable):
     @property
     def url(self):
         """Returns a URL version of the emoji."""
-        return "https://discordapp.com/api/emojis/{0.id}.png".format(self)
+        return "https://cdn.discordapp.com/emojis/{0.id}.png".format(self)
 
 
     @asyncio.coroutine
