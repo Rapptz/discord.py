@@ -342,20 +342,21 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Returns
         --------
-        List
+        List[:class:`Webhook`]
             All webhooks in a channel, empty if none
         """
         webhooks = yield from self._state.http.get_channel_webhooks(self.id)
-        return [Webhook._from_data(self._state, wb) for wb in webhooks]
+        return [Webhook(self._state, **wb) for wb in webhooks]
+
     @asyncio.coroutine
-    def create_webhook(self,name,avatar):
+    def create_webhook(self, name, avatar_url):
         """|coro|
         Parameters
         -----------
         name: str
             The name of the webhook
-        avatar: url or str
-            Avatar of the webhook. If str, it must be a base64 encoded image.
+        avatar_url: str
+            Avatar of the webhook. A URL or Base64 encoded image
 
         Raises
         -------
@@ -365,20 +366,22 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Creating the webhook failed.
 
         Returns
-        --------
-        discord.Webhook - The created webhook
+        -----------
+        :class:`Webhook`
+            The created webhook.
         """
-        if isinstance(avatar,str):
-            ret = yield from self._state.http._session.get(avatar)
+        if isinstance(avatar_url, str):
+            ret = yield from self._state.http._session.get(avatar_url)
             if ret.status not in [200,204]:
                 m = yield from ret.text()
                 raise discord.HTTPException(ret,message=m)
             data = yield from ret.read()
             img = io.BytesIO(data)
             img.seek(0)
-            avatar = utils._bytes_to_base64_data(img.read())
-        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
-        return Webhook._from_data(self._state,webhook)
+            avatar_url = utils._bytes_to_base64_data(img.read())
+        webhook = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar_url)
+        return Webhook(self._state, **webhook)
+
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 
