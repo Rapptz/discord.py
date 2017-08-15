@@ -553,12 +553,11 @@ class Message:
             pass
         else:
             if delete_after is not None:
-                reason = fields.get('reason')
                 @asyncio.coroutine
                 def delete():
                     yield from asyncio.sleep(delete_after, loop=self._state.loop)
                     try:
-                        yield from self._state.http.delete_message(self.channel.id, self.id, reason=reason)
+                        yield from self._state.http.delete_message(self.channel.id, self.id, reason=fields.get('reason'))
                     except:
                         pass
                 compat.create_task(delete(), loop=self._state.loop)
