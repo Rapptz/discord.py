@@ -108,7 +108,10 @@ class Webhook(Hashable):
             data['embeds_cache'] = [data['embeds'].to_dict()]
         data['embeds'] = data['embeds_cache']
         del data['embeds_cache']
-        ret = yield from self._state.http._session.request(method,self.url,data=json.dumps(data),headers = {'content-type': 'application/json'})
+        ret = yield from self._state.http._session.request(method,
+                                                           self.url,
+                                                           data=json.dumps(data),
+                                                           headers={'content-type': 'application/json'})
         if ret.status not in [200,204]:
             m = yield from ret.text()
             raise HTTPException(ret,message=m)

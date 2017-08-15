@@ -525,7 +525,7 @@ class HTTPClient:
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
 
     def get_channel_webhooks(self, channel_id):
-        return self.request(Route('GET','/channels/{channel_id}/webhooks', channel_id=channel_id))
+        return self.request(Route('GET', '/channels/{channel_id}/webhooks', channel_id=channel_id))
     
     def create_webhook(self, channel_id, *, name='', avatar=''):
         payload = {'name':name,'avatar':avatar}
