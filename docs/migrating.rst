@@ -470,7 +470,7 @@ Event Changes
 
 A lot of events have gone through some changes.
 
-Many events with ``server`` in the name where changed to use ``guild`` instead.
+Many events with ``server`` in the name were changed to use ``guild`` instead.
 
 Before:
 
@@ -754,7 +754,7 @@ Context Changes
 
 In v1.0, the :class:`.Context` has received a lot of changes with how it's retrieved and used.
 
-The biggest change is that ``pass_context=True`` is now the default behaviour. Ergo:
+The biggest change is that ``pass_context=True`` no longer exists, :class:`.Context` is always passed. Ergo:
 
 .. code-block:: python3
 
@@ -849,8 +849,8 @@ For a full list of changes, see below:
 Command Changes
 ~~~~~~~~~~~~~~~~~
 
-As mentioned earlier, the first command change is that ``pass_context=True`` is now the
-default, so there is no need to pass this as a parameter.
+As mentioned earlier, the first command change is that ``pass_context=True`` no longer
+exists, so there is no need to pass this as a parameter.
 
 Another change is the removal of ``no_pm=True``. Instead, use the new :func:`~ext.commands.guild_only` built-in
 check.
@@ -1027,9 +1027,9 @@ The invocation order is as follows:
 2. Cog local before invocation hook
 3. Global before invocation hook
 4. The actual command
-5. Command local after invocation hooko
-6. Cog local after invocation hooko
-7. Global after invocation hooko
+5. Command local after invocation hook
+6. Cog local after invocation hook
+7. Global after invocation hook
 
 Converter Changes
 ~~~~~~~~~~~~~~~~~~~
