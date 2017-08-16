@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import re, os
 
 on_rtd = os.getenv('READTHEDOCS') == 'True'
@@ -29,7 +29,7 @@ setup(name='discord.py',
       author='Rapptz',
       url='https://github.com/Rapptz/discord.py',
       version=version,
-      packages=find_packages(),
+      packages=['discord', 'discord.ext.commands'],
       license='MIT',
       description='A python wrapper for the Discord API',
       long_description=readme,
