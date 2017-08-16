@@ -628,7 +628,7 @@ class Messageable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, reason=None, delete_after=None, nonce=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -664,9 +664,6 @@ class Messageable(metaclass=abc.ABCMeta):
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
-        reason: Optional[str]
-            The reason for deleting the message, if necessary.
-            Shows up on the audit log.
 
         Raises
         --------
@@ -723,7 +720,7 @@ class Messageable(metaclass=abc.ABCMeta):
             def delete():
                 yield from asyncio.sleep(delete_after, loop=state.loop)
                 try:
-                    yield from ret.delete(reason=reason)
+                    yield from ret.delete()
                 except:
                     pass
             compat.create_task(delete(), loop=state.loop)

@@ -475,7 +475,7 @@ class Message:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
     @asyncio.coroutine
-    def delete(self, *, reason=None):
+    def delete(self):
         """|coro|
 
         Deletes the message.
@@ -484,11 +484,6 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
-        Parameters
-        ------------
-        reason: Optional[str]
-            The reason for deleting this message. Shows up on the audit log.
-
         Raises
         ------
         Forbidden
@@ -496,7 +491,7 @@ class Message:
         HTTPException
             Deleting the message failed.
         """
-        yield from self._state.http.delete_message(self.channel.id, self.id, reason=reason)
+        yield from self._state.http.delete_message(self.channel.id, self.id)
 
     @asyncio.coroutine
     def edit(self, **fields):

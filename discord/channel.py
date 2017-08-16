@@ -37,9 +37,9 @@ import asyncio
 __all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'GroupChannel', '_channel_factory')
 
 @asyncio.coroutine
-def _single_delete_strategy(messages, *, reason):
+def _single_delete_strategy(messages):
     for m in messages:
-        yield from m.delete(reason=reason)
+        yield from m.delete()
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
@@ -164,7 +164,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             self._update(self.guild, data)
 
     @asyncio.coroutine
-    def delete_messages(self, messages, *, reason=None):
+    def delete_messages(self, messages):
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -183,8 +183,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         -----------
         messages: Iterable[:class:`abc.Snowflake`]
             An iterable of messages denoting which ones to bulk delete.
-        reason: Optional[str]
-            The reason for bulk deleting these messages. Shows up on the audit log.
 
         Raises
         ------
@@ -211,10 +209,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
         message_ids = [m.id for m in messages]
-        yield from self._state.http.delete_messages(self.id, message_ids, reason=reason)
+        yield from self._state.http.delete_messages(self.id, message_ids)
 
     @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, reason=None, bulk=True):
+    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, bulk=True):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -246,8 +244,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``around`` in :meth:`history`.
         reverse
             Same as ``reverse`` in :meth:`history`.
-        reason: Optional[str]
-            The reason for doing this action. Shows up on the audit log.
         bulk: bool
             If True, use bulk delete. bulk=False is useful for mass-deleting
             a bot's own messages without manage_messages. When True, will fall
@@ -296,17 +292,17 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 if count >= 2:
                     # more than 2 messages -> bulk delete
                     to_delete = ret[-count:]
-                    yield from strategy(to_delete, reason=reason)
+                    yield from strategy(to_delete)
                 elif count == 1:
                     # delete a single message
-                    yield from ret[-1].delete(reason=reason)
+                    yield from ret[-1].delete()
 
                 return ret
             else:
                 if count == 100:
                     # we've reached a full 'queue'
                     to_delete = ret[-100:]
-                    yield from strategy(to_delete, reason=reason)
+                    yield from strategy(to_delete)
                     count = 0
                     yield from asyncio.sleep(1)
 
@@ -317,7 +313,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                             yield from ret[-1].delete()
                         elif count >= 2:
                             to_delete = ret[-count:]
-                            yield from strategy(to_delete, reason=reason)
+                            yield from strategy(to_delete)
 
                         count = 0
                         strategy = _single_delete_strategy
