@@ -754,7 +754,7 @@ Context Changes
 
 In v1.0, the :class:`.Context` has received a lot of changes with how it's retrieved and used.
 
-The biggest change is that ``pass_context=True`` is no longer required, :class:`.Context` is always passed. Ergo:
+The biggest change is that ``pass_context=True`` no longer exists, :class:`.Context` is always passed. Ergo:
 
 .. code-block:: python3
 
@@ -849,8 +849,8 @@ For a full list of changes, see below:
 Command Changes
 ~~~~~~~~~~~~~~~~~
 
-As mentioned earlier, the first command change is that ``pass_context=True`` is now the
-default, so there is no need to pass this as a parameter.
+As mentioned earlier, the first command change is that ``pass_context=True`` no longer
+exists, so there is no need to pass this as a parameter.
 
 Another change is the removal of ``no_pm=True``. Instead, use the new :func:`~ext.commands.guild_only` built-in
 check.
