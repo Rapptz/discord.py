@@ -47,20 +47,20 @@ class Game:
 
     Attributes
     -----------
-    name : str
+    name: str
         The game's name.
-    url : str
+    url: str
         The game's URL. Usually used for twitch streaming.
-    type : int
+    type: int
         The type of game being played. 1 indicates "Streaming".
     """
 
     __slots__ = ('name', 'type', 'url')
 
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
-        self.url = kwargs.get('url')
-        self.type = kwargs.get('type')
+    def __init__(self, *, name, url=None, type=0):
+        self.name = name
+        self.url = url
+        self.type = type
 
     def __str__(self):
         return str(self.name)
