@@ -149,6 +149,24 @@ class AutoShardedClient(Client):
         ws = self.shards[shard_id].ws
         yield from ws.send_as_json(payload)
 
+    @property
+    def latency(self):
+        """float: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+
+        This operates similarly to :meth:`.Client.latency` except it uses the average
+        latency of every shard's latency. To get a list of shard latency, check the
+        :attr:`latencies` property.
+        """
+        return sum(latency for _, latency in self.latencies) / len(self.shards)
+
+    @property
+    def latencies(self):
+        """List[Tuple[int, float]]: A list of latencies between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+
+        This returns a list of tuples with elements ``(shard_id, latency)``.
+        """
+        return [(shard_id, shard.ws.latency) for shard_id, shard in self.shards.items()]
+
     @asyncio.coroutine
     def request_offline_members(self, *guilds):
         """|coro|

@@ -173,6 +173,15 @@ class Client:
         return invite
 
     @property
+    def latency(self):
+        """float: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+
+        This could be referred to as the Discord WebSocket protocol latency.
+        """
+        ws = self.ws
+        return float('nan') if not ws else ws.latency
+
+    @property
     def user(self):
         """Optional[:class:`ClientUser`]: Represents the connected client. None if not logged in."""
         return self._connection.user

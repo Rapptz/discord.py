@@ -346,6 +346,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         if op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = KeepAliveHandler(ws=self, interval=interval, shard_id=self.shard_id)
+            # send a heartbeat immediately
+            yield from self.send_as_json(self._keep_alive.get_payload())
             self._keep_alive.start()
             return
 
