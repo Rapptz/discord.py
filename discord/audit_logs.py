@@ -105,6 +105,7 @@ class AuditLogChanges:
         'inviter_id':              ('inviter', _transform_inviter_id),
         'channel_id':              ('channel', _transform_channel),
         'afk_channel_id':          ('afk_channel', _transform_channel),
+        'system_channel_id':       ('system_channel', _transform_channel),
         'widget_channel_id':       ('widget_channel', _transform_channel),
         'permission_overwrites':   ('overwrites', _transform_overwrites),
         'splash_hash':             ('splash', None),

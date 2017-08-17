@@ -886,6 +886,7 @@ All enumerations are subclasses of `enum`_.
         Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.afk_channel`
+        - :attr:`~AuditLogDiff.system_channel`
         - :attr:`~AuditLogDiff.afk_timeout`
         - :attr:`~AuditLogDiff.default_message_notifications`
         - :attr:`~AuditLogDiff.explicit_content_filter`
@@ -1490,6 +1491,15 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         with the ID being set.
 
         See :attr:`Guild.afk_channel`.
+
+    .. attribute:: system_channel
+
+        Union[:class:`TextChannel`, :class:`Object`] – The guild's system channel.
+
+        If this could not be found, then it falls back to a :class:`Object`
+        with the ID being set.
+
+        See :attr:`Guild.system_channel`.
 
     .. attribute:: afk_timeout
 

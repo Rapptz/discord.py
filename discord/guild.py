@@ -122,7 +122,7 @@ class Guild(Hashable):
                  '_default_role', 'roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states' )
+                 '_voice_states', '_system_channel_id', )
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -214,6 +214,7 @@ class Guild(Hashable):
         self.emojis = tuple(map(lambda d: self._state.store_emoji(self, d), guild.get('emojis', [])))
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
+        self._system_channel_id = guild.get('system_channel_id')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=self._state)
@@ -307,6 +308,15 @@ class Guild(Hashable):
     def get_channel(self, channel_id):
         """Returns a :class:`abc.GuildChannel` with the given ID. If not found, returns None."""
         return self._channels.get(channel_id)
+
+    @property
+    def system_channel(self):
+        """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
+
+        Currently this is only for new member joins. If no channel is set, then this returns ``None``.
+        """
+        channel_id = self._system_channel_id
+        return channel_id and self._channels.get(channel_id)
 
     @property
     def members(self):
@@ -627,6 +637,8 @@ class Guild(Hashable):
             The new verification level for the guild.
         vanity_code: str
             The new vanity code for the guild.
+        system_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for the system channel. Could be ``None`` for no system channel.
         reason: Optional[str]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -682,6 +694,16 @@ class Guild(Hashable):
                 fields['afk_channel_id'] = afk_channel
             else:
                 fields['afk_channel_id'] = afk_channel.id
+
+        try:
+            system_channel = fields.pop('system_channel')
+        except KeyError:
+            pass
+        else:
+            if system_channel is None:
+                fields['system_channel_id'] = system_channel
+            else:
+                fields['system_channel_id'] = system_channel.id
 
         if 'owner' in fields:
             if self.owner != self.me:
