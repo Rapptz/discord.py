@@ -202,7 +202,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         if len(messages) == 1:
             message_id = messages[0].id
-            yield from self._state.http.delete_message(self.id, message_id, reason=reason)
+            yield from self._state.http.delete_message(self.id, message_id)
             return
 
         if len(messages) > 100:
