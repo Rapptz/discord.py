@@ -57,7 +57,7 @@ class Game:
 
     __slots__ = ('name', 'type', 'url')
 
-    def __init__(self, *, name, url=None, type=0):
+    def __init__(self, *, name, url=None, type=0, **kwargs):
         self.name = name
         self.url = url
         self.type = type
