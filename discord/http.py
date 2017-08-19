@@ -524,6 +524,13 @@ class HTTPClient:
     def delete_channel(self, channel_id, *, reason=None):
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
 
+    def get_channel_webhooks(self, channel_id):
+        return self.request(Route('GET', '/channels/{channel_id}/webhooks', channel_id=channel_id))
+    
+    def create_webhook(self, channel_id, *, name='', avatar=''):
+        payload = {'name':name,'avatar':avatar}
+        return self.request(Route('POST','/channels/{channel_id}/webhooks', channel_id=channel_id), json=payload)
+
     # Guild management
 
     def leave_guild(self, guild_id):
@@ -607,6 +614,10 @@ class HTTPClient:
 
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
+    
+    def get_guild_webhooks(self,guild_id):
+        return self.request(Route('GET','/guilds/{guild_id}/webhooks',guild_id=guild_id))
+
 
     # Invite management
 
@@ -737,3 +748,4 @@ class HTTPClient:
 
     def get_user_profile(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
+    

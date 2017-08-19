@@ -43,7 +43,7 @@ from .utils import valid_icon_size
 from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator
-
+from .webhook import Webhook
 VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
 BanEntry = namedtuple('BanEntry', 'reason user')
@@ -1175,3 +1175,15 @@ class Guild(Hashable):
 
         return AuditLogIterator(self, before=before, after=after, limit=limit,
                                 reverse=reverse, user_id=user, action_type=action)
+
+    @asyncio.coroutine
+    def webhooks(self):
+        """
+        Gets all guild webhooks
+
+        Returns:
+            list: 
+                discord.Webhook
+        """
+        wb = yield from self._state.http.get_guild_webhooks(self.id)
+        return [Webhook(self._state, **w) for w in wb]
