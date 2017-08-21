@@ -57,10 +57,10 @@ class Game:
 
     __slots__ = ('name', 'type', 'url')
 
-    def __init__(self, *, name, url=None, type=0, **kwargs):
-        self.name = name
-        self.url = url
-        self.type = type
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+        self.url = kwargs.get('url')
+        self.type = kwargs.get('type', 0)
 
     def __str__(self):
         return str(self.name)
