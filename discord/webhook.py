@@ -131,7 +131,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
         The session to use to send requests.
     """
 
-    def __init__(self, *, session):
+    def __init__(self, session):
         self.session = session
         self.loop = session.loop
 
