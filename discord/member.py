@@ -484,7 +484,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         yield from self.edit(voice_channel=channel, reason=reason)
 
     @asyncio.coroutine
-    def add_roles(self, *roles, reason=None):
+    def add_roles(self, *roles, reason=None, atomic=True):
         """|coro|
 
         Gives the member a number of :class:`Role`\s.
@@ -499,6 +499,10 @@ class Member(discord.abc.Messageable, _BaseUser):
             to give to the member.
         reason: Optional[str]
             The reason for adding these roles. Shows up on the audit log.
+        atomic: bool
+            Whether to atomically add roles. This will ensure that multiple
+            operations will always be applied regardless of the current
+            state of the cache.
 
         Raises
         -------
@@ -508,11 +512,18 @@ class Member(discord.abc.Messageable, _BaseUser):
             Adding roles failed.
         """
 
-        new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
-        yield from self.edit(roles=new_roles, reason=reason)
+        if not atomic:
+            new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
+            yield from self.edit(roles=new_roles, reason=reason)
+        else:
+            req = self._state.http.add_role
+            guild_id = self.guild.id
+            user_id = self.id
+            for role in roles:
+                yield from req(guild_id, user_id, role.id, reason=reason)
 
     @asyncio.coroutine
-    def remove_roles(self, *roles, reason=None):
+    def remove_roles(self, *roles, reason=None, atomic=True):
         """|coro|
 
         Removes :class:`Role`\s from this member.
@@ -527,6 +538,10 @@ class Member(discord.abc.Messageable, _BaseUser):
             to remove from the member.
         reason: Optional[str]
             The reason for removing these roles. Shows up on the audit log.
+        atomic: bool
+            Whether to atomically add roles. This will ensure that multiple
+            operations will always be applied regardless of the current
+            state of the cache.
 
         Raises
         -------
@@ -536,11 +551,18 @@ class Member(discord.abc.Messageable, _BaseUser):
             Removing the roles failed.
         """
 
-        new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
-        for role in roles:
-            try:
-                new_roles.remove(Object(id=role.id))
-            except ValueError:
-                pass
+        if not atomic:
+            new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
+            for role in roles:
+                try:
+                    new_roles.remove(Object(id=role.id))
+                except ValueError:
+                    pass
 
-        yield from self.edit(roles=new_roles, reason=reason)
+            yield from self.edit(roles=new_roles, reason=reason)
+        else:
+            req = self._state.http.remove_role
+            guild_id = self.guild.id
+            user_id = self.id
+            for role in roles:
+                yield from req(guild_id, user_id, role.id, reason=reason)
