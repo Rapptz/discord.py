@@ -124,16 +124,13 @@ class Emoji(Hashable):
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
     managed: bool
         If this emoji is managed by a Twitch integration.
-    guild: :class:`Guild`
-        The guild the emoji belongs to.
-    roles: List[:class:`Role`]
-        A list of :class:`Role` that is allowed to use this emoji. If roles is empty,
-        the emoji is unrestricted.
+    guild_id: int
+        The guild ID the emoji belongs to.
     """
-    __slots__ = ('require_colons', 'managed', 'id', 'name', 'roles', 'guild', '_state')
+    __slots__ = ('require_colons', 'managed', 'id', 'name', '_roles', 'guild_id', '_state')
 
     def __init__(self, *, guild, state, data):
-        self.guild = guild
+        self.guild_id = guild.id
         self._state = state
         self._from_data(data)
 
@@ -142,10 +139,7 @@ class Emoji(Hashable):
         self.managed = emoji['managed']
         self.id = int(emoji['id'])
         self.name = emoji['name']
-        self.roles = emoji.get('roles', [])
-        if self.roles:
-            roles = set(self.roles)
-            self.roles = [role for role in self.guild.roles if role.id in roles]
+        self._roles = set(emoji.get('roles', []))
 
     def _iterator(self):
         for attr in self.__slots__:
@@ -173,6 +167,22 @@ class Emoji(Hashable):
         """Returns a URL version of the emoji."""
         return "https://cdn.discordapp.com/emojis/{0.id}.png".format(self)
 
+    @property
+    def roles(self):
+        """List[:class:`Role`]: A list of roles that is allowed to use this emoji.
+
+        If roles is empty, the emoji is unrestricted.
+        """
+        guild = self.guild
+        if guild is None:
+            return []
+
+        return [role for role in guild.roles if role.id in self._roles]
+
+    @property
+    def guild(self):
+        """:class:`Guild`: The guild this emoji belongs to."""
+        return self._state._get_guild(self.guild_id)
 
     @asyncio.coroutine
     def delete(self, *, reason=None):
