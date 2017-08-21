@@ -433,9 +433,7 @@ class Webhook:
 
     @property
     def created_at(self):
-        """Returns the webhook's creation time in UTC.
-
-        This is when the webhook's discord account was created."""
+        """Returns the webhook's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
@@ -475,7 +473,7 @@ class Webhook:
         Raises
         ------
         InvalidArgument
-            Bad image format passed to ``format` or invalid ``size``.
+            Bad image format passed to ``format`` or invalid ``size``.
         """
         if self.avatar is None:
             # Default is always blurple apparently
@@ -648,5 +646,5 @@ class Webhook:
             return self._adapter.execute_webhook(wait=wait, json=payload)
 
     def execute(self, *args, **kwargs):
-        """An alias for :meth:`.~Webhook.send`."""
+        """An alias for :meth:`~.Webhook.send`."""
         return self.send(*args, **kwargs)
