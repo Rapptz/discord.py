@@ -31,7 +31,6 @@ import sys
 import logging
 import weakref
 import datetime
-from email.utils import parsedate_to_datetime
 from urllib.parse import quote as _uriquote
 
 log = logging.getLogger(__name__)
@@ -161,9 +160,7 @@ class HTTPClient:
                     if remaining == '0' and r.status != 429:
                         # we've depleted our current bucket
                         if header_bypass_delay is None:
-                            now = parsedate_to_datetime(r.headers['Date'])
-                            reset = datetime.datetime.fromtimestamp(int(r.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
-                            delta = (reset - now).total_seconds()
+                            delta = utils._parse_ratelimit_header(r)
                         else:
                             delta = header_bypass_delay
 
@@ -524,6 +521,26 @@ class HTTPClient:
     def delete_channel(self, channel_id, *, reason=None):
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
 
+    # Webhook management
+
+    def create_webhook(self, channel_id, *, name=None, avatar=None):
+        payload = {}
+        if name is not None:
+            payload['name'] = name
+        if avatar is not None:
+            payload['avatar'] = avatar
+
+        return self.request(Route('POST', '/channels/{channel_id}/webhooks', channel_id=channel_id), json=payload)
+
+    def channel_webhooks(self, channel_id):
+        return self.request(Route('GET', '/channels/{channel_id}/webhooks', channel_id=channel_id))
+
+    def guild_webhooks(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/webhooks', guild_id=guild_id))
+
+    def get_webhook(self, webhook_id):
+        return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
+
     # Guild management
 
     def leave_guild(self, guild_id):
@@ -686,7 +703,6 @@ class HTTPClient:
 
     def move_member(self, user_id, guild_id, channel_id, *, reason=None):
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
-
 
     # Relationship related
 

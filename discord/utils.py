@@ -28,6 +28,7 @@ from re import split as re_split
 from .errors import InvalidArgument
 import datetime
 from base64 import b64encode
+from email.utils import parsedate_to_datetime
 import asyncio
 import json
 import warnings, functools
@@ -257,6 +258,11 @@ def _bytes_to_base64_data(data):
 
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+
+def _parse_ratelimit_header(request):
+    now = parsedate_to_datetime(request.headers['Date'])
+    reset = datetime.datetime.fromtimestamp(int(request.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
+    return (reset - now).total_seconds()
 
 @asyncio.coroutine
 def maybe_coroutine(f, *args, **kwargs):

@@ -41,6 +41,7 @@ from collections import namedtuple
 from .embeds import Embed
 from .shard import AutoShardedClient
 from .player import *
+from .webhook import *
 from .voice_client import VoiceClient
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 

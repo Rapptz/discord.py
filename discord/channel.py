@@ -28,6 +28,7 @@ from .enums import ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
 from .errors import ClientException, NoMoreItems
+from .webhook import Webhook
 
 import discord.abc
 
@@ -320,6 +321,66 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
                     count += 1
                     ret.append(msg)
+
+    @asyncio.coroutine
+    def webhooks(self):
+        """|coro|
+
+        Gets the list of webhooks from this channel.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the webhooks.
+
+        Returns
+        --------
+        List[:class:`Webhook`]
+            The webhooks for this channel.
+        """
+
+        data = yield from self._state.http.channel_webhooks(self.id)
+        return [Webhook.from_state(d, state=self._state) for d in data]
+
+    @asyncio.coroutine
+    def create_webhook(self, *, name=None, avatar=None):
+        """|coro|
+
+        Creates a webhook for this channel.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Parameters
+        -------------
+        name: Optional[str]
+            The webhook's name.
+        avatar: Optional[bytes]
+            A *bytes-like* object representing the webhook's default avatar.
+            This operates similarly to :meth:`~ClientUser.edit`.
+
+        Raises
+        -------
+        HTTPException
+            Creating the webhook failed.
+        Forbidden
+            You do not have permissions to create a webhook.
+
+        Returns
+        --------
+        :class:`Webhook`
+            The created webhook.
+        """
+
+        if avatar is not None:
+            avatar = utils._bytes_to_base64_data(avatar)
+
+        if name is not None:
+            name = str(name)
+
+        data = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        return Webhook.from_state(data, state=self._state)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.

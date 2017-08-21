@@ -36,6 +36,7 @@ from .http import HTTPClient
 from .state import ConnectionState
 from . import utils, compat
 from .backoff import ExponentialBackoff
+from .webhook import Webhook
 
 import asyncio
 import aiohttp
@@ -1010,3 +1011,26 @@ class Client:
                        mutual_guilds=mutual_guilds,
                        user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
+
+    @asyncio.coroutine
+    def get_webhook_info(self, webhook_id):
+        """|coro|
+
+        Retrieves a :class:`Webhook` with the specified ID.
+
+        Raises
+        --------
+        HTTPException
+            Retrieving the webhook failed.
+        NotFound
+            Invalid webhook ID.
+        Forbidden
+            You do not have permission to fetch this webhook.
+
+        Returns
+        ---------
+        :class:`Webhook`
+            The webhook you requested.
+        """
+        data = yield from self.http.get_webhook(webhook_id)
+        return Webhook.from_state(data, state=self._connection)

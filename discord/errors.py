@@ -76,7 +76,8 @@ class HTTPException(DiscordException):
     ------------
     response: aiohttp.ClientResponse
         The response of the failed HTTP request. This is an
-        instance of `aiohttp.ClientResponse`__.
+        instance of `aiohttp.ClientResponse`__. In some cases
+        this could also be a ``requests.Response``.
 
         __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
 

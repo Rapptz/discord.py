@@ -1692,6 +1692,29 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
 
+Webhook Support
+------------------
+
+discord.py offers support for creating, editing, and executing webhooks through the :class:`Webhook` class.
+
+.. autoclass:: Webhook
+    :members:
+
+Adapters
+~~~~~~~~~
+
+Adapters allow you to change how the request should be handled. They all build on a single
+interface, :meth:`WebhookAdapter.request`.
+
+.. autoclass:: WebhookAdapter
+    :members:
+
+.. autoclass:: AsyncWebhookAdapter
+    :members:
+
+.. autoclass:: RequestsWebhookAdapter
+    :members:
+
 .. _discord_api_abcs:
 
 Abstract Base Classes
@@ -1985,7 +2008,6 @@ PermissionOverwrite
 
 .. autoclass:: PermissionOverwrite
     :members:
-
 
 Exceptions
 ------------

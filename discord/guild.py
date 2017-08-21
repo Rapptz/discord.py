@@ -43,6 +43,7 @@ from .utils import valid_icon_size
 from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator
+from .webhook import Webhook
 
 VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
@@ -797,6 +798,28 @@ class Guild(Hashable):
 
         data = yield from self._state.http.prune_members(self.id, days, reason=reason)
         return data['pruned']
+
+    @asyncio.coroutine
+    def webhooks(self):
+        """|coro|
+
+        Gets the list of webhooks from this guild.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the webhooks.
+
+        Returns
+        --------
+        List[:class:`Webhook`]
+            The webhooks for this guild.
+        """
+
+        data = yield from self._state.http.guild_webhooks(self.id)
+        return [Webhook.from_state(d, state=self._state) for d in data]
 
     @asyncio.coroutine
     def estimate_pruned_members(self, *, days):
