@@ -647,5 +647,6 @@ class Webhook:
         else:
             return self._adapter.execute_webhook(wait=wait, json=payload)
 
-    execute = send
-    execute.__doc__ = """An alias for :meth:`.~Webhook.send`."""
+    def execute(self, *args, **kwargs):
+        """An alias for :meth:`.~Webhook.send`."""
+        return self.send(*args, **kwargs)
