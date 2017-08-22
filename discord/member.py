@@ -321,6 +321,15 @@ class Member(discord.abc.Messageable, _BaseUser):
         return None
 
     @property
+    def top_hoist(self):
+        """Returns the member's highest hoisted role. If not found, returns None."""
+
+        try:
+            return max([r for r in self.roles if r.hoist])
+        except ValueError:
+            return None
+
+    @property
     def guild_permissions(self):
         """Returns the member's guild permissions.
 
