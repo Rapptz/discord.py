@@ -145,6 +145,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
         if multipart:
             file = multipart.pop('file', None)
+            data = aiohttp.FormData()
             if file:
                 data.add_field('file', file[0], filename=file[1], content_type=file[2])
             for key, value in multipart.items():
