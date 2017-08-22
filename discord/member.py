@@ -539,7 +539,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         reason: Optional[str]
             The reason for removing these roles. Shows up on the audit log.
         atomic: bool
-            Whether to atomically add roles. This will ensure that multiple
+            Whether to atomically remove roles. This will ensure that multiple
             operations will always be applied regardless of the current
             state of the cache.
 
