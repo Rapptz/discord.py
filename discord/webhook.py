@@ -406,7 +406,7 @@ class Webhook:
             The URL is invalid.
         """
 
-        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.]{60,68})', url)
+        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         return cls(m.groupdict(), adapter=adapter)
