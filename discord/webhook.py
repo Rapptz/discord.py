@@ -360,7 +360,7 @@ class Webhook:
 
     @classmethod
     def partial(cls, id, token, *, adapter):
-        """Creates an partial :class:`Webhook`.
+        """Creates a partial :class:`Webhook`.
 
         A partial webhook is just a webhook object with an ID and a token.
 
@@ -418,7 +418,7 @@ class Webhook:
     def guild(self):
         """Optional[:class:`Guild`]: The guild this webhook belongs to.
 
-        If this is an partial webhook, then this will always return ``None``.
+        If this is a partial webhook, then this will always return ``None``.
         """
         return self._state and self._state.get_guild(self.guild_id)
 
@@ -426,7 +426,7 @@ class Webhook:
     def channel(self):
         """Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
 
-        If this is an partial webhook, then this will always return ``None``.
+        If this is a partial webhook, then this will always return ``None``.
         """
         guild = self.guild
         return guild and guild.get_channel(self.channel_id)
