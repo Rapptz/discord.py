@@ -134,6 +134,21 @@ To upload multiple files, you can use the ``files`` keyword argument instead of 
     ]
     await channel.send(files=my_files)
 
+If you want to upload something from a URL, you will have to use an HTTP request using ``aiohttp``
+and then pass an ``io.BytesIO`` instance to :class:`File` like so:
+
+.. code-block:: python3
+
+    import io
+    import aiohttp
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(my_url) as resp:
+            if resp.status != 200:
+                return await channel.send('Could not download file...')
+            data = io.BytesIO(await resp.read())
+            await channel.send(file=discord.File(data, 'cool_image.png'))
+
 
 How can I add a reaction to a message?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
