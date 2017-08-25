@@ -53,7 +53,7 @@ class WebhookAdapter:
         self._request_url = '{0.BASE}/webhooks/{1}/{2}'.format(self, webhook.id, webhook.token)
         self.webhook = webhook
 
-    def request(self, verb, url, json=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None):
         """Actually does the request.
 
         Subclasses must implement this.
@@ -70,7 +70,7 @@ class WebhookAdapter:
             the request. If a filename is being uploaded, then it will
             be under a ``file`` key which will have a 3-element tuple
             denoting ``(filename, file, content_type)``.
-        json: Optional[dict]
+        payload: Optional[dict]
             The JSON to send with the request, if any.
         """
         raise NotImplementedError()
@@ -78,8 +78,8 @@ class WebhookAdapter:
     def delete_webhook(self):
         return self.request('DELETE', self._request_url)
 
-    def edit_webhook(self, **json):
-        return self.request('PATCH', self._request_url, json=json)
+    def edit_webhook(self, **payload):
+        return self.request('PATCH', self._request_url, payload=payload)
 
     def handle_execution_response(self, data, *, wait):
         """Transforms the webhook execution response into something
@@ -103,19 +103,19 @@ class WebhookAdapter:
         # mocks a ConnectionState for appropriate use for Message
         return BaseUser(state=self, data=data)
 
-    def execute_webhook(self, *, json, wait=False, file=None):
+    def execute_webhook(self, *, payload, wait=False, file=None):
         if file is not None:
             multipart = {
                 'file': file,
-                'payload_json': utils.to_json(json)
+                'payload_json': utils.to_json(payload)
             }
             data = None
         else:
-            data = json
+            data = payload
             multipart = None
 
         url = '%s?wait=%d' % (self._request_url, wait)
-        maybe_coro = self.request('POST', url, multipart=multipart, json=data)
+        maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
         return self.handle_execution_response(maybe_coro, wait=wait)
 
 class AsyncWebhookAdapter(WebhookAdapter):
@@ -136,12 +136,12 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.loop = session.loop
 
     @asyncio.coroutine
-    def request(self, verb, url, json=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None):
         headers = {}
         data = None
-        if json:
+        if payload:
             headers['Content-Type'] = 'application/json'
-            data = utils.to_json(json)
+            data = utils.to_json(payload)
 
         if multipart:
             file = multipart.pop('file', None)
@@ -219,12 +219,12 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, json=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None):
         headers = {}
         data = None
-        if json:
+        if payload:
             headers['Content-Type'] = 'application/json'
-            data = utils.to_json(json)
+            data = utils.to_json(payload)
 
         for tries in range(5):
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
@@ -640,11 +640,11 @@ class Webhook:
         if file is not None:
             try:
                 to_pass = (file.open_file(), file.filename, 'application/octet-stream')
-                return self._adapter.execute_webhook(wait=wait, file=to_pass, json=payload)
+                return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
             finally:
                 file.close()
         else:
-            return self._adapter.execute_webhook(wait=wait, json=payload)
+            return self._adapter.execute_webhook(wait=wait, payload=payload)
 
     def execute(self, *args, **kwargs):
         """An alias for :meth:`~.Webhook.send`."""
