@@ -92,6 +92,10 @@ class CooldownMapping:
     def valid(self):
         return self._cooldown is not None
 
+    @classmethod
+    def from_cooldown(cls, rate, per, type):
+        return cls(Cooldown(rate, per, type))
+
     def _bucket_key(self, ctx):
         msg = ctx.message
         bucket_type = self._cooldown.type
