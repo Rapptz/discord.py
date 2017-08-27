@@ -323,7 +323,7 @@ class Permissions:
 
     @property
     def manage_messages(self):
-        """Returns True if a user can delete messages from a text channel. Note that there are currently no ways to edit other people's messages."""
+        """Returns True if a user can delete or pin messages in a text channel. Note that there are currently no ways to edit other people's messages."""
         return self._bit(13)
 
     @manage_messages.setter
