@@ -423,7 +423,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a :class:`Guild` is either created by the :class:`Client` or when the
     :class:`Client` joins a guild.
 
-    :param guild: The class:`Guild` that was joined.
+    :param guild: The :class:`Guild` that was joined.
 
 .. function:: on_guild_remove(guild)
 
