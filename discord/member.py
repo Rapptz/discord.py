@@ -139,7 +139,8 @@ class Member(discord.abc.Messageable, _BaseUser):
     ----------
     roles
         A list of :class:`Role` that the member belongs to. Note that the first element of this
-        list is always the default '@everyone' role.
+        list is always the default '@everyone' role. These roles are sorted by their position
+        in the role hierarchy.
     joined_at : `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
@@ -196,8 +197,8 @@ class Member(discord.abc.Messageable, _BaseUser):
             if role is not None:
                 self.roles.append(role)
 
-        # sort the roles by ID since they can be "randomised"
-        self.roles.sort(key=lambda r: r.id)
+        # sort the roles by hierarchy since they can be "randomised"
+        self.roles.sort()
 
     def _update(self, data, user=None):
         if user:
@@ -238,21 +239,15 @@ class Member(discord.abc.Messageable, _BaseUser):
         There is an alias for this under ``color``.
         """
 
-        default_colour = Colour.default()
         roles = self.roles[1:] # remove @everyone
 
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
         # is chosen instead
-        if roles:
-            roles = sorted(roles, reverse=True)
-            for role in roles:
-                if role.colour == default_colour:
-                    continue
-                else:
-                    return role.colour
-
-        return default_colour
+        for role in reversed(roles):
+            if role.colour.value:
+                return role.colour
+        return Colour.default()
 
     color = colour
 
@@ -314,11 +309,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         This is useful for figuring where a member stands in the role
         hierarchy chain.
         """
-
-        if self.roles:
-            roles = sorted(self.roles, reverse=True)
-            return roles[0]
-        return None
+        return self.roles[-1]
 
     @property
     def guild_permissions(self):
