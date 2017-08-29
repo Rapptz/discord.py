@@ -173,7 +173,7 @@ class Embed:
 
     @property
     def footer(self):
-        """Returns a ``EmbedProxy`` denoting the footer contents.
+        """Returns an ``EmbedProxy`` denoting the footer contents.
 
         See :meth:`set_footer` for possible values you can access.
 
@@ -206,7 +206,7 @@ class Embed:
 
     @property
     def image(self):
-        """Returns a ``EmbedProxy`` denoting the image contents.
+        """Returns an ``EmbedProxy`` denoting the image contents.
 
         Possible attributes you can access are:
 
@@ -239,7 +239,7 @@ class Embed:
 
     @property
     def thumbnail(self):
-        """Returns a ``EmbedProxy`` denoting the thumbnail contents.
+        """Returns an ``EmbedProxy`` denoting the thumbnail contents.
 
         Possible attributes you can access are:
 
@@ -272,7 +272,7 @@ class Embed:
 
     @property
     def video(self):
-        """Returns a ``EmbedProxy`` denoting the video contents.
+        """Returns an ``EmbedProxy`` denoting the video contents.
 
         Possible attributes include:
 
@@ -286,7 +286,7 @@ class Embed:
 
     @property
     def provider(self):
-        """Returns a ``EmbedProxy`` denoting the provider contents.
+        """Returns an ``EmbedProxy`` denoting the provider contents.
 
         The only attributes that might be accessed are ``name`` and ``url``.
 
@@ -296,7 +296,7 @@ class Embed:
 
     @property
     def author(self):
-        """Returns a ``EmbedProxy`` denoting the author contents.
+        """Returns an ``EmbedProxy`` denoting the author contents.
 
         See :meth:`set_author` for possible values you can access.
 
