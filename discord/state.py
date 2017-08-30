@@ -410,7 +410,7 @@ class ConnectionState:
             if role is not None:
                 roles.append(role)
 
-        data['roles'] = sorted(roles, key=lambda r: int(r.id))
+        data['roles'] = sorted(roles)
         return Member(server=server, **data)
 
     def parse_guild_member_add(self, data):
@@ -463,7 +463,7 @@ class ConnectionState:
                     member.roles.append(role)
 
             # sort the roles by ID since they can be "randomised"
-            member.roles.sort(key=lambda r: int(r.id))
+            member.roles.sort()
             self.dispatch('member_update', old_member, member)
 
     def parse_guild_emojis_update(self, data):
