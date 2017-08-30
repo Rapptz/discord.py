@@ -431,7 +431,9 @@ class HTTPClient:
     def kick(self, user_id, guild_id, reason=None):
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         if reason:
-            return self.request(r, params={'reason': reason })
+            # thanks aiohttp
+            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+
         return self.request(r)
 
     def ban(self, user_id, guild_id, delete_message_days=1, reason=None):
@@ -439,8 +441,10 @@ class HTTPClient:
         params = {
             'delete-message-days': delete_message_days,
         }
+
         if reason:
-            params['reason'] = reason
+            # thanks aiohttp
+            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
 
         return self.request(r, params=params)
 
