@@ -197,7 +197,7 @@ def get(iterable, **attrs):
 
     .. code-block:: python3
 
-        channel = discord.utils.get(guild.channels, name='Foo', type=ChannelType.voice)
+        channel = discord.utils.get(guild.voice_channels, name='Foo', bitrate=64000)
 
     Nested attribute matching:
 
