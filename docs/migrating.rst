@@ -649,7 +649,7 @@ arguments.
 
 For example, to wait for a reaction: ::
 
-    reaction, user = await client.wait_for('reaction_add', check=lambda u, r: u.id == 176995180300206080)
+    reaction, user = await client.wait_for('reaction_add', check=lambda r, u: u.id == 176995180300206080)
 
     # use user and reaction
 
