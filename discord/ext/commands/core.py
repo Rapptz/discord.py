@@ -1116,6 +1116,9 @@ def has_permissions(**perms):
     The permissions passed in must be exactly like the properties shown under
     :class:`.discord.Permissions`.
 
+    This check raises a special exception, :exc:`.MissingPermissions`
+    that is derived from :exc:`.CheckFailure`.
+
     Parameters
     ------------
     perms
@@ -1135,7 +1138,13 @@ def has_permissions(**perms):
     def predicate(ctx):
         ch = ctx.channel
         permissions = ch.permissions_for(ctx.author)
-        return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
+
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+
+        if not missing:
+            return True
+
+        raise MissingPermissions(missing)
 
     return check(predicate)
 
@@ -1169,12 +1178,22 @@ def bot_has_any_role(*names):
 def bot_has_permissions(**perms):
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
+
+    This check raises a special exception, :exc:`.BotMissingPermissions`
+    that is derived from :exc:`.CheckFailure`.
     """
     def predicate(ctx):
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
         permissions = ctx.channel.permissions_for(me)
-        return all(getattr(permissions, perm, None) == value for perm, value in perms.items())
+
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+
+        if not missing:
+            return True
+
+        raise BotMissingPermissions(missing)
+
     return check(predicate)
 
 def guild_only():
