@@ -214,3 +214,9 @@ Errors
 .. autoexception:: discord.ext.commands.NotOwner
     :members:
 
+.. autoexception:: discord.ext.commands.MissingPermissions
+    :members:
+
+.. autoexception:: discord.ext.commands.BotMissingPermissions
+    :members:
+
