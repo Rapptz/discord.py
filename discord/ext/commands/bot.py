@@ -521,7 +521,7 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog):
+    def add_cog(self, cog, display_name=None):
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
@@ -540,8 +540,12 @@ class BotBase(GroupMixin):
         -----------
         cog
             The cog to register to the bot.
+        display_name: str
+            The name to be displayed by the help formatter.
+            If not specified, this is the class name.
         """
 
+        type(cog).__name__ = display_name if display_name is not None else type(cog.__name__)
         self.cogs[type(cog).__name__] = cog
 
         try:
