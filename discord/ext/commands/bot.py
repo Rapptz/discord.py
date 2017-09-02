@@ -545,7 +545,7 @@ class BotBase(GroupMixin):
             If not specified, this is the class name.
         """
 
-        type(cog).__name__ = display_name if display_name is not None else type(cog).__name__
+        type(cog).__name__ = display_name if display_name else type(cog).__name__
         self.cogs[type(cog).__name__] = cog
 
         try:
