@@ -521,7 +521,7 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog, display_name=None):
+    def add_cog(self, cog, display_name: str=None):
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
