@@ -2063,7 +2063,7 @@ class Client:
         yield from self.http.move_channel_position(channel.server.id, payload)
 
     @asyncio.coroutine
-    def create_channel(self, server, name, *overwrites, type=None):
+    def create_channel(self, server, name, *overwrites, **kwargs):
         """|coro|
 
         Creates a :class:`Channel` in the specified :class:`Server`.
@@ -2133,9 +2133,10 @@ class Client:
             The channel that was just created. This channel is
             different than the one that will be added in cache.
         """
+        type_ = kwargs.pop('type')
 
-        if type is None:
-            type = ChannelType.text
+        if type_ is None:
+            type_ = ChannelType.text
 
         perms = []
         for overwrite in overwrites:
@@ -2160,7 +2161,7 @@ class Client:
 
             perms.append(payload)
 
-        data = yield from self.http.create_channel(server.id, name, str(type), permission_overwrites=perms)
+        data = yield from self.http.create_channel(server.id, name, str(type_), permission_overwrites=perms)
         channel = Channel(server=server, **data)
         return channel
 
