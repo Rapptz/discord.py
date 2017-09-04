@@ -541,6 +541,34 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param before: The previous relationship status.
     :param after: The updated relationship status.
 
+.. function:: on_receive_opus(voice_client, voice_packet)
+
+    Called before decoding the audio when a user speaks in a voice channel that
+    you are connected to.
+    
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is talking in.
+    :param voice_packet: The :class:`VoicePacket` containing the raw opus data.
+
+.. function:: on_receive_pcm(voice_client, voice_packet)
+
+    Called when a user speaks in a voice channel that you are connected to.
+    
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is talking in.
+    :param voice_packet: The :class:`VoicePacket` containing the decoded PCM
+                         data in a sterio, 48kHz, signed, 16 bit format.
+
+.. function:: on_voice_speaking_state(voice_client, user, speaking)
+
+    Called when a user starts or stops speaking in a voice channel that you are
+    connected to.
+
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is in.
+    :param user: The :class:`User` who has started or stopped speaking.
+    :param speaking: A `bool` representing if the user is now speaking or not.
+
 .. _discord-api-utils:
 
 Utility Functions
