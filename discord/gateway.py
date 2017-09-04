@@ -661,12 +661,14 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
                 self._dispatch('voice_speaking_state', self._connection, user, data['speaking'])
 
                 # Used for continuous streams
-                for f in self._connection._speaking_listeners:
-                    f(user, data['speaking'])
+                for uid in self._connection._speaking_listeners:
+                    if uid == user_id:
+                        for f in self._connection._speaking_listeners[uid]:
+                            f(user, data['speaking'])
 
                 if self._connection.channel.id not in self._connection._ssrc_lookup:
-                    self._connection._ssrc_lookup[self._connection.channel.id] = {}
-                self._connection._ssrc_lookup[self._connection.channel.id][ssrc] = user_id
+                    self._connection._ssrc_lookup[self._connection.guild.id] = {}
+                self._connection._ssrc_lookup[self._connection.guild.id][ssrc] = user_id
 
     @asyncio.coroutine
     def initial_connection(self, data):

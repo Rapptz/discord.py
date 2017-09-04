@@ -350,33 +350,23 @@ class Decoder:
         if frame_size is None:
             frames = self._packet_get_nb_frames(data)
             samples_per_frame = self._packet_get_samples_per_frame(data)
-            # note: channels could be different from self.channels
-            # this doesn't actually get used in frame_size, but we get
-            # the value for debugging
+
             channels = self._packet_get_nb_channels(data)
             frame_size = frames * samples_per_frame
-            log.debug('detected frame_size {} ({} frames, {} samples per frame, {} channels)'.format(frame_size, frames, samples_per_frame, channels))
+            log.debug('detected frame_size %d (%d frames, %d samples per frame, %d channels)', frame_size, frames, samples_per_frame, channels)
 
-        # note: python-opus also multiplies this value by
-        # ctypes.sizeof(decode_ctype) but that appears to be wrong
         pcm_size = frame_size * self.channels
         pcm = (decode_ctype * pcm_size)()
         pcm_ptr = ctypes.cast(pcm, ctypes.POINTER(decode_ctype))
 
-        decode_fec = int(bool(decode_fec))
+        decode_fec = 1 if decode_fec else 0
 
         result = decode_func(self._state, data, len(data), pcm_ptr, frame_size, decode_fec)
         if result < 0:
             log.debug('error happened in decode')
             raise OpusError(result, verbose=False)
 
-        # note: I'm not sure exactly how to interpret result. It appears to be
-        # the number of samples decoded, but if the packet was only 1 channel
-        # and the decoder was created with 2 channels, the actual output
-        # appears to be 2 * result samples (same audio on each channel).
-        # Regardless, the way we've created the pcm buffer, it should be
-        # completely filled.
-        log.debug('opus decode result: {} (total buf size: {})'.format(result, len(pcm)))
+        log.debug('opus decode result: %d (total buf size: %d)', result, len(pcm))
         return array.array(arr_type, pcm).tobytes()
 
     def decode(self, data, frame_size=None, decode_fec=False):

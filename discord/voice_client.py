@@ -85,8 +85,12 @@ class VoicePacket:
     pcm : Optional[bytes]
         The decoded PCM data.
     """
+
+    # Make the class slotted to save memory
+    __slots__ = ('sequence', 'timestamp', 'ssrc', 'buff', 'user', 'pcm')
+
     # Struct format of the packet metadata
-    _FORMAT = '>HHII'
+    _FORMAT = struct.Struct('>HHII')
     # Packets should start with b'\x80\x78' (32888 as a big endian ushort)
     _CHECK = 32888
     # Some packets will start with b'\x90\x78' (36984)
@@ -105,7 +109,7 @@ class VoicePacket:
             raise InvalidVoicePacket('packet is too small: {}'.format(packet))
 
         # Unpack header
-        check, seq, ts, ssrc = struct.unpack_from(cls._FORMAT, packet)
+        check, seq, ts, ssrc = cls._FORMAT.unpack(packet)
         header = packet[:12]
         buff = packet[12:]
 
@@ -117,8 +121,13 @@ class VoicePacket:
         # Decrypt data
         nonce = bytearray(24)
         nonce[:12] = header
-        box = nacl.secret.SecretBox(bytes(voice_client.secret_key))
-        buff = box.decrypt(bytes(buff), bytes(nonce))
+
+        try:
+            box = nacl.secret.SecretBox(bytes(voice_client.secret_key))
+            buff = box.decrypt(bytes(buff), bytes(nonce))
+        except Exception as e:
+            log.debug('VoicePacket.unpack failed with %s', e)
+            return None
 
         # Packets starting with b'\x90' need the first 8 bytes ignored
         if check == cls._CHECK2:
@@ -127,8 +136,8 @@ class VoicePacket:
         # Lookup the SSRC and then get the user
         user_id = 0
         if voice_client.channel.id in voice_client._ssrc_lookup:
-            if ssrc in voice_client._ssrc_lookup[voice_client.channel.id]:
-                user_id = int(voice_client._ssrc_lookup[voice_client.channel.id][ssrc])
+            if ssrc in voice_client._ssrc_lookup[voice_client.guild.id]:
+                user_id = int(voice_client._ssrc_lookup[voice_client.guild.id][ssrc])
         user = voice_client._state.get_user(user_id)
 
         # Create a `VoicePacket` instance and return it.
@@ -193,8 +202,8 @@ class VoiceClient:
         self._ssrc_lookup = {}
         self._voice_receiver = None
 
-        self._pcm_listeners = []
-        self._speaking_listeners = []
+        self._pcm_listeners = {}
+        self._speaking_listeners = {}
 
     warn_nacl = not has_nacl
 
@@ -360,7 +369,7 @@ class VoiceClient:
             self._voice_receiver.cancel()
             self._voice_receiver = None
         self.decoders.clear()
-        self._pcm_listeners = []
+        self._pcm_listeners = {}
 
         self._connected.clear()
 
@@ -423,15 +432,16 @@ class VoiceClient:
 
         def listener(vc, vp):
             nonlocal buffer, user_id, last_packet
-            if user_id == (None if vp.user is None else vp.user.id):
-                last_packet = time.time()
-                heapq.heappush(buffer, (vp.timestamp, vp))
+            last_packet = time.time()
+            buffer.append(vp.timestamp, vp)
 
-        self._pcm_listeners.append(listener)
+        if user_id not in self._pcm_listeners:
+            self._pcm_listeners[user_id] = []
+        self._pcm_listeners[user_id].append(listener)
 
         while time.time() - last_packet < timeout or last_packet == 0:
             yield from asyncio.sleep(0.1)  # Continue to fill up the buffer.
-        self._pcm_listeners.remove(listener)
+        self._pcm_listeners[user_id].remove(listener)
 
         buffer.sort()
         data = bytearray()
@@ -495,25 +505,24 @@ class VoiceClient:
 
         def listener(vc, vp):
             nonlocal voice_buffer, user_id, last_packet
-            if user_id == (None if vp.user is None else vp.user.id):
-                last_packet = vp.timestamp
-                heapq.heappush(voice_buffer, (vp.timestamp, vp))
+            last_packet = vp.timestamp
+            heapq.heappush(voice_buffer, (vp.timestamp, vp))
 
-                if len(voice_buffer) > buffer_size:
-                    packet = heapq.heappop(voice_buffer)[1]
+            if len(voice_buffer) > buffer_size:
+                packet = heapq.heappop(voice_buffer)[1]
 
-                    if last_packet == 0:
-                        delta = 0
-                    else:
-                        delta = (packet.timestamp - last_packet) - 960
+                if last_packet == 0:
+                    delta = 0
+                else:
+                    delta = (packet.timestamp - last_packet) - 960
 
-                    if delta > 0:  # Ignore skipped packets
-                        data = bytearray([0] * delta * 4)
-                        data += packet.pcm
+                if delta > 0:  # Ignore skipped packets
+                    data = bytearray([0] * delta * 4)
+                    data += packet.pcm
 
-                        file_object.write(data)
+                    file_object.write(data)
 
-                        last_packet = packet.timestamp
+                    last_packet = packet.timestamp
 
         def speaking_listener(user, speaking):
             nonlocal last_speaking, user_id
@@ -528,8 +537,13 @@ class VoiceClient:
                 else:
                     last_speaking = time.time()
 
-        self._pcm_listeners.append(listener)
-        self._speaking_listeners.append(speaking_listener)
+        if user_id not in self._pcm_listeners:
+            self._pcm_listeners[user_id] = []
+        self._pcm_listeners[user_id].append(listener)
+
+        if user_id not in self._speaking_listeners:
+            self._speaking_listeners[user_id] = []
+        self._speaking_listeners[uesr_id].append(speaking_listener)
 
     @asyncio.coroutine
     def _voice_receive_loop(self):
@@ -543,10 +557,18 @@ class VoiceClient:
         try:
             while self.is_connected():
                 packet = yield from self.loop.sock_recv(self.socket, 65536)
-                log.debug('Received Voice Packet of {} bytes'.format(len(packet)))
+                log.debug('Received Voice Packet of %d bytes', len(packet))
 
-                vp = VoicePacket.unpack(packet, self)
-                log.debug('Decoded Voice Packet: {}'.format(vp))
+                try:
+                    vp = VoicePacket.unpack(packet, self)
+                except InvalidVoicePacket as e:
+                    log.warning(e)
+                    continue
+
+                if vp is None:
+                    log.debug('Voice packet failed to decode.')
+                    continue
+                log.debug('Decoded Voice Packet: %s', vp)
 
                 if vp.ssrc not in self.decoders:
                     self.decoders[vp.ssrc] = opus.Decoder()
@@ -556,15 +578,20 @@ class VoiceClient:
 
                 # TODO: re-order packets
 
-                pcm = self.decoders[vp.ssrc].decode(vp.buff)
-                log.debug('Opus decoded {} bytes of pcm data'.format(len(pcm)))
+                try:
+                    pcm = self.decoders[vp.ssrc].decode(vp.buff)
+                except Exception as e:
+                    log.debug('Opus decode failed with %s', e)
+                log.debug('Opus decoded %d bytes of pcm data', len(pcm))
 
                 vp.pcm = pcm
                 self._state.dispatch('receive_pcm', self, vp)
 
                 # Send PCM data to `get_voice_data`(s):
-                for f in self._pcm_listeners:
-                    f(self, vp)
+                for uid in self._pcm_listeners:
+                    if vp.user is not None and uid = vp.user.id:
+                        for f in self._pcm_listeners[uid]:
+                            f(self, vp)
         except asyncio.CancelledError:
             pass
 
