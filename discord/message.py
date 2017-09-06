@@ -129,6 +129,11 @@ class Message:
     channel
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
+    member
+        A :class:`Member` that sent the message. None if :attr:`channel` is a
+        private channel.
+    user
+        A :class:`User` that sent the message.
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
@@ -172,8 +177,8 @@ class Message:
     """
 
     __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
-                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
+                  'mention_everyone', 'embeds', 'id', 'mentions', 'author', 'member',
+                  'user', '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
                   '_cs_system_content', '_cs_guild', '_state', 'reactions' )
@@ -260,10 +265,16 @@ class Message:
 
     def _handle_author(self, author):
         self.author = self._state.store_user(author)
+        self.user = self._state.store_user(author)
         if self.guild is not None:
             found = self.guild.get_member(self.author.id)
             if found is not None:
                 self.author = found
+                self.member = found
+            else:
+                self.member = None
+        else:
+            self.member = None
 
     def _handle_mentions(self, mentions):
         self.mentions = []
