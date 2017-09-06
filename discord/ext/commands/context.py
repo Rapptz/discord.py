@@ -202,13 +202,23 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def guild(self):
-        """Returns the guild associated with this context's command. None if not available."""
+        """Returns the guild associated with this context's command. None if not available. Shorthand for :attr:`Message.guild`."""
         return self.message.guild
 
     @discord.utils.cached_property
     def channel(self):
         """Returns the channel associated with this context's command. Shorthand for :attr:`Message.channel`."""
         return self.message.channel
+
+    @discord.utils.cached_property
+    def member(self):
+        """Returns the member associated with this context's command. None if not available. Shorthand for :attr:`Message.member`."""
+        return self.message.member
+
+    @discord.utils.cached_property
+    def user(self):
+        """Returns the user associated with this context's command. Shorthand for :attr:`Message.user`."""
+        return self.message.user
 
     @discord.utils.cached_property
     def author(self):
