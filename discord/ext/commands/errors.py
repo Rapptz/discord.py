@@ -90,6 +90,11 @@ class BadArgument(UserInputError):
     """
     pass
 
+class ArgumentParseFailure(BadArgument):
+    """Exception raised when the argument parser fails.
+    """
+    pass
+
 class ConversionFailure(BadArgument):
     """Exception raised whenm a :func:`.Converter.convert` method fails.
 
