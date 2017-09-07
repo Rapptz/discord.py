@@ -29,7 +29,7 @@ import asyncio
 import re
 import inspect
 
-from .errors import BadArgument, NoPrivateMessage
+from .errors import ConversionFailure, NoPrivateMessage
 from .view import StringView
 
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
@@ -120,7 +120,9 @@ class MemberConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
         if result is None:
-            raise BadArgument('Member "{}" not found'.format(argument))
+            raise ConversionFailure('Member "{}" not found'.format(argument),
+                                    argument=argument,
+                                    converter=self.__class__)
 
         return result
 
@@ -160,7 +162,9 @@ class UserConverter(IDConverter):
             result = discord.utils.find(predicate, state._users.values())
 
         if result is None:
-            raise BadArgument('User "{}" not found'.format(argument))
+            raise ConversionFailure('User "{}" not found'.format(argument),
+                                    argument=argument,
+                                    converter=self.__class__)
 
         return result
 
@@ -200,7 +204,9 @@ class TextChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.TextChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ConversionFailure('Channel "{}" not found.'.format(argument),
+                                    argument=argument,
+                                    converter=self.__class__)
 
         return result
 
@@ -239,7 +245,9 @@ class VoiceChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.VoiceChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ConversionFailure('Channel "{}" not found.'.format(argument),
+                                    argument=argument,
+                                    converter=self.__class__)
 
         return result
 
@@ -307,7 +315,9 @@ class ColourConverter(Converter):
         except ValueError:
             method = getattr(discord.Colour, arg.replace(' ', '_'), None)
             if method is None or not inspect.ismethod(method):
-                raise BadArgument('Colour "{}" is invalid.'.format(arg))
+                raise ConversionFailure('Colour "{}" is invalid.'.format(arg),
+                                        argument=argument,
+                                        converter=self.__class__)
             return method()
 
 class RoleConverter(IDConverter):
@@ -333,7 +343,9 @@ class RoleConverter(IDConverter):
         params = dict(id=int(match.group(1))) if match else dict(name=argument)
         result = discord.utils.get(guild.roles, **params)
         if result is None:
-            raise BadArgument('Role "{}" not found.'.format(argument))
+            raise ConversionFailure('Role "{}" not found.'.format(argument),
+                                    argument=argument,
+                                    converter=self.__class__)
         return result
 
 class GameConverter(Converter):
@@ -353,7 +365,9 @@ class InviteConverter(Converter):
             invite = yield from ctx.bot.get_invite(argument)
             return invite
         except Exception as e:
-            raise BadArgument('Invite is invalid or expired') from e
+            raise ConversionFailure('Invite is invalid or expired',
+                                    argument=argument,
+                                    converter=self.__class__) from e
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.
@@ -393,7 +407,9 @@ class EmojiConverter(IDConverter):
                 result = discord.utils.get(bot.emojis, id=emoji_id)
 
         if result is None:
-            raise BadArgument('Emoji "{}" not found.'.format(argument))
+            raise ConversionFailure('Emoji "{}" not found.'.format(argument),
+                                    argument=argument,
+                                    converter=self.__class__)
 
         return result
 

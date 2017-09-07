@@ -25,12 +25,11 @@ DEALINGS IN THE SOFTWARE.
 
 from discord.errors import DiscordException
 
-
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
-           'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
+           'ConversionFailure', 'NoPrivateMessage', 'CheckFailure',
+           'CommandNotFound', 'DisabledCommand', 'CommandInvokeError',
            'UserInputError', 'CommandOnCooldown', 'NotOwner',
-           'MissingPermissions', 'BotMissingPermissions']
+           'TooManyArguments', 'MissingPermissions', 'BotMissingPermissions' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -90,6 +89,21 @@ class BadArgument(UserInputError):
     on an argument to pass into a command.
     """
     pass
+
+class ConversionFailure(BadArgument):
+    """Exception raised whenm a :func:`.Converter.convert` method fails.
+
+    Attributes
+    -----------
+    argument: str
+        The argument which the user passed in.
+    converter: :class:`.Converter`
+        The converter that failed.
+    """
+    def __init__(self, *args, **kwargs):
+        self.argument = kwargs.pop("argument", None)
+        self.converter = kwargs.pop("converter", None)
+        super().__init__(*args)
 
 class CheckFailure(CommandError):
     """Exception raised when the predicates in :attr:`.Command.checks` have failed."""
