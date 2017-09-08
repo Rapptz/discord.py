@@ -495,7 +495,7 @@ class Webhook:
 
         Deletes this Webhook.
 
-        If the webhook is constructed with a `RequestsWebhookAdapter` then this is
+        If the webhook is constructed with a :class:`RequestsWebhookAdapter` then this is
         not a coroutine.
 
         Raises
@@ -514,7 +514,7 @@ class Webhook:
 
         Edits this Webhook.
 
-        If the webhook is constructed with a `RequestsWebhookAdapter` then this is
+        If the webhook is constructed with a :class:`RequestsWebhookAdapter` then this is
         not a coroutine.
 
         Parameters
@@ -559,9 +559,12 @@ class Webhook:
 
     def send(self, content=None, *, wait=False, username=None, avatar_url=None,
                                     tts=False, file=None, embed=None, embeds=None):
-        """|coro|
+        """|maybecoro|
 
         Sends a message using the webhook.
+
+        If the webhook is constructed with a :class:`RequestsWebhookAdapter` then this is
+        not a coroutine.
 
         The content must be a type that can convert to a string through ``str(content)``.
 
@@ -576,26 +579,26 @@ class Webhook:
         ------------
         content
             The content of the message to send.
-        tts: bool
-            Indicates if the message should be sent using text-to-speech.
-        embed: :class:`Embed`
-            The rich embed for the content to send. This cannot be mixed with
-            ``embeds`` parameter.
-        embeds: List[:class:`Embed`]
-            A list of embeds to send with the content. Maximum of 10. This cannot
-            be mixed with the ``embed`` parameter.
-        file: :class:`File`
-            The file to upload.
+        wait: bool
+            Whether the server should wait before sending a response. This essentially
+            means that the return type of this function changes from ``None`` to
+            a :class:`Message` if set to ``True``.
         username: str
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
         avatar_url: str
             The avatar URL to send with this message. If no avatar URL is provided
             then the default avatar for the webhook is used.
-        wait: bool
-            Whether the server should wait before sending a response. This essentially
-            means that the return type of this function changes from ``None`` to
-            a :class:`Message` if set to ``True``.
+        tts: bool
+            Indicates if the message should be sent using text-to-speech.
+        file: :class:`File`
+            The file to upload.
+        embed: :class:`Embed`
+            The rich embed for the content to send. This cannot be mixed with
+            ``embeds`` parameter.
+        embeds: List[:class:`Embed`]
+            A list of embeds to send with the content. Maximum of 10. This cannot
+            be mixed with the ``embed`` parameter.
 
         Raises
         --------
@@ -606,8 +609,8 @@ class Webhook:
         Forbidden
             The authorization token for the webhook is incorrect.
         InvalidArgument
-            You specified both ``file`` and ``files`` or the length of
-            ``files`` was invalid.
+            You specified both ``embed`` and ``embeds`` or the length of
+            ``embeds`` was invalid.
 
         Returns
         ---------
