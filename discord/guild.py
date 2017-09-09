@@ -249,10 +249,11 @@ class Guild(Hashable):
             for c in channels:
                 if c['type'] == ChannelType.text.value:
                     channel = TextChannel(guild=self, data=c, state=self._state)
-                else:
+                    self._add_channel(channel)
+                elif c['type'] == ChannelType.voice.value:
                     channel = VoiceChannel(guild=self, data=c, state=self._state)
+                    self._add_channel(channel)
 
-                self._add_channel(channel)
 
     @property
     def channels(self):

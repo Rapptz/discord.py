@@ -496,6 +496,10 @@ class ConnectionState:
             guild_id = utils._get_as_snowflake(data, 'guild_id')
             guild = self._get_guild(guild_id)
             if guild is not None:
+                if factory is None:
+                    log.warning('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
+                    return
+
                 channel = factory(guild=guild, state=self, data=data)
                 guild._add_channel(channel)
                 self.dispatch('guild_channel_create', channel)
