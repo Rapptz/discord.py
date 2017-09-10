@@ -190,6 +190,12 @@ Errors
 .. autoexception:: discord.ext.commands.BadArgument
     :members:
 
+.. autoexception:: discord.ext.commands.ArgumentParseFailure
+    :members:
+
+.. autoexception:: discord.ext.commands.ConversionFailure
+    :members:
+
 .. autoexception:: discord.ext.commands.NoPrivateMessage
     :members:
 

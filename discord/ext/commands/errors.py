@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
 from discord.errors import DiscordException
 
 __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'ConversionFailure', 'NoPrivateMessage', 'CheckFailure',
-           'CommandNotFound', 'DisabledCommand', 'CommandInvokeError',
-           'UserInputError', 'CommandOnCooldown', 'NotOwner',
-           'TooManyArguments', 'MissingPermissions', 'BotMissingPermissions' ]
+           'ArgumentParseFailure', 'ConversionFailure', 'NoPrivateMessage',
+           'CheckFailure', 'CommandNotFound', 'DisabledCommand',
+           'CommandInvokeError', 'UserInputError', 'CommandOnCooldown',
+           'NotOwner', 'TooManyArguments', 'MissingPermissions',
+           'BotMissingPermissions' ]
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -92,11 +93,15 @@ class BadArgument(UserInputError):
 
 class ArgumentParseFailure(BadArgument):
     """Exception raised when the argument parser fails.
+
+    This is a subclass of :class:`.BadArgument`.
     """
     pass
 
 class ConversionFailure(BadArgument):
-    """Exception raised whenm a :func:`.Converter.convert` method fails.
+    """Exception raised when a :func:`.Converter.convert` method fails.
+
+    This is a subclass of :class:`.BadArgument`.
 
     Attributes
     -----------
@@ -105,10 +110,10 @@ class ConversionFailure(BadArgument):
     converter: :class:`.Converter`
         The converter that failed.
     """
-    def __init__(self, *args, **kwargs):
-        self.argument = kwargs.pop("argument", None)
-        self.converter = kwargs.pop("converter", None)
-        super().__init__(*args)
+    def __init__(self, argument=None, converter=None, message=None, *args):
+        self.argument = argument
+        self.converter = converter
+        super().__init__(message, *args)
 
 class CheckFailure(CommandError):
     """Exception raised when the predicates in :attr:`.Command.checks` have failed."""
