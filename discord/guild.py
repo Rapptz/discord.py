@@ -113,6 +113,8 @@ class Guild(Hashable):
         - ``VIP_REGIONS``: Guild has VIP voice regions
         - ``VANITY_URL``: Guild has a vanity invite URL (e.g. discord.gg/discord-api)
         - ``INVITE_SPLASH``: Guild's invite page has a special splash.
+        - ``VERIFIED``: Guild is a "verified" server.
+        - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
 
     splash: str
         The guild's invite splash.
