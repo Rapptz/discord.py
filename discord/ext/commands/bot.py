@@ -809,7 +809,7 @@ class BotBase(GroupMixin):
             ret = [p for p in ret if p]
 
         if not ret:
-            raise ClientException('invalid prefix (could be an empty string, empty list, or None)')
+            raise discord.ClientException('invalid prefix (could be an empty string, empty list, or None)')
 
         return ret
 
