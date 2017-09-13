@@ -520,7 +520,7 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
-    def _create_channel(self, name, overwrites, type, reason):
+    def _create_channel(self, name, overwrites, channel_type, reason):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
@@ -545,7 +545,7 @@ class Guild(Hashable):
 
             perms.append(payload)
 
-        return self._state.http.create_channel(self.id, name, str(type), permission_overwrites=perms, reason=reason)
+        return self._state.http.create_channel(self.id, name, channel_type.value, permission_overwrites=perms, reason=reason)
 
     @asyncio.coroutine
     def create_text_channel(self, name, *, overwrites=None, reason=None):
