@@ -152,6 +152,12 @@ Converters
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 
+.. autoclass:: discord.ext.commands.VoiceChannelConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.CategoryChannelConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.InviteConverter
     :members:
 
@@ -162,9 +168,6 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.ColourConverter
-    :members:
-
-.. autoclass:: discord.ext.commands.VoiceChannelConverter
     :members:
 
 .. autoclass:: discord.ext.commands.EmojiConverter
