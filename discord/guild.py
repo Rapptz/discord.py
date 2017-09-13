@@ -612,11 +612,21 @@ class Guild(Hashable):
     def create_voice_channel(self, name, *, overwrites=None, reason=None):
         """|coro|
 
-        Same as :meth:`create_text_channel` except makes a
-        :class:`VoiceChannel` instead.
+        Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
         """
         data = yield from self._create_channel(name, overwrites, ChannelType.voice, reason=reason)
         return VoiceChannel(state=self._state, guild=self, data=data)
+
+    @asyncio.coroutine
+    def create_category(self, name, *, overwrites=None, reason=None):
+        """|coro|
+
+        Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
+        """
+        data = yield from self._create_channel(name, overwrites, ChannelType.category, reason=reason)
+        return CategoryChannel(state=self._state, guild=self, data=data)
+
+    create_category_channel = create_category
 
     @asyncio.coroutine
     def leave(self):
