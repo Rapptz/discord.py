@@ -500,16 +500,16 @@ class HTTPClient:
 
     def edit_channel(self, channel_id, *, reason=None, **options):
         r = Route('PATCH', '/channels/{channel_id}', channel_id=channel_id)
-        valid_keys = ('name', 'topic', 'bitrate', 'nsfw', 'user_limit', 'position')
+        valid_keys = ('name', 'topic', 'bitrate', 'nsfw', 'user_limit', 'position', 'permission_overwrites')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }
 
         return self.request(r, reason=reason, json=payload)
 
-    def move_channel_position(self, guild_id, positions, *, reason=None):
+    def bulk_channel_update(self, guild_id, data, *, reason=None):
         r = Route('PATCH', '/guilds/{guild_id}/channels', guild_id=guild_id)
-        return self.request(r, json=positions, reason=reason)
+        return self.request(r, json=data, reason=reason)
 
     def create_channel(self, guild_id, name, channe_type, permission_overwrites=None, *, reason=None):
         payload = {

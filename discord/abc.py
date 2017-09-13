@@ -188,7 +188,7 @@ class GuildChannel:
         return self.name
 
     @asyncio.coroutine
-    def _move(self, position, *, reason):
+    def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
@@ -211,8 +211,45 @@ class GuildChannel:
             # add ourselves at our designated position
             channels.insert(position, self)
 
-        payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
-        yield from http.move_channel_position(self.guild.id, payload, reason=reason)
+        payload = []
+        for index, c in enumerate(channels):
+            d = {'id': c.id, 'position': index}
+            if parent_id is not _undefined and c.id == self.id:
+                d.update(parent_id=parent_id, lock_permissions=lock_permissions)
+            payload.append(d)
+
+        yield from http.bulk_channel_update(self.guild.id, payload, reason=reason)
+        self.position = position
+        if parent_id is not _undefined:
+            self.category_id = int(parent_id)
+
+    @asyncio.coroutine
+    def _edit(self, options, reason):
+        try:
+            parent = options.pop('category')
+        except KeyError:
+            parent_id = _undefined
+        else:
+            parent_id = parent and parent.id
+
+        lock_permissions = options.pop('sync_permissions', False)
+
+        try:
+            position = options.pop('position')
+        except KeyError:
+            if parent_id is not _undefined:
+                yield from self._move(self.position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
+            elif lock_permissions and self.category_id is not None:
+                # if we're syncing permissions on a pre-existing channel category without changing it
+                # we need to update the permissions to point to the pre-existing category
+                category = self.guild.get_channel(self.category_id)
+                options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
+        else:
+            yield from self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
+
+        if options:
+            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
+            self._update(self.guild, data)
 
     def _fill_overwrites(self, data):
         self._overwrites = []
@@ -321,6 +358,14 @@ class GuildChannel:
 
             ret.append((target, overwrite))
         return ret
+
+    @property
+    def category(self):
+        """Optional[:class:`CategoryChannel`]: The category this channel belongs to.
+
+        If there is no category then this is ``None``.
+        """
+        return self.guild.get_channel(self.category_id)
 
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`Member`.

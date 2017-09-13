@@ -31,10 +31,11 @@ __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'AuditLogAction', 'AuditLogActionCategory', 'UserFlags', ]
 
 class ChannelType(Enum):
-    text    = 0
-    private = 1
-    voice   = 2
-    group   = 3
+    text     = 0
+    private  = 1
+    voice    = 2
+    group    = 3
+    category = 4
 
     def __str__(self):
         return self.name

@@ -35,7 +35,7 @@ import discord.abc
 import time
 import asyncio
 
-__all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'GroupChannel', '_channel_factory')
+__all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory')
 
 @asyncio.coroutine
 def _single_delete_strategy(messages):
@@ -71,6 +71,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         The guild the channel belongs to.
     id: int
         The channel ID.
+    category_id: int
+        The category channel ID this channel belongs to.
     topic: Optional[str]
         The channel's topic. None if it doesn't exist.
     position: int
@@ -79,7 +81,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """
 
     __slots__ = ( 'name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                  'position', '_overwrites' )
+                  'category_id', 'position', '_overwrites' )
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -92,6 +94,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.topic = data.get('topic')
         self.position = data['position']
         self.nsfw = data.get('nsfw', False)
@@ -140,6 +143,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The new channel's position.
         nsfw: bool
             To mark the channel as NSFW or not.
+        sync_permissions: bool
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
         reason: Optional[str]
             The reason for editing this channel. Shows up on the audit log.
 
@@ -152,17 +161,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Editing the channel failed.
         """
-        try:
-            position = options.pop('position')
-        except KeyError:
-            pass
-        else:
-            yield from self._move(position, reason=reason)
-            self.position = position
-
-        if options:
-            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
-            self._update(self.guild, data)
+        yield from self._edit(options, reason=reason)
 
     @asyncio.coroutine
     def delete_messages(self, messages):
@@ -411,6 +410,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The guild the channel belongs to.
     id: int
         The channel ID.
+    category_id: int
+        The category channel ID this channel belongs to.
     position: int
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
@@ -421,7 +422,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """
 
     __slots__ = ('name', 'id', 'guild', 'bitrate',  'user_limit',
-                 '_state', 'position', '_overwrites' )
+                 '_state', 'position', '_overwrites', 'category_id' )
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -440,6 +441,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
         self.user_limit = data.get('user_limit')
@@ -473,6 +475,12 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             The new channel's user limit.
         position: int
             The new channel's position.
+        sync_permissions: bool
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
         reason: Optional[str]
             The reason for editing this channel. Shows up on the audit log.
 
@@ -482,6 +490,97 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             You do not have permissions to edit the channel.
         HTTPException
             Editing the channel failed.
+        """
+
+        yield from self._edit(options, reason=reason)
+
+class CategoryChannel(discord.abc.GuildChannel, Hashable):
+    """Represents a Discord channel category.
+
+    These are useful to group channels to logical compartments.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the category's hash.
+
+        .. describe:: str(x)
+
+            Returns the category's name.
+
+    Attributes
+    -----------
+    name: str
+        The category name.
+    guild: :class:`Guild`
+        The guild the category belongs to.
+    id: int
+        The category channel ID.
+    position: int
+        The position in the category list. This is a number that starts at 0. e.g. the
+        top category is position 0.
+    """
+
+    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id')
+
+    def __init__(self, *, state, guild, data):
+        self._state = state
+        self.id = int(data['id'])
+        self._update(guild, data)
+
+    def __repr__(self):
+        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+
+    def _update(self, guild, data):
+        self.guild = guild
+        self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
+        self.nsfw = data.get('nsfw', False)
+        self.position = data['position']
+        self._fill_overwrites(data)
+
+    def is_nsfw(self):
+        """Checks if the category is NSFW."""
+        n = self.name
+        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+
+    @asyncio.coroutine
+    def edit(self, *, reason=None, **options):
+        """|coro|
+
+        Edits the channel.
+
+        You must have the :attr:`Permissions.manage_channel` permission to
+        use this.
+
+        Parameters
+        ----------
+        name: str
+            The new category's name.
+        position: int
+            The new category's position.
+        nsfw: bool
+            To mark the category as NSFW or not.
+        reason: Optional[str]
+            The reason for editing this category. Shows up on the audit log.
+
+        Raises
+        ------
+        InvalidArgument
+            If position is less than 0 or greater than the number of categories.
+        Forbidden
+            You do not have permissions to edit the category.
+        HTTPException
+            Editing the category failed.
         """
 
         try:
@@ -495,6 +594,19 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         if options:
             data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
             self._update(self.guild, data)
+
+    @property
+    def channels(self):
+        """List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
+
+        These are sorted by the official Discord UI, which places voice channels below the text channels.
+        """
+        def comparator(channel):
+            return (not isinstance(channel, TextChannel), channel.position)
+
+        ret = [c for c in self.guild.channels if c.category_id == self.id]
+        ret.sort(key=comparator)
+        return ret
 
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
@@ -810,6 +922,8 @@ def _channel_factory(channel_type):
         return VoiceChannel, value
     elif value is ChannelType.private:
         return DMChannel, value
+    elif value is ChannelType.category:
+        return CategoryChannel, value
     elif value is ChannelType.group:
         return GroupChannel, value
     else:

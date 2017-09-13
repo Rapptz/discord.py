@@ -366,11 +366,15 @@ They will be enumerated here.
 **Added**
 
 - :class:`Attachment` to represent a discord attachment.
+- :class:`CategoryChannel` to represent a channel category.
 - :attr:`VoiceChannel.members` for fetching members connected to a voice channel.
 - :attr:`TextChannel.members` for fetching members that can see the channel.
 - :attr:`Role.members` for fetching members that have the role.
 - :attr:`Guild.text_channels` for fetching text channels only.
 - :attr:`Guild.voice_channels` for fetching voice channels only.
+- :attr:`Guild.categories` for fetching channel categories only.
+- :attr:`TextChannel.category` and :attr:`VoiceChannel.category` to get the category a channel belongs to.
+- :meth:`Guild.by_category` to get channels grouped by their category.
 - :attr:`Guild.chunked` to check member chunking status.
 - :attr:`Guild.explicit_content_filter` to fetch the content filter.
 - :attr:`Guild.shard_id` to get a guild's Shard ID if you're sharding.

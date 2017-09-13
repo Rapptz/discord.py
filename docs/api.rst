@@ -1912,6 +1912,13 @@ VoiceChannel
     :members:
     :inherited-members:
 
+CategoryChannel
+~~~~~~~~~~~~~
+
+.. autoclass:: CategoryChannel()
+    :members:
+    :inherited-members:
+
 DMChannel
 ~~~~~~~~~
 
