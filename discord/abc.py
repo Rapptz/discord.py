@@ -133,7 +133,7 @@ class User(metaclass=abc.ABCMeta):
 class PrivateChannel(metaclass=abc.ABCMeta):
     """An ABC that details the common operations on a private Discord channel.
 
-    The follow implement this ABC:
+    The following implement this ABC:
 
     - :class:`DMChannel`
     - :class:`GroupChannel`
@@ -165,10 +165,11 @@ _Overwrites = namedtuple('_Overwrites', 'id allow deny type')
 class GuildChannel:
     """An ABC that details the common operations on a Discord guild channel.
 
-    The follow implement this ABC:
+    The following implement this ABC:
 
     - :class:`TextChannel`
     - :class:`VoiceChannel`
+    - :class:`CategoryChannel`
 
     This ABC must also implement :class:`abc.Snowflake`.
 
@@ -653,7 +654,7 @@ class GuildChannel:
 class Messageable(metaclass=abc.ABCMeta):
     """An ABC that details the common operations on a model that can send messages.
 
-    The follow implement this ABC:
+    The following implement this ABC:
 
     - :class:`TextChannel`
     - :class:`DMChannel`
@@ -928,7 +929,7 @@ class Connectable(metaclass=abc.ABCMeta):
     """An ABC that details the common operations on a channel that can
     connect to a voice server.
 
-    The follow implement this ABC:
+    The following implement this ABC:
 
     - :class:`VoiceChannel`
     """
