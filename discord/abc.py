@@ -590,7 +590,7 @@ class GuildChannel:
         Parameters
         ------------
         max_age : int
-            How long the invite should last. If it's 0 then the invite
+            How long the invite should last in seconds. If it's 0 then the invite
             doesn't expire. Defaults to 0.
         max_uses : int
             How many uses the invite could be used for. If it's 0 then there
