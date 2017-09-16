@@ -256,7 +256,7 @@ class VoiceClient:
     def disconnect(self, *, force=False):
         """|coro|
 
-        Disconnects all connections to the voice client.
+        Disconnects this voice client from voice.
         """
         if not force and not self._connected.is_set():
             return
