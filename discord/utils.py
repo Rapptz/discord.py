@@ -266,10 +266,11 @@ def _parse_ratelimit_header(request):
 
 @asyncio.coroutine
 def maybe_coroutine(f, *args, **kwargs):
-    if asyncio.iscoroutinefunction(f):
-        return (yield from f(*args, **kwargs))
+    value = f(*args, **kwargs)
+    if asyncio.iscoroutine(value):
+        return (yield from value)
     else:
-        return f(*args, **kwargs)
+        return value
 
 @asyncio.coroutine
 def async_all(gen):
