@@ -210,7 +210,7 @@ class Server(Hashable):
                 if role is not None:
                     roles.append(role)
 
-            mdata['roles'] = roles
+            mdata['roles'] = sorted(roles)
             member = Member(**mdata)
             member.server = self
             self._add_member(member)
