@@ -359,6 +359,11 @@ class Webhook:
     def __repr__(self):
         return '<Webhook id=%r>' % self.id
 
+    @property
+    def url(self):
+        """Returns the webhook's url."""
+        return 'https://discordapp.com/api/webhooks/{}/{}'.format(self.id, self.token)
+
     @classmethod
     def partial(cls, id, token, *, adapter):
         """Creates a partial :class:`Webhook`.
