@@ -682,6 +682,25 @@ class Client:
                     msg = await client.wait_for('message', check=check)
                     await channel.send('Hello {.author}!'.format(msg))
 
+        Waiting for a thumbs up reaction from the message author: ::
+
+            @client.event
+            async def on_message(message):
+                if message.content.startswith('$thumb'):
+                    channel = message.channel
+                    await channel.send('Send me that \N{THUMBS UP SIGN} reaction, mate')
+
+                    def check(reaction, user):
+                        return user == message.author and str(reaction.emoji) == '\N{THUMBS UP SIGN}'
+
+                    try:
+                        reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check)
+                    except asyncio.TimeoutError:
+                        await channel.send('\N{THUMBS DOWN SIGN}')
+                    else:
+                        await channel.send('\N{THUMBS UP SIGN}')
+
+
         Parameters
         ------------
         event: str
