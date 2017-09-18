@@ -104,12 +104,3 @@ Requirements
 
 Usually ``pip`` will handle these for you.
 
-Related Projects
----------------
-* `discord.js <https://github.com/discord-js/discord.js>`__
-* `discord.io <https://github.com/izy521/discord.io>`__
-* `Discord.NET <https://github.com/RogueException/Discord.Net>`__
-* `DiscordSharp <https://github.com/Luigifan/DiscordSharp>`__
-* `Discord4J <https://github.com/knobody/Discord4J>`__
-* `discordrb <https://github.com/meew0/discordrb>`__
-
