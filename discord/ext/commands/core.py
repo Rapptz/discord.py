@@ -868,7 +868,10 @@ class Group(GroupMixin, Command):
         view = ctx.view
         previous = view.index
         view.skip_ws()
+        sep = view.separator
+        view.separator = None
         trigger = view.get_word()
+        view.separator = sep
 
         if trigger:
             ctx.subcommand_passed = trigger
@@ -900,7 +903,10 @@ class Group(GroupMixin, Command):
         view = ctx.view
         previous = view.index
         view.skip_ws()
+        sep = view.separator
+        view.separator = None
         trigger = view.get_word()
+        view.separator = sep
 
         if trigger:
             ctx.subcommand_passed = trigger
