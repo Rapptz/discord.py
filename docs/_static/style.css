@@ -243,6 +243,15 @@ div.body li {
   line-height: 1.4em;
 }
 
+/* weird margins */
+ul > li p {
+  margin: 2px;
+}
+
+li > blockquote {
+  margin: 10px;
+}
+
 div.admonition p.admonition-title + p {
   display: inline;
 }
