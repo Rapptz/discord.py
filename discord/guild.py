@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import copy
 import asyncio
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 from . import utils
 from .role import Role
@@ -332,17 +332,12 @@ class Guild(Hashable):
         List[Tuple[Optional[:class:`CategoryChannel`], List[:class:`abc.GuildChannel`]]]:
             The categories and their associated channels.
         """
-        grouped = {}
+        grouped = defaultdict(list)
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
                 continue
 
-            try:
-                channels = grouped[channel.category_id]
-            except KeyError:
-                channels = grouped[channel.category_id] = []
-
-            channels.append(channel)
+            grouped[channel.category_id].append(channel)
 
         def key(t):
             k, v = t
