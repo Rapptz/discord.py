@@ -154,7 +154,7 @@ div.body h6 { color: #777; }
 
 div.body h1 { margin: 0 0 10px 0; }
 div.body h2,
-div.body h3 { margin: 30px 0px 10px 0px; }
+div.body h3 { margin: 10px 0px 10px 0px; }
 div.body h4,
 div.body h5,
 div.body h6 { margin: 20px 0px 10px 0px; }
@@ -244,7 +244,7 @@ div.body li {
 }
 
 /* weird margins */
-ul > li p {
+li > p {
   margin: 2px;
 }
 
@@ -280,6 +280,11 @@ div.topic {
 a.toc-backref {
   text-decoration: none;
   color: #3e4349;
+}
+
+/* bold and fix the Parameter, Raises, etc. */
+dl.field-list > dt {
+  font-weight: bold;
 }
 
 div.danger, div.error {
@@ -373,6 +378,8 @@ dd {
 .container.operations::before {
   content: 'Supported Operations';
   color: #212224;
+  display: block;
+  padding-bottom: 5px;
 }
 
 .container.operations > dl.describe > dt {
