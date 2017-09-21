@@ -10,6 +10,7 @@ with open('requirements.txt') as f:
 if on_rtd:
   requirements.append('sphinxcontrib-napoleon')
   requirements.append('sphinxcontrib-asyncio')
+  requirements.append('sphinx==1.6.3')
 
 version = ''
 with open('discord/__init__.py') as f:
