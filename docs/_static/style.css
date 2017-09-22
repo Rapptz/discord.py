@@ -17,6 +17,10 @@ body {
   padding: 0;
 }
 
+p {
+  margin-bottom: 8px;
+}
+
 div.document {
   margin: 10px auto 0 auto;
   max-width: 940px; /* page width */
