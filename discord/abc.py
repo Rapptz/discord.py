@@ -222,7 +222,7 @@ class GuildChannel:
         yield from http.bulk_channel_update(self.guild.id, payload, reason=reason)
         self.position = position
         if parent_id is not _undefined:
-            self.category_id = int(parent_id)
+            self.category_id = int(parent_id) if parent_id else None
 
     @asyncio.coroutine
     def _edit(self, options, reason):
