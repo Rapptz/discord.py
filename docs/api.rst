@@ -1913,7 +1913,7 @@ VoiceChannel
     :inherited-members:
 
 CategoryChannel
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autoclass:: CategoryChannel()
     :members:
