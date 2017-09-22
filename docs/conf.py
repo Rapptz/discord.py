@@ -22,6 +22,7 @@ on_rtd = os.getenv('READTHEDOCS') == 'True'
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('extensions'))
 
 # -- General configuration ------------------------------------------------
 
@@ -34,7 +35,8 @@ sys.path.insert(0, os.path.abspath('..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
-    'sphinxcontrib.asyncio'
+    'sphinxcontrib.asyncio',
+    'details'
 ]
 
 if on_rtd:
