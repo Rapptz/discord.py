@@ -82,7 +82,7 @@ async def on_message(message):
 client.run('token')
 ```
 
-Note that in Python 3.4 you use `@asyncio.coroutine` instead of `async def` and `yield from` instead of `await`.
+Note that in Python 3.4 (not 3.5 or above) you use `@asyncio.coroutine` instead of `async def` and `yield from` instead of `await`.
 
 You can find examples in the examples directory.
 
