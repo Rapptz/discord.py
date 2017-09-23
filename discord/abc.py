@@ -725,6 +725,11 @@ class Messageable(metaclass=abc.ABCMeta):
         ---------
         :class:`Message`
             The message that was sent.
+
+        Warning
+        -------
+        Sending users DMs using a selfbot is grounds for your account being disabled.
+        You have been warned.
         """
 
         channel = yield from self._get_channel()
