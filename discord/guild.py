@@ -601,7 +601,11 @@ class Guild(Hashable):
             The channel that was just created.
         """
         data = yield from self._create_channel(name, overwrites, ChannelType.text, reason=reason)
-        return TextChannel(state=self._state, guild=self, data=data)
+        channel = TextChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
 
     @asyncio.coroutine
     def create_voice_channel(self, name, *, overwrites=None, reason=None):
@@ -610,7 +614,11 @@ class Guild(Hashable):
         Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
         """
         data = yield from self._create_channel(name, overwrites, ChannelType.voice, reason=reason)
-        return VoiceChannel(state=self._state, guild=self, data=data)
+        channel = VoiceChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
 
     @asyncio.coroutine
     def create_category(self, name, *, overwrites=None, reason=None):
@@ -619,7 +627,11 @@ class Guild(Hashable):
         Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
         """
         data = yield from self._create_channel(name, overwrites, ChannelType.category, reason=reason)
-        return CategoryChannel(state=self._state, guild=self, data=data)
+        channel = CategoryChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
 
     create_category_channel = create_category
 
