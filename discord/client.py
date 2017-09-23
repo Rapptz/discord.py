@@ -773,7 +773,7 @@ class Client:
             raise ClientException('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
-        log.info('%s has successfully been registered as an event', coro.__name__)
+        log.debug('%s has successfully been registered as an event', coro.__name__)
         return coro
 
     def async_event(self, coro):
