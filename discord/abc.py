@@ -239,7 +239,10 @@ class GuildChannel:
             position = options.pop('position')
         except KeyError:
             if parent_id is not _undefined:
-                yield from self._move(self.position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
+                if lock_permissions:
+                    category = self.guild.get_channel(parent_id)
+                    options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
+                options['parent_id'] = parent_id
             elif lock_permissions and self.category_id is not None:
                 # if we're syncing permissions on a pre-existing channel category without changing it
                 # we need to update the permissions to point to the pre-existing category
