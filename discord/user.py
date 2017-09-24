@@ -48,7 +48,7 @@ class User:
     -----------
     name : str
         The user's username.
-    id : str
+    id : int
         The user's unique ID.
     discriminator : str or int
         The user's discriminator. This is given when the username has conflicts.
@@ -62,7 +62,7 @@ class User:
 
     def __init__(self, **kwargs):
         self.name = kwargs.get('username')
-        self.id = kwargs.get('id')
+        self.id = int(kwargs.get('id'))
         self.discriminator = kwargs.get('discriminator')
         self.avatar = kwargs.get('avatar')
         self.bot = kwargs.get('bot', False)
