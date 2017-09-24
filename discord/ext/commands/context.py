@@ -26,6 +26,8 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import discord.abc
 import discord.utils
+from .errors import CommandOnCooldown
+
 
 class Context(discord.abc.Messageable):
     """Represents the context in which a command is being invoked under.
@@ -107,8 +109,11 @@ class Context(discord.abc.Messageable):
         -----------
         command: :class:`.Command`
             A command or superclass of a command that is going to be called.
+        invoke_with_checks: Optional[bool]
+            Whether to verify all checks associated with the command when invoking.
+            Defaults to ``False``.
         \*args
-            The arguments to to use.
+            The arguments to use.
         \*\*kwargs
             The keyword arguments to use.
         """
@@ -121,6 +126,18 @@ class Context(discord.abc.Messageable):
         arguments = []
         if command.instance is not None:
             arguments.append(command.instance)
+
+        invoke_with_checks = kwargs.pop('invoke_with_checks', False)
+
+        # I could of used command.prepare here but didn't want to include hooks, felt this was easier.
+        if invoke_with_checks is True:
+            yield from command._verify_checks(self)
+
+            if command._buckets.valid:
+                bucket = command._buckets.get_bucket(self)
+                retry_after = bucket.is_rate_limited()
+                if retry_after:
+                    raise CommandOnCooldown(bucket, retry_after)
 
         arguments.append(self)
         arguments.extend(args[1:])
