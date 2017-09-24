@@ -338,6 +338,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         return base
 
     @property
+    def is_owner(self):
+        """bool: Checks if the member owns the guild."""
+        return self.guild.owner_id == self.id
+
+    @property
     def voice(self):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
