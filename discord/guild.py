@@ -217,7 +217,7 @@ class Guild(Hashable):
         self.emojis = tuple(map(lambda d: self._state.store_emoji(self, d), guild.get('emojis', [])))
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
-        self._system_channel_id = guild.get('system_channel_id')
+        self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=self._state)
