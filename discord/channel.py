@@ -81,7 +81,7 @@ class Channel(Hashable):
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
+    __slots__ = [ 'voice_members', 'name', 'id', 'category_id', 'server', 'topic', 'position',
                   'is_private', 'type', 'bitrate', 'user_limit',
                   '_permission_overwrites' ]
 
@@ -96,6 +96,7 @@ class Channel(Hashable):
         self.name = kwargs.get('name')
         self.server = kwargs.get('server')
         self.id = kwargs.get('id')
+        self.category_id = kwargs.get('parent_id')
         self.topic = kwargs.get('topic')
         self.is_private = False
         self.position = kwargs.get('position')
@@ -150,6 +151,16 @@ class Channel(Hashable):
     def is_default(self):
         """bool : Indicates if this is the default channel for the :class:`Server` it belongs to."""
         return self.server.id == self.id
+
+    @property
+    def in_category(self):
+        """bool: Returns true if the channel is in a category"""
+        return self.category_id is not None
+
+    @property
+    def category(self):
+        """Returns the category channel if valid"""
+        return self.server.get_channel(self.category_id)
 
     @property
     def mention(self):
