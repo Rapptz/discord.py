@@ -439,12 +439,31 @@ class Command:
 
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx)
-            retry_after = bucket.is_rate_limited()
+            retry_after = bucket.update_rate_limit()
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
         yield from self._parse_arguments(ctx)
         yield from self.call_before_hooks(ctx)
+
+    def is_on_cooldown(self, ctx):
+        """Checks whether the command is currently on cooldown.
+
+        Parameters
+        -----------
+        ctx: :class:`.Context.`
+            The invocation context to use when checking the commands cooldown status.
+
+        Returns
+        --------
+        bool
+            A boolean indicating if the command is on cooldown.
+        """
+        if not self._buckets.valid:
+            return False
+
+        bucket = self._buckets.get_bucket(ctx)
+        return bucket.get_tokens() == 0
 
     def reset_cooldown(self, ctx):
         """Resets the cooldown on this command.
