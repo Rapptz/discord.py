@@ -655,14 +655,7 @@ class ConnectionState:
         if channel is not None:
             member = None
             user_id = data.get('user_id')
-            is_private = getattr(channel, 'is_private', None)
-            if is_private == None:
-                return
-
-            if is_private:
-                member = channel.user
-            else:
-                member = channel.server.get_member(user_id)
+            member = self._get_member(channel, user_id)
 
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
