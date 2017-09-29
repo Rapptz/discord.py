@@ -515,7 +515,7 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
-    def _create_channel(self, name, overwrites, channel_type, reason):
+    def _create_channel(self, name, overwrites, channel_type, category=None, reason=None):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
@@ -540,10 +540,12 @@ class Guild(Hashable):
 
             perms.append(payload)
 
-        return self._state.http.create_channel(self.id, name, channel_type.value, permission_overwrites=perms, reason=reason)
+        parent_id = category.id if category else None
+        return self._state.http.create_channel(self.id, name, channel_type.value, parent_id=parent_id,
+                                               permission_overwrites=perms, reason=reason)
 
     @asyncio.coroutine
-    def create_text_channel(self, name, *, overwrites=None, reason=None):
+    def create_text_channel(self, name, *, overwrites=None, category=None, reason=None):
         """|coro|
 
         Creates a :class:`TextChannel` for the guild.
@@ -583,6 +585,10 @@ class Guild(Hashable):
             A `dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply upon creation of a channel.
             Useful for creating secret channels.
+        category: Optional[:class:`CategoryChannel`]
+            The category to place the newly created channel under.
+            The permissions will be automatically synced to category if no
+            overwrites are provided.
         reason: Optional[str]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -600,7 +606,7 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.text, reason=reason)
+        data = yield from self._create_channel(name, overwrites, ChannelType.text, category, reason=reason)
         channel = TextChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
@@ -608,12 +614,12 @@ class Guild(Hashable):
         return channel
 
     @asyncio.coroutine
-    def create_voice_channel(self, name, *, overwrites=None, reason=None):
+    def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.voice, reason=reason)
+        data = yield from self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
@@ -625,6 +631,11 @@ class Guild(Hashable):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
+
+        .. note::
+
+            The ``category`` parameter is not supported in this function since categories
+            cannot have categories.
         """
         data = yield from self._create_channel(name, overwrites, ChannelType.category, reason=reason)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
