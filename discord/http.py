@@ -164,7 +164,7 @@ class HTTPClient:
                         else:
                             delta = header_bypass_delay
 
-                        log.info('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
+                        log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                         maybe_lock.defer()
                         self.loop.call_later(delta, lock.release)
 
