@@ -959,7 +959,7 @@ class Client:
             Retrieving the information failed somehow.
         """
         data = yield from self.http.application_info()
-        return AppInfo(id=data['id'], name=data['name'],
+        return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
                        owner=User(state=self._connection, data=data['owner']))
 
