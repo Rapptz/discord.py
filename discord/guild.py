@@ -969,11 +969,6 @@ class Guild(Hashable):
 
         Creates a custom :class:`Emoji` for the guild.
 
-        This endpoint is only allowed for user bots or white listed
-        bots. If this is done by a user bot then this is a local
-        emoji that can only be used inside the guild. If done by
-        a whitelisted bot, then this emoji is "global".
-
         There is currently a limit of 50 local emotes per guild.
 
         Parameters
