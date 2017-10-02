@@ -971,6 +971,8 @@ class Guild(Hashable):
 
         There is currently a limit of 50 local emotes per guild.
 
+        Note that bot accounts can only edit and delete emojis they have created.
+
         Parameters
         -----------
         name: str
