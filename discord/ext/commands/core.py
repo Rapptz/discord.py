@@ -34,10 +34,11 @@ from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
 
-__all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
-            'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown', 'guild_only', 'is_owner', 'is_nsfw', ]
+__all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
+           'has_role', 'has_permissions', 'has_any_role', 'check',
+           'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+           'cooldown', 'guild_only', 'is_owner', 'is_nsfw', ]
+
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -52,7 +53,9 @@ def wrap_callback(coro):
         except Exception as e:
             raise CommandInvokeError(e) from e
         return ret
+
     return wrapped
+
 
 def hooked_wrapped_callback(command, ctx, coro):
     @functools.wraps(coro)
@@ -72,7 +75,9 @@ def hooked_wrapped_callback(command, ctx, coro):
         finally:
             yield from command.call_after_hooks(ctx)
         return ret
+
     return wrapped
+
 
 def _convert_to_bool(argument):
     lowered = argument.lower()
@@ -82,6 +87,7 @@ def _convert_to_bool(argument):
         return False
     else:
         raise BadArgument(lowered + ' is not a recognised boolean option')
+
 
 class Command:
     """A class that implements the protocol for a bot text command.
@@ -137,6 +143,7 @@ class Command:
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
         are called with :exc:`.TooManyArguments`. Defaults to ``True``.
     """
+
     def __init__(self, name, callback, **kwargs):
         self.name = name
         if not isinstance(name, str):
@@ -235,7 +242,7 @@ class Command:
 
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
-                raise RuntimeError() # break the loop
+                raise RuntimeError()  # break the loop
             if required:
                 raise MissingRequiredArgument(param)
             return param.default
@@ -448,7 +455,7 @@ class Command:
 
     def is_on_cooldown(self, ctx):
         """Checks whether the command is currently on cooldown.
-        
+
         Parameters
         -----------
         ctx: :class:`.Context.`
@@ -463,7 +470,7 @@ class Command:
             return False
 
         bucket = self._buckets.get_bucket(ctx)
-        return bucket.is_rate_limited()
+        return bucket.get_tokens() == 0
 
     def reset_cooldown(self, ctx):
         """Resets the cooldown on this command.
@@ -687,6 +694,7 @@ class Command:
         finally:
             ctx.command = original
 
+
 class GroupMixin:
     """A mixin that implements common functionality for classes that behave
     similar to :class:`.Group` and are allowed to register commands.
@@ -697,6 +705,7 @@ class GroupMixin:
         A mapping of command name to :class:`.Command` or superclass
         objects.
     """
+
     def __init__(self, **kwargs):
         self.all_commands = {}
         super().__init__(**kwargs)
@@ -824,6 +833,7 @@ class GroupMixin:
         """A shortcut decorator that invokes :func:`.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
         """
+
         def decorator(func):
             result = command(*args, **kwargs)(func)
             self.add_command(result)
@@ -835,12 +845,14 @@ class GroupMixin:
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
         """
+
         def decorator(func):
             result = group(*args, **kwargs)(func)
             self.add_command(result)
             return result
 
         return decorator
+
 
 class Group(GroupMixin, Command):
     """A class that implements a grouping protocol for commands to be
@@ -861,6 +873,7 @@ class Group(GroupMixin, Command):
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
     """
+
     def __init__(self, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)
         super().__init__(**attrs)
@@ -931,6 +944,7 @@ class Group(GroupMixin, Command):
             view.previous = previous
             yield from super().reinvoke(ctx, call_hooks=call_hooks)
 
+
 # Decorators
 
 def command(name=None, cls=None, **attrs):
@@ -999,6 +1013,7 @@ def command(name=None, cls=None, **attrs):
 
     return decorator
 
+
 def group(name=None, **attrs):
     """A decorator that transforms a function into a :class:`.Group`.
 
@@ -1006,6 +1021,7 @@ def group(name=None, **attrs):
     :class:`.Group` instead of a :class:`.Command`.
     """
     return command(name=name, cls=Group, **attrs)
+
 
 def check(predicate):
     """A decorator that adds a check to the :class:`.Command` or its
@@ -1071,7 +1087,9 @@ def check(predicate):
             func.__commands_checks__.append(predicate)
 
         return func
+
     return decorator
+
 
 def has_role(name):
     """A :func:`.check` that is added that checks if the member invoking the
@@ -1098,6 +1116,7 @@ def has_role(name):
 
     return check(predicate)
 
+
 def has_any_role(*names):
     """A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
@@ -1120,13 +1139,16 @@ def has_any_role(*names):
         async def cool(ctx):
             await ctx.send('You are cool indeed')
     """
+
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return False
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
         return any(getter(name=name) is not None for name in names)
+
     return check(predicate)
+
 
 def has_permissions(**perms):
     """A :func:`.check` that is added that checks if the member has any of
@@ -1154,6 +1176,7 @@ def has_permissions(**perms):
             await ctx.send('You can manage messages.')
 
     """
+
     def predicate(ctx):
         ch = ctx.channel
         permissions = ch.permissions_for(ctx.author)
@@ -1167,6 +1190,7 @@ def has_permissions(**perms):
 
     return check(predicate)
 
+
 def bot_has_role(name):
     """Similar to :func:`.has_role` except checks if the bot itself has the
     role.
@@ -1179,12 +1203,15 @@ def bot_has_role(name):
         me = ch.guild.me
         role = discord.utils.get(me.roles, name=name)
         return role is not None
+
     return check(predicate)
+
 
 def bot_has_any_role(*names):
     """Similar to :func:`.has_any_role` except checks if the bot itself has
     any of the roles listed.
     """
+
     def predicate(ctx):
         ch = ctx.channel
         if not isinstance(ch, discord.abc.GuildChannel):
@@ -1192,7 +1219,9 @@ def bot_has_any_role(*names):
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
         return any(getter(name=name) is not None for name in names)
+
     return check(predicate)
+
 
 def bot_has_permissions(**perms):
     """Similar to :func:`.has_permissions` except checks if the bot itself has
@@ -1201,6 +1230,7 @@ def bot_has_permissions(**perms):
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is derived from :exc:`.CheckFailure`.
     """
+
     def predicate(ctx):
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
@@ -1214,6 +1244,7 @@ def bot_has_permissions(**perms):
         raise BotMissingPermissions(missing)
 
     return check(predicate)
+
 
 def guild_only():
     """A :func:`.check` that indicates this command must only be used in a
@@ -1230,6 +1261,7 @@ def guild_only():
         return True
 
     return check(predicate)
+
 
 def is_owner():
     """A :func:`.check` that checks if the person invoking this command is the
@@ -1249,11 +1281,15 @@ def is_owner():
 
     return check(predicate)
 
+
 def is_nsfw():
     """A :func:`.check` that checks if the channel is a NSFW channel."""
+
     def pred(ctx):
         return isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw()
+
     return check(pred)
+
 
 def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`.Command`
@@ -1291,4 +1327,5 @@ def cooldown(rate, per, type=BucketType.default):
         else:
             func.__commands_cooldown__ = Cooldown(rate, per, type)
         return func
+
     return decorator
