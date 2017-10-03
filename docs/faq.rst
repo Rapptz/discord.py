@@ -54,8 +54,8 @@ You can only use ``await`` inside ``async def`` functions and nowhere else.
 What does "blocking" mean?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In asynchronous programming a blocking call is essentially all the parts of the function that are not ``await``. Do not
-despair however, because not all forms of blocking are bad! Using blocking calls is inevitable, but you must work to make
+In asynchronous programming, a blocking call is essentially all the parts of the function that are not ``await``. Do not
+despair. However, because not all forms of blocking are bad! Using blocking calls is inevitable, but you must work to make
 sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has
 not stopped the function's execution at that point to do other things.
 
@@ -114,7 +114,7 @@ The second way is by calling :meth:`Client.get_channel` directly: ::
 I'm passing IDs as integers and things are not working!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the library IDs must be of type ``str`` not of type ``int``. Wrap it in quotes.
+In the library, IDs must be of type ``str`` not of type ``int``. Wrap it in quotes.
 
 How do I upload an image?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,7 +150,7 @@ you should be able to use :meth:`Client.get_all_emojis`/:attr:`Server.emojis` to
 How do I pass a coroutine to the player's "after" function?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A StreamPlayer is just a ``threading.Thread`` object that plays music. As a result it does not execute inside a coroutine.
+A StreamPlayer is just a ``threading.Thread`` object that plays music. As a result, it does not execute inside a coroutine.
 This does not mean that it is not possible to call a coroutine in the ``after`` parameter. To do so you must pass a callable
 that wraps up a couple of aspects.
 
@@ -191,7 +191,7 @@ callable in its ``target`` keyword argument. This means that the following are i
     player = await voice.create_ytdl_player(url, after=self.foo())
     other  = await voice.create_ytdl_player(url, after=self.bar(10))
 
-However the following are correct:
+However, the following are correct:
 
 .. code-block:: python
 
@@ -218,7 +218,7 @@ one of the following functions:
 - :meth:`Server.get_channel`
 
 If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding
-specific entities. The documentation for those functions provide specific examples.
+specific entities. The documentation for those functions provides specific examples.
 
 Commands Extension
 -------------------
