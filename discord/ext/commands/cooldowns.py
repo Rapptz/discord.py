@@ -48,25 +48,24 @@ class Cooldown:
         if not isinstance(self.type, BucketType):
             raise TypeError('Cooldown type must be a BucketType')
 
-    def is_rate_limited(self):
-        current = time.time()
+    def get_tokens(self, current=None):
+        if not current:
+            current = time.time()
+
         tokens = self._tokens
 
         if current > self._window + self.per:
             tokens = self.rate
-        return tokens == 0
+        return tokens
 
     def update_rate_limit(self):
         current = time.time()
         self._last = current
 
+        self._tokens = self.get_tokens(current)
+
         # first token used means that we start a new rate limit window
         if self._tokens == self.rate:
-            self._window = current
-
-        # check if our window has passed and we can refresh our tokens
-        if current > self._window + self.per:
-            self._tokens = self.rate
             self._window = current
 
         # check if we are rate limited
