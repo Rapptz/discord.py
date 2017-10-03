@@ -218,7 +218,7 @@ one of the following functions:
 - :meth:`Server.get_channel`
 
 If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding
-specific entities. The documentation for those functions provide specific examples.
+specific entities. The documentation for those functions provides specific examples.
 
 Commands Extension
 -------------------
