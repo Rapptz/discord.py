@@ -103,5 +103,5 @@ Usually `pip` will handle these for you.
 - [discord.io](https://github.com/izy521/discord.io)
 - [Discord.NET](https://github.com/RogueException/Discord.Net)
 - [DiscordSharp](https://github.com/Luigifan/DiscordSharp)
-- [Discord4J](https://github.com/knobody/Discord4J)
+- [Discord4J](https://github.com/austinv11/Discord4J)
 - [discordrb](https://github.com/meew0/discordrb)
