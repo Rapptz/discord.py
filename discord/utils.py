@@ -112,7 +112,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
     if guild is not None:
-        url = url + "&guild_id=" + guild.id
+        url = url + "&guild_id=" + str(guild.id)
     if redirect_uri is not None:
         from urllib.parse import urlencode
         url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
