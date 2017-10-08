@@ -438,7 +438,7 @@ class Command:
         yield from self._verify_checks(ctx)
 
         if self._buckets.valid:
-            bucket = self._buckets.get_bucket(ctx)
+            bucket = self._buckets.get_bucket(ctx.message)
             retry_after = bucket.update_rate_limit()
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
@@ -462,7 +462,7 @@ class Command:
         if not self._buckets.valid:
             return False
 
-        bucket = self._buckets.get_bucket(ctx)
+        bucket = self._buckets.get_bucket(ctx.message)
         return bucket.get_tokens() == 0
 
     def reset_cooldown(self, ctx):
@@ -474,7 +474,7 @@ class Command:
             The invocation context to reset the cooldown under.
         """
         if self._buckets.valid:
-            bucket = self._buckets.get_bucket(ctx)
+            bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
 
     @asyncio.coroutine

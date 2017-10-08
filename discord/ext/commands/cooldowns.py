@@ -103,8 +103,7 @@ class CooldownMapping:
     def from_cooldown(cls, rate, per, type):
         return cls(Cooldown(rate, per, type))
 
-    def _bucket_key(self, ctx):
-        msg = ctx.message
+    def _bucket_key(self, msg):
         bucket_type = self._cooldown.type
         if bucket_type is BucketType.user:
             return msg.author.id
@@ -122,12 +121,12 @@ class CooldownMapping:
         for k in dead_keys:
             del self._cache[k]
 
-    def get_bucket(self, ctx):
+    def get_bucket(self, message):
         if self._cooldown.type is BucketType.default:
             return self._cooldown
 
         self._verify_cache_integrity()
-        key = self._bucket_key(ctx)
+        key = self._bucket_key(message)
         if key not in self._cache:
             bucket = self._cooldown.copy()
             self._cache[key] = bucket
