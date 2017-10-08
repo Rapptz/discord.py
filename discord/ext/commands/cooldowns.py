@@ -108,7 +108,7 @@ class CooldownMapping:
         if bucket_type is BucketType.user:
             return msg.author.id
         elif bucket_type is BucketType.guild:
-            return getattr(msg.guild, 'id', msg.author.id)
+            return (msg.guild or msg.author).id
         elif bucket_type is BucketType.channel:
             return msg.channel.id
 
