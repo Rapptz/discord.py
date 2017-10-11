@@ -23,6 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .user import ClientUser
 from .permissions import Permissions
 from .enums import ChannelType, try_enum
 from .mixins import Hashable
@@ -105,7 +106,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self
 
     def permissions_for(self, member):
-        base = super().permissions_for(member)
+        # use Member instead of ClientUser
+        if isinstance(member, ClientUser):
+            base = super().permissions_for(self.guild.me)
+        else:
+            base = super().permissions_for(member)
 
         # text channels do not have voice related permissions
         denied = Permissions.voice()
