@@ -41,8 +41,7 @@ import struct
 
 log = logging.getLogger(__name__)
 
-__all__ = [ 'ReconnectWebSocket', 'DiscordWebSocket',
-            'KeepAliveHandler', 'VoiceKeepAliveHandler',
+__all__ = [ 'DiscordWebSocket', 'KeepAliveHandler', 'VoiceKeepAliveHandler',
             'DiscordVoiceWebSocket', 'ResumeWebSocket' ]
 
 class ResumeWebSocket(Exception):
