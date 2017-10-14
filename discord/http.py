@@ -739,29 +739,21 @@ class HTTPClient:
         return self.request(Route('GET', '/oauth2/applications/@me'))
 
     @asyncio.coroutine
-    def get_gateway(self, *, encoding='json', v=6, zlib=True):
+    def get_gateway(self):
         try:
             data = yield from self.request(Route('GET', '/gateway'))
         except HTTPException as e:
             raise GatewayNotFound() from e
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
-        else:
-            value = '{0}?encoding={1}&v={2}'
-        return value.format(data['url'], encoding, v)
+        return data.get('url') + '?encoding=json&v=6'
 
     @asyncio.coroutine
-    def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
+    def get_bot_gateway(self):
         try:
             data = yield from self.request(Route('GET', '/gateway/bot'))
         except HTTPException as e:
             raise GatewayNotFound() from e
-
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v={2}'
-        return data['shards'], value.format(data['url'], encoding, v)
+            return data['shards'], data['url'] + '?encoding=json&v=6'
 
     def get_user_info(self, user_id):
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

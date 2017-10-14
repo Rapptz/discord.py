@@ -186,8 +186,6 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         # ws related stuff
         self.session_id = None
         self.sequence = None
-        self._zlib = zlib.decompressobj()
-        self._buffer = bytearray()
 
     @classmethod
     @asyncio.coroutine
@@ -314,18 +312,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         self._dispatch('socket_raw_receive', msg)
 
         if isinstance(msg, bytes):
-            self._buffer.extend(msg)
-
-            if len(msg) >= 4:
-                suffix = int.from_bytes(msg[-4:], byteorder='big')
-                if suffix == 0xFFFF:
-                    msg = self._zlib.decompress(self._buffer)
-                    msg = msg.decode('utf-8')
-                    self._buffer = bytearray()
-                else:
-                    return
-            else:
-                return
+            msg = zlib.decompress(msg, 15, 10490000) # This is 10 MiB
+            msg = msg.decode('utf-8')
 
         msg = json.loads(msg)
 
