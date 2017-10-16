@@ -503,19 +503,19 @@ All enumerations are subclasses of `enum`_.
 
     Specifies the region a :class:`Server`'s voice server belongs to.
 
-    .. attribute:: us_west
+    .. attribute:: us-west
 
         The US West region.
-    .. attribute:: us_east
+    .. attribute:: us-east
 
         The US East region.
-    .. attribute:: us_central
+    .. attribute:: us-central
 
         The US Central region.
-    .. attribute:: eu_west
+    .. attribute:: eu-west
 
         The EU West region.
-    .. attribute:: eu_central
+    .. attribute:: eu-central
 
         The EU Central region.
     .. attribute:: singapore
@@ -537,13 +537,13 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: brazil
 
         The Brazil region.
-    .. attribute:: vip_us_east
+    .. attribute:: vip-us-east
 
         The US East region for VIP servers.
-    .. attribute:: vip_us_west
+    .. attribute:: vip-us-west
 
         The US West region for VIP servers.
-    .. attribute:: vip_amsterdam
+    .. attribute:: vip-amsterdam
 
         The Amsterdam region for VIP servers.
 
