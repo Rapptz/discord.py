@@ -218,6 +218,8 @@ class Embed:
 
     def set_image(self, *, url):
         """Sets the image for the embed content.
+        
+        If you pass in None, your request's image will not change.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -228,9 +230,10 @@ class Embed:
             The source URL for the image. Only HTTP(S) is supported.
         """
 
-        self._image = {
-            'url': str(url)
-        }
+        if url:
+            self._image = {
+                'url': str(url)
+            }
 
         return self
 
@@ -252,6 +255,8 @@ class Embed:
     def set_thumbnail(self, *, url):
         """Sets the thumbnail for the embed content.
 
+        If you pass in None, your request's thumbnail will not change.
+
         This function returns the class instance to allow for fluent-style
         chaining.
 
@@ -261,9 +266,10 @@ class Embed:
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
-        self._thumbnail = {
-            'url': str(url)
-        }
+        if url:
+            self._thumbnail = {
+                'url': str(url)
+            }
 
         return self
 
@@ -304,6 +310,8 @@ class Embed:
     def set_author(self, *, name, url=EmptyEmbed, icon_url=EmptyEmbed):
         """Sets the author for the embed content.
 
+        If you pass in None for name, your request's name will not change.
+
         This function returns the class instance to allow for fluent-style
         chaining.
 
@@ -317,9 +325,10 @@ class Embed:
             The URL of the author icon. Only HTTP(S) is supported.
         """
 
-        self._author = {
-            'name': str(name)
-        }
+        if name:
+            self._author = {
+                'name': str(name)
+            }
 
         if url is not EmptyEmbed:
             self._author['url'] = str(url)
