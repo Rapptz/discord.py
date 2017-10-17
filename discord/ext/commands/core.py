@@ -590,6 +590,13 @@ class Command:
         return type(self.instance).__name__ if self.instance is not None else None
 
     @property
+    def category_name(self):
+        """A custom override name for the cog this belongs to. None otherwise."""
+        cog = self.instance
+        if cog is not None:
+            return getattr(cog, '_{0.__class__.__name__}__category_name'.format(cog), None)
+
+    @property
     def short_doc(self):
         """Gets the "short" documentation of a command.
 
