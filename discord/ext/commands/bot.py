@@ -109,8 +109,15 @@ def _default_help_command(ctx, *commands : str):
         command = None
         if name in bot.cogs:
             command = bot.cogs[name]
+        elif name in bot.all_commands:
+            command = bot.all_commands[name]
         else:
-            command = bot.all_commands.get(name)
+            for cog in bot.cogs.values():
+                category_name = getattr(cog, '_{0.__class__.__name__}__category_name'.format(cog), None)
+                if category_name == name:
+                    command = cog
+                    break
+
             if command is None:
                 yield from destination.send(bot.command_not_found.format(name))
                 return
