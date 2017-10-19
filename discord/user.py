@@ -101,7 +101,7 @@ class BaseUser(_BaseUser):
 
     def is_avatar_animated(self):
         """bool: Returns True if the user has an animated avatar."""
-        return self.avatar and self.avatar.startswith('a_')
+        return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
         """Returns a friendly URL version of the avatar the user has.
