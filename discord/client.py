@@ -631,6 +631,20 @@ class Client:
         for guild in self.guilds:
             for member in guild.members:
                 yield member
+                
+    def get_all_roles(self):
+        """Returns a generator with every :class:`Role` the client can see.
+
+        This is equivalent to: ::
+
+            for guild in client.guilds:
+                for role in guild.roles:
+                    yield role
+
+        """
+        for guild in self.guilds:
+            for role in guild.roles:
+                yield role
 
     # listeners/waiters
 
