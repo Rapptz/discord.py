@@ -53,7 +53,7 @@ class Route:
         self.method = method
         url = (self.BASE + self.path)
         if parameters:
-            self.url = url.format(**{k: _uriquote(v) for k, v in parameters.items()})
+            self.url = url.format(**{k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
         else:
             self.url = url
 
