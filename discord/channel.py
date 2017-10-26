@@ -469,6 +469,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
+        name: str
+            The new channel's name.
         bitrate: int
             The new channel's bitrate.
         user_limit: int
