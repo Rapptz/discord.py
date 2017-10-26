@@ -78,7 +78,7 @@ class Converter:
 
 class IDConverter(Converter):
     def __init__(self):
-        self._id_regex = re.compile(r'([0-9]{15,21})$')
+        self._id_regex = re.compile(r'(\d{15,21})$')
         super().__init__()
 
     def _get_id_match(self, argument):
