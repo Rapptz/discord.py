@@ -90,8 +90,8 @@ class Member(User):
         A list of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role.
     joined_at : `datetime.datetime`
-        A datetime object that specifies the date and time in UTC that the member joined the server for
-        the first time.
+        A datetime object that specifies the date and time (in UTC) that the member joined the server.
+        In case the member left and rejoined, this is their most recent join.
     status : :class:`Status`
         The member's status. There is a chance that the status will be a ``str``
         if it is a value that is not recognised by the enumerator.
