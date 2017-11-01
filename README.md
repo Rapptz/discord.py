@@ -5,7 +5,7 @@
 
 discord.py is an API wrapper for Discord written in Python.
 
-This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the [documentation][doc].
+This was written to allow easier writing of bots or chat logs. Make sure to familiarize yourself with the API using the [documentation][doc].
 
 [doc]: http://discordpy.rtfd.org/en/latest
 
