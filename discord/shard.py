@@ -175,8 +175,10 @@ class AutoShardedClient(Client):
 
         This operates similarly to :meth:`.Client.latency` except it uses the average
         latency of every shard's latency. To get a list of shard latency, check the
-        :attr:`latencies` property.
+        :attr:`latencies` property. Returns ``None`` if there are no shards ready.
         """
+        if not self.shards:
+            return None
         return sum(latency for _, latency in self.latencies) / len(self.shards)
 
     @property
