@@ -512,7 +512,7 @@ class Webhook:
         Forbidden
             You do not have permissions to delete this webhook.
         """
-        return self._adapter.delete_webhook(self.id, self.token)
+        return self._adapter.delete_webhook()
 
     def edit(self, **kwargs):
         """|maybecoro|
