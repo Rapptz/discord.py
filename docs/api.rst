@@ -693,6 +693,9 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: us_east
 
         The US East region.
+    .. attribute:: us_south
+    
+        The US South region.
     .. attribute:: us_central
 
         The US Central region.
@@ -721,6 +724,12 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: brazil
 
         The Brazil region.
+    .. attribute:: hongkong
+    
+        The Hong Kong region.
+    .. attribute:: russia
+    
+        The Russia region.
     .. attribute:: vip_us_east
 
         The US East region for VIP guilds.
