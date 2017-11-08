@@ -99,8 +99,7 @@ class ArgumentParseFailure(BadArgument):
     pass
 
 class ConversionFailure(BadArgument):
-    """Exception raised when a :func:`Converter.convert()
-    <discord.ext.commands.Converter.convert>` method fails.
+    """Exception raised when a :meth:`.Converter.convert` method fails.
 
     This is a subclass of :class:`.BadArgument`.
 
