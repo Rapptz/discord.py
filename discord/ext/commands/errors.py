@@ -107,8 +107,8 @@ class ConversionFailure(BadArgument):
     -----------
     argument: str
         The argument which the user passed in.
-    converter: :class:`.Converter`
-        The converter that failed.
+    converter: type
+        The class for the converter that failed.
     """
     def __init__(self, argument=None, converter=None, message=None, *args):
         self.argument = argument
