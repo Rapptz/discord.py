@@ -65,7 +65,8 @@ class Converter:
 
         If an error is found while converting, it is recommended to
         raise a :exc:`.CommandError` derived exception as it will
-        properly propagate to the error handlers.
+        properly propagate to the error handlers (namely
+        :exc:`.ConversionFailure`).
 
         Parameters
         -----------
