@@ -45,7 +45,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return self(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
-class YouTube:
+class Music:
     # guilds = { guild_id, guild_list[] }
     # guild_list = [ voice_client, requests[] ]
     # requests = [ request_info[] ]
