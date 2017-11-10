@@ -51,6 +51,7 @@ class Game:
         The game's name.
     url: str
         The game's URL. Usually used for twitch streaming.
+        Only necessary when the Game type is 1.
     type: int
         The type of game being played. 
         1 indicates "Streaming".
