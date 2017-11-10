@@ -52,7 +52,11 @@ class Game:
     url: str
         The game's URL. Usually used for twitch streaming.
     type: int
-        The type of game being played. 1 indicates "Streaming".
+        The type of game being played. 
+        1 indicates "Streaming".
+        2 indicates "Listening to".
+        3 indicates "Watching".
+        
     """
 
     __slots__ = ('name', 'type', 'url')
