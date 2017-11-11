@@ -465,7 +465,7 @@ class HTTPClient:
         r = Route('PATCH', '/guilds/{guild_id}/channels', guild_id=guild_id)
         return self.request(r, json=positions)
 
-    def create_channel(self, guild_id, name, channe_type, permission_overwrites=None):
+    def create_channel(self, guild_id, name, channe_type, parent_id=None,permission_overwrites=None):
         payload = {
             'name': name,
             'type': channe_type
@@ -473,6 +473,8 @@ class HTTPClient:
 
         if permission_overwrites is not None:
             payload['permission_overwrites'] = permission_overwrites
+        if parent_id is not None:
+            payload['parent_id'] = parent_id
 
         return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload)
 
