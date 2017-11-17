@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .enums import try_enum, PresenceType
+
 class Game:
     """Represents a Discord game.
 
@@ -60,7 +62,7 @@ class Game:
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
         self.url = kwargs.get('url')
-        self.type = kwargs.get('type', 0)
+        self.type = try_enum(PresenceType, kwargs.get('type', 0))
 
     def __str__(self):
         return str(self.name)
