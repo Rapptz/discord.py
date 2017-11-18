@@ -53,8 +53,8 @@ class Game:
         The game's name.
     url: str
         The game's URL. Usually used for twitch streaming.
-    type: int
-        The type of game being played. 1 indicates "Streaming".
+    type: Union[:class:`PresenceType`, int]
+        The displayed presence type.
     """
 
     __slots__ = ('name', 'type', 'url')
