@@ -954,7 +954,7 @@ class Bot(BotBase, discord.Client):
         than ignoring itself. If ``False`` (the default) then the bot will ignore
         itself. This cannot be changed once initialised.
     formatter : :class:`.HelpFormatter`
-        The formatter used to format the help message. By default, it uses a
+        The formatter used to format the help message. By default, it uses
         the :class:`.HelpFormatter`. Check it for more info on how to override it.
         If you want to change the help command completely (add aliases, etc) then
         a call to :meth:`~.Bot.remove_command` with 'help' as the argument would do the
