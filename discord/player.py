@@ -156,6 +156,7 @@ class FFmpegPCMAudio(AudioSource):
 
         args.append('pipe:1')
 
+        self._process = None
         try:
             self._process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
             self._stdout = self._process.stdout
