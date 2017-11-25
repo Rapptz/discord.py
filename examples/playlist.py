@@ -146,6 +146,8 @@ class Music:
 
     async def __local_check(self, ctx):
         """A check which applies to all commands in Music."""
+        if ctx.invoked_with == 'help':
+            return True
         if not ctx.guild:
             await ctx.send('Music commands can not be used in DMs.')
             return False
