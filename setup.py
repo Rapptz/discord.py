@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
   requirements = f.read().splitlines()
 
 if on_rtd:
-  requirements.append('sphinxcontrib-napoleon')
+  requirements.append('sphinx.ext.napoleon')
   requirements.append('sphinxcontrib-asyncio')
   requirements.append('sphinx==1.6.3')
 
