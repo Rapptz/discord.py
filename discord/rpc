@@ -1,0 +1,171 @@
+import asyncio
+import json
+import os
+import struct
+import sys
+import time
+import uuid
+
+
+class DiscordRPC:
+    """Represents a connection to the local Discord RPC server.
+    Parameters
+    ----------
+    client_id : [str]
+        The client id of the application.
+    """
+    def __init__(self, **options):
+        if sys.platform == 'linux':
+            env_vars = ['XDG_RUNTIME_DIR', 'TMPDIR', 'TMP', 'TEMP']
+            path = next((os.environ.get(path, None) for path in env_vars if path in os.environ), '/tmp')
+            self.ipc_path = f'{path}/discord-ipc-0'
+            self.loop = asyncio.get_event_loop()
+        elif sys.platform == 'win32':
+            self.ipc_path = r'\\?\pipe\discord-ipc-0'
+            self.loop = asyncio.ProactorEventLoop()
+
+        self.sock_reader: asyncio.StreamReader = None
+        self.sock_writer: asyncio.StreamWriter = None
+
+        self.client_id = options.get('client_id')
+
+    async def read_output(self):
+        """|coro|
+        """
+        while True:
+            data = await self.sock_reader.read(1024)
+            if data == b'':
+                self.sock_writer.close()
+                exit(0)
+            try:
+                code, length = struct.unpack('<ii', data[:8])
+                print(f'OP Code: {code}; Length: {length}\nResponse:\n{json.loads(data[8:].decode("utf-8"))}\n')
+            except struct.error:
+                print(f'Something happened\n{data}')
+
+    def send_data(self, op: int, payload: dict):
+        """"""
+        payload = json.dumps(payload)
+        self.sock_writer.write(struct.pack('<ii', op, len(payload)) + payload.encode('utf-8'))
+
+    async def handshake(self):
+        """|coro|
+        """
+        if sys.platform == 'linux':
+            self.sock_reader, self.sock_writer = await asyncio.open_unix_connection(self.ipc_path, loop=self.loop)
+        elif sys.platform == 'win32':
+            self.sock_reader = asyncio.StreamReader(loop=self.loop)
+            reader_protocol = asyncio.StreamReaderProtocol(self.sock_reader, loop=self.loop)
+            self.sock_writer, _ = await self.loop.create_pipe_connection(lambda: reader_protocol, self.ipc_path)
+
+        self.send_data(0, {'v': 1, 'client_id': self.client_id})
+        data = await self.sock_reader.read(1024)
+        code, length = struct.unpack('<ii', data[:8])
+        print(f'OP Code: {code}; Length: {length}\nResponse:\n{json.loads(data[8:].decode("utf-8"))}\n')
+
+    def send_rich_presence(self, **options):
+        """Sends rich presence.
+        Parameters
+        ----------
+        state : Optional[str]
+            The state to be sent.
+        details : Optional[str]
+            The details to be sent.
+        large_image : Optional[str]
+            The name of the large image asset to be used.
+        large_image_text : Optional[str]
+            The text for the large image.
+        small_image : Optional[str]
+            The name of the small image asset to be used.
+        small_image_text : Optional[str]
+            The text for the small image.
+        client_id : Optional[str]
+            The client id of the application.
+        match_secret : Optional[str]
+            The match secret.
+        join_secret : Optional[str]
+            The join secret.
+        spectate_secret : Optional[str]
+            The spectate secret.
+        instance : Optional[str]
+
+        start_timestamp : Optional[int]
+            The start of the event.
+        end_timestamp : Optional[int]
+            The end of the event.
+        party_id : Optional[str]
+            The id of the party.
+        party_current : Optional[int]
+            The current size of the party.
+        party_max : Optional[int]
+            The maximum size of the party.
+        pid : Optional[int]
+            The PID of the process
+        nonce : Optional[str]
+
+        """
+        state = options.get('state', None)
+        details = options.get('details', None)
+        large_image = options.get('large_image', None)
+        large_image_text = options.get('large_image_text', None)
+        small_image = options.get('small_image', None)
+        small_image_text = options.get('small_image_text', None)
+        client_id = options.get('client_id', None)
+        match_secret = options.get('match_secret', None)
+        join_secret = options.get('join_secret', None)
+        spectate_secret = options.get('spectate_secret', None)
+        instance = options.get('instance', None)
+        start_timestamp = options.get('start_timestamp', None)
+        end_timestamp = options.get('end_timestamp', None)
+        party_id = options.get('party_id', None)
+        party_current = options.get('party_current', None)
+        party_max = options.get('party_max', None)
+        pid = options.get('pid', os.getpid())
+        nonce = options.get('nonce', str(uuid.uuid4()))
+
+        payload = {
+            'cmd': 'SET_ACTIVITY',
+            'args': {
+                'activity': {
+                    'state': state,
+                    'details': details,
+                    'timestamps': {
+                        'start': start_timestamp,
+                        'end': end_timestamp
+                    },
+                    'assets': {
+                        'large_image': large_image_text,
+                        'large_text': large_image,
+                        'small_image': small_image,
+                        'small_text': small_image_text
+                    },
+                    'party': {
+                        'id': party_id,
+                        'size': [party_current, party_max]
+                    },
+                    'secrets': {
+                        'match': match_secret,
+                        'join': join_secret,
+                        'spectate': spectate_secret,
+                    },
+                    'instance': instance
+                },
+                'pid': pid
+            },
+            'nonce': nonce
+        }
+        self.send_data(1, payload)
+
+    async def run(self):
+        """|coro|
+        """
+        await self.handshake()
+        self.send_rich_presence()
+        await self.read_output()
+
+    def close(self):
+        """|coro|
+        """
+        self.sock_writer.close()
+        self.loop.close()
+        exit(0)
