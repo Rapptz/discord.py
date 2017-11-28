@@ -468,6 +468,10 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: group
 
         A private group text channel.
+    .. attribute:: category
+
+        A server category channel.
+
 
 .. class:: MessageType
 

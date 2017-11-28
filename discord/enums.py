@@ -27,10 +27,11 @@ DEALINGS IN THE SOFTWARE.
 from enum import Enum
 
 class ChannelType(Enum):
-    text    = 0
-    private = 1
-    voice   = 2
-    group   = 3
+    text     = 0
+    private  = 1
+    voice    = 2
+    group    = 3
+    category = 4
 
     def __str__(self):
         return self.name
