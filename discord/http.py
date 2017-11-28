@@ -224,7 +224,7 @@ class HTTPClient:
         yield from self.session.close()
 
     def recreate(self):
-        self.session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
+        self.session = aiohttp.ClientSession(connector=self.connector, loop=self.loop, trust_env=True)
 
     def _token(self, token, *, bot=True):
         self.token = token
