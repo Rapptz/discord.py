@@ -15,7 +15,7 @@ Breaking Changes
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before ``v1.0.0``.
 
-I recommend that you follow the discussion in the `unofficial Discord API discord channel <https://discord.gg/0SBTUU1wZTUzBx2q>`__ and update your installation periodically. I will attempt to make note of breaking changes in the API channel so make sure to subscribe to library news by typing ``?sub news`` in the channel.
+I recommend joining either the `official discord.py server <https://discord.gg/r3sSKJJ>`_ or the `Discord API server <https://discord.gg/discord-api>`_ for help and discussion about the library.
 
 Installing
 ----------
@@ -42,7 +42,7 @@ To install the development version, do the following:
 or the more long winded from cloned source:
 
 .. code:: sh
-    
+
     $ git clone https://github.com/Rapptz/discord.py
     $ cd discord.py
     $ python3 -m pip install -U .[voice]
@@ -56,7 +56,7 @@ Quick Example
 ------------
 
 .. code:: py
-    
+
     import discord
     import asyncio
 
