@@ -462,6 +462,18 @@ class Client:
         yield from self.http.close()
         self._ready.clear()
 
+    def clear(self):
+        """Clears the internal state of the bot.
+
+        After this, the bot can be considered "re-opened", i.e. :meth:`.is_closed`
+        and :meth:`.is_ready` both return ``False`` along with the bot's internal
+        cache cleared.
+        """
+        self._closed.clear()
+        self._ready.clear()
+        self._connection.clear()
+        self._http.recreate()
+
     @asyncio.coroutine
     def start(self, *args, **kwargs):
         """|coro|

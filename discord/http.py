@@ -102,6 +102,10 @@ class HTTPClient:
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
+    def recreate(self):
+        if self._session.closed:
+            self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
+
     @asyncio.coroutine
     def request(self, route, *, header_bypass_delay=None, **kwargs):
         bucket = route.bucket
