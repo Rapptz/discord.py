@@ -22,7 +22,7 @@ Below are major model changes that have happened in v1.0
 Snowflakes are int
 ~~~~~~~~~~~~~~~~~~~~
 
-Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to :obj:`int`.
+Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to :class:`int`.
 
 Quick example: ::
 

@@ -81,11 +81,11 @@ class HTTPException(DiscordException):
 
         __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
 
-    text: :obj:`str`
+    text: :class:`str`
         The text of the error. Could be an empty string.
-    status: :obj:`int`
+    status: :class:`int`
         The status code of the HTTP request.
-    code: :obj:`int`
+    code: :class:`int`
         The Discord specific error code for the failure.
     """
 
@@ -150,11 +150,11 @@ class ConnectionClosed(ClientException):
 
     Attributes
     -----------
-    code: :obj:`int`
+    code: :class:`int`
         The close code of the websocket.
-    reason: :obj:`str`
+    reason: :class:`str`
         The reason provided for the closure.
-    shard_id: Optional[:obj:`int`]
+    shard_id: Optional[:class:`int`]
         The shard ID that got closed if applicable.
     """
     def __init__(self, original, *, shard_id):

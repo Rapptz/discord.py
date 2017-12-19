@@ -54,11 +54,11 @@ class Reaction:
 
     Attributes
     -----------
-    emoji: :class:`Emoji` or :obj:`str`
+    emoji: :class:`Emoji` or :class:`str`
         The reaction emoji. May be a custom emoji, or a unicode emoji.
-    count: :obj:`int`
+    count: :class:`int`
         Number of times this reaction was made
-    me: :obj:`bool`
+    me: :class:`bool`
         If the user sent this reaction.
     message: :class:`Message`
         Message this reaction is for.
@@ -73,7 +73,7 @@ class Reaction:
 
     @property
     def custom_emoji(self):
-        """:obj:`bool`: If this is a custom emoji."""
+        """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
     def __eq__(self, other):

@@ -135,7 +135,7 @@ To upload multiple files, you can use the ``files`` keyword argument instead of 
     await channel.send(files=my_files)
 
 If you want to upload something from a URL, you will have to use an HTTP request using ``aiohttp``
-and then pass an :obj:`io.BytesIO` instance to :class:`File` like so:
+and then pass an :class:`io.BytesIO` instance to :class:`File` like so:
 
 .. code-block:: python3
 
@@ -200,7 +200,7 @@ a coroutine from another thread.
     This function is only part of 3.5.1+ and 3.4.4+. If you are not using these Python versions then use
     ``discord.compat.run_coroutine_threadsafe``.
 
-However, this function returns a :obj:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of
+However, this function returns a :class:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of
 this together we can do the following: ::
 
     def my_after(error):

@@ -65,17 +65,17 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     Attributes
     -----------
-    name: :obj:`str`
+    name: :class:`str`
         The channel name.
     guild: :class:`Guild`
         The guild the channel belongs to.
-    id: :obj:`int`
+    id: :class:`int`
         The channel ID.
-    category_id: :obj:`int`
+    category_id: :class:`int`
         The category channel ID this channel belongs to.
-    topic: Optional[:obj:`str`]
+    topic: Optional[:class:`str`]
         The channel's topic. None if it doesn't exist.
-    position: :obj:`int`
+    position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
     """
@@ -116,7 +116,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """Returns a :obj:`list` of :class:`Member` that can see this channel."""
+        """Returns a :class:`list` of :class:`Member` that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
@@ -404,20 +404,20 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     Attributes
     -----------
-    name: :obj:`str`
+    name: :class:`str`
         The channel name.
     guild: :class:`Guild`
         The guild the channel belongs to.
-    id: :obj:`int`
+    id: :class:`int`
         The channel ID.
-    category_id: :obj:`int`
+    category_id: :class:`int`
         The category channel ID this channel belongs to.
-    position: :obj:`int`
+    position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
-    bitrate: :obj:`int`
+    bitrate: :class:`int`
         The channel's preferred audio bitrate in bits per second.
-    user_limit: :obj:`int`
+    user_limit: :class:`int`
         The channel's limit for number of members that can be in a voice channel.
     """
 
@@ -521,13 +521,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     Attributes
     -----------
-    name: :obj:`str`
+    name: :class:`str`
         The category name.
     guild: :class:`Guild`
         The guild the category belongs to.
-    id: :obj:`int`
+    id: :class:`int`
         The category channel ID.
-    position: :obj:`int`
+    position: :class:`int`
         The position in the category list. This is a number that starts at 0. e.g. the
         top category is position 0.
     """
@@ -637,7 +637,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         The user you are participating with in the direct message channel.
     me: :class:`ClientUser`
         The user presenting yourself.
-    id: :obj:`int`
+    id: :class:`int`
         The direct message channel ID.
     """
 
@@ -716,17 +716,17 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipients: :obj:`list` of :class:`User`
+    recipients: :class:`list` of :class:`User`
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
         The user presenting yourself.
-    id: :obj:`int`
+    id: :class:`int`
         The group channel ID.
     owner: :class:`User`
         The user that owns the group channel.
-    icon: Optional[:obj:`str`]
+    icon: Optional[:class:`str`]
         The group channel's icon hash if provided.
-    name: Optional[:obj:`str`]
+    name: Optional[:class:`str`]
         The group channel's name if provided.
     """
 
