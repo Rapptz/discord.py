@@ -280,7 +280,7 @@ class CategoryChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.CategoryChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ConversionFailure(argument, self, 'Channel "{}" not found.'.format(argument))
 
         return result
 
