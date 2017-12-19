@@ -657,7 +657,7 @@ For example, to wait for a reaction: ::
 
     # use user and reaction
 
-Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a ``asyncio.TimeoutError``
+Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a :exc:`asyncio.TimeoutError`
 when reached instead of setting the return to ``None``. For example:
 
 .. code-block:: python3

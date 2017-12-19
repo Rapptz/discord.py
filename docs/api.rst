@@ -94,7 +94,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     All the events must be a |corourl|_. If they aren't, then you might get unexpected
     errors. In order to turn a function into a coroutine they must either be ``async def``
-    functions or in 3.4 decorated with ``@asyncio.coroutine``.
+    functions or in 3.4 decorated with :func:`asyncio.coroutine`.
 
     The following two functions are examples of coroutine functions: ::
 

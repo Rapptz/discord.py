@@ -4,7 +4,7 @@
 Setting Up Logging
 ===================
 
-*discord.py* logs errors and debug information via the `logging`_ python
+*discord.py* logs errors and debug information via the :mod:`logging` python
 module. It is strongly recommended that the logging module is
 configured, as no errors or warnings will be output if it is not set up.
 Configuration of the ``logging`` module can be as simple as::
@@ -21,7 +21,7 @@ The optional ``level`` argument specifies what level of events to log
 out and can any of ``CRITICAL``, ``ERROR``, ``WARNING``, ``INFO``, and
 ``DEBUG`` and if not specified defaults to ``WARNING``.
 
-More advance setups are possible with the ``logging`` module.  To for
+More advance setups are possible with the :mod:`logging` module.  To for
 example write the logs to a file called ``discord.log`` instead of
 outputting them to to the console the following snippet can be used::
 
@@ -41,6 +41,4 @@ stdout of your program.
 
 
 For more information, check the documentation and tutorial of the
-`logging`_ module.
-
-.. _logging: https://docs.python.org/2/library/logging.html
+:mod:`logging` module.
