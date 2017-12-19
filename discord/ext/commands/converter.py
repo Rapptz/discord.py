@@ -121,8 +121,7 @@ class MemberConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
         if result is None:
-            raise ConversionFailure(argument, type(self),
-                                    'Member "{}" not found'.format(argument))
+            raise ConversionFailure(argument, self, 'Member "{}" not found'.format(argument))
 
         return result
 
@@ -162,8 +161,7 @@ class UserConverter(IDConverter):
             result = discord.utils.find(predicate, state._users.values())
 
         if result is None:
-            raise ConversionFailure(argument, type(self),
-                                    'User "{}" not found'.format(argument))
+            raise ConversionFailure(argument, self, 'User "{}" not found'.format(argument))
 
         return result
 
@@ -203,8 +201,7 @@ class TextChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.TextChannel):
-            raise ConversionFailure(argument, type(self),
-                                    'Channel "{}" not found.'.format(argument))
+            raise ConversionFailure(argument, self, 'Channel "{}" not found.'.format(argument))
 
         return result
 
@@ -243,8 +240,7 @@ class VoiceChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.VoiceChannel):
-            raise ConversionFailure(argument, type(self),
-                                    'Channel "{}" not found.'.format(argument))
+            raise ConversionFailure(argument, self, 'Channel "{}" not found.'.format(argument))
 
         return result
 
@@ -312,8 +308,7 @@ class ColourConverter(Converter):
         except ValueError:
             method = getattr(discord.Colour, arg.replace(' ', '_'), None)
             if method is None or not inspect.ismethod(method):
-                raise ConversionFailure(argument, type(self),
-                                        'Colour "{}" is invalid.'.format(arg))
+                raise ConversionFailure(argument, self, 'Colour "{}" is invalid.'.format(arg))
             return method()
 
 class RoleConverter(IDConverter):
@@ -339,8 +334,7 @@ class RoleConverter(IDConverter):
         params = dict(id=int(match.group(1))) if match else dict(name=argument)
         result = discord.utils.get(guild.roles, **params)
         if result is None:
-            raise ConversionFailure(argument, type(self),
-                                    'Role "{}" not found.'.format(argument))
+            raise ConversionFailure(argument, self, 'Role "{}" not found.'.format(argument))
         return result
 
 class GameConverter(Converter):
@@ -360,8 +354,7 @@ class InviteConverter(Converter):
             invite = yield from ctx.bot.get_invite(argument)
             return invite
         except Exception as e:
-            raise ConversionFailure(argument, type(self),
-                                    'Invite is invalid or expired') from e
+            raise ConversionFailure(argument, self, 'Invite is invalid or expired') from e
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.
@@ -401,8 +394,7 @@ class EmojiConverter(IDConverter):
                 result = discord.utils.get(bot.emojis, id=emoji_id)
 
         if result is None:
-            raise ConversionFailure(argument, type(self),
-                                    'Emoji "{}" not found.'.format(argument))
+            raise ConversionFailure(argument, self, 'Emoji "{}" not found.'.format(argument))
 
         return result
 
