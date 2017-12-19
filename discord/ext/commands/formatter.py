@@ -58,11 +58,11 @@ class Paginator:
 
     Attributes
     -----------
-    prefix: str
+    prefix: :obj:`str`
         The prefix inserted to every page. e.g. three backticks.
-    suffix: str
+    suffix: :obj:`str`
         The suffix appended at the end of every page. e.g. three backticks.
-    max_size: int
+    max_size: :obj:`int`
         The maximum amount of codepoints allowed in a page.
     """
     def __init__(self, prefix='```', suffix='```', max_size=2000):
@@ -133,13 +133,13 @@ class HelpFormatter:
 
     Attributes
     -----------
-    show_hidden: bool
+    show_hidden: :obj:`bool`
         Dictates if hidden commands should be shown in the output.
         Defaults to ``False``.
-    show_check_failure: bool
+    show_check_failure: :obj:`bool`
         Dictates if commands that have their :attr:`.Command.checks` failed
         shown. Defaults to ``False``.
-    width: int
+    width: :obj:`int`
         The maximum number of characters that fit in a line.
         Defaults to 80.
     """
@@ -149,15 +149,15 @@ class HelpFormatter:
         self.show_check_failure = show_check_failure
 
     def has_subcommands(self):
-        """bool: Specifies if the command has subcommands."""
+        """:obj:`bool`: Specifies if the command has subcommands."""
         return isinstance(self.command, GroupMixin)
 
     def is_bot(self):
-        """bool: Specifies if the command being formatted is the bot itself."""
+        """:obj:`bool`: Specifies if the command being formatted is the bot itself."""
         return self.command is self.context.bot
 
     def is_cog(self):
-        """bool: Specifies if the command being formatted is actually a cog."""
+        """:obj:`bool`: Specifies if the command being formatted is actually a cog."""
         return not self.is_bot() and not isinstance(self.command, Command)
 
     def shorten(self, text):
@@ -168,7 +168,7 @@ class HelpFormatter:
 
     @property
     def max_name_size(self):
-        """int: Returns the largest name length of a command or if it has subcommands
+        """:obj:`int`: Returns the largest name length of a command or if it has subcommands
         the largest subcommand name."""
         try:
             commands = self.command.all_commands if not self.is_cog() else self.context.bot.all_commands
@@ -209,7 +209,7 @@ class HelpFormatter:
         --------
         iterable
             An iterable with the filter being applied. The resulting value is
-            a (key, value) tuple of the command name and the command itself.
+            a (key, value) :obj:`tuple` of the command name and the command itself.
         """
 
         def sane_no_suspension_point_predicate(tup):

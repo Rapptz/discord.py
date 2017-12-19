@@ -175,7 +175,7 @@ class Client:
 
     @property
     def latency(self):
-        """float: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord WebSocket protocol latency.
         """
@@ -214,7 +214,7 @@ class Client:
         return self._connection.voice_clients
 
     def is_ready(self):
-        """bool: Specifies if the client's internal cache is ready for use."""
+        """:obj:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
     @asyncio.coroutine
@@ -581,14 +581,14 @@ class Client:
     # properties
 
     def is_closed(self):
-        """bool: Indicates if the websocket connection is closed."""
+        """:obj:`bool`: Indicates if the websocket connection is closed."""
         return self._closed.is_set()
 
     # helpers/getters
 
     @property
     def users(self):
-        """Returns a list of all the :class:`User` the bot can see."""
+        """Returns a :obj:`list` of all the :class:`User` the bot can see."""
         return list(self._connection._users.values())
 
     def get_channel(self, id):
@@ -663,19 +663,17 @@ class Client:
         or to react to a message, or to edit a message in a self-contained
         way.
 
-        The ``timeout`` parameter is passed onto `asyncio.wait_for`_. By default,
+        The ``timeout`` parameter is passed onto :func:`asyncio.wait_for`. By default,
         it does not timeout. Note that this does propagate the
-        ``asyncio.TimeoutError`` for you in case of timeout and is provided for
+        :exc:`asyncio.TimeoutError` for you in case of timeout and is provided for
         ease of use.
 
-        In case the event returns multiple arguments, a tuple containing those
+        In case the event returns multiple arguments, a :obj:`tuple` containing those
         arguments is returned instead. Please check the
         :ref:`documentation <discord-api-events>` for a list of events and their
         parameters.
 
         This function returns the **first event that meets the requirements**.
-
-        .. _asyncio.wait_for: https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for
 
         Examples
         ---------
@@ -723,7 +721,7 @@ class Client:
             parameters of the event being waited for.
         timeout: Optional[float]
             The number of seconds to wait before timing out and raising
-            ``asyncio.TimeoutError``\.
+            :exc:`asyncio.TimeoutError`.
 
         Raises
         -------
@@ -733,7 +731,7 @@ class Client:
         Returns
         --------
         Any
-            Returns no arguments, a single argument, or a tuple of multiple
+            Returns no arguments, a single argument, or a :obj:`tuple` of multiple
             arguments that mirrors the parameters passed in the
             :ref:`event reference <discord-api-events>`.
         """
@@ -789,7 +787,7 @@ class Client:
         return coro
 
     def async_event(self, coro):
-        """A shorthand decorator for ``asyncio.coroutine`` + :meth:`event`."""
+        """A shorthand decorator for :func:`asyncio.coroutine` + :meth:`event`."""
         if not asyncio.iscoroutinefunction(coro):
             coro = asyncio.coroutine(coro)
 

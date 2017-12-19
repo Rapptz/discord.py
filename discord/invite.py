@@ -56,22 +56,22 @@ class Invite(Hashable):
 
     Attributes
     -----------
-    max_age: int
+    max_age: :obj:`int`
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
-    code: str
+    code: :obj:`str`
         The URL fragment used for the invite.
     guild: :class:`Guild`
         The guild the invite is for.
-    revoked: bool
+    revoked: :obj:`bool`
         Indicates if the invite has been revoked.
     created_at: `datetime.datetime`
         A datetime object denoting the time the invite was created.
-    temporary: bool
+    temporary: :obj:`bool`
         Indicates that the invite grants temporary membership.
         If True, members who joined via this invite will be kicked upon disconnect.
-    uses: int
+    uses: :obj:`int`
         How many times the invite has been used.
-    max_uses: int
+    max_uses: :obj:`int`
         How many times the invite can be used.
     inviter: :class:`User`
         The user who created the invite.

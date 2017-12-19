@@ -68,7 +68,7 @@ class WebhookAdapter:
         multipart: Optional[dict]
             A dict containing multipart form data to send with
             the request. If a filename is being uploaded, then it will
-            be under a ``file`` key which will have a 3-element tuple
+            be under a ``file`` key which will have a 3-element :obj:`tuple`
             denoting ``(filename, file, content_type)``.
         payload: Optional[dict]
             The JSON to send with the request, if any.
@@ -317,20 +317,20 @@ class Webhook:
 
     Attributes
     ------------
-    id: int
+    id: :obj:`int`
         The webhook's ID
-    token: str
+    token: :obj:`str`
         The authentication token of the webhook.
-    guild_id: Optional[int]
+    guild_id: Optional[:obj:`int`]
         The guild ID this webhook is for.
-    channel_id: Optional[int]
+    channel_id: Optional[:obj:`int`]
         The channel ID this webhook is for.
     user: Optional[:class:`abc.User`]
         The user this webhook was created by. If the webhook was
         received without authentication then this will be ``None``.
-    name: Optional[str]
+    name: Optional[:obj:`str`]
         The default name of the webhook.
-    avatar: Optional[str]
+    avatar: Optional[:obj:`str`]
         The default avatar of the webhook.
     """
 
@@ -578,7 +578,7 @@ class Webhook:
 
         If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
         it must be a rich embed type. You cannot mix the ``embed`` parameter with the
-        ``embeds`` parameter, which must be a list of :class:`Embed` objects to send.
+        ``embeds`` parameter, which must be a :obj:`list` of :class:`Embed` objects to send.
 
         Parameters
         ------------

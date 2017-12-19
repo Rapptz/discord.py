@@ -142,7 +142,7 @@ Some examples of previously valid behaviour that is now invalid
     if client.servers[0].name == "test":
         # do something
 
-Since they are no longer ``list``\s, they no longer support indexing or any operation other than iterating.
+Since they are no longer :obj:`list`\s, they no longer support indexing or any operation other than iterating.
 In order to get the old behaviour you should explicitly cast it to a list.
 
 .. code-block:: python3

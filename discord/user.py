@@ -100,7 +100,7 @@ class BaseUser(_BaseUser):
         return self.avatar_url_as(format=None, size=1024)
 
     def is_avatar_animated(self):
-        """bool: Returns True if the user has an animated avatar."""
+        """:obj:`bool`: Returns True if the user has an animated avatar."""
         return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
@@ -246,23 +246,23 @@ class ClientUser(BaseUser):
 
     Attributes
     -----------
-    name: str
+    name: :obj:`str`
         The user's username.
-    id: int
+    id: :obj:`int`
         The user's unique ID.
-    discriminator: str
+    discriminator: :obj:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: Optional[str]
+    avatar: Optional[:obj:`str`]
         The avatar hash the user has. Could be None.
-    bot: bool
+    bot: :obj:`bool`
         Specifies if the user is a bot account.
-    verified: bool
+    verified: :obj:`bool`
         Specifies if the user is a verified account.
-    email: Optional[str]
+    email: Optional[:obj:`str`]
         The email the user used when registering.
-    mfa_enabled: bool
+    mfa_enabled: :obj:`bool`
         Specifies if the user has MFA turned on and working.
-    premium: bool
+    premium: :obj:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
     """
     __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', '_relationships')
@@ -297,17 +297,17 @@ class ClientUser(BaseUser):
 
     @property
     def relationships(self):
-        """Returns a list of :class:`Relationship` that the user has."""
+        """Returns a :obj:`list` of :class:`Relationship` that the user has."""
         return list(self._relationships.values())
 
     @property
     def friends(self):
-        """Returns a list of :class:`User`\s that the user is friends with."""
+        """Returns a :obj:`list` of :class:`User`\s that the user is friends with."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        """Returns a list of :class:`User`\s that the user has blocked."""
+        """Returns a :obj:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
     @asyncio.coroutine
@@ -408,7 +408,7 @@ class ClientUser(BaseUser):
         Parameters
         -----------
         \*recipients
-            An argument list of :class:`User` to have in
+            An argument :obj:`list` of :class:`User` to have in
             your group.
 
         Return
@@ -457,15 +457,15 @@ class User(BaseUser, discord.abc.Messageable):
 
     Attributes
     -----------
-    name: str
+    name: :obj:`str`
         The user's username.
-    id: int
+    id: :obj:`int`
         The user's unique ID.
-    discriminator: str
+    discriminator: :obj:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: Optional[str]
+    avatar: Optional[:obj:`str`]
         The avatar hash the user has. Could be None.
-    bot: bool
+    bot: :obj:`bool`
         Specifies if the user is a bot account.
     """
 
@@ -509,14 +509,14 @@ class User(BaseUser, discord.abc.Messageable):
         return self._state.user.get_relationship(self.id)
 
     def is_friend(self):
-        """bool: Checks if the user is your friend."""
+        """:obj:`bool`: Checks if the user is your friend."""
         r = self.relationship
         if r is None:
             return False
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """bool: Checks if the user is blocked."""
+        """:obj:`bool`: Checks if the user is blocked."""
         r = self.relationship
         if r is None:
             return False

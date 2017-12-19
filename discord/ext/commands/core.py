@@ -91,20 +91,20 @@ class Command:
 
     Attributes
     -----------
-    name: str
+    name: :obj:`str`
         The name of the command.
-    callback: coroutine
+    callback: :obj:`coroutine`
         The coroutine that is executed when the command is called.
-    help: str
+    help: :obj:`str`
         The long help text for the command.
-    brief: str
+    brief: :obj:`str`
         The short help text for the command. If this is not specified
         then the first line of the long help text is used instead.
-    usage: str
+    usage: :obj:`str`
         A replacement for arguments in the default help text.
-    aliases: list
+    aliases: :obj:`list`
         The list of aliases the command can be invoked under.
-    enabled: bool
+    enabled: :obj:`bool`
         A boolean that indicates if the command is currently enabled.
         If the command is invoked while it is disabled, then
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
@@ -119,19 +119,19 @@ class Command:
         :exc:`.CommandError` should be used. Note that if the checks fail then
         :exc:`.CheckFailure` exception is raised to the :func:`.on_command_error`
         event.
-    description: str
+    description: :obj:`str`
         The message prefixed into the default help command.
-    hidden: bool
+    hidden: :obj:`bool`
         If ``True``\, the default help command does not show this in the
         help output.
-    rest_is_raw: bool
+    rest_is_raw: :obj:`bool`
         If ``False`` and a keyword-only argument is provided then the keyword
         only argument is stripped and handled as if it was a regular argument
         that handles :exc:`.MissingRequiredArgument` and default values in a
         regular matter rather than passing the rest completely raw. If ``True``
         then the keyword-only argument will pass in the rest of the arguments
         in a completely raw matter. Defaults to ``False``.
-    ignore_extra: bool
+    ignore_extra: :obj:`bool`
         If ``True``\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
@@ -693,7 +693,7 @@ class GroupMixin:
 
     Attributes
     -----------
-    all_commands: dict
+    all_commands: :obj:`dict`
         A mapping of command name to :class:`.Command` or superclass
         objects.
     """
@@ -851,7 +851,7 @@ class Group(GroupMixin, Command):
 
     Attributes
     -----------
-    invoke_without_command: bool
+    invoke_without_command: :obj:`bool`
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -940,7 +940,7 @@ def command(name=None, cls=None, **attrs):
     By default the ``help`` attribute is received automatically from the
     docstring of the function and is cleaned up with the use of
     ``inspect.cleandoc``. If the docstring is ``bytes``, then it is decoded
-    into ``str`` using utf-8 encoding.
+    into :obj:`str` using utf-8 encoding.
 
     All checks added using the :func:`.check` & co. decorators are added into
     the function. There is no way to supply your own checks through this

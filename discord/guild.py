@@ -74,32 +74,32 @@ class Guild(Hashable):
 
     Attributes
     ----------
-    name: str
+    name: :obj:`str`
         The guild name.
     roles
-        A list of :class:`Role` that the guild has available.
+        A :obj:`list` of :class:`Role` that the guild has available.
     emojis
-        A tuple of :class:`Emoji` that the guild owns.
+        A :obj:`tuple` of :class:`Emoji` that the guild owns.
     region: :class:`VoiceRegion`
         The region the guild belongs on. There is a chance that the region
-        will be a ``str`` if the value is not recognised by the enumerator.
-    afk_timeout: int
+        will be a :obj:`str` if the value is not recognised by the enumerator.
+    afk_timeout: :obj:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
         The channel that denotes the AFK channel. None if it doesn't exist.
-    icon: str
+    icon: :obj:`str`
         The guild's icon.
-    id: int
+    id: :obj:`int`
         The guild's ID.
-    owner_id: int
+    owner_id: :obj:`int`
         The guild owner's ID. Use :attr:`Guild.owner` instead.
-    unavailable: bool
+    unavailable: :obj:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Guild.id` is slim and they might
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
-    mfa_level: int
+    mfa_level: :obj:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
         1 then they do.
@@ -107,7 +107,7 @@ class Guild(Hashable):
         The guild's verification level.
     explicit_content_filter: :class:`ContentFilter`
         The guild's explicit content filter.
-    features: List[str]
+    features: List[:obj:`str`]
         A list of features that the guild has. They are currently as follows:
 
         - ``VIP_REGIONS``: Guild has VIP voice regions
@@ -116,7 +116,7 @@ class Guild(Hashable):
         - ``VERIFIED``: Guild is a "verified" server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
 
-    splash: str
+    splash: :obj:`str`
         The guild's invite splash.
     """
 
@@ -264,7 +264,7 @@ class Guild(Hashable):
 
     @property
     def large(self):
-        """bool: Indicates if the guild is a 'large' guild.
+        """:obj:`bool`: Indicates if the guild is a 'large' guild.
 
         A large guild is defined as having more than ``large_threshold`` count
         members, which for this library is set to the maximum of 250.
@@ -807,7 +807,7 @@ class Guild(Hashable):
 
         Retrieves all the users that are banned from the guild.
 
-        This coroutine returns a list of BanEntry objects. Which is a
+        This coroutine returns a :obj:`list` of BanEntry objects. Which is a
         namedtuple with a ``user`` field to denote the :class:`User`
         that got banned along with a ``reason`` field specifying
         why the user was banned that could be set to ``None``.

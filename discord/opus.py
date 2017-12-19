@@ -142,7 +142,7 @@ class OpusError(DiscordException):
 
     Attributes
     ----------
-    code : int
+    code : :obj:`int`
         The error code returned.
     """
 

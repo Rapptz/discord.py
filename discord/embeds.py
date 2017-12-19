@@ -63,22 +63,22 @@ class Embed:
     is invalid or empty, then a special sentinel value is returned,
     :attr:`Embed.Empty`.
 
-    For ease of use, all parameters that expect a ``str`` are implicitly
-    casted to ``str`` for you.
+    For ease of use, all parameters that expect a :obj:`str` are implicitly
+    casted to :obj:`str` for you.
 
     Attributes
     -----------
-    title: str
+    title: :obj:`str`
         The title of the embed.
-    type: str
+    type: :obj:`str`
         The type of embed. Usually "rich".
-    description: str
+    description: :obj:`str`
         The description of the embed.
-    url: str
+    url: :obj:`str`
         The URL of the embed.
     timestamp: `datetime.datetime`
         The timestamp of the embed content. This could be a naive or aware datetime.
-    colour: :class:`Colour` or int
+    colour: :class:`Colour` or :obj:`int`
         The colour code of the embed. Aliased to ``color`` as well.
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
@@ -334,7 +334,7 @@ class Embed:
 
     @property
     def fields(self):
-        """Returns a list of ``EmbedProxy`` denoting the field contents.
+        """Returns a :obj:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 
