@@ -111,11 +111,16 @@ class Client:
         The websocket gateway the client is currently connected to. Could be None.
     loop
         The `event loop`_ that the client uses for HTTP requests and websocket operations.
+    tasks
+        A dict of `asyncio.Task`_ objects containing all tasks that were registered
+        using the :meth:`task` decorator.
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = {}
+        self.tasks = {}
+        self._task_states = {}
         self.shard_id = options.get('shard_id')
         self.shard_count = options.get('shard_count')
 
@@ -794,6 +799,122 @@ class Client:
             coro = asyncio.coroutine(coro)
 
         return self.event(coro)
+
+    def task(self, coro, name=None, cancel_check=None):
+        """A decorator that registers a task to execute in the background.
+
+        The task must be a |corourl|_, if not, :exc:`ClientException` is raised.
+
+        The task must accept only one argument (usually called ``state``),
+        if not, ``TypeError``\ is raised. The ``state`` passed is a `dict`_.
+        If a task is running when the Client disconnects from Discord
+        because it logged itself out, it will cancel the execution of the
+        task. If the Client loses the connection to Discord because
+        of network issues or similar, it will cancel the execution of the task,
+        wait for itself to reconnect, then restart the task with the
+        ``state`` it had when it was cancelled.
+
+        Examples
+        ---------
+
+        Creating a task that executes once on startup: ::
+
+            @client.task
+            @asyncio.coroutine
+            def say_hello(state):
+                step = state.setdefault('step', 1)
+                if step == 1:
+                    print('Step 1')
+                    step = state['step'] = 2
+                if step == 2:
+                    print('Step 2')
+                    step = state['step'] = 3
+                if step == 3:
+                    print('Step 3')
+                return
+
+        Creating a task that will execute continuously, also saving
+        characters by using :meth:`async_task`: ::
+
+            @async_task
+            def say_hello_every_minute(state):
+                seconds_passed = state.setdefault('seconds_passed', 0)
+                while True:
+                    if seconds_passed == 60:
+                        print("Hello World!")
+                        seconds_passed = state['seconds_passed'] = 0
+                    yield from asyncio.sleep(1)
+                    seconds_passed = state['seconds_passed'] += 1
+
+        Parameters
+        ------------
+        name = Optional[str]
+            A custom task name used as the key to store the task in :attr:`tasks`
+        restart_check = Optional[predicate]
+            A predicate used to determine whether a task should be
+            cancelled on logout or restarted instead when the bot is
+            ready again. Defaults to `None`, in which case the task
+            will be cancelled on logout.
+
+        """
+
+        if not asyncio.iscoroutinefunction(coro):
+            raise ClientException('task registered must be a coroutine function')
+
+        if name is None:
+            name = coro.__name__
+        # avoid creating duplicate tasks
+        if name in self.tasks:
+            return coro
+
+        @asyncio.coroutine
+        def task_coro():
+            state = self._task_states.setdefault(name, {})
+            while True:
+                try:
+                    yield from self.wait_until_ready()
+                    result = yield from coro(state)
+                # catch exceptions the regular discord.py user might not catch
+                except (asyncio.CancelledError, 
+                        OSError,
+                        HTTPException,
+                        GatewayNotFound,
+                        ConnectionClosed,
+                        aiohttp.ClientError,
+                        asyncio.TimeoutError,
+                        websockets.InvalidHandshake,
+                        websockets.WebSocketProtocolError) as e:
+                    restart = all(isinstance(e, asyncio.CancelledError),
+                                  restart_check is not None, restart_check())
+                    restart_on_resume = any(not self.is_closed(),
+                        # clean disconnect
+                        isinstance(e, ConnectionClosed) and
+                        e.code = 1000) or
+                        # connection issue
+                        not isinstance(e, (ConnectionClosed, asyncio.CancelledError))
+
+                    if restart or restart_on_resume:
+                        if restart_on_resume:
+                            yield from self.wait_for('resume')
+                        continue
+
+                    else:
+                        raise
+
+                else:
+                    return result
+
+        task = self.loop.create_task(task_coro())
+        self.tasks[name] = task
+        return coro
+
+    def async_task(self, func):
+        """A shorthand decorator for ``asyncio.coroutine`` + :meth:`task`."""
+
+        if not asyncio.iscoroutinefunction(func):
+            coro = asyncio.coroutine(func)
+
+        return self.task(coro)
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False):
