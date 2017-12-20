@@ -472,7 +472,7 @@ class Client:
         self._closed.clear()
         self._ready.clear()
         self._connection.clear()
-        self._http.recreate()
+        self.http.recreate()
 
     @asyncio.coroutine
     def start(self, *args, **kwargs):
