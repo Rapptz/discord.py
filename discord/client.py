@@ -800,13 +800,11 @@ class Client:
 
         return self.event(coro)
 
-    def task(self, coro, name=None, cancel_check=None):
+    def task(self, coro, name=None, overwrite=False, restart_check=None):
         """A decorator that registers a task to execute in the background.
 
-        The task must be a |corourl|_, if not, :exc:`ClientException` is raised.
-
         The task must accept only one argument (usually called ``state``),
-        if not, ``TypeError``\ is raised. The ``state`` passed is a `dict`_.
+        if not, ``TypeError``\ is raised. The ``state`` passed is a ``dict``.
         If a task is running when the Client disconnects from Discord
         because it logged itself out, it will cancel the execution of the
         task. If the Client loses the connection to Discord because
@@ -846,15 +844,29 @@ class Client:
                     yield from asyncio.sleep(1)
                     seconds_passed = state['seconds_passed'] += 1
 
+        Creating a task from a coroutine dynamically: ::
+
+            client.task(my_coroutine)
+
         Parameters
         ------------
         name = Optional[str]
-            A custom task name used as the key to store the task in :attr:`tasks`
+            A custom task name used as the key to store the task in :attr:`tasks`.
+            Defaults to the coroutine's name.
+        overwrite : Optional[bool]
+            If this is ``True``, tasks with the same name that are already in
+            :attr:`tasks` will be overwritten, and the original task will be
+            cancelled. Defaults to ``False``.
         restart_check = Optional[predicate]
             A predicate used to determine whether a task should be
             cancelled on logout or restarted instead when the bot is
-            ready again. Defaults to `None`, in which case the task
+            ready again. Defaults to ``None``, in which case the task
             will be cancelled on logout.
+
+        Raises
+        -------
+        ClientException
+            The decorated `coro`_ is not a |corourl|_.
 
         """
 
@@ -863,9 +875,12 @@ class Client:
 
         if name is None:
             name = coro.__name__
-        # avoid creating duplicate tasks
+        
         if name in self.tasks:
-            return coro
+            if overwrite:
+                self.tasks['name'].cancel()
+            else:
+                return coro
 
         @asyncio.coroutine
         def task_coro():
@@ -885,7 +900,9 @@ class Client:
                         websockets.InvalidHandshake,
                         websockets.WebSocketProtocolError) as e:
                     restart = all(isinstance(e, asyncio.CancelledError),
-                                  restart_check is not None, restart_check())
+                                  restart_check is not None, restart_check(),
+                                  # check if task has been overwritten
+                                  self.tasks['name'] is asyncio.Task.current_task()
                     restart_on_resume = any(not self.is_closed(),
                         # clean disconnect
                         isinstance(e, ConnectionClosed) and
@@ -904,17 +921,16 @@ class Client:
                 else:
                     return result
 
-        task = self.loop.create_task(task_coro())
-        self.tasks[name] = task
+        self.tasks[name] = self.loop.create_task(task_coro(), loop=self.loop)
         return coro
 
-    def async_task(self, func):
+    def async_task(self, coro, name=None, overwrite=False, restart_check=None):
         """A shorthand decorator for ``asyncio.coroutine`` + :meth:`task`."""
 
-        if not asyncio.iscoroutinefunction(func):
-            coro = asyncio.coroutine(func)
+        if not asyncio.iscoroutinefunction(coro):
+            coro = asyncio.coroutine(coro)
 
-        return self.task(coro)
+        return self.task(coro, name, overwrite, restart_check)
 
     @asyncio.coroutine
     def change_presence(self, *, game=None, status=None, afk=False):
