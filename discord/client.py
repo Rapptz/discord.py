@@ -899,16 +899,16 @@ class Client:
                         asyncio.TimeoutError,
                         websockets.InvalidHandshake,
                         websockets.WebSocketProtocolError) as e:
-                    restart = all(isinstance(e, asyncio.CancelledError),
+                    restart = all((isinstance(e, asyncio.CancelledError),
                                   restart_check is not None, restart_check(),
                                   # check if task has been overwritten
-                                  self.tasks['name'] is asyncio.Task.current_task()
-                    restart_on_resume = any(not self.is_closed(),
+                                  self.tasks['name'] is asyncio.Task.current_task()))
+                    restart_on_resume = any((not self.is_closed(),
                         # clean disconnect
                         isinstance(e, ConnectionClosed) and
-                        e.code = 1000) or
+                        e.code == 1000) or
                         # connection issue
-                        not isinstance(e, (ConnectionClosed, asyncio.CancelledError))
+                        not isinstance(e, (ConnectionClosed, asyncio.CancelledError)))
 
                     if restart or restart_on_resume:
                         if restart_on_resume:
@@ -921,7 +921,7 @@ class Client:
                 else:
                     return result
 
-        self.tasks[name] = self.loop.create_task(task_coro(), loop=self.loop)
+        self.tasks[name] = self.loop.create_task(task_coro())
         return coro
 
     def async_task(self, coro, name=None, overwrite=False, restart_check=None):
