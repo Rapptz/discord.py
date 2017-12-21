@@ -122,12 +122,14 @@ class Emoji(Hashable):
         The emoji's ID.
     require_colons: bool
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
+    animated: bool
+        Whether an emoji is animated or not.
     managed: bool
         If this emoji is managed by a Twitch integration.
     guild_id: int
         The guild ID the emoji belongs to.
     """
-    __slots__ = ('require_colons', 'managed', 'id', 'name', '_roles', 'guild_id', '_state')
+    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id', '_state')
 
     def __init__(self, *, guild, state, data):
         self.guild_id = guild.id
@@ -139,6 +141,7 @@ class Emoji(Hashable):
         self.managed = emoji['managed']
         self.id = int(emoji['id'])
         self.name = emoji['name']
+        self.animated = emoji.get('animated', False)
         self._roles = set(emoji.get('roles', []))
 
     def _iterator(self):
@@ -152,6 +155,8 @@ class Emoji(Hashable):
         return self._iterator()
 
     def __str__(self):
+        if self.animated:
+            return '<a:{0.name}:{0.id}>'.format(self)
         return "<:{0.name}:{0.id}>".format(self)
 
     def __repr__(self):
