@@ -170,7 +170,8 @@ class Emoji(Hashable):
     @property
     def url(self):
         """Returns a URL version of the emoji."""
-        return "https://cdn.discordapp.com/emojis/{0.id}.png".format(self)
+        _format = 'gif' if self.animated else 'png'
+        return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
 
     @property
     def roles(self):
