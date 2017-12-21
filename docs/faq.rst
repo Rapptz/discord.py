@@ -260,7 +260,7 @@ Questions regarding ``discord.ext.commands`` belong here.
 Is there any documentation for this?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Yes, it's over .. _here: https://discordpy.readthedocs.io/en/rewrite/ext/commands/
+Yes, it's over here: https://discordpy.readthedocs.io/en/rewrite/ext/commands/
 
 Why does ``on_message`` make my commands stop working?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
