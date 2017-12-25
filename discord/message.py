@@ -341,17 +341,19 @@ class Message:
         it = filter(None, map(lambda m: self.guild.get_channel(m), self.raw_channel_mentions))
         return utils._unique(it)
 
-    @utils.cached_slot_property('_cs_clean_content')
-    def clean_content(self):
-        """A property that returns the content in a "cleaned up"
-        manner. This basically means that mentions are transformed
+    def clean_substr(self, substr):
+        """Return "cleaned up" version given string.
+
+        This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
         into ``#name``.
 
         This will also transform @everyone and @here mentions into
         non-mentions.
-        """
 
+        `substr` must be substring of message content, and this applies
+        transformations for mentions in this message only.
+        """
         transformations = {
             re.escape('<#%s>' % channel.id): '#' + channel.name
             for channel in self.channel_mentions
@@ -382,7 +384,7 @@ class Message:
             return transformations.get(re.escape(obj.group(0)), '')
 
         pattern = re.compile('|'.join(transformations.keys()))
-        result = pattern.sub(repl, self.content)
+        result = pattern.sub(repl, substr)
 
         transformations = {
             '@everyone': '@\u200beveryone',
@@ -394,6 +396,18 @@ class Message:
 
         pattern = re.compile('|'.join(transformations.keys()))
         return pattern.sub(repl2, result)
+
+    @utils.cached_slot_property('_cs_clean_content')
+    def clean_content(self):
+        """A property that returns the content in a "cleaned up"
+        manner. This basically means that mentions are transformed
+        into the way the client shows it. e.g. ``<#id>`` will transform
+        into ``#name``.
+
+        This will also transform @everyone and @here mentions into
+        non-mentions.
+        """
+        return self.clean_substr(self.content)
 
     @property
     def created_at(self):
