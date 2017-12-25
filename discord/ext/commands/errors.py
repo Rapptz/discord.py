@@ -72,11 +72,11 @@ class MissingRequiredArgument(UserInputError):
 
     Attributes
     -----------
-    param: str
+    param: :class:`inspect.Parameter`
         The argument that is missing.
     """
     def __init__(self, param):
-        self.param = param.name
+        self.param = param
         super().__init__('{0.name} is a required argument that is missing.'.format(param))
 
 class TooManyArguments(UserInputError):
