@@ -239,7 +239,10 @@ class Bot(GroupMixin, discord.Client):
     def _get_prefix(self, message):
         prefix = self.command_prefix
         if callable(prefix):
-            ret = prefix(self, message)
+            if len(inspect.signature(prefix).parameters) == 1:
+                ret = prefix(message)
+            else:
+                ret = prefix(self, message)
             if asyncio.iscoroutine(ret):
                 ret = yield from ret
             return ret
