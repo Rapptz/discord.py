@@ -37,7 +37,6 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
-from inspect import signature
 
 def _get_variable(name):
     stack = inspect.stack()
@@ -240,7 +239,7 @@ class Bot(GroupMixin, discord.Client):
     def _get_prefix(self, message):
         prefix = self.command_prefix
         if callable(prefix):
-            if len(signature(prefix).parameters) == 1:
+            if len(inspect.signature(prefix).parameters) == 1:
                 ret = prefix(message)
             else:
                 ret = prefix(self, message)
