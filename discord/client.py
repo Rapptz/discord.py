@@ -223,9 +223,9 @@ class Client:
             yield from coro(*args, **kwargs)
         except asyncio.CancelledError:
             pass
-        except Exception:
+        except Exception as e:
             try:
-                yield from self.on_error(event_name, *args, **kwargs)
+                yield from self.on_error(event_name, e, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
 
@@ -278,7 +278,7 @@ class Client:
             compat.create_task(self._run_event(coro, method, *args, **kwargs), loop=self.loop)
 
     @asyncio.coroutine
-    def on_error(self, event_method, *args, **kwargs):
+    def on_error(self, event_method, exception, *args, **kwargs):
         """|coro|
 
         The default error handler provided by the client.
@@ -288,7 +288,7 @@ class Client:
         Check :func:`discord.on_error` for more details.
         """
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
-        traceback.print_exc()
+        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     @asyncio.coroutine
     def request_offline_members(self, *guilds):
@@ -461,18 +461,6 @@ class Client:
 
         yield from self.http.close()
         self._ready.clear()
-
-    def clear(self):
-        """Clears the internal state of the bot.
-
-        After this, the bot can be considered "re-opened", i.e. :meth:`.is_closed`
-        and :meth:`.is_ready` both return ``False`` along with the bot's internal
-        cache cleared.
-        """
-        self._closed.clear()
-        self._ready.clear()
-        self._connection.clear()
-        self.http.recreate()
 
     @asyncio.coroutine
     def start(self, *args, **kwargs):
