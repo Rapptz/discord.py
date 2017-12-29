@@ -742,6 +742,9 @@ class GroupMixin:
             raise discord.ClientException('Command {0.name} is already registered.'.format(command))
 
         self.all_commands[command.name] = command
+        if isinstance(command.aliases, str):
+            command.aliases = [command.aliases]
+
         for alias in command.aliases:
             if alias in self.all_commands:
                 raise discord.ClientException('The alias {} is already an existing command or alias.'.format(alias))
