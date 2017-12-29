@@ -41,7 +41,6 @@ extensions = [
 
 if on_rtd:
   extensions.append('sphinxcontrib.napoleon')
-  extensions.append('sphinxcontrib.websupport')
 else:
   extensions.append('sphinx.ext.napoleon')
 
