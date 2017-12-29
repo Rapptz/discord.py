@@ -11,7 +11,7 @@ if on_rtd:
   requirements.append('sphinxcontrib-napoleon')
   requirements.append('sphinxcontrib-asyncio')
   requirements.append('sphinxcontrib-websupport')
-  requirements.append('sphinx==1.6')
+  requirements.append('sphinx==1.6.5')
 
 version = ''
 with open('discord/__init__.py') as f:
