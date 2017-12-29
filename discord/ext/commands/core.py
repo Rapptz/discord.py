@@ -658,6 +658,12 @@ class Command:
         ctx: :class:`.Context`
             The ctx of the command currently being invoked.
 
+        Raises
+        -------
+        :class:`CommandError`
+            Any command error that was raised during a check call will be propagated
+            by this function.
+
         Returns
         --------
         bool
