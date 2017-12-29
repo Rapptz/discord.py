@@ -149,6 +149,10 @@ class Command:
         self.usage = kwargs.get('usage')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
+
+        if not isinstance(self.aliases, (list, tuple)):
+            raise TypeError("Aliases of a command must be a list of strings.")
+
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
         signature = inspect.signature(callback)
