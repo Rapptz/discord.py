@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .guild import Guild
 from .user import User, ClientUser
-from .emoji import Emoji, PartialReactionEmoji
+from .emoji import Emoji, PartialEmoji
 from .message import Message
 from .relationship import Relationship
 from .channel import *
@@ -372,7 +372,7 @@ class ConnectionState:
 
         emoji_data = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji_data, 'id')
-        emoji = PartialReactionEmoji(id=emoji_id, name=emoji_data['name'])
+        emoji = PartialEmoji(animated=emoji_data['animated'], id=emoji_id, name=emoji_data['name'])
         self.dispatch('raw_reaction_add', emoji, message_id, channel_id, user_id)
 
         # rich interface here
@@ -402,7 +402,7 @@ class ConnectionState:
 
         emoji_data = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji_data, 'id')
-        emoji = PartialReactionEmoji(id=emoji_id, name=emoji_data['name'])
+        emoji = PartialEmoji(animated=emoji_data['animated'], id=emoji_id, name=emoji_data['name'])
         self.dispatch('raw_reaction_remove', emoji, message_id, channel_id, user_id)
 
         message = self._get_message(message_id)
@@ -846,7 +846,7 @@ class ConnectionState:
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialReactionEmoji(id=emoji_id, name=data['name'])
+            return PartialEmoji(animated=data['animated'], id=emoji_id, name=data['name'])
 
     def _upgrade_partial_emoji(self, emoji):
         emoji_id = emoji.id

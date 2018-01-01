@@ -29,7 +29,7 @@ import re
 
 from . import utils, compat
 from .reaction import Reaction
-from .emoji import Emoji, PartialReactionEmoji
+from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException, NotFound
@@ -627,7 +627,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialReactionEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
             The emoji to react with.
 
         Raises
@@ -647,7 +647,7 @@ class Message:
 
         if isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialReactionEmoji):
+        elif isinstance(emoji, PartialEmoji):
             emoji = emoji._as_reaction()
         elif isinstance(emoji, str):
             pass # this is okay
@@ -672,7 +672,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialReactionEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.
@@ -694,7 +694,7 @@ class Message:
 
         if isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialReactionEmoji):
+        elif isinstance(emoji, PartialEmoji):
             emoji = emoji._as_reaction()
         elif isinstance(emoji, str):
             pass # this is okay
