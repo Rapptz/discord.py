@@ -304,7 +304,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     called regardless of the state of the internal message cache.
 
     :param emoji: The custom or unicode emoji being reacted to.
-    :type emoji: :class:`PartialReactionEmoji`
+    :type emoji: :class:`PartialEmoji`
     :param int message_id: The message ID of the message being reacted.
     :param int channel_id: The channel ID where the message belongs to.
     :param int user_id: The user ID of the user who did the reaction.
@@ -328,7 +328,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     called regardless of the state of the internal message cache.
 
     :param emoji: The custom or unicode emoji that got un-reacted.
-    :type emoji: :class:`PartialReactionEmoji`
+    :type emoji: :class:`PartialEmoji`
     :param int message_id: The message ID of the message being un-reacted.
     :param int channel_id: The channel ID where the message belongs to.
     :param int user_id: The user ID of the user who removed the reaction.
@@ -1888,10 +1888,10 @@ Emoji
 .. autoclass:: Emoji()
     :members:
 
-PartialReactionEmoji
+PartialEmoji
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: PartialReactionEmoji()
+.. autoclass:: PartialEmoji()
     :members:
 
 Role

@@ -30,8 +30,8 @@ from collections import namedtuple
 from . import utils
 from .mixins import Hashable
 
-class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
-    """Represents a "partial" reaction emoji.
+class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
+    """Represents a "partial" emoji.
 
     This model will be given in two scenarios:
 
@@ -61,6 +61,8 @@ class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
     name: :class:`str`
         The custom emoji name, if applicable, or the unicode codepoint
         of the non-custom emoji.
+    animated: :class:`bool`
+        Whether the emoji is animated or not.
     id: Optional[:class:`int`]
         The ID of the custom emoji, if applicable.
     """
@@ -70,7 +72,7 @@ class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
     def __str__(self):
         if self.id is None:
             return self.name
-        return '<:%s:%s>' % (self.name, self.id)
+        return '<%s:%s:%s>' % ('a' if self.animated else '', self.name, self.id)
 
     def is_custom_emoji(self):
         """Checks if this is a custom non-Unicode emoji."""
@@ -84,6 +86,15 @@ class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
         if self.id is None:
             return self.name
         return ':%s:%s' % (self.name, self.id)
+
+    @property
+    def url(self):
+        """Returns a URL version of the emoji, if it is custom."""
+        if self.is_unicode_emoji():
+            return None
+
+        _format = 'gif' if self.animated else 'png'
+        return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
 
 class Emoji(Hashable):
     """Represents a custom emoji.
