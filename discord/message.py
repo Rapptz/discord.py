@@ -125,7 +125,7 @@ class Message:
         The value used by the discord guild and the client to verify that the message is successfully sent.
         This is typically non-important.
     embeds: List[:class:`Embed`]
-        A list embeds the message has.
+        A list of embeds the message has.
     channel
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
