@@ -163,6 +163,9 @@ class Client:
             VoiceClient.warn_nacl = False
             log.warning("PyNaCl is not installed, voice will NOT be supported")
 
+    def __del__(self):
+        self.close()
+
     # internals
 
     @asyncio.coroutine
