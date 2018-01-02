@@ -370,7 +370,7 @@ class EmojiConverter(IDConverter):
     """
     @asyncio.coroutine
     def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild

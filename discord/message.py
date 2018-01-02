@@ -701,7 +701,10 @@ class Message:
         else:
             raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
-        yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+        if member.id == self._state.self_id:
+            yield from self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
+        else:
+            yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
 
     @asyncio.coroutine
     def clear_reactions(self):
