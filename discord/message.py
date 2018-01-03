@@ -315,7 +315,7 @@ class Message:
         """A property that returns an array of user IDs matched with
         the syntax of <@user_id> in the message content.
 
-        This allows you receive the user IDs of mentioned users
+        This allows you to receive the user IDs of mentioned users
         even in a private message context.
         """
         return [int(x) for x in re.findall(r'<@!?([0-9]+)>', self.content)]
