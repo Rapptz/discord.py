@@ -35,8 +35,8 @@ from .view import StringView
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter','CategoryChannelConverter', 'IDConverter',
-            'clean_content' ]
+            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
+            'IDConverter', 'clean_content' ]
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -396,6 +396,25 @@ class EmojiConverter(IDConverter):
             raise BadArgument('Emoji "{}" not found.'.format(argument))
 
         return result
+
+class PartialEmojiConverter(Converter):
+    """Converts to a :class:`PartialEmoji`.
+
+
+    This is done by extracting the animated flag, name and ID from the emoji.
+    """
+    @asyncio.coroutine
+    def convert(self, ctx, argument):
+        match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
+
+        if match:
+            emoji_animated = bool(match.group(1))
+            emoji_name = match.group(2)
+            emoji_id = int(match.group(3))
+
+            return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+
+        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of

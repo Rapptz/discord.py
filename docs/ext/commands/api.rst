@@ -173,6 +173,9 @@ Converters
 .. autoclass:: discord.ext.commands.EmojiConverter
     :members:
 
+.. autoclass:: discord.ext.commands.PartialEmojiConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
