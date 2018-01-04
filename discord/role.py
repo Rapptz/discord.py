@@ -71,9 +71,9 @@ class Role(Hashable):
 
     Attributes
     ----------
-    id: int
+    id: :class:`int`
         The ID for the role.
-    name: str
+    name: :class:`str`
         The name of the role.
     permissions: :class:`Permissions`
         Represents the role's permissions.
@@ -81,15 +81,15 @@ class Role(Hashable):
         The guild the role belongs to.
     colour: :class:`Colour`
         Represents the role colour. An alias exists under ``color``.
-    hoist: bool
+    hoist: :class:`bool`
          Indicates if the role will be displayed separately from other members.
-    position: int
+    position: :class:`int`
         The position of the role. This number is usually positive. The bottom
         role has a position of 0.
-    managed: bool
+    managed: :class:`bool`
         Indicates if the role is managed by the guild through some form of
         integrations such as Twitch.
-    mentionable: bool
+    mentionable: :class:`bool`
         Indicates if the role can be mentioned by users.
     """
 
@@ -164,7 +164,7 @@ class Role(Hashable):
 
     @property
     def members(self):
-        """Returns a list of :class:`Member` with this role."""
+        """Returns a :class:`list` of :class:`Member` with this role."""
         all_members = self.guild.members
         if self.is_default():
             return all_members

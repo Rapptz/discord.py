@@ -94,7 +94,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     All the events must be a |corourl|_. If they aren't, then you might get unexpected
     errors. In order to turn a function into a coroutine they must either be ``async def``
-    functions or in 3.4 decorated with ``@asyncio.coroutine``.
+    functions or in 3.4 decorated with :func:`asyncio.coroutine`.
 
     The following two functions are examples of coroutine functions: ::
 
@@ -172,7 +172,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param msg: The message passed in from the WebSocket library.
-                Could be ``bytes`` for a binary message or ``str``
+                Could be :class:`bytes` for a binary message or :class:`str`
                 for a regular message.
 
 .. function:: on_socket_raw_send(payload)
@@ -190,8 +190,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param payload: The message that is about to be passed on to the
-                    WebSocket library. It can be ``bytes`` to denote a binary
-                    message or ``str`` to denote a regular text message.
+                    WebSocket library. It can be :class:`bytes` to denote a binary
+                    message or :class:`str` to denote a regular text message.
 
 .. function:: on_typing(channel, user, when)
 
@@ -1359,14 +1359,14 @@ Certain utilities make working with async iterators easier, detailed below.
 
         |coro|
 
-        Flattens the async iterator into a ``list`` with all the elements.
+        Flattens the async iterator into a :class:`list` with all the elements.
 
         :return: A list of every element in the async iterator.
         :rtype: list
 
     .. method:: map(func)
 
-        This is similar to the built-in ``map`` function. Another
+        This is similar to the built-in :func:`map <python:map>` function. Another
         :class:`AsyncIterator` is returned that executes the function on
         every element it is iterating over. This function can either be a
         regular function or a coroutine.
@@ -1384,7 +1384,7 @@ Certain utilities make working with async iterators easier, detailed below.
 
     .. method:: filter(predicate)
 
-        This is similar to the built-in ``filter`` function. Another
+        This is similar to the built-in :func:`filter <python:filter>` function. Another
         :class:`AsyncIterator` is returned that filters over the original
         async iterator. This predicate can be a regular function or a coroutine.
 
@@ -1474,15 +1474,15 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: name
 
-        *str* – A name of something.
+        :class:`str` – A name of something.
 
     .. attribute:: icon
 
-        *str* – A guild's icon hash. See also :attr:`Guild.icon`.
+        :class:`str` – A guild's icon hash. See also :attr:`Guild.icon`.
 
     .. attribute:: splash
 
-        *str* – The guild's invite splash hash. See also :attr:`Guild.splash`.
+        :class:`str` – The guild's invite splash hash. See also :attr:`Guild.splash`.
 
     .. attribute:: owner
 
@@ -1512,15 +1512,15 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: afk_timeout
 
-        *int* – The guild's AFK timeout. See :attr:`Guild.afk_timeout`.
+        :class:`int` – The guild's AFK timeout. See :attr:`Guild.afk_timeout`.
 
     .. attribute:: mfa_level
 
-        *int* - The guild's MFA level. See :attr:`Guild.mfa_level`.
+        :class:`int` - The guild's MFA level. See :attr:`Guild.mfa_level`.
 
     .. attribute:: widget_enabled
 
-        *bool* – The guild's widget has been enabled or disabled.
+        :class:`bool` – The guild's widget has been enabled or disabled.
 
     .. attribute:: widget_channel
 
@@ -1543,37 +1543,37 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: default_message_notifications
 
-        *int* – The guild's default message notification setting.
+        :class:`int` – The guild's default message notification setting.
 
     .. attribute:: vanity_url_code
 
-        *str* – The guild's vanity URL.
+        :class:`str` – The guild's vanity URL.
 
         See also :meth:`Guild.vanity_invite` and :meth:`Guild.change_vanity_invite`.
 
     .. attribute:: position
 
-        *int* – The position of a :class:`Role` or :class:`abc.GuildChannel`.
+        :class:`int` – The position of a :class:`Role` or :class:`abc.GuildChannel`.
 
     .. attribute:: type
 
         *Union[int, str]* – The type of channel or channel permission overwrite.
 
-        If the type is an ``int``, then it is a type of channel which can be either
+        If the type is an :class:`int`, then it is a type of channel which can be either
         ``0`` to indicate a text channel or ``1`` to indicate a voice channel.
 
-        If the type is a ``str``, then it is a type of permission overwrite which
+        If the type is a :class:`str`, then it is a type of permission overwrite which
         can be either ``'role'`` or ``'member'``.
 
     .. attribute:: topic
 
-        *str* – The topic of a :class:`TextChannel`.
+        :class:`str` – The topic of a :class:`TextChannel`.
 
         See also :attr:`TextChannel.topic`.
 
     .. attribute:: bitrate
 
-        *int* – The bitrate of a :class:`VoiceChannel`.
+        :class:`int` – The bitrate of a :class:`VoiceChannel`.
 
         See also :attr:`VoiceChannel.bitrate`.
 
@@ -1605,13 +1605,13 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: deaf
 
-        *bool* – Whether the member is being server deafened.
+        :class:`bool` – Whether the member is being server deafened.
 
         See also :attr:`VoiceState.deaf`.
 
     .. attribute:: mute
 
-        *bool* – Whether the member is being server muted.
+        :class:`bool` – Whether the member is being server muted.
 
         See also :attr:`VoiceState.mute`.
 
@@ -1630,19 +1630,19 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: hoist
 
-        *bool* – Whether the role is being hoisted or not.
+        :class:`bool` – Whether the role is being hoisted or not.
 
         See also :attr:`Role.hoist`
 
     .. attribute:: mentionable
 
-        *bool* – Whether the role is mentionable or not.
+        :class:`bool` – Whether the role is mentionable or not.
 
         See also :attr:`Role.mentionable`
 
     .. attribute:: code
 
-        *str* – The invite's code.
+        :class:`str` – The invite's code.
 
         See also :attr:`Invite.code`
 
@@ -1661,25 +1661,25 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: max_uses
 
-        *int* – The invite's max uses.
+        :class:`int` – The invite's max uses.
 
         See also :attr:`Invite.max_uses`.
 
     .. attribute:: uses
 
-        *int* – The invite's current uses.
+        :class:`int` – The invite's current uses.
 
         See also :attr:`Invite.uses`.
 
     .. attribute:: max_age
 
-        *int* – The invite's max age in seconds.
+        :class:`int` – The invite's max age in seconds.
 
         See also :attr:`Invite.max_age`.
 
     .. attribute:: temporary
 
-        *bool* – If the invite is a temporary invite.
+        :class:`bool` – If the invite is a temporary invite.
 
         See also :attr:`Invite.temporary`.
 
@@ -1690,11 +1690,11 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: id
 
-        *int* – The ID of the object being changed.
+        :class:`int` – The ID of the object being changed.
 
     .. attribute:: avatar
 
-        *str* – The avatar hash of a member.
+        :class:`str` – The avatar hash of a member.
 
         See also :attr:`User.avatar`.
 

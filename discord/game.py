@@ -47,11 +47,11 @@ class Game:
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The game's name.
-    url: str
+    url: :class:`str`
         The game's URL. Usually used for twitch streaming.
-    type: int
+    type: :class:`int`
         The type of game being played. 1 indicates "Streaming".
     """
 

@@ -189,12 +189,12 @@ class AuditLogEntry:
     user: :class:`abc.User`
         The user who initiated this action. Usually a :class:`Member`\, unless gone
         then it's a :class:`User`.
-    id: int
+    id: :class:`int`
         The entry ID.
     target: Any
         The target that got changed. The exact type of this depends on
         the action being done.
-    reason: Optional[str]
+    reason: Optional[:class:`str`]
         The reason this action was done.
     extra: Any
         Extra information that this entry has that might be useful.

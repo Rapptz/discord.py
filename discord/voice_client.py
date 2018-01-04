@@ -75,11 +75,11 @@ class VoiceClient:
 
     Attributes
     -----------
-    session_id: str
+    session_id: :class:`str`
         The voice connection session ID.
-    token: str
+    token: :class:`str`
         The voice connection token.
-    endpoint: str
+    endpoint: :class:`str`
         The endpoint we are connecting to.
     channel: :class:`abc.Connectable`
         The voice channel connected to.
@@ -288,7 +288,7 @@ class VoiceClient:
         yield from self.main_ws.voice_state(guild_id, channel.id)
 
     def is_connected(self):
-        """bool: Indicates if the voice client is connected to voice."""
+        """:class:`bool`: Indicates if the voice client is connected to voice."""
         return self._connected.is_set()
 
     # audio related

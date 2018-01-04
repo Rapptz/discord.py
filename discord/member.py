@@ -43,15 +43,15 @@ class VoiceState:
 
     Attributes
     ------------
-    deaf: bool
+    deaf: :class:`bool`
         Indicates if the user is currently deafened by the guild.
-    mute: bool
+    mute: :class:`bool`
         Indicates if the user is currently muted by the guild.
-    self_mute: bool
+    self_mute: :class:`bool`
         Indicates if the user is currently muted by their own accord.
-    self_deaf: bool
+    self_deaf: :class:`bool`
         Indicates if the user is currently deafened by their own accord.
-    afk: bool
+    afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
     channel: :class:`VoiceChannel`
         The voice channel that the user is currently connected to. None if the user
@@ -138,20 +138,20 @@ class Member(discord.abc.Messageable, _BaseUser):
     Attributes
     ----------
     roles
-        A list of :class:`Role` that the member belongs to. Note that the first element of this
+        A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role. These roles are sorted by their position
         in the role hierarchy.
     joined_at : `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`
-        The member's status. There is a chance that the status will be a ``str``
+        The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
     game : :class:`Game`
         The game that the user is currently playing. Could be None if no game is being played.
     guild : :class:`Guild`
         The guild that the member belongs to.
-    nick : Optional[str]
+    nick : Optional[:class:`str`]
         The guild specific nickname of the user.
     """
 

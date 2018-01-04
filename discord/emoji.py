@@ -58,10 +58,10 @@ class PartialReactionEmoji(namedtuple('PartialReactionEmoji', 'name id')):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The custom emoji name, if applicable, or the unicode codepoint
         of the non-custom emoji.
-    id: Optional[int]
+    id: Optional[:class:`int`]
         The ID of the custom emoji, if applicable.
     """
 
@@ -116,17 +116,17 @@ class Emoji(Hashable):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The name of the emoji.
-    id: int
+    id: :class:`int`
         The emoji's ID.
-    require_colons: bool
+    require_colons: :class:`bool`
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
-    animated: bool
+    animated: :class:`bool`
         Whether an emoji is animated or not.
-    managed: bool
+    managed: :class:`bool`
         If this emoji is managed by a Twitch integration.
-    guild_id: int
+    guild_id: :class:`int`
         The guild ID the emoji belongs to.
     """
     __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id', '_state')

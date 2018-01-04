@@ -42,32 +42,32 @@ class Context(discord.abc.Messageable):
         The message that triggered the command being executed.
     bot: :class:`.Bot`
         The bot that contains the command being executed.
-    args: list
+    args: :class:`list`
         The list of transformed arguments that were passed into the command.
         If this is accessed during the :func:`on_command_error` event
         then this list could be incomplete.
-    kwargs: dict
+    kwargs: :class:`dict`
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
         :func:`on_command_error` event then this dict could be incomplete.
-    prefix: str
+    prefix: :class:`str`
         The prefix that was used to invoke the command.
     command
         The command (i.e. :class:`.Command` or its superclasses) that is being
         invoked currently.
-    invoked_with: str
+    invoked_with: :class:`str`
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
     invoked_subcommand
         The subcommand (i.e. :class:`.Command` or its superclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
         `None`.
-    subcommand_passed: Optional[str]
+    subcommand_passed: Optional[:class:`str`]
         The string that was attempted to call a subcommand. This does not have
         to point to a valid registered subcommand and could just point to a
         nonsense string. If nothing was passed to attempt a call to a
         subcommand then this is set to `None`.
-    command_failed: bool
+    command_failed: :class:`bool`
         A boolean that indicates if the command failed to be parsed, checked,
         or invoked.
     """

@@ -189,7 +189,7 @@ Converters come in a few flavours:
 
 - A regular callable object that takes an argument as a sole parameter and returns a different type.
 
-    - These range from your own function, to something like ``bool`` or ``int``.
+    - These range from your own function, to something like :class:`bool` or :class:`int`.
 
 - A custom class that inherits from :class:`~ext.commands.Converter`.
 
