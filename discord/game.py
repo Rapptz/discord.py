@@ -52,7 +52,10 @@ class Game:
     url: str
         The game's URL. Usually used for twitch streaming.
     type: int
-        The type of game being played. 1 indicates "Streaming".
+        The type of game being played. See ``discord.enums.ActivityType`` for
+        the valid options. Defaults to ``0``, denoting a game.
+        Note that ``1`` (streaming) requires a VALID twitch URL to work,
+        otherwise the bot user will appear to not be doing anything.
     """
 
     __slots__ = ('name', 'type', 'url')

@@ -212,6 +212,20 @@ class UserFlags(Enum):
     partner = 2
     hypesquad = 4
 
+
+class ActivityType(IntEnum):
+    """An enum that defines valid flags for the ``type`` parameter
+    used when creating an instance of ``discord.game.Game``.
+
+    Correct for v6 of the gateway API, as of 4th Jan 2018.
+    See: https://discordapp.com/developers/docs/topics/gateway#game-object
+    """
+    game = 0,       # e.g. `Playing {name}`
+    streaming = 1,  # e.g. `Streaming {name}`; requires a valid twitch URL.
+    listening = 2,  # e.g. `Listening to {name}`
+    watching = 3    # e.g. `Watching {name}`
+
+
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
 
