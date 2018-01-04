@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .enums import try_enum, PresenceType
+
 class Game:
     """Represents a Discord game.
 
@@ -51,8 +53,8 @@ class Game:
         The game's name.
     url: str
         The game's URL. Usually used for twitch streaming.
-    type: int
-        The type of game being played. 1 indicates "Streaming".
+    type: Union[:class:`PresenceType`, int]
+        The displayed presence type.
     """
 
     __slots__ = ('name', 'type', 'url')
@@ -60,7 +62,7 @@ class Game:
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
         self.url = kwargs.get('url')
-        self.type = kwargs.get('type', 0)
+        self.type = try_enum(PresenceType, kwargs.get('type', 0))
 
     def __str__(self):
         return str(self.name)

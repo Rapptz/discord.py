@@ -1280,6 +1280,27 @@ All enumerations are subclasses of `enum`_.
         The action is the update of something.
 
 
+.. class:: PresenceType
+
+    Represents the type of presence being shown with a :class:`Game`. This affects how it displays in Discord.
+
+    .. attribute:: playing
+
+        Shows "Playing .." in Discord.
+
+    .. attribute:: streaming
+
+        Shows "Streaming .." in Discord. When this type is used, a URL is included linking to the stream page.
+
+    .. attribute:: listening
+
+        Shows "Listening to .." in Discord.
+
+    .. attribute:: watching
+
+        Shows "Watching .." in Discord.
+
+
 
 Async Iterator
 ----------------
