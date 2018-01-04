@@ -564,6 +564,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         super().__init__(*args, **kwargs)
         self.max_size = None
         self._keep_alive = None
+        self._dispatch = lambda *args: None
 
     @asyncio.coroutine
     def send_as_json(self, data):
@@ -606,6 +607,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0
+        ws._dispatch = client._state.dispatch
 
         if resume:
             yield from ws.resume()
@@ -660,6 +662,24 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             yield from self.identify()
         elif op == self.SESSION_DESCRIPTION:
             yield from self.load_secret_key(data)
+        elif op == self.SPEAKING:
+            user_id = int(data['user_id'])
+            ssrc = int(data['ssrc'])
+
+            if 'speaking' in data:
+                user = self._connection._state.get_user(user_id)
+
+                self._dispatch('voice_speaking_state', self._connection, user, data['speaking'])
+
+                # Used for continuous streams
+                for uid in self._connection._speaking_listeners:
+                    if uid == user_id:
+                        for f in self._connection._speaking_listeners[uid]:
+                            f(user, data['speaking'])
+
+                if self._connection.channel.id not in self._connection._ssrc_lookup:
+                    self._connection._ssrc_lookup[self._connection.guild.id] = {}
+                self._connection._ssrc_lookup[self._connection.guild.id][ssrc] = user_id
 
     @asyncio.coroutine
     def initial_connection(self, data):
@@ -706,5 +726,3 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             self._keep_alive.stop()
 
         yield from super().close_connection(force=force)
-
-

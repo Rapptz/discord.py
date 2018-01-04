@@ -44,6 +44,8 @@ import socket
 import logging
 import struct
 import threading
+import heapq
+import time
 
 log = logging.getLogger(__name__)
 
@@ -56,8 +58,97 @@ except ImportError:
 from . import opus
 from .backoff import ExponentialBackoff
 from .gateway import *
-from .errors import ClientException, ConnectionClosed
+from .errors import ClientException, ConnectionClosed,  InvalidVoicePacket
 from .player import AudioPlayer, AudioSource
+
+class VoicePacket:
+    """Represents a packet of voice data.
+
+    You should not construct these yourself, they will be constructed from
+    incoming UDP packets on the socket used for voice data.
+
+    Attributes
+    ----------
+    sequence : int
+        The sequence id for the packet. Must be between 0 and 65535. Each
+        packet has a value of 1 greater than the previous packet from the
+        same source. After the sequence reaches the maximum value (65535),
+        the next packet has a sequence value of 0.
+    timestamp : int
+        The timestamp for the packet.
+    ssrc : int
+        The id of the user (or source) of this voice packet.
+    buff : bytes
+        The Opus packet (as bytes).
+    user : Optional[:class:`abc.User`]
+        The user who the packet belongs to
+    pcm : Optional[bytes]
+        The decoded PCM data.
+    """
+
+    # Make the class slotted to save memory
+    __slots__ = ('sequence', 'timestamp', 'ssrc', 'buff', 'user', 'pcm')
+
+    # Struct format of the packet metadata
+    _FORMAT = struct.Struct('>HHII')
+    # Packets should start with b'\x80\x78' (32888 as a big endian ushort)
+    _CHECK = 32888
+    # Some packets will start with b'\x90\x78' (36984)
+    _CHECK2 = 36984
+
+    def __init__(self, sequence=None, timestamp=None, ssrc=None, buff=None, user=None):
+        self.sequence = sequence
+        self.timestamp = timestamp
+        self.ssrc = ssrc
+        self.buff = buff
+        self.user = user
+
+    @classmethod
+    def unpack(cls, packet, voice_client):
+        if len(packet) < 13:
+            raise InvalidVoicePacket('packet is too small: {}'.format(packet))
+
+        # Unpack header
+        check, seq, ts, ssrc = cls._FORMAT.unpack(packet)
+        header = packet[:12]
+        buff = packet[12:]
+
+        # Check the packet is valid
+        if check != cls._CHECK and check != cls._CHECK2:
+            fmt = 'packet has invalid check bytes: {}'
+            raise InvalidVoicePacket(fmt.format(packet))
+
+        # Decrypt data
+        nonce = bytearray(24)
+        nonce[:12] = header
+
+        try:
+            box = nacl.secret.SecretBox(bytes(voice_client.secret_key))
+            buff = box.decrypt(bytes(buff), bytes(nonce))
+        except Exception as e:
+            log.debug('VoicePacket.unpack failed with %s', e)
+            return None
+
+        # Packets starting with b'\x90' need the first 8 bytes ignored
+        if check == cls._CHECK2:
+            buff = buff[8:]
+
+        # Lookup the SSRC and then get the user
+        user_id = 0
+        if voice_client.channel.id in voice_client._ssrc_lookup:
+            if ssrc in voice_client._ssrc_lookup[voice_client.guild.id]:
+                user_id = int(voice_client._ssrc_lookup[voice_client.guild.id][ssrc])
+        user = voice_client._state.get_user(user_id)
+
+        # Create a `VoicePacket` instance and return it.
+        return cls(seq, ts, ssrc, buff, user)
+
+    def __str__(self):
+        fmt = '<VoicePacket sequence={0.sequence}, timestamp={0.timestamp}, ssrc={0.ssrc}, buff=bytes({1})>'
+        return fmt.format(self, len(self.buff))
+
+    def __repr__(self):
+        return str(self)
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -67,11 +158,11 @@ class VoiceClient:
 
     Warning
     --------
-    In order to play audio, you must have loaded the opus library
-    through :func:`opus.load_opus`.
+    In order to play or receive audio, you must have loaded the opus
+    library through :func:`opus.load_opus`.
 
     If you don't do this then the library will not be able to
-    transmit audio.
+    transmit or receive audio.
 
     Attributes
     -----------
@@ -107,6 +198,12 @@ class VoiceClient:
         self._runner = None
         self._player = None
         self.encoder = opus.Encoder()
+        self.decoders = {}
+        self._ssrc_lookup = {}
+        self._voice_receiver = None
+
+        self._pcm_listeners = {}
+        self._speaking_listeners = {}
 
     warn_nacl = not has_nacl
 
@@ -212,6 +309,11 @@ class VoiceClient:
             while not hasattr(self, 'secret_key'):
                 yield from self.ws.poll_event()
             self._connected.set()
+
+            self._voice_receiver = self.loop.create_task(self._voice_receive_loop())
+            #receive_thread = threading.Thread(target=self._voice_receive_loop)
+            #receive_thread.deamon = True
+            #receive_thread.start()
         except (ConnectionClosed, asyncio.TimeoutError):
             if reconnect and _tries < 5:
                 log.exception('Failed to connect to voice... Retrying...')
@@ -262,6 +364,13 @@ class VoiceClient:
             return
 
         self.stop()
+
+        if self._voice_receiver is not None:
+            self._voice_receiver.cancel()
+            self._voice_receiver = None
+        self.decoders.clear()
+        self._pcm_listeners = {}
+
         self._connected.clear()
 
         try:
@@ -293,23 +402,198 @@ class VoiceClient:
 
     # audio related
 
-    def _get_voice_packet(self, data):
-        header = bytearray(12)
-        nonce = bytearray(24)
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
+    @asyncio.coroutine
+    def get_voice_data(self, user, timeout=0.4):
+        """|coro|
 
-        # Formulate header
-        header[0] = 0x80
-        header[1] = 0x78
-        struct.pack_into('>H', header, 2, self.sequence)
-        struct.pack_into('>I', header, 4, self.timestamp)
-        struct.pack_into('>I', header, 8, self.ssrc)
+        Receive voice data from a user until they are silent for
+        `timeout` s.
 
-        # Copy header to nonce's first 12 bytes
-        nonce[:12] = header
+        Parameters
+        -----------
+        user: :class:`abc.User`
+            The user to listen for audio from.
+        timeout: Optional[float]
+            The time in ms of silence after which to stop listening.
 
-        # Encrypt and return the data
-        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
+        Returns
+        -----------
+        `bytearray`
+            The received voice data from the user.
+
+        Note
+        -----------
+        The returned data is stereo 48kHz audio in raw PCM. You will have to
+        add your own headers if you want to save it as a `.wav` file.
+        """
+        buffer = []
+        last_packet = 0
+        user_id = user.id
+
+        def listener(vc, vp):
+            nonlocal buffer, user_id, last_packet
+            last_packet = time.time()
+            buffer.append(vp.timestamp, vp)
+
+        if user_id not in self._pcm_listeners:
+            self._pcm_listeners[user_id] = []
+        self._pcm_listeners[user_id].append(listener)
+
+        while time.time() - last_packet < timeout or last_packet == 0:
+            yield from asyncio.sleep(0.1)  # Continue to fill up the buffer.
+        self._pcm_listeners[user_id].remove(listener)
+
+        buffer.sort()
+        data = bytearray()
+        current_timestamp = 0
+        for key, value in buffer:
+            if current_timestamp == 0:
+                delta = 0
+            else:
+                delta = (key - current_timestamp) - 960
+                delta = max(delta, 0)  # Just to be safe
+
+            padding = bytearray([0] * delta * 4)
+            data += padding
+            data += value.pcm
+
+            current_timestamp = key
+
+        return data
+
+    @asyncio.coroutine
+    def pipe_voice_into_file(self, user, file_object, buffer_size=0.2):
+        """|coro|
+
+        Constantly receive data from a user and pipe it into a file-like
+        object. Packets will be reordered and any silence or missed packets
+        will be accounted for.
+
+        Parameters
+        -----------
+        user: :class:`abc.User`
+            The user to listen for audio from.
+        file_object: File-like
+            The file-like object to pipe the voice data into. This object just
+            has to have a `.write` method that takes bytes.
+        buffer_size: Optional[float]
+            The number of seconds to bufffer the audio for before writing to
+            the `file_object`. The larger this value, the less likely you are
+            to miss a packet, but the longer you have to wait before the data
+            is in the `file_object`.
+
+        Note
+        -----------
+        This function, although a co-routine, is not blocking.
+
+        Note
+        -----------
+        The returned data is stereo 48kHz audio in raw PCM. You will have to
+        add your own headers if you want to save it as a `.wav` file.
+        """
+
+        # Convert buffer_size from seconds to packets.
+        buffer_size = int(round((buffer_size * 1000) / 20))
+
+        SAMPLE_RATE = 48000
+        SAMPLE_SIZE = 2
+
+        last_packet = 0
+        user_id = user.id
+        voice_buffer = []
+        last_speaking = 0
+
+        def listener(vc, vp):
+            nonlocal voice_buffer, user_id, last_packet
+            last_packet = vp.timestamp
+            heapq.heappush(voice_buffer, (vp.timestamp, vp))
+
+            if len(voice_buffer) > buffer_size:
+                packet = heapq.heappop(voice_buffer)[1]
+
+                if last_packet == 0:
+                    delta = 0
+                else:
+                    delta = (packet.timestamp - last_packet) - 960
+
+                if delta > 0:  # Ignore skipped packets
+                    data = bytearray([0] * delta * 4)
+                    data += packet.pcm
+
+                    file_object.write(data)
+
+                    last_packet = packet.timestamp
+
+        def speaking_listener(user, speaking):
+            nonlocal last_speaking, user_id
+            if user.id == user_id:
+                if speaking:
+                    if last_speaking != 0:
+                        delta = time.time() - last_speaking
+                        padding = bytearray([0] * int(delta * SAMPLE_RATE) * SAMPLE_SIZE)
+                        file_object.write(padding)
+
+                        last_speaking = 0
+                else:
+                    last_speaking = time.time()
+
+        if user_id not in self._pcm_listeners:
+            self._pcm_listeners[user_id] = []
+        self._pcm_listeners[user_id].append(listener)
+
+        if user_id not in self._speaking_listeners:
+            self._speaking_listeners[user_id] = []
+        self._speaking_listeners[uesr_id].append(speaking_listener)
+
+    @asyncio.coroutine
+    def _voice_receive_loop(self):
+        """
+        Listener loop.
+        This loop will receive data from `self.socket` then it will create a
+        `VoicePckaet` object that handles the decryption and decoding then
+        dispatch two client events so the user can tap into the data.
+        """
+
+        try:
+            while self.is_connected():
+                packet = yield from self.loop.sock_recv(self.socket, 65536)
+                log.debug('Received Voice Packet of %d bytes', len(packet))
+
+                try:
+                    vp = VoicePacket.unpack(packet, self)
+                except InvalidVoicePacket as e:
+                    log.warning(e)
+                    continue
+
+                if vp is None:
+                    log.debug('Voice packet failed to decode.')
+                    continue
+                log.debug('Decoded Voice Packet: %s', vp)
+
+                if vp.ssrc not in self.decoders:
+                    self.decoders[vp.ssrc] = opus.Decoder()
+
+                # Dispatch event
+                self._state.dispatch('receive_opus', self, vp)
+
+                # TODO: re-order packets
+
+                try:
+                    pcm = self.decoders[vp.ssrc].decode(vp.buff)
+                except Exception as e:
+                    log.debug('Opus decode failed with %s', e)
+                log.debug('Opus decoded %d bytes of pcm data', len(pcm))
+
+                vp.pcm = pcm
+                self._state.dispatch('receive_pcm', self, vp)
+
+                # Send PCM data to `get_voice_data`(s):
+                for uid in self._pcm_listeners:
+                    if vp.user is not None and uid = vp.user.id:
+                        for f in self._pcm_listeners[uid]:
+                            f(self, vp)
+        except asyncio.CancelledError:
+            pass
 
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
