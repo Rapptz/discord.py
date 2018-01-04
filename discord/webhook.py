@@ -147,7 +147,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
             file = multipart.pop('file', None)
             data = aiohttp.FormData()
             if file:
-                data.add_field('file', file[0], filename=file[1], content_type=file[2])
+                data.add_field('file', file[1], filename=file[0], content_type=file[2])
             for key, value in multipart.items():
                 data.add_field(key, value)
 
@@ -225,6 +225,9 @@ class RequestsWebhookAdapter(WebhookAdapter):
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
+
+        if multipart is not None:
+            data = { 'payload_json': multipart.pop('payload_json') }
 
         for tries in range(5):
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
@@ -647,7 +650,7 @@ class Webhook:
 
         if file is not None:
             try:
-                to_pass = (file.open_file(), file.filename, 'application/octet-stream')
+                to_pass = (file.filename, file.open_file(), 'application/octet-stream')
                 return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
             finally:
                 file.close()
