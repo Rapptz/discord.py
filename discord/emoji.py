@@ -72,7 +72,9 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
     def __str__(self):
         if self.id is None:
             return self.name
-        return '<%s:%s:%s>' % ('a' if self.animated else '', self.name, self.id)
+        if self.animated:
+            return '<a:%s:%s>' % (self.name, self.id)
+        return '<:%s:%s>' % (self.name, self.id)
 
     def is_custom_emoji(self):
         """Checks if this is a custom non-Unicode emoji."""
