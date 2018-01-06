@@ -74,32 +74,32 @@ class Guild(Hashable):
 
     Attributes
     ----------
-    name: str
+    name: :class:`str`
         The guild name.
     roles
-        A list of :class:`Role` that the guild has available.
+        A :class:`list` of :class:`Role` that the guild has available.
     emojis
-        A tuple of :class:`Emoji` that the guild owns.
+        A :class:`tuple` of :class:`Emoji` that the guild owns.
     region: :class:`VoiceRegion`
         The region the guild belongs on. There is a chance that the region
-        will be a ``str`` if the value is not recognised by the enumerator.
-    afk_timeout: int
+        will be a :class:`str` if the value is not recognised by the enumerator.
+    afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
         The channel that denotes the AFK channel. None if it doesn't exist.
-    icon: str
+    icon: :class:`str`
         The guild's icon.
-    id: int
+    id: :class:`int`
         The guild's ID.
-    owner_id: int
+    owner_id: :class:`int`
         The guild owner's ID. Use :attr:`Guild.owner` instead.
-    unavailable: bool
+    unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Guild.id` is slim and they might
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
-    mfa_level: int
+    mfa_level: :class:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
         1 then they do.
@@ -107,7 +107,7 @@ class Guild(Hashable):
         The guild's verification level.
     explicit_content_filter: :class:`ContentFilter`
         The guild's explicit content filter.
-    features: List[str]
+    features: List[:class:`str`]
         A list of features that the guild has. They are currently as follows:
 
         - ``VIP_REGIONS``: Guild has VIP voice regions
@@ -116,7 +116,7 @@ class Guild(Hashable):
         - ``VERIFIED``: Guild is a "verified" server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
 
-    splash: str
+    splash: :class:`str`
         The guild's invite splash.
     """
 
@@ -264,7 +264,7 @@ class Guild(Hashable):
 
     @property
     def large(self):
-        """bool: Indicates if the guild is a 'large' guild.
+        """:class:`bool`: Indicates if the guild is a 'large' guild.
 
         A large guild is defined as having more than ``large_threshold`` count
         members, which for this library is set to the maximum of 250.
@@ -553,7 +553,7 @@ class Guild(Hashable):
         Note that you need the proper permissions to create the channel.
 
         The ``overwrites`` parameter can be used to create a 'secret'
-        channel upon creation. This parameter expects a `dict` of
+        channel upon creation. This parameter expects a :class:`dict` of
         overwrites with the target (either a :class:`Member` or a :class:`Role`)
         as the key and a :class:`PermissionOverwrite` as the value.
 
@@ -582,7 +582,7 @@ class Guild(Hashable):
         name: str
             The channel's name.
         overwrites
-            A `dict` of target (either a role or a member) to
+            A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply upon creation of a channel.
             Useful for creating secret channels.
         category: Optional[:class:`CategoryChannel`]
@@ -807,7 +807,7 @@ class Guild(Hashable):
 
         Retrieves all the users that are banned from the guild.
 
-        This coroutine returns a list of BanEntry objects. Which is a
+        This coroutine returns a :class:`list` of BanEntry objects. Which is a
         namedtuple with a ``user`` field to denote the :class:`User`
         that got banned along with a ``reason`` field specifying
         why the user was banned that could be set to ``None``.

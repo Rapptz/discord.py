@@ -436,7 +436,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        func : coroutine
+        func : :ref:`coroutine <coroutine>`
             The extra event to listen to.
         name : Optional[str]
             The name of the command to use. Defaults to ``func.__name__``.
@@ -943,13 +943,13 @@ class Bot(BotBase, discord.Client):
         command prefixes. This callable can be either a regular function or
         a coroutine.
 
-        The command prefix could also be a list or a tuple indicating that
+        The command prefix could also be a :class:`list` or a :class:`tuple` indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
         :attr:`.Context.prefix`.
-    description : str
+    description : :class:`str`
         The content prefixed into the default help message.
-    self_bot : bool
+    self_bot : :class:`bool`
         If ``True``, the bot will only listen to commands invoked by itself rather
         than ignoring itself. If ``False`` (the default) then the bot will ignore
         itself. This cannot be changed once initialised.
@@ -959,29 +959,29 @@ class Bot(BotBase, discord.Client):
         If you want to change the help command completely (add aliases, etc) then
         a call to :meth:`~.Bot.remove_command` with 'help' as the argument would do the
         trick.
-    pm_help : Optional[bool]
+    pm_help : Optional[:class:`bool`]
         A tribool that indicates if the help command should PM the user instead of
         sending it to the channel it received it from. If the boolean is set to
         ``True``, then all help output is PM'd. If ``False``, none of the help
         output is PM'd. If ``None``, then the bot will only PM when the help
         message becomes too long (dictated by more than 1000 characters).
         Defaults to ``False``.
-    help_attrs : dict
+    help_attrs : :class:`dict`
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing
         the implementation of the command. The attributes will be the same as the
         ones passed in the :class:`.Command` constructor. Note that ``pass_context``
         will always be set to ``True`` regardless of what you pass in.
-    command_not_found : str
+    command_not_found : :class:`str`
         The format string used when the help command is invoked with a command that
         is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
         The only format argument is the name of the command passed.
-    command_has_no_subcommands : str
+    command_has_no_subcommands : :class:`str`
         The format string used when the help command is invoked with requests for a
         subcommand but the command does not have any subcommands. Defaults to
         ``"Command {0.name} has no subcommands."``. The first format argument is the
         :class:`.Command` attempted to get a subcommand and the second is the name.
-    owner_id: Optional[int]
+    owner_id: Optional[:class:`int`]
         The ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.

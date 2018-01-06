@@ -130,7 +130,7 @@ class CommandOnCooldown(CommandError):
     cooldown: Cooldown
         A class with attributes ``rate``, ``per``, and ``type`` similar to
         the :func:`.cooldown` decorator.
-    retry_after: float
+    retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
     def __init__(self, cooldown, retry_after):
@@ -144,7 +144,7 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: list
+    missing_perms: :class:`list`
         The required permissions that are missing.
     """
     def __init__(self, missing_perms, *args):
@@ -164,7 +164,7 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: list
+    missing_perms: :class:`list`
         The required permissions that are missing.
     """
     def __init__(self, missing_perms, *args):

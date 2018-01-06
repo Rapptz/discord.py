@@ -18,7 +18,7 @@ Questions regarding coroutines and asyncio belong here.
 I get a SyntaxError around the word ``async``\! What should I do?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This ``SyntaxError`` happens because you're using a Python version lower than 3.5. Python 3.4 uses ``@asyncio.coroutine`` and
+This :exc:`SyntaxError` happens because you're using a Python version lower than 3.5. Python 3.4 uses ``@asyncio.coroutine`` and
 ``yield from`` instead of ``async def`` and ``await``.
 
 Thus you must do the following instead: ::
@@ -59,7 +59,7 @@ despair however, because not all forms of blocking are bad! Using blocking calls
 sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has
 not stopped the function's execution at that point to do other things.
 
-A common source of blocking for too long is something like ``time.sleep(n)``. Don't do that. Use ``asyncio.sleep(n)``
+A common source of blocking for too long is something like :func:`time.sleep`. Don't do that. Use :func:`asyncio.sleep`
 instead. Similar to this example: ::
 
     # bad
@@ -69,7 +69,7 @@ instead. Similar to this example: ::
     await asyncio.sleep(10)
 
 Another common source of blocking for too long is using HTTP requests with the famous module ``requests``. While ``requests``
-is an amazing module for non-asynchronous programming, it is not a good choice for ``asyncio`` because certain requests can
+is an amazing module for non-asynchronous programming, it is not a good choice for :mod:`asyncio` because certain requests can
 block the event loop too long. Instead, use the ``aiohttp`` library which is installed on the side with this library.
 
 Consider the following example: ::
@@ -135,7 +135,7 @@ To upload multiple files, you can use the ``files`` keyword argument instead of 
     await channel.send(files=my_files)
 
 If you want to upload something from a URL, you will have to use an HTTP request using ``aiohttp``
-and then pass an ``io.BytesIO`` instance to :class:`File` like so:
+and then pass an :class:`io.BytesIO` instance to :class:`File` like so:
 
 .. code-block:: python3
 
@@ -192,8 +192,7 @@ that wraps up a couple of aspects.
 
 The first gotcha that you must be aware of is that calling a coroutine is not a thread-safe operation. Since we are
 technically in another thread, we must take caution in calling thread-safe operations so things do not bug out. Luckily for
-us, ``asyncio`` comes with a ``asyncio.run_coroutine_threadsafe``
-`function <https://docs.python.org/3.5/library/asyncio-task.html#asyncio.run_coroutine_threadsafe>`_ that allows us to call
+us, :mod:`asyncio` comes with a :func:`asyncio.run_coroutine_threadsafe` function that allows us to call
 a coroutine from another thread.
 
 .. warning::
@@ -201,7 +200,7 @@ a coroutine from another thread.
     This function is only part of 3.5.1+ and 3.4.4+. If you are not using these Python versions then use
     ``discord.compat.run_coroutine_threadsafe``.
 
-However, this function returns a ``concurrent.Future`` and to actually call it we have to fetch its result. Putting all of
+However, this function returns a :class:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of
 this together we can do the following: ::
 
     def my_after(error):

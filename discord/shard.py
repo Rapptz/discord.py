@@ -122,7 +122,7 @@ class AutoShardedClient(Client):
 
     Attributes
     ------------
-    shard_ids: Optional[List[int]]
+    shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
     def __init__(self, *args, loop=None, **kwargs):
@@ -171,7 +171,7 @@ class AutoShardedClient(Client):
 
     @property
     def latency(self):
-        """float: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This operates similarly to :meth:`.Client.latency` except it uses the average
         latency of every shard's latency. To get a list of shard latency, check the
@@ -183,7 +183,7 @@ class AutoShardedClient(Client):
 
     @property
     def latencies(self):
-        """List[Tuple[int, float]]: A list of latencies between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """List[Tuple[:class:`int`, :class:`float`]]: A list of latencies between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This returns a list of tuples with elements ``(shard_id, latency)``.
         """

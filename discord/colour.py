@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 class Colour:
     """Represents a Discord role colour. This class is similar
-    to an (red, green, blue) tuple.
+    to an (red, green, blue) :class:`tuple`.
 
     There is an alias for this called Color.
 
@@ -50,7 +50,7 @@ class Colour:
 
     Attributes
     ------------
-    value: int
+    value: :class:`int`
         The raw integer colour value.
     """
 

@@ -405,11 +405,11 @@ class clean_content(Converter):
 
     Attributes
     ------------
-    fix_channel_mentions: bool
+    fix_channel_mentions: :obj:`bool`
         Whether to clean channel mentions.
-    use_nicknames: bool
+    use_nicknames: :obj:`bool`
         Whether to use nicknames when transforming mentions.
-    escape_markdown: bool
+    escape_markdown: :obj:`bool`
         Whether to also escape special markdown characters.
     """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False):
