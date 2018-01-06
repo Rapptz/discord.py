@@ -155,7 +155,10 @@ class BaseUser(_BaseUser):
             else:
                 format = static_format
 
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        # Discord has trouble animating gifs if the url does not end in `.gif`
+        gif_fix = '&_=.gif' if format == 'gif' else ''
+
+        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}{3}'.format(self, format, size, gif_fix)
 
     @property
     def default_avatar(self):
