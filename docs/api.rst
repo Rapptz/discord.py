@@ -872,6 +872,25 @@ All enumerations are subclasses of `enum`_.
         You have sent a friend request to this user.
 
 
+.. class:: ActivityType
+
+    Represents the possible activity types that can be passed for the type
+    parameter of an :class:`Activity`.
+
+    .. attribute:: playing
+
+        The activity type is playing
+    .. attribute:: streaming
+
+        The activity type is streaming
+    .. attribute:: listening
+
+        The activity type is listening
+    .. attribute:: watching
+
+        The activity type is watching
+
+
 .. class:: AuditLogAction
 
     Represents the type of action being done for a :class:`AuditLogEntry`\,
