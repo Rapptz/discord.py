@@ -164,7 +164,7 @@ Converters
 .. autoclass:: discord.ext.commands.RoleConverter
     :members:
 
-.. autoclass:: discord.ext.commands.GameConverter
+.. autoclass:: discord.ext.commands.ActivityConverter
     :members:
 
 .. autoclass:: discord.ext.commands.ColourConverter

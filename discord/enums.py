@@ -28,7 +28,8 @@ from enum import Enum, IntEnum
 
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
-           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags', ]
+           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
+           'ActivityType']
 
 class ChannelType(Enum):
     text     = 0
@@ -119,6 +120,15 @@ class RelationshipType(Enum):
     blocked          = 2
     incoming_request = 3
     outgoing_request = 4
+
+class ActivityType(IntEnum):
+    playing   = 0
+    streaming = 1
+    listening = 2
+    watching  = 3
+
+    def __str__(self):
+        return self.name
 
 class AuditLogActionCategory(Enum):
     create = 1

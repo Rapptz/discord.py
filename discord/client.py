@@ -95,8 +95,8 @@ class Client:
         members from the guilds the bot belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
-    game: Optional[:class:`Game`]
-        A game to start your presence with upon logging on to Discord.
+    activity: Optional[:class:`Activity`]
+        An activity to start your presence with upon logging on to Discord.
     status: Optional[:class:`Status`]
         A status to start your presence with upon logging on to Discord.
     heartbeat_timeout: float
@@ -794,23 +794,23 @@ class Client:
         return self.event(coro)
 
     @asyncio.coroutine
-    def change_presence(self, *, game=None, status=None, afk=False):
+    def change_presence(self, *, activity=None, status=None, afk=False):
         """|coro|
 
         Changes the client's presence.
 
-        The game parameter is a Game object (not a string) that represents
-        a game being played currently.
+        The activity parameter is an Activity object (not a string) that represents
+        an activity being played currently.
 
         Example: ::
 
-            game = discord.Game(name="with the API")
-            await client.change_presence(status=discord.Status.idle, game=game)
+            acitivity = discord.Activity(name="with the API")
+            await client.change_presence(status=discord.Status.idle, activity=activity)
 
         Parameters
         ----------
-        game: Optional[:class:`Game`]
-            The game being played. None if no game is being played.
+        activity: Optional[:class:`Activity`]
+            The activity being played. None if no activity is being played.
         status: Optional[:class:`Status`]
             Indicates what status to change to. If None, then
             :attr:`Status.online` is used.
@@ -822,7 +822,7 @@ class Client:
         Raises
         ------
         InvalidArgument
-            If the ``game`` parameter is not :class:`Game` or None.
+            If the ``activity`` parameter is not :class:`Activity` or None.
         """
 
         if status is None:
@@ -835,14 +835,14 @@ class Client:
             status_enum = status
             status = str(status)
 
-        yield from self.ws.change_presence(game=game, status=status, afk=afk)
+        yield from self.ws.change_presence(activity=activity, status=status, afk=afk)
 
         for guild in self._connection.guilds:
             me = guild.me
             if me is None:
                 continue
 
-            me.game = game
+            me.activity = activity
             me.status = status_enum
 
     # Guild stuff

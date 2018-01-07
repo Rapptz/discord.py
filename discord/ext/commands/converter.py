@@ -34,7 +34,7 @@ from .view import StringView
 
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',
-            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
+            'ActivityConverter', 'ColourConverter', 'VoiceChannelConverter',
             'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
             'IDConverter', 'clean_content' ]
 
@@ -336,11 +336,11 @@ class RoleConverter(IDConverter):
             raise BadArgument('Role "{}" not found.'.format(argument))
         return result
 
-class GameConverter(Converter):
-    """Converts to :class:`Game`."""
+class ActivityConverter(Converter):
+    """Converts to :class:`Activity`."""
     @asyncio.coroutine
     def convert(self, ctx, argument):
-        return discord.Game(name=argument)
+        return discord.Activity(name=argument)
 
 class InviteConverter(Converter):
     """Converts to a :class:`Invite`.

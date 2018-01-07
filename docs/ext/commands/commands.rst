@@ -308,7 +308,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`CategoryChannel`
 - :class:`Role`
 - :class:`Invite`
-- :class:`Game`
+- :class:`Activity`
 - :class:`Emoji`
 - :class:`PartialEmoji`
 - :class:`Colour`
@@ -336,7 +336,7 @@ converter is given below:
 +-----------------------+-------------------------------------------------+
 | :class:`Invite`       | :class:`~ext.commands.InviteConverter`          |
 +-----------------------+-------------------------------------------------+
-| :class:`Game`         | :class:`~ext.commands.GameConverter`            |
+| :class:`Activity`         | :class:`~ext.commands.ActivityConverter`    |
 +-----------------------+-------------------------------------------------+
 | :class:`Emoji`        | :class:`~ext.commands.EmojiConverter`           |
 +-----------------------+-------------------------------------------------+

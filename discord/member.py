@@ -32,7 +32,7 @@ import discord.abc
 
 from . import utils
 from .user import BaseUser, User
-from .game import Game
+from .activity import Activity
 from .permissions import Permissions
 from .enums import Status, try_enum
 from .colour import Colour
@@ -147,15 +147,15 @@ class Member(discord.abc.Messageable, _BaseUser):
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    game : :class:`Game`
-        The game that the user is currently playing. Could be None if no game is being played.
+    activity : :class:`Activity`
+        The activity that the user is currently playing. Could be None if no activity is being played.
     guild : :class:`Guild`
         The guild that the member belongs to.
     nick : Optional[:class:`str`]
         The guild specific nickname of the user.
     """
 
-    __slots__ = ('roles', 'joined_at', 'status', 'game', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -164,8 +164,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self.status = Status.offline
-        game = data.get('game', {})
-        self.game = Game(**game) if game else None
+        activity = data.get('game', {})
+        self.activity = Activity(**activity) if activity else None
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -218,8 +218,8 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _presence_update(self, data, user):
         self.status = try_enum(Status, data['status'])
-        game = data.get('game', {})
-        self.game = Game(**game) if game else None
+        activity = data.get('game', {})
+        self.activity = Activity(**activity) if activity else None
         u = self._user
         u.name = user.get('username', u.name)
         u.avatar = user.get('avatar', u.avatar)

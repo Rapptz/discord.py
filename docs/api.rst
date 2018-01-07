@@ -410,7 +410,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This is called when one or more of the following things change:
 
     - status
-    - game playing
+    - current activity
     - avatar
     - nickname
     - roles
@@ -2007,10 +2007,10 @@ Colour
 .. autoclass:: Colour
     :members:
 
-Game
+Activity
 ~~~~
 
-.. autoclass:: Game
+.. autoclass:: Activity
     :members:
 
 Permissions
