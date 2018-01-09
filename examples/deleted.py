@@ -1,4 +1,5 @@
 import discord
+import asyncio
 
 client = discord.Client()
 
@@ -12,6 +13,7 @@ async def on_ready():
 async def on_message(message):
     if message.content.startswith('!deleteme'):
         msg = await client.send_message(message.channel, 'I will delete myself now...')
+        await asyncio.sleep(5)
         await client.delete_message(msg)
 
 @client.event
