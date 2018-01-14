@@ -61,16 +61,19 @@ Quick Example
     import asyncio
 
     class MyClient(discord.Client):
+        # Tells you when the bot is connected to Discord and is ready to receive commands
         async def on_ready(self):
             print('Logged in as')
             print(self.user.name)
             print(self.user.id)
             print('------')
-
+        
+        # Runs whenever a message is sent in a server the bot is in
         async def on_message(self, message):
-            # don't respond to ourselves
+            # Don't respond to ourselves
             if message.author == self.user:
                 return
+            # Tells us how many of the last 100 messages in the channel were sent by the command user
             if message.content.startswith('!test'):
                 counter = 0
                 tmp = await message.channel.send('Calculating messages...')
