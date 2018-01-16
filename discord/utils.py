@@ -272,6 +272,47 @@ def maybe_coroutine(f, *args, **kwargs):
     else:
         return value
 
+def reconnect_coro(pause, delay_start=None, resume_check=None):
+    """Decorator that makes the decorated coro restart itself when a connection issue occurs"""
+
+    if not asyncio.iscoroutinefunction(pause):
+        raise TypeError("pause must be a coroutine function")
+    if not (delay_start is None or asyncio.iscoroutinefunction(delay_start)):
+        raise TypeError("delay_start must be a coroutine function")
+
+    def wrapper(coro):
+        if not asyncio.iscoroutinefunction(coro):
+            raise TypeError("decorated function must be a coroutine function")
+
+        @asyncio.coroutine
+        def wrapped(*args, **kwargs):
+            if delay_start is not None:
+                yield from delay_start()
+            while True:
+                try:
+                    yield from pause()
+                    return (yield from coro(*args, **kwargs))
+                except asyncio.CancelledError:
+                    if resume_check is not None and resume_check():
+                        yield from pause()
+                # catch connection issues
+                except (OSError,
+                        HTTPException,
+                        GatewayNotFound,
+                        ConnectionClosed,
+                        aiohttp.ClientError,
+                        asyncio.TimeoutError,
+                        websockets.InvalidHandshake,
+                        websockets.WebSocketProtocolError) as e:
+                    if any((isinstance(e, ConnectionClosed) and e.code == 1000,  # clean disconnect
+                            not isinstance(e, ConnectionClosed))):
+                        yield from pause()
+                    else:
+                        raise
+
+        return wrapped
+    return wrapper
+
 @asyncio.coroutine
 def async_all(gen):
     check = asyncio.iscoroutine
