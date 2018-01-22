@@ -683,6 +683,10 @@ All enumerations are subclasses of `enum`_.
 
         The system message denoting that a pinned message has been added to a channel.
 
+    .. attribute:: new_member
+
+        The system message denoting that a new member has joined a Guild.
+
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
