@@ -107,7 +107,7 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.delete_channel``             | :meth:`abc.GuildChannel.delete`                                              |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.delete_channel_permissions`` | :meth:`abc.GuildChannel.set_permissions` with ``overwrites`` set to ``None`` |
+| ``Client.delete_channel_permissions`` | :meth:`abc.GuildChannel.set_permissions` with ``overwrite`` set to ``None``  |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.delete_custom_emoji``        | :meth:`Emoji.delete`                                                         |
 +---------------------------------------+------------------------------------------------------------------------------+
