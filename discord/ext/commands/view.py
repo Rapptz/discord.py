@@ -114,26 +114,7 @@ def quoted_word(view):
     if current is None:
         return None
 
-    # map from opening quotes to closing quotes
-    quotes = {
-        '"': '"',
-        '«': '»',
-        '‹': '›',
-        '“': '”',
-        '‘': '’',
-        '❛': '❜',
-        '❝': '❞',
-        '❮': '❯',
-        '〝': '〞',
-        '＂': '＂',
-    }
-
-    is_quoted = current in quotes
-    if is_quoted:
-        open_quote = current
-        close_quote = quotes[open_quote]
-    else:
-        open_quote = close_quote = ''
+    is_quoted = current == '"'
     result = [] if is_quoted else [current]
 
     while not view.eof:
@@ -141,7 +122,7 @@ def quoted_word(view):
         if not current:
             if is_quoted:
                 # unexpected EOF
-                raise BadArgument('Expected closing {}'.format(close_quote))
+                raise BadArgument('Expected closing "')
             return ''.join(result)
 
         # currently we accept strings in the format of "hello world"
@@ -152,13 +133,13 @@ def quoted_word(view):
                 # string ends with \ and no character after it
                 if is_quoted:
                     # if we're quoted then we're expecting a closing quote
-                    raise BadArgument('Expected closing {}'.format(close_quote))
+                    raise BadArgument('Expected closing "')
                 # if we aren't then we just let it through
                 return ''.join(result)
 
-            if next_char in (open_quote, close_quote):
+            if next_char == '"':
                 # escaped quote
-                result.append(next_char)
+                result.append('"')
             else:
                 # different escape character, ignore it
                 view.undo()
@@ -166,7 +147,7 @@ def quoted_word(view):
             continue
 
         # closing quote
-        if current == close_quote:
+        if current == '"':
             next_char = view.get()
             valid_eof = not next_char or next_char.isspace()
             if is_quoted:
