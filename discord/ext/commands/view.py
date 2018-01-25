@@ -140,10 +140,10 @@ def quoted_word(view):
     if current is None:
         return None
 
-    is_quoted = current in _quotes
+    close_quote = _quotes.get(current)
+    is_quoted = bool(close_quote)
     if is_quoted:
         open_quote = current
-        close_quote = _quotes[current]
     result = [] if is_quoted else [current]
 
     while not view.eof:
