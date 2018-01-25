@@ -109,7 +109,7 @@ class StringView:
 # Parser
 
 # map from opening quotes to closing quotes
-quotes = {
+_quotes = {
     '"': '"',
     "'": "'",
     "«": "»",
@@ -132,7 +132,7 @@ quotes = {
     "《": "》",
     "〈": "〉",
 }
-all_quotes = set(quotes.keys()) | set(quotes.values())
+_all_quotes = set(_quotes.keys()) | set(_quotes.values())
 
 def quoted_word(view):
     current = view.current
@@ -140,10 +140,10 @@ def quoted_word(view):
     if current is None:
         return None
 
-    is_quoted = current in quotes
+    is_quoted = current in _quotes
     if is_quoted:
         open_quote = current
-        close_quote = quotes[current]
+        close_quote = _quotes[current]
     result = [] if is_quoted else [current]
 
     while not view.eof:
@@ -166,7 +166,7 @@ def quoted_word(view):
                 # if we aren't then we just let it through
                 return ''.join(result)
 
-            if next_char in ((open_quote, close_quote) if is_quoted else all_quotes):
+            if next_char in ((open_quote, close_quote) if is_quoted else _all_quotes):
                 # escaped quote
                 result.append(next_char)
             else:
@@ -175,7 +175,7 @@ def quoted_word(view):
                 result.append(current)
             continue
 
-        if not is_quoted and current in all_quotes:
+        if not is_quoted and current in _all_quotes:
             # we aren't quoted
             raise BadArgument('Unexpected quote mark in non-quoted string')
 
