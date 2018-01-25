@@ -166,7 +166,7 @@ def quoted_word(view):
                 # if we aren't then we just let it through
                 return ''.join(result)
 
-            if is_quoted and next_char in (open_quote, close_quote):
+            if next_char in ((open_quote, close_quote) if is_quoted else all_quotes):
                 # escaped quote
                 result.append(next_char)
             else:
