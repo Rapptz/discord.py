@@ -330,7 +330,7 @@ class ClientUser(BaseUser):
 
         Parameters
         -----------
-        password : str
+        password: str
             The current password for the client's account.
             Only applicable to user accounts.
         new_password: str
@@ -339,7 +339,10 @@ class ClientUser(BaseUser):
         email: str
             The new email you wish to change to.
             Only applicable to user accounts.
-        username :str
+        discriminator: str
+            The new discriminator you wish to change to.
+            Only applicable to premium user accounts.
+        username: str
             The new username you wish to change to.
         avatar: bytes
             A *bytes-like object* representing the image to upload.
@@ -378,6 +381,7 @@ class ClientUser(BaseUser):
 
         if not_bot_account:
             args['email'] = fields.get('email', self.email)
+            args['discriminator'] = fields.get('discriminator', self.discriminator)
 
             if 'new_password' in fields:
                 args['new_password'] = fields['new_password']

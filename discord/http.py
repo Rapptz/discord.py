@@ -482,6 +482,9 @@ class HTTPClient:
         if 'email' in fields:
             payload['email'] = fields['email']
 
+        if 'discriminator' in fields:
+            payload['discriminator'] = fields['discriminator']
+
         if 'new_password' in fields:
             payload['new_password'] = fields['new_password']
 
