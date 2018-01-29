@@ -108,6 +108,11 @@ class Message:
     """Represents a message from Discord.
 
     There should be no need to create one of these manually.
+    
+    .. container:: operations
+        .. describe:: x == y
+            Checks if two messages are equal. This works by checking if the message
+            id is the same. 
 
     Attributes
     -----------
@@ -188,6 +193,12 @@ class Message:
     def __repr__(self):
         return '<Message id={0.id} pinned={0.pinned} author={0.author!r}>'.format(self)
 
+     def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.id == other.id
+        else:
+            return False
+     
     def _try_patch(self, data, key, transform=None):
         try:
             value = data[key]
