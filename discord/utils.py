@@ -272,9 +272,9 @@ def maybe_coroutine(f, *args, **kwargs):
     else:
         return value
 
-def restart_after_disconnect(delay_start=None, pause=None, restart_check=None):
-    """Decorator that restarts the decorated coroutine
-    function when a connection issue occurs.
+def autorestart(delay_start=None, pause=None, restart_check=None):
+    """Decorator that automatically restarts the decorated
+    coroutine function when a connection issue occurs.
 
     Parameters
     ----------
