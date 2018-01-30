@@ -272,43 +272,61 @@ def maybe_coroutine(f, *args, **kwargs):
     else:
         return value
 
-def reconnect_coro(pause, delay_start=None, resume_check=None):
-    """Decorator that makes the decorated coro restart itself when a connection issue occurs"""
+def restart_after_disconnect(delay_start=None, pause=None, restart_check=None):
+    """Decorator that restarts the decorated coroutine
+    function when a connection issue occurs.
 
-    if not asyncio.iscoroutinefunction(pause):
-        raise TypeError("pause must be a coroutine function")
-    if not (delay_start is None or asyncio.iscoroutinefunction(delay_start)):
-        raise TypeError("delay_start must be a coroutine function")
+    Parameters
+    ----------
+    delay_start : Callable
+        Will be yielded from before starting the
+        execution of the decorated coroutine function.
+    pause : Callable
+        Will be yielded from before restarting the
+        execution of the decorated coroutine function.
+    restart_check : Callable
+        A callable that checks whether the decorated
+        coroutine function should be restarted if it
+        has been cancelled. Should return a truth value.
+        May be a coroutine function.
+    """
+    if not (pause is None or callable(pause)):
+        raise TypeError("pause must be a callable")
+    if not (delay_start is None or callable(delay_start)):
+        raise TypeError("delay_start must be a callable")
 
     def wrapper(coro):
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError("decorated function must be a coroutine function")
 
+        @functools.wraps(coro)
         @asyncio.coroutine
         def wrapped(*args, **kwargs):
             if delay_start is not None:
-                yield from delay_start()
-            while True:
-                try:
-                    yield from pause()
-                    return (yield from coro(*args, **kwargs))
-                except asyncio.CancelledError:
-                    if resume_check is not None and resume_check():
-                        yield from pause()
+                yield from maybe_coroutine(delay_start)()
+            try:
+                if pause is not None:
+                    yield from maybe_coroutine(pause())
+                return (yield from coro(*args, **kwargs))
+            except asyncio.CancelledError:
+                if resume_check is not None and resume_check():
+                    yield from wrapped(*args, **kwargs)
+                else:
+                    raise
                 # catch connection issues
-                except (OSError,
-                        HTTPException,
-                        GatewayNotFound,
-                        ConnectionClosed,
-                        aiohttp.ClientError,
-                        asyncio.TimeoutError,
-                        websockets.InvalidHandshake,
-                        websockets.WebSocketProtocolError) as e:
-                    if any((isinstance(e, ConnectionClosed) and e.code == 1000,  # clean disconnect
-                            not isinstance(e, ConnectionClosed))):
-                        yield from pause()
-                    else:
-                        raise
+            except (OSError,
+                    HTTPException,
+                    GatewayNotFound,
+                    ConnectionClosed,
+                    aiohttp.ClientError,
+                    asyncio.TimeoutError,
+                    websockets.InvalidHandshake,
+                    websockets.WebSocketProtocolError) as e:
+                if any((isinstance(e, ConnectionClosed) and e.code == 1000,  # clean disconnect
+                        not isinstance(e, ConnectionClosed))):
+                    yield from wrapped(*args, **kwargs)
+                else:
+                    raise
 
         return wrapped
     return wrapper
