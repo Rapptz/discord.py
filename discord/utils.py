@@ -290,10 +290,12 @@ def autorestart(delay_start=None, pause=None, restart_check=None):
         has been cancelled. Should return a truth value.
         May be a coroutine function.
     """
-    if not (pause is None or callable(pause)):
-        raise TypeError("pause must be a callable")
     if not (delay_start is None or callable(delay_start)):
         raise TypeError("delay_start must be a callable")
+    if not (pause is None or callable(pause)):
+        raise TypeError("pause must be a callable")
+    if not (restart_check is None or callable(restart_check)):
+        raise TypeError("restart_check must be a callable")
 
     def wrapper(coro):
         if not asyncio.iscoroutinefunction(coro):
@@ -309,7 +311,7 @@ def autorestart(delay_start=None, pause=None, restart_check=None):
                     yield from maybe_coroutine(pause())
                 return (yield from coro(*args, **kwargs))
             except asyncio.CancelledError:
-                if resume_check is not None and resume_check():
+                if restart_check is not None and (yield from maybe_coroutine(restart_check)()):
                     yield from wrapped(*args, **kwargs)
                 else:
                     raise
