@@ -49,9 +49,10 @@ def _err_lt(result, func, args):
     return result
 
 def _err_ne(result, func, args):
-    if result.value != 0:
+    ret = args[-1]._obj
+    if ret.value != 0:
         log.info('error has happened in {0.__name__}'.format(func))
-        raise OpusError(result.value)
+        raise OpusError(ret.value)
     return result
 
 # A list of exported functions.
