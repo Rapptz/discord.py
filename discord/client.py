@@ -1173,7 +1173,7 @@ class Client:
         yield from self.http.send_typing(channel_id)
 
     @asyncio.coroutine
-    def send_file(self, destination, fp, *, filename=None, content=None, tts=False):
+    def send_file(self, destination, fp, *, filename=None, content=None, tts=False, embed=None):
         """|coro|
 
         Sends a message to the destination given with the file given.
@@ -1207,6 +1207,8 @@ class Client:
             forced into a string by a ``str(content)`` call.
         tts : bool
             If the content of the message should be sent with TTS enabled.
+        embed: :class:`Embed`
+            The rich embed for the content.
 
         Raises
         -------
@@ -1230,8 +1232,12 @@ class Client:
             buffer = fp
 
         content = str(content) if content is not None else None
+
+        if embed is not None:
+            embed = embed.to_dict()
+
         data = yield from self.http.send_file(channel_id, buffer, guild_id=guild_id,
-                                              filename=filename, content=content, tts=tts)
+                                              filename=filename, content=content, tts=tts, embed=embed)
         channel = self.get_channel(data.get('channel_id'))
         message = self.connection._create_message(channel=channel, **data)
         return message
