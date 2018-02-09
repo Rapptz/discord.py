@@ -29,7 +29,7 @@ import asyncio
 try:
     create_task = asyncio.ensure_future
 except AttributeError:
-    create_task = asyncio.async
+    create_task = getattr(asyncio, 'async')
 
 try:
     _create_future = asyncio.AbstractEventLoop.create_future

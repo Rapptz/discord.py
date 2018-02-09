@@ -24,18 +24,47 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time
-from .enums import DefaultAvatar, RelationshipType
-from .errors import ClientException
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
+from .enums import DefaultAvatar, RelationshipType, UserFlags
+from .errors import ClientException, InvalidArgument
 
 from collections import namedtuple
 
 import discord.abc
 import asyncio
 
-Profile = namedtuple('Profile', 'premium user mutual_guilds connected_accounts premium_since')
+VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
+VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
-class BaseUser:
+class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
+    __slots__ = ()
+
+    @property
+    def nitro(self):
+        return self.premium_since is not None
+
+    premium = nitro
+
+    def _has_flag(self, o):
+        v = o.value
+        return (self.flags & v) == v
+
+    @property
+    def staff(self):
+        return self._has_flag(UserFlags.staff)
+
+    @property
+    def hypesquad(self):
+        return self._has_flag(UserFlags.hypesquad)
+
+    @property
+    def partner(self):
+        return self._has_flag(UserFlags.partner)
+
+
+_BaseUser = discord.abc.User
+
+class BaseUser(_BaseUser):
     __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
 
     def __init__(self, *, state, data):
@@ -50,7 +79,7 @@ class BaseUser:
         return '{0.name}#{0.discriminator}'.format(self)
 
     def __eq__(self, other):
-        return isinstance(other, BaseUser) and other.id == self.id
+        return isinstance(other, _BaseUser) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -70,22 +99,30 @@ class BaseUser:
         """
         return self.avatar_url_as(format=None, size=1024)
 
-    def avatar_url_as(self, *, format, size=1024):
+    def is_avatar_animated(self):
+        """:class:`bool`: Returns True if the user has an animated avatar."""
+        return bool(self.avatar and self.avatar.startswith('a_'))
+
+    def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
         """Returns a friendly URL version of the avatar the user has.
 
         If the user does not have a traditional avatar, their default
         avatar URL is returned instead.
 
-        The format must be one of 'webp', 'jpeg', 'png' or 'gif'. The
-        size must be a power of 2 (128, 256, 512, 1024).
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 1024.
 
         Parameters
         -----------
         format: Optional[str]
             The format to attempt to convert the avatar to.
             If the format is ``None``, then it is automatically
-            detected into either 'gif' or 'webp' depending on the
+            detected into either 'gif' or static_format depending on the
             avatar being animated or not.
+        static_format: 'str'
+            Format to attempt to convert only non-animated avatars to.
+            Defaults to 'webp'
         size: int
             The size of the image to display.
 
@@ -93,22 +130,39 @@ class BaseUser:
         --------
         str
             The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or ``static_format``, or
+            invalid ``size``.
         """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not self.is_avatar_animated():
+            raise InvalidArgument("non animated avatars do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
 
         if self.avatar is None:
             return self.default_avatar_url
 
         if format is None:
-            if self.avatar.startswith('a_'):
+            if self.is_avatar_animated():
                 format = 'gif'
             else:
-                format = 'webp'
+                format = static_format
 
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        # Discord has trouble animating gifs if the url does not end in `.gif`
+        gif_fix = '&_=.gif' if format == 'gif' else ''
+
+        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}{3}'.format(self, format, size, gif_fix)
 
     @property
     def default_avatar(self):
-        """Returns the default avatar for a given user. This is calculated by the user's descriminator"""
+        """Returns the default avatar for a given user. This is calculated by the user's discriminator"""
         return DefaultAvatar(int(self.discriminator) % len(DefaultAvatar))
 
     @property
@@ -122,11 +176,11 @@ class BaseUser:
         return '<@{0.id}>'.format(self)
 
     def permissions_in(self, channel):
-        """An alias for :meth:`Channel.permissions_for`.
+        """An alias for :meth:`abc.GuildChannel.permissions_for`.
 
         Basically equivalent to:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             channel.permissions_for(self)
 
@@ -175,39 +229,43 @@ class BaseUser:
 class ClientUser(BaseUser):
     """Represents your Discord user.
 
-    Supported Operations:
+    .. container:: operations
 
-    +-----------+---------------------------------------------+
-    | Operation |                 Description                 |
-    +===========+=============================================+
-    | x == y    | Checks if two users are equal.              |
-    +-----------+---------------------------------------------+
-    | x != y    | Checks if two users are not equal.          |
-    +-----------+---------------------------------------------+
-    | hash(x)   | Return the user's hash.                     |
-    +-----------+---------------------------------------------+
-    | str(x)    | Returns the user's name with discriminator. |
-    +-----------+---------------------------------------------+
+        .. describe:: x == y
+
+            Checks if two users are equal.
+
+        .. describe:: x != y
+
+            Checks if two users are not equal.
+
+        .. describe:: hash(x)
+
+            Return the user's hash.
+
+        .. describe:: str(x)
+
+            Returns the user's name with discriminator.
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The user's username.
-    id: int
+    id: :class:`int`
         The user's unique ID.
-    discriminator: str
+    discriminator: :class:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: str
+    avatar: Optional[:class:`str`]
         The avatar hash the user has. Could be None.
-    bot: bool
+    bot: :class:`bool`
         Specifies if the user is a bot account.
-    verified: bool
+    verified: :class:`bool`
         Specifies if the user is a verified account.
-    email: Optional[str]
+    email: Optional[:class:`str`]
         The email the user used when registering.
-    mfa_enabled: bool
+    mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
-    premium: bool
+    premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
     """
     __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', '_relationships')
@@ -242,17 +300,17 @@ class ClientUser(BaseUser):
 
     @property
     def relationships(self):
-        """Returns a list of :class:`Relationship` that the user has."""
+        """Returns a :class:`list` of :class:`Relationship` that the user has."""
         return list(self._relationships.values())
 
     @property
     def friends(self):
-        """Returns a list of :class:`User`\s that the user is friends with."""
+        """Returns a :class:`list` of :class:`User`\s that the user is friends with."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        """Returns a list of :class:`User`\s that the user has blocked."""
+        """Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
     @asyncio.coroutine
@@ -353,7 +411,7 @@ class ClientUser(BaseUser):
         Parameters
         -----------
         \*recipients
-            An argument list of :class:`User` to have in
+            An argument :class:`list` of :class:`User` to have in
             your group.
 
         Return
@@ -382,31 +440,35 @@ class ClientUser(BaseUser):
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
 
-    Supported Operations:
+    .. container:: operations
 
-    +-----------+---------------------------------------------+
-    | Operation |                 Description                 |
-    +===========+=============================================+
-    | x == y    | Checks if two users are equal.              |
-    +-----------+---------------------------------------------+
-    | x != y    | Checks if two users are not equal.          |
-    +-----------+---------------------------------------------+
-    | hash(x)   | Return the user's hash.                     |
-    +-----------+---------------------------------------------+
-    | str(x)    | Returns the user's name with discriminator. |
-    +-----------+---------------------------------------------+
+        .. describe:: x == y
+
+            Checks if two users are equal.
+
+        .. describe:: x != y
+
+            Checks if two users are not equal.
+
+        .. describe:: hash(x)
+
+            Return the user's hash.
+
+        .. describe:: str(x)
+
+            Returns the user's name with discriminator.
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The user's username.
-    id: int
+    id: :class:`int`
         The user's unique ID.
-    discriminator: str
+    discriminator: :class:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: str
+    avatar: Optional[:class:`str`]
         The avatar hash the user has. Could be None.
-    bot: bool
+    bot: :class:`bool`
         Specifies if the user is a bot account.
     """
 
@@ -448,6 +510,20 @@ class User(BaseUser, discord.abc.Messageable):
     def relationship(self):
         """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
         return self._state.user.get_relationship(self.id)
+
+    def is_friend(self):
+        """:class:`bool`: Checks if the user is your friend."""
+        r = self.relationship
+        if r is None:
+            return False
+        return r.type is RelationshipType.friend
+
+    def is_blocked(self):
+        """:class:`bool`: Checks if the user is blocked."""
+        r = self.relationship
+        if r is None:
+            return False
+        return r.type is RelationshipType.blocked
 
     @asyncio.coroutine
     def block(self):
@@ -535,9 +611,10 @@ class User(BaseUser, discord.abc.Messageable):
         def transform(d):
             return state._get_guild(int(d['id']))
 
+        since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        return Profile(premium=data['premium'],
-                       premium_since=parse_time(data.get('premium_since')),
+        return Profile(flags=data['user'].get('flags', 0),
+                       premium_since=parse_time(since),
                        mutual_guilds=mutual_guilds,
                        user=self,
                        connected_accounts=data['connected_accounts'])

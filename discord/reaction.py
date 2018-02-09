@@ -24,8 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
-
 from .iterators import ReactionIterator
 
 class Reaction:
@@ -34,27 +32,33 @@ class Reaction:
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    Similar to members, the same reaction to a different message are equal.
+    .. container:: operations
 
-    Supported Operations:
+        .. describe:: x == y
 
-    +-----------+-------------------------------------------+
-    | Operation |               Description                 |
-    +===========+===========================================+
-    | x == y    | Checks if two reactions are the same.     |
-    +-----------+-------------------------------------------+
-    | x != y    | Checks if two reactions are not the same. |
-    +-----------+-------------------------------------------+
-    | hash(x)   | Return the emoji's hash.                  |
-    +-----------+-------------------------------------------+
+            Checks if two reactions are equal. This works by checking if the emoji
+            is the same. So two messages with the same reaction will be considered
+            "equal".
+
+        .. describe:: x != y
+
+            Checks if two reactions are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the reaction's hash.
+
+        .. describe:: str(x)
+
+            Returns the string form of the reaction's emoji.
 
     Attributes
     -----------
-    emoji: :class:`Emoji` or str
+    emoji: :class:`Emoji` or :class:`str`
         The reaction emoji. May be a custom emoji, or a unicode emoji.
-    count: int
+    count: :class:`int`
         Number of times this reaction was made
-    me: bool
+    me: :class:`bool`
         If the user sent this reaction.
     message: :class:`Message`
         Message this reaction is for.
@@ -63,13 +67,13 @@ class Reaction:
 
     def __init__(self, *, message, data, emoji=None):
         self.message = message
-        self.emoji = message._state.get_reaction_emoji(data['emoji']) if emoji is None else emoji
+        self.emoji = emoji or message._state.get_reaction_emoji(data['emoji'])
         self.count = data.get('count', 1)
         self.me = data.get('me')
 
     @property
     def custom_emoji(self):
-        """bool: If this is a custom emoji."""
+        """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
     def __eq__(self, other):
@@ -82,6 +86,9 @@ class Reaction:
 
     def __hash__(self):
         return hash(self.emoji)
+
+    def __str__(self):
+        return str(self.emoji)
 
     def __repr__(self):
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
@@ -130,7 +137,7 @@ class Reaction:
             iterator = reaction.users()
             while True:
                 try:
-                    user = yield from iterator.get()
+                    user = yield from iterator.next()
                 except discord.NoMoreItems:
                     break
                 else:

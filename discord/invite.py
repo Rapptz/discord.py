@@ -31,47 +31,51 @@ from .mixins import Hashable
 from .object import Object
 
 class Invite(Hashable):
-    """Represents a Discord :class:`Guild` or :class:`Channel` invite.
+    """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
 
-    Supported Operations:
+    .. container:: operations
 
-    +-----------+--------------------------------------+
-    | Operation |             Description              |
-    +===========+======================================+
-    | x == y    | Checks if two invites are equal.     |
-    +-----------+--------------------------------------+
-    | x != y    | Checks if two invites are not equal. |
-    +-----------+--------------------------------------+
-    | hash(x)   | Return the invite's hash.            |
-    +-----------+--------------------------------------+
-    | str(x)    | Returns the invite's URL.            |
-    +-----------+--------------------------------------+
+        .. describe:: x == y
+
+            Checks if two invites are equal.
+
+        .. describe:: x != y
+
+            Checks if two invites are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the invite hash.
+
+        .. describe:: str(x)
+
+            Returns the invite URL.
 
     Attributes
     -----------
-    max_age: int
+    max_age: :class:`int`
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
-    code: str
+    code: :class:`str`
         The URL fragment used for the invite.
     guild: :class:`Guild`
         The guild the invite is for.
-    revoked: bool
+    revoked: :class:`bool`
         Indicates if the invite has been revoked.
     created_at: `datetime.datetime`
         A datetime object denoting the time the invite was created.
-    temporary: bool
+    temporary: :class:`bool`
         Indicates that the invite grants temporary membership.
         If True, members who joined via this invite will be kicked upon disconnect.
-    uses: int
+    uses: :class:`int`
         How many times the invite has been used.
-    max_uses: int
+    max_uses: :class:`int`
         How many times the invite can be used.
     inviter: :class:`User`
         The user who created the invite.
-    channel: :class:`Channel`
+    channel: :class:`abc.GuildChannel`
         The channel the invite is for.
     """
 
@@ -117,6 +121,9 @@ class Invite(Hashable):
     def __repr__(self):
         return '<Invite code={0.code!r}>'.format(self)
 
+    def __hash__(self):
+        return hash(self.code)
+
     @property
     def id(self):
         """Returns the proper code portion of the invite."""
@@ -128,29 +135,15 @@ class Invite(Hashable):
         return 'http://discord.gg/' + self.code
 
     @asyncio.coroutine
-    def accept(self):
-        """|coro|
-
-        Accepts the instant invite and adds you to the guild
-        the invite is in.
-
-        Raises
-        -------
-        HTTPException
-            Accepting the invite failed.
-        NotFound
-            The invite is invalid or expired.
-        Forbidden
-            You are a bot user and cannot use this endpoint.
-        """
-
-        yield from self._state.http.accept_invite(self.code)
-
-    @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Revokes the instant invite.
+
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this invite. Shows up on the audit log.
 
         Raises
         -------
@@ -162,4 +155,4 @@ class Invite(Hashable):
             Revoking the invite failed.
         """
 
-        yield from self._state.http.delete_invite(self.code)
+        yield from self._state.http.delete_invite(self.code, reason=reason)

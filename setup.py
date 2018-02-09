@@ -8,7 +8,10 @@ with open('requirements.txt') as f:
   requirements = f.read().splitlines()
 
 if on_rtd:
+  requirements.append('sphinx==1.6.5')
   requirements.append('sphinxcontrib-napoleon')
+  requirements.append('sphinxcontrib-asyncio')
+  requirements.append('sphinxcontrib-websupport')
 
 version = ''
 with open('discord/__init__.py') as f:
@@ -17,12 +20,30 @@ with open('discord/__init__.py') as f:
 if not version:
     raise RuntimeError('version is not set')
 
+if version.endswith(('a', 'b', 'rc')):
+    # append version identifier based on commit count
+    try:
+        import subprocess
+        p = subprocess.Popen(['git', 'rev-list', '--count', 'HEAD'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        if out:
+            version += out.decode('utf-8').strip()
+        p = subprocess.Popen(['git', 'rev-parse', '--short', 'HEAD'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        if out:
+            version += '+g' + out.decode('utf-8').strip()
+    except Exception:
+        pass
+
 readme = ''
-with open('README.md') as f:
+with open('README.rst') as f:
     readme = f.read()
 
 extras_require = {
-    'voice': ['PyNaCl==1.0.1'],
+    'voice': ['PyNaCl==1.1.2'],
+    'docs': ['sphinxcontrib-asyncio']
 }
 
 setup(name='discord.py',

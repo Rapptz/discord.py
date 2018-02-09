@@ -26,27 +26,31 @@ DEALINGS IN THE SOFTWARE.
 
 class Colour:
     """Represents a Discord role colour. This class is similar
-    to an (red, green, blue) tuple.
+    to an (red, green, blue) :class:`tuple`.
 
     There is an alias for this called Color.
 
-    Supported operations:
+    .. container:: operations
 
-    +-----------+----------------------------------------+
-    | Operation |              Description               |
-    +===========+========================================+
-    | x == y    | Checks if two colours are equal.       |
-    +-----------+----------------------------------------+
-    | x != y    | Checks if two colours are not equal.   |
-    +-----------+----------------------------------------+
-    | hash(x)   | Return the colour's hash.              |
-    +-----------+----------------------------------------+
-    | str(x)    | Returns the hex format for the colour. |
-    +-----------+----------------------------------------+
+        .. describe:: x == y
+
+             Checks if two colours are equal.
+
+        .. describe:: x != y
+
+             Checks if two colours are not equal.
+
+        .. describe:: hash(x)
+
+             Return the colour's hash.
+
+        .. describe:: str(x)
+
+             Returns the hex format for the colour.
 
     Attributes
     ------------
-    value: int
+    value: :class:`int`
         The raw integer colour value.
     """
 
@@ -91,9 +95,14 @@ class Colour:
         """Returns the blue component of the colour."""
         return self._get_byte(0)
 
-    def to_tuple(self):
+    def to_rgb(self):
         """Returns an (r, g, b) tuple representing the colour."""
         return (self.r, self.g, self.b)
+
+    @classmethod
+    def from_rgb(cls, r, g, b):
+        """Constructs a :class:`Colour` from an RGB tuple."""
+        return cls((r << 16) + (g << 8) + b)
 
     @classmethod
     def default(cls):
@@ -200,5 +209,14 @@ class Colour:
         """A factory method that returns a :class:`Colour` with a value of ``0x546e7a``."""
         return cls(0x546e7a)
 
+    @classmethod
+    def blurple(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x7289da``."""
+        return cls(0x7289da)
+
+    @classmethod
+    def greyple(cls):
+        """A factory method that returns a :class:`Colour` with a value of ``0x99aab5``."""
+        return cls(0x99aab5)
 
 Color = Colour

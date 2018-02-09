@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import datetime
 
 from . import utils
-from .enums import GuildRegion, try_enum
+from .enums import VoiceRegion, try_enum
 from .member import VoiceState
 
 class CallMessage:
@@ -53,7 +53,7 @@ class CallMessage:
 
     @property
     def call_ended(self):
-        """bool: Indicates if the call has ended."""
+        """:obj:`bool`: Indicates if the call has ended."""
         return self.ended_timestamp is not None
 
     @property
@@ -87,11 +87,11 @@ class GroupCall:
     -----------
     call: :class:`CallMessage`
         The call message associated with this group call.
-    unavailable: bool
+    unavailable: :obj:`bool`
         Denotes if this group call is unavailable.
     ringing: List[:class:`User`]
         A list of users that are currently being rung to join the call.
-    region: :class:`GuildRegion`
+    region: :class:`VoiceRegion`
         The guild region the group call is being hosted on.
     """
 
@@ -106,7 +106,7 @@ class GroupCall:
         self._update(**kwargs)
 
     def _update(self, **kwargs):
-        self.region = try_enum(GuildRegion, kwargs.get('region'))
+        self.region = try_enum(VoiceRegion, kwargs.get('region'))
         lookup = {u.id: u for u in self.call.channel.recipients}
         me = self.call.channel.me
         lookup[me.id] = me
@@ -122,7 +122,7 @@ class GroupCall:
 
     @property
     def connected(self):
-        """A property that returns the list of :class:`User` that are currently in this call."""
+        """A property that returns the :obj:`list` of :class:`User` that are currently in this call."""
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:
@@ -148,7 +148,7 @@ class GroupCall:
 
         Returns
         --------
-        Optiona[:class:`VoiceState`]
+        Optional[:class:`VoiceState`]
             The voice state associated with this user.
         """
 

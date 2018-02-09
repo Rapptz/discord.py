@@ -27,27 +27,31 @@ DEALINGS IN THE SOFTWARE.
 class Game:
     """Represents a Discord game.
 
-    Supported Operations:
+    .. container:: operations
 
-    +-----------+------------------------------------+
-    | Operation |            Description             |
-    +===========+====================================+
-    | x == y    | Checks if two games are equal.     |
-    +-----------+------------------------------------+
-    | x != y    | Checks if two games are not equal. |
-    +-----------+------------------------------------+
-    | hash(x)   | Return the games's hash.           |
-    +-----------+------------------------------------+
-    | str(x)    | Returns the games's name.          |
-    +-----------+------------------------------------+
+        .. describe:: x == y
+
+            Checks if two games are equal.
+
+        .. describe:: x != y
+
+            Checks if two games are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the game's hash.
+
+        .. describe:: str(x)
+
+            Returns the game's name.
 
     Attributes
     -----------
-    name : str
+    name: :class:`str`
         The game's name.
-    url : str
+    url: :class:`str`
         The game's URL. Usually used for twitch streaming.
-    type : int
+    type: :class:`int`
         The type of game being played. 1 indicates "Streaming".
     """
 
@@ -56,10 +60,10 @@ class Game:
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
         self.url = kwargs.get('url')
-        self.type = kwargs.get('type')
+        self.type = kwargs.get('type', 0)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def __repr__(self):
         return '<Game name={0.name!r} type={0.type!r} url={0.url!r}>'.format(self)

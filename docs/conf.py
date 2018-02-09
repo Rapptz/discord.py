@@ -22,6 +22,7 @@ on_rtd = os.getenv('READTHEDOCS') == 'True'
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('extensions'))
 
 # -- General configuration ------------------------------------------------
 
@@ -34,6 +35,9 @@ sys.path.insert(0, os.path.abspath('..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
+    'sphinxcontrib.asyncio',
+    'details'
 ]
 
 if on_rtd:
@@ -47,8 +51,12 @@ extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
 }
 
+# Links used for cross-referencing stuff in other documentation
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.
+.. |maybecoro| replace:: This function *could be a* |corourl|_.
 .. |corourl| replace:: *coroutine*
 .. _corourl: https://docs.python.org/3/library/asyncio-task.html#coroutine
 """
@@ -115,7 +123,7 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'friendly'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -126,15 +134,16 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
+html_experimental_html5_writer = True
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'basic'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 # html_theme_options = {
-
 # }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -159,7 +168,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -304,3 +313,6 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+def setup(app):
+  app.add_javascript('custom.js')

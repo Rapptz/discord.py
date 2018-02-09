@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 
 from .permissions import Permissions
+from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time
@@ -34,33 +35,45 @@ from .utils import snowflake_time
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.
 
-    Supported Operations:
+    .. container:: operations
 
-    +-----------+------------------------------------------------------------------+
-    | Operation |                           Description                            |
-    +===========+==================================================================+
-    | x == y    | Checks if two roles are equal.                                   |
-    +-----------+------------------------------------------------------------------+
-    | x != y    | Checks if two roles are not equal.                               |
-    +-----------+------------------------------------------------------------------+
-    | x > y     | Checks if a role is higher than another in the hierarchy.        |
-    +-----------+------------------------------------------------------------------+
-    | x < y     | Checks if a role is lower than another in the hierarchy.         |
-    +-----------+------------------------------------------------------------------+
-    | x >= y    | Checks if a role is higher or equal to another in the hierarchy. |
-    +-----------+------------------------------------------------------------------+
-    | x <= y    | Checks if a role is lower or equal to another in the hierarchy.  |
-    +-----------+------------------------------------------------------------------+
-    | hash(x)   | Return the role's hash.                                          |
-    +-----------+------------------------------------------------------------------+
-    | str(x)    | Returns the role's name.                                         |
-    +-----------+------------------------------------------------------------------+
+        .. describe:: x == y
+
+            Checks if two roles are equal.
+
+        .. describe:: x != y
+
+            Checks if two roles are not equal.
+
+        .. describe:: x > y
+
+            Checks if a role is higher than another in the hierarchy.
+
+        .. describe:: x < y
+
+            Checks if a role is lower than another in the hierarchy.
+
+        .. describe:: x >= y
+
+            Checks if a role is higher or equal to another in the hierarchy.
+
+        .. describe:: x <= y
+
+            Checks if a role is lower or equal to another in the hierarchy.
+
+        .. describe:: hash(x)
+
+            Return the role's hash.
+
+        .. describe:: str(x)
+
+            Returns the role's name.
 
     Attributes
     ----------
-    id: int
+    id: :class:`int`
         The ID for the role.
-    name: str
+    name: :class:`str`
         The name of the role.
     permissions: :class:`Permissions`
         Represents the role's permissions.
@@ -68,15 +81,15 @@ class Role(Hashable):
         The guild the role belongs to.
     colour: :class:`Colour`
         Represents the role colour. An alias exists under ``color``.
-    hoist: bool
+    hoist: :class:`bool`
          Indicates if the role will be displayed separately from other members.
-    position: int
+    position: :class:`int`
         The position of the role. This number is usually positive. The bottom
         role has a position of 0.
-    managed: bool
+    managed: :class:`bool`
         Indicates if the role is managed by the guild through some form of
         integrations such as Twitch.
-    mentionable: bool
+    mentionable: :class:`bool`
         Indicates if the role can be mentioned by users.
     """
 
@@ -96,7 +109,7 @@ class Role(Hashable):
         return '<Role id={0.id} name={0.name!r}>'.format(self)
 
     def __lt__(self, other):
-        if not isinstance(other, Role) or  not isinstance(self, Role):
+        if not isinstance(other, Role) or not isinstance(self, Role):
             return NotImplemented
 
         if self.guild != other.guild:
@@ -147,23 +160,19 @@ class Role(Hashable):
     @property
     def mention(self):
         """Returns a string that allows you to mention a role."""
-        return '<@&{}>'.format(self.id)
+        return '<@&%s>' % self.id
 
     @property
     def members(self):
-        """Returns a list of :class:`Member` with this role."""
+        """Returns a :class:`list` of :class:`Member` with this role."""
         all_members = self.guild.members
         if self.is_default():
             return all_members
 
-        ret = []
-        for member in all_members:
-            if self in member.roles:
-                ret.append(member)
-        return ret
+        return [member for member in all_members if self in member.roles]
 
     @asyncio.coroutine
-    def _move(self, position):
+    def _move(self, position, reason):
         if position <= 0:
             raise InvalidArgument("Cannot move role to position 0 or below")
 
@@ -187,10 +196,10 @@ class Role(Hashable):
             roles.append(self.id)
 
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
-        yield from http.move_role_position(role.guild.id, payload)
+        yield from http.move_role_position(self.guild.id, payload, reason=reason)
 
     @asyncio.coroutine
-    def edit(self, **fields):
+    def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the role.
@@ -215,6 +224,8 @@ class Role(Hashable):
         position: int
             The new role's position. This must be below your top role's
             position or it will fail.
+        reason: Optional[str]
+            The reason for editing this role. Shows up on the audit log.
 
         Raises
         -------
@@ -229,7 +240,7 @@ class Role(Hashable):
 
         position = fields.get('position')
         if position is not None:
-            yield from self._move(position)
+            yield from self._move(position, reason=reason)
             self.position = position
 
         try:
@@ -245,17 +256,22 @@ class Role(Hashable):
             'mentionable': fields.get('mentionable', self.mentionable)
         }
 
-        data = yield from self._state.http.edit_role(self.guild.id, self.id, **payload)
+        data = yield from self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         self._update(data)
 
     @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Deletes the role.
 
         You must have the :attr:`Permissions.manage_roles` permission to
         use this.
+
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this role. Shows up on the audit log.
 
         Raises
         --------
@@ -265,4 +281,4 @@ class Role(Hashable):
             Deleting the role failed.
         """
 
-        yield from self._state.http.delete_role(self.guild.id, self.id)
+        yield from self._state.http.delete_role(self.guild.id, self.id, reason=reason)

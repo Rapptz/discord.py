@@ -16,4 +16,4 @@ from .core import *
 from .errors import *
 from .formatter import HelpFormatter, Paginator
 from .converter import *
-from .cooldowns import BucketType
+from .cooldowns import *

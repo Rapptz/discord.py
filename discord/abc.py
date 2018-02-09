@@ -25,19 +25,19 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import abc
-import io
-import os
-import time
+import copy
 import asyncio
 
 from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .errors import ClientException, NoMoreItems, InvalidArgument
+from .errors import InvalidArgument, ClientException
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
+from .file import File
+from .voice_client import VoiceClient
 from . import utils, compat
 
 class _Undefined:
@@ -46,17 +46,23 @@ class _Undefined:
 
 _undefined = _Undefined()
 
-@asyncio.coroutine
-def _single_delete_strategy(messages):
-    for m in messages:
-        yield from m.delete()
-
 class Snowflake(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a Discord model.
+
+    Almost all :ref:`Discord models <discord_api_models>` meet this
+    abstract base class.
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The model's unique ID.
+    """
     __slots__ = ()
 
     @property
     @abc.abstractmethod
     def created_at(self):
+        """Returns the model's creation time in UTC."""
         raise NotImplementedError
 
     @classmethod
@@ -73,16 +79,39 @@ class Snowflake(metaclass=abc.ABCMeta):
         return NotImplemented
 
 class User(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a Discord user.
+
+    The following implement this ABC:
+
+    - :class:`User`
+    - :class:`ClientUser`
+    - :class:`Member`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The user's username.
+    discriminator: :class:`str`
+        The user's discriminator.
+    avatar: Optional[:class:`str`]
+        The avatar hash the user has.
+    bot: :class:`bool`
+        If the user is a bot account.
+    """
     __slots__ = ()
 
     @property
     @abc.abstractmethod
     def display_name(self):
+        """Returns the user's display name."""
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
     def mention(self):
+        """Returns a string that allows you to mention the given user."""
         raise NotImplementedError
 
     @classmethod
@@ -102,6 +131,20 @@ class User(metaclass=abc.ABCMeta):
         return NotImplemented
 
 class PrivateChannel(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a private Discord channel.
+
+    The following implement this ABC:
+
+    - :class:`DMChannel`
+    - :class:`GroupChannel`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+
+    Attributes
+    -----------
+    me: :class:`ClientUser`
+        The user presenting yourself.
+    """
     __slots__ = ()
 
     @classmethod
@@ -120,13 +163,33 @@ class PrivateChannel(metaclass=abc.ABCMeta):
 _Overwrites = namedtuple('_Overwrites', 'id allow deny type')
 
 class GuildChannel:
+    """An ABC that details the common operations on a Discord guild channel.
+
+    The following implement this ABC:
+
+    - :class:`TextChannel`
+    - :class:`VoiceChannel`
+    - :class:`CategoryChannel`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0.
+        e.g. the top channel is position 0.
+    """
     __slots__ = ()
 
     def __str__(self):
         return self.name
 
     @asyncio.coroutine
-    def _move(self, position):
+    def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
@@ -149,8 +212,48 @@ class GuildChannel:
             # add ourselves at our designated position
             channels.insert(position, self)
 
-        payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
-        yield from http.move_channel_position(self.guild.id, payload)
+        payload = []
+        for index, c in enumerate(channels):
+            d = {'id': c.id, 'position': index}
+            if parent_id is not _undefined and c.id == self.id:
+                d.update(parent_id=parent_id, lock_permissions=lock_permissions)
+            payload.append(d)
+
+        yield from http.bulk_channel_update(self.guild.id, payload, reason=reason)
+        self.position = position
+        if parent_id is not _undefined:
+            self.category_id = int(parent_id) if parent_id else None
+
+    @asyncio.coroutine
+    def _edit(self, options, reason):
+        try:
+            parent = options.pop('category')
+        except KeyError:
+            parent_id = _undefined
+        else:
+            parent_id = parent and parent.id
+
+        lock_permissions = options.pop('sync_permissions', False)
+
+        try:
+            position = options.pop('position')
+        except KeyError:
+            if parent_id is not _undefined:
+                if lock_permissions:
+                    category = self.guild.get_channel(parent_id)
+                    options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
+                options['parent_id'] = parent_id
+            elif lock_permissions and self.category_id is not None:
+                # if we're syncing permissions on a pre-existing channel category without changing it
+                # we need to update the permissions to point to the pre-existing category
+                category = self.guild.get_channel(self.category_id)
+                options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
+        else:
+            yield from self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
+
+        if options:
+            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
+            self._update(self.guild, data)
 
     def _fill_overwrites(self, data):
         self._overwrites = []
@@ -179,7 +282,7 @@ class GuildChannel:
 
     @property
     def changed_roles(self):
-        """Returns a list of :class:`Roles` that have been overridden from
+        """Returns a :class:`list` of :class:`Roles` that have been overridden from
         their default values in the :attr:`Guild.roles` attribute."""
         ret = []
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
@@ -192,14 +295,10 @@ class GuildChannel:
             ret.append(role)
         return ret
 
-    def is_default(self):
-        """bool : Indicates if this is the default channel for the :class:`Guild` it belongs to."""
-        return self.guild.id == self.id
-
     @property
     def mention(self):
-        """str : The string that allows you to mention the channel."""
-        return '<#{0.id}>'.format(self)
+        """:class:`str` : The string that allows you to mention the channel."""
+        return '<#%s>' % self.id
 
     @property
     def created_at(self):
@@ -264,6 +363,14 @@ class GuildChannel:
             ret.append((target, overwrite))
         return ret
 
+    @property
+    def category(self):
+        """Optional[:class:`CategoryChannel`]: The category this channel belongs to.
+
+        If there is no category then this is ``None``.
+        """
+        return self.guild.get_channel(self.category_id)
+
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`Member`.
 
@@ -273,7 +380,6 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
-        - Whether the channel is the default channel.
 
         Parameters
         ----------
@@ -295,14 +401,13 @@ class GuildChannel:
         # have to take into effect.
         # After all that is done.. you have to do the following:
 
-        # If manage permissions is True, then all permissions are set to
-        # True. If the channel is the default channel then everyone gets
-        # read permissions regardless.
+        # If manage permissions is True, then all permissions are set to True.
 
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        if member.id == self.guild.owner.id:
+        o = self.guild.owner
+        if o is not None and member.id == o.id:
             return Permissions.all()
 
         default = self.guild.default_role
@@ -317,12 +422,23 @@ class GuildChannel:
         if base.administrator:
             return Permissions.all()
 
+        # Apply @everyone allow/deny first since it's special
+        try:
+            maybe_everyone = self._overwrites[0]
+            if maybe_everyone.id == self.guild.id:
+                base.handle_overwrite(allow=maybe_everyone.allow, deny=maybe_everyone.deny)
+                remaining_overwrites = self._overwrites[1:]
+            else:
+                remaining_overwrites = self._overwrites
+        except IndexError:
+            remaining_overwrites = self._overwrites
+
         member_role_ids = set(map(lambda r: r.id, member.roles))
         denies = 0
         allows = 0
 
         # Apply channel specific role permission overwrites
-        for overwrite in self._overwrites:
+        for overwrite in remaining_overwrites:
             if overwrite.type == 'role' and overwrite.id in member_role_ids:
                 denies |= overwrite.deny
                 allows |= overwrite.allow
@@ -330,14 +446,10 @@ class GuildChannel:
         base.handle_overwrite(allow=allows, deny=denies)
 
         # Apply member specific permission overwrites
-        for overwrite in self._overwrites:
+        for overwrite in remaining_overwrites:
             if overwrite.type == 'member' and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
-
-        # default channels can always be read
-        if self.is_default():
-            base.read_messages = True
 
         # if you can't send a message in a channel then you can't have certain
         # permissions as well
@@ -355,12 +467,18 @@ class GuildChannel:
         return base
 
     @asyncio.coroutine
-    def delete(self):
+    def delete(self, *, reason=None):
         """|coro|
 
         Deletes the channel.
 
         You must have Manage Channel permission to use this.
+
+        Parameters
+        -----------
+        reason: Optional[str]
+            The reason for deleting this channel.
+            Shows up on the audit log.
 
         Raises
         -------
@@ -371,10 +489,10 @@ class GuildChannel:
         HTTPException
             Deleting the channel failed.
         """
-        yield from self._state.http.delete_channel(self.id)
+        yield from self._state.http.delete_channel(self.id, reason=reason)
 
     @asyncio.coroutine
-    def set_permissions(self, target, *, overwrite=_undefined, **permissions):
+    def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
         """|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -422,6 +540,8 @@ class GuildChannel:
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
             Cannot be mixed with ``overwrite``.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
@@ -457,15 +577,15 @@ class GuildChannel:
         # TODO: wait for event
 
         if overwrite is None:
-            yield from http.delete_channel_permissions(self.id, target.id)
+            yield from http.delete_channel_permissions(self.id, target.id, reason=reason)
         elif isinstance(overwrite, PermissionOverwrite):
             (allow, deny) = overwrite.pair()
-            yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type)
+            yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
     @asyncio.coroutine
-    def create_invite(self, **fields):
+    def create_invite(self, *, reason=None, **fields):
         """|coro|
 
         Creates an instant invite.
@@ -485,6 +605,8 @@ class GuildChannel:
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to False then it will return a previously created
             invite.
+        reason: Optional[str]
+            The reason for creating this invite. Shows up on the audit log.
 
         Raises
         -------
@@ -497,7 +619,7 @@ class GuildChannel:
             The invite that was created.
         """
 
-        data = yield from self._state.http.create_invite(self.id, **fields)
+        data = yield from self._state.http.create_invite(self.id, reason=reason, **fields)
         return Invite.from_incomplete(data=data, state=self._state)
 
     @asyncio.coroutine
@@ -533,6 +655,20 @@ class GuildChannel:
         return result
 
 class Messageable(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a model that can send messages.
+
+    The following implement this ABC:
+
+    - :class:`TextChannel`
+    - :class:`DMChannel`
+    - :class:`GroupChannel`
+    - :class:`User`
+    - :class:`Member`
+    - :class:`~ext.commands.Context`
+
+    This ABC must also implement :class:`abc.Snowflake`.
+    """
+
     __slots__ = ()
 
     @asyncio.coroutine
@@ -541,7 +677,7 @@ class Messageable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, filename=None, delete_after=None):
+    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -550,19 +686,10 @@ class Messageable(metaclass=abc.ABCMeta):
         If the content is set to ``None`` (the default), then the ``embed`` parameter must
         be provided.
 
-        The ``file`` parameter should be either a string denoting the location for a
-        file or a *file-like object*. The *file-like object* passed is **not closed**
-        at the end of execution. You are responsible for closing it yourself.
-
-        .. note::
-
-            If the file-like object passed is opened via ``open`` then the modes
-            'rb' should be used.
-
-        The ``filename`` parameter is the filename of the file.
-        If this is not given then it defaults to ``file.name`` or if ``file`` is a string
-        then the ``filename`` will default to the string given. You can overwrite
-        this value by passing this in.
+        To upload a single file, the ``file`` parameter should be used with a
+        single :class:`File` object. To upload multiple files, the ``files``
+        parameter should be used with a :class:`list` of :class:`File` objects.
+        **Specifying both parameters will lead to an exception**.
 
         If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
         it must be a rich embed type.
@@ -575,12 +702,13 @@ class Messageable(metaclass=abc.ABCMeta):
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`Embed`
             The rich embed for the content.
-        file: file-like object or filename
-            The *file-like object* or file path to send.
-        filename: str
-            The filename of the file. Defaults to ``file.name`` if it's available.
-            If this is provided, you must also provide the ``file`` parameter or it
-            is silently ignored.
+        file: :class:`File`
+            The file to upload.
+        files: List[:class:`File`]
+            A list of files to upload. Must be a maximum of 10.
+        nonce: int
+            The nonce to use for sending this message. If the message was successfully sent,
+            then the message will have a nonce with this value.
         delete_after: float
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
@@ -592,6 +720,9 @@ class Messageable(metaclass=abc.ABCMeta):
             Sending the message failed.
         Forbidden
             You do not have the proper permissions to send the message.
+        InvalidArgument
+            The ``files`` list is not of the appropriate size or
+            you specified both ``file`` and ``files``.
 
         Returns
         ---------
@@ -605,19 +736,32 @@ class Messageable(metaclass=abc.ABCMeta):
         if embed is not None:
             embed = embed.to_dict()
 
-        if file is not None:
-            try:
-                with open(file, 'rb') as f:
-                    buffer = io.BytesIO(f.read())
-                    if filename is None:
-                        _, filename = os.path.split(file)
-            except TypeError:
-                buffer = file
+        if file is not None and files is not None:
+            raise InvalidArgument('cannot pass both file and files parameter to send()')
 
-            data = yield from state.http.send_file(channel.id, buffer, filename=filename, content=content,
-                                                   tts=tts, embed=embed)
+        if file is not None:
+            if not isinstance(file, File):
+                raise InvalidArgument('file parameter must be File')
+
+            try:
+                data = yield from state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
+                                                        content=content, tts=tts, embed=embed, nonce=nonce)
+            finally:
+                file.close()
+
+        elif files is not None:
+            if len(files) > 10:
+                raise InvalidArgument('files parameter must be a list of up to 10 elements')
+
+            try:
+                param = [(f.open_file(), f.filename) for f in files]
+                data = yield from state.http.send_files(channel.id, files=param, content=content, tts=tts,
+                                                        embed=embed, nonce=nonce)
+            finally:
+                for f in files:
+                    f.close()
         else:
-            data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed)
+            data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
@@ -655,7 +799,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Example Usage: ::
 
-            with channel.typing():
+            async with channel.typing():
                 # do expensive stuff here
                 await channel.send('done!')
 
@@ -695,44 +839,10 @@ class Messageable(metaclass=abc.ABCMeta):
         return self._state.create_message(channel=channel, data=data)
 
     @asyncio.coroutine
-    def delete_messages(self, messages):
-        """|coro|
-
-        Deletes a list of messages. This is similar to :meth:`Message.delete`
-        except it bulk deletes multiple messages.
-
-        Usable only by bot accounts.
-
-        Parameters
-        -----------
-        messages : iterable of :class:`Message`
-            An iterable of messages denoting which ones to bulk delete.
-
-        Raises
-        ------
-        ClientException
-            The number of messages to delete is less than 2 or more than 100.
-        Forbidden
-            You do not have proper permissions to delete the messages or
-            you're not using a bot account.
-        HTTPException
-            Deleting the messages failed.
-        """
-
-        messages = list(messages)
-        if len(messages) > 100 or len(messages) < 2:
-            raise ClientException('Can only delete messages in the range of [2, 100]')
-
-        message_ids = [m.id for m in messages]
-        channel = yield from self._get_channel()
-
-        yield from self._state.http.delete_messages(channel.id, message_ids)
-
-    @asyncio.coroutine
     def pins(self):
         """|coro|
 
-        Returns a list of :class:`Message` that are currently pinned.
+        Returns a :class:`list` of :class:`Message` that are currently pinned.
 
         Raises
         -------
@@ -748,7 +858,7 @@ class Messageable(metaclass=abc.ABCMeta):
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
         """Return an :class:`AsyncIterator` that enables receiving the destination's message history.
 
-        You must have Read Message History permissions to use this.
+        You must have :attr:`~Permissions.read_message_history` permissions to use this.
 
         All parameters are optional.
 
@@ -808,7 +918,7 @@ class Messageable(metaclass=abc.ABCMeta):
             iterator = channel.history(limit=200)
             while True:
                 try:
-                    message = yield from iterator.get()
+                    message = yield from iterator.next()
                 except discord.NoMoreItems:
                     break
                 else:
@@ -817,105 +927,72 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
+
+class Connectable(metaclass=abc.ABCMeta):
+    """An ABC that details the common operations on a channel that can
+    connect to a voice server.
+
+    The following implement this ABC:
+
+    - :class:`VoiceChannel`
+    """
+    __slots__ = ()
+
+    @abc.abstractmethod
+    def _get_voice_client_key(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_voice_state_pair(self):
+        raise NotImplementedError
+
     @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None):
+    def connect(self, *, timeout=60.0, reconnect=True):
         """|coro|
 
-        Purges a list of messages that meet the criteria given by the predicate
-        ``check``. If a ``check`` is not provided then all messages are deleted
-        without discrimination.
-
-        You must have :attr:`Permissions.manage_messages` permission to delete
-        messages even if they are your own (unless you are a user account).
-        The :attr:`Permissions.read_message_history` permission is also needed
-        to retrieve message history.
-
-        Internally, this employs a different number of strategies depending
-        on the conditions met such as if a bulk delete is possible or if
-        the account is a user bot or not.
+        Connects to voice and creates a :class:`VoiceClient` to establish
+        your connection to the voice server.
 
         Parameters
         -----------
-        limit: int
-            The number of messages to search through. This is not the number
-            of messages that will be deleted, though it can be.
-        check: predicate
-            The function used to check if a message should be deleted.
-            It must take a :class:`Message` as its sole parameter.
-        before
-            Same as ``before`` in :meth:`history`.
-        after
-            Same as ``after`` in :meth:`history`.
-        around
-            Same as ``around`` in :meth:`history`.
+        timeout: float
+            The timeout in seconds to wait for the voice endpoint.
+        reconnect: bool
+            Whether the bot should automatically attempt
+            a reconnect if a part of the handshake fails
+            or the gateway goes down.
 
         Raises
         -------
-        Forbidden
-            You do not have proper permissions to do the actions required.
-        HTTPException
-            Purging the messages failed.
-
-        Examples
-        ---------
-
-        Deleting bot's messages ::
-
-            def is_me(m):
-                return m.author == client.user
-
-            deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send_message('Deleted {} message(s)'.format(len(deleted)))
+        asyncio.TimeoutError
+            Could not connect to the voice channel in time.
+        ClientException
+            You are already connected to a voice channel.
+        OpusNotLoaded
+            The opus library has not been loaded.
 
         Returns
-        --------
-        list
-            The list of messages that were deleted.
+        -------
+        :class:`VoiceClient`
+            A voice client that is fully connected to the voice server.
         """
+        key_id, key_name = self._get_voice_client_key()
+        state = self._state
 
-        if check is None:
-            check = lambda m: True
+        if state._get_voice_client(key_id):
+            raise ClientException('Already connected to a voice channel.')
 
-        iterator = self.history(limit=limit, before=before, after=after, around=around)
-        ret = []
-        count = 0
+        voice = VoiceClient(state=state, timeout=timeout, channel=self)
+        state._add_voice_client(key_id, voice)
 
-        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if self._state.is_bot else _single_delete_strategy
-
-        while True:
+        try:
+            yield from voice.connect(reconnect=reconnect)
+        except asyncio.TimeoutError as e:
             try:
-                msg = yield from iterator.get()
-            except NoMoreItems:
-                # no more messages to poll
-                if count >= 2:
-                    # more than 2 messages -> bulk delete
-                    to_delete = ret[-count:]
-                    yield from strategy(to_delete)
-                elif count == 1:
-                    # delete a single message
-                    yield from ret[-1].delete()
+                yield from voice.disconnect(force=True)
+            except:
+                # we don't care if disconnect failed because connection failed
+                pass
+            raise e # re-raise
 
-                return ret
-            else:
-                if count == 100:
-                    # we've reached a full 'queue'
-                    to_delete = ret[-100:]
-                    yield from strategy(to_delete)
-                    count = 0
-                    yield from asyncio.sleep(1)
-
-                if check(msg):
-                    if msg.id < minimum_time:
-                        # older than 14 days old
-                        if count == 1:
-                            yield from ret[-1].delete()
-                        elif count >= 2:
-                            to_delete = ret[-count:]
-                            yield from strategy(to_delete)
-
-                        count = 0
-                        strategy = _single_delete_strategy
-
-                    count += 1
-                    ret.append(msg)
+        return voice

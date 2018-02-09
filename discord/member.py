@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import itertools
+import copy
 
 import discord.abc
 
@@ -33,23 +34,24 @@ from . import utils
 from .user import BaseUser, User
 from .game import Game
 from .permissions import Permissions
-from .enums import Status, ChannelType, try_enum
+from .enums import Status, try_enum
 from .colour import Colour
+from .object import Object
 
 class VoiceState:
     """Represents a Discord user's voice state.
 
     Attributes
     ------------
-    deaf: bool
+    deaf: :class:`bool`
         Indicates if the user is currently deafened by the guild.
-    mute: bool
+    mute: :class:`bool`
         Indicates if the user is currently muted by the guild.
-    self_mute: bool
+    self_mute: :class:`bool`
         Indicates if the user is currently muted by their own accord.
-    self_deaf: bool
+    self_deaf: :class:`bool`
         Indicates if the user is currently deafened by their own accord.
-    afk: bool
+    afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
     channel: :class:`VoiceChannel`
         The voice channel that the user is currently connected to. None if the user
@@ -86,7 +88,7 @@ def flatten_user(cls):
 
         # if it's a slotted attribute or a property, redirect it
         # slotted members are implemented as member_descriptors in Type.__dict__
-        if hasattr(value, '__get__'):
+        if not hasattr(value, '__annotations__'):
             def getter(self, x=attr):
                 return getattr(self._user, x)
             setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
@@ -105,42 +107,51 @@ def flatten_user(cls):
 
     return cls
 
+_BaseUser = discord.abc.User
+
 @flatten_user
-class Member(discord.abc.Messageable):
+class Member(discord.abc.Messageable, _BaseUser):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
 
-    Supported Operations:
+    .. container:: operations
 
-    +-----------+-----------------------------------------------+
-    | Operation |                  Description                  |
-    +===========+===============================================+
-    | x == y    | Checks if two members are equal.              |
-    +-----------+-----------------------------------------------+
-    | x != y    | Checks if two members are not equal.          |
-    +-----------+-----------------------------------------------+
-    | hash(x)   | Return the member's hash.                     |
-    +-----------+-----------------------------------------------+
-    | str(x)    | Returns the member's name with discriminator. |
-    +-----------+-----------------------------------------------+
+        .. describe:: x == y
+
+            Checks if two members are equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: x != y
+
+            Checks if two members are not equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: hash(x)
+
+            Returns the member's hash.
+
+        .. describe:: str(x)
+
+            Returns the member's name with the discriminator.
 
     Attributes
     ----------
     roles
-        A list of :class:`Role` that the member belongs to. Note that the first element of this
-        list is always the default '@everyone' role.
+        A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
+        list is always the default '@everyone' role. These roles are sorted by their position
+        in the role hierarchy.
     joined_at : `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`
-        The member's status. There is a chance that the status will be a ``str``
+        The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
     game : :class:`Game`
         The game that the user is currently playing. Could be None if no game is being played.
     guild : :class:`Guild`
         The guild that the member belongs to.
-    nick : Optional[str]
+    nick : Optional[:class:`str`]
         The guild specific nickname of the user.
     """
 
@@ -165,7 +176,7 @@ class Member(discord.abc.Messageable):
                ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
 
     def __eq__(self, other):
-        return isinstance(other, Member) and other._user.id == self._user.id and self.guild.id == other.guild.id
+        return isinstance(other, _BaseUser) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -186,8 +197,8 @@ class Member(discord.abc.Messageable):
             if role is not None:
                 self.roles.append(role)
 
-        # sort the roles by ID since they can be "randomised"
-        self.roles.sort(key=lambda r: r.id)
+        # sort the roles by hierarchy since they can be "randomised"
+        self.roles.sort()
 
     def _update(self, data, user=None):
         if user:
@@ -214,6 +225,11 @@ class Member(discord.abc.Messageable):
         u.avatar = user.get('avatar', u.avatar)
         u.discriminator = user.get('discriminator', u.discriminator)
 
+    def _copy(self):
+        c = copy.copy(self)
+        c._user = copy.copy(self._user)
+        return c
+
     @property
     def colour(self):
         """A property that returns a :class:`Colour` denoting the rendered colour
@@ -223,19 +239,15 @@ class Member(discord.abc.Messageable):
         There is an alias for this under ``color``.
         """
 
-        default_colour = Colour.default()
+        roles = self.roles[1:] # remove @everyone
+
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
         # is chosen instead
-        if self.roles:
-            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
-            for role in roles:
-                if role.colour == default_colour:
-                    continue
-                else:
-                    return role.colour
-
-        return default_colour
+        for role in reversed(roles):
+            if role.colour.value:
+                return role.colour
+        return Colour.default()
 
     color = colour
 
@@ -243,8 +255,8 @@ class Member(discord.abc.Messageable):
     def mention(self):
         """Returns a string that mentions the member."""
         if self.nick:
-            return '<@!{}>'.format(self.id)
-        return '<@{}>'.format(self.id)
+            return '<@!%s>' % self.id
+        return '<@%s>' % self.id
 
     @property
     def display_name(self):
@@ -275,11 +287,11 @@ class Member(discord.abc.Messageable):
         return False
 
     def permissions_in(self, channel):
-        """An alias for :meth:`Channel.permissions_for`.
+        """An alias for :meth:`abc.GuildChannel.permissions_for`.
 
         Basically equivalent to:
 
-        .. code-block:: python
+        .. code-block:: python3
 
             channel.permissions_for(self)
 
@@ -297,11 +309,7 @@ class Member(discord.abc.Messageable):
         This is useful for figuring where a member stands in the role
         hierarchy chain.
         """
-
-        if self.roles:
-            roles = sorted(self.roles, reverse=True)
-            return roles[0]
-        return None
+        return self.roles[-1]
 
     @property
     def guild_permissions(self):
@@ -311,7 +319,7 @@ class Member(discord.abc.Messageable):
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
         calculation, please use either :meth:`permissions_in` or
-        :meth:`Channel.permissions_for`.
+        :meth:`abc.GuildChannel.permissions_for`.
 
         This does take into consideration guild ownership and the
         administrator implication.
@@ -343,23 +351,23 @@ class Member(discord.abc.Messageable):
         yield from self.guild.ban(self, **kwargs)
 
     @asyncio.coroutine
-    def unban(self):
+    def unban(self, *, reason=None):
         """|coro|
 
         Unbans this member. Equivalent to :meth:`Guild.unban`
         """
-        yield from self.guild.unban(self)
+        yield from self.guild.unban(self, reason=reason)
 
     @asyncio.coroutine
-    def kick(self):
+    def kick(self, *, reason=None):
         """|coro|
 
         Kicks this member. Equivalent to :meth:`Guild.kick`
         """
-        yield from self.guild.kick(self)
+        yield from self.guild.kick(self, reason=reason)
 
     @asyncio.coroutine
-    def edit(self, **fields):
+    def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the member's data.
@@ -394,6 +402,8 @@ class Member(discord.abc.Messageable):
             The member's new list of roles. This *replaces* the roles.
         voice_channel: :class:`VoiceChannel`
             The voice channel to move the member to.
+        reason: Optional[str]
+            The reason for editing this member. Shows up on the audit log.
 
         Raises
         -------
@@ -414,7 +424,7 @@ class Member(discord.abc.Messageable):
         else:
             nick = nick if nick else ''
             if self._state.self_id == self.id:
-                yield from http.change_my_nickname(guild_id, nick)
+                yield from http.change_my_nickname(guild_id, nick, reason=reason)
             else:
                 payload['nick'] = nick
 
@@ -440,17 +450,17 @@ class Member(discord.abc.Messageable):
         else:
             payload['roles'] = tuple(r.id for r in roles)
 
-        yield from http.edit_member(guild_id, self.id, **payload)
+        yield from http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         # TODO: wait for WS event for modify-in-place behaviour
 
     @asyncio.coroutine
-    def move_to(self, channel):
+    def move_to(self, channel, *, reason=None):
         """|coro|
 
         Moves a member to a new voice channel (they must be connected first).
 
-        You must have the :attr:`Permissions.move_members` permission to
+        You must have the :attr:`~Permissions.move_members` permission to
         use this.
 
         This raises the same exceptions as :meth:`edit`.
@@ -459,22 +469,31 @@ class Member(discord.abc.Messageable):
         -----------
         channel: :class:`VoiceChannel`
             The new voice channel to move the member to.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
         """
-        yield from self.edit(voice_channel=channel)
+        yield from self.edit(voice_channel=channel, reason=reason)
 
     @asyncio.coroutine
-    def add_roles(self, *roles):
+    def add_roles(self, *roles, reason=None, atomic=True):
         """|coro|
 
         Gives the member a number of :class:`Role`\s.
 
-        You must have the :attr:`Permissions.manage_roles` permission to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
 
         Parameters
         -----------
         \*roles
-            An argument list of :class:`Role`\s to give the member.
+            An argument list of :class:`abc.Snowflake` representing a :class:`Role`
+            to give to the member.
+        reason: Optional[str]
+            The reason for adding these roles. Shows up on the audit log.
+        atomic: bool
+            Whether to atomically add roles. This will ensure that multiple
+            operations will always be applied regardless of the current
+            state of the cache.
 
         Raises
         -------
@@ -484,22 +503,36 @@ class Member(discord.abc.Messageable):
             Adding roles failed.
         """
 
-        new_roles = utils._unique(r for s in (self.roles[1:], roles) for r in s)
-        yield from self.edit(roles=new_roles)
+        if not atomic:
+            new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
+            yield from self.edit(roles=new_roles, reason=reason)
+        else:
+            req = self._state.http.add_role
+            guild_id = self.guild.id
+            user_id = self.id
+            for role in roles:
+                yield from req(guild_id, user_id, role.id, reason=reason)
 
     @asyncio.coroutine
-    def remove_roles(self, *roles):
+    def remove_roles(self, *roles, reason=None, atomic=True):
         """|coro|
 
         Removes :class:`Role`\s from this member.
 
-        You must have the :attr:`Permissions.manage_roles` permission to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
 
         Parameters
         -----------
         \*roles
-            An argument list of :class:`Role`\s to remove from the member.
+            An argument list of :class:`abc.Snowflake` representing a :class:`Role`
+            to remove from the member.
+        reason: Optional[str]
+            The reason for removing these roles. Shows up on the audit log.
+        atomic: bool
+            Whether to atomically remove roles. This will ensure that multiple
+            operations will always be applied regardless of the current
+            state of the cache.
 
         Raises
         -------
@@ -509,11 +542,18 @@ class Member(discord.abc.Messageable):
             Removing the roles failed.
         """
 
-        new_roles = self.roles[1:] # remove @everyone
-        for role in roles:
-            try:
-                new_roles.remove(role)
-            except ValueError:
-                pass
+        if not atomic:
+            new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
+            for role in roles:
+                try:
+                    new_roles.remove(Object(id=role.id))
+                except ValueError:
+                    pass
 
-        yield from self.edit(roles=new_roles)
+            yield from self.edit(roles=new_roles, reason=reason)
+        else:
+            req = self._state.http.remove_role
+            guild_id = self.guild.id
+            user_id = self.id
+            for role in roles:
+                yield from req(guild_id, user_id, role.id, reason=reason)

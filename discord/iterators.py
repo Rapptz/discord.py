@@ -26,12 +26,12 @@ DEALINGS IN THE SOFTWARE.
 
 import sys
 import asyncio
-import aiohttp
 import datetime
 
 from .errors import NoMoreItems
 from .utils import time_snowflake, maybe_coroutine
 from .object import Object
+from .audit_logs import AuditLogEntry
 
 PY35 = sys.version_info >= (3, 5)
 
@@ -56,7 +56,7 @@ class _AsyncIterator:
     def find(self, predicate):
         while True:
             try:
-                elem = yield from self.get()
+                elem = yield from self.next()
             except NoMoreItems:
                 return None
 
@@ -75,7 +75,7 @@ class _AsyncIterator:
         ret = []
         while True:
             try:
-                item = yield from self.get()
+                item = yield from self.next()
             except NoMoreItems:
                 return ret
             else:
@@ -89,7 +89,7 @@ class _AsyncIterator:
         @asyncio.coroutine
         def __anext__(self):
             try:
-                msg = yield from self.get()
+                msg = yield from self.next()
             except NoMoreItems:
                 raise StopAsyncIteration()
             else:
@@ -104,9 +104,9 @@ class _MappedAsyncIterator(_AsyncIterator):
         self.func = func
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         # this raises NoMoreItems and will propagate appropriately
-        item = yield from self.iterator.get()
+        item = yield from self.iterator.next()
         return (yield from maybe_coroutine(self.func, item))
 
 class _FilteredAsyncIterator(_AsyncIterator):
@@ -119,8 +119,8 @@ class _FilteredAsyncIterator(_AsyncIterator):
         self.predicate = predicate
 
     @asyncio.coroutine
-    def get(self):
-        getter = self.iterator.get
+    def next(self):
+        getter = self.iterator.next
         pred = self.predicate
         while True:
             # propagate NoMoreItems similar to _MappedAsyncIterator
@@ -143,7 +143,7 @@ class ReactionIterator(_AsyncIterator):
         self.users = asyncio.Queue(loop=state.loop)
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         if self.users.empty():
             yield from self.fill_users()
 
@@ -271,7 +271,7 @@ class HistoryIterator(_AsyncIterator):
             self._retrieve_messages = self._retrieve_messages_before_strategy
 
     @asyncio.coroutine
-    def get(self):
+    def next(self):
         if self.messages.empty():
             yield from self.fill_messages()
 
@@ -301,7 +301,7 @@ class HistoryIterator(_AsyncIterator):
         self.channel = channel
         while self._get_retrieve():
             data = yield from self._retrieve_messages(self.retrieve)
-            if self.limit is None and len(data) < 100:
+            if len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
             if self.reverse:
@@ -370,3 +370,115 @@ class HistoryIterator(_AsyncIterator):
             self.around = None
             return data
         return []
+
+class AuditLogIterator(_AsyncIterator):
+    def __init__(self, guild, limit=None, before=None, after=None, reverse=None, user_id=None, action_type=None):
+        if isinstance(before, datetime.datetime):
+            before = Object(id=time_snowflake(before, high=False))
+        if isinstance(after, datetime.datetime):
+            after = Object(id=time_snowflake(after, high=True))
+
+
+        self.guild = guild
+        self.loop = guild._state.loop
+        self.request = guild._state.http.get_audit_logs
+        self.limit = limit
+        self.before = before
+        self.user_id = user_id
+        self.action_type = action_type
+        self.after = after
+        self._users = {}
+        self._state = guild._state
+
+        if reverse is None:
+            self.reverse = after is not None
+        else:
+            self.reverse = reverse
+
+        self._filter = None  # entry dict -> bool
+
+        self.entries = asyncio.Queue(loop=self.loop)
+
+        if self.before and self.after:
+            if self.reverse:
+                self._strategy = self._after_strategy
+                self._filter = lambda m: int(m['id']) < self.before.id
+            else:
+                self._strategy = self._before_strategy
+                self._filter = lambda m: int(m['id']) > self.after.id
+        elif self.after:
+            self._strategy = self._after_strategy
+        else:
+            self._strategy = self._before_strategy
+
+    @asyncio.coroutine
+    def _before_strategy(self, retrieve):
+        before = self.before.id if self.before else None
+        data = yield from self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
+                                       action_type=self.action_type, before=before)
+
+        entries = data.get('audit_log_entries', [])
+        if len(data) and entries:
+            if self.limit is not None:
+                self.limit -= retrieve
+            self.before = Object(id=int(entries[-1]['id']))
+        return data.get('users', []), entries
+
+    @asyncio.coroutine
+    def _after_strategy(self, retrieve):
+        after = self.after.id if self.after else None
+        data = yield from self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
+                                       action_type=self.action_type, after=after)
+        entries = data.get('audit_log_entries', [])
+        if len(data) and entries:
+            if self.limit is not None:
+                self.limit -= retrieve
+            self.after = Object(id=int(entries[0]['id']))
+        return data.get('users', []), entries
+
+    @asyncio.coroutine
+    def next(self):
+        if self.entries.empty():
+            yield from self._fill()
+
+        try:
+            return self.entries.get_nowait()
+        except asyncio.QueueEmpty:
+            raise NoMoreItems()
+
+    def _get_retrieve(self):
+        l = self.limit
+        if l is None:
+            r = 100
+        elif l <= 100:
+            r = l
+        else:
+            r = 100
+
+        self.retrieve = r
+        return r > 0
+
+    @asyncio.coroutine
+    def _fill(self):
+        from .user import User
+
+        if self._get_retrieve():
+            users, data = yield from self._strategy(self.retrieve)
+            if self.limit is None and len(data) < 100:
+                self.limit = 0 # terminate the infinite loop
+
+            if self.reverse:
+                data = reversed(data)
+            if self._filter:
+                data = filter(self._filter, data)
+
+            for user in users:
+                u = User(data=user, state=self._state)
+                self._users[u.id] = u
+
+            for element in data:
+                # TODO: remove this if statement later
+                if element['action_type'] is None:
+                    continue
+
+                yield from self.entries.put(AuditLogEntry(data=element, users=self._users, guild=self.guild))

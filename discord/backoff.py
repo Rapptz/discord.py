@@ -61,7 +61,7 @@ class ExponentialBackoff:
         rand = random.Random()
         rand.seed()
 
-        self._randfunc = rand.rand_range if integral else rand.uniform
+        self._randfunc = rand.randrange if integral else rand.uniform
 
     def delay(self):
         """Compute the next delay

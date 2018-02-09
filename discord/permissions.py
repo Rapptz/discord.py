@@ -27,42 +27,42 @@ DEALINGS IN THE SOFTWARE.
 class Permissions:
     """Wraps up the Discord permission value.
 
-    Supported operations:
+    The properties provided are two way. You can set and retrieve individual
+    bits using the properties as if they were regular bools. This allows
+    you to edit permissions.
 
-    +-----------+------------------------------------------+
-    | Operation |               Description                |
-    +===========+==========================================+
-    | x == y    | Checks if two permissions are equal.     |
-    +-----------+------------------------------------------+
-    | x != y    | Checks if two permissions are not equal. |
-    +-----------+------------------------------------------+
-    | x <= y    | Checks if a permission is a subset       |
-    |           | of another permission.                   |
-    +-----------+------------------------------------------+
-    | x >= y    | Checks if a permission is a superset     |
-    |           | of another permission.                   |
-    +-----------+------------------------------------------+
-    | x < y     | Checks if a permission is a strict       |
-    |           | subset of another permission.            |
-    +-----------+------------------------------------------+
-    | x > y     | Checks if a permission is a strict       |
-    |           | superset of another permission.          |
-    +-----------+------------------------------------------+
-    | hash(x)   | Return the permission's hash.            |
-    +-----------+------------------------------------------+
-    | iter(x)   | Returns an iterator of (perm, value)     |
-    |           | pairs. This allows this class to be used |
-    |           | as an iterable in e.g. set/list/dict     |
-    |           | constructions.                           |
-    +-----------+------------------------------------------+
+    .. container:: operations
 
-    The properties provided are two way. You can set and retrieve individual bits using the properties as if they
-    were regular bools. This allows you to edit permissions.
+        .. describe:: x == y
+
+            Checks if two permissions are equal.
+        .. describe:: x != y
+
+            Checks if two permissions are not equal.
+        .. describe:: x <= y
+
+            Checks if a permission is a subset of another permission.
+        .. describe:: x >= y
+
+            Checks if a permission is a superset of another permission.
+        .. describe:: x < y
+
+             Checks if a permission is a strict subset of another permission.
+        .. describe:: x > y
+
+             Checks if a permission is a strict superset of another permission.
+        .. describe:: hash(x)
+
+               Return the permission's hash.
+        .. describe:: iter(x)
+
+               Returns an iterator of ``(perm, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
 
     Attributes
     -----------
     value
-        The raw value. This value is a bit array field of a 32-bit integer
+        The raw value. This value is a bit array field of a 53-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
     """
@@ -133,7 +133,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110001111111)
+        return cls(0b01111111111101111111110011111111)
 
     @classmethod
     def all_channel(cls):
@@ -154,7 +154,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to True."""
-        return cls(0b01111100000000000000000000111111)
+        return cls(0b01111100000000000000000010111111)
 
     @classmethod
     def text(cls):
@@ -283,7 +283,16 @@ class Permissions:
     def add_reactions(self, value):
         self._set(6, value)
 
-    # 4 unused
+    @property
+    def view_audit_log(self):
+        """Returns True if a user can view the guild's audit log."""
+        return self._bit(7)
+
+    @view_audit_log.setter
+    def view_audit_log(self, value):
+        self._set(7, value)
+
+    # 2 unused
 
     @property
     def read_messages(self):
@@ -314,7 +323,7 @@ class Permissions:
 
     @property
     def manage_messages(self):
-        """Returns True if a user can delete messages from a text channel. Note that there are currently no ways to edit other people's messages."""
+        """Returns True if a user can delete or pin messages in a text channel. Note that there are currently no ways to edit other people's messages."""
         return self._bit(13)
 
     @manage_messages.setter
@@ -520,10 +529,15 @@ class PermissionOverwrite:
         Set the value of permissions by their name.
     """
 
+    __slots__ = ('_values',)
+
     def __init__(self, **kwargs):
         self._values = {}
 
         for key, value in kwargs.items():
+            if key not in self.VALID_NAMES:
+                raise ValueError('no permission called {0}.'.format(key))
+
             setattr(self, key, value)
 
     def _set(self, key, value):

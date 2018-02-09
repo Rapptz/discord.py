@@ -25,9 +25,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
-from .errors import HTTPException, Forbidden, NotFound, InvalidArgument
+from .errors import InvalidArgument
 import datetime
 from base64 import b64encode
+from email.utils import parsedate_to_datetime
 import asyncio
 import json
 import warnings, functools
@@ -111,7 +112,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
     if guild is not None:
-        url = url + "&guild_id=" + guild.id
+        url = url + "&guild_id=" + str(guild.id)
     if redirect_uri is not None:
         from urllib.parse import urlencode
         url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
@@ -188,19 +189,19 @@ def get(iterable, **attrs):
 
     Basic usage:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         member = discord.utils.get(message.guild.members, name='Foo')
 
     Multiple attribute matching:
 
-    .. code-block:: python
+    .. code-block:: python3
 
-        channel = discord.utils.get(guild.channels, name='Foo', type=ChannelType.voice)
+        channel = discord.utils.get(guild.voice_channels, name='Foo', bitrate=64000)
 
     Nested attribute matching:
 
-    .. code-block:: python
+    .. code-block:: python3
 
         channel = discord.utils.get(client.get_all_channels(), guild__name='Cool', name='general')
 
@@ -237,14 +238,12 @@ def _get_as_snowflake(data, key):
     except KeyError:
         return None
     else:
-        if value is None:
-            return value
-        return int(value)
+        return value and int(value)
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data.startswith(b'\xFF\xD8') and data.endswith(b'\xFF\xD9'):
+    elif data.startswith(b'\xFF\xD8') and data.rstrip(b'\0').endswith(b'\xFF\xD9'):
         return 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         return 'image/gif'
@@ -260,12 +259,18 @@ def _bytes_to_base64_data(data):
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
+def _parse_ratelimit_header(request):
+    now = parsedate_to_datetime(request.headers['Date'])
+    reset = datetime.datetime.fromtimestamp(int(request.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
+    return (reset - now).total_seconds()
+
 @asyncio.coroutine
 def maybe_coroutine(f, *args, **kwargs):
-    if asyncio.iscoroutinefunction(f):
-        return (yield from f(*args, **kwargs))
+    value = f(*args, **kwargs)
+    if asyncio.iscoroutine(value):
+        return (yield from value)
     else:
-        return f(*args, **kwargs)
+        return value
 
 @asyncio.coroutine
 def async_all(gen):
@@ -283,3 +288,7 @@ def sane_wait_for(futures, *, timeout, loop):
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()
+
+def valid_icon_size(size):
+    """Icons must be power of 2 within [16, 1024]."""
+    return ((size != 0) and not (size & (size - 1))) and size in range(16, 1025)
