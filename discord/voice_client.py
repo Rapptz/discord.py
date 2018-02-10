@@ -44,6 +44,10 @@ import socket
 import logging
 import struct
 import threading
+import heapq
+import time
+
+from collections import defaultdict
 
 log = logging.getLogger(__name__)
 
@@ -56,8 +60,177 @@ except ImportError:
 from . import opus
 from .backoff import ExponentialBackoff
 from .gateway import *
-from .errors import ClientException, ConnectionClosed
+from .errors import ClientException, ConnectionClosed, InvalidVoicePacket
 from .player import AudioPlayer, AudioSource
+
+class VoicePacket:
+    __slots__ = ('sequence', 'timestamp', 'ssrc', 'buff', 'user', 'pcm')
+
+    HEADER_FORMAT = struct.Struct('>HHII')
+    RTP_VERSION = 2
+    RTC_MAGIC = 36984
+
+    def __init__(self, sequence=None, timestamp=None, ssrc=None, buff=None, user=None):
+        self.sequence = sequence
+        self.timestamp = timestamp
+        self.ssrc = ssrc
+        self.buff = buff
+        self.user = user
+
+    @classmethod
+    def unpack(cls, packet, voice_client):
+        if len(packet) < 13:
+            raise InvalidVoicePacket('packet is too small: {}'.format(packet))
+
+        # Unpack header
+        rtp_header, seq, ts, ssrc = cls.HEADER_FORMAT.unpack_from(packet)
+        header = packet[:12]
+        buff = packet[12:]
+
+        # Extract info for the header
+        version = rtp_header >> 14
+        marker = rtp_header & 2 ** 7 != 0
+        p_type = rtp_header & 0b1111111
+
+        if version != cls.RTP_VERSION:
+            fmt = 'packet has unsupported rtp version: {}'
+            raise InvalidVoicePacket(fmt.format(packet))
+        if marker:
+            return
+        if p_type != 120:
+            fmt = 'packet is of unsupported type: {}'
+            raise InvalidVoicePacket(fmt.format(packet))
+
+        # Decrypt data
+        nonce = bytearray(24)
+        nonce[:12] = header
+
+        try:
+            box = nacl.secret.SecretBox(bytes(voice_client.secret_key))
+            buff = box.decrypt(bytes(buff), bytes(nonce))
+        except Exception as e:
+            log.debug('VoicePacket.unpack failed with %s', e)
+            return None
+
+        if buff[0] == 0xBE and buff[1] == 0xDE:
+            # RFC5285 Section 4.2: One-Byte Header
+            rtp_header_extension_length = buff[2] << 8 | buff[3]
+            index = 4
+            for i in range(rtp_header_extension_length):
+                byte = buff[index]
+                index += 1
+                if byte == 0:
+                    continue
+                l = (byte & 0b1111) + 1
+                index += l
+
+            while buff[index] == 0:
+                index += 1
+            buff = buff[index:]
+        elif rtp_header == cls.RTC_MAGIC:
+            # Drop the header bytes
+            buff = buff[8:]
+
+        # Lookup the SSRC and then get the user
+        user = None
+        #user_id = 0
+        #if voice_client.channel.id in voice_client._ssrc_lookup:
+        #    if ssrc in voice_client._ssrc_lookup[voice_client.guild.id]:
+        #        user_id = int(voice_client._ssrc_lookup[voice_client.guild.id][ssrc])
+        #user = voice_client._state.get_user(user_id)
+
+        # Create a `VoicePacket` instance and return it.
+        return cls(seq, ts, ssrc, buff, user)
+
+    def __str__(self):
+        fmt = '<VoicePacket sequence={0.sequence}, timestamp={0.timestamp}, ssrc={0.ssrc}, buff=bytes({1})>'
+        return fmt.format(self, len(self.buff))
+
+    def __repr__(self):
+        return str(self)
+
+class PacketDecoder:
+    PACKET_SIZE = 960
+    SAMPLE_RATE = 48000
+    SAMPLE_SIZE = 2
+
+    def __init__(self, voice_client, buffer_size=2000):
+        #self.current_packets = []
+        #self.next_packets = []
+        #self.start_timestamp = None
+        #self.end_timestamp = None
+        #self.swap_timestamp = None
+        self.last_packet = 0
+        self.voice_buffer = []
+
+        # Convert buffer_size from ms to packets.
+        self.buffer_size = int(round(buffer_size / 20))
+        self.decoder = opus.Decoder()
+
+        # User object
+        self.user = None
+
+        # Speaking tracking
+        self.stopped_speaking = -1
+        self.started_speaking = -1
+        self.has_had_pause = False
+
+        # Link to the voice client
+        self.voice_client = voice_client
+        self.dispatch = self.voice_client._state.dispatch
+
+    def speaking_state(self, speaking):
+        self.dispatch('voice_speaking_state',
+                      self.voice_client, self.user, speaking)
+
+        if speaking:
+            self.started_speaking = time.perf_counter()
+            if self.stopped_speaking:
+                self.has_had_pause = True
+        else:
+            while self.voice_buffer:
+                # Clear buffer
+                self.dispatch_buffered()
+            self.stopped_speaking = time.perf_counter()
+
+    def feed(self, rtp_packet):
+        try:
+            rtp_packet.pcm = self.decoder.decode(rtp_packet.buff)
+        except Exception as e:
+            return e, None
+        log.debug('Opus decoded %d bytes of pcm data', len(rtp_packet.pcm))
+        rtp_packet.user = self.user
+        return None, self.buffer_packet(rtp_packet)
+
+    def dispatch_buffered(self):
+        timestamp, packet = heapq.heappop(self.voice_buffer)
+
+        delta = 0
+        if self.last_packet != 0:
+            delta = (timestamp - self.last_packet) - self.PACKET_SIZE
+
+        if delta >= 0:
+            # Pad dropped packets
+            data = b'\x00\x00' * delta * self.SAMPLE_SIZE
+            data += packet
+
+            # Pad silence
+            if self.has_had_pause:
+                if self.voice_client.pad_silence:
+                    delta = self.started_speaking - self.stopped_speaking
+                    data += b'\x00\x00' * round((delta / 2) * self.SAMPLE_SIZE)
+                self.has_had_pause = False
+
+            self.last_packet = timestamp
+
+            self.dispatch('voice_receive', self.voice_client, self.user, data)
+
+    def buffer_packet(self, rtp_packet):
+        heapq.heappush(self.voice_buffer,
+                       (rtp_packet.timestamp, rtp_packet.pcm))
+
+        if len(self.voice_buffer) > self.buffer_size:
+            self.dispatch_buffered()
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -67,8 +240,8 @@ class VoiceClient:
 
     Warning
     --------
-    In order to play audio, you must have loaded the opus library
-    through :func:`opus.load_opus`.
+    In order to play or receive audio, you must have loaded
+    the opus library through :func:`opus.load_opus`.
 
     If you don't do this then the library will not be able to
     transmit audio.
@@ -86,7 +259,7 @@ class VoiceClient:
     loop
         The event loop that the voice client is running on.
     """
-    def __init__(self, state, timeout, channel):
+    def __init__(self, state, timeout, pad_silence, channel):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
@@ -106,7 +279,10 @@ class VoiceClient:
         self.timestamp = 0
         self._runner = None
         self._player = None
+        self._voice_receiver = None
         self.encoder = opus.Encoder()
+        self.decoders = defaultdict(lambda:PacketDecoder(self))
+        self.pad_silence = pad_silence
 
     warn_nacl = not has_nacl
 
@@ -212,6 +388,8 @@ class VoiceClient:
             while not hasattr(self, 'secret_key'):
                 yield from self.ws.poll_event()
             self._connected.set()
+
+            self._voice_receiver = self.loop.create_task(self._voice_receive_loop())
         except (ConnectionClosed, asyncio.TimeoutError):
             if reconnect and _tries < 5:
                 log.exception('Failed to connect to voice... Retrying...')
@@ -310,6 +488,43 @@ class VoiceClient:
 
         # Encrypt and return the data
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
+
+    @asyncio.coroutine
+    def _voice_receive_loop(self):
+        """
+        Socket listener loop.
+        This loop will poll `self.socket`, attempt to decode the packets it
+        receives and then feeds them to a decoder in `self.decoders` which
+        handles re-ordering the packets and dispatching ordered events.
+        """
+        try:
+            while self.is_connected():
+                packet = yield from self.loop.sock_recv(self.socket, 65536)
+                log.debug('Received Voice Packet of %d bytes', len(packet))
+
+                try:
+                    rtp_packet = VoicePacket.unpack(packet, self)
+                except InvalidVoicePacket as e:
+                    log.warning(e)
+                    continue
+
+                if rtp_packet is None:
+                    log.debug('Voice packet failed to decode.')
+                    continue
+                log.debug('Decoded Voice Packet: %s', rtp_packet)
+
+                # Decode packet and assign `user` attribute
+                decoder = self.decoders[rtp_packet.ssrc]
+                error, new_packet = decoder.feed(rtp_packet)
+
+                # Fire events
+                self._state.dispatch('raw_voice_receive', self, rtp_packet)
+                if error is not None:
+                    log.debug('Opus decode failed with %s', error)
+                else:
+                    self._state.dispatch('pcm_data_receive', self, rtp_packet)
+        except asyncio.CancelledError:
+            pass
 
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.

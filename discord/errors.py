@@ -164,3 +164,9 @@ class ConnectionClosed(ClientException):
         self.reason = original.reason
         self.shard_id = shard_id
         super().__init__(str(original))
+
+class InvalidVoicePacket(DiscordException):
+    """Exception that's thrown when a raw UDP packet cannot be parsed
+    as a valid :class:`VoicePacket`.
+    """
+    pass
