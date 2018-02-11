@@ -201,8 +201,13 @@ class Command:
         if converter is bool:
             return _convert_to_bool(argument)
 
-        if converter.__module__.startswith('discord.') and not converter.__module__.endswith('converter'):
-            converter = getattr(converters, converter.__name__ + 'Converter')
+        try:
+            module = converter.__module__
+        except:
+            pass
+        else:
+            if module.startswith('discord.') and not module.endswith('converter'):
+                converter = getattr(converters, converter.__name__ + 'Converter')
 
         if inspect.isclass(converter):
             if issubclass(converter, converters.Converter):
