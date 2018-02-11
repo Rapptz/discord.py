@@ -701,10 +701,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             raise ConnectionClosed(e, shard_id=None) from e
 
     @asyncio.coroutine
-    def close_connection(self, force=False):
+    def close_connection(self, *args, **kwargs):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        yield from super().close_connection(force=force)
+        yield from super().close_connection(*args, **kwargs)
 
 
