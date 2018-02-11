@@ -35,7 +35,7 @@ from .view import StringView
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter', 'IDConverter', 'clean_content' ]
+            'EmojiConverter', 'IDConverter', 'clean_content', 'Union']
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -441,11 +441,11 @@ class clean_content(Converter):
 
 class Union(Converter):
     """Tries to convert the argument to each of a list of
-    converters, in order.
+    :class:`.Converter` compatible objects, in order.
 
     Attributes
     ------------
-    converters : tuple(:class:`Converter`,any)
+    converters : tuple(:class:`.Converter`, any)
         A sequence of converters to attempt
     """
     def __init__(self, *converters):
