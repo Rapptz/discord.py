@@ -72,7 +72,7 @@ class Attachment:
         self._http = state.http
 
     @asyncio.coroutine
-    def save(self, fp):
+    def save(self, fp, *, seek_begin=True):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -83,6 +83,9 @@ class Attachment:
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
+        seek_begin: bool
+            Whether to seek to the beginning of the file after saving is
+            successfully done.
 
         Raises
         --------
@@ -102,7 +105,10 @@ class Attachment:
             with open(fp, 'wb') as f:
                 return f.write(data)
         else:
-            return fp.write(data)
+            written = fp.write(data)
+            if seek_begin:
+                fp.seek(0)
+            return written
 
 class Message:
     """Represents a message from Discord.
