@@ -605,18 +605,35 @@ class Group(GroupMixin, Command):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
+
+    consume_args : bool
+        If the callback is called before the subcommand, indicates if
+        the parsed arguments should be consumed, or left for the
+        subcommand. If this is ``True``, then the parameters of the
+        callback will consume arguments from the command, and
+        whatever's left will be interpreted as the subcommand and its
+        arguments. If ``False``, the same arguments will be passed to
+        the callback, but they won't be consumed from the command.
+        This is useful if all the subcommands require the same setup,
+        which can be performed in the callback. Defaults to ``True``
     """
     def __init__(self, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)
+        self.consume_args = attrs.pop('consume_args', True)
         super().__init__(**attrs)
 
     @asyncio.coroutine
     def invoke(self, ctx):
         early_invoke = not self.invoke_without_command
-        if early_invoke:
-            yield from self.prepare(ctx)
 
         view = ctx.view
+
+        if early_invoke:
+            index, previous = view.index, view.previous
+            yield from self.prepare(ctx)
+            if not self.consume_args:
+                view.index, view.previous = index, previous
+
         previous = view.index
         view.skip_ws()
         trigger = view.get_word()
