@@ -964,6 +964,30 @@ class Guild(Hashable):
         return result
 
     @asyncio.coroutine
+    def integrations(self):
+        """|coro|
+        Returns a list of all integrations for the guild.
+
+        You must have :attr:`~Permissions.manage_guild` to get this information.
+
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to get the information
+
+        Returns
+        -------
+        List[:class:`GuildIntegration`]
+            The list of integrations
+        """
+        data = yield from self._state.http.integrations_from(self.id)
+        result = []
+        for integration in data:
+            result.append(GuildIntegration(guild=self, state=self._state, data=integration))
+
+        return result
+
+    @asyncio.coroutine
     def create_custom_emoji(self, *, name, image, reason=None):
         """|coro|
 
@@ -1272,3 +1296,81 @@ class Guild(Hashable):
 
         return AuditLogIterator(self, before=before, after=after, limit=limit,
                                 reverse=reverse, user_id=user, action_type=action)
+
+
+GuildIntegrationAccount = namedtuple("GuildIntegrationAccount", "id name")
+
+
+class GuildIntegration:
+    def __init__(self, *, state, guild, data):
+        self._state = state
+        self.id = int(data["id"])
+        self._update(guild, data)
+
+    def _update(self, guild, data):
+        self.guild = guild
+        self.name = data["name"]
+        self.type = data["type"]
+        self.enabled = data["enabled"]
+        self.syncing = data["syncing"]
+        self.role = utils.get(self.guild.roles, id=data["role_id"])
+        self.expire_behavior = data["expire_behavior"]
+        self.expire_grace_period = data["expire_grace_period"] * 86400
+        self.user = Member(data=data["user"], guild=self.guild, state=self._state)
+        self.account = GuildIntegrationAccount(**data["account"])
+        self.synced_at = utils.parse_time(data["synced_at"])
+
+    @asyncio.coroutine
+    def edit(self, expire_behavior=None, expire_grace_period=None):
+        """|coro|
+        Edits the integration
+
+        You must have the :attr:`~Permissions.manage_guild` permission
+        to edit the integration
+
+        Parameters
+        ----------
+        expire_behavior: int
+            The behavior when an integration subscription lapses
+            0 is remove role, 1 is kick
+        expire_grace_period: int
+            Period in days for which a lapsed subscription will
+            be ignored
+            Valid options are 1, 3, 7, 14, or 30
+
+        Raises
+        ------
+        Forbidden
+            You are not allowed to edit integrations
+        HTTPException
+            An error occurred while editing the integration
+        """
+        yield from self._state.http.edit_integration(self.guild.id, self.id, expire_behavior=expire_behavior, expire_grace_period=expire_grace_period)
+
+    @asyncio.coroutine
+    def delete(self):
+        """
+        Deletes the integration
+
+        You must have the :attr:`~Permissions.manage_guild` permission
+        to delete the integration
+
+        Raises
+        ------
+        Forbidden
+            You are not allowed to delete integrations
+        """
+        yield from self._state.http.delete_integration(self.guild.id, self.id)
+
+    @asyncio.coroutine
+    def sync(self):
+        """
+        Syncs the integration
+
+        Raises
+        ------
+        Forbidden
+            You are not allowed to sync integrations
+
+        """
+        yield from self._state.http.sync_integration(self.guild.id, self.id)

@@ -585,6 +585,24 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
+    def integrations_from(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id))
+
+    def edit_integration(self, guild_id, integration_id, **fields):
+        valid_keys = ('expire_behavior', 'expire_grace_period', 'enable_emoticons')
+
+        payload = {
+            k: v for k, v in fields.items() if k in valid_keys
+        }
+
+        return self.request(Route('PATCH', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id), json=payload)
+
+    def delete_integration(self, guild_id, integration_id):
+        return self.request(Route('DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id))
+
+    def sync_integration(self, guild_id, integration_id):
+        return self.request(Route('POST', '/guilds/{guild_id}/integrations/{integration_id}/sync', guild_id=guild_id, integration_id=integration_id))
+
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
