@@ -22,7 +22,7 @@ from .user import User, ClientUser, Profile
 from .game import Game
 from .emoji import Emoji, PartialEmoji
 from .channel import *
-from .guild import Guild
+from .guild import Guild, GuildIntegration
 from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message, Attachment

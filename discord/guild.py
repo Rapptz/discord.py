@@ -966,6 +966,7 @@ class Guild(Hashable):
     @asyncio.coroutine
     def integrations(self):
         """|coro|
+
         Returns a list of all integrations for the guild.
 
         You must have :attr:`~Permissions.manage_guild` to get this information.
@@ -1302,9 +1303,15 @@ GuildIntegrationAccount = namedtuple("GuildIntegrationAccount", "id name")
 
 
 class GuildIntegration:
+    """
+    Represents a guild integration
+
+    """
     def __init__(self, *, state, guild, data):
         self._state = state
         self.id = int(data["id"])
+        self.expire_behavior = data["expire_behavior"]
+        self.expire_grace_period = data["expire_grace_period"]
         self._update(guild, data)
 
     def _update(self, guild, data):
@@ -1314,8 +1321,6 @@ class GuildIntegration:
         self.enabled = data["enabled"]
         self.syncing = data["syncing"]
         self.role = utils.get(self.guild.roles, id=data["role_id"])
-        self.expire_behavior = data["expire_behavior"]
-        self.expire_grace_period = data["expire_grace_period"] * 86400
         self.user = Member(data=data["user"], guild=self.guild, state=self._state)
         self.account = GuildIntegrationAccount(**data["account"])
         self.synced_at = utils.parse_time(data["synced_at"])
@@ -1323,6 +1328,7 @@ class GuildIntegration:
     @asyncio.coroutine
     def edit(self, expire_behavior=None, expire_grace_period=None):
         """|coro|
+
         Edits the integration
 
         You must have the :attr:`~Permissions.manage_guild` permission
@@ -1346,10 +1352,16 @@ class GuildIntegration:
             An error occurred while editing the integration
         """
         yield from self._state.http.edit_integration(self.guild.id, self.id, expire_behavior=expire_behavior, expire_grace_period=expire_grace_period)
+        if expire_behavior in (0, 1):
+            self.expire_behavior = expire_behavior
+        if expire_grace_period in (1, 3, 7, 14, 30):
+            self.expire_grace_period = expire_grace_period
 
     @asyncio.coroutine
     def delete(self):
-        """
+        """|coro|
+
+
         Deletes the integration
 
         You must have the :attr:`~Permissions.manage_guild` permission
@@ -1364,8 +1376,12 @@ class GuildIntegration:
 
     @asyncio.coroutine
     def sync(self):
-        """
+        """|coro|
+
         Syncs the integration
+
+        You must have the :attr:`~Permissions.manage_guild` permission
+        to sync the integration
 
         Raises
         ------

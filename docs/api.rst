@@ -2029,6 +2029,12 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
+GuildIntegration
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: GuildIntegration
+    :members:
+
 Exceptions
 ------------
 
