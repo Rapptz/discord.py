@@ -485,6 +485,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param guild: The :class:`Guild` that has changed availability.
 
+.. function:: on_guild_integrations_update(guild)
+
+    Called when a :class:`GuildIntegration` is created, modified, or deleted.
+
+    :param guild: The :class:`Guild` whose integrations have changed.
+
 .. function:: on_voice_state_update(member, before, after)
 
     Called when a :class:`Member` changes their :class:`VoiceState`.

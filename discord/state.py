@@ -443,6 +443,10 @@ class ConnectionState:
     def parse_user_update(self, data):
         self.user = ClientUser(state=self, data=data)
 
+    def parse_guild_integrations_update(self, data):
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        self.dispatch('guild_integrations_update', guild)
+
     def parse_channel_delete(self, data):
         guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = int(data['id'])
