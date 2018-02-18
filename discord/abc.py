@@ -947,7 +947,7 @@ class Connectable(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @asyncio.coroutine
-    def connect(self, *, timeout=60.0, reconnect=True):
+    def connect(self, *, timeout=60.0, pad_silence=True, reconnect=True):
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
@@ -961,6 +961,9 @@ class Connectable(metaclass=abc.ABCMeta):
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.
+        pad_silence: bool
+            Whether silence when a user is not speaking should be
+            padded with zeroes or just ignored.
 
         Raises
         -------
@@ -982,7 +985,8 @@ class Connectable(metaclass=abc.ABCMeta):
         if state._get_voice_client(key_id):
             raise ClientException('Already connected to a voice channel.')
 
-        voice = VoiceClient(state=state, timeout=timeout, channel=self)
+        voice = VoiceClient(state=state, timeout=timeout,
+                            pad_silence=pad_silence, channel=self)
         state._add_voice_client(key_id, voice)
 
         try:
