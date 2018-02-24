@@ -151,7 +151,9 @@ class ConnectionState:
         try:
             return self._users[user_id]
         except KeyError:
-            self._users[user_id] = user = User(state=self, data=data)
+            user = User(state=self, data=data)
+            if user.discriminator != '0000':
+                self._users[user_id] = user
             return user
 
     def get_user(self, id):
