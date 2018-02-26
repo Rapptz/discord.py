@@ -220,6 +220,7 @@ class HTTPClient:
             # We've run out of retries, raise.
             raise HTTPException(r, data)
 
+    @asyncio.coroutine
     def get_attachment(self, url):
         resp = yield from self._session.get(url)
         try:
