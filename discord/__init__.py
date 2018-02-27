@@ -19,7 +19,7 @@ __version__ = '1.0.0a'
 
 from .client import Client, AppInfo
 from .user import User, ClientUser, Profile
-from .game import Game
+from .activity import Activity
 from .emoji import Emoji, PartialEmoji
 from .channel import *
 from .guild import Guild

@@ -24,35 +24,37 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class Game:
-    """Represents a Discord game.
+from .enums import ActivityType, try_enum
+
+class Activity:
+    """Represents a Discord activity.
 
     .. container:: operations
 
         .. describe:: x == y
 
-            Checks if two games are equal.
+            Checks if two activities are equal.
 
         .. describe:: x != y
 
-            Checks if two games are not equal.
+            Checks if two activities are not equal.
 
         .. describe:: hash(x)
 
-            Returns the game's hash.
+            Returns the activity's hash.
 
         .. describe:: str(x)
 
-            Returns the game's name.
+            Returns the activity's name.
 
     Attributes
     -----------
     name: :class:`str`
-        The game's name.
+        The activity's name.
     url: :class:`str`
-        The game's URL. Usually used for twitch streaming.
-    type: :class:`int`
-        The type of game being played. 1 indicates "Streaming".
+        The activity's URL. Usually used for twitch streaming.
+    type: :class:`ActivityType`
+        The type of activity being played.
     """
 
     __slots__ = ('name', 'type', 'url')
@@ -60,13 +62,13 @@ class Game:
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
         self.url = kwargs.get('url')
-        self.type = kwargs.get('type', 0)
+        self.type = try_enum(ActivityType, kwargs.get('type', 0))
 
     def __str__(self):
         return str(self.name)
 
     def __repr__(self):
-        return '<Game name={0.name!r} type={0.type!r} url={0.url!r}>'.format(self)
+        return '<Activity name={0.name!r} type={0.type!r} url={0.url!r}>'.format(self)
 
     def _iterator(self):
         for attr in self.__slots__:
@@ -78,7 +80,7 @@ class Game:
         return self._iterator()
 
     def __eq__(self, other):
-        return isinstance(other, Game) and other.name == self.name
+        return isinstance(other, Activity) and other.name == self.name
 
     def __ne__(self, other):
         return not self.__eq__(other)

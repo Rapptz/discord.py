@@ -329,7 +329,7 @@ New Features
 - Added a way to remove the messages of the user that just got banned in :meth:`Client.ban`.
 - Added :meth:`Client.wait_until_ready` to facilitate easy creation of tasks that require the client cache to be ready.
 - Added :meth:`Client.wait_until_login` to facilitate easy creation of tasks that require the client to be logged in.
-- Add :class:`discord.Game` to represent any game with custom text to send to :meth:`Client.change_status`.
+- Add :class:`discord.Activity` to represent any activity with custom text to send to :meth:`Client.change_status`.
 - Add :attr:`Message.nonce` attribute.
 - Add :meth:`Member.permissions_in` as another way of doing :meth:`Channel.permissions_for`.
 - Add :meth:`Client.move_member` to move a member to another voice channel.

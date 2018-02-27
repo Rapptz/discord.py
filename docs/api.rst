@@ -410,7 +410,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This is called when one or more of the following things change:
 
     - status
-    - game playing
+    - current activity
     - avatar
     - nickname
     - roles
@@ -874,6 +874,25 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: outgoing_request
 
         You have sent a friend request to this user.
+
+
+.. class:: ActivityType
+
+    Represents the possible activity types that can be passed for the type
+    parameter of an :class:`Activity`.
+
+    .. attribute:: playing
+
+        The activity type is playing
+    .. attribute:: streaming
+
+        The activity type is streaming
+    .. attribute:: listening
+
+        The activity type is listening
+    .. attribute:: watching
+
+        The activity type is watching
 
 
 .. class:: AuditLogAction
@@ -2011,10 +2030,10 @@ Colour
 .. autoclass:: Colour
     :members:
 
-Game
+Activity
 ~~~~
 
-.. autoclass:: Game
+.. autoclass:: Activity
     :members:
 
 Permissions

@@ -67,9 +67,9 @@ class ConnectionState:
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self._listeners = []
 
-        game = options.get('game', None)
-        if game:
-            game = dict(game)
+        activity = options.get('activity', None)
+        if activity:
+            activity = dict(activity)
 
         status = options.get('status', None)
         if status:
@@ -78,7 +78,7 @@ class ConnectionState:
             else:
                 status = str(status)
 
-        self._game = game
+        self._activity = activity
         self._status = status
 
         self.clear()

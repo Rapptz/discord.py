@@ -32,7 +32,7 @@ from collections import namedtuple, defaultdict
 from . import utils
 from .role import Role
 from .member import Member, VoiceState
-from .game import Game
+from .activity import Activity
 from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
@@ -243,8 +243,8 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member.status = try_enum(Status, presence['status'])
-                game = presence.get('game', {})
-                member.game = Game(**game) if game else None
+                activity = presence.get('game', {})
+                member.activity = Activity(**activity) if activity else None
 
         if 'channels' in data:
             channels = data['channels']

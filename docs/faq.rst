@@ -96,10 +96,10 @@ How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There is a method for this under :class:`Client` called :meth:`Client.change_presence`. The relevant aspect of this is its
-``game`` keyword argument which takes in a :class:`Game` object. Putting both of these pieces of info together, you get the
+``activity`` keyword argument which takes in a :class:`Activity` object. Putting both of these pieces of info together, you get the
 following: ::
 
-    await client.change_presence(game=discord.Game(name='my game'))
+    await client.change_presence(activity=discord.Activity(name='my activity'))
 
 How do I send a message to a specific channel?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
