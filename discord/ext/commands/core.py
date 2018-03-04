@@ -874,10 +874,10 @@ class Group(GroupMixin, Command):
         in case no subcommand was found. If this is ``False``, then
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
-        will be executed. Defaults to ``False``.
+        will be executed. Defaults to ``True``.
     """
     def __init__(self, **attrs):
-        self.invoke_without_command = attrs.pop('invoke_without_command', False)
+        self.invoke_without_command = attrs.pop('invoke_without_command', True)
         super().__init__(**attrs)
 
     @asyncio.coroutine
