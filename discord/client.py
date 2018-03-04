@@ -130,7 +130,7 @@ class Client:
         self._connection.shard_count = self.shard_count
         self._closed = asyncio.Event(loop=self.loop)
         self._ready = asyncio.Event(loop=self.loop)
-        self._connection._get_websocket = lambda g: self.ws
+        self._connection._get_websocket = self.get_websocket
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -172,6 +172,9 @@ class Client:
             if m:
                 return m.group(1)
         return invite
+
+    def get_websocket(self, guild_id):
+        return self.ws
 
     @property
     def latency(self):
