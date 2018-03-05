@@ -307,18 +307,24 @@ class AutoShardedClient(Client):
         yield from self.http.close()
 
     @asyncio.coroutine
-    def change_presence(self, *, game=None, status=None, afk=False, shard_id=None):
+    def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
         """|coro|
 
         Changes the client's presence.
 
-        The game parameter is a Game object (not a string) that represents
-        a game being played currently.
+        The activity parameter is a :class:`Activity` object (not a string) that represents
+        the activity being done currently. This could also be the slimmed down versions,
+        :class:`Game` and :class:`Streaming`.
+
+        Example: ::
+
+            game = discord.Game("with the API")
+            await client.change_presence(status=discord.Status.idle, activity=game)
 
         Parameters
         ----------
-        game: Optional[:class:`Game`]
-            The game being played. None if no game is being played.
+        activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+            The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
             Indicates what status to change to. If None, then
             :attr:`Status.online` is used.
@@ -334,7 +340,7 @@ class AutoShardedClient(Client):
         Raises
         ------
         InvalidArgument
-            If the ``game`` parameter is not :class:`Game` or None.
+            If the ``activity`` parameter is not of proper type.
         """
 
         if status is None:
@@ -349,12 +355,12 @@ class AutoShardedClient(Client):
 
         if shard_id is None:
             for shard in self.shards.values():
-                yield from shard.ws.change_presence(game=game, status=status, afk=afk)
+                yield from shard.ws.change_presence(activity=activity, status=status, afk=afk)
 
             guilds = self._connection.guilds
         else:
             shard = self.shards[shard_id]
-            yield from shard.ws.change_presence(game=game, status=status, afk=afk)
+            yield from shard.ws.change_presence(activity=activity, status=status, afk=afk)
             guilds = [g for g in self._connection.guilds if g.shard_id == shard_id]
 
         for guild in guilds:
@@ -362,5 +368,5 @@ class AutoShardedClient(Client):
             if me is None:
                 continue
 
-            me.game = game
+            me.activity = activity
             me.status = status_enum

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .guild import Guild
+from .activity import _ActivityTag
 from .user import User, ClientUser
 from .emoji import Emoji, PartialEmoji
 from .message import Message
@@ -67,9 +68,12 @@ class ConnectionState:
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self._listeners = []
 
-        game = options.get('game', None)
-        if game:
-            game = dict(game)
+        activity = options.get('activity', None)
+        if activity:
+            if not isinstance(activity, _ActivityTag):
+                raise TypeError('activity parameter must be one of Game, Streaming, or Activity.')
+
+            activity = activity.to_dict()
 
         status = options.get('status', None)
         if status:
@@ -78,7 +82,7 @@ class ConnectionState:
             else:
                 status = str(status)
 
-        self._game = game
+        self._activity = activity
         self._status = status
 
         self.clear()

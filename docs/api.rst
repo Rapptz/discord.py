@@ -687,6 +687,27 @@ All enumerations are subclasses of `enum`_.
 
         The system message denoting that a new member has joined a Guild.
 
+.. class:: ActivityType
+
+    Specifies the type of :class:`Activity`. This is used to check how to
+    interpret the activity itself.
+
+    .. attribute:: unknown
+
+        An unknown activity type. This should generally not happen.
+    .. attribute:: playing
+
+        A "Playing" activity type.
+    .. attribute:: streaming
+
+        A "Streaming" activity type.
+    .. attribute:: listening
+
+        A "Listening" activity type.
+    .. attribute:: watching
+
+        A "Watching" activity type.
+
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
@@ -698,7 +719,7 @@ All enumerations are subclasses of `enum`_.
 
         The US East region.
     .. attribute:: us_south
-    
+
         The US South region.
     .. attribute:: us_central
 
@@ -729,10 +750,10 @@ All enumerations are subclasses of `enum`_.
 
         The Brazil region.
     .. attribute:: hongkong
-    
+
         The Hong Kong region.
     .. attribute:: russia
-    
+
         The Russia region.
     .. attribute:: vip_us_east
 
@@ -1880,6 +1901,12 @@ Member
     .. autocomethod:: typing
         :async-with:
 
+Spotify
+~~~~~~~~
+
+.. autoclass:: Spotify()
+    :members:
+
 VoiceState
 ~~~~~~~~~~~
 
@@ -2011,10 +2038,22 @@ Colour
 .. autoclass:: Colour
     :members:
 
+Activity
+~~~~~~~~~
+
+.. autoclass:: Activity
+    :members:
+
 Game
-~~~~
+~~~~~
 
 .. autoclass:: Game
+    :members:
+
+Streaming
+~~~~~~~~~~~
+
+.. autoclass:: Streaming
     :members:
 
 Permissions
