@@ -584,6 +584,20 @@ class Client:
         """:obj:`bool`: Indicates if the websocket connection is closed."""
         return self._closed.is_set()
 
+    @property
+    def activity(self):
+        """Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]]: The activity being used upon logging in."""
+        return self._connection._activity
+
+    @activity.setter
+    def activity(self, value):
+        if value is None:
+            self._connection._activity = None
+        elif isinstance(value, _ActivityTag):
+            self._connection._activity = value.to_dict()
+        else:
+            raise TypeError('activity must be one of Game, Streaming, or Activity.')
+
     # helpers/getters
 
     @property
