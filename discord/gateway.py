@@ -70,7 +70,7 @@ class KeepAliveHandler(threading.Thread):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + self.heartbeat_timeout < time.monotonic():
                 log.warn("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
-                coro = self.ws.close(1006)
+                coro = self.ws.close(4000)
                 f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
                 try:

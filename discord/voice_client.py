@@ -190,7 +190,7 @@ class VoiceClient:
         if self._handshake_complete.is_set():
             # terminate the websocket and handle the reconnect loop if necessary.
             self._handshake_complete.clear()
-            yield from self.ws.close(1006)
+            yield from self.ws.close(4000)
             return
 
         self._handshake_complete.set()
