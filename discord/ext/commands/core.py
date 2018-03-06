@@ -83,6 +83,22 @@ def _convert_to_bool(argument):
     else:
         raise BadArgument(lowered + ' is not a recognised boolean option')
 
+class _CaseInsensitiveDict(dict):
+    def __contains__(self, k):
+        return super().__contains__(k.lower())
+
+    def __delitem__(self, k):
+        return super().__delitem__(k.lower())
+
+    def __getitem__(self, k):
+        return super().__getitem__(k.lower())
+
+    def get(self, k, default=None):
+        return super().get(k.lower(), default)
+
+    def __setitem__(self, k, v):
+        super().__setitem__(k.lower(), v)
+
 class Command:
     """A class that implements the protocol for a bot text command.
 
@@ -711,9 +727,13 @@ class GroupMixin:
     all_commands: :class:`dict`
         A mapping of command name to :class:`.Command` or superclass
         objects.
+    case_insensitive: :class:`bool`
+        Whether the commands should be case insensitive. Defaults to ``False``.
     """
     def __init__(self, **kwargs):
-        self.all_commands = {}
+        case_insensitive = kwargs.get('case_insensitive', False)
+        self.all_commands = _CaseInsensitiveDict() if case_insensitive else {}
+        self.case_insensitive = case_insensitive
         super().__init__(**kwargs)
 
     @property
@@ -875,6 +895,9 @@ class Group(GroupMixin, Command):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
+    case_insensitive: :class:`bool`
+        Indicates if the group's commands should be case insensitive.
+        Defaults to ``False``.
     """
     def __init__(self, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)

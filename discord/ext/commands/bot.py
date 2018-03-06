@@ -947,6 +947,10 @@ class Bot(BotBase, discord.Client):
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
         :attr:`.Context.prefix`.
+    case_insensitive: :class:`bool`
+        Whether the commands should be case insensitive. Defaults to ``False``. This
+        attribute does not carry over to groups. You must set it to every group if
+        you require group commands to be case insensitive as well.
     description : :class:`str`
         The content prefixed into the default help message.
     self_bot : :class:`bool`
