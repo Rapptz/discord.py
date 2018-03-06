@@ -463,7 +463,7 @@ class Spotify:
             'assets': self._assets,
             'party': self._party,
             'sync_id': self._sync_id,
-            'session_id': self.session_id,
+            'session_id': self._session_id,
             'timestamps': self._timestamps,
             'details': self._details,
             'state': self._state
