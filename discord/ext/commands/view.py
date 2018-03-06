@@ -143,8 +143,11 @@ def quoted_word(view):
     close_quote = _quotes.get(current)
     is_quoted = bool(close_quote)
     if is_quoted:
-        open_quote = current
-    result = [] if is_quoted else [current]
+        result = []
+        _escaped_quotes = (current, close_quote)
+    else:
+        result = [current]
+        _escaped_quotes = _all_quotes
 
     while not view.eof:
         current = view.get()
@@ -166,7 +169,7 @@ def quoted_word(view):
                 # if we aren't then we just let it through
                 return ''.join(result)
 
-            if next_char in ((open_quote, close_quote) if is_quoted else _all_quotes):
+            if next_char in _escaped_quotes:
                 # escaped quote
                 result.append(next_char)
             else:
