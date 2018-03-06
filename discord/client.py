@@ -31,6 +31,7 @@ from .guild import Guild
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
+from .activity import _ActivityTag
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
