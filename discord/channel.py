@@ -176,10 +176,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         You cannot bulk delete more than 100 messages or messages that
         are older than 14 days old.
-        
-        You must have :attr:`Permissions.manage_messages` permission use 
+
+        You must have :attr:`Permissions.manage_messages` permission to use
         this.
-        
+
         Usable only by bot accounts.
 
         Parameters
