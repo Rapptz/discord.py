@@ -31,7 +31,7 @@ from .guild import Guild
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
-from .activity import _ActivityTag
+from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
@@ -588,7 +588,7 @@ class Client:
     @property
     def activity(self):
         """Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]]: The activity being used upon logging in."""
-        return self._connection._activity
+        return create_activity(self._connection._activity)
 
     @activity.setter
     def activity(self, value):
