@@ -357,6 +357,10 @@ They will be enumerated here.
 
     - Use :attr:`Permissions.view_audit_log` instead.
 
+- ``Member.game``
+
+    - Use :attr:`Member.activity` instead.
+
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
@@ -384,6 +388,7 @@ They will be enumerated here.
 - :meth:`Guild.vanity_invite` to fetch the guild's vanity invite.
 - :meth:`Guild.audit_logs` to fetch the guild's audit logs.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
+- :attr:`Message.activity` and :attr:`Message.application` for Rich Presence related information.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
 - :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
 
