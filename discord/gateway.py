@@ -678,6 +678,6 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        yield from super().close_connection(force=force)
+        yield from super().close_connection()
 
 
