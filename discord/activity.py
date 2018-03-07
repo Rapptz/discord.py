@@ -438,7 +438,7 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id', '_colour')
+    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id')
 
     def __init__(self, **data):
         self._state = data.pop('state', None)
@@ -448,7 +448,6 @@ class Spotify:
         self._party = data.pop('party', {})
         self._sync_id = data.pop('sync_id')
         self._session_id = data.pop('session_id')
-        self._colour = Colour(0x1db954)
 
     @property
     def type(self):
@@ -463,14 +462,14 @@ class Spotify:
         """Returns the Spotify integration colour, as a :class:`Colour`.
 
         There is an alias for this named :meth:`color`"""
-        return self._colour
+        return Colour(0x1db954)
 
     @property
     def color(self):
         """Returns the Spotify integration colour, as a :class:`Colour`.
 
         There is an alias for this named :meth:`colour`"""
-        return self._colour
+        return self.colour
 
     def to_dict(self):
         return {
