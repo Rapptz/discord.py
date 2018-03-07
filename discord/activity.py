@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .enums import ActivityType, try_enum
+from .colour import Colour
 import datetime
 
 __all__ = ('Activity', 'Streaming', 'Game', 'Spotify')
@@ -437,7 +438,7 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id')
+    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id', '_colour')
 
     def __init__(self, **data):
         self._state = data.pop('state', None)
@@ -447,6 +448,7 @@ class Spotify:
         self._party = data.pop('party', {})
         self._sync_id = data.pop('sync_id')
         self._session_id = data.pop('session_id')
+        self._colour = Colour(0x1db954)
 
     @property
     def type(self):
@@ -455,6 +457,20 @@ class Spotify:
         It always returns :attr:`ActivityType.listening`.
         """
         return ActivityType.listening
+
+    @property
+    def colour(self):
+        """Returns the Spotify integration colour, as a :class:`Colour`.
+
+        There is an alias for this named :meth:`color`"""
+        return self._colour
+
+    @property
+    def color(self):
+        """Returns the Spotify integration colour, as a :class:`Colour`.
+
+        There is an alias for this named :meth:`colour`"""
+        return self._colour
 
     def to_dict(self):
         return {
