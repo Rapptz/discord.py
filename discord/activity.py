@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .enums import ActivityType, try_enum
+from .colour import Colour
 import datetime
 
 __all__ = ('Activity', 'Streaming', 'Game', 'Spotify')
@@ -455,6 +456,20 @@ class Spotify:
         It always returns :attr:`ActivityType.listening`.
         """
         return ActivityType.listening
+
+    @property
+    def colour(self):
+        """Returns the Spotify integration colour, as a :class:`Colour`.
+
+        There is an alias for this named :meth:`color`"""
+        return Colour(0x1db954)
+
+    @property
+    def color(self):
+        """Returns the Spotify integration colour, as a :class:`Colour`.
+
+        There is an alias for this named :meth:`colour`"""
+        return self.colour
 
     def to_dict(self):
         return {
