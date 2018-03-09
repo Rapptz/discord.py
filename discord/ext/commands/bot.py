@@ -28,6 +28,7 @@ import asyncio
 import discord
 import inspect
 import importlib
+import logging
 import sys
 import traceback
 import re
@@ -37,6 +38,8 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
+
+log = logging.getLogger(__name__)
 
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
@@ -540,7 +543,17 @@ class BotBase(GroupMixin):
         -----------
         cog
             The cog to register to the bot.
+
+        Raises
+        -------
+        :exc:`.ClientException`
+            The cog passed was a class or incompatible instance.
         """
+
+        if inspect.isclass(cog):
+            raise discord.ClientException('cog must be an instance, not a class')
+        elif isinstance(cog, discord.Client):
+            raise discord.ClientException('cog cannot inherit from discord.Client')
 
         self.cogs[type(cog).__name__] = cog
 
@@ -558,17 +571,24 @@ class BotBase(GroupMixin):
         else:
             self.add_check(check, call_once=True)
 
+        has_registered_method = False
+
         members = inspect.getmembers(cog)
         for name, member in members:
             # register commands the cog has
             if isinstance(member, Command):
                 if member.parent is None:
                     self.add_command(member)
+                    has_registered_method = True
                 continue
 
             # register event listeners the cog has
             if name.startswith('on_'):
                 self.add_listener(member, name)
+                has_registered_method = True
+
+        if not has_registered_method:
+            log.warning('cog %s was loaded but registered no commands or listeners', cog.__class__.__name__)
 
     def get_cog(self, name):
         """Gets the cog instance requested.
