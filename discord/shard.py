@@ -143,11 +143,9 @@ class AutoShardedClient(Client):
         # the key is the shard_id
         self.shards = {}
 
-        def _get_websocket(guild_id):
-            i = (guild_id >> 22) % self.shard_count
-            return self.shards[i].ws
-
-        self._connection._get_websocket = _get_websocket
+    def get_websocket(self, guild_id):
+        i = (guild_id >> 22) % self.shard_count
+        return self.shards[i].ws
 
     @asyncio.coroutine
     def _chunker(self, guild, *, shard_id=None):
