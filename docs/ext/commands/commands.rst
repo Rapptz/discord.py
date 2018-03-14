@@ -278,7 +278,7 @@ fine tuning the converter. An example of this is actually in the library, :class
         await ctx.send(content)
 
 
-If a converter fails to convert an argument to its designated target type, the :exc:`.BadArgument` exception must be
+If a converter fails to convert an argument to its designated target type, the :exc:`.ConversionFailure` exception must be
 raised.
 
 Discord Converters
@@ -442,7 +442,7 @@ handlers that allow us to do just that. First we decorate an error handler funct
 
     @info.error
     async def info_error(ctx, error):
-        if isinstance(error, commands.BadArgument):
+        if isinstance(error, commands.ConversionFailure):
             await ctx.send('I could not find that member...')
 
 The first parameter of the error handler is the :class:`.Context` while the second one is an exception that is derived from

@@ -415,7 +415,7 @@ class PartialEmojiConverter(Converter):
 
             return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
 
-        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+        raise ConversionFailure(argument, self, 'Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
