@@ -6,7 +6,7 @@ client = discord.Client()
 async def on_member_join(member):
     server = member.server
     fmt = 'Welcome {0.mention} to {1.name}!'
-    await client.send_message(server, fmt.format(member, server))
+    await client.send_message(member, fmt.format(member, server))
 
 @client.event
 async def on_ready():
