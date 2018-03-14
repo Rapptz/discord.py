@@ -54,7 +54,7 @@ class Snowflake(metaclass=abc.ABCMeta):
 
     Attributes
     -----------
-    id: int
+    id: :class:`int`
         The model's unique ID.
     """
     __slots__ = ()
@@ -91,13 +91,13 @@ class User(metaclass=abc.ABCMeta):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The user's username.
-    discriminator: str
+    discriminator: :class:`str`
         The user's discriminator.
-    avatar: Optional[str]
+    avatar: Optional[:class:`str`]
         The avatar hash the user has.
-    bot: bool
+    bot: :class:`bool`
         If the user is a bot account.
     """
     __slots__ = ()
@@ -175,11 +175,11 @@ class GuildChannel:
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The channel name.
     guild: :class:`Guild`
         The guild the channel belongs to.
-    position: int
+    position: :class:`int`
         The position in the channel list. This is a number that starts at 0.
         e.g. the top channel is position 0.
     """
@@ -282,7 +282,7 @@ class GuildChannel:
 
     @property
     def changed_roles(self):
-        """Returns a list of :class:`Roles` that have been overridden from
+        """Returns a :class:`list` of :class:`Roles` that have been overridden from
         their default values in the :attr:`Guild.roles` attribute."""
         ret = []
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
@@ -297,7 +297,7 @@ class GuildChannel:
 
     @property
     def mention(self):
-        """str : The string that allows you to mention the channel."""
+        """:class:`str` : The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
@@ -688,7 +688,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         To upload a single file, the ``file`` parameter should be used with a
         single :class:`File` object. To upload multiple files, the ``files``
-        parameter should be used with a list of :class:`File` objects.
+        parameter should be used with a :class:`list` of :class:`File` objects.
         **Specifying both parameters will lead to an exception**.
 
         If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
@@ -842,7 +842,7 @@ class Messageable(metaclass=abc.ABCMeta):
     def pins(self):
         """|coro|
 
-        Returns a list of :class:`Message` that are currently pinned.
+        Returns a :class:`list` of :class:`Message` that are currently pinned.
 
         Raises
         -------

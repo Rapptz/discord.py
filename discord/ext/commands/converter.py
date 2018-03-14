@@ -35,8 +35,8 @@ from .view import StringView
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',
             'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter','CategoryChannelConverter', 'IDConverter',
-            'clean_content' ]
+            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
+            'IDConverter', 'clean_content' ]
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -371,7 +371,7 @@ class EmojiConverter(IDConverter):
     """
     @asyncio.coroutine
     def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild
@@ -398,6 +398,25 @@ class EmojiConverter(IDConverter):
 
         return result
 
+class PartialEmojiConverter(Converter):
+    """Converts to a :class:`PartialEmoji`.
+
+
+    This is done by extracting the animated flag, name and ID from the emoji.
+    """
+    @asyncio.coroutine
+    def convert(self, ctx, argument):
+        match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
+
+        if match:
+            emoji_animated = bool(match.group(1))
+            emoji_name = match.group(2)
+            emoji_id = int(match.group(3))
+
+            return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+
+        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
     said content.
@@ -406,11 +425,11 @@ class clean_content(Converter):
 
     Attributes
     ------------
-    fix_channel_mentions: bool
+    fix_channel_mentions: :obj:`bool`
         Whether to clean channel mentions.
-    use_nicknames: bool
+    use_nicknames: :obj:`bool`
         Whether to use nicknames when transforming mentions.
-    escape_markdown: bool
+    escape_markdown: :obj:`bool`
         Whether to also escape special markdown characters.
     """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False):

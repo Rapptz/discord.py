@@ -30,7 +30,7 @@ import websockets
 import asyncio
 
 from . import utils, compat
-from .game import Game
+from .activity import create_activity, _ActivityTag
 from .errors import ConnectionClosed, InvalidArgument
 import logging
 import zlib, json
@@ -70,7 +70,7 @@ class KeepAliveHandler(threading.Thread):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + self.heartbeat_timeout < time.monotonic():
                 log.warn("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
-                coro = self.ws.close(1006)
+                coro = self.ws.close(4000)
                 f = compat.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
                 try:
@@ -283,10 +283,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             payload['d']['shard'] = [self.shard_id, self.shard_count]
 
         state = self._connection
-        if state._game is not None or state._status is not None:
+        if state._activity is not None or state._status is not None:
             payload['d']['presence'] = {
                 'status': state._status,
-                'game': state._game,
+                'game': state._activity,
                 'since': 0,
                 'afk': False
             }
@@ -428,7 +428,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
     @property
     def latency(self):
-        """float: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
+        """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
         heartbeat = self._keep_alive
         return float('inf') if heartbeat is None else heartbeat._last_ack - heartbeat._last_send
 
@@ -469,19 +469,19 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 raise ConnectionClosed(e, shard_id=self.shard_id) from e
 
     @asyncio.coroutine
-    def change_presence(self, *, game=None, status=None, afk=False, since=0.0):
-        if game is not None and not isinstance(game, Game):
-            raise InvalidArgument('game must be of type Game or None')
+    def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
+        if activity is not None:
+            if not isinstance(activity, _ActivityTag):
+                raise InvalidArgument('activity must be one of Game, Streaming, or Activity.')
+            activity = activity.to_dict()
 
         if status == 'idle':
             since = int(time.time() * 1000)
 
-        sent_game = dict(game) if game else None
-
         payload = {
             'op': self.PRESENCE,
             'd': {
-                'game': sent_game,
+                'game': activity,
                 'afk': afk,
                 'since': since,
                 'status': status
@@ -516,11 +516,11 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         yield from self.send_as_json(payload)
 
     @asyncio.coroutine
-    def close_connection(self, force=False):
+    def close_connection(self, *args, **kwargs):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        yield from super().close_connection(force=force)
+        yield from super().close_connection(*args, **kwargs)
 
 class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements the websocket protocol for handling voice connections.
@@ -701,10 +701,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             raise ConnectionClosed(e, shard_id=None) from e
 
     @asyncio.coroutine
-    def close_connection(self, force=False):
+    def close_connection(self, *args, **kwargs):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        yield from super().close_connection(force=force)
+        yield from super().close_connection(*args, **kwargs)
 
 

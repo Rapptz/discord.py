@@ -189,7 +189,7 @@ Converters come in a few flavours:
 
 - A regular callable object that takes an argument as a sole parameter and returns a different type.
 
-    - These range from your own function, to something like ``bool`` or ``int``.
+    - These range from your own function, to something like :class:`bool` or :class:`int`.
 
 - A custom class that inherits from :class:`~ext.commands.Converter`.
 
@@ -310,6 +310,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`Invite`
 - :class:`Game`
 - :class:`Emoji`
+- :class:`PartialEmoji`
 - :class:`Colour`
 
 Having any of these set as the converter will intelligently convert the argument to the appropriate target type you
@@ -338,6 +339,8 @@ converter is given below:
 | :class:`Game`         | :class:`~ext.commands.GameConverter`            |
 +-----------------------+-------------------------------------------------+
 | :class:`Emoji`        | :class:`~ext.commands.EmojiConverter`           |
++-----------------------+-------------------------------------------------+
+| :class:`PartialEmoji` | :class:`~ext.commands.PartialEmojiConverter`    |
 +-----------------------+-------------------------------------------------+
 | :class:`Colour`       | :class:`~ext.commands.ColourConverter`          |
 +-----------------------+-------------------------------------------------+

@@ -35,6 +35,7 @@ sys.path.append(os.path.abspath('extensions'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
     'sphinxcontrib.asyncio',
     'details'
 ]
@@ -49,6 +50,9 @@ autodoc_member_order = 'bysource'
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
 }
+
+# Links used for cross-referencing stuff in other documentation
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.

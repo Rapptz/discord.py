@@ -220,6 +220,7 @@ class HTTPClient:
             # We've run out of retries, raise.
             raise HTTPException(r, data)
 
+    @asyncio.coroutine
     def get_attachment(self, url):
         resp = yield from self._session.get(url)
         try:
@@ -384,6 +385,11 @@ class HTTPClient:
     def remove_reaction(self, message_id, channel_id, emoji, member_id):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
                   channel_id=channel_id, message_id=message_id, member_id=member_id, emoji=emoji)
+        return self.request(r, header_bypass_delay=0.25)
+
+    def remove_own_reaction(self, message_id, channel_id, emoji):
+        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
+                  channel_id=channel_id, message_id=message_id, emoji=emoji)
         return self.request(r, header_bypass_delay=0.25)
 
     def get_reaction_users(self, message_id, channel_id, emoji, limit, after=None):

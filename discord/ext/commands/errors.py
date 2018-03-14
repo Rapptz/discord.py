@@ -72,11 +72,11 @@ class MissingRequiredArgument(UserInputError):
 
     Attributes
     -----------
-    param: str
+    param: :class:`inspect.Parameter`
         The argument that is missing.
     """
     def __init__(self, param):
-        self.param = param.name
+        self.param = param
         super().__init__('{0.name} is a required argument that is missing.'.format(param))
 
 class TooManyArguments(UserInputError):
@@ -154,7 +154,7 @@ class CommandOnCooldown(CommandError):
     cooldown: Cooldown
         A class with attributes ``rate``, ``per``, and ``type`` similar to
         the :func:`.cooldown` decorator.
-    retry_after: float
+    retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
     def __init__(self, cooldown, retry_after):
@@ -168,7 +168,7 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: list
+    missing_perms: :class:`list`
         The required permissions that are missing.
     """
     def __init__(self, missing_perms, *args):
@@ -188,7 +188,7 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: list
+    missing_perms: :class:`list`
         The required permissions that are missing.
     """
     def __init__(self, missing_perms, *args):

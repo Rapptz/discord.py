@@ -22,7 +22,7 @@ Below are major model changes that have happened in v1.0
 Snowflakes are int
 ~~~~~~~~~~~~~~~~~~~~
 
-Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to ``int``.
+Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to :class:`int`.
 
 Quick example: ::
 
@@ -107,7 +107,7 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.delete_channel``             | :meth:`abc.GuildChannel.delete`                                              |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.delete_channel_permissions`` | :meth:`abc.GuildChannel.set_permissions` with ``overwrites`` set to ``None`` |
+| ``Client.delete_channel_permissions`` | :meth:`abc.GuildChannel.set_permissions` with ``overwrite`` set to ``None``  |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.delete_custom_emoji``        | :meth:`Emoji.delete`                                                         |
 +---------------------------------------+------------------------------------------------------------------------------+
@@ -357,6 +357,10 @@ They will be enumerated here.
 
     - Use :attr:`Permissions.view_audit_log` instead.
 
+- ``Member.game``
+
+    - Use :attr:`Member.activity` instead.
+
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
@@ -384,6 +388,7 @@ They will be enumerated here.
 - :meth:`Guild.vanity_invite` to fetch the guild's vanity invite.
 - :meth:`Guild.audit_logs` to fetch the guild's audit logs.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
+- :attr:`Message.activity` and :attr:`Message.application` for Rich Presence related information.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
 - :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
 
@@ -657,7 +662,7 @@ For example, to wait for a reaction: ::
 
     # use user and reaction
 
-Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a ``asyncio.TimeoutError``
+Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a :exc:`asyncio.TimeoutError`
 when reached instead of setting the return to ``None``. For example:
 
 .. code-block:: python3

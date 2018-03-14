@@ -28,7 +28,8 @@ from enum import Enum, IntEnum
 
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
-           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags', ]
+           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
+           'ActivityType', ]
 
 class ChannelType(Enum):
     text     = 0
@@ -211,6 +212,14 @@ class UserFlags(Enum):
     staff = 1
     partner = 2
     hypesquad = 4
+
+class ActivityType(IntEnum):
+    unknown = -1
+    playing = 0
+    streaming = 1
+    listening = 2
+    watching = 3
+
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

@@ -29,7 +29,7 @@ import re
 
 from . import utils, compat
 from .reaction import Reaction
-from .emoji import Emoji, PartialReactionEmoji
+from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException, NotFound
@@ -40,20 +40,20 @@ class Attachment:
 
     Attributes
     ------------
-    id: int
+    id: :class:`int`
         The attachment ID.
-    size: int
+    size: :class:`int`
         The attachment size in bytes.
-    height: Optional[int]
+    height: Optional[:class:`int`]
         The attachment's height, in pixels. Only applicable to images.
-    width: Optional[int]
+    width: Optional[:class:`int`]
         The attachment's width, in pixels. Only applicable to images.
-    filename: str
+    filename: :class:`str`
         The attachment's filename.
-    url: str
+    url: :class:`str`
         The attachment URL. If the message this attachment was attached
         to is deleted, then this will 404.
-    proxy_url: str
+    proxy_url: :class:`str`
         The proxy URL. This is a cached version of the :attr:`~Attachment.url` in the
         case of images. When the message is deleted, this URL might be valid for a few
         minutes or not valid at all.
@@ -72,7 +72,7 @@ class Attachment:
         self._http = state.http
 
     @asyncio.coroutine
-    def save(self, fp):
+    def save(self, fp, *, seek_begin=True):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -83,6 +83,9 @@ class Attachment:
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
+        seek_begin: bool
+            Whether to seek to the beginning of the file after saving is
+            successfully done.
 
         Raises
         --------
@@ -102,7 +105,10 @@ class Attachment:
             with open(fp, 'wb') as f:
                 return f.write(data)
         else:
-            return fp.write(data)
+            written = fp.write(data)
+            if seek_begin:
+                fp.seek(0)
+            return written
 
 class Message:
     """Represents a message from Discord.
@@ -111,7 +117,7 @@ class Message:
 
     Attributes
     -----------
-    tts: bool
+    tts: :class:`bool`
         Specifies if the message was done with text-to-speech.
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
@@ -119,20 +125,20 @@ class Message:
     author
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel, then it is a :class:`User` instead.
-    content: str
+    content: :class:`str`
         The actual contents of the message.
     nonce
         The value used by the discord guild and the client to verify that the message is successfully sent.
         This is typically non-important.
     embeds: List[:class:`Embed`]
-        A list embeds the message has.
+        A list of embeds the message has.
     channel
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
-    mention_everyone: bool
+    mention_everyone: :class:`bool`
         Specifies if the message mentions everyone.
 
         .. note::
@@ -141,7 +147,7 @@ class Message:
             Rather this boolean indicates if the ``@everyone`` text is in the message
             **and** it did end up mentioning everyone.
 
-    mentions: list
+    mentions: :class:`list`
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list will be of :class:`User` instead. For messages that are not of type
         :attr:`MessageType.default`\, this array can be used to aid in system messages.
@@ -152,23 +158,41 @@ class Message:
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a discord limitation, not one with the library.
 
-    channel_mentions: list
+    channel_mentions: :class:`list`
         A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
         then the list is always empty.
-    role_mentions: list
+    role_mentions: :class:`list`
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
-    id: int
+    id: :class:`int`
         The message ID.
-    webhook_id: Optional[int]
+    webhook_id: Optional[:class:`int`]
         If this message was sent by a webhook, then this is the webhook ID's that sent this
         message.
     attachments: List[:class:`Attachment`]
         A list of attachments given to a message.
-    pinned: bool
+    pinned: :class:`bool`
         Specifies if the message is currently pinned.
     reactions : List[:class:`Reaction`]
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
+    activity: Optional[:class:`dict`]
+        The activity associated with this message. Sent with Rich-Presence related messages that for
+        example, request joining, spectating, or listening to or with another member.
+
+        It is a dictionary with the following optional keys:
+
+        - ``type``: An integer denoting the type of message activity being requested.
+        - ``party_id``: The party ID associated with the party.
+    application: Optional[:class:`dict`]
+        The rich presence enabled application associated with this message.
+
+        It is a dictionary with the following keys:
+
+        - ``id``: A string representing the application's ID.
+        - ``name``: A string representing the application's name.
+        - ``description``: A string representing the application's description.
+        - ``icon``: A string representing the icon ID of the application.
+        - ``cover_image``: A string representing the embed's image asset ID.
     """
 
     __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
@@ -176,13 +200,16 @@ class Message:
                   '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_cs_guild', '_state', 'reactions' )
+                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
+                  'application', 'activity' )
 
     def __init__(self, *, state, channel, data):
         self._state = state
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.application = data.get('application')
+        self.activity = data.get('activity')
         self._update(channel, data)
 
     def __repr__(self):
@@ -236,6 +263,8 @@ class Message:
         self.channel = channel
         self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
         self._try_patch(data, 'pinned')
+        self._try_patch(data, 'application')
+        self._try_patch(data, 'activity')
         self._try_patch(data, 'mention_everyone')
         self._try_patch(data, 'tts')
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
@@ -315,7 +344,7 @@ class Message:
         """A property that returns an array of user IDs matched with
         the syntax of <@user_id> in the message content.
 
-        This allows you receive the user IDs of mentioned users
+        This allows you to receive the user IDs of mentioned users
         even in a private message context.
         """
         return [int(x) for x in re.findall(r'<@!?([0-9]+)>', self.content)]
@@ -627,7 +656,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialReactionEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
             The emoji to react with.
 
         Raises
@@ -647,7 +676,7 @@ class Message:
 
         if isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialReactionEmoji):
+        elif isinstance(emoji, PartialEmoji):
             emoji = emoji._as_reaction()
         elif isinstance(emoji, str):
             pass # this is okay
@@ -672,7 +701,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialReactionEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.
@@ -694,14 +723,17 @@ class Message:
 
         if isinstance(emoji, Emoji):
             emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialReactionEmoji):
+        elif isinstance(emoji, PartialEmoji):
             emoji = emoji._as_reaction()
         elif isinstance(emoji, str):
             pass # this is okay
         else:
             raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
-        yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+        if member.id == self._state.self_id:
+            yield from self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
+        else:
+            yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
 
     @asyncio.coroutine
     def clear_reactions(self):
