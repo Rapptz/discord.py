@@ -429,7 +429,7 @@ class Webhook:
 
         If this is a partial webhook, then this will always return ``None``.
         """
-        return self._state and self._state.get_guild(self.guild_id)
+        return self._state and self._state._get_guild(self.guild_id)
 
     @property
     def channel(self):
