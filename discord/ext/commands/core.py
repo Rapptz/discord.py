@@ -765,7 +765,9 @@ def check(predicate):
     """
 
     def decorator(func):
-        if isinstance(func, Command):
+        if inspect.iscoroutinefunction(func):
+            raise ClientException('The command checks cannot be async.')
+        elif isinstance(func, Command):
             func.checks.append(predicate)
         else:
             if not hasattr(func, '__commands_checks__'):
