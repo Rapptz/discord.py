@@ -209,6 +209,9 @@ class Activity(_ActivityTag):
     def small_image_text(self):
         """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
         return self.assets.get('small_text', None)
+    
+    def __eq__(self, other):
+        return isinstance(other, discord._ActivityTag) and other.name == self.name and other.type == self.type
 
 
 class Game(_ActivityTag):
