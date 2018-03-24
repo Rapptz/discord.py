@@ -70,9 +70,6 @@ class Music:
     async def play(self, ctx, *, query):
         """Plays a file from the local filesystem"""
 
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
-
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
         ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
 
@@ -81,9 +78,6 @@ class Music:
     @commands.command()
     async def yt(self, ctx, *, url):
         """Plays from a url (almost anything youtube_dl supports)"""
-
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop)
@@ -94,9 +88,6 @@ class Music:
     @commands.command()
     async def stream(self, ctx, *, url):
         """Streams from a url (same as yt, but doesn't predownload)"""
-
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
@@ -130,7 +121,8 @@ class Music:
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
-
+        elif ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
                    description='Relatively simple music bot example')
