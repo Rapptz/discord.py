@@ -241,7 +241,7 @@ class Game(_ActivityTag):
     start: Optional[:class:`datetime.datetime`]
         A naive UTC timestamp representing when the game started. Keyword-only parameter. Ignored for bots.
     end: Optional[:class:`datetime.datetime`]
-        A naive UTC timestamp representing when the game started. Keyword-only parameter. Ignored for bots.
+        A naive UTC timestamp representing when the game ends. Keyword-only parameter. Ignored for bots.
 
     Attributes
     -----------
