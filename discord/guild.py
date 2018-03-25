@@ -340,7 +340,7 @@ class Guild(Hashable):
 
         def key(t):
             k, v = t
-            return ((k.position, k.id) if k else (-1, -1), v)
+            return ((isinstance(k, TextChannel), k.position, k.id) if k else (-1, -1), v)
 
         _get = self._channels.get
         as_list = [(_get(k), v) for k, v in grouped.items()]
