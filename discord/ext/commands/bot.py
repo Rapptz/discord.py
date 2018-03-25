@@ -542,10 +542,10 @@ class BotBase(GroupMixin):
             The cog to register to the bot.
         """
 
-        if not hasattr(cog, '__cog_name'):
-            setattr(cog, '__cog_name', type(cog).__name__)
+        if not hasattr(cog, 'cog_name'):
+            setattr(cog, 'cog_name', type(cog).__name__)
 
-        self.cogs[cog.__cog_name] = cog
+        self.cogs[cog.cog_name] = cog
 
         try:
             check = getattr(cog, '_{.__class__.__name__}__global_check'.format(cog))
