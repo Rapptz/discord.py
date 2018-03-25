@@ -161,3 +161,25 @@ class Reaction:
             limit = self.count
 
         return ReactionIterator(self.message, emoji, limit, after)
+    
+    async def remove(self, user):
+        """|coro|
+
+        This is a shorthand version of `discord.Message.remove_reaction`.
+
+        Parameters
+        ------------
+        user: :class:``User`` or :class:``discord.Member``
+
+        Examples
+        ---------
+
+        Usage ::
+
+            # Don't actually use this in a relatively big sized bot.
+            @staticmethod
+            async def on_reaction_add(reaction, user):
+                await reaction.remove(user)
+
+        """
+        return await self.message.remove_reaction(self.emoji, user)
