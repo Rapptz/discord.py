@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import time
 import random
 
+
 class ExponentialBackoff:
     """An implementation of the exponential backoff algorithm
 
