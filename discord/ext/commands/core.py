@@ -1321,6 +1321,7 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.user`` for a per-user basis.
     - ``BucketType.guild`` for a per-guild basis.
     - ``BucketType.channel`` for a per-channel basis.
+    - ``BucketType.member`` for a per-member basis.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.
