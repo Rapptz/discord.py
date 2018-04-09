@@ -963,7 +963,7 @@ class Guild(Hashable):
         return result
 
     @asyncio.coroutine
-    def create_custom_emoji(self, *, name, image, reason=None):
+    def create_custom_emoji(self, *, name, image, roles=[], reason=None):
         """|coro|
 
         Creates a custom :class:`Emoji` for the guild.
@@ -979,6 +979,8 @@ class Guild(Hashable):
         image: bytes
             The *bytes-like* object representing the image data to use.
             Only JPG and PNG images are supported.
+        roles: List[:class:`Snowflake`]
+            The roles for which this emoji will be whitelisted.
         reason: Optional[str]
             The reason for creating this emoji. Shows up on the audit log.
 
@@ -996,7 +998,7 @@ class Guild(Hashable):
         """
 
         img = utils._bytes_to_base64_data(image)
-        data = yield from self._state.http.create_custom_emoji(self.id, name, img, reason=reason)
+        data = yield from self._state.http.create_custom_emoji(self.id, name, img, roles=[role.id for role in roles], reason=reason)
         return self._state.store_emoji(self, data)
 
     @asyncio.coroutine

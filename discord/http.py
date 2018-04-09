@@ -608,10 +608,11 @@ class HTTPClient:
         }
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
-    def create_custom_emoji(self, guild_id, name, image, *, reason=None):
+    def create_custom_emoji(self, guild_id, name, image, *, roles=[], reason=None):
         payload = {
             'name': name,
-            'image': image
+            'image': image,
+            'roles': roles
         }
 
         r = Route('POST', '/guilds/{guild_id}/emojis', guild_id=guild_id)
