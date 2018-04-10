@@ -230,7 +230,7 @@ class Emoji(Hashable):
         yield from self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
     @asyncio.coroutine
-    def edit(self, *, name, reason=None):
+    def edit(self, *, name, roles=[], reason=None):
         """|coro|
 
         Edits the custom emoji.
@@ -244,6 +244,8 @@ class Emoji(Hashable):
         -----------
         name: str
             The new emoji name.
+        roles: List[:class:`Snowflake`]
+            The roles for which this emoji will be whitelisted.
         reason: Optional[str]
             The reason for editing this emoji. Shows up on the audit log.
 
@@ -255,4 +257,4 @@ class Emoji(Hashable):
             An error occurred editing the emoji.
         """
 
-        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, reason=reason)
+        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=[role.id for role in roles], reason=reason)

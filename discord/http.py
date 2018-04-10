@@ -622,9 +622,10 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, reason=reason)
 
-    def edit_custom_emoji(self, guild_id, emoji_id, *, name, reason=None):
+    def edit_custom_emoji(self, guild_id, emoji_id, *, name, roles=[], reason=None):
         payload = {
-            'name': name
+            'name': name,
+            'roles': roles
         }
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
