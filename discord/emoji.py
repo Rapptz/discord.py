@@ -257,4 +257,6 @@ class Emoji(Hashable):
             An error occurred editing the emoji.
         """
 
-        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=[role.id for role in roles], reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)

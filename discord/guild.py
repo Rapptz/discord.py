@@ -998,7 +998,9 @@ class Guild(Hashable):
         """
 
         img = utils._bytes_to_base64_data(image)
-        data = yield from self._state.http.create_custom_emoji(self.id, name, img, roles=[role.id for role in roles], reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+        data = yield from self._state.http.create_custom_emoji(self.id, name, img, roles=roles, reason=reason)
         return self._state.store_emoji(self, data)
 
     @asyncio.coroutine
