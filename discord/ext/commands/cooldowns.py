@@ -113,7 +113,7 @@ class CooldownMapping:
         elif bucket_type is BucketType.channel:
             return msg.channel.id
         elif bucket_type is BucketType.member:
-            return ((msg.guild or msg.author).id, msg.author.id)
+            return ((msg.guild and msg.guild.id), msg.author.id)
 
     def _verify_cache_integrity(self):
         # we want to delete all cache objects that haven't been used
