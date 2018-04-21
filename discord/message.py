@@ -123,7 +123,7 @@ class Message:
         in cases where it might be a system message for :attr:`system_content`.
     author
         A :class:`Member` that sent the message. If :attr:`channel` is a
-        private channel, then it is a :class:`User` instead.
+        private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
         The actual contents of the message.
     nonce
