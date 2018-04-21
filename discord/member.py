@@ -501,6 +501,9 @@ class Member(discord.abc.Messageable, _BaseUser):
         HTTPException
             Adding roles failed.
         """
+        for role in roles:
+            if not isinstance(role, discord.Role):
+                raise TypeError("Role must be an instance of discord.Role")
 
         if not atomic:
             new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
@@ -540,6 +543,9 @@ class Member(discord.abc.Messageable, _BaseUser):
         HTTPException
             Removing the roles failed.
         """
+        for role in roles:
+            if not isinstance(role, discord.Role):
+                raise TypeError("Role must be an instance of discord.Role")
 
         if not atomic:
             new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
