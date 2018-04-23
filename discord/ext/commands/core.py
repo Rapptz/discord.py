@@ -83,6 +83,18 @@ def _convert_to_bool(argument):
     else:
         raise BadArgument(lowered + ' is not a recognised boolean option')
 
+def ignore_when_subcommand(func):
+    """Ignore command when invoked subcommand"""
+    async def function_wrapper(client, ctx):
+        # Make sure subcommand is not used
+        if ctx.invoked_subcommand is None:
+            # Return the original function
+            return await func(client, ctx)
+
+    # Return the function wrapper so this will be
+    # called using the arguments
+    return function_wrapper
+
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
         return super().__contains__(k.lower())
