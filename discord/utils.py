@@ -38,7 +38,7 @@ DISCORD_EPOCH = 1420070400000
 class cached_property:
     def __init__(self, function):
         self.function = function
-        self.__doc__ = getattr(function, '__doc__')
+        self.__doc__ = function.__doc__
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -53,7 +53,7 @@ class CachedSlotProperty:
     def __init__(self, name, function):
         self.name = name
         self.function = function
-        self.__doc__ = getattr(function, '__doc__')
+        self.__doc__ = function.__doc__
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -228,9 +228,7 @@ def get(iterable, **attrs):
 
 
 def _unique(iterable):
-    seen = set()
-    adder = seen.add
-    return [x for x in iterable if not (x in seen or adder(x))]
+    return list(set(iterable))
 
 def _get_as_snowflake(data, key):
     try:
