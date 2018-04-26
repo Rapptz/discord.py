@@ -82,7 +82,7 @@ class Channel(Hashable):
     """
 
     __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
-                  'is_private', 'type', 'bitrate', 'user_limit', 'is_nsfw'
+                  'is_private', 'type', 'bitrate', 'user_limit', 'is_nsfw',
                   '_permission_overwrites' ]
 
     def __init__(self, **kwargs):
