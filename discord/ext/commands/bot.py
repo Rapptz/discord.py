@@ -917,6 +917,8 @@ class BotBase(GroupMixin):
 
     @asyncio.coroutine
     def on_message(self, message):
+        if message.author.bot:
+            return
         yield from self.process_commands(message)
 
 class Bot(BotBase, discord.Client):
