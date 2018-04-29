@@ -346,7 +346,7 @@ class Guild(Hashable):
         as_list = [(_get(k), v) for k, v in grouped.items()]
         as_list.sort(key=key)
         for _, channels in as_list:
-            channels.sort(key=lambda c: (c.position, c.id))
+            channels.sort(key=lambda c: (not isinstance(c, TextChannel), c.position, c.id))
         return as_list
 
     def get_channel(self, channel_id):

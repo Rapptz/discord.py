@@ -20,7 +20,7 @@ ytdl_format_options = {
     'quiet': True,
     'no_warnings': True,
     'default_search': 'auto',
-    'source_address': '0.0.0.0' # ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
 ffmpeg_options = {
@@ -41,15 +41,15 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.url = data.get('url')
 
     @classmethod
-    async def from_url(cls, url, *, loop=None):
+    async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, ytdl.extract_info, url)
-        
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+
         if 'entries' in data:
             # take first item from a playlist
             data = data['entries'][0]
 
-        filename = ytdl.prepare_filename(data)
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
@@ -63,43 +63,36 @@ class Music:
 
         if ctx.voice_client is not None:
             return await ctx.voice_client.move_to(channel)
-        
+
         await channel.connect()
 
     @commands.command()
     async def play(self, ctx, *, query):
         """Plays a file from the local filesystem"""
 
-        if ctx.voice_client is None:
-            if ctx.author.voice.channel:
-                await ctx.author.voice.channel.connect()
-            else:
-                return await ctx.send("Not connected to a voice channel.")
-
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
-
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
         ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-        
+
         await ctx.send('Now playing: {}'.format(query))
 
     @commands.command()
     async def yt(self, ctx, *, url):
-        """Streams from a url (almost anything youtube_dl supports)"""
+        """Plays from a url (almost anything youtube_dl supports)"""
 
-        if ctx.voice_client is None:
-            if ctx.author.voice.channel:
-                await ctx.author.voice.channel.connect()
-            else:
-                return await ctx.send("Not connected to a voice channel.")
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=self.bot.loop)
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
+        await ctx.send('Now playing: {}'.format(player.title))
 
-        player = await YTDLSource.from_url(url, loop=self.bot.loop)
-        ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-        
+    @commands.command()
+    async def stream(self, ctx, *, url):
+        """Streams from a url (same as yt, but doesn't predownload)"""
+
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+
         await ctx.send('Now playing: {}'.format(player.title))
 
     @commands.command()
@@ -112,20 +105,31 @@ class Music:
         ctx.voice_client.source.volume = volume
         await ctx.send("Changed volume to {}%".format(volume))
 
-
     @commands.command()
     async def stop(self, ctx):
         """Stops and disconnects the bot from voice"""
 
         await ctx.voice_client.disconnect()
 
+    @play.before_invoke
+    @yt.before_invoke
+    @stream.before_invoke
+    async def ensure_voice(self, ctx):
+        if ctx.voice_client is None:
+            if ctx.author.voice:
+                await ctx.author.voice.channel.connect()
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+                raise commands.CommandError("Author not connected to a voice channel.")
+        elif ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
-                   description='Music bot example')
+                   description='Relatively simple music bot example')
 
 @bot.event
 async def on_ready():
-    print('Logged in as {0.id}/{0}'.format(bot.user))
+    print('Logged in as {0} ({0.id})'.format(bot.user))
     print('------')
 
 bot.add_cog(Music(bot))

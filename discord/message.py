@@ -300,7 +300,7 @@ class Message:
             self.mentions = [self._state.store_user(m) for m in mentions]
             return
 
-        for mention in mentions:
+        for mention in filter(None, mentions):
             id_search = int(mention['id'])
             member = self.guild.get_member(id_search)
             if member is not None:
