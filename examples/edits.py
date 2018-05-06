@@ -1,5 +1,4 @@
 import discord
-import asyncio
 
 class MyClient(discord.Client):
     async def on_ready(self):
