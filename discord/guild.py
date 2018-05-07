@@ -799,6 +799,36 @@ class Guild(Hashable):
 
         yield from http.edit_guild(self.id, reason=reason, **fields)
 
+    @asyncio.coroutine
+    def get_ban(self, user):
+        """|coro|
+
+        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
+        with a ``user`` and ``reason`` field. See :meth:`bans` for more
+        information.
+
+        You must have :attr:`~Permissions.ban_members` permission
+        to get this information.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to get the information.
+        NotFound
+            This user is not banned.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        -------
+        BanEntry
+            The BanEntry object for the specified user.
+        """
+        data = yield from self._state.http.get_ban(user.id, self.id)
+        return BanEntry(
+            user=User(state=self._state, data=data['user']),
+            reason=data['reason']
+        )
 
     @asyncio.coroutine
     def bans(self):
