@@ -810,6 +810,11 @@ class Guild(Hashable):
         You must have :attr:`~Permissions.ban_members` permission
         to get this information.
 
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to get ban information from.
+
         Raises
         ------
         Forbidden
