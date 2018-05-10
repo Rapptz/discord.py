@@ -204,7 +204,7 @@ class Role(Hashable):
 
         Edits the role.
 
-        You must have the :attr:`Permissions.manage_roles` permission to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
 
         All fields are optional.
@@ -265,7 +265,7 @@ class Role(Hashable):
 
         Deletes the role.
 
-        You must have the :attr:`Permissions.manage_roles` permission to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
 
         Parameters

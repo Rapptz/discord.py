@@ -140,6 +140,8 @@ class Invite(Hashable):
 
         Revokes the instant invite.
 
+        You must have :attr:`~Permissions.manage_channels` permission to do this.
+
         Parameters
         -----------
         reason: Optional[str]
