@@ -25,11 +25,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .guild import Guild
+from .activity import _ActivityTag
 from .user import User, ClientUser
 from .emoji import Emoji, PartialEmoji
 from .message import Message
 from .relationship import Relationship
 from .channel import *
+from .raw_models import *
 from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
@@ -67,9 +69,12 @@ class ConnectionState:
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self._listeners = []
 
-        game = options.get('game', None)
-        if game:
-            game = dict(game)
+        activity = options.get('activity', None)
+        if activity:
+            if not isinstance(activity, _ActivityTag):
+                raise TypeError('activity parameter must be one of Game, Streaming, or Activity.')
+
+            activity = activity.to_dict()
 
         status = options.get('status', None)
         if status:
@@ -78,7 +83,7 @@ class ConnectionState:
             else:
                 status = str(status)
 
-        self._game = game
+        self._activity = activity
         self._status = status
 
         self.clear()
@@ -151,7 +156,9 @@ class ConnectionState:
         try:
             return self._users[user_id]
         except KeyError:
-            self._users[user_id] = user = User(state=self, data=data)
+            user = User(state=self, data=data)
+            if user.discriminator != '0000':
+                self._users[user_id] = user
             return user
 
     def get_user(self, id):
@@ -207,7 +214,7 @@ class ConnectionState:
         channel_id = channel.id
         self._private_channels[channel_id] = channel
 
-        if len(self._private_channels) > 128:
+        if self.is_bot and len(self._private_channels) > 128:
             _, to_remove = self._private_channels.popitem(last=False)
             if isinstance(to_remove, DMChannel):
                 self._private_channels_by_user.pop(to_remove.recipient.id, None)
@@ -236,6 +243,17 @@ class ConnectionState:
     def chunks_needed(self, guild):
         for chunk in range(math.ceil(guild._member_count / 1000)):
             yield self.receive_chunk(guild.id)
+
+    def _get_guild_channel(self, data):
+        try:
+            guild = self._get_guild(int(data['guild_id']))
+        except KeyError:
+            channel = self.get_channel(int(data['channel_id']))
+            guild = None
+        else:
+            channel = guild and guild.get_channel(int(data['channel_id']))
+
+        return channel, guild
 
     @asyncio.coroutine
     def request_offline_members(self, guilds):
@@ -324,34 +342,33 @@ class ConnectionState:
         self.dispatch('resumed')
 
     def parse_message_create(self, data):
-        channel = self.get_channel(int(data['channel_id']))
+        channel, _ = self._get_guild_channel(data)
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
         self._messages.append(message)
 
     def parse_message_delete(self, data):
-        message_id = int(data['id'])
-        channel_id = int(data['channel_id'])
-        self.dispatch('raw_message_delete', message_id, channel_id)
+        raw = RawMessageDeleteEvent(data)
+        self.dispatch('raw_message_delete', raw)
 
-        found = self._get_message(message_id)
+        found = self._get_message(raw.message_id)
         if found is not None:
             self.dispatch('message_delete', found)
             self._messages.remove(found)
 
     def parse_message_delete_bulk(self, data):
-        message_ids = { int(x) for x in data.get('ids', []) }
-        channel_id = int(data['channel_id'])
-        self.dispatch('raw_bulk_message_delete', message_ids, channel_id)
-        to_be_deleted = [message for message in self._messages if message.id in message_ids]
+        raw = RawBulkMessageDeleteEvent(data)
+        self.dispatch('raw_bulk_message_delete', raw)
+
+        to_be_deleted = [message for message in self._messages if message.id in raw.message_ids]
         for msg in to_be_deleted:
             self.dispatch('message_delete', msg)
             self._messages.remove(msg)
 
     def parse_message_update(self, data):
-        message_id = int(data['id'])
-        self.dispatch('raw_message_edit', message_id, data)
-        message = self._get_message(message_id)
+        raw = RawMessageUpdateEvent(data)
+        self.dispatch('raw_message_edit', raw)
+        message = self._get_message(raw.message_id)
         if message is not None:
             older_message = copy.copy(message)
             if 'call' in data:
@@ -366,54 +383,47 @@ class ConnectionState:
             self.dispatch('message_edit', older_message, message)
 
     def parse_message_reaction_add(self, data):
-        message_id = int(data['message_id'])
-        user_id = int(data['user_id'])
-        channel_id = int(data['channel_id'])
-
         emoji_data = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji_data, 'id')
         emoji = PartialEmoji(animated=emoji_data['animated'], id=emoji_id, name=emoji_data['name'])
-        self.dispatch('raw_reaction_add', emoji, message_id, channel_id, user_id)
+        raw = RawReactionActionEvent(data, emoji)
+        self.dispatch('raw_reaction_add', raw)
 
         # rich interface here
-        message = self._get_message(message_id)
+        message = self._get_message(raw.message_id)
         if message is not None:
             emoji = self._upgrade_partial_emoji(emoji)
-            reaction = message._add_reaction(data, emoji, user_id)
-            user = self._get_reaction_user(message.channel, user_id)
+            reaction = message._add_reaction(data, emoji, raw.user_id)
+            user = self._get_reaction_user(message.channel, raw.user_id)
             if user:
                 self.dispatch('reaction_add', reaction, user)
 
     def parse_message_reaction_remove_all(self, data):
-        message_id = int(data['message_id'])
-        channel_id = int(data['channel_id'])
-        self.dispatch('raw_reaction_clear', message_id, channel_id)
+        raw = RawReactionClearEvent(data)
+        self.dispatch('raw_reaction_clear', raw)
 
-        message =  self._get_message(message_id)
+        message =  self._get_message(raw.message_id)
         if message is not None:
             old_reactions = message.reactions.copy()
             message.reactions.clear()
             self.dispatch('reaction_clear', message, old_reactions)
 
     def parse_message_reaction_remove(self, data):
-        message_id = int(data['message_id'])
-        user_id = int(data['user_id'])
-        channel_id = int(data['channel_id'])
-
         emoji_data = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji_data, 'id')
         emoji = PartialEmoji(animated=emoji_data['animated'], id=emoji_id, name=emoji_data['name'])
-        self.dispatch('raw_reaction_remove', emoji, message_id, channel_id, user_id)
+        raw = RawReactionActionEvent(data, emoji)
+        self.dispatch('raw_reaction_remove', raw)
 
-        message = self._get_message(message_id)
+        message = self._get_message(raw.message_id)
         if message is not None:
             emoji = self._upgrade_partial_emoji(emoji)
             try:
-                reaction = message._remove_reaction(data, emoji, user_id)
+                reaction = message._remove_reaction(data, emoji, raw.user_id)
             except (AttributeError, ValueError) as e: # eventual consistency lol
                 pass
             else:
-                user = self._get_reaction_user(message.channel, user_id)
+                user = self._get_reaction_user(message.channel, raw.user_id)
                 if user:
                     self.dispatch('reaction_remove', reaction, user)
 
@@ -798,14 +808,14 @@ class ConnectionState:
             compat.create_task(vc._create_socket(key_id, data))
 
     def parse_typing_start(self, data):
-        channel = self.get_channel(int(data['channel_id']))
+        channel, guild = self._get_guild_channel(data)
         if channel is not None:
             member = None
             user_id = utils._get_as_snowflake(data, 'user_id')
             if isinstance(channel, DMChannel):
                 member = channel.recipient
             elif isinstance(channel, TextChannel):
-                member = channel.guild.get_member(user_id)
+                member = guild.get_member(user_id)
             elif isinstance(channel, GroupChannel):
                 member = utils.find(lambda x: x.id == user_id, channel.recipients)
 

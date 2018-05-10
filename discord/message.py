@@ -72,7 +72,7 @@ class Attachment:
         self._http = state.http
 
     @asyncio.coroutine
-    def save(self, fp):
+    def save(self, fp, *, seek_begin=True):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -83,6 +83,9 @@ class Attachment:
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
+        seek_begin: bool
+            Whether to seek to the beginning of the file after saving is
+            successfully done.
 
         Raises
         --------
@@ -102,7 +105,10 @@ class Attachment:
             with open(fp, 'wb') as f:
                 return f.write(data)
         else:
-            return fp.write(data)
+            written = fp.write(data)
+            if seek_begin:
+                fp.seek(0)
+            return written
 
 class Message:
     """Represents a message from Discord.
@@ -169,6 +175,24 @@ class Message:
         Specifies if the message is currently pinned.
     reactions : List[:class:`Reaction`]
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
+    activity: Optional[:class:`dict`]
+        The activity associated with this message. Sent with Rich-Presence related messages that for
+        example, request joining, spectating, or listening to or with another member.
+
+        It is a dictionary with the following optional keys:
+
+        - ``type``: An integer denoting the type of message activity being requested.
+        - ``party_id``: The party ID associated with the party.
+    application: Optional[:class:`dict`]
+        The rich presence enabled application associated with this message.
+
+        It is a dictionary with the following keys:
+
+        - ``id``: A string representing the application's ID.
+        - ``name``: A string representing the application's name.
+        - ``description``: A string representing the application's description.
+        - ``icon``: A string representing the icon ID of the application.
+        - ``cover_image``: A string representing the embed's image asset ID.
     """
 
     __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
@@ -176,13 +200,16 @@ class Message:
                   '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_cs_guild', '_state', 'reactions' )
+                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
+                  'application', 'activity' )
 
     def __init__(self, *, state, channel, data):
         self._state = state
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.application = data.get('application')
+        self.activity = data.get('activity')
         self._update(channel, data)
 
     def __repr__(self):
@@ -236,6 +263,8 @@ class Message:
         self.channel = channel
         self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
         self._try_patch(data, 'pinned')
+        self._try_patch(data, 'application')
+        self._try_patch(data, 'activity')
         self._try_patch(data, 'mention_everyone')
         self._try_patch(data, 'tts')
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
@@ -271,7 +300,7 @@ class Message:
             self.mentions = [self._state.store_user(m) for m in mentions]
             return
 
-        for mention in mentions:
+        for mention in filter(None, mentions):
             id_search = int(mention['id'])
             member = self.guild.get_member(id_search)
             if member is not None:

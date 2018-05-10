@@ -32,7 +32,7 @@ from collections import namedtuple, defaultdict
 from . import utils
 from .role import Role
 from .member import Member, VoiceState
-from .game import Game
+from .activity import create_activity
 from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
@@ -243,8 +243,7 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member.status = try_enum(Status, presence['status'])
-                game = presence.get('game', {})
-                member.game = Game(**game) if game else None
+                member.activity = create_activity(presence.get('game'))
 
         if 'channels' in data:
             channels = data['channels']
@@ -347,7 +346,7 @@ class Guild(Hashable):
         as_list = [(_get(k), v) for k, v in grouped.items()]
         as_list.sort(key=key)
         for _, channels in as_list:
-            channels.sort(key=lambda c: (c.position, c.id))
+            channels.sort(key=lambda c: (not isinstance(c, TextChannel), c.position, c.id))
         return as_list
 
     def get_channel(self, channel_id):
@@ -800,6 +799,41 @@ class Guild(Hashable):
 
         yield from http.edit_guild(self.id, reason=reason, **fields)
 
+    @asyncio.coroutine
+    def get_ban(self, user):
+        """|coro|
+
+        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
+        with a ``user`` and ``reason`` field. See :meth:`bans` for more
+        information.
+
+        You must have :attr:`~Permissions.ban_members` permission
+        to get this information.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to get ban information from.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to get the information.
+        NotFound
+            This user is not banned.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        -------
+        BanEntry
+            The BanEntry object for the specified user.
+        """
+        data = yield from self._state.http.get_ban(user.id, self.id)
+        return BanEntry(
+            user=User(state=self._state, data=data['user']),
+            reason=data['reason']
+        )
 
     @asyncio.coroutine
     def bans(self):
