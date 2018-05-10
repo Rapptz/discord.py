@@ -912,7 +912,7 @@ class Client:
     def get_invite(self, url):
         """|coro|
 
-        Gets a :class:`Invite` from a discord.gg URL or ID.
+        Gets an :class:`Invite` from a discord.gg URL or ID.
 
         Note
         ------
@@ -947,6 +947,9 @@ class Client:
         """|coro|
 
         Revokes an :class:`Invite`, URL, or ID to an invite.
+
+        You must have the :attr:`~Permissions.manage_channels` permission in
+        the associated guild to do this.
 
         Parameters
         ----------
