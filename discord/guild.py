@@ -808,7 +808,7 @@ class Guild(Hashable):
         with a ``user`` and ``reason`` field. See :meth:`bans` for more
         information.
 
-        You must have :attr:`~Permissions.ban_members` permission
+        You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
 
         Parameters
@@ -847,7 +847,7 @@ class Guild(Hashable):
         that got banned along with a ``reason`` field specifying
         why the user was banned that could be set to ``None``.
 
-        You must have :attr:`~Permissions.ban_members` permission
+        You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
 
         Raises
@@ -973,7 +973,8 @@ class Guild(Hashable):
 
         Returns a list of all active instant invites from the guild.
 
-        You must have :attr:`~Permissions.manage_guild` to get this information.
+        You must have the :attr:`~Permissions.manage_guild` permission to get
+        this information.
 
         Raises
         -------
@@ -1006,7 +1007,7 @@ class Guild(Hashable):
 
         There is currently a limit of 50 local emotes per guild.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
+        You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
 
         Note that bot accounts can only edit and delete emojis they have created.
@@ -1046,7 +1047,7 @@ class Guild(Hashable):
 
         All fields are optional.
 
-        You must have :attr:`~Permissions.manage_roles` permissions to
+        You must have the :attr:`~Permissions.manage_roles` permission to
         do this.
 
         Parameters
@@ -1115,7 +1116,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`~Permissions.kick_members` permissions to
+        You must have the :attr:`~Permissions.kick_members` permission to
         do this.
 
         Parameters
@@ -1142,7 +1143,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`~Permissions.ban_members` permissions to
+        You must have the :attr:`~Permissions.ban_members` permission to
         do this.
 
         Parameters
@@ -1172,7 +1173,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`~Permissions.ban_members` permissions to
+        You must have the :attr:`~Permissions.ban_members` permission to
         do this.
 
         Parameters
@@ -1200,7 +1201,8 @@ class Guild(Hashable):
         The guild must be partnered, i.e. have 'VANITY_URL' in
         :attr:`~Guild.features`.
 
-        You must have :attr:`~Permissions.manage_guild` to use this as well.
+        You must have the :attr:`~Permissions.manage_guild` permission to use
+        this as well.
 
         Returns
         --------
@@ -1253,7 +1255,7 @@ class Guild(Hashable):
     def audit_logs(self, *, limit=100, before=None, after=None, reverse=None, user=None, action=None):
         """Return an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
-        You must have :attr:`~Permissions.view_audit_log` permission to use this.
+        You must have the :attr:`~Permissions.view_audit_log` permission to use this.
 
         Parameters
         -----------

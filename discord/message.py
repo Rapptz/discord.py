@@ -608,7 +608,7 @@ class Message:
 
         Pins the message.
 
-        You must have :attr:`~Permissions.manage_messages` permissions to do
+        You must have the :attr:`~Permissions.manage_messages` permission to do
         this in a non-private channel context.
 
         Raises
@@ -631,7 +631,7 @@ class Message:
 
         Unpins the message.
 
-        You must have :attr:`~Permissions.manage_messages` permissions to do
+        You must have the :attr:`~Permissions.manage_messages` permission to do
         this in a non-private channel context.
 
         Raises
@@ -746,8 +746,7 @@ class Message:
 
         Removes all the reactions from the message.
 
-        You need :attr:`~Permissions.manage_messages` permission
-        to use this.
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
 
         Raises
         --------

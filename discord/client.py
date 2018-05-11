@@ -948,8 +948,8 @@ class Client:
 
         Revokes an :class:`Invite`, URL, or ID to an invite.
 
-        You must have :attr:`~Permissions.manage_channels` permission in the
-        associated guild to do this.
+        You must have the :attr:`~Permissions.manage_channels` permission in
+        the associated guild to do this.
 
         Parameters
         ----------
