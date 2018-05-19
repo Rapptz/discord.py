@@ -549,6 +549,8 @@ class GuildChannel:
             You do not have permissions to edit channel specific permissions.
         HTTPException
             Editing channel specific permissions failed.
+        NotFound
+            The role or member being edited is not part of the guild.
         InvalidArgument
             The overwrite parameter invalid or the target type was not
             :class:`Role` or :class:`Member`.
