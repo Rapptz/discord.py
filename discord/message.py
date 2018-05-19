@@ -606,8 +606,10 @@ class Message:
     def pin(self):
         """|coro|
 
-        Pins the message. You must have :attr:`~Permissions.manage_messages`
-        permissions to do this in a non-private channel context.
+        Pins the message.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to do
+        this in a non-private channel context.
 
         Raises
         -------
@@ -627,8 +629,10 @@ class Message:
     def unpin(self):
         """|coro|
 
-        Unpins the message. You must have :attr:`~Permissions.manage_messages`
-        permissions to do this in a non-private channel context.
+        Unpins the message.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to do
+        this in a non-private channel context.
 
         Raises
         -------
@@ -651,8 +655,9 @@ class Message:
 
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
-        You must have the :attr:`~Permissions.add_reactions` and
-        :attr:`~Permissions.read_message_history` permissions to use this.
+        You must have the :attr:`~Permissions.read_message_history` permission
+        to use this. If nobody else has reacted to the message using this
+        emoji, the :attr:`~Permissions.add_reactions` permission is required.
 
         Parameters
         ------------
@@ -741,8 +746,7 @@ class Message:
 
         Removes all the reactions from the message.
 
-        You need :attr:`~Permissions.manage_messages` permission
-        to use this.
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
 
         Raises
         --------

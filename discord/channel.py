@@ -130,7 +130,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Edits the channel.
 
-        You must have the :attr:`Permissions.manage_channel` permission to
+        You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
         Parameters
@@ -177,8 +177,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         You cannot bulk delete more than 100 messages or messages that
         are older than 14 days old.
 
-        You must have :attr:`Permissions.manage_messages` permission to use
-        this.
+        You must have the :attr:`~Permissions.manage_messages` permission to
+        use this.
 
         Usable only by bot accounts.
 
@@ -222,10 +222,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        You must have :attr:`Permissions.manage_messages` permission to delete
-        messages even if they are your own (unless you are a user account).
-        The :attr:`Permissions.read_message_history` permission is also needed
-        to retrieve message history.
+        You must have the :attr:`~Permissions.manage_messages` permission to
+        delete messages even if they are your own (unless you are a user
+        account). The :attr:`~Permissions.read_message_history` permission is
+        also needed to retrieve message history.
 
         Internally, this employs a different number of strategies depending
         on the conditions met such as if a bulk delete is possible or if
@@ -467,7 +467,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
         Edits the channel.
 
-        You must have the :attr:`Permissions.manage_channel` permission to
+        You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
         Parameters
@@ -564,7 +564,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         Edits the channel.
 
-        You must have the :attr:`Permissions.manage_channel` permission to
+        You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
         Parameters
