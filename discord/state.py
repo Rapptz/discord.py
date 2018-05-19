@@ -599,6 +599,8 @@ class ConnectionState:
             return
 
         before_emojis = guild.emojis
+        for emoji in before_emojis:
+            self._emojis.pop(emoji.id, None)
         guild.emojis = tuple(map(lambda d: self.store_emoji(guild, d), data['emojis']))
         self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
 
