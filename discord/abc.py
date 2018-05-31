@@ -472,7 +472,7 @@ class GuildChannel:
 
         Deletes the channel.
 
-        You must have Manage Channel permission to use this.
+        You must have :attr:`~.Permissions.manage_channels` permission to use this.
 
         Parameters
         -----------
@@ -510,7 +510,7 @@ class GuildChannel:
         If the ``overwrite`` parameter is ``None``, then the permission
         overwrites are deleted.
 
-        You must have :attr:`Permissions.manage_roles` permission to use this.
+        You must have the :attr:`~Permissions.manage_roles` permission to use this.
 
         Examples
         ----------
@@ -549,6 +549,8 @@ class GuildChannel:
             You do not have permissions to edit channel specific permissions.
         HTTPException
             Editing channel specific permissions failed.
+        NotFound
+            The role or member being edited is not part of the guild.
         InvalidArgument
             The overwrite parameter invalid or the target type was not
             :class:`Role` or :class:`Member`.
@@ -590,6 +592,9 @@ class GuildChannel:
 
         Creates an instant invite.
 
+        You must have :attr:`~.Permissions.create_instant_invite` permission to
+        do this.
+
         Parameters
         ------------
         max_age : int
@@ -628,7 +633,7 @@ class GuildChannel:
 
         Returns a list of all active instant invites from this channel.
 
-        You must have proper permissions to get this information.
+        You must have :attr:`~.Permissions.manage_guild` to get this information.
 
         Raises
         -------
@@ -858,7 +863,7 @@ class Messageable(metaclass=abc.ABCMeta):
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
         """Return an :class:`AsyncIterator` that enables receiving the destination's message history.
 
-        You must have :attr:`~Permissions.read_message_history` permissions to use this.
+        You must have :attr:`~.Permissions.read_message_history` permissions to use this.
 
         All parameters are optional.
 

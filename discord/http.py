@@ -589,6 +589,9 @@ class HTTPClient:
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
+    def get_ban(self, user_id, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
+
     def get_vanity_code(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
 

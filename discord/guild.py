@@ -364,7 +364,7 @@ class Guild(Hashable):
 
     @property
     def members(self):
-        """List[:class:`Member`]: A list of members that belongs to this guild."""
+        """List[:class:`Member`]: A list of members that belong to this guild."""
         return list(self._members.values())
 
     def get_member(self, user_id):
@@ -549,7 +549,8 @@ class Guild(Hashable):
 
         Creates a :class:`TextChannel` for the guild.
 
-        Note that you need the proper permissions to create the channel.
+        Note that you need the :attr:`~Permissions.manage_channels` permission
+        to create the channel.
 
         The ``overwrites`` parameter can be used to create a 'secret'
         channel upon creation. This parameter expects a :class:`dict` of
@@ -799,6 +800,41 @@ class Guild(Hashable):
 
         yield from http.edit_guild(self.id, reason=reason, **fields)
 
+    @asyncio.coroutine
+    def get_ban(self, user):
+        """|coro|
+
+        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
+        with a ``user`` and ``reason`` field. See :meth:`bans` for more
+        information.
+
+        You must have the :attr:`~Permissions.ban_members` permission
+        to get this information.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to get ban information from.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to get the information.
+        NotFound
+            This user is not banned.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        -------
+        BanEntry
+            The BanEntry object for the specified user.
+        """
+        data = yield from self._state.http.get_ban(user.id, self.id)
+        return BanEntry(
+            user=User(state=self._state, data=data['user']),
+            reason=data['reason']
+        )
 
     @asyncio.coroutine
     def bans(self):
@@ -806,12 +842,12 @@ class Guild(Hashable):
 
         Retrieves all the users that are banned from the guild.
 
-        This coroutine returns a :class:`list` of BanEntry objects. Which is a
+        This coroutine returns a :class:`list` of BanEntry objects, which is a
         namedtuple with a ``user`` field to denote the :class:`User`
         that got banned along with a ``reason`` field specifying
         why the user was banned that could be set to ``None``.
 
-        You must have :attr:`~Permissions.ban_members` permission
+        You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
 
         Raises
@@ -937,7 +973,8 @@ class Guild(Hashable):
 
         Returns a list of all active instant invites from the guild.
 
-        You must have :attr:`~Permissions.manage_guild` to get this information.
+        You must have the :attr:`~Permissions.manage_guild` permission to get
+        this information.
 
         Raises
         -------
@@ -969,6 +1006,9 @@ class Guild(Hashable):
         Creates a custom :class:`Emoji` for the guild.
 
         There is currently a limit of 50 local emotes per guild.
+
+        You must have the :attr:`~Permissions.manage_emojis` permission to
+        do this.
 
         Note that bot accounts can only edit and delete emojis they have created.
 
@@ -1006,6 +1046,9 @@ class Guild(Hashable):
         Creates a :class:`Role` for the guild.
 
         All fields are optional.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        do this.
 
         Parameters
         -----------
@@ -1073,7 +1116,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`Permissions.kick_members` permissions to
+        You must have the :attr:`~Permissions.kick_members` permission to
         do this.
 
         Parameters
@@ -1100,7 +1143,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`Permissions.ban_members` permissions to
+        You must have the :attr:`~Permissions.ban_members` permission to
         do this.
 
         Parameters
@@ -1130,7 +1173,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`Permissions.ban_members` permissions to
+        You must have the :attr:`~Permissions.ban_members` permission to
         do this.
 
         Parameters
@@ -1158,7 +1201,8 @@ class Guild(Hashable):
         The guild must be partnered, i.e. have 'VANITY_URL' in
         :attr:`~Guild.features`.
 
-        You must have :attr:`Permissions.manage_guild` to use this as well.
+        You must have the :attr:`~Permissions.manage_guild` permission to use
+        this as well.
 
         Returns
         --------
@@ -1211,7 +1255,7 @@ class Guild(Hashable):
     def audit_logs(self, *, limit=100, before=None, after=None, reverse=None, user=None, action=None):
         """Return an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
-        You must have :attr:`Permissions.view_audit_logs` permission to use this.
+        You must have the :attr:`~Permissions.view_audit_log` permission to use this.
 
         Parameters
         -----------
