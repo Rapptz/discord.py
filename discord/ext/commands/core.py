@@ -94,6 +94,9 @@ class _CaseInsensitiveDict(dict):
     def get(self, k, default=None):
         return super().get(k.lower(), default)
 
+    def pop(self, k, default=None):
+        return super().pop(k.lower(), default)
+
     def __setitem__(self, k, v):
         super().__setitem__(k.lower(), v)
 
