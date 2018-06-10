@@ -989,12 +989,13 @@ class Client:
             Retrieving the information failed somehow.
         """
         data = yield from self.http.application_info()
+        if 'rpc_origins' not in data:
+            data['rpc_origins'] = None
         return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
                        rpc_origins=data['rpc_origins'], bot_public=data['bot_public'],
                        bot_require_code_grant=data['bot_require_code_grant'],
-                       owner=User(state=self._connection, data=data['owner'])
-                       )
+                       owner=User(state=self._connection, data=data['owner']))
 
     @asyncio.coroutine
     def get_user_info(self, user_id):
