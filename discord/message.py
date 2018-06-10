@@ -71,8 +71,7 @@ class Attachment:
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
 
-    @asyncio.coroutine
-    def save(self, fp, *, seek_begin=True):
+    async def save(self, fp, *, seek_begin=True):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -100,7 +99,7 @@ class Attachment:
             The number of bytes written.
         """
 
-        data = yield from self._http.get_attachment(self.url)
+        data = await self._http.get_attachment(self.url)
         if isinstance(fp, str):
             with open(fp, 'wb') as f:
                 return f.write(data)
@@ -527,8 +526,7 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
-    @asyncio.coroutine
-    def delete(self):
+    async def delete(self):
         """|coro|
 
         Deletes the message.
@@ -544,10 +542,9 @@ class Message:
         HTTPException
             Deleting the message failed.
         """
-        yield from self._state.http.delete_message(self.channel.id, self.id)
+        await self._state.http.delete_message(self.channel.id, self.id)
 
-    @asyncio.coroutine
-    def edit(self, **fields):
+    async def edit(self, **fields):
         """|coro|
 
         Edits the message.
@@ -589,7 +586,7 @@ class Message:
             if embed is not None:
                 fields['embed'] = embed.to_dict()
 
-        data = yield from self._state.http.edit_message(self.id, self.channel.id, **fields)
+        data = await self._state.http.edit_message(self.id, self.channel.id, **fields)
         self._update(channel=self.channel, data=data)
 
         try:
@@ -598,18 +595,16 @@ class Message:
             pass
         else:
             if delete_after is not None:
-                @asyncio.coroutine
-                def delete():
-                    yield from asyncio.sleep(delete_after, loop=self._state.loop)
+                async def delete():
+                    await asyncio.sleep(delete_after, loop=self._state.loop)
                     try:
-                        yield from self._state.http.delete_message(self.channel.id, self.id)
+                        await self._state.http.delete_message(self.channel.id, self.id)
                     except:
                         pass
 
-                compat.create_task(delete(), loop=self._state.loop)
+                asyncio.ensure_future(delete(), loop=self._state.loop)
 
-    @asyncio.coroutine
-    def pin(self):
+    async def pin(self):
         """|coro|
 
         Pins the message.
@@ -628,11 +623,10 @@ class Message:
             having more than 50 pinned messages.
         """
 
-        yield from self._state.http.pin_message(self.channel.id, self.id)
+        await self._state.http.pin_message(self.channel.id, self.id)
         self.pinned = True
 
-    @asyncio.coroutine
-    def unpin(self):
+    async def unpin(self):
         """|coro|
 
         Unpins the message.
@@ -650,11 +644,10 @@ class Message:
             Unpinning the message failed.
         """
 
-        yield from self._state.http.unpin_message(self.channel.id, self.id)
+        await self._state.http.unpin_message(self.channel.id, self.id)
         self.pinned = False
 
-    @asyncio.coroutine
-    def add_reaction(self, emoji):
+    async def add_reaction(self, emoji):
         """|coro|
 
         Add a reaction to the message.
@@ -694,10 +687,9 @@ class Message:
         else:
             raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
-        yield from self._state.http.add_reaction(self.id, self.channel.id, emoji)
+        await self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
-    @asyncio.coroutine
-    def remove_reaction(self, emoji, member):
+    async def remove_reaction(self, emoji, member):
         """|coro|
 
         Remove a reaction by the member from the message.
@@ -742,12 +734,11 @@ class Message:
             raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
         if member.id == self._state.self_id:
-            yield from self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
+            await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
         else:
-            yield from self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+            await self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
 
-    @asyncio.coroutine
-    def clear_reactions(self):
+    async def clear_reactions(self):
         """|coro|
 
         Removes all the reactions from the message.
@@ -761,7 +752,7 @@ class Message:
         Forbidden
             You do not have the proper permissions to remove all the reactions.
         """
-        yield from self._state.http.clear_reactions(self.id, self.channel.id)
+        await self._state.http.clear_reactions(self.id, self.channel.id)
 
     def ack(self):
         """|coro|

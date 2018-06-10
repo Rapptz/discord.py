@@ -203,8 +203,7 @@ class Emoji(Hashable):
         """:class:`Guild`: The guild this emoji belongs to."""
         return self._state._get_guild(self.guild_id)
 
-    @asyncio.coroutine
-    def delete(self, *, reason=None):
+    async def delete(self, *, reason=None):
         """|coro|
 
         Deletes the custom emoji.
@@ -227,10 +226,9 @@ class Emoji(Hashable):
             An error occurred deleting the emoji.
         """
 
-        yield from self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
+        await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    @asyncio.coroutine
-    def edit(self, *, name, reason=None):
+    async def edit(self, *, name, reason=None):
         """|coro|
 
         Edits the custom emoji.
@@ -255,4 +253,4 @@ class Emoji(Hashable):
             An error occurred editing the emoji.
         """
 
-        yield from self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, reason=reason)
+        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, reason=reason)

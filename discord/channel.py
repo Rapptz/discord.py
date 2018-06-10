@@ -37,10 +37,9 @@ import asyncio
 
 __all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory')
 
-@asyncio.coroutine
-def _single_delete_strategy(messages):
+async def _single_delete_strategy(messages):
     for m in messages:
-        yield from m.delete()
+        await m.delete()
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
@@ -100,8 +99,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.nsfw = data.get('nsfw', False)
         self._fill_overwrites(data)
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self
 
     def permissions_for(self, member):
@@ -124,8 +122,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         n = self.name
         return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
@@ -161,10 +158,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Editing the channel failed.
         """
-        yield from self._edit(options, reason=reason)
+        await self._edit(options, reason=reason)
 
-    @asyncio.coroutine
-    def delete_messages(self, messages):
+    async def delete_messages(self, messages):
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -205,17 +201,16 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         if len(messages) == 1:
             message_id = messages[0].id
-            yield from self._state.http.delete_message(self.id, message_id)
+            await self._state.http.delete_message(self.id, message_id)
             return
 
         if len(messages) > 100:
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
         message_ids = [m.id for m in messages]
-        yield from self._state.http.delete_messages(self.id, message_ids)
+        await self._state.http.delete_messages(self.id, message_ids)
 
-    @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, bulk=True):
+    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, bulk=True):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -289,34 +284,34 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         while True:
             try:
-                msg = yield from iterator.next()
+                msg = await iterator.next()
             except NoMoreItems:
                 # no more messages to poll
                 if count >= 2:
                     # more than 2 messages -> bulk delete
                     to_delete = ret[-count:]
-                    yield from strategy(to_delete)
+                    await strategy(to_delete)
                 elif count == 1:
                     # delete a single message
-                    yield from ret[-1].delete()
+                    await ret[-1].delete()
 
                 return ret
             else:
                 if count == 100:
                     # we've reached a full 'queue'
                     to_delete = ret[-100:]
-                    yield from strategy(to_delete)
+                    await strategy(to_delete)
                     count = 0
-                    yield from asyncio.sleep(1)
+                    await asyncio.sleep(1)
 
                 if check(msg):
                     if msg.id < minimum_time:
                         # older than 14 days old
                         if count == 1:
-                            yield from ret[-1].delete()
+                            await ret[-1].delete()
                         elif count >= 2:
                             to_delete = ret[-count:]
-                            yield from strategy(to_delete)
+                            await strategy(to_delete)
 
                         count = 0
                         strategy = _single_delete_strategy
@@ -324,8 +319,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                     count += 1
                     ret.append(msg)
 
-    @asyncio.coroutine
-    def webhooks(self):
+    async def webhooks(self):
         """|coro|
 
         Gets the list of webhooks from this channel.
@@ -343,11 +337,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The webhooks for this channel.
         """
 
-        data = yield from self._state.http.channel_webhooks(self.id)
+        data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    @asyncio.coroutine
-    def create_webhook(self, *, name=None, avatar=None):
+    async def create_webhook(self, *, name=None, avatar=None):
         """|coro|
 
         Creates a webhook for this channel.
@@ -381,7 +374,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if name is not None:
             name = str(name)
 
-        data = yield from self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        data = await self._state.http.create_webhook(self.id, name=name, avatar=avatar)
         return Webhook.from_state(data, state=self._state)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
@@ -461,8 +454,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                     ret.append(member)
         return ret
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
@@ -497,7 +489,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             Editing the channel failed.
         """
 
-        yield from self._edit(options, reason=reason)
+        await self._edit(options, reason=reason)
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord channel category.
@@ -558,8 +550,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         n = self.name
         return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
@@ -593,11 +584,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         except KeyError:
             pass
         else:
-            yield from self._move(position, reason=reason)
+            await self._move(position, reason=reason)
             self.position = position
 
         if options:
-            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
+            data = await self._state.http.edit_channel(self.id, reason=reason, **options)
             self._update(self.guild, data)
 
     @property
@@ -652,8 +643,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.me = me
         self.id = int(data['id'])
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self
 
     def __str__(self):
@@ -756,8 +746,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         else:
             self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self
 
     def __str__(self):
@@ -820,8 +809,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         return base
 
-    @asyncio.coroutine
-    def add_recipients(self, *recipients):
+    async def add_recipients(self, *recipients):
         """|coro|
 
         Adds recipients to this group.
@@ -846,10 +834,9 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         req = self._state.http.add_group_recipient
         for recipient in recipients:
-            yield from req(self.id, recipient.id)
+            await req(self.id, recipient.id)
 
-    @asyncio.coroutine
-    def remove_recipients(self, *recipients):
+    async def remove_recipients(self, *recipients):
         """|coro|
 
         Removes recipients from this group.
@@ -869,10 +856,9 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         req = self._state.http.remove_group_recipient
         for recipient in recipients:
-            yield from req(self.id, recipient.id)
+            await req(self.id, recipient.id)
 
-    @asyncio.coroutine
-    def edit(self, **fields):
+    async def edit(self, **fields):
         """|coro|
 
         Edits the group.
@@ -900,11 +886,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             if icon_bytes is not None:
                 fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
 
-        data = yield from self._state.http.edit_group(self.id, **fields)
+        data = await self._state.http.edit_group(self.id, **fields)
         self._update_group(data)
 
-    @asyncio.coroutine
-    def leave(self):
+    async def leave(self):
         """|coro|
 
         Leave the group.
@@ -917,7 +902,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             Leaving the group failed.
         """
 
-        yield from self._state.http.leave_group(self.id)
+        await self._state.http.leave_group(self.id)
 
 def _channel_factory(channel_type):
     value = try_enum(ChannelType, channel_type)

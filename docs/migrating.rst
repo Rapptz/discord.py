@@ -14,6 +14,13 @@ new library.
 Part of the redesign involves making things more easy to use and natural. Things are done on the
 :ref:`models <discord_api_models>` instead of requiring a :class:`Client` instance to do any work.
 
+Python Version Change
+-----------------------
+
+In order to make development easier and also to allow for our dependencies to upgrade to allow usage of 3.7 or higher,
+the library had to remove support for Python versions lower than 3.5.2, which essentially means that **support for Python 3.4
+is dropped**.
+
 Major Model Changes
 ---------------------
 
@@ -441,14 +448,14 @@ Prior to v1.0, certain functions like ``Client.logs_from`` would return a differ
 In v1.0, this change has been reverted and will now return a singular type meeting an abstract concept called
 :class:`AsyncIterator`.
 
-This allows you to iterate over it like normal in Python 3.5+: ::
+This allows you to iterate over it like normal: ::
 
     async for message in channel.history():
         print(message)
 
-Or turn it into a list for either Python 3.4 or 3.5+: ::
+Or turn it into a list: ::
 
-    messages = await channel.history().flatten() # use yield from for 3.4!
+    messages = await channel.history().flatten()
     for message in messages:
         print(message)
 
