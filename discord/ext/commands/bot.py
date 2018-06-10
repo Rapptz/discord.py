@@ -795,7 +795,7 @@ class BotBase(GroupMixin):
         """
         prefix = ret = self.command_prefix
         if callable(prefix):
-            ret = await discord.utils.maybe_coroutine(prefix, self, ret)
+            ret = await discord.utils.maybe_coroutine(prefix, self, message)
 
         if isinstance(ret, (list, tuple)):
             ret = [p for p in ret if p]
