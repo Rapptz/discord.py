@@ -51,7 +51,8 @@ from collections import namedtuple
 PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
 
-AppInfo = namedtuple('AppInfo', 'id name description icon owner')
+AppInfo = namedtuple('AppInfo', 
+                     'id name description rpc_origins bot_public bot_require_code_grant icon owner')
 
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
@@ -990,7 +991,10 @@ class Client:
         data = yield from self.http.application_info()
         return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
-                       owner=User(state=self._connection, data=data['owner']))
+                       rpc_origins=data['rpc_origins'], bot_public=data['bot_public'],
+                       bot_require_code_grant=data['bot_require_code_grant'],
+                       owner=User(state=self._connection, data=data['owner'])
+                       )
 
     @asyncio.coroutine
     def get_user_info(self, user_id):
