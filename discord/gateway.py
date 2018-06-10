@@ -29,7 +29,7 @@ import time
 import websockets
 import asyncio
 
-from . import utils, compat
+from . import utils
 from .activity import create_activity, _ActivityTag
 from .errors import ConnectionClosed, InvalidArgument
 import logging

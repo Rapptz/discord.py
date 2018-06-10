@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import re
 
-from . import utils, compat
+from . import utils
 from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage

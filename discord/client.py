@@ -35,7 +35,7 @@ from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
-from . import utils, compat
+from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 

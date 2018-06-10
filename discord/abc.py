@@ -38,7 +38,7 @@ from .role import Role
 from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient
-from . import utils, compat
+from . import utils
 
 class _Undefined:
     def __repr__(self):

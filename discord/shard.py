@@ -28,7 +28,7 @@ from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
 from .errors import ClientException, InvalidArgument
-from . import compat, utils
+from . import utils
 from .enums import Status
 
 import asyncio

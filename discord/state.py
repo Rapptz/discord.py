@@ -36,7 +36,7 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
 from .calls import GroupCall
-from . import utils, compat
+from . import utils
 from .embeds import Embed
 
 from collections import deque, namedtuple, OrderedDict
