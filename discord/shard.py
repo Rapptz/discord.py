@@ -210,7 +210,7 @@ class AutoShardedClient(Client):
 
     async def launch_shard(self, gateway, shard_id):
         try:
-            coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket)
+            coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
             ws = await asyncio.wait_for(coro, loop=self.loop, timeout=180.0)
         except Exception as e:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
