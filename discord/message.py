@@ -434,6 +434,12 @@ class Message:
         """Optional[datetime.datetime]: A naive UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
+    @property
+    def jump_to_url(self):
+        """:class:`str`: Returns a URL that allows the client to jump to this message."""
+        guild_id = getattr(self.guild, 'id', '@me')
+        return 'https://discordapp.com/channels/{0}/{1.channel.id}?jump={1.id}'.format(guild_id, self)
+
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
         """A property that returns the content that is rendered
