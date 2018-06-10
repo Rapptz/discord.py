@@ -51,7 +51,7 @@ class Typing:
             await asyncio.sleep(5)
 
     def __enter__(self):
-        self.task = create_task(self.do_typing(), loop=self.loop)
+        self.task = asyncio.ensure_future(self.do_typing(), loop=self.loop)
         self.task.add_done_callback(_typing_done_callback)
         return self
 
