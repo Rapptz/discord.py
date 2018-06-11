@@ -1350,8 +1350,7 @@ class GuildIntegration:
         self.account = GuildIntegrationAccount(**data["account"])
         self.synced_at = utils.parse_time(data["synced_at"])
 
-    @asyncio.coroutine
-    def edit(self, expire_behavior=None, expire_grace_period=None):
+    async def edit(self, expire_behavior=None, expire_grace_period=None):
         """|coro|
 
         Edits the integration
@@ -1382,8 +1381,7 @@ class GuildIntegration:
         if expire_grace_period in (1, 3, 7, 14, 30):
             self.expire_grace_period = expire_grace_period
 
-    @asyncio.coroutine
-    def delete(self):
+    async def delete(self):
         """|coro|
 
 
@@ -1397,10 +1395,9 @@ class GuildIntegration:
         Forbidden
             You are not allowed to delete integrations
         """
-        yield from self._state.http.delete_integration(self.guild.id, self.id)
+        await self._state.http.delete_integration(self.guild.id, self.id)
 
-    @asyncio.coroutine
-    def sync(self):
+    async def sync(self):
         """|coro|
 
         Syncs the integration
@@ -1414,4 +1411,4 @@ class GuildIntegration:
             You are not allowed to sync integrations
 
         """
-        yield from self._state.http.sync_integration(self.guild.id, self.id)
+        await self._state.http.sync_integration(self.guild.id, self.id)
