@@ -134,8 +134,7 @@ class Invite(Hashable):
         """A property that retrieves the invite URL."""
         return 'http://discord.gg/' + self.code
 
-    @asyncio.coroutine
-    def delete(self, *, reason=None):
+    async def delete(self, *, reason=None):
         """|coro|
 
         Revokes the instant invite.
@@ -157,4 +156,4 @@ class Invite(Hashable):
             Revoking the invite failed.
         """
 
-        yield from self._state.http.delete_invite(self.code, reason=reason)
+        await self._state.http.delete_invite(self.code, reason=reason)

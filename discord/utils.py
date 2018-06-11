@@ -29,6 +29,7 @@ from .errors import InvalidArgument
 import datetime
 from base64 import b64encode
 from email.utils import parsedate_to_datetime
+from inspect import isawaitable as _isawaitable
 import asyncio
 import json
 import warnings, functools
@@ -264,27 +265,23 @@ def _parse_ratelimit_header(request):
     reset = datetime.datetime.fromtimestamp(int(request.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
     return (reset - now).total_seconds()
 
-@asyncio.coroutine
-def maybe_coroutine(f, *args, **kwargs):
+async def maybe_coroutine(f, *args, **kwargs):
     value = f(*args, **kwargs)
-    if asyncio.iscoroutine(value):
-        return (yield from value)
+    if _isawaitable(value):
+        return (await value)
     else:
         return value
 
-@asyncio.coroutine
-def async_all(gen):
-    check = asyncio.iscoroutine
+async def async_all(gen, *, check=_isawaitable):
     for elem in gen:
         if check(elem):
-            elem = yield from elem
+            elem = await elem
         if not elem:
             return False
     return True
 
-@asyncio.coroutine
-def sane_wait_for(futures, *, timeout, loop):
-    done, pending = yield from asyncio.wait(futures, timeout=timeout, loop=loop)
+async def sane_wait_for(futures, *, timeout, loop):
+    done, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()

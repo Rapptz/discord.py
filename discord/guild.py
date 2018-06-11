@@ -543,8 +543,7 @@ class Guild(Hashable):
         return self._state.http.create_channel(self.id, name, channel_type.value, parent_id=parent_id,
                                                permission_overwrites=perms, reason=reason)
 
-    @asyncio.coroutine
-    def create_text_channel(self, name, *, overwrites=None, category=None, reason=None):
+    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None):
         """|coro|
 
         Creates a :class:`TextChannel` for the guild.
@@ -606,28 +605,26 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.text, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason)
         channel = TextChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
         return channel
 
-    @asyncio.coroutine
-    def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None):
+    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
         return channel
 
-    @asyncio.coroutine
-    def create_category(self, name, *, overwrites=None, reason=None):
+    async def create_category(self, name, *, overwrites=None, reason=None):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
@@ -637,7 +634,7 @@ class Guild(Hashable):
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
         """
-        data = yield from self._create_channel(name, overwrites, ChannelType.category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
@@ -646,8 +643,7 @@ class Guild(Hashable):
 
     create_category_channel = create_category
 
-    @asyncio.coroutine
-    def leave(self):
+    async def leave(self):
         """|coro|
 
         Leaves the guild.
@@ -662,10 +658,9 @@ class Guild(Hashable):
         HTTPException
             Leaving the guild failed.
         """
-        yield from self._state.http.leave_guild(self.id)
+        await self._state.http.leave_guild(self.id)
 
-    @asyncio.coroutine
-    def delete(self):
+    async def delete(self):
         """|coro|
 
         Deletes the guild. You must be the guild owner to delete the
@@ -679,10 +674,9 @@ class Guild(Hashable):
             You do not have permissions to delete the guild.
         """
 
-        yield from self._state.http.delete_guild(self.id)
+        await self._state.http.delete_guild(self.id)
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **fields):
+    async def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the guild.
@@ -748,7 +742,7 @@ class Guild(Hashable):
         except KeyError:
             pass
         else:
-            yield from http.change_vanity_code(self.id, vanity_code, reason=reason)
+            await http.change_vanity_code(self.id, vanity_code, reason=reason)
 
         try:
             splash_bytes = fields['splash']
@@ -798,7 +792,7 @@ class Guild(Hashable):
 
         fields['verification_level'] = level.value
 
-        yield from http.edit_guild(self.id, reason=reason, **fields)
+        await http.edit_guild(self.id, reason=reason, **fields)
 
     @asyncio.coroutine
     def get_ban(self, user):
@@ -836,8 +830,7 @@ class Guild(Hashable):
             reason=data['reason']
         )
 
-    @asyncio.coroutine
-    def bans(self):
+    async def bans(self):
         """|coro|
 
         Retrieves all the users that are banned from the guild.
@@ -863,13 +856,12 @@ class Guild(Hashable):
             A list of BanEntry objects.
         """
 
-        data = yield from self._state.http.get_bans(self.id)
+        data = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']),
                          reason=e['reason'])
                 for e in data]
 
-    @asyncio.coroutine
-    def prune_members(self, *, days, reason=None):
+    async def prune_members(self, *, days, reason=None):
         """|coro|
 
         Prunes the guild from its inactive members.
@@ -908,11 +900,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = yield from self._state.http.prune_members(self.id, days, reason=reason)
+        data = await self._state.http.prune_members(self.id, days, reason=reason)
         return data['pruned']
 
-    @asyncio.coroutine
-    def webhooks(self):
+    async def webhooks(self):
         """|coro|
 
         Gets the list of webhooks from this guild.
@@ -930,11 +921,10 @@ class Guild(Hashable):
             The webhooks for this guild.
         """
 
-        data = yield from self._state.http.guild_webhooks(self.id)
+        data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    @asyncio.coroutine
-    def estimate_pruned_members(self, *, days):
+    async def estimate_pruned_members(self, *, days):
         """|coro|
 
         Similar to :meth:`prune_members` except instead of actually
@@ -964,11 +954,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = yield from self._state.http.estimate_pruned_members(self.id, days)
+        data = await self._state.http.estimate_pruned_members(self.id, days)
         return data['pruned']
 
-    @asyncio.coroutine
-    def invites(self):
+    async def invites(self):
         """|coro|
 
         Returns a list of all active instant invites from the guild.
@@ -989,7 +978,7 @@ class Guild(Hashable):
             The list of invites that are currently active.
         """
 
-        data = yield from self._state.http.invites_from(self.id)
+        data = await self._state.http.invites_from(self.id)
         result = []
         for invite in data:
             channel = self.get_channel(int(invite['channel']['id']))
@@ -999,8 +988,7 @@ class Guild(Hashable):
 
         return result
 
-    @asyncio.coroutine
-    def create_custom_emoji(self, *, name, image, reason=None):
+    async def create_custom_emoji(self, *, name, image, reason=None):
         """|coro|
 
         Creates a custom :class:`Emoji` for the guild.
@@ -1036,11 +1024,10 @@ class Guild(Hashable):
         """
 
         img = utils._bytes_to_base64_data(image)
-        data = yield from self._state.http.create_custom_emoji(self.id, name, img, reason=reason)
+        data = await self._state.http.create_custom_emoji(self.id, name, img, reason=reason)
         return self._state.store_emoji(self, data)
 
-    @asyncio.coroutine
-    def create_role(self, *, reason=None, **fields):
+    async def create_role(self, *, reason=None, **fields):
         """|coro|
 
         Creates a :class:`Role` for the guild.
@@ -1102,14 +1089,13 @@ class Guild(Hashable):
             if key not in valid_keys:
                 raise InvalidArgument('%r is not a valid field.' % key)
 
-        data = yield from self._state.http.create_role(self.id, reason=reason, **fields)
+        data = await self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)
 
         # TODO: add to cache
         return role
 
-    @asyncio.coroutine
-    def kick(self, user, *, reason=None):
+    async def kick(self, user, *, reason=None):
         """|coro|
 
         Kicks a user from the guild.
@@ -1133,10 +1119,9 @@ class Guild(Hashable):
         HTTPException
             Kicking failed.
         """
-        yield from self._state.http.kick(user.id, self.id, reason=reason)
+        await self._state.http.kick(user.id, self.id, reason=reason)
 
-    @asyncio.coroutine
-    def ban(self, user, *, reason=None, delete_message_days=1):
+    async def ban(self, user, *, reason=None, delete_message_days=1):
         """|coro|
 
         Bans a user from the guild.
@@ -1163,10 +1148,9 @@ class Guild(Hashable):
         HTTPException
             Banning failed.
         """
-        yield from self._state.http.ban(user.id, self.id, delete_message_days, reason=reason)
+        await self._state.http.ban(user.id, self.id, delete_message_days, reason=reason)
 
-    @asyncio.coroutine
-    def unban(self, user, *, reason=None):
+    async def unban(self, user, *, reason=None):
         """|coro|
 
         Unbans a user from the guild.
@@ -1190,10 +1174,9 @@ class Guild(Hashable):
         HTTPException
             Unbanning failed.
         """
-        yield from self._state.http.unban(user.id, self.id, reason=reason)
+        await self._state.http.unban(user.id, self.id, reason=reason)
 
-    @asyncio.coroutine
-    def vanity_invite(self):
+    async def vanity_invite(self):
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -1218,11 +1201,11 @@ class Guild(Hashable):
         """
 
         # we start with { code: abc }
-        payload = yield from self._state.http.get_vanity_code(self.id)
+        payload = await self._state.http.get_vanity_code(self.id)
 
         # get the vanity URL channel since default channels aren't
         # reliable or a thing anymore
-        data = yield from self._state.http.get_invite(payload['code'])
+        data = await self._state.http.get_invite(payload['code'])
 
         payload['guild'] = self
         payload['channel'] = self.get_channel(int(data['channel']['id']))

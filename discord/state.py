@@ -36,7 +36,7 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
 from .calls import GroupCall
-from . import utils, compat
+from . import utils
 from .embeds import Embed
 
 from collections import deque, namedtuple, OrderedDict
@@ -255,8 +255,7 @@ class ConnectionState:
 
         return channel, guild
 
-    @asyncio.coroutine
-    def request_offline_members(self, guilds):
+    async def request_offline_members(self, guilds):
         # get all the chunks
         chunks = []
         for guild in guilds:
@@ -265,17 +264,16 @@ class ConnectionState:
         # we only want to request ~75 guilds per chunk request.
         splits = [guilds[i:i + 75] for i in range(0, len(guilds), 75)]
         for split in splits:
-            yield from self.chunker(split)
+            await self.chunker(split)
 
         # wait for the chunks
         if chunks:
             try:
-                yield from utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
-    @asyncio.coroutine
-    def _delay_ready(self):
+    async def _delay_ready(self):
         try:
             launch = self._ready_state.launch
 
@@ -285,11 +283,11 @@ class ConnectionState:
                     # this snippet of code is basically waiting 2 seconds
                     # until the last GUILD_CREATE was sent
                     launch.set()
-                    yield from asyncio.sleep(2, loop=self.loop)
+                    await asyncio.sleep(2, loop=self.loop)
 
             guilds = self._ready_state.guilds
             if self._fetch_offline:
-                yield from self.request_offline_members(guilds)
+                await self.request_offline_members(guilds)
 
             # remove the state
             try:
@@ -300,7 +298,7 @@ class ConnectionState:
             # call GUILD_SYNC after we're done chunking
             if not self.is_bot:
                 log.info('Requesting GUILD_SYNC for %s guilds', len(self.guilds))
-                yield from self.syncer([s.id for s in self.guilds])
+                await self.syncer([s.id for s in self.guilds])
         except asyncio.CancelledError:
             pass
         else:
@@ -336,7 +334,7 @@ class ConnectionState:
             self._add_private_channel(factory(me=self.user, data=pm, state=self))
 
         self.dispatch('connect')
-        self._ready_task = compat.create_task(self._delay_ready(), loop=self.loop)
+        self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
@@ -617,13 +615,12 @@ class ConnectionState:
 
         return self._add_guild_from_data(data)
 
-    @asyncio.coroutine
-    def _chunk_and_dispatch(self, guild, unavailable):
+    async def _chunk_and_dispatch(self, guild, unavailable):
         chunks = list(self.chunks_needed(guild))
-        yield from self.chunker(guild)
+        await self.chunker(guild)
         if chunks:
             try:
-                yield from utils.sane_wait_for(chunks, timeout=len(chunks), loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks), loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -662,7 +659,7 @@ class ConnectionState:
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here if wanted
             if self._fetch_offline:
-                compat.create_task(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
+                asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
                 return
 
         # Dispatch available if newly available
@@ -807,7 +804,7 @@ class ConnectionState:
 
         vc = self._get_voice_client(key_id)
         if vc is not None:
-            compat.create_task(vc._create_socket(key_id, data))
+            asyncio.ensure_future(vc._create_socket(key_id, data))
 
     def parse_typing_start(self, data):
         channel, guild = self._get_guild_channel(data)
@@ -886,7 +883,7 @@ class ConnectionState:
         return Message(state=self, channel=channel, data=data)
 
     def receive_chunk(self, guild_id):
-        future = compat.create_future(self.loop)
+        future = self.loop.create_future()
         listener = Listener(ListenerType.chunk, future, lambda s: s.id == guild_id)
         self._listeners.append(listener)
         return future
@@ -896,8 +893,7 @@ class AutoShardedConnectionState(ConnectionState):
         super().__init__(*args, **kwargs)
         self._ready_task = None
 
-    @asyncio.coroutine
-    def request_offline_members(self, guilds, *, shard_id):
+    async def request_offline_members(self, guilds, *, shard_id):
         # get all the chunks
         chunks = []
         for guild in guilds:
@@ -906,30 +902,29 @@ class AutoShardedConnectionState(ConnectionState):
         # we only want to request ~75 guilds per chunk request.
         splits = [guilds[i:i + 75] for i in range(0, len(guilds), 75)]
         for split in splits:
-            yield from self.chunker(split, shard_id=shard_id)
+            await self.chunker(split, shard_id=shard_id)
 
         # wait for the chunks
         if chunks:
             try:
-                yield from utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
-    @asyncio.coroutine
-    def _delay_ready(self):
+    async def _delay_ready(self):
         launch = self._ready_state.launch
         while not launch.is_set():
             # this snippet of code is basically waiting 2 seconds
             # until the last GUILD_CREATE was sent
             launch.set()
-            yield from asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
+            await asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
 
         if self._fetch_offline:
             guilds = sorted(self._ready_state.guilds, key=lambda g: g.shard_id)
 
             for shard_id, sub_guilds in itertools.groupby(guilds, key=lambda g: g.shard_id):
                 sub_guilds = list(sub_guilds)
-                yield from self.request_offline_members(sub_guilds, shard_id=shard_id)
+                await self.request_offline_members(sub_guilds, shard_id=shard_id)
                 self.dispatch('shard_ready', shard_id)
 
         # remove the state
@@ -964,4 +959,4 @@ class AutoShardedConnectionState(ConnectionState):
 
         self.dispatch('connect')
         if self._ready_task is None:
-            self._ready_task = compat.create_task(self._delay_ready(), loop=self.loop)
+            self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)

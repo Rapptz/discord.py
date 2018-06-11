@@ -40,9 +40,7 @@ class ClientException(DiscordException):
 
 class NoMoreItems(DiscordException):
     """Exception that is thrown when an async iteration operation has no more
-    items. This is mainly exposed for Python 3.4 support where `StopAsyncIteration`
-    is not provided.
-    """
+    items."""
     pass
 
 class GatewayNotFound(DiscordException):

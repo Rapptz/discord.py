@@ -91,8 +91,7 @@ _mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
 def _is_submodule(parent, child):
     return parent == child or child.startswith(parent + ".")
 
-@asyncio.coroutine
-def _default_help_command(ctx, *commands : str):
+async def _default_help_command(ctx, *commands : str):
     """Shows this message."""
     bot = ctx.bot
     destination = ctx.message.author if bot.pm_help else ctx.message.channel
@@ -102,7 +101,7 @@ def _default_help_command(ctx, *commands : str):
 
     # help by itself just lists our own commands.
     if len(commands) == 0:
-        pages = yield from bot.formatter.format_help_for(ctx, bot)
+        pages = await bot.formatter.format_help_for(ctx, bot)
     elif len(commands) == 1:
         # try to see if it is a cog name
         name = _mention_pattern.sub(repl, commands[0])
@@ -112,15 +111,15 @@ def _default_help_command(ctx, *commands : str):
         else:
             command = bot.all_commands.get(name)
             if command is None:
-                yield from destination.send(bot.command_not_found.format(name))
+                await destination.send(bot.command_not_found.format(name))
                 return
 
-        pages = yield from bot.formatter.format_help_for(ctx, command)
+        pages = await bot.formatter.format_help_for(ctx, command)
     else:
         name = _mention_pattern.sub(repl, commands[0])
         command = bot.all_commands.get(name)
         if command is None:
-            yield from destination.send(bot.command_not_found.format(name))
+            await destination.send(bot.command_not_found.format(name))
             return
 
         for key in commands[1:]:
@@ -128,13 +127,13 @@ def _default_help_command(ctx, *commands : str):
                 key = _mention_pattern.sub(repl, key)
                 command = command.all_commands.get(key)
                 if command is None:
-                    yield from destination.send(bot.command_not_found.format(key))
+                    await destination.send(bot.command_not_found.format(key))
                     return
             except AttributeError:
-                yield from destination.send(bot.command_has_no_subcommands.format(command, key))
+                await destination.send(bot.command_has_no_subcommands.format(command, key))
                 return
 
-        pages = yield from bot.formatter.format_help_for(ctx, command)
+        pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
         characters = sum(map(lambda l: len(l), pages))
@@ -143,7 +142,7 @@ def _default_help_command(ctx, *commands : str):
             destination = ctx.message.author
 
     for page in pages:
-        yield from destination.send(page)
+        await destination.send(page)
 
 class BotBase(GroupMixin):
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
@@ -189,10 +188,9 @@ class BotBase(GroupMixin):
         ev = 'on_' + event_name
         for event in self.extra_events.get(ev, []):
             coro = self._run_event(event, event_name, *args, **kwargs)
-            discord.compat.create_task(coro, loop=self.loop)
+            asyncio.ensure_future(coro, loop=self.loop)
 
-    @asyncio.coroutine
-    def close(self):
+    async def close(self):
         for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
@@ -205,10 +203,9 @@ class BotBase(GroupMixin):
             except:
                 pass
 
-        yield from super().close()
+        await super().close()
 
-    @asyncio.coroutine
-    def on_command_error(self, context, exception):
+    async def on_command_error(self, context, exception):
         """|coro|
 
         The default command error handler provided by the bot.
@@ -335,17 +332,15 @@ class BotBase(GroupMixin):
         self.add_check(func, call_once=True)
         return func
 
-    @asyncio.coroutine
-    def can_run(self, ctx, *, call_once=False):
+    async def can_run(self, ctx, *, call_once=False):
         data = self._check_once if call_once else self._checks
 
         if len(data) == 0:
             return True
 
-        return (yield from discord.utils.async_all(f(ctx) for f in data))
+        return (await discord.utils.async_all(f(ctx) for f in data))
 
-    @asyncio.coroutine
-    def is_owner(self, user):
+    async def is_owner(self, user):
         """Checks if a :class:`.User` or :class:`.Member` is the owner of
         this bot.
 
@@ -359,7 +354,7 @@ class BotBase(GroupMixin):
         """
 
         if self.owner_id is None:
-            app = yield from self.application_info()
+            app = await self.application_info()
             self.owner_id = owner_id = app.owner.id
             return user.id == owner_id
         return user.id == self.owner_id
@@ -773,8 +768,7 @@ class BotBase(GroupMixin):
 
     # command processing
 
-    @asyncio.coroutine
-    def get_prefix(self, message):
+    async def get_prefix(self, message):
         """|coro|
 
         Retrieves the prefix the bot is listening to
@@ -801,9 +795,7 @@ class BotBase(GroupMixin):
         """
         prefix = ret = self.command_prefix
         if callable(prefix):
-            ret = prefix(self, message)
-            if asyncio.iscoroutine(ret):
-                ret = yield from ret
+            ret = await discord.utils.maybe_coroutine(prefix, self, message)
 
         if isinstance(ret, (list, tuple)):
             ret = [p for p in ret if p]
@@ -813,8 +805,7 @@ class BotBase(GroupMixin):
 
         return ret
 
-    @asyncio.coroutine
-    def get_context(self, message, *, cls=Context):
+    async def get_context(self, message, *, cls=Context):
         """|coro|
 
         Returns the invocation context from the message.
@@ -850,7 +841,7 @@ class BotBase(GroupMixin):
         if self._skip_check(message.author.id, self.user.id):
             return ctx
 
-        prefix = yield from self.get_prefix(message)
+        prefix = await self.get_prefix(message)
         invoked_prefix = prefix
 
         if isinstance(prefix, str):
@@ -867,8 +858,7 @@ class BotBase(GroupMixin):
         ctx.command = self.all_commands.get(invoker)
         return ctx
 
-    @asyncio.coroutine
-    def invoke(self, ctx):
+    async def invoke(self, ctx):
         """|coro|
 
         Invokes the command given under the invocation context and
@@ -882,18 +872,17 @@ class BotBase(GroupMixin):
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
-                if (yield from self.can_run(ctx, call_once=True)):
-                    yield from ctx.command.invoke(ctx)
+                if (await self.can_run(ctx, call_once=True)):
+                    await ctx.command.invoke(ctx)
             except CommandError as e:
-                yield from ctx.command.dispatch_error(ctx, e)
+                await ctx.command.dispatch_error(ctx, e)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
             exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
-    @asyncio.coroutine
-    def process_commands(self, message):
+    async def process_commands(self, message):
         """|coro|
 
         This function processes the commands that have been registered
@@ -912,12 +901,11 @@ class BotBase(GroupMixin):
         message : discord.Message
             The message to process commands for.
         """
-        ctx = yield from self.get_context(message)
-        yield from self.invoke(ctx)
+        ctx = await self.get_context(message)
+        await self.invoke(ctx)
 
-    @asyncio.coroutine
-    def on_message(self, message):
-        yield from self.process_commands(message)
+    async def on_message(self, message):
+        await self.process_commands(message)
 
 class Bot(BotBase, discord.Client):
     """Represents a discord bot.

@@ -38,7 +38,7 @@ from .role import Role
 from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient
-from . import utils, compat
+from . import utils
 
 class _Undefined:
     def __repr__(self):
@@ -188,8 +188,7 @@ class GuildChannel:
     def __str__(self):
         return self.name
 
-    @asyncio.coroutine
-    def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
+    async def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
@@ -219,13 +218,12 @@ class GuildChannel:
                 d.update(parent_id=parent_id, lock_permissions=lock_permissions)
             payload.append(d)
 
-        yield from http.bulk_channel_update(self.guild.id, payload, reason=reason)
+        await http.bulk_channel_update(self.guild.id, payload, reason=reason)
         self.position = position
         if parent_id is not _undefined:
             self.category_id = int(parent_id) if parent_id else None
 
-    @asyncio.coroutine
-    def _edit(self, options, reason):
+    async def _edit(self, options, reason):
         try:
             parent = options.pop('category')
         except KeyError:
@@ -249,10 +247,10 @@ class GuildChannel:
                 category = self.guild.get_channel(self.category_id)
                 options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
         else:
-            yield from self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
+            await self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
 
         if options:
-            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
+            data = await self._state.http.edit_channel(self.id, reason=reason, **options)
             self._update(self.guild, data)
 
     def _fill_overwrites(self, data):
@@ -466,8 +464,7 @@ class GuildChannel:
 
         return base
 
-    @asyncio.coroutine
-    def delete(self, *, reason=None):
+    async def delete(self, *, reason=None):
         """|coro|
 
         Deletes the channel.
@@ -489,10 +486,9 @@ class GuildChannel:
         HTTPException
             Deleting the channel failed.
         """
-        yield from self._state.http.delete_channel(self.id, reason=reason)
+        await self._state.http.delete_channel(self.id, reason=reason)
 
-    @asyncio.coroutine
-    def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
         """|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -579,15 +575,14 @@ class GuildChannel:
         # TODO: wait for event
 
         if overwrite is None:
-            yield from http.delete_channel_permissions(self.id, target.id, reason=reason)
+            await http.delete_channel_permissions(self.id, target.id, reason=reason)
         elif isinstance(overwrite, PermissionOverwrite):
             (allow, deny) = overwrite.pair()
-            yield from http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
+            await http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
-    @asyncio.coroutine
-    def create_invite(self, *, reason=None, **fields):
+    async def create_invite(self, *, reason=None, **fields):
         """|coro|
 
         Creates an instant invite.
@@ -624,11 +619,10 @@ class GuildChannel:
             The invite that was created.
         """
 
-        data = yield from self._state.http.create_invite(self.id, reason=reason, **fields)
+        data = await self._state.http.create_invite(self.id, reason=reason, **fields)
         return Invite.from_incomplete(data=data, state=self._state)
 
-    @asyncio.coroutine
-    def invites(self):
+    async def invites(self):
         """|coro|
 
         Returns a list of all active instant invites from this channel.
@@ -649,7 +643,7 @@ class GuildChannel:
         """
 
         state = self._state
-        data = yield from state.http.invites_from_channel(self.id)
+        data = await state.http.invites_from_channel(self.id)
         result = []
 
         for invite in data:
@@ -676,13 +670,11 @@ class Messageable(metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
-    @asyncio.coroutine
     @abc.abstractmethod
-    def _get_channel(self):
+    async def _get_channel(self):
         raise NotImplementedError
 
-    @asyncio.coroutine
-    def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
+    async def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -735,7 +727,7 @@ class Messageable(metaclass=abc.ABCMeta):
             The message that was sent.
         """
 
-        channel = yield from self._get_channel()
+        channel = await self._get_channel()
         state = self._state
         content = str(content) if content is not None else None
         if embed is not None:
@@ -749,7 +741,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 raise InvalidArgument('file parameter must be File')
 
             try:
-                data = yield from state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
+                data = await state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
                                                         content=content, tts=tts, embed=embed, nonce=nonce)
             finally:
                 file.close()
@@ -760,28 +752,26 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 param = [(f.open_file(), f.filename) for f in files]
-                data = yield from state.http.send_files(channel.id, files=param, content=content, tts=tts,
+                data = await state.http.send_files(channel.id, files=param, content=content, tts=tts,
                                                         embed=embed, nonce=nonce)
             finally:
                 for f in files:
                     f.close()
         else:
-            data = yield from state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
+            data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
-            @asyncio.coroutine
-            def delete():
-                yield from asyncio.sleep(delete_after, loop=state.loop)
+            async def delete():
+                await asyncio.sleep(delete_after, loop=state.loop)
                 try:
-                    yield from ret.delete()
+                    await ret.delete()
                 except:
                     pass
-            compat.create_task(delete(), loop=state.loop)
+            asyncio.ensure_future(delete(), loop=state.loop)
         return ret
 
-    @asyncio.coroutine
-    def trigger_typing(self):
+    async def trigger_typing(self):
         """|coro|
 
         Triggers a *typing* indicator to the destination.
@@ -789,8 +779,8 @@ class Messageable(metaclass=abc.ABCMeta):
         *Typing* indicator will go away after 10 seconds, or after a message is sent.
         """
 
-        channel = yield from self._get_channel()
-        yield from self._state.http.send_typing(channel.id)
+        channel = await self._get_channel()
+        await self._state.http.send_typing(channel.id)
 
     def typing(self):
         """Returns a context manager that allows you to type for an indefinite period of time.
@@ -811,8 +801,7 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         return Typing(self)
 
-    @asyncio.coroutine
-    def get_message(self, id):
+    async def get_message(self, id):
         """|coro|
 
         Retrieves a single :class:`Message` from the destination.
@@ -839,12 +828,11 @@ class Messageable(metaclass=abc.ABCMeta):
             Retrieving the message failed.
         """
 
-        channel = yield from self._get_channel()
-        data = yield from self._state.http.get_message(channel.id, id)
+        channel = await self._get_channel()
+        data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    @asyncio.coroutine
-    def pins(self):
+    async def pins(self):
         """|coro|
 
         Returns a :class:`list` of :class:`Message` that are currently pinned.
@@ -855,9 +843,9 @@ class Messageable(metaclass=abc.ABCMeta):
             Retrieving the pinned messages failed.
         """
 
-        channel = yield from self._get_channel()
+        channel = await self._get_channel()
         state = self._state
-        data = yield from state.http.pins_from(channel.id)
+        data = await state.http.pins_from(channel.id)
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
@@ -916,19 +904,6 @@ class Messageable(metaclass=abc.ABCMeta):
 
             messages = await channel.history(limit=123).flatten()
             # messages is now a list of Message...
-
-        Python 3.4 Usage ::
-
-            count = 0
-            iterator = channel.history(limit=200)
-            while True:
-                try:
-                    message = yield from iterator.next()
-                except discord.NoMoreItems:
-                    break
-                else:
-                    if message.author == client.user:
-                        counter += 1
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
@@ -951,8 +926,7 @@ class Connectable(metaclass=abc.ABCMeta):
     def _get_voice_state_pair(self):
         raise NotImplementedError
 
-    @asyncio.coroutine
-    def connect(self, *, timeout=60.0, reconnect=True):
+    async def connect(self, *, timeout=60.0, reconnect=True):
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
@@ -991,10 +965,10 @@ class Connectable(metaclass=abc.ABCMeta):
         state._add_voice_client(key_id, voice)
 
         try:
-            yield from voice.connect(reconnect=reconnect)
+            await voice.connect(reconnect=reconnect)
         except asyncio.TimeoutError as e:
             try:
-                yield from voice.disconnect(force=True)
+                await voice.disconnect(force=True)
             except:
                 # we don't care if disconnect failed because connection failed
                 pass

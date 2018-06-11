@@ -87,14 +87,12 @@ Quick Example
     client = MyClient()
     client.run('token')
 
-Note that in Python 3.4 you use ``@asyncio.coroutine`` instead of ``async def`` and ``yield from`` instead of ``await``.
-
 You can find examples in the examples directory.
 
 Requirements
 ------------
 
-* Python 3.4.2+
+* Python 3.5.2+
 * ``aiohttp`` library
 * ``websockets`` library
 * ``PyNaCl`` library (optional, for voice only)
