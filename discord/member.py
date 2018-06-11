@@ -32,7 +32,7 @@ import discord.abc
 
 from . import utils
 from .user import BaseUser, User
-from .game import Game
+from .activity import create_activity
 from .permissions import Permissions
 from .enums import Status, try_enum
 from .colour import Colour
@@ -137,25 +137,25 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     Attributes
     ----------
-    roles
+    roles: List[:class:`Role`]
         A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role. These roles are sorted by their position
         in the role hierarchy.
-    joined_at : `datetime.datetime`
+    joined_at: `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    game : :class:`Game`
-        The game that the user is currently playing. Could be None if no game is being played.
-    guild : :class:`Guild`
+    activity: Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]
+        The activity that the user is currently doing. Could be None if no activity is being done.
+    guild: :class:`Guild`
         The guild that the member belongs to.
-    nick : Optional[:class:`str`]
+    nick: Optional[:class:`str`]
         The guild specific nickname of the user.
     """
 
-    __slots__ = ('roles', 'joined_at', 'status', 'game', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -164,8 +164,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self.status = Status.offline
-        game = data.get('game', {})
-        self.game = Game(**game) if game else None
+        self.activity = create_activity(data.get('game'))
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -184,9 +183,8 @@ class Member(discord.abc.Messageable, _BaseUser):
     def __hash__(self):
         return hash(self._user.id)
 
-    @asyncio.coroutine
-    def _get_channel(self):
-        ch = yield from self.create_dm()
+    async def _get_channel(self):
+        ch = await self.create_dm()
         return ch
 
     def _update_roles(self, data):
@@ -218,8 +216,8 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _presence_update(self, data, user):
         self.status = try_enum(Status, data['status'])
-        game = data.get('game', {})
-        self.game = Game(**game) if game else None
+        self.activity = create_activity(data.get('game'))
+
         u = self._user
         u.name = user.get('username', u.name)
         u.avatar = user.get('avatar', u.avatar)
@@ -342,32 +340,28 @@ class Member(discord.abc.Messageable, _BaseUser):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
 
-    @asyncio.coroutine
-    def ban(self, **kwargs):
+    async def ban(self, **kwargs):
         """|coro|
 
         Bans this member. Equivalent to :meth:`Guild.ban`
         """
-        yield from self.guild.ban(self, **kwargs)
+        await self.guild.ban(self, **kwargs)
 
-    @asyncio.coroutine
-    def unban(self, *, reason=None):
+    async def unban(self, *, reason=None):
         """|coro|
 
         Unbans this member. Equivalent to :meth:`Guild.unban`
         """
-        yield from self.guild.unban(self, reason=reason)
+        await self.guild.unban(self, reason=reason)
 
-    @asyncio.coroutine
-    def kick(self, *, reason=None):
+    async def kick(self, *, reason=None):
         """|coro|
 
         Kicks this member. Equivalent to :meth:`Guild.kick`
         """
-        yield from self.guild.kick(self, reason=reason)
+        await self.guild.kick(self, reason=reason)
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **fields):
+    async def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the member's data.
@@ -424,7 +418,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             nick = nick if nick else ''
             if self._state.self_id == self.id:
-                yield from http.change_my_nickname(guild_id, nick, reason=reason)
+                await http.change_my_nickname(guild_id, nick, reason=reason)
             else:
                 payload['nick'] = nick
 
@@ -450,12 +444,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             payload['roles'] = tuple(r.id for r in roles)
 
-        yield from http.edit_member(guild_id, self.id, reason=reason, **payload)
+        await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         # TODO: wait for WS event for modify-in-place behaviour
 
-    @asyncio.coroutine
-    def move_to(self, channel, *, reason=None):
+    async def move_to(self, channel, *, reason=None):
         """|coro|
 
         Moves a member to a new voice channel (they must be connected first).
@@ -472,10 +465,9 @@ class Member(discord.abc.Messageable, _BaseUser):
         reason: Optional[str]
             The reason for doing this action. Shows up on the audit log.
         """
-        yield from self.edit(voice_channel=channel, reason=reason)
+        await self.edit(voice_channel=channel, reason=reason)
 
-    @asyncio.coroutine
-    def add_roles(self, *roles, reason=None, atomic=True):
+    async def add_roles(self, *roles, reason=None, atomic=True):
         """|coro|
 
         Gives the member a number of :class:`Role`\s.
@@ -505,16 +497,15 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         if not atomic:
             new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
-            yield from self.edit(roles=new_roles, reason=reason)
+            await self.edit(roles=new_roles, reason=reason)
         else:
             req = self._state.http.add_role
             guild_id = self.guild.id
             user_id = self.id
             for role in roles:
-                yield from req(guild_id, user_id, role.id, reason=reason)
+                await req(guild_id, user_id, role.id, reason=reason)
 
-    @asyncio.coroutine
-    def remove_roles(self, *roles, reason=None, atomic=True):
+    async def remove_roles(self, *roles, reason=None, atomic=True):
         """|coro|
 
         Removes :class:`Role`\s from this member.
@@ -550,10 +541,10 @@ class Member(discord.abc.Messageable, _BaseUser):
                 except ValueError:
                     pass
 
-            yield from self.edit(roles=new_roles, reason=reason)
+            await self.edit(roles=new_roles, reason=reason)
         else:
             req = self._state.http.remove_role
             guild_id = self.guild.id
             user_id = self.id
             for role in roles:
-                yield from req(guild_id, user_id, role.id, reason=reason)
+                await req(guild_id, user_id, role.id, reason=reason)

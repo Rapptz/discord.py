@@ -31,10 +31,11 @@ from .guild import Guild
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
+from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
-from . import utils, compat
+from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 
@@ -47,7 +48,6 @@ import sys, re
 import signal
 from collections import namedtuple
 
-PY35 = sys.version_info >= (3, 5)
 log = logging.getLogger(__name__)
 
 AppInfo = namedtuple('AppInfo', 'id name description icon owner')
@@ -72,8 +72,8 @@ class Client:
     .. _ProxyConnector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#proxyconnector
 
     Parameters
-    ----------
-    max_messages : Optional[int]
+    -----------
+    max_messages : Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
         This defaults to 5000. Passing in `None` or a value less than 100
         will use the default instead of the passed in value.
@@ -82,24 +82,24 @@ class Client:
         in which case the default event loop is used via ``asyncio.get_event_loop()``.
     connector : aiohttp.BaseConnector
         The `connector`_ to use for connection pooling.
-    proxy : Optional[str]
+    proxy : Optional[:class:`str`]
         Proxy URL.
     proxy_auth : Optional[aiohttp.BasicAuth]
         An object that represents proxy HTTP Basic Authorization.
-    shard_id : Optional[int]
+    shard_id : Optional[:class:`int`]
         Integer starting at 0 and less than shard_count.
-    shard_count : Optional[int]
+    shard_count : Optional[:class:`int`]
         The total number of shards.
-    fetch_offline_members: bool
+    fetch_offline_members: :class:`bool`
         Indicates if :func:`on_ready` should be delayed to fetch all offline
         members from the guilds the bot belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
-    game: Optional[:class:`Game`]
-        A game to start your presence with upon logging on to Discord.
     status: Optional[:class:`Status`]
         A status to start your presence with upon logging on to Discord.
-    heartbeat_timeout: float
+    activity: Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]]
+        An activity to start your presence with upon logging on to Discord.
+    heartbeat_timeout: :class:`float`
         The maximum numbers of seconds before timing out and restarting the
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
@@ -138,12 +138,10 @@ class Client:
 
     # internals
 
-    @asyncio.coroutine
-    def _syncer(self, guilds):
-        yield from self.ws.request_sync(guilds)
+    async def _syncer(self, guilds):
+        await self.ws.request_sync(guilds)
 
-    @asyncio.coroutine
-    def _chunker(self, guild):
+    async def _chunker(self, guild):
         try:
             guild_id = guild.id
         except AttributeError:
@@ -158,7 +156,7 @@ class Client:
             }
         }
 
-        yield from self.ws.send_as_json(payload)
+        await self.ws.send_as_json(payload)
 
     def handle_ready(self):
         self._ready.set()
@@ -217,15 +215,14 @@ class Client:
         """:obj:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
-    @asyncio.coroutine
-    def _run_event(self, coro, event_name, *args, **kwargs):
+    async def _run_event(self, coro, event_name, *args, **kwargs):
         try:
-            yield from coro(*args, **kwargs)
+            await coro(*args, **kwargs)
         except asyncio.CancelledError:
             pass
         except Exception:
             try:
-                yield from self.on_error(event_name, *args, **kwargs)
+                await self.on_error(event_name, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
 
@@ -275,10 +272,9 @@ class Client:
         except AttributeError:
             pass
         else:
-            compat.create_task(self._run_event(coro, method, *args, **kwargs), loop=self.loop)
+            asyncio.ensure_future(self._run_event(coro, method, *args, **kwargs), loop=self.loop)
 
-    @asyncio.coroutine
-    def on_error(self, event_method, *args, **kwargs):
+    async def on_error(self, event_method, *args, **kwargs):
         """|coro|
 
         The default error handler provided by the client.
@@ -290,8 +286,7 @@ class Client:
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
 
-    @asyncio.coroutine
-    def request_offline_members(self, *guilds):
+    async def request_offline_members(self, *guilds):
         """|coro|
 
         Requests previously offline members from the guild to be filled up
@@ -317,12 +312,11 @@ class Client:
         if any(not g.large or g.unavailable for g in guilds):
             raise InvalidArgument('An unavailable or non-large guild was passed.')
 
-        yield from self._connection.request_offline_members(guilds)
+        await self._connection.request_offline_members(guilds)
 
     # login state management
 
-    @asyncio.coroutine
-    def login(self, token, *, bot=True):
+    async def login(self, token, *, bot=True):
         """|coro|
 
         Logs in the client with the specified credentials.
@@ -349,34 +343,31 @@ class Client:
         """
 
         log.info('logging in using static token')
-        yield from self.http.static_login(token, bot=bot)
+        await self.http.static_login(token, bot=bot)
         self._connection.is_bot = bot
 
-    @asyncio.coroutine
-    def logout(self):
+    async def logout(self):
         """|coro|
 
         Logs out of Discord and closes all connections.
         """
-        yield from self.close()
+        await self.close()
 
-    @asyncio.coroutine
-    def _connect(self):
+    async def _connect(self):
         coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
-        self.ws = yield from asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+        self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
         while True:
             try:
-                yield from self.ws.poll_event()
+                await self.ws.poll_event()
             except ResumeWebSocket as e:
                 log.info('Got a request to RESUME the websocket.')
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id,
                                                           session=self.ws.session_id,
                                                           sequence=self.ws.sequence,
                                                           resume=True)
-                self.ws = yield from asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+                self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
-    @asyncio.coroutine
-    def connect(self, *, reconnect=True):
+    async def connect(self, *, reconnect=True):
         """|coro|
 
         Creates a websocket connection and lets the websocket listen
@@ -404,7 +395,7 @@ class Client:
         backoff = ExponentialBackoff()
         while not self.is_closed():
             try:
-                yield from self._connect()
+                await self._connect()
             except (OSError,
                     HTTPException,
                     GatewayNotFound,
@@ -415,7 +406,7 @@ class Client:
                     websockets.WebSocketProtocolError) as e:
 
                 if not reconnect:
-                    yield from self.close()
+                    await self.close()
                     if isinstance(e, ConnectionClosed) and e.code == 1000:
                         # clean close, don't re-raise this
                         return
@@ -430,15 +421,14 @@ class Client:
                 # regardless and rely on is_closed instead
                 if isinstance(e, ConnectionClosed):
                     if e.code != 1000:
-                        yield from self.close()
+                        await self.close()
                         raise
 
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in %.2fs", retry)
-                yield from asyncio.sleep(retry, loop=self.loop)
+                await asyncio.sleep(retry, loop=self.loop)
 
-    @asyncio.coroutine
-    def close(self):
+    async def close(self):
         """|coro|
 
         Closes the connection to discord.
@@ -450,16 +440,16 @@ class Client:
 
         for voice in self.voice_clients:
             try:
-                yield from voice.disconnect()
+                await voice.disconnect()
             except:
                 # if an error happens during disconnects, disregard it.
                 pass
 
         if self.ws is not None and self.ws.open:
-            yield from self.ws.close()
+            await self.ws.close()
 
 
-        yield from self.http.close()
+        await self.http.close()
         self._ready.clear()
 
     def clear(self):
@@ -474,8 +464,7 @@ class Client:
         self._connection.clear()
         self.http.recreate()
 
-    @asyncio.coroutine
-    def start(self, *args, **kwargs):
+    async def start(self, *args, **kwargs):
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
@@ -483,8 +472,8 @@ class Client:
 
         bot = kwargs.pop('bot', True)
         reconnect = kwargs.pop('reconnect', True)
-        yield from self.login(*args, bot=bot)
-        yield from self.connect(reconnect=reconnect)
+        await self.login(*args, bot=bot)
+        await self.connect(reconnect=reconnect)
 
     def _do_cleanup(self):
         log.info('Cleaning up event loop.')
@@ -492,7 +481,7 @@ class Client:
         if loop.is_closed():
             return # we're already cleaning up
 
-        task = compat.create_task(self.close(), loop=loop)
+        task = asyncio.ensure_future(self.close(), loop=loop)
 
         def _silence_gathered(fut):
             try:
@@ -557,7 +546,7 @@ class Client:
             loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
             loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
-        task = compat.create_task(self.start(*args, **kwargs), loop=loop)
+        task = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
 
         def stop_loop_on_finish(fut):
             loop.stop()
@@ -583,6 +572,20 @@ class Client:
     def is_closed(self):
         """:obj:`bool`: Indicates if the websocket connection is closed."""
         return self._closed.is_set()
+
+    @property
+    def activity(self):
+        """Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]]: The activity being used upon logging in."""
+        return create_activity(self._connection._activity)
+
+    @activity.setter
+    def activity(self, value):
+        if value is None:
+            self._connection._activity = None
+        elif isinstance(value, _ActivityTag):
+            self._connection._activity = value.to_dict()
+        else:
+            raise TypeError('activity must be one of Game, Streaming, or Activity.')
 
     # helpers/getters
 
@@ -646,13 +649,12 @@ class Client:
 
     # listeners/waiters
 
-    @asyncio.coroutine
-    def wait_until_ready(self):
+    async def wait_until_ready(self):
         """|coro|
 
         Waits until the client's internal cache is all ready.
         """
-        yield from self._ready.wait()
+        await self._ready.wait()
 
     def wait_for(self, event, *, check=None, timeout=None):
         """|coro|
@@ -736,7 +738,7 @@ class Client:
             :ref:`event reference <discord-api-events>`.
         """
 
-        future = compat.create_future(self.loop)
+        future = self.loop.create_future()
         if check is None:
             def _check(*args):
                 return True
@@ -767,8 +769,7 @@ class Client:
         Using the basic :meth:`event` decorator: ::
 
             @client.event
-            @asyncio.coroutine
-            def on_ready():
+            async def on_ready():
                 print('Ready!')
 
         Saving characters by using the :meth:`async_event` decorator: ::
@@ -793,24 +794,24 @@ class Client:
 
         return self.event(coro)
 
-    @asyncio.coroutine
-    def change_presence(self, *, game=None, status=None, afk=False):
+    async def change_presence(self, *, activity=None, status=None, afk=False):
         """|coro|
 
         Changes the client's presence.
 
-        The game parameter is a Game object (not a string) that represents
-        a game being played currently.
+        The activity parameter is a :class:`Activity` object (not a string) that represents
+        the activity being done currently. This could also be the slimmed down versions,
+        :class:`Game` and :class:`Streaming`.
 
         Example: ::
 
-            game = discord.Game(name="with the API")
-            await client.change_presence(status=discord.Status.idle, game=game)
+            game = discord.Game("with the API")
+            await client.change_presence(status=discord.Status.idle, activity=game)
 
         Parameters
         ----------
-        game: Optional[:class:`Game`]
-            The game being played. None if no game is being played.
+        activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+            The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
             Indicates what status to change to. If None, then
             :attr:`Status.online` is used.
@@ -822,7 +823,7 @@ class Client:
         Raises
         ------
         InvalidArgument
-            If the ``game`` parameter is not :class:`Game` or None.
+            If the ``activity`` parameter is not the proper type.
         """
 
         if status is None:
@@ -835,20 +836,19 @@ class Client:
             status_enum = status
             status = str(status)
 
-        yield from self.ws.change_presence(game=game, status=status, afk=afk)
+        await self.ws.change_presence(activity=activity, status=status, afk=afk)
 
         for guild in self._connection.guilds:
             me = guild.me
             if me is None:
                 continue
 
-            me.game = game
+            me.activity = activity
             me.status = status_enum
 
     # Guild stuff
 
-    @asyncio.coroutine
-    def create_guild(self, name, region=None, icon=None):
+    async def create_guild(self, name, region=None, icon=None):
         """|coro|
 
         Creates a :class:`Guild`.
@@ -887,16 +887,15 @@ class Client:
         else:
             region = region.value
 
-        data = yield from self.http.create_guild(name, region, icon)
+        data = await self.http.create_guild(name, region, icon)
         return Guild(data=data, state=self._connection)
 
     # Invite management
 
-    @asyncio.coroutine
-    def get_invite(self, url):
+    async def get_invite(self, url):
         """|coro|
 
-        Gets a :class:`Invite` from a discord.gg URL or ID.
+        Gets an :class:`Invite` from a discord.gg URL or ID.
 
         Note
         ------
@@ -923,14 +922,16 @@ class Client:
         """
 
         invite_id = self._resolve_invite(url)
-        data = yield from self.http.get_invite(invite_id)
+        data = await self.http.get_invite(invite_id)
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    @asyncio.coroutine
-    def delete_invite(self, invite):
+    async def delete_invite(self, invite):
         """|coro|
 
         Revokes an :class:`Invite`, URL, or ID to an invite.
+
+        You must have the :attr:`~Permissions.manage_channels` permission in
+        the associated guild to do this.
 
         Parameters
         ----------
@@ -948,12 +949,11 @@ class Client:
         """
 
         invite_id = self._resolve_invite(invite)
-        yield from self.http.delete_invite(invite_id)
+        await self.http.delete_invite(invite_id)
 
     # Miscellaneous stuff
 
-    @asyncio.coroutine
-    def application_info(self):
+    async def application_info(self):
         """|coro|
 
         Retrieve's the bot's application information.
@@ -968,13 +968,12 @@ class Client:
         HTTPException
             Retrieving the information failed somehow.
         """
-        data = yield from self.http.application_info()
+        data = await self.http.application_info()
         return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
                        owner=User(state=self._connection, data=data['owner']))
 
-    @asyncio.coroutine
-    def get_user_info(self, user_id):
+    async def get_user_info(self, user_id):
         """|coro|
 
         Retrieves a :class:`User` based on their ID. This can only
@@ -999,11 +998,10 @@ class Client:
         HTTPException
             Fetching the user failed.
         """
-        data = yield from self.http.get_user_info(user_id)
+        data = await self.http.get_user_info(user_id)
         return User(state=self._connection, data=data)
 
-    @asyncio.coroutine
-    def get_user_profile(self, user_id):
+    async def get_user_profile(self, user_id):
         """|coro|
 
         Gets an arbitrary user's profile. This can only be used by non-bot accounts.
@@ -1027,7 +1025,7 @@ class Client:
         """
 
         state = self._connection
-        data = yield from self.http.get_user_profile(user_id)
+        data = await self.http.get_user_profile(user_id)
 
         def transform(d):
             return state._get_guild(int(d['id']))
@@ -1041,8 +1039,7 @@ class Client:
                        user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
 
-    @asyncio.coroutine
-    def get_webhook_info(self, webhook_id):
+    async def get_webhook_info(self, webhook_id):
         """|coro|
 
         Retrieves a :class:`Webhook` with the specified ID.
@@ -1061,5 +1058,5 @@ class Client:
         :class:`Webhook`
             The webhook you requested.
         """
-        data = yield from self.http.get_webhook(webhook_id)
+        data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
