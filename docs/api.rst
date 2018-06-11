@@ -574,7 +574,7 @@ Application Info
         to the token owner. Correspond to the "Public bot" box in the
         token settings.
         
-    .. attribute:: bot_requires_code_grant
+    .. attribute:: bot_require_code_grant
     
         ``True`` if the bot requires code grant, else ``False``.
         Corresponf to the "Bot requires code grant" bow in the token
