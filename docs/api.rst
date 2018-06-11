@@ -577,7 +577,7 @@ Application Info
     .. attribute:: bot_require_code_grant
     
         ``True`` if the bot requires code grant, else ``False``.
-        Corresponf to the "Bot requires code grant" bow in the token
+        Correspond to the "Bot requires code grant" box in the token
         settings.
         
     .. attribute:: rpc_origins
