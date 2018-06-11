@@ -988,7 +988,6 @@ class Guild(Hashable):
 
         return result
 
-    @asyncio.coroutine
     async def integrations(self):
         """|coro|
 
