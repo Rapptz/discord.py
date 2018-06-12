@@ -18,7 +18,7 @@ Python Version Change
 -----------------------
 
 In order to make development easier and also to allow for our dependencies to upgrade to allow usage of 3.7 or higher,
-the library had to remove support for Python versions lower than 3.5.2, which essentially means that **support for Python 3.4
+the library had to remove support for Python versions lower than 3.5.3, which essentially means that **support for Python 3.4
 is dropped**.
 
 Major Model Changes
