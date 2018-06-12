@@ -30,7 +30,6 @@ import json
 import sys
 import logging
 import weakref
-import datetime
 from urllib.parse import quote as _uriquote
 
 log = logging.getLogger(__name__)

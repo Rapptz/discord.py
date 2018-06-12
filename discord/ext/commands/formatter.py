@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 import itertools
 import inspect
-import asyncio
 
 from .core import GroupMixin, Command
 from .errors import CommandError

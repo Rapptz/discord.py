@@ -33,7 +33,7 @@ import sys
 import traceback
 import re
 
-from .core import GroupMixin, Command, command
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
