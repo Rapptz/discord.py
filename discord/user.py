@@ -31,7 +31,6 @@ from .errors import ClientException, InvalidArgument
 from collections import namedtuple
 
 import discord.abc
-import asyncio
 
 VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}

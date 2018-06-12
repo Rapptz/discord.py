@@ -25,12 +25,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import discord
-import asyncio
 import re
 import inspect
 
 from .errors import BadArgument, NoPrivateMessage
-from .view import StringView
 
 __all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
             'TextChannelConverter', 'InviteConverter', 'RoleConverter',

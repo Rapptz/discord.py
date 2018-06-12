@@ -32,7 +32,7 @@ from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException, NotFound
+from .errors import InvalidArgument, ClientException
 from .embeds import Embed
 
 class Attachment:

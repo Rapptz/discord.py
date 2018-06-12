@@ -28,8 +28,6 @@ import discord
 import argparse
 import sys
 from pathlib import Path
-import os
-import re
 
 def core(parser, args):
     pass
