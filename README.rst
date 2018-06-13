@@ -92,7 +92,7 @@ You can find examples in the examples directory.
 Requirements
 ------------
 
-* Python 3.5.2+
+* Python 3.5.3+
 * ``aiohttp`` library
 * ``websockets`` library
 * ``PyNaCl`` library (optional, for voice only)
