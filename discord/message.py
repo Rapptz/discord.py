@@ -437,7 +437,7 @@ class Message:
     def jump_to_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discordapp.com/channels/{0}/{1.channel.id}?jump={1.id}'.format(guild_id, self)
+        return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
