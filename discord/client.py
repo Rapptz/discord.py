@@ -444,7 +444,7 @@ class Client:
         for voice in self.voice_clients:
             try:
                 await voice.disconnect()
-            except:
+            except Exception:
                 # if an error happens during disconnects, disregard it.
                 pass
 
@@ -489,7 +489,7 @@ class Client:
         def _silence_gathered(fut):
             try:
                 fut.result()
-            except:
+            except Exception:
                 pass
             finally:
                 loop.stop()
@@ -516,7 +516,7 @@ class Client:
 
         try:
             return task.result() # suppress unused task warning
-        except:
+        except Exception:
             return None
 
     def run(self, *args, **kwargs):

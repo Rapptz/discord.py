@@ -177,7 +177,7 @@ class VoiceClient:
         if self.socket:
             try:
                 self.socket.close()
-            except:
+            except Exception:
                 pass
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

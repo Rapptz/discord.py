@@ -76,7 +76,7 @@ class KeepAliveHandler(threading.Thread):
 
                 try:
                     f.result()
-                except:
+                except Exception:
                     pass
                 finally:
                     self.stop()

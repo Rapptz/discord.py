@@ -282,7 +282,7 @@ class AutoShardedClient(Client):
         for vc in self.voice_clients:
             try:
                 await vc.disconnect()
-            except:
+            except Exception:
                 pass
 
         to_close = [shard.ws.close() for shard in self.shards.values()]

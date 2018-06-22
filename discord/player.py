@@ -303,7 +303,7 @@ class AudioPlayer(threading.Thread):
         if self.after is not None:
             try:
                 self.after(self._current_error)
-            except:
+            except Exception:
                 log.exception('Calling the after function failed.')
 
     def stop(self):

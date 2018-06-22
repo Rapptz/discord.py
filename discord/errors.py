@@ -58,7 +58,7 @@ def flatten_error_dict(d, key=''):
         if isinstance(v, dict):
             try:
                 _errors = v['_errors']
-            except Exception:
+            except KeyError:
                 items.extend(flatten_error_dict(v, new_key).items())
             else:
                 items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
