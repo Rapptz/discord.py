@@ -366,7 +366,7 @@ class Message:
     def channel_mentions(self):
         if self.guild is None:
             return []
-        it = filter(None, map(lambda m: self.guild.get_channel(m), self.raw_channel_mentions))
+        it = filter(None, map(self.guild.get_channel, self.raw_channel_mentions))
         return utils._unique(it)
 
     @utils.cached_slot_property('_cs_clean_content')
