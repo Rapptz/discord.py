@@ -281,7 +281,7 @@ async def async_all(gen, *, check=_isawaitable):
     return True
 
 async def sane_wait_for(futures, *, timeout, loop):
-    done, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
+    _, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()

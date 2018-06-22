@@ -240,7 +240,7 @@ class ConnectionState:
         return guild
 
     def chunks_needed(self, guild):
-        for chunk in range(math.ceil(guild._member_count / 1000)):
+        for _ in range(math.ceil(guild._member_count / 1000)):
             yield self.receive_chunk(guild.id)
 
     def _get_guild_channel(self, data):
@@ -423,7 +423,7 @@ class ConnectionState:
             emoji = self._upgrade_partial_emoji(emoji)
             try:
                 reaction = message._remove_reaction(data, emoji, raw.user_id)
-            except (AttributeError, ValueError) as e: # eventual consistency lol
+            except (AttributeError, ValueError): # eventual consistency lol
                 pass
             else:
                 user = self._get_reaction_user(message.channel, raw.user_id)
