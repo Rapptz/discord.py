@@ -193,9 +193,9 @@ class Permissions:
         return bool((self.value >> index) & 1)
 
     def _set(self, index, value):
-        if value == True:
+        if value is True:
             self.value |= (1 << index)
-        elif value == False:
+        elif value is False:
             self.value &= ~(1 << index)
         else:
             raise TypeError('Value to set for Permissions must be a bool.')
