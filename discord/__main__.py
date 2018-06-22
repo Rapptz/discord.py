@@ -197,7 +197,7 @@ def newbot(parser, args):
         with open(str(new_directory / 'config.py'), 'w', encoding='utf-8') as fp:
             fp.write('token = "place your token here"\ncogs = []\n')
     except OSError as e:
-       parser.error('could not create config file ({})'.format(e))
+        parser.error('could not create config file ({})'.format(e))
 
     try:
         with open(str(new_directory / 'bot.py'), 'w', encoding='utf-8') as fp:

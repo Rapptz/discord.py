@@ -76,10 +76,8 @@ class Shard:
             await self.ws.poll_event()
         except ResumeWebSocket:
             log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
-            coro = DiscordWebSocket.from_client(self._client, resume=True,
-                                                              shard_id=self.id,
-                                                              session=self.ws.session_id,
-                                                              sequence=self.ws.sequence)
+            coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
+                                                session=self.ws.session_id, sequence=self.ws.sequence)
             self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     def get_future(self):

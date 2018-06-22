@@ -57,8 +57,8 @@ class VoiceState:
         is not currently in a voice channel.
     """
 
-    __slots__ = ( 'session_id', 'deaf', 'mute', 'self_mute',
-                  'self_deaf', 'afk', 'channel' )
+    __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
+                 'self_deaf', 'afk', 'channel')
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')

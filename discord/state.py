@@ -405,7 +405,7 @@ class ConnectionState:
         raw = RawReactionClearEvent(data)
         self.dispatch('raw_reaction_clear', raw)
 
-        message =  self._get_message(raw.message_id)
+        message = self._get_message(raw.message_id)
         if message is not None:
             old_reactions = message.reactions.copy()
             message.reactions.clear()
@@ -457,7 +457,7 @@ class ConnectionState:
         self.user = ClientUser(state=self, data=data)
 
     def parse_channel_delete(self, data):
-        guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = int(data['id'])
         if guild is not None:
             channel = guild.get_channel(channel_id)

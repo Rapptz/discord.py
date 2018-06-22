@@ -92,7 +92,7 @@ class Role(Hashable):
     """
 
     __slots__ = ('id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', '_state' )
+                 'managed', 'mentionable', 'hoist', 'guild', '_state')
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
