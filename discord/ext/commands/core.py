@@ -321,7 +321,7 @@ class Command:
         try:
             # first/second parameter is context
             result.popitem(last=False)
-        except Exception as e:
+        except Exception:
             raise ValueError('Missing context parameter') from None
 
         return result

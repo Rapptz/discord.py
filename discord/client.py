@@ -367,7 +367,7 @@ class Client:
         while True:
             try:
                 await self.ws.poll_event()
-            except ResumeWebSocket as e:
+            except ResumeWebSocket:
                 log.info('Got a request to RESUME the websocket.')
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id,
                                                           session=self.ws.session_id,

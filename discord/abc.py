@@ -955,7 +955,7 @@ class Connectable(metaclass=abc.ABCMeta):
         :class:`VoiceClient`
             A voice client that is fully connected to the voice server.
         """
-        key_id, key_name = self._get_voice_client_key()
+        key_id, _ = self._get_voice_client_key()
         state = self._state
 
         if state._get_voice_client(key_id):
