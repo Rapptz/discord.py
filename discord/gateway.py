@@ -363,7 +363,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 return
 
             if op == self.INVALIDATE_SESSION:
-                if data == True:
+                if data is True:
                     await asyncio.sleep(5.0, loop=self.loop)
                     await self.close()
                     raise ResumeWebSocket(self.shard_id)

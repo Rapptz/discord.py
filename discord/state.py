@@ -298,7 +298,7 @@ class ConnectionState:
                 await self.request_offline_members(guilds)
 
             for guild, unavailable in self._ready_state.guilds:
-                if unavailable == False:
+                if unavailable is False:
                     self.dispatch('guild_available', guild)
                 else:
                     self.dispatch('guild_join', guild)
@@ -618,7 +618,7 @@ class ConnectionState:
         self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
 
     def _get_create_guild(self, data):
-        if data.get('unavailable') == False:
+        if data.get('unavailable') is False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the guild has become available
             # and is therefore in the cache
@@ -639,14 +639,14 @@ class ConnectionState:
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
-        if unavailable == False:
+        if unavailable is False:
             self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
 
     def parse_guild_create(self, data):
         unavailable = data.get('unavailable')
-        if unavailable == True:
+        if unavailable is True:
             # joined a guild with unavailable == True so..
             return
 
@@ -654,7 +654,7 @@ class ConnectionState:
 
         # check if it requires chunking
         if guild.large:
-            if unavailable == False:
+            if unavailable is False:
                 # check if we're waiting for 'useful' READY
                 # and if we are, we don't want to dispatch any
                 # event such as guild_join or guild_available
@@ -678,7 +678,7 @@ class ConnectionState:
                 return
 
         # Dispatch available if newly available
-        if unavailable == False:
+        if unavailable is False:
             self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
@@ -946,14 +946,14 @@ class AutoShardedConnectionState(ConnectionState):
                 await self.request_offline_members(sub_guilds, shard_id=shard_id)
 
                 for guild, unavailable in zip(sub_guilds, sub_available):
-                    if unavailable == False:
+                    if unavailable is False:
                         self.dispatch('guild_available', guild)
                     else:
                         self.dispatch('guild_join', guild)
                 self.dispatch('shard_ready', shard_id)
         else:
             for guild, unavailable in self._ready_state.guilds:
-                if unavailable == False:
+                if unavailable is False:
                     self.dispatch('guild_available', guild)
                 else:
                     self.dispatch('guild_join', guild)
