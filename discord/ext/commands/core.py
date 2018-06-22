@@ -240,7 +240,7 @@ class Command:
 
         try:
             module = converter.__module__
-        except:
+        except AttributeError:
             pass
         else:
             if module.startswith('discord.') and not module.endswith('converter'):

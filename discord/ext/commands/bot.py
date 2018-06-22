@@ -195,13 +195,13 @@ class BotBase(GroupMixin):
         for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
-            except:
+            except Exception:
                 pass
 
         for cog in tuple(self.cogs):
             try:
                 self.remove_cog(cog)
-            except:
+            except Exception:
                 pass
 
         await super().close()
@@ -759,7 +759,7 @@ class BotBase(GroupMixin):
         else:
             try:
                 func(self)
-            except:
+            except Exception:
                 pass
         finally:
             # finally remove the import..
