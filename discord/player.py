@@ -36,7 +36,7 @@ from .opus import Encoder as OpusEncoder
 
 log = logging.getLogger(__name__)
 
-__all__ = [ 'AudioSource', 'PCMAudio', 'FFmpegPCMAudio', 'PCMVolumeTransformer' ]
+__all__ = ['AudioSource', 'PCMAudio', 'FFmpegPCMAudio', 'PCMVolumeTransformer']
 
 class AudioSource:
     """Represents an audio stream.

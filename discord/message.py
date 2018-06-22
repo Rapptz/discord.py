@@ -194,13 +194,13 @@ class Message:
         - ``cover_image``: A string representing the embed's image asset ID.
     """
 
-    __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
-                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
-                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
-                  'application', 'activity' )
+    __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
+                 'mention_everyone', 'embeds', 'id', 'mentions', 'author',
+                 '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
+                 '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions',
+                 'application', 'activity')
 
     def __init__(self, *, state, channel, data):
         self._state = state

@@ -222,7 +222,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
             data = utils.to_json(payload)
 
         if multipart is not None:
-            data = { 'payload_json': multipart.pop('payload_json') }
+            data = {'payload_json': multipart.pop('payload_json')}
 
         for tries in range(5):
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)

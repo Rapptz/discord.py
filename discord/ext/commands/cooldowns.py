@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -31,7 +32,7 @@ __all__ = ['BucketType', 'Cooldown', 'CooldownMapping']
 class BucketType(enum.Enum):
     default = 0
     user    = 1
-    guild  = 2
+    guild   = 2
     channel = 3
 
 class Cooldown:

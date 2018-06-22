@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -26,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from discord.errors import DiscordException
 
 
-__all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
+__all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
            'UserInputError', 'CommandOnCooldown', 'NotOwner',
@@ -171,7 +172,7 @@ class MissingPermissions(CheckFailure):
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
 
         if len(missing) > 2:
-            fmt =  '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
         message = 'You are missing {} permission(s) to run command.'.format(fmt)
@@ -191,7 +192,7 @@ class BotMissingPermissions(CheckFailure):
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
 
         if len(missing) > 2:
-            fmt =  '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
         message = 'Bot requires {} permission(s) to run command.'.format(fmt)

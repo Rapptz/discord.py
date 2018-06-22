@@ -153,4 +153,3 @@ class GroupCall:
         """
 
         return self._voice_states.get(user.id)
-
