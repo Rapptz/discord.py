@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import collections
 import discord
 import inspect
 import importlib
@@ -779,14 +780,6 @@ class BotBase(GroupMixin):
         message: :class:`discord.Message`
             The message context to get the prefix of.
 
-        Raises
-        --------
-        :exc:`.ClientException`
-            The prefix was invalid. This could be if the prefix
-            function returned None, the prefix list returned no
-            elements that aren't None, or the prefix string is
-            empty.
-
         Returns
         --------
         Union[List[str], str]
@@ -797,11 +790,20 @@ class BotBase(GroupMixin):
         if callable(prefix):
             ret = await discord.utils.maybe_coroutine(prefix, self, message)
 
-        if isinstance(ret, (list, tuple)):
-            ret = [p for p in ret if p]
+        if not isinstance(ret, str):
+            try:
+                ret = list(ret)
+            except TypeError:
+                # It's possible that a generator raised this exception.  Don't
+                # replace it with our own error if that's the case.
+                if isinstance(ret, collections.Iterable):
+                    raise
 
-        if not ret:
-            raise discord.ClientException('invalid prefix (could be an empty string, empty list, or None)')
+                raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
+                                "returning either of these, not {}".format(ret.__class__.__name__))
+
+            if not ret:
+                raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
@@ -848,9 +850,27 @@ class BotBase(GroupMixin):
             if not view.skip_string(prefix):
                 return ctx
         else:
-            invoked_prefix = discord.utils.find(view.skip_string, prefix)
-            if invoked_prefix is None:
-                return ctx
+            try:
+                # if the context class' __init__ consumes something from the view this
+                # will be wrong.  That seems unreasonable though.
+                if message.content.startswith(tuple(prefix)):
+                    invoked_prefix = discord.utils.find(view.skip_string, prefix)
+                else:
+                    return ctx
+
+            except TypeError:
+                if not isinstance(prefix, list):
+                    raise TypeError("get_prefix must return either a string or a list of string, "
+                                    "not {}".format(prefix.__class__.__name__))
+
+                # It's possible a bad command_prefix got us here.
+                for value in prefix:
+                    if not isinstance(value, str):
+                        raise TypeError("Iterable command_prefix or list returned from get_prefix must "
+                                        "contain only strings, not {}".format(value.__class__.__name__))
+
+                # Getting here shouldn't happen
+                raise
 
         invoker = view.get_word()
         ctx.invoked_with = invoker
@@ -931,10 +951,26 @@ class Bot(BotBase, discord.Client):
         command prefixes. This callable can be either a regular function or
         a coroutine.
 
-        The command prefix could also be a :class:`list` or a :class:`tuple` indicating that
+        An empty string as the prefix always matches, enabling prefix-less
+        command invocation. While this may be useful in DMs it should be avoided
+        in servers, as it's likely to cause performance issues and unintended
+        command invocations.
+
+        The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`.
+        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
+        allowed.
+
+        .. note::
+
+            When passing multiple prefixes be careful to not pass a prefix
+            that matches a longer prefix occuring later in the sequence.  For
+            example, if the command prefix is ``('!', '!?')``  the ``'!?'``
+            prefix will never be matched to any message as the previous one
+            matches messages starting with ``!?``. This is especially important
+            when passing an empty string, it should always be last as no prefix
+            after it will be matched.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``. This
         attribute does not carry over to groups. You must set it to every group if
