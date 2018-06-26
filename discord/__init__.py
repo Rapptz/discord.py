@@ -35,7 +35,7 @@ from .colour import Color, Colour
 from .invite import Invite
 from .object import Object
 from .reaction import Reaction
-from . import utils, opus, compat, abc
+from . import utils, opus, abc
 from .enums import *
 from collections import namedtuple
 from .embeds import Embed
@@ -44,6 +44,7 @@ from .player import *
 from .webhook import *
 from .voice_client import VoiceClient
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
+from .raw_models import *
 
 import logging
 

@@ -57,8 +57,7 @@ class Converter:
     method to do its conversion logic. This method must be a coroutine.
     """
 
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         """|coro|
 
         The method to override to do conversion logic.
@@ -99,8 +98,7 @@ class MemberConverter(IDConverter):
     5. Lookup by nickname
     """
 
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         message = ctx.message
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -136,8 +134,7 @@ class UserConverter(IDConverter):
     3. Lookup by name#discrim
     4. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
         result = None
         state = ctx._state
@@ -176,8 +173,7 @@ class TextChannelConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         bot = ctx.bot
 
         match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
@@ -216,8 +212,7 @@ class VoiceChannelConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
         result = None
@@ -255,8 +250,7 @@ class CategoryChannelConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         bot = ctx.bot
 
         match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
@@ -295,8 +289,7 @@ class ColourConverter(Converter):
 
         - The ``_`` in the name can be optionally replaced with spaces.
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         arg = argument.replace('0x', '').lower()
 
         if arg[0] == '#':
@@ -323,8 +316,7 @@ class RoleConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         guild = ctx.message.guild
         if not guild:
             raise NoPrivateMessage()
@@ -338,8 +330,7 @@ class RoleConverter(IDConverter):
 
 class GameConverter(Converter):
     """Converts to :class:`Game`."""
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         return discord.Game(name=argument)
 
 class InviteConverter(Converter):
@@ -347,10 +338,9 @@ class InviteConverter(Converter):
 
     This is done via an HTTP request using :meth:`.Bot.get_invite`.
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         try:
-            invite = yield from ctx.bot.get_invite(argument)
+            invite = await ctx.bot.get_invite(argument)
             return invite
         except Exception as e:
             raise BadArgument('Invite is invalid or expired') from e
@@ -368,8 +358,7 @@ class EmojiConverter(IDConverter):
     2. Lookup by extracting ID from the emoji.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
@@ -403,8 +392,7 @@ class PartialEmojiConverter(Converter):
 
     This is done by extracting the animated flag, name and ID from the emoji.
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
 
         if match:
@@ -436,8 +424,7 @@ class clean_content(Converter):
         self.use_nicknames = use_nicknames
         self.escape_markdown = escape_markdown
 
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         message = ctx.message
         transformations = {}
 

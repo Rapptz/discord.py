@@ -199,8 +199,7 @@ class HelpFormatter:
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
 
-    @asyncio.coroutine
-    def filter_command_list(self):
+    async def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
         provided, :attr:`show_check_failure` and :attr:`show_hidden`.
         Also filters based on if :meth:`~.HelpFormatter.is_cog` is valid.
@@ -224,14 +223,13 @@ class HelpFormatter:
 
             return True
 
-        @asyncio.coroutine
-        def predicate(tup):
+        async def predicate(tup):
             if sane_no_suspension_point_predicate(tup) is False:
                 return False
 
             cmd = tup[1]
             try:
-                return (yield from cmd.can_run(self.context))
+                return (await cmd.can_run(self.context))
             except CommandError:
                 return False
 
@@ -242,7 +240,7 @@ class HelpFormatter:
         # Gotta run every check and verify it
         ret = []
         for elem in iterator:
-            valid = yield from predicate(elem)
+            valid = await predicate(elem)
             if valid:
                 ret.append(elem)
 
@@ -258,8 +256,7 @@ class HelpFormatter:
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 
-    @asyncio.coroutine
-    def format_help_for(self, context, command_or_bot):
+    async def format_help_for(self, context, command_or_bot):
         """Formats the help page and handles the actual heavy lifting of how
         the help command looks like. To change the behaviour, override the
         :meth:`~.HelpFormatter.format` method.
@@ -278,10 +275,9 @@ class HelpFormatter:
         """
         self.context = context
         self.command = command_or_bot
-        return (yield from self.format())
+        return (await self.format())
 
-    @asyncio.coroutine
-    def format(self):
+    async def format(self):
         """Handles the actual behaviour involved with formatting.
 
         To change the behaviour, this method should be overridden.
@@ -323,7 +319,7 @@ class HelpFormatter:
             # last place sorting position.
             return cog + ':' if cog is not None else '\u200bNo Category:'
 
-        filtered = yield from self.filter_command_list()
+        filtered = await self.filter_command_list()
         if self.is_bot():
             data = sorted(filtered, key=category)
             for category, commands in itertools.groupby(data, key=category):

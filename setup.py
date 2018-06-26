@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
   requirements = f.read().splitlines()
 
 if on_rtd:
-  requirements.append('sphinx==1.6.5')
+  requirements.append('sphinx==1.7.4')
   requirements.append('sphinxcontrib-napoleon')
   requirements.append('sphinxcontrib-asyncio')
   requirements.append('sphinxcontrib-websupport')
@@ -63,7 +63,6 @@ setup(name='discord.py',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Topic :: Internet',

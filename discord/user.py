@@ -313,8 +313,7 @@ class ClientUser(BaseUser):
         """Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
-    @asyncio.coroutine
-    def edit(self, **fields):
+    async def edit(self, **fields):
         """|coro|
 
         Edits the current profile of the client.
@@ -387,7 +386,7 @@ class ClientUser(BaseUser):
 
         http = self._state.http
 
-        data = yield from http.edit_profile(**args)
+        data = await http.edit_profile(**args)
         if not_bot_account:
             self.email = data['email']
             try:
@@ -398,8 +397,7 @@ class ClientUser(BaseUser):
         # manually update data by calling __init__ explicitly.
         self.__init__(state=self._state, data=data)
 
-    @asyncio.coroutine
-    def create_group(self, *recipients):
+    async def create_group(self, *recipients):
         """|coro|
 
         Creates a group direct message with the recipients
@@ -434,7 +432,7 @@ class ClientUser(BaseUser):
             raise ClientException('You must have two or more recipients to create a group.')
 
         users = [str(u.id) for u in recipients]
-        data = yield from self._state.http.create_group(self.id, users)
+        data = await self._state.http.create_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
 
 class User(BaseUser, discord.abc.Messageable):
@@ -477,9 +475,8 @@ class User(BaseUser, discord.abc.Messageable):
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
 
-    @asyncio.coroutine
-    def _get_channel(self):
-        ch = yield from self.create_dm()
+    async def _get_channel(self):
+        ch = await self.create_dm()
         return ch
 
     @property
@@ -491,8 +488,7 @@ class User(BaseUser, discord.abc.Messageable):
         """
         return self._state._get_private_channel_by_user(self.id)
 
-    @asyncio.coroutine
-    def create_dm(self):
+    async def create_dm(self):
         """Creates a :class:`DMChannel` with this user.
 
         This should be rarely called, as this is done transparently for most
@@ -503,7 +499,7 @@ class User(BaseUser, discord.abc.Messageable):
             return found
 
         state = self._state
-        data = yield from state.http.start_private_message(self.id)
+        data = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
 
     @property
@@ -525,8 +521,7 @@ class User(BaseUser, discord.abc.Messageable):
             return False
         return r.type is RelationshipType.blocked
 
-    @asyncio.coroutine
-    def block(self):
+    async def block(self):
         """|coro|
 
         Blocks the user.
@@ -539,10 +534,9 @@ class User(BaseUser, discord.abc.Messageable):
             Blocking the user failed.
         """
 
-        yield from self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
+        await self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
 
-    @asyncio.coroutine
-    def unblock(self):
+    async def unblock(self):
         """|coro|
 
         Unblocks the user.
@@ -554,10 +548,9 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Unblocking the user failed.
         """
-        yield from self._state.http.remove_relationship(self.id)
+        await self._state.http.remove_relationship(self.id)
 
-    @asyncio.coroutine
-    def remove_friend(self):
+    async def remove_friend(self):
         """|coro|
 
         Removes the user as a friend.
@@ -569,10 +562,9 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Removing the user as a friend failed.
         """
-        yield from self._state.http.remove_relationship(self.id)
+        await self._state.http.remove_relationship(self.id)
 
-    @asyncio.coroutine
-    def send_friend_request(self):
+    async def send_friend_request(self):
         """|coro|
 
         Sends the user a friend request.
@@ -584,10 +576,9 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Sending the friend request failed.
         """
-        yield from self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
+        await self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
 
-    @asyncio.coroutine
-    def profile(self):
+    async def profile(self):
         """|coro|
 
         Gets the user's profile. This can only be used by non-bot accounts.
@@ -606,7 +597,7 @@ class User(BaseUser, discord.abc.Messageable):
         """
 
         state = self._state
-        data = yield from state.http.get_user_profile(self.id)
+        data = await state.http.get_user_profile(self.id)
 
         def transform(d):
             return state._get_guild(int(d['id']))

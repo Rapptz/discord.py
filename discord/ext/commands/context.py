@@ -86,8 +86,7 @@ class Context(discord.abc.Messageable):
         self.command_failed = attrs.pop('command_failed', False)
         self._state = self.message._state
 
-    @asyncio.coroutine
-    def invoke(self, *args, **kwargs):
+    async def invoke(self, *args, **kwargs):
         """|coro|
 
         Calls a command with the arguments given.
@@ -125,11 +124,10 @@ class Context(discord.abc.Messageable):
         arguments.append(self)
         arguments.extend(args[1:])
 
-        ret = yield from command.callback(*arguments, **kwargs)
+        ret = await command.callback(*arguments, **kwargs)
         return ret
 
-    @asyncio.coroutine
-    def reinvoke(self, *, call_hooks=False, restart=True):
+    async def reinvoke(self, *, call_hooks=False, restart=True):
         """|coro|
 
         Calls the command again.
@@ -174,7 +172,7 @@ class Context(discord.abc.Messageable):
             to_call = cmd
 
         try:
-            yield from to_call.reinvoke(self, call_hooks=call_hooks)
+            await to_call.reinvoke(self, call_hooks=call_hooks)
         finally:
             self.command = cmd
             view.index = index
@@ -188,8 +186,7 @@ class Context(discord.abc.Messageable):
         """Checks if the invocation context is valid to be invoked with."""
         return self.prefix is not None and self.command is not None
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self.channel
 
     @property

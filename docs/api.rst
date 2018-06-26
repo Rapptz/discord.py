@@ -93,17 +93,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. warning::
 
     All the events must be a |corourl|_. If they aren't, then you might get unexpected
-    errors. In order to turn a function into a coroutine they must either be ``async def``
-    functions or in 3.4 decorated with :func:`asyncio.coroutine`.
-
-    The following two functions are examples of coroutine functions: ::
-
-        async def on_ready():
-            pass
-
-        @asyncio.coroutine
-        def on_ready():
-            pass
+    errors. In order to turn a function into a coroutine they must be ``async def``
+    functions.
 
 .. function:: on_connect()
 
@@ -1306,21 +1297,10 @@ Some API functions return an "async iterator". An async iterator is something th
 capable of being used in an `async for <https://docs.python.org/3/reference/compound_stmts.html#the-async-for-statement>`_
 statement.
 
-These async iterators can be used as follows in 3.5 or higher: ::
+These async iterators can be used as follows: ::
 
     async for elem in channel.history():
         # do stuff with elem here
-
-If you are using 3.4 however, you will have to use the more verbose way: ::
-
-    iterator = channel.history() # or whatever returns an async iterator
-    while True:
-        try:
-            item = yield from iterator.next()
-        except discord.NoMoreItems:
-            break
-
-        # do stuff with item here
 
 Certain utilities make working with async iterators easier, detailed below.
 
