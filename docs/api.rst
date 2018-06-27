@@ -568,6 +568,20 @@ Application Info
         The owner of the application. This is a :class:`User` instance
         with the owner's information at the time of the call.
 
+BanEntry
+------------------
+
+.. class:: BanEntry
+
+    A `namedtuple`_ representing the a user's ban.
+
+    .. attribute:: user
+
+        The banned :class:`User`.
+    .. attribute:: reason
+
+        The reason the user was banned, could be ``None``.
+
 Profile
 ---------
 
