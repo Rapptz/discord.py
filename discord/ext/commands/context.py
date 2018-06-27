@@ -38,7 +38,7 @@ class Context(discord.abc.Messageable):
 
     Attributes
     -----------
-    message: :class:`discord.Message`
+    message: :class:`.Message`
         The message that triggered the command being executed.
     bot: :class:`.Bot`
         The bot that contains the command being executed.

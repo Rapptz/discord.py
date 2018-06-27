@@ -5,6 +5,8 @@ API Reference
 
 The following section outlines the API of discord.py's command extension module.
 
+.. _namedtuple: https://docs.python.org/3.5/library/collections.html#collections.namedtuple
+
 .. _ext_commands_api_bot:
 
 Bot

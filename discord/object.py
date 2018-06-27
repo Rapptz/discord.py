@@ -56,7 +56,7 @@ class Object(Hashable):
 
     Attributes
     -----------
-    id : :class:`str`
+    id : :class:`int`
         The ID of the object.
     """
 

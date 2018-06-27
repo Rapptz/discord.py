@@ -65,7 +65,7 @@ class Client:
     """Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
-    A number of options can be passed to the :class:`Client`.
+    A number of options can be passed to the :class:`.Client`.
 
     .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
     .. _connector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#connectors
@@ -97,7 +97,7 @@ class Client:
         must be used to fetch the offline members of the guild.
     status: Optional[:class:`Status`]
         A status to start your presence with upon logging on to Discord.
-    activity: Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]]
+    activity: Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]]
         An activity to start your presence with upon logging on to Discord.
     heartbeat_timeout: :class:`float`
         The maximum numbers of seconds before timing out and restarting the
@@ -182,22 +182,22 @@ class Client:
 
     @property
     def user(self):
-        """Optional[:class:`ClientUser`]: Represents the connected client. None if not logged in."""
+        """Optional[:class:`.ClientUser`]: Represents the connected client. None if not logged in."""
         return self._connection.user
 
     @property
     def guilds(self):
-        """List[:class:`Guild`]: The guilds that the connected client is a member of."""
+        """List[:class:`.Guild`]: The guilds that the connected client is a member of."""
         return self._connection.guilds
 
     @property
     def emojis(self):
-        """List[:class:`Emoji`]: The emojis that the connected client has."""
+        """List[:class:`.Emoji`]: The emojis that the connected client has."""
         return self._connection.emojis
 
     @property
     def private_channels(self):
-        """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on.
+        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
 
         .. note::
 
@@ -208,7 +208,7 @@ class Client:
 
     @property
     def voice_clients(self):
-        """List[:class:`VoiceClient`]: Represents a list of voice connections."""
+        """List[:class:`.VoiceClient`]: Represents a list of voice connections."""
         return self._connection.voice_clients
 
     def is_ready(self):
@@ -290,14 +290,14 @@ class Client:
         """|coro|
 
         Requests previously offline members from the guild to be filled up
-        into the :attr:`Guild.members` cache. This function is usually not
+        into the :attr:`.Guild.members` cache. This function is usually not
         called. It should only be used if you have the ``fetch_offline_members``
         parameter set to ``False``.
 
         When the client logs on and connects to the websocket, Discord does
         not provide the library with offline members if the number of members
         in the guild is larger than 250. You can check if a guild is large
-        if :attr:`Guild.large` is ``True``.
+        if :attr:`.Guild.large` is ``True``.
 
         Parameters
         -----------
@@ -306,7 +306,7 @@ class Client:
 
         Raises
         -------
-        InvalidArgument
+        :class:`.InvalidArgument`
             If any guild is unavailable or not large in the collection.
         """
         if any(not g.large or g.unavailable for g in guilds):
@@ -467,7 +467,7 @@ class Client:
     async def start(self, *args, **kwargs):
         """|coro|
 
-        A shorthand coroutine for :meth:`login` + :meth:`connect`.
+        A shorthand coroutine for :meth:`.login` + :meth:`.connect`.
         """
 
         bot = kwargs.pop('bot', True)
@@ -521,8 +521,8 @@ class Client:
         initialisation from you.
 
         If you want more control over the event loop then this
-        function should not be used. Use :meth:`start` coroutine
-        or :meth:`connect` + :meth:`login`.
+        function should not be used. Use :meth:`.start` coroutine
+        or :meth:`.connect` + :meth:`.login`.
 
         Roughly Equivalent to: ::
 
@@ -575,7 +575,7 @@ class Client:
 
     @property
     def activity(self):
-        """Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]]: The activity being used upon logging in."""
+        """Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]]: The activity being used upon logging in."""
         return create_activity(self._connection._activity)
 
     @activity.setter
@@ -591,30 +591,30 @@ class Client:
 
     @property
     def users(self):
-        """Returns a :obj:`list` of all the :class:`User` the bot can see."""
+        """Returns a :obj:`list` of all the :class:`.User` the bot can see."""
         return list(self._connection._users.values())
 
     def get_channel(self, id):
-        """Returns a :class:`abc.GuildChannel` or :class:`abc.PrivateChannel` with the following ID.
+        """Returns a :class:`.abc.GuildChannel` or :class:`.abc.PrivateChannel` with the following ID.
 
         If not found, returns None.
         """
         return self._connection.get_channel(id)
 
     def get_guild(self, id):
-        """Returns a :class:`Guild` with the given ID. If not found, returns None."""
+        """Returns a :class:`.Guild` with the given ID. If not found, returns None."""
         return self._connection._get_guild(id)
 
     def get_user(self, id):
-        """Returns a :class:`User` with the given ID. If not found, returns None."""
+        """Returns a :class:`.User` with the given ID. If not found, returns None."""
         return self._connection.get_user(id)
 
     def get_emoji(self, id):
-        """Returns a :class:`Emoji` with the given ID. If not found, returns None."""
+        """Returns a :class:`.Emoji` with the given ID. If not found, returns None."""
         return self._connection.get_emoji(id)
 
     def get_all_channels(self):
-        """A generator that retrieves every :class:`abc.GuildChannel` the client can 'access'.
+        """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
 
         This is equivalent to: ::
 
@@ -624,8 +624,8 @@ class Client:
 
         Note
         -----
-        Just because you receive a :class:`abc.GuildChannel` does not mean that
-        you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
+        Just because you receive a :class:`.abc.GuildChannel` does not mean that
+        you can communicate in said channel. :meth:`.abc.GuildChannel.permissions_for` should
         be used for that.
         """
 
@@ -634,7 +634,7 @@ class Client:
                 yield channel
 
     def get_all_members(self):
-        """Returns a generator with every :class:`Member` the client can see.
+        """Returns a generator with every :class:`.Member` the client can see.
 
         This is equivalent to: ::
 
@@ -761,18 +761,18 @@ class Client:
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
 
-        The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
+        The events must be a |corourl|_, if not, :exc:`.ClientException` is raised.
 
         Examples
         ---------
 
-        Using the basic :meth:`event` decorator: ::
+        Using the basic :meth:`.event` decorator: ::
 
             @client.event
             async def on_ready():
                 print('Ready!')
 
-        Saving characters by using the :meth:`async_event` decorator: ::
+        Saving characters by using the :meth:`.async_event` decorator: ::
 
             @client.async_event
             def on_ready():
@@ -799,9 +799,9 @@ class Client:
 
         Changes the client's presence.
 
-        The activity parameter is a :class:`Activity` object (not a string) that represents
+        The activity parameter is a :class:`.Activity` object (not a string) that represents
         the activity being done currently. This could also be the slimmed down versions,
-        :class:`Game` and :class:`Streaming`.
+        :class:`.Game` and :class:`.Streaming`.
 
         Example: ::
 
@@ -810,11 +810,11 @@ class Client:
 
         Parameters
         ----------
-        activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+        activity: Optional[Union[:class:`.Game`, :class:`.Streaming`, :class:`.Activity`]]
             The activity being done. ``None`` if no currently active activity is done.
-        status: Optional[:class:`Status`]
+        status: Optional[:class:`.Status`]
             Indicates what status to change to. If None, then
-            :attr:`Status.online` is used.
+            :attr:`.Status.online` is used.
         afk: bool
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better
@@ -851,7 +851,7 @@ class Client:
     async def create_guild(self, name, region=None, icon=None):
         """|coro|
 
-        Creates a :class:`Guild`.
+        Creates a :class:`.Guild`.
 
         Bot accounts generally are not allowed to create servers.
 
@@ -859,23 +859,23 @@ class Client:
         ----------
         name: str
             The name of the guild.
-        region: :class:`VoiceRegion`
+        region: :class:`.VoiceRegion`
             The region for the voice communication server.
-            Defaults to :attr:`VoiceRegion.us_west`.
+            Defaults to :attr:`.VoiceRegion.us_west`.
         icon: bytes
-            The *bytes-like* object representing the icon. See :meth:`~ClientUser.edit`
+            The *bytes-like* object representing the icon. See :meth:`~.ClientUser.edit`
             for more details on what is expected.
 
         Raises
         ------
-        HTTPException
+        :class:`.HTTPException`
             Guild creation failed.
-        InvalidArgument
+        :class:`.InvalidArgument`
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns
         -------
-        :class:`Guild`
+        :class:`.Guild`
             The guild created. This is not the same guild that is
             added to cache.
         """
@@ -895,12 +895,12 @@ class Client:
     async def get_invite(self, url):
         """|coro|
 
-        Gets an :class:`Invite` from a discord.gg URL or ID.
+        Gets an :class:`.Invite` from a discord.gg URL or ID.
 
         Note
         ------
         If the invite is for a guild you have not joined, the guild and channel
-        attributes of the returned invite will be :class:`Object` with the names
+        attributes of the returned invite will be :class:`.Object` with the names
         patched in.
 
         Parameters
@@ -917,7 +917,7 @@ class Client:
 
         Returns
         --------
-        :class:`Invite`
+        :class:`.Invite`
             The invite from the URL/ID.
         """
 
@@ -928,9 +928,9 @@ class Client:
     async def delete_invite(self, invite):
         """|coro|
 
-        Revokes an :class:`Invite`, URL, or ID to an invite.
+        Revokes an :class:`.Invite`, URL, or ID to an invite.
 
-        You must have the :attr:`~Permissions.manage_channels` permission in
+        You must have the :attr:`~.Permissions.manage_channels` permission in
         the associated guild to do this.
 
         Parameters
@@ -960,12 +960,12 @@ class Client:
 
         Returns
         --------
-        :class:`AppInfo`
-            A namedtuple representing the application info.
+        :class:`.AppInfo`
+            A `namedtuple`_ representing the application info.
 
         Raises
         -------
-        HTTPException
+        :class:`.HTTPException`
             Retrieving the information failed somehow.
         """
         data = await self.http.application_info()
@@ -976,7 +976,7 @@ class Client:
     async def get_user_info(self, user_id):
         """|coro|
 
-        Retrieves a :class:`User` based on their ID. This can only
+        Retrieves a :class:`.User` based on their ID. This can only
         be used by bot accounts. You do not have to share any guilds
         with the user to get this information, however many operations
         do require that you do.
@@ -988,7 +988,7 @@ class Client:
 
         Returns
         --------
-        :class:`User`
+        :class:`.User`
             The user you requested.
 
         Raises
@@ -1020,7 +1020,7 @@ class Client:
 
         Returns
         --------
-        :class:`Profile`
+        :class:`.Profile`
             The profile of the user.
         """
 
@@ -1042,7 +1042,7 @@ class Client:
     async def get_webhook_info(self, webhook_id):
         """|coro|
 
-        Retrieves a :class:`Webhook` with the specified ID.
+        Retrieves a :class:`.Webhook` with the specified ID.
 
         Raises
         --------
@@ -1055,7 +1055,7 @@ class Client:
 
         Returns
         ---------
-        :class:`Webhook`
+        :class:`.Webhook`
             The webhook you requested.
         """
         data = await self.http.get_webhook(webhook_id)

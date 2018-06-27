@@ -401,7 +401,7 @@ class VoiceClient:
         -------
         ClientException
             You are not connected.
-        OpusError
+        :class:`~.opus.OpusError`
             Encoding the data failed.
         """
 

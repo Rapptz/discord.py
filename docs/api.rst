@@ -20,11 +20,12 @@ There are two main ways to query version information about the library.
 
 .. data:: version_info
 
-    A named tuple that is similar to `sys.version_info`_.
+    A `namedtuple`_ that is similar to `sys.version_info`_.
 
     Just like `sys.version_info`_ the valid values for ``releaselevel`` are
     'alpha', 'beta', 'candidate' and 'final'.
 
+    .. _namedtuple: https://docs.python.org/3.5/library/collections.html#collections.namedtuple
     .. _sys.version_info: https://docs.python.org/3.5/library/sys.html#sys.version_info
 
 .. data:: __version__
@@ -197,7 +198,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param channel: The location where the typing originated from.
     :param user: The user that started typing.
-    :param when: A ``datetime.datetime`` object representing when typing started.
+    :param when: A :class:`datetime.datetime` object representing when typing started.
 
 .. function:: on_message(message)
 
@@ -277,7 +278,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_reaction_add(reaction, user)
 
-    Called when a message has a reaction added to it. Similar to on_message_edit,
+    Called when a message has a reaction added to it. Similar to :func:`on_message_edit`,
     if the message is not found in the :attr:`Client.messages` cache, then this
     event will not be called.
 
@@ -298,7 +299,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_reaction_remove(reaction, user)
 
-    Called when a message has a reaction removed from it. Similar to on_message_edit,
+    Called when a message has a reaction removed from it. Similar to :func:`on_message_edit`,
     if the message is not found in the :attr:`Client.messages` cache, then this event
     will not be called.
 
@@ -543,7 +544,7 @@ Application Info
 
 .. class:: AppInfo
 
-    A namedtuple representing the bot's application info.
+    A `namedtuple`_ representing the bot's application info.
 
     .. attribute:: id
 
@@ -572,7 +573,7 @@ Profile
 
 .. class:: Profile
 
-    A namedtuple representing a user's Discord public profile.
+    A `namedtuple`_ representing a user's Discord public profile.
 
     .. attribute:: user
 

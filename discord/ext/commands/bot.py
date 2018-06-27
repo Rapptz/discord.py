@@ -898,7 +898,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        message : discord.Message
+        message : :class:`.Message`
             The message to process commands for.
         """
         ctx = await self.get_context(message)

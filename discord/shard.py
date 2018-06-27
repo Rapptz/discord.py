@@ -89,23 +89,23 @@ class Shard:
         return self._current
 
 class AutoShardedClient(Client):
-    """A client similar to :class:`Client` except it handles the complications
+    """A client similar to :class:`.Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
     process bot.
 
     When using this client, you will be able to use it as-if it was a regular
-    :class:`Client` with a single shard when implementation wise internally it
+    :class:`.Client` with a single shard when implementation wise internally it
     is split up into multiple shards. This allows you to not have to deal with
     IPC or other complicated infrastructure.
 
     It is recommended to use this client only if you have surpassed at least
     1000 guilds.
 
-    If no :attr:`shard_count` is provided, then the library will use the
+    If no :attr:`.shard_count` is provided, then the library will use the
     Bot Gateway endpoint call to figure out how many shards to use.
 
     If a ``shard_ids`` parameter is given, then those shard IDs will be used
-    to launch the internal shards. Note that :attr:`shard_count` must be provided
+    to launch the internal shards. Note that :attr:`.shard_count` must be provided
     if this is used. By default, when omitted, the client will launch shards from
     0 to ``shard_count - 1``.
 
@@ -161,9 +161,9 @@ class AutoShardedClient(Client):
     def latency(self):
         """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
-        This operates similarly to :meth:`.Client.latency` except it uses the average
+        This operates similarly to :attr:`.Client.latency` except it uses the average
         latency of every shard's latency. To get a list of shard latency, check the
-        :attr:`latencies` property. Returns ``nan`` if there are no shards ready.
+        :attr:`.latencies` property. Returns ``nan`` if there are no shards ready.
         """
         if not self.shards:
             return float('nan')
@@ -181,14 +181,14 @@ class AutoShardedClient(Client):
         """|coro|
 
         Requests previously offline members from the guild to be filled up
-        into the :attr:`Guild.members` cache. This function is usually not
+        into the :attr:`.Guild.members` cache. This function is usually not
         called. It should only be used if you have the ``fetch_offline_members``
         parameter set to ``False``.
 
         When the client logs on and connects to the websocket, Discord does
         not provide the library with offline members if the number of members
         in the guild is larger than 250. You can check if a guild is large
-        if :attr:`Guild.large` is ``True``.
+        if :attr:`.Guild.large` is ``True``.
 
         Parameters
         -----------
@@ -197,7 +197,7 @@ class AutoShardedClient(Client):
 
         Raises
         -------
-        InvalidArgument
+        :class:`.InvalidArgument`
             If any guild is unavailable or not large in the collection.
         """
         if any(not g.large or g.unavailable for g in guilds):
@@ -295,9 +295,9 @@ class AutoShardedClient(Client):
 
         Changes the client's presence.
 
-        The activity parameter is a :class:`Activity` object (not a string) that represents
+        The activity parameter is a :class:`.Activity` object (not a string) that represents
         the activity being done currently. This could also be the slimmed down versions,
-        :class:`Game` and :class:`Streaming`.
+        :class:`.Game` and :class:`.Streaming`.
 
         Example: ::
 
@@ -306,11 +306,11 @@ class AutoShardedClient(Client):
 
         Parameters
         ----------
-        activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+        activity: Optional[Union[:class:`.Game`, :class:`.Streaming`, :class:`.Activity`]]
             The activity being done. ``None`` if no currently active activity is done.
-        status: Optional[:class:`Status`]
+        status: Optional[:class:`.Status`]
             Indicates what status to change to. If None, then
-            :attr:`Status.online` is used.
+            :attr:`.Status.online` is used.
         afk: bool
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better

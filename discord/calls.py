@@ -38,7 +38,7 @@ class CallMessage:
 
     Attributes
     -----------
-    ended_timestamp: Optional[datetime.datetime]
+    ended_timestamp: Optional[:class:`datetime.datetime`]
         A naive UTC datetime object that represents the time that the call has ended.
     participants: List[:class:`User`]
         The list of users that are participating in this call.

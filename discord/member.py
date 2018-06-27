@@ -141,7 +141,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
         list is always the default '@everyone' role. These roles are sorted by their position
         in the role hierarchy.
-    joined_at: `datetime.datetime`
+    joined_at: :class:`datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`

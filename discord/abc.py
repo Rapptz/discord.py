@@ -83,11 +83,11 @@ class User(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`User`
-    - :class:`ClientUser`
-    - :class:`Member`
+    - :class:`.User`
+    - :class:`.ClientUser`
+    - :class:`.Member`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`.abc.Snowflake`.
 
     Attributes
     -----------
@@ -135,14 +135,14 @@ class PrivateChannel(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`DMChannel`
-    - :class:`GroupChannel`
+    - :class:`.DMChannel`
+    - :class:`.GroupChannel`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`.abc.Snowflake`.
 
     Attributes
     -----------
-    me: :class:`ClientUser`
+    me: :class:`.ClientUser`
         The user presenting yourself.
     """
     __slots__ = ()
@@ -167,17 +167,17 @@ class GuildChannel:
 
     The following implement this ABC:
 
-    - :class:`TextChannel`
-    - :class:`VoiceChannel`
-    - :class:`CategoryChannel`
+    - :class:`.TextChannel`
+    - :class:`.VoiceChannel`
+    - :class:`.CategoryChannel`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`.abc.Snowflake`.
 
     Attributes
     -----------
     name: :class:`str`
         The channel name.
-    guild: :class:`Guild`
+    guild: :class:`.Guild`
         The guild the channel belongs to.
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0.
@@ -280,8 +280,8 @@ class GuildChannel:
 
     @property
     def changed_roles(self):
-        """Returns a :class:`list` of :class:`Roles` that have been overridden from
-        their default values in the :attr:`Guild.roles` attribute."""
+        """Returns a :class:`list` of :class:`.Role` that have been overridden from
+        their default values in the :attr:`.Guild.roles` attribute."""
         ret = []
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
             role = utils.get(self.guild.roles, id=overwrite.id)
@@ -309,12 +309,12 @@ class GuildChannel:
         Parameters
         -----------
         obj
-            The :class:`Role` or :class:`abc.User` denoting
+            The :class:`.Role` or :class:`.User` denoting
             whose overwrite to get.
 
         Returns
         ---------
-        :class:`PermissionOverwrite`
+        :class:`.PermissionOverwrite`
             The permission overwrites for this object.
         """
 
@@ -338,12 +338,12 @@ class GuildChannel:
         """Returns all of the channel's overwrites.
 
         This is returned as a list of two-element tuples containing the target,
-        which can be either a :class:`Role` or a :class:`Member` and the overwrite
-        as the second element as a :class:`PermissionOverwrite`.
+        which can be either a :class:`.Role` or a :class:`.Member` and the overwrite
+        as the second element as a :class:`.PermissionOverwrite`.
 
         Returns
         --------
-        List[Tuple[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]]:
+        List[Tuple[Union[:class:`.Role`, :class:`.Member`], :class:`.PermissionOverwrite`]]:
             The channel's permission overwrites.
         """
         ret = []
@@ -363,14 +363,14 @@ class GuildChannel:
 
     @property
     def category(self):
-        """Optional[:class:`CategoryChannel`]: The category this channel belongs to.
+        """Optional[:class:`.CategoryChannel`]: The category this channel belongs to.
 
         If there is no category then this is ``None``.
         """
         return self.guild.get_channel(self.category_id)
 
     def permissions_for(self, member):
-        """Handles permission resolution for the current :class:`Member`.
+        """Handles permission resolution for the current :class:`.Member`.
 
         This function takes into consideration the following cases:
 
@@ -381,12 +381,12 @@ class GuildChannel:
 
         Parameters
         ----------
-        member : :class:`Member`
+        member : :class:`.Member`
             The member to resolve permissions for.
 
         Returns
         -------
-        :class:`Permissions`
+        :class:`.Permissions`
             The resolved permissions for the member.
         """
 
@@ -479,11 +479,11 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :class:`.Forbidden`
             You do not have proper permissions to delete the channel.
-        NotFound
+        :class:`.NotFound`
             The channel was not found or was already deleted.
-        HTTPException
+        :class:`.HTTPException`
             Deleting the channel failed.
         """
         await self._state.http.delete_channel(self.id, reason=reason)
@@ -494,19 +494,19 @@ class GuildChannel:
         Sets the channel specific permission overwrites for a target in the
         channel.
 
-        The ``target`` parameter should either be a :class:`Member` or a
-        :class:`Role` that belongs to guild.
+        The ``target`` parameter should either be a :class:`.Member` or a
+        :class:`.Role` that belongs to guild.
 
         The ``overwrite`` parameter, if given, must either be ``None`` or
-        :class:`PermissionOverwrite`. For convenience, you can pass in
-        keyword arguments denoting :class:`Permissions` attributes. If this is
+        :class:`.PermissionOverwrite`. For convenience, you can pass in
+        keyword arguments denoting :class:`.Permissions` attributes. If this is
         done, then you cannot mix the keyword arguments with the ``overwrite``
         parameter.
 
         If the ``overwrite`` parameter is ``None``, then the permission
         overwrites are deleted.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to use this.
+        You must have the :attr:`~.Permissions.manage_roles` permission to use this.
 
         Examples
         ----------
@@ -520,7 +520,7 @@ class GuildChannel:
 
             await channel.set_permissions(member, overwrite=None)
 
-        Using :class:`PermissionOverwrite` ::
+        Using :class:`.PermissionOverwrite` ::
 
             overwrite = PermissionOverwrite()
             overwrite.send_messages = False
@@ -530,8 +530,8 @@ class GuildChannel:
         Parameters
         -----------
         target
-            The :class:`Member` or :class:`Role` to overwrite permissions for.
-        overwrite: :class:`PermissionOverwrite`
+            The :class:`.Member` or :class:`.Role` to overwrite permissions for.
+        overwrite: :class:`.PermissionOverwrite`
             The permissions to allow and deny to the target.
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
@@ -541,13 +541,13 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :class:`.Forbidden`
             You do not have permissions to edit channel specific permissions.
-        HTTPException
+        :class:`.HTTPException`
             Editing channel specific permissions failed.
-        NotFound
+        :class:`.NotFound`
             The role or member being edited is not part of the guild.
-        InvalidArgument
+        :class:`.InvalidArgument`
             The overwrite parameter invalid or the target type was not
             :class:`Role` or :class:`Member`.
         """
@@ -610,12 +610,12 @@ class GuildChannel:
 
         Raises
         -------
-        HTTPException
+        :class:`.HTTPException`
             Invite creation failed.
 
         Returns
         --------
-        :class:`Invite`
+        :class:`.Invite`
             The invite that was created.
         """
 
@@ -631,14 +631,14 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :class:`.Forbidden`
             You do not have proper permissions to get the information.
-        HTTPException
+        :class:`.HTTPException`
             An error occurred while fetching the information.
 
         Returns
         -------
-        List[:class:`Invite`]
+        List[:class:`.Invite`]
             The list of invites that are currently active.
         """
 
@@ -658,14 +658,14 @@ class Messageable(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`TextChannel`
-    - :class:`DMChannel`
-    - :class:`GroupChannel`
-    - :class:`User`
-    - :class:`Member`
-    - :class:`~ext.commands.Context`
+    - :class:`.TextChannel`
+    - :class:`.DMChannel`
+    - :class:`.GroupChannel`
+    - :class:`.User`
+    - :class:`.Member`
+    - :class:`~.ext.commands.Context`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`.abc.Snowflake`.
     """
 
     __slots__ = ()
@@ -684,11 +684,11 @@ class Messageable(metaclass=abc.ABCMeta):
         be provided.
 
         To upload a single file, the ``file`` parameter should be used with a
-        single :class:`File` object. To upload multiple files, the ``files``
-        parameter should be used with a :class:`list` of :class:`File` objects.
+        single :class:`.File` object. To upload multiple files, the ``files``
+        parameter should be used with a :class:`list` of :class:`.File` objects.
         **Specifying both parameters will lead to an exception**.
 
-        If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
+        If the ``embed`` parameter is provided, it must be of type :class:`.Embed` and
         it must be a rich embed type.
 
         Parameters
@@ -697,11 +697,11 @@ class Messageable(metaclass=abc.ABCMeta):
             The content of the message to send.
         tts: bool
             Indicates if the message should be sent using text-to-speech.
-        embed: :class:`Embed`
+        embed: :class:`.Embed`
             The rich embed for the content.
-        file: :class:`File`
+        file: :class:`.File`
             The file to upload.
-        files: List[:class:`File`]
+        files: List[:class:`.File`]
             A list of files to upload. Must be a maximum of 10.
         nonce: int
             The nonce to use for sending this message. If the message was successfully sent,
@@ -713,17 +713,17 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         --------
-        HTTPException
+        :class:`.HTTPException`
             Sending the message failed.
-        Forbidden
+        :class:`.Forbidden`
             You do not have the proper permissions to send the message.
-        InvalidArgument
+        :class:`.InvalidArgument`
             The ``files`` list is not of the appropriate size or
             you specified both ``file`` and ``files``.
 
         Returns
         ---------
-        :class:`Message`
+        :class:`.Message`
             The message that was sent.
         """
 
@@ -804,7 +804,7 @@ class Messageable(metaclass=abc.ABCMeta):
     async def get_message(self, id):
         """|coro|
 
-        Retrieves a single :class:`Message` from the destination.
+        Retrieves a single :class:`.Message` from the destination.
 
         This can only be used by bot accounts.
 
@@ -815,16 +815,16 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Returns
         --------
-        :class:`Message`
+        :class:`.Message`
             The message asked for.
 
         Raises
         --------
-        NotFound
+        :class:`.NotFound`
             The specified message was not found.
-        Forbidden
+        :class:`.Forbidden`
             You do not have the permissions required to get a message.
-        HTTPException
+        :class:`.HTTPException`
             Retrieving the message failed.
         """
 
@@ -835,11 +835,11 @@ class Messageable(metaclass=abc.ABCMeta):
     async def pins(self):
         """|coro|
 
-        Returns a :class:`list` of :class:`Message` that are currently pinned.
+        Returns a :class:`list` of :class:`.Message` that are currently pinned.
 
         Raises
         -------
-        HTTPException
+        :class:`.HTTPException`
             Retrieving the pinned messages failed.
         """
 
@@ -849,7 +849,7 @@ class Messageable(metaclass=abc.ABCMeta):
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
-        """Return an :class:`AsyncIterator` that enables receiving the destination's message history.
+        """Return an :class:`.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
 
@@ -861,13 +861,13 @@ class Messageable(metaclass=abc.ABCMeta):
             The number of messages to retrieve.
             If ``None``, retrieves every message in the channel. Note, however,
             that this would make it a slow operation.
-        before: :class:`Message` or `datetime`
+        before: :class:`.Message` or `datetime`
             Retrieve messages before this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        after: :class:`Message` or `datetime`
+        after: :class:`.Message` or `datetime`
             Retrieve messages after this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        around: :class:`Message` or `datetime`
+        around: :class:`.Message` or `datetime`
             Retrieve messages around this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
@@ -880,14 +880,14 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         ------
-        Forbidden
+        :class:`.Forbidden`
             You do not have permissions to get channel message history.
-        HTTPException
+        :class:`.HTTPException`
             The request to get message history failed.
 
         Yields
         -------
-        :class:`Message`
+        :class:`.Message`
             The message with the message data parsed.
 
         Examples
@@ -914,7 +914,7 @@ class Connectable(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`VoiceChannel`
+    - :class:`.VoiceChannel`
     """
     __slots__ = ()
 
@@ -947,7 +947,7 @@ class Connectable(metaclass=abc.ABCMeta):
             Could not connect to the voice channel in time.
         ClientException
             You are already connected to a voice channel.
-        OpusNotLoaded
+        :class:`~.opus.OpusNotLoaded`
             The opus library has not been loaded.
 
         Returns
