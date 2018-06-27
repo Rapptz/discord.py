@@ -285,9 +285,15 @@ class ConnectionState:
                     launch.set()
                     await asyncio.sleep(2, loop=self.loop)
 
-            guilds = self._ready_state.guilds
+            guilds = next(zip(*self._ready_state.guilds), [])
             if self._fetch_offline:
                 await self.request_offline_members(guilds)
+
+            for guild, unavailable in self._ready_state.guilds:
+                if unavailable == False:
+                    self.dispatch('guild_available', guild)
+                else:
+                    self.dispatch('guild_join', guild)
 
             # remove the state
             try:
@@ -648,7 +654,7 @@ class ConnectionState:
                 try:
                     state = self._ready_state
                     state.launch.clear()
-                    state.guilds.append(guild)
+                    state.guilds.append((guild, unavailable))
                 except AttributeError:
                     # the _ready_state attribute is only there during
                     # processing of useful READY.
@@ -920,12 +926,24 @@ class AutoShardedConnectionState(ConnectionState):
             await asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
 
         if self._fetch_offline:
-            guilds = sorted(self._ready_state.guilds, key=lambda g: g.shard_id)
+            guilds = sorted(self._ready_state.guilds, key=lambda g: g[0].shard_id)
 
-            for shard_id, sub_guilds in itertools.groupby(guilds, key=lambda g: g.shard_id):
-                sub_guilds = list(sub_guilds)
+            for shard_id, sub_guilds_info in itertools.groupby(guilds, key=lambda g: g[0].shard_id):
+                sub_guilds, sub_available = zip(*sub_guilds_info)
                 await self.request_offline_members(sub_guilds, shard_id=shard_id)
+
+                for guild, unavailable in zip(sub_guilds, sub_available):
+                    if unavailable == False:
+                        self.dispatch('guild_available', guild)
+                    else:
+                        self.dispatch('guild_join', guild)
                 self.dispatch('shard_ready', shard_id)
+        else:
+            for guild, unavailable in self._ready_state.guilds:
+                if unavailable == False:
+                    self.dispatch('guild_available', guild)
+                else:
+                    self.dispatch('guild_join', guild)
 
         # remove the state
         try:
