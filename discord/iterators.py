@@ -77,7 +77,7 @@ class _AsyncIterator:
             else:
                 ret.append(item)
 
-    async def __aiter__(self):
+    def __aiter__(self):
         return self
 
     async def __anext__(self):
