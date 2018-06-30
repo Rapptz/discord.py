@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-import asyncio
 
 from collections import namedtuple, defaultdict
 
@@ -794,8 +793,7 @@ class Guild(Hashable):
 
         await http.edit_guild(self.id, reason=reason, **fields)
 
-    @asyncio.coroutine
-    def get_ban(self, user):
+    async def get_ban(self, user):
         """|coro|
 
         Retrieves the :class:`BanEntry` for a user, which is a namedtuple
@@ -824,7 +822,7 @@ class Guild(Hashable):
         BanEntry
             The BanEntry object for the specified user.
         """
-        data = yield from self._state.http.get_ban(user.id, self.id)
+        data = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
             user=User(state=self._state, data=data['user']),
             reason=data['reason']

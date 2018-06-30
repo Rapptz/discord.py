@@ -787,13 +787,6 @@ class Client:
         log.debug('%s has successfully been registered as an event', coro.__name__)
         return coro
 
-    def async_event(self, coro):
-        """A shorthand decorator for :func:`asyncio.coroutine` + :meth:`event`."""
-        if not asyncio.iscoroutinefunction(coro):
-            coro = asyncio.coroutine(coro)
-
-        return self.event(coro)
-
     async def change_presence(self, *, activity=None, status=None, afk=False):
         """|coro|
 
