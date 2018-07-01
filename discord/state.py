@@ -325,7 +325,7 @@ class ConnectionState:
         for guild_data in data['guilds']:
             guild = self._add_guild_from_data(guild_data)
             if (not self.is_bot and not guild.unavailable) or guild.large:
-                guilds.append(guild)
+                guilds.append((guild, guild.unavailable))
 
         for relationship in data.get('relationships', []):
             try:
