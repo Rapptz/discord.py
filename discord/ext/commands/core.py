@@ -606,6 +606,11 @@ class Command:
         return type(self.instance).__name__ if self.instance is not None else None
 
     @property
+    def cog(self):
+        """The cog this command belongs to. None otherwise."""
+        return self.instance if self.instance is not None else None
+
+    @property
     def short_doc(self):
         """Gets the "short" documentation of a command.
 
