@@ -79,7 +79,7 @@ def _convert_to_bool(argument):
     elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
         return False
     else:
-        raise BadArgument(lowered + ' is not a recognised boolean option')
+        raise ConversionFailure(argument, bool, lowered + ' is not a recognised boolean option')
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
@@ -278,7 +278,8 @@ class Command:
             except AttributeError:
                 name = converter.__class__.__name__
 
-            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+            message = 'Converting to "{}" failed for parameter "{}".'.format(name, param.name)
+            raise ConversionFailure(argument, converter, message) from e
 
     @property
     def clean_params(self):

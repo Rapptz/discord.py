@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .errors import BadArgument
+from .errors import ArgumentParseFailure
 
 class StringView:
     def __init__(self, buffer):
@@ -152,7 +152,7 @@ def quoted_word(view):
         if not current:
             if is_quoted:
                 # unexpected EOF
-                raise BadArgument('Expected closing {}.'.format(close_quote))
+                raise ArgumentParseFailure('Expected closing {}.'.format(close_quote))
             return ''.join(result)
 
         # currently we accept strings in the format of "hello world"
@@ -163,7 +163,7 @@ def quoted_word(view):
                 # string ends with \ and no character after it
                 if is_quoted:
                     # if we're quoted then we're expecting a closing quote
-                    raise BadArgument('Expected closing {}.'.format(close_quote))
+                    raise ArgumentParseFailure('Expected closing {}.'.format(close_quote))
                 # if we aren't then we just let it through
                 return ''.join(result)
 
@@ -178,14 +178,14 @@ def quoted_word(view):
 
         if not is_quoted and current in _all_quotes:
             # we aren't quoted
-            raise BadArgument('Unexpected quote mark in non-quoted string')
+            raise ArgumentParseFailure('Unexpected quote mark in non-quoted string')
 
         # closing quote
         if is_quoted and current == close_quote:
             next_char = view.get()
             valid_eof = not next_char or next_char.isspace()
             if not valid_eof:
-                raise BadArgument('Expected space after closing quotation')
+                raise ArgumentParseFailure('Expected space after closing quotation')
 
             # we're quoted so it's okay
             return ''.join(result)
