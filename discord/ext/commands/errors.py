@@ -30,7 +30,7 @@ __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
            'UserInputError', 'CommandOnCooldown', 'NotOwner',
-           'MissingPermissions', 'BotMissingPermissions']
+           'MissingPermissions', 'BotMissingPermissions', 'ConversionError']
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -48,6 +48,19 @@ class CommandError(DiscordException):
             super().__init__(m, *args)
         else:
             super().__init__(*args)
+
+class ConversionError(CommandError):
+    """Exception raised when a Converter class raises non-CommandError.
+
+    Attributes
+    ----------
+    converter: :class:`discord.ext.commands.Converter`
+        The converter that failed.
+
+    This inherits from :exc:`.CommandError`.
+    """
+    def __init__(self, converter):
+        self.converter = converter
 
 class UserInputError(CommandError):
     """The base exception type for errors that involve errors
