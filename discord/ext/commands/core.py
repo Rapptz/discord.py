@@ -212,7 +212,7 @@ class Command:
             self.instance = instance
         return self
 
-    async def do_conversion(self, ctx, converter, argument):
+    async def do_conversion(self, ctx, converter, argument, param):
         if converter is bool:
             return _convert_to_bool(argument)
 
@@ -224,21 +224,36 @@ class Command:
             if module.startswith('discord.') and not module.endswith('converter'):
                 converter = getattr(converters, converter.__name__ + 'Converter')
 
-        if inspect.isclass(converter):
-            if issubclass(converter, converters.Converter):
-                instance = converter()
-                ret = await instance.convert(ctx, argument)
-                return ret
-            else:
-                method = getattr(converter, 'convert', None)
-                if method is not None and inspect.ismethod(method):
-                    ret = await method(ctx, argument)
+        try:
+            if inspect.isclass(converter):
+                if issubclass(converter, converters.Converter):
+                    instance = converter()
+                    ret = await instance.convert(ctx, argument)
                     return ret
-        elif isinstance(converter, converters.Converter):
-            ret = await converter.convert(ctx, argument)
-            return ret
+                else:
+                    method = getattr(converter, 'convert', None)
+                    if method is not None and inspect.ismethod(method):
+                        ret = await method(ctx, argument)
+                        return ret
+            elif isinstance(converter, converters.Converter):
+                ret = await converter.convert(ctx, argument)
+                return ret
+        except CommandError as e:
+            raise e
+        except Exception as e:
+            raise ConversionError(converter) from e
 
-        return converter(argument)
+        try:
+            return converter(argument)
+        except CommandError as e:
+            raise e
+        except Exception as e:
+            try:
+                name = converter.__name__
+            except AttributeError:
+                name = converter.__class__.__name__
+
+            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
 
     def _get_converter(self, param):
         converter = param.annotation
@@ -268,17 +283,7 @@ class Command:
         else:
             argument = quoted_word(view)
 
-        try:
-            return (await self.do_conversion(ctx, converter, argument))
-        except CommandError as e:
-            raise e
-        except Exception as e:
-            try:
-                name = converter.__name__
-            except AttributeError:
-                name = converter.__class__.__name__
-
-            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+        return (await self.do_conversion(ctx, converter, argument, param))
 
     @property
     def clean_params(self):
