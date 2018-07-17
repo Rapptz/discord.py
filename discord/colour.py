@@ -80,6 +80,9 @@ class Colour:
     def __hash__(self):
         return hash(self.value)
 
+    def __int__(self):
+        return self.value
+
     @property
     def r(self):
         """Returns the red component of the colour."""
