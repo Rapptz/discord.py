@@ -86,7 +86,7 @@ class HTTPClient:
     SUCCESS_LOG = '{method} {url} has received {text}'
     REQUEST_LOG = '{method} {url} with {json} has returned {status}'
 
-    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
+    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None, message_transform=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
         self._session = aiohttp.ClientSession(connector=connector, loop=self.loop)
@@ -97,6 +97,7 @@ class HTTPClient:
         self.bot_token = False
         self.proxy = proxy
         self.proxy_auth = proxy_auth
+        self.message_transform = message_transform
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
@@ -296,11 +297,16 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload)
 
-    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None):
+    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None, message_transform=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
 
         if content:
+            if message_transform is not None:
+                content = self.message_transform(content)
+            elif self.message_transform:
+                content = self.message_transform(content)
+
             payload['content'] = content
 
         if tts:
@@ -317,12 +323,17 @@ class HTTPClient:
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None):
+    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None, message_transform=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
         payload = {'tts': tts}
         if content:
+            if message_transform is not None:
+                content = self.message_transform(content)
+            elif self.message_transform:
+                content = self.message_transform(content)
+
             payload['content'] = content
         if embed:
             payload['embed'] = embed

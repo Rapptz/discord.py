@@ -674,7 +674,7 @@ class Messageable(metaclass=abc.ABCMeta):
     async def _get_channel(self):
         raise NotImplementedError
 
-    async def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
+    async def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None, message_transform=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -710,6 +710,11 @@ class Messageable(metaclass=abc.ABCMeta):
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
+        message_transform: callable
+            If provided alongside content, content will be replaced with the result of calling transform
+            with content as the only parameter
+
+            Defaults to using the bot-wide filter if one is set, and none is provided here.
 
         Raises
         --------
@@ -742,7 +747,8 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = await state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
-                                                        content=content, tts=tts, embed=embed, nonce=nonce)
+                                                        content=content, tts=tts, embed=embed, nonce=nonce,
+                                                        message_transform=message_transform)
             finally:
                 file.close()
 
@@ -753,12 +759,13 @@ class Messageable(metaclass=abc.ABCMeta):
             try:
                 param = [(f.open_file(), f.filename) for f in files]
                 data = await state.http.send_files(channel.id, files=param, content=content, tts=tts,
-                                                        embed=embed, nonce=nonce)
+                                                        embed=embed, nonce=nonce, message_transform=message_transform)
             finally:
                 for f in files:
                     f.close()
         else:
-            data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
+            data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce,
+                                                    message_transform=message_transform)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:

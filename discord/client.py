@@ -70,6 +70,7 @@ class Client:
     .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
     .. _connector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#connectors
     .. _ProxyConnector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#proxyconnector
+    .. _callable: https://docs.python.org/3/library/typing.html#typing.Callable
 
     Parameters
     -----------
@@ -104,6 +105,10 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
+    default_message_transform: Optional[callable]
+        A message transformation applied as the default message transformation
+        on content for outgoing messages
+
 
     Attributes
     -----------
@@ -122,7 +127,8 @@ class Client:
         connector = options.pop('connector', None)
         proxy = options.pop('proxy', None)
         proxy_auth = options.pop('proxy_auth', None)
-        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
+        message_transform = options.pop('default_message_transform', None)
+        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop, message_transform=message_transform)
 
         self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
