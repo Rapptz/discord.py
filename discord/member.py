@@ -31,7 +31,6 @@ import copy
 import discord.abc
 
 from . import utils
-from .role import Role
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
@@ -448,12 +447,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
         else:
-            id_list = []
-            for r in roles:
-                if not isinstance(r, Role):
-                    raise TypeError('Expected discord.Role but received %s instead.' % r.__class__.__name__)
-                id_list.append(r.id)
-            payload['roles'] = tuple(id_list)
+            payload['roles'] = tuple(r.id for r in roles) 
 
         yield from http.edit_member(guild_id, self.id, reason=reason, **payload)
 
