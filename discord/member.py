@@ -442,7 +442,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
         else:
-            payload['roles'] = tuple(r.id for r in roles) 
+            payload['roles'] = tuple(r.id for r in roles)
 
         await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
