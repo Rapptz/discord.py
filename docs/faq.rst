@@ -15,27 +15,6 @@ Coroutines
 
 Questions regarding coroutines and asyncio belong here.
 
-I get a SyntaxError around the word ``async``\! What should I do?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This :exc:`SyntaxError` happens because you're using a Python version lower than 3.5. Python 3.4 uses ``@asyncio.coroutine`` and
-``yield from`` instead of ``async def`` and ``await``.
-
-Thus you must do the following instead: ::
-
-    async def foo():
-        await bar()
-
-    # into
-
-    @asyncio.coroutine
-    def foo():
-        yield from bar()
-
-Don't forget to ``import asyncio`` on the top of your files.
-
-**It is heavily recommended that you update to Python 3.5 or higher as it simplifies asyncio massively.**
-
 What is a coroutine?
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -194,11 +173,6 @@ The first gotcha that you must be aware of is that calling a coroutine is not a 
 technically in another thread, we must take caution in calling thread-safe operations so things do not bug out. Luckily for
 us, :mod:`asyncio` comes with a :func:`asyncio.run_coroutine_threadsafe` function that allows us to call
 a coroutine from another thread.
-
-.. warning::
-
-    This function is only part of 3.5.1+ and 3.4.4+. If you are not using these Python versions then use
-    ``discord.compat.run_coroutine_threadsafe``.
 
 However, this function returns a :class:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of
 this together we can do the following: ::

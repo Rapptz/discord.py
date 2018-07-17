@@ -101,14 +101,14 @@ class Permissions:
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
 
     def is_superset(self, other):
         """Returns True if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
 
     def is_strict_subset(self, other):
         """Returns True if the permissions on other are a strict subset of those on self."""
@@ -258,7 +258,7 @@ class Permissions:
     def manage_channels(self):
         """Returns True if a user can edit, delete, or create channels in the guild.
 
-        This also corresponds to the "manage channel" channel-specific override."""
+        This also corresponds to the "Manage Channel" channel-specific override."""
         return self._bit(4)
 
     @manage_channels.setter
@@ -453,7 +453,7 @@ class Permissions:
     def manage_roles(self):
         """Returns True if a user can create or edit roles less than their role's position.
 
-        This also corresponds to the "manage permissions" channel-specific override.
+        This also corresponds to the "Manage Permissions" channel-specific override.
         """
         return self._bit(28)
 

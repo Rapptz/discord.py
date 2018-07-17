@@ -137,7 +137,7 @@ class Reaction:
             iterator = reaction.users()
             while True:
                 try:
-                    user = yield from iterator.next()
+                    user = await iterator.next()
                 except discord.NoMoreItems:
                     break
                 else:
