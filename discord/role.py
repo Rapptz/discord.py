@@ -160,7 +160,7 @@ class Role(Hashable):
     @property
     def mention(self):
         """Returns a string that allows you to mention a role."""
-        return '<@&%s>' % self.id
+        return '<@&%s>' % self.id if self.guild.id != self.id else '@everyone'
 
     @property
     def members(self):
