@@ -228,7 +228,7 @@ class Emoji(Hashable):
 
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    async def edit(self, *, name, reason=None):
+    async def edit(self, *, name, roles=[], reason=None):
         """|coro|
 
         Edits the custom emoji.
@@ -242,6 +242,8 @@ class Emoji(Hashable):
         -----------
         name: str
             The new emoji name.
+        roles: Optional[list[int]]
+            IDs of the roles for which this emoji is to be whitelisted.  Leave empty to make it unrestricted.
         reason: Optional[str]
             The reason for editing this emoji. Shows up on the audit log.
 
@@ -253,4 +255,4 @@ class Emoji(Hashable):
             An error occurred editing the emoji.
         """
 
-        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, reason=reason)
+        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)

@@ -986,7 +986,7 @@ class Guild(Hashable):
 
         return result
 
-    async def create_custom_emoji(self, *, name, image, reason=None):
+    async def create_custom_emoji(self, *, name, image, roles=[], reason=None):
         """|coro|
 
         Creates a custom :class:`Emoji` for the guild.
@@ -1005,6 +1005,8 @@ class Guild(Hashable):
         image: bytes
             The *bytes-like* object representing the image data to use.
             Only JPG and PNG images are supported.
+        roles: Optional[list[int]]
+            IDs of the roles for which this emoji is to be whitelisted.  Leave empty to make it unrestricted.
         reason: Optional[str]
             The reason for creating this emoji. Shows up on the audit log.
 
@@ -1022,7 +1024,7 @@ class Guild(Hashable):
         """
 
         img = utils._bytes_to_base64_data(image)
-        data = await self._state.http.create_custom_emoji(self.id, name, img, reason=reason)
+        data = await self._state.http.create_custom_emoji(self.id, name, img, roles=roles, reason=reason)
         return self._state.store_emoji(self, data)
 
     async def create_role(self, *, reason=None, **fields):
