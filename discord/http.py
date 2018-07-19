@@ -600,10 +600,11 @@ class HTTPClient:
         }
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
-    def create_custom_emoji(self, guild_id, name, image, *, reason=None):
+    def create_custom_emoji(self, guild_id, name, image, *, roles=None, reason=None):
         payload = {
             'name': name,
-            'image': image
+            'image': image,
+            'roles': roles or []
         }
 
         r = Route('POST', '/guilds/{guild_id}/emojis', guild_id=guild_id)
@@ -613,9 +614,10 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, reason=reason)
 
-    def edit_custom_emoji(self, guild_id, emoji_id, *, name, reason=None):
+    def edit_custom_emoji(self, guild_id, emoji_id, *, name, roles=None, reason=None):
         payload = {
-            'name': name
+            'name': name,
+            'roles': roles or []
         }
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
