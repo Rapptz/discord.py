@@ -342,7 +342,7 @@ class Embed:
         """
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]
 
-    def add_field(self, *, name, value, inline=True):
+    def add_field(self, name, value, *, inline=True):
         """Adds a field to the embed object.
 
         This function returns the class instance to allow for fluent-style
