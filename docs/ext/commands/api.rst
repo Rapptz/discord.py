@@ -196,6 +196,9 @@ Errors
 .. autoexception:: discord.ext.commands.BadArgument
     :members:
 
+.. autoexception:: discord.ext.commands.BadUnionArgument
+    :members:
+
 .. autoexception:: discord.ext.commands.NoPrivateMessage
     :members:
 
