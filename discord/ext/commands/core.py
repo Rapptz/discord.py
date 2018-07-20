@@ -257,18 +257,23 @@ class Command:
         if converter is bool:
             return _convert_to_bool(argument)
 
-        if type(converter) is typing._Union:
-            errors = []
-            for conv in converter.__args__:
-                try:
-                    value = await self._actual_conversion(ctx, conv, argument, param)
-                except CommandError as e:
-                    errors.append(e)
-                else:
-                    return value
+        try:
+            origin = converter.__origin__
+        except AttributeError:
+            pass
+        else:
+            if origin is typing.Union:
+                errors = []
+                for conv in converter.__args__:
+                    try:
+                        value = await self._actual_conversion(ctx, conv, argument, param)
+                    except CommandError as e:
+                        errors.append(e)
+                    else:
+                        return value
 
-            # if we're  here, then we failed all the converters
-            raise BadUnionArgument(param, converter.__args__, errors)
+                # if we're  here, then we failed all the converters
+                raise BadUnionArgument(param, converter.__args__, errors)
 
         return await self._actual_conversion(ctx, converter, argument, param)
 
