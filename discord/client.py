@@ -763,19 +763,12 @@ class Client:
 
         The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
 
-        Examples
+        Example
         ---------
 
-        Using the basic :meth:`event` decorator: ::
-
+		::
             @client.event
             async def on_ready():
-                print('Ready!')
-
-        Saving characters by using the :meth:`async_event` decorator: ::
-
-            @client.async_event
-            def on_ready():
                 print('Ready!')
 
         """

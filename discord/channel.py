@@ -340,7 +340,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name=None, avatar=None):
+    async def create_webhook(self, *, name, avatar=None):
         """|coro|
 
         Creates a webhook for this channel.
@@ -349,7 +349,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -------------
-        name: Optional[str]
+        name: str
             The webhook's name.
         avatar: Optional[bytes]
             A *bytes-like* object representing the webhook's default avatar.
@@ -371,10 +371,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if avatar is not None:
             avatar = utils._bytes_to_base64_data(avatar)
 
-        if name is not None:
-            name = str(name)
-
-        data = await self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar)
         return Webhook.from_state(data, state=self._state)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
