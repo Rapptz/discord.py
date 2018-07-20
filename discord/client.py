@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+l# -*- coding: utf-8 -*-
 
 """
 The MIT License (MIT)
@@ -839,7 +839,7 @@ class Client:
 
         Creates a :class:`Guild`.
 
-        Bot accounts generally are not allowed to create servers.
+        Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
         ----------
