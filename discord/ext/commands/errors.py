@@ -57,11 +57,15 @@ class ConversionError(CommandError):
     ----------
     converter: :class:`discord.ext.commands.Converter`
         The converter that failed.
+    original
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
 
     This inherits from :exc:`.CommandError`.
     """
-    def __init__(self, converter):
+    def __init__(self, converter, original):
         self.converter = converter
+        self.original = original
 
 class UserInputError(CommandError):
     """The base exception type for errors that involve errors

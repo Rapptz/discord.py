@@ -239,7 +239,7 @@ class Command:
         except CommandError as e:
             raise e
         except Exception as e:
-            raise ConversionError(converter) from e
+            raise ConversionError(converter, e) from e
 
         try:
             return converter(argument)
