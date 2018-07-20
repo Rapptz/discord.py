@@ -28,6 +28,7 @@ import asyncio
 import inspect
 import discord
 import functools
+import typing
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
@@ -212,10 +213,7 @@ class Command:
             self.instance = instance
         return self
 
-    async def do_conversion(self, ctx, converter, argument, param):
-        if converter is bool:
-            return _convert_to_bool(argument)
-
+    async def _actual_conversion(self, ctx, converter, argument, param):
         try:
             module = converter.__module__
         except:
@@ -254,6 +252,25 @@ class Command:
                 name = converter.__class__.__name__
 
             raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+
+    async def do_conversion(self, ctx, converter, argument, param):
+        if converter is bool:
+            return _convert_to_bool(argument)
+
+        if type(converter) is typing._Union:
+            errors = []
+            for conv in converter.__args__:
+                try:
+                    value = await self._actual_conversion(ctx, conv, argument, param)
+                except CommandError as e:
+                    errors.append(e)
+                else:
+                    return value
+
+            # if we're  here, then we failed all the converters
+            raise BadUnionArgument(param, converter.__args__, errors)
+
+        return await self._actual_conversion(ctx, converter, argument, param)
 
     def _get_converter(self, param):
         converter = param.annotation

@@ -30,7 +30,8 @@ __all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
            'UserInputError', 'CommandOnCooldown', 'NotOwner',
-           'MissingPermissions', 'BotMissingPermissions', 'ConversionError']
+           'MissingPermissions', 'BotMissingPermissions', 'ConversionError',
+           'BadUnionArgument']
 
 class CommandError(DiscordException):
     """The base exception type for all command related errors.
@@ -191,3 +192,35 @@ class BotMissingPermissions(CheckFailure):
             fmt = ' and '.join(missing)
         message = 'Bot requires {} permission(s) to run command.'.format(fmt)
         super().__init__(message, *args)
+
+class BadUnionArgument(UserInputError):
+    """Exception raised when a :class:`typing.Union` converter fails for all
+    its associated types.
+
+    Attributes
+    -----------
+    param: :class:`inspect.Parameter`
+        The parameter that failed being converted.
+    converters: Tuple[Type, ...]
+        A tuple of converters attempted in conversion, in order of failure.
+    errors: List[:class:`CommandError`]
+        A list of errors that were caught from failing the conversion.
+    """
+    def __init__(self, param, converters, errors):
+        self.param = param
+        self.converters = converters
+        self.errors = errors
+
+        def _get_name(x):
+            try:
+                return x.__name__
+            except AttributeError:
+                return x.__class__.__name__
+
+        to_string = [_get_name(x) for x in converters]
+        if len(to_string) > 2:
+            fmt = '{}, or {}'.format(', '.join(to_string[:-1]), to_string[-1])
+        else:
+            fmt = ' or '.join(to_string)
+
+        super().__init__('Could not convert "{0.name}" into {1}.'.format(param, fmt))
