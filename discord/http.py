@@ -529,10 +529,10 @@ class HTTPClient:
 
     # Webhook management
 
-    def create_webhook(self, channel_id, *, name=None, avatar=None):
-        payload = {}
-        if name is not None:
-            payload['name'] = name
+    def create_webhook(self, channel_id, *, name, avatar=None):
+        payload = {
+            'name': name
+        }
         if avatar is not None:
             payload['avatar'] = avatar
 
