@@ -187,6 +187,9 @@ Errors
 .. autoexception:: discord.ext.commands.CommandError
     :members:
 
+.. autoexception:: discord.ext.commands.ConversionError
+    :members:
+
 .. autoexception:: discord.ext.commands.MissingRequiredArgument
     :members:
 
