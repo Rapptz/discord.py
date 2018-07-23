@@ -846,7 +846,7 @@ class Client:
 
         Creates a :class:`Guild`.
 
-        Bot accounts over 10 total guilds are typically not allowed to create guilds.
+        Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
         ----------
