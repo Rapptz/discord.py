@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import colorsys
+
 class Colour:
     """Represents a Discord role colour. This class is similar
     to an (red, green, blue) :class:`tuple`.
@@ -103,6 +105,12 @@ class Colour:
     def from_rgb(cls, r, g, b):
         """Constructs a :class:`Colour` from an RGB tuple."""
         return cls((r << 16) + (g << 8) + b)
+
+    @classmethod
+    def from_hsv(cls, h, s, v):
+        """Constructs a :class:`Colour` from an HSV tuple."""
+        rgb = colorsys.hsv_to_rgb(h, s, v)
+        return cls.from_rgb(*(int(x * 255) for x in rgb))
 
     @classmethod
     def default(cls):
