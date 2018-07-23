@@ -187,7 +187,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
+                yield from asyncio.wait(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -199,7 +199,8 @@ class ConnectionState:
 
         # call GUILD_SYNC after we're done chunking
         if not self.is_bot:
-            compat.create_task(self.syncer([s.id for s in self.servers]), loop=self.loop)
+            log.info('Requesting GUILD_SYNC for %s guilds' % len(self.servers))
+            yield from self.syncer([s.id for s in self.servers])
 
         # dispatch the event
         self.dispatch('ready')
@@ -212,7 +213,7 @@ class ConnectionState:
         servers = self._ready_state.servers
         for guild in guilds:
             server = self._add_server_from_data(guild)
-            if not self.is_bot and server.large:
+            if (not self.is_bot and not server.unavailable) or server.large:
                 servers.append(server)
 
         for pm in data.get('private_channels'):
@@ -409,7 +410,7 @@ class ConnectionState:
             if role is not None:
                 roles.append(role)
 
-        data['roles'] = sorted(roles, key=lambda r: int(r.id))
+        data['roles'] = sorted(roles)
         return Member(server=server, **data)
 
     def parse_guild_member_add(self, data):
@@ -462,7 +463,7 @@ class ConnectionState:
                     member.roles.append(role)
 
             # sort the roles by ID since they can be "randomised"
-            member.roles.sort(key=lambda r: int(r.id))
+            member.roles.sort()
             self.dispatch('member_update', old_member, member)
 
     def parse_guild_emojis_update(self, data):
@@ -486,8 +487,8 @@ class ConnectionState:
 
     @asyncio.coroutine
     def _chunk_and_dispatch(self, server, unavailable):
-        yield from self.chunker(server)
         chunks = list(self.chunks_needed(server))
+        yield from self.chunker(server)
         if chunks:
             try:
                 yield from asyncio.wait(chunks, timeout=len(chunks), loop=self.loop)
@@ -688,6 +689,8 @@ class ConnectionState:
 
     def _get_member(self, channel, id):
         if channel.is_private:
+            if id == self.user.id:
+                return self.user
             return utils.get(channel.recipients, id=id)
         else:
             return channel.server.get_member(id)

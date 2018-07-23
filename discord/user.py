@@ -86,7 +86,7 @@ class User:
         if self.avatar is None:
             return ''
 
-        url = 'https://images.discordapp.net/avatars/{0.id}/{0.avatar}.{1}?size=1024'
+        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size=1024'
         if self.avatar.startswith('a_'):
             return url.format(self, 'gif')
         else:
@@ -100,7 +100,7 @@ class User:
     @property
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
-        return 'https://discordapp.com/assets/{0.url}.png'.format(self.default_avatar)
+        return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
 
     @property
     def mention(self):

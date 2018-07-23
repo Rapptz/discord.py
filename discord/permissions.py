@@ -91,14 +91,14 @@ class Permissions:
         return self._perm_iterator()
 
     def is_subset(self, other):
-        """Returns True if other has the same or fewer permissions as self."""
+        """Returns True if self has the same or fewer permissions as other."""
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
             raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
 
     def is_superset(self, other):
-        """Returns True if other has the same or more permissions as self."""
+        """Returns True if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
@@ -127,7 +127,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110001111111)
+        return cls(0b01111111111101111111110011111111)
 
     @classmethod
     def all_channel(cls):
@@ -148,7 +148,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to True."""
-        return cls(0b01111100000000000000000000111111)
+        return cls(0b01111100000000000000000010111111)
 
     @classmethod
     def text(cls):
@@ -277,7 +277,16 @@ class Permissions:
     def add_reactions(self, value):
         self._set(6, value)
 
-    # 4 unused
+    @property
+    def view_audit_logs(self):
+        """Returns True if a user can view the server's audit log."""
+        return self._bit(7)
+
+    @view_audit_logs.setter
+    def view_audit_logs(self, value):
+        self._set(7, value)
+
+    # 2 unused
 
     @property
     def read_messages(self):

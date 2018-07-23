@@ -446,10 +446,9 @@ class Client:
         while not self.is_closed:
             try:
                 yield from self.ws.poll_event()
-            except (ReconnectWebSocket, ResumeWebSocket) as e:
-                resume = type(e) is ResumeWebSocket
-                log.info('Got ' + type(e).__name__)
-                self.ws = yield from DiscordWebSocket.from_client(self, resume=resume)
+            except ResumeWebSocket:
+                log.info('Got ResumeWebsocket')
+                self.ws = yield from DiscordWebSocket.from_client(self, resume=True)
             except ConnectionClosed as e:
                 yield from self.close()
                 if e.code != 1000:
@@ -1144,7 +1143,7 @@ class Client:
 
         channel_id, guild_id = yield from self._resolve_destination(destination)
 
-        content = str(content) if content else None
+        content = str(content) if content is not None else None
 
         if embed is not None:
             embed = embed.to_dict()
@@ -1230,6 +1229,7 @@ class Client:
         except TypeError:
             buffer = fp
 
+        content = str(content) if content is not None else None
         data = yield from self.http.send_file(channel_id, buffer, guild_id=guild_id,
                                               filename=filename, content=content, tts=tts)
         channel = self.get_channel(data.get('channel_id'))
@@ -2041,7 +2041,6 @@ class Client:
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
-        url = '{0}/{1.server.id}/channels'.format(self.http.GUILDS, channel)
         channels = [c for c in channel.server.channels if c.type is channel.type]
 
         if position >= len(channels):
@@ -2060,7 +2059,7 @@ class Client:
             channels.insert(position, channel)
 
         payload = [{'id': c.id, 'position': index } for index, c in enumerate(channels)]
-        yield from self.http.patch(url, json=payload, bucket='move_channel')
+        yield from self.http.move_channel_position(channel.server.id, payload)
 
     @asyncio.coroutine
     def create_channel(self, server, name, *overwrites, type=None):
@@ -2242,6 +2241,9 @@ class Client:
 
         Creates a :class:`Server`.
 
+        Bot accounts generally are not allowed to create servers.
+        See Discord's official documentation for more info.
+
         Parameters
         ----------
         name : str
@@ -2270,9 +2272,9 @@ class Client:
             icon = utils._bytes_to_base64_data(icon)
 
         if region is None:
-            region = ServerRegion.us_west.name
+            region = ServerRegion.us_west.value
         else:
-            region = region.name
+            region = region.value
 
         data = yield from self.http.create_server(name, region, icon)
         return Server(**data)
@@ -2304,7 +2306,7 @@ class Client:
             ``INVITE_SPLASH`` feature.
         region: :class:`ServerRegion`
             The new region for the server's voice communication.
-        afk_channel: :class:`Channel`
+        afk_channel: Optional[:class:`Channel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: int
             The number of seconds until someone is moved to the AFK channel.
@@ -2350,8 +2352,16 @@ class Client:
 
         fields['icon'] = icon
         fields['splash'] = splash
-        if 'afk_channel' in fields:
-            fields['afk_channel_id'] = fields['afk_channel'].id
+
+        try:
+            afk_channel = fields.pop('afk_channel')
+        except KeyError:
+            pass
+        else:
+            if afk_channel is None:
+                fields['afk_channel_id'] = afk_channel
+            else:
+                fields['afk_channel_id'] = afk_channel.id
 
         if 'owner' in fields:
             if server.owner != server.me:
@@ -2598,8 +2608,10 @@ class Client:
         temporary : bool
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to False.
-        xkcd : bool
-            Indicates if the invite URL is human readable. Defaults to False.
+        unique: bool
+            Indicates if a unique invite URL should be created. Defaults to True.
+            If this is set to False then it will return a previously created
+            invite.
 
         Raises
         -------
@@ -2780,8 +2792,6 @@ class Client:
         if role.position == position:
             return  # Save discord the extra request.
 
-        url = '{0}/{1.id}/roles'.format(self.http.GUILDS, server)
-
         change_range = range(min(role.position, position), max(role.position, position) + 1)
 
         roles = [r.id for r in sorted(filter(lambda x: (x.position in change_range) and x != role, server.roles), key=lambda x: x.position)]
@@ -2792,7 +2802,7 @@ class Client:
             roles.append(role.id)
 
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
-        yield from self.http.patch(url, json=payload, bucket='move_role')
+        yield from self.http.move_role_position(server.id, payload)
 
     @asyncio.coroutine
     def edit_role(self, server, role, **fields):
@@ -3016,7 +3026,7 @@ class Client:
             overwrite = discord.PermissionOverwrite()
             overwrite.read_messages = True
             overwrite.ban_members = False
-            yield from client.edit_channel_permissions(message.channel, message.author, overwrite)
+            await client.edit_channel_permissions(message.channel, message.author, overwrite)
 
         Parameters
         -----------
@@ -3178,8 +3188,13 @@ class Client:
 
         # request joining
         yield from self.ws.voice_state(server.id, channel.id)
-        session_id_data = yield from asyncio.wait_for(session_id_future, timeout=10.0, loop=self.loop)
-        data = yield from asyncio.wait_for(voice_data_future, timeout=10.0, loop=self.loop)
+
+        try:
+            session_id_data = yield from asyncio.wait_for(session_id_future, timeout=10.0, loop=self.loop)
+            data = yield from asyncio.wait_for(voice_data_future, timeout=10.0, loop=self.loop)
+        except asyncio.TimeoutError as e:
+            yield from self.ws.voice_state(server.id, None, self_mute=True)
+            raise e
 
         kwargs = {
             'user': self.user,

@@ -166,6 +166,7 @@ CTL_SET_BITRATE      = 4002
 CTL_SET_BANDWIDTH    = 4008
 CTL_SET_FEC          = 4012
 CTL_SET_PLP          = 4014
+CTL_SET_SIGNAL       = 4024
 
 band_ctl = {
     'narrow': 1101,
@@ -173,6 +174,12 @@ band_ctl = {
     'wide': 1103,
     'superwide': 1104,
     'full': 1105,
+}
+
+signal_ctl = {
+    'auto': -1000,
+    'voice': 3001,
+    'music': 3002,
 }
 
 class Encoder:
@@ -194,6 +201,7 @@ class Encoder:
         self.set_fec(True)
         self.set_expected_packet_loss_percent(0.15)
         self.set_bandwidth('full')
+        self.set_signal_type('auto')
 
     def __del__(self):
         if hasattr(self, '_state'):
@@ -231,6 +239,17 @@ class Encoder:
             log.info('error has happened in set_bandwidth')
             raise OpusError(ret)
             
+    def set_signal_type(self, req):
+        if req not in signal_ctl:
+            raise KeyError('%r is not a valid signal setting. Try one of: %s' % (req, ','.join(signal_ctl)))
+
+        k = signal_ctl[req]
+        ret = _lib.opus_encoder_ctl(self._state, CTL_SET_SIGNAL, k)
+
+        if ret < 0:
+            log.info('error has happened in set_signal_type')
+            raise OpusError(ret)
+
     def set_fec(self, enabled=True):
         ret = _lib.opus_encoder_ctl(self._state, CTL_SET_FEC, 1 if enabled else 0)
         

@@ -210,7 +210,7 @@ class Server(Hashable):
                 if role is not None:
                     roles.append(role)
 
-            mdata['roles'] = roles
+            mdata['roles'] = sorted(roles)
             member = Member(**mdata)
             member.server = self
             self._add_member(member)
@@ -266,7 +266,7 @@ class Server(Hashable):
         """Returns the URL version of the server's icon. Returns an empty string if it has no icon."""
         if self.icon is None:
             return ''
-        return 'https://discordapp.com/api/guilds/{0.id}/icons/{0.icon}.jpg'.format(self)
+        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.jpg'.format(self)
 
     @property
     def splash_url(self):

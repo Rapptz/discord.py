@@ -155,19 +155,15 @@ class Member(User):
         There is an alias for this under ``color``.
         """
 
-        default_colour = Colour.default()
+        roles = self.roles[1:] # remove @everyone
+
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
         # is chosen instead
-        if self.roles:
-            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
-            for role in roles:
-                if role.colour == default_colour:
-                    continue
-                else:
-                    return role.colour
-
-        return default_colour
+        for role in reversed(roles):
+            if role.colour.value:
+                return role.colour
+        return Colour.default()
 
     color = colour
 
@@ -197,10 +193,7 @@ class Member(User):
         hierarchy chain.
         """
 
-        if self.roles:
-            roles = sorted(self.roles, reverse=True)
-            return roles[0]
-        return None
+        return self.roles[-1]
 
     @property
     def server_permissions(self):
