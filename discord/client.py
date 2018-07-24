@@ -323,6 +323,12 @@ class Client:
 
         This function can be used in two different ways.
 
+        .. warning::
+
+            Logging on with a user token is against the Discord
+            `Terms of Service <https://support.discordapp.com/hc/en-us/articles/115002192352>`_
+            and doing so might potentially get your account ban. Use this at your own risk.
+
         Parameters
         -----------
         token: str
