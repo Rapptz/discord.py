@@ -1005,8 +1005,8 @@ class Guild(Hashable):
         image: bytes
             The *bytes-like* object representing the image data to use.
             Only JPG and PNG images are supported.
-        roles: Optional[list[Role]]
-            List of Roles for which this emoji is to be whitelisted.  Leave empty to make it unrestricted.
+        roles: Optional[list[:class:`Role`]]
+            A :class:`list` of :class:`Role`s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
             The reason for creating this emoji. Shows up on the audit log.
 

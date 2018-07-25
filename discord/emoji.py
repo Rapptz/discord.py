@@ -242,8 +242,8 @@ class Emoji(Hashable):
         -----------
         name: str
             The new emoji name.
-        roles: Optional[list[int]]
-            List of Roles for which this emoji is to be whitelisted.  Leave empty to make it unrestricted.
+        roles: Optional[list[:class:`Role`]]
+            A :class:`list` of :class:`Role`s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
             The reason for editing this emoji. Shows up on the audit log.
 
