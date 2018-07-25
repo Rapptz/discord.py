@@ -323,6 +323,13 @@ class Client:
 
         This function can be used in two different ways.
 
+        .. warning::
+
+            Logging on with a user token is against the Discord
+            `Terms of Service <https://support.discordapp.com/hc/en-us/articles/115002192352>`_
+            and doing so might potentially get your account banned.
+            Use this at your own risk.
+
         Parameters
         -----------
         token: str
@@ -839,7 +846,7 @@ class Client:
 
         Creates a :class:`Guild`.
 
-        Bot accounts generally are not allowed to create servers.
+        Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
         ----------
