@@ -747,7 +747,6 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: frankfurt
 
         The Frankfurt region.
-
     .. attribute:: brazil
 
         The Brazil region.
@@ -757,8 +756,14 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: russia
 
         The Russia region.
-    .. attribute:: vip_us_east
+    .. attribute:: japan
 
+        The Japan region.
+    .. attribute:: southafrica
+    
+        The South Africa region.
+    .. attribute:: vip_us_east
+    
         The US East region for VIP guilds.
     .. attribute:: vip_us_west
 
