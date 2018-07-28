@@ -517,7 +517,7 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog):
+    def add_cog(self, cog, **kwargs):
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
@@ -536,6 +536,11 @@ class BotBase(GroupMixin):
         -----------
         cog
             The cog to register to the bot.
+        hidden: bool
+            Whether or not all commands in this cog should be hidden
+            from the help command. Defaults to ``False``. Commands with 
+            force_visible set to True will still appear in the help.
+            
         """
 
         self.cogs[type(cog).__name__] = cog
@@ -554,11 +559,15 @@ class BotBase(GroupMixin):
         else:
             self.add_check(check, call_once=True)
 
+        hidden = kwargs.get('hidden', False)
+
         members = inspect.getmembers(cog)
         for name, member in members:
             # register commands the cog has
             if isinstance(member, Command):
                 if member.parent is None:
+                    if hidden and not member.force_visible:
+                        member.hidden = True
                     self.add_command(member)
                 continue
 

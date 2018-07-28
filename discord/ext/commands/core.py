@@ -142,6 +142,11 @@ class Command:
     hidden: :class:`bool`
         If ``True``\, the default help command does not show this in the
         help output.
+    force_visible: :class:`bool`
+        If ``True``\, the default help commaand will show this in the help
+        output even if the cog is set to be hidden. Setting this to true 
+        will not make the command visible if it is directly specified as hidden.
+        Defaults to ``False``. 
     rest_is_raw: :class:`bool`
         If ``False`` and a keyword-only argument is provided then the keyword
         only argument is stripped and handled as if it was a regular argument
@@ -173,6 +178,7 @@ class Command:
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
+        self.force_visible = kwargs.get('force_visible', False)
         signature = inspect.signature(callback)
         self.params = signature.parameters.copy()
         self.checks = kwargs.get('checks', [])
