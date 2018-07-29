@@ -538,8 +538,9 @@ class BotBase(GroupMixin):
             The cog to register to the bot.
         hidden: bool
             Whether or not all commands in this cog should be hidden
-            from the help command. Defaults to ``False``. Commands with 
-            force_visible set to True will still appear in the help.
+            from the help command. Defaults to ``False``. Commands
+            which manually specifiy hidden as ``False`` will still 
+            be shown in the help.
             
         """
 
@@ -566,7 +567,7 @@ class BotBase(GroupMixin):
             # register commands the cog has
             if isinstance(member, Command):
                 if member.parent is None:
-                    if hidden and not member.force_visible:
+                    if hidden and not member.force_visibility:
                         member.hidden = True
                     self.add_command(member)
                 continue
