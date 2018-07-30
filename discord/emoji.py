@@ -30,6 +30,10 @@ from collections import namedtuple
 from . import utils
 from .mixins import Hashable
 
+def _emoji_url(id, animated: bool):
+    _format = 'gif' if animated else 'png'
+    return "https://cdn.discordapp.com/emojis/{}.{}?v=1".format(id, _format)
+
 class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
     """Represents a "partial" emoji.
 
@@ -95,8 +99,7 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         if self.is_unicode_emoji():
             return None
 
-        _format = 'gif' if self.animated else 'png'
-        return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        return _emoji_url(self.id, self.animated)
 
 class Emoji(Hashable):
     """Represents a custom emoji.
@@ -183,8 +186,7 @@ class Emoji(Hashable):
     @property
     def url(self):
         """Returns a URL version of the emoji."""
-        _format = 'gif' if self.animated else 'png'
-        return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        return _emoji_url(self.id, self.animated)
 
     @property
     def roles(self):
