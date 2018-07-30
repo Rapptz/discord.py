@@ -675,18 +675,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialEmoji):
-            emoji = emoji._as_reaction()
-        elif isinstance(emoji, str):
-            pass # this is okay
-        else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
-
+        emoji = self._emoji_reaction(emoji)
         await self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
     async def remove_reaction(self, emoji, member):
@@ -721,22 +710,25 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialEmoji):
-            emoji = emoji._as_reaction()
-        elif isinstance(emoji, str):
-            pass # this is okay
-        else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+        emoji = self._emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
             await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
         else:
             await self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+
+    @staticmethod
+    def _emoji_reaction(emoji):
+        if isinstance(emoji, Reaction):
+            return emoji.emoji
+        if isinstance(emoji, Emoji):
+            return '%s:%s' % (emoji.name, emoji.id)
+        if isinstance(emoji, PartialEmoji):
+            return emoji._as_reaction()
+        if isinstance(emoji, str):
+            return emoji # this is okay
+
+        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     async def clear_reactions(self):
         """|coro|
