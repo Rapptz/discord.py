@@ -112,12 +112,10 @@ class StringView:
 # map from opening quotes to closing quotes
 _quotes = {
     '"': '"',
-    "«": "»",
     "‘": "’",
     "‚": "‛",
     "“": "”",
     "„": "‟",
-    "‹": "›",
     "⹂": "⹂",
     "「": "」",
     "『": "』",
