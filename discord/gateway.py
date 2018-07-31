@@ -69,7 +69,7 @@ class KeepAliveHandler(threading.Thread):
     def run(self):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + self.heartbeat_timeout < time.monotonic():
-                log.warn("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
+                log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
