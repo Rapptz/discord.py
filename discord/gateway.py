@@ -70,7 +70,7 @@ class KeepAliveHandler(threading.Thread):
     def run(self):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + self.heartbeat_timeout < time.perf_counter():
-                log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
+                log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
@@ -370,7 +370,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
                 self.sequence = None
                 self.session_id = None
-                log.info('Shard ID %s session has been invalidated.' % self.shard_id)
+                log.info('Shard ID %s session has been invalidated.', self.shard_id)
                 await self.identify()
                 return
 

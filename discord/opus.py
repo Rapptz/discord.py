@@ -44,14 +44,14 @@ EncoderStructPtr = ctypes.POINTER(EncoderStruct)
 
 def _err_lt(result, func, args):
     if result < 0:
-        log.info('error has happened in {0.__name__}'.format(func))
+        log.info('error has happened in %s', func.__name__)
         raise OpusError(result)
     return result
 
 def _err_ne(result, func, args):
     ret = args[-1]._obj
     if ret.value != 0:
-        log.info('error has happened in {0.__name__}'.format(func))
+        log.info('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
 
