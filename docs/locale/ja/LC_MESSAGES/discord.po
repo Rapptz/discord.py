@@ -1,0 +1,196 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2017, Rapptz
+# This file is distributed under the same license as the discord.py package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: discord.py 1.0.0a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: ../../discord.rst:4
+msgid "Creating a Bot Account"
+msgstr ""
+
+#: ../../discord.rst:6
+msgid ""
+"In order to work with the library and the Discord API in general, we must"
+" first create a Discord Bot account."
+msgstr ""
+
+#: ../../discord.rst:8
+msgid "Creating a Bot account is a pretty straightforward process."
+msgstr ""
+
+#: ../../discord.rst:10
+msgid ""
+"Make sure you're logged on to the `Discord website "
+"<https://discordapp.com>`_."
+msgstr ""
+
+#: ../../discord.rst:11
+msgid ""
+"Navigate to the `application page "
+"<https://discordapp.com/developers/applications/me>`_"
+msgstr ""
+
+#: ../../discord.rst:12
+msgid "Click on the \"New App\" button."
+msgstr ""
+
+#: ../../discord.rst:17
+msgid ""
+"Give the application a name and a description if wanted and click "
+"\"Create App\"."
+msgstr ""
+
+#: ../../discord.rst:19
+msgid ""
+"You can also put an avatar you want your bot to use, don't worry you can "
+"change this later."
+msgstr ""
+
+#: ../../discord.rst:20
+msgid "**Leave the Redirect URI(s) blank** unless are creating a service."
+msgstr ""
+
+#: ../../discord.rst:24
+msgid ""
+"Create a Bot User by clicking on the accompanying button and confirming "
+"it."
+msgstr ""
+
+#: ../../discord.rst:28
+msgid ""
+"Make sure that **Public Bot** is ticked if you want others to invite your"
+" bot."
+msgstr ""
+
+#: ../../discord.rst:30
+msgid ""
+"You should also make sure that **Require OAuth2 Code Grant** is unchecked"
+" unless you are developing a service that needs it. If you're unsure, "
+"then **leave it unchecked**."
+msgstr ""
+
+#: ../../discord.rst:36
+msgid "Click to reveal the token."
+msgstr ""
+
+#: ../../discord.rst:38
+msgid "**This is not the Client Secret**"
+msgstr ""
+
+#: ../../discord.rst:39
+msgid "Look at the image above to see where the **Token** is."
+msgstr ""
+
+#: ../../discord.rst:43
+msgid ""
+"It should be worth noting that this token is essentially your bot's "
+"password. You should **never** share this to someone else. In doing so, "
+"someone can log in to your bot and do malicious things, such as leaving "
+"servers, ban all members inside a server, or pinging everyone "
+"maliciously."
+msgstr ""
+
+#: ../../discord.rst:48
+msgid "The possibilities are endless, so **do not share this token.**"
+msgstr ""
+
+#: ../../discord.rst:50
+msgid ""
+"And that's it. You now have a bot account and you can login with that "
+"token."
+msgstr ""
+
+#: ../../discord.rst:55
+msgid "Inviting Your Bot"
+msgstr ""
+
+#: ../../discord.rst:57
+msgid "So you've made a Bot User but it's not actually in any server."
+msgstr ""
+
+#: ../../discord.rst:59
+msgid "If you want to invite your bot you must create an invite URL for your bot."
+msgstr ""
+
+#: ../../discord.rst:61
+msgid ""
+"First, you must fetch the Client ID of the Bot. You can find this in the "
+"Bot's application page."
+msgstr ""
+
+#: ../../discord.rst:66
+msgid "Copy paste that into the pre-formatted URL:"
+msgstr ""
+
+#: ../../discord.rst:72
+msgid ""
+"Replace ``YOUR_CLIENT_ID`` with the Client ID we got in the previous "
+"step. For example, in the image above our client ID is 312777964700041216"
+" so the resulting URL would be "
+"https://discordapp.com/oauth2/authorize?client_id=312777964700041216&scope=bot&permissions=0"
+" (note that this bot has been deleted)."
+msgstr ""
+
+#: ../../discord.rst:77
+msgid ""
+"Now you can click the link and invite your bot to any server you have "
+"\"Manage Server\" permissions on."
+msgstr ""
+
+#: ../../discord.rst:80
+msgid "Adding Permissions"
+msgstr ""
+
+#: ../../discord.rst:82
+msgid ""
+"In the above URL, you might have noticed an interesting bit, the "
+"``permissions=0`` fragment."
+msgstr ""
+
+#: ../../discord.rst:84
+msgid ""
+"Bot accounts can request specific permissions to be granted upon joining."
+" When the bot joins the guild, they will be granted a managed role that "
+"contains the permissions you requested. If the permissions is 0, then no "
+"special role is created."
+msgstr ""
+
+#: ../../discord.rst:88
+msgid ""
+"This ``permissions`` value is calculated based on bit-wise arithmetic. "
+"Thankfully, people have created a calculator that makes it easy to "
+"calculate the permissions necessary visually."
+msgstr ""
+
+#: ../../discord.rst:91
+msgid "https://discordapi.com/permissions.html"
+msgstr ""
+
+#: ../../discord.rst:92
+msgid "https://finitereality.github.io/permissions/"
+msgstr ""
+
+#: ../../discord.rst:94
+msgid "Feel free to use whichever is easier for you to grasp."
+msgstr ""
+
+#: ../../discord.rst:96
+msgid ""
+"If you want to generate this URL dynamically at run-time inside your bot "
+"and using the :class:`discord.Permissions` interface, you can use "
+":func:`discord.utils.oauth_url`."
+msgstr ""
+

@@ -1,0 +1,120 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2017, Rapptz
+# This file is distributed under the same license as the discord.py package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: discord.py 1.0.0a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: ../../quickstart.rst:6
+msgid "Quickstart"
+msgstr ""
+
+#: ../../quickstart.rst:8
+msgid ""
+"This page gives a brief introduction to the library. It assumes you have "
+"the library installed, if you don't check the :ref:`installing` portion."
+msgstr ""
+
+#: ../../quickstart.rst:12
+msgid "A Minimal Bot"
+msgstr ""
+
+#: ../../quickstart.rst:14
+msgid ""
+"Let's make a bot that replies to a specific message and walk you through "
+"it."
+msgstr ""
+
+#: ../../quickstart.rst:16
+msgid "It looks something like this:"
+msgstr ""
+
+#: ../../quickstart.rst:38
+msgid ""
+"Let's name this file ``example_bot.py``. Make sure not to name it "
+"``discord.py`` as that'll conflict with the library."
+msgstr ""
+
+#: ../../quickstart.rst:41
+msgid "There's a lot going on here, so let's walk you through it step by step."
+msgstr ""
+
+#: ../../quickstart.rst:43
+msgid ""
+"The first line just imports the library, if this raises a "
+"`ModuleNotFoundError` or `ImportError` then head on over to "
+":ref:`installing` section to properly install."
+msgstr ""
+
+#: ../../quickstart.rst:45
+msgid ""
+"Next, we create an instance of a :class:`Client`. This client is our "
+"connection to Discord."
+msgstr ""
+
+#: ../../quickstart.rst:46
+msgid ""
+"We then use the :meth:`Client.event` decorator to register an event. This"
+" library has many events. Since this library is asynchronous, we do "
+"things in a \"callback\" style manner."
+msgstr ""
+
+#: ../../quickstart.rst:49
+msgid ""
+"A callback is essentially a function that is called when something "
+"happens. In our case, the :func:`on_ready` event is called when the bot "
+"has finished logging in and setting things up and the :func:`on_message` "
+"event is called when the bot has received a message."
+msgstr ""
+
+#: ../../quickstart.rst:52
+msgid ""
+"Since the :func:`on_message` event triggers for *every* message received,"
+" we have to make sure that we ignore messages from ourselves. We do this "
+"by checking if the :attr:`Message.author` is the same as the "
+":attr:`Client.user`."
+msgstr ""
+
+#: ../../quickstart.rst:55
+msgid ""
+"Afterwards, we check if the :class:`Message.content` starts with "
+"``'$hello'``. If it is, then we reply in the channel it was used in with "
+"``'Hello!'``."
+msgstr ""
+
+#: ../../quickstart.rst:57
+msgid ""
+"Finally, we run the bot with our login token. If you need help getting "
+"your token or creating a bot, look in the :ref:`discord-intro` section."
+msgstr ""
+
+#: ../../quickstart.rst:61
+msgid ""
+"Now that we've made a bot, we have to *run* the bot. Luckily, this is "
+"simple since this is just a Python script, we can run it directly."
+msgstr ""
+
+#: ../../quickstart.rst:64
+msgid "On Windows:"
+msgstr ""
+
+#: ../../quickstart.rst:70
+msgid "On other systems:"
+msgstr ""
+
+#: ../../quickstart.rst:76
+msgid "Now you can try playing around with your basic bot."
+msgstr ""
+

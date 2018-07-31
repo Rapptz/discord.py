@@ -1,0 +1,405 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2017, Rapptz
+# This file is distributed under the same license as the discord.py package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: discord.py 1.0.0a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: ../../faq.rst:5
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: ../../faq.rst:7
+msgid ""
+"This is a list of Frequently Asked Questions regarding using "
+"``discord.py`` and its extension modules. Feel free to suggest a new "
+"question or submit one via pull requests."
+msgstr ""
+
+#: ../../faq.rst:11
+msgid "Questions"
+msgstr ""
+
+#: ../../faq.rst:14
+msgid "Coroutines"
+msgstr ""
+
+#: ../../faq.rst:16
+msgid "Questions regarding coroutines and asyncio belong here."
+msgstr ""
+
+#: ../../faq.rst:19
+msgid "What is a coroutine?"
+msgstr ""
+
+#: ../../faq.rst:21
+msgid ""
+"A coroutine is a function that must be invoked with ``await`` or ``yield "
+"from``. When Python encounters an ``await`` it stops the function's "
+"execution at that point and works on other things until it comes back to "
+"that point and finishes off its work. This allows for your program to be "
+"doing multiple things at the same time without using threads or "
+"complicated multiprocessing."
+msgstr ""
+
+#: ../../faq.rst:26
+msgid ""
+"**If you forget to await a coroutine then the coroutine will not run. "
+"Never forget to await a coroutine.**"
+msgstr ""
+
+#: ../../faq.rst:29
+msgid "Where can I use ``await``\\?"
+msgstr ""
+
+#: ../../faq.rst:31
+msgid ""
+"You can only use ``await`` inside ``async def`` functions and nowhere "
+"else."
+msgstr ""
+
+#: ../../faq.rst:34
+msgid "What does \"blocking\" mean?"
+msgstr ""
+
+#: ../../faq.rst:36
+msgid ""
+"In asynchronous programming a blocking call is essentially all the parts "
+"of the function that are not ``await``. Do not despair however, because "
+"not all forms of blocking are bad! Using blocking calls is inevitable, "
+"but you must work to make sure that you don't excessively block "
+"functions. Remember, if you block for too long then your bot will freeze "
+"since it has not stopped the function's execution at that point to do "
+"other things."
+msgstr ""
+
+#: ../../faq.rst:41
+msgid ""
+"A common source of blocking for too long is something like "
+":func:`time.sleep`. Don't do that. Use :func:`asyncio.sleep` instead. "
+"Similar to this example: ::"
+msgstr ""
+
+#: ../../faq.rst:50
+msgid ""
+"Another common source of blocking for too long is using HTTP requests "
+"with the famous module ``requests``. While ``requests`` is an amazing "
+"module for non-asynchronous programming, it is not a good choice for "
+":mod:`asyncio` because certain requests can block the event loop too "
+"long. Instead, use the ``aiohttp`` library which is installed on the side"
+" with this library."
+msgstr ""
+
+#: ../../faq.rst:54
+msgid "Consider the following example: ::"
+msgstr ""
+
+#: ../../faq.rst:70
+msgid "General"
+msgstr ""
+
+#: ../../faq.rst:72
+msgid "General questions regarding library usage belong here."
+msgstr ""
+
+#: ../../faq.rst:75
+msgid "How do I set the \"Playing\" status?"
+msgstr ""
+
+#: ../../faq.rst:77
+msgid ""
+"There is a method for this under :class:`Client` called "
+":meth:`Client.change_presence`. The relevant aspect of this is its "
+"``game`` keyword argument which takes in a :class:`Game` object. Putting "
+"both of these pieces of info together, you get the following: ::"
+msgstr ""
+
+#: ../../faq.rst:84
+msgid "How do I send a message to a specific channel?"
+msgstr ""
+
+#: ../../faq.rst:86
+msgid ""
+"You must fetch the channel directly and then call the appropriate method."
+" Example: ::"
+msgstr ""
+
+#: ../../faq.rst:92
+msgid "How do I upload an image?"
+msgstr ""
+
+#: ../../faq.rst:94
+msgid "To upload something to Discord you have to use the :class:`File` object."
+msgstr ""
+
+#: ../../faq.rst:96
+msgid ""
+"A :class:`File` accepts two parameters, the file-like object (or file "
+"path) and the filename to pass to Discord when uploading."
+msgstr ""
+
+#: ../../faq.rst:99
+msgid "If you want to upload an image it's as simple as: ::"
+msgstr ""
+
+#: ../../faq.rst:103
+msgid "If you have a file-like object you can do as follows: ::"
+msgstr ""
+
+#: ../../faq.rst:108
+msgid ""
+"To upload multiple files, you can use the ``files`` keyword argument "
+"instead of ``file``\\: ::"
+msgstr ""
+
+#: ../../faq.rst:116
+msgid ""
+"If you want to upload something from a URL, you will have to use an HTTP "
+"request using ``aiohttp`` and then pass an :class:`io.BytesIO` instance "
+"to :class:`File` like so:"
+msgstr ""
+
+#: ../../faq.rst:133
+msgid "How can I add a reaction to a message?"
+msgstr ""
+
+#: ../../faq.rst:135
+msgid "You use the :meth:`Message.add_reaction` method."
+msgstr ""
+
+#: ../../faq.rst:137
+msgid ""
+"If you want to use unicode emoji, you must pass a valid unicode code "
+"point in a string. In your code, you can write this in a few different "
+"ways:"
+msgstr ""
+
+#: ../../faq.rst:139
+msgid "``'👍'``"
+msgstr ""
+
+#: ../../faq.rst:140
+msgid "``'\\U0001F44D'``"
+msgstr ""
+
+#: ../../faq.rst:141
+msgid "``'\\N{THUMBS UP SIGN}'``"
+msgstr ""
+
+#: ../../faq.rst:143 ../../faq.rst:154 ../../faq.rst:218
+msgid "Quick example: ::"
+msgstr ""
+
+#: ../../faq.rst:147
+msgid ""
+"In case you want to use emoji that come from a message, you already get "
+"their code points in the content without needing to do anything special. "
+"You **cannot** send ``':thumbsup:'`` style shorthands."
+msgstr ""
+
+#: ../../faq.rst:150
+msgid ""
+"For custom emoji, you should pass an instance of :class:`Emoji`. You can "
+"also pass a ``'name:id'`` string, but if you can use said emoji, you "
+"should be able to use :meth:`Client.get_emoji` to get an emoji via ID or "
+"use :func:`utils.find`/ :func:`utils.get` on :attr:`Client.emojis` or "
+":attr:`Guild.emojis` collections."
+msgstr ""
+
+#: ../../faq.rst:166
+msgid "How do I pass a coroutine to the player's \"after\" function?"
+msgstr ""
+
+#: ../../faq.rst:168
+msgid ""
+"The library's music player launches on a separate thread, ergo it does "
+"not execute inside a coroutine. This does not mean that it is not "
+"possible to call a coroutine in the ``after`` parameter. To do so you "
+"must pass a callable that wraps up a couple of aspects."
+msgstr ""
+
+#: ../../faq.rst:172
+msgid ""
+"The first gotcha that you must be aware of is that calling a coroutine is"
+" not a thread-safe operation. Since we are technically in another thread,"
+" we must take caution in calling thread-safe operations so things do not "
+"bug out. Luckily for us, :mod:`asyncio` comes with a "
+":func:`asyncio.run_coroutine_threadsafe` function that allows us to call "
+"a coroutine from another thread."
+msgstr ""
+
+#: ../../faq.rst:177
+msgid ""
+"However, this function returns a :class:`concurrent.Future` and to "
+"actually call it we have to fetch its result. Putting all of this "
+"together we can do the following: ::"
+msgstr ""
+
+#: ../../faq.rst:192
+msgid "How do I run something in the background?"
+msgstr ""
+
+#: ../../faq.rst:194
+msgid ""
+"`Check the background_task.py example. "
+"<https://github.com/Rapptz/discord.py/blob/rewrite/examples/background_task.py>`_"
+msgstr ""
+
+#: ../../faq.rst:197
+msgid "How do I get a specific model?"
+msgstr ""
+
+#: ../../faq.rst:199
+msgid ""
+"There are multiple ways of doing this. If you have a specific model's ID "
+"then you can use one of the following functions:"
+msgstr ""
+
+#: ../../faq.rst:202
+msgid ":meth:`Client.get_channel`"
+msgstr ""
+
+#: ../../faq.rst:203
+msgid ":meth:`Client.get_guild`"
+msgstr ""
+
+#: ../../faq.rst:204
+msgid ":meth:`Client.get_user`"
+msgstr ""
+
+#: ../../faq.rst:205
+msgid ":meth:`Client.get_emoji`"
+msgstr ""
+
+#: ../../faq.rst:206
+msgid ":meth:`Guild.get_member`"
+msgstr ""
+
+#: ../../faq.rst:207
+msgid ":meth:`Guild.get_channel`"
+msgstr ""
+
+#: ../../faq.rst:209
+msgid "The following use an HTTP request:"
+msgstr ""
+
+#: ../../faq.rst:211
+msgid ":meth:`abc.Messageable.get_message`"
+msgstr ""
+
+#: ../../faq.rst:212
+msgid ":meth:`Client.get_user_info`"
+msgstr ""
+
+#: ../../faq.rst:215
+msgid ""
+"If the functions above do not help you, then use of :func:`utils.find` or"
+" :func:`utils.get` would serve some use in finding specific models."
+msgstr ""
+
+#: ../../faq.rst:229
+msgid "Commands Extension"
+msgstr ""
+
+#: ../../faq.rst:231
+msgid "Questions regarding ``discord.ext.commands`` belong here."
+msgstr ""
+
+#: ../../faq.rst:234
+msgid "Is there any documentation for this?"
+msgstr ""
+
+#: ../../faq.rst:236
+msgid ""
+"Not at the moment. Writing documentation for stuff takes time. A lot of "
+"people get by reading the docstrings in the source code. Others get by "
+"via asking questions in the `Discord server <https://discord.gg/discord-"
+"api>`_. Others look at the source code of `other existing bots "
+"<https://github.com/Rapptz/RoboDanny>`_."
+msgstr ""
+
+#: ../../faq.rst:240
+msgid ""
+"There is a `basic example "
+"<https://github.com/Rapptz/discord.py/blob/rewrite/examples/basic_bot.py>`_"
+" showcasing some functionality."
+msgstr ""
+
+#: ../../faq.rst:243
+msgid ""
+"**Documentation is being worked on, it will just take some time to polish"
+" it**."
+msgstr ""
+
+#: ../../faq.rst:246
+msgid "Why does ``on_message`` make my commands stop working?"
+msgstr ""
+
+#: ../../faq.rst:248
+msgid ""
+"Overriding the default provided ``on_message`` forbids any extra commands"
+" from running. To fix this, add a ``bot.process_commands(message)`` line "
+"at the end of your ``on_message``. For example: ::"
+msgstr ""
+
+#: ../../faq.rst:258
+msgid "Why do my arguments require quotes?"
+msgstr ""
+
+#: ../../faq.rst:260
+msgid "In a simple command defined as: ::"
+msgstr ""
+
+#: ../../faq.rst:266
+msgid ""
+"Calling it via ``?echo a b c`` will only fetch the first argument and "
+"disregard the rest. To fix this you should either call it via ``?echo \"a"
+" b c\"`` or change the signature to have \"consume rest\" behaviour. "
+"Example: ::"
+msgstr ""
+
+#: ../../faq.rst:273
+msgid "This will allow you to use ``?echo a b c`` without needing the quotes."
+msgstr ""
+
+#: ../../faq.rst:276
+msgid "How do I get the original ``message``\\?"
+msgstr ""
+
+#: ../../faq.rst:278
+msgid ""
+"The :class:`~ext.commands.Context` contains an attribute, "
+":attr:`~.Context.message` to get the original message."
+msgstr ""
+
+#: ../../faq.rst:281 ../../faq.rst:294
+msgid "Example: ::"
+msgstr ""
+
+#: ../../faq.rst:289
+msgid "How do I make a subcommand?"
+msgstr ""
+
+#: ../../faq.rst:291
+msgid ""
+"Use the ``group`` decorator. This will transform the callback into a "
+"``Group`` which will allow you to add commands into the group operating "
+"as \"subcommands\". These groups can be arbitrarily nested as well."
+msgstr ""
+
+#: ../../faq.rst:305
+msgid "This could then be used as ``?git push origin master``."
+msgstr ""
+

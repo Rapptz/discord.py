@@ -1,0 +1,149 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2017, Rapptz
+# This file is distributed under the same license as the discord.py package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: discord.py 1.0.0a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: ../../intro.rst:6
+msgid "Introduction"
+msgstr ""
+
+#: ../../intro.rst:8
+msgid ""
+"This is the documentation for discord.py, a library for Python to aid in "
+"creating applications that utilise the Discord API."
+msgstr ""
+
+#: ../../intro.rst:12
+msgid "Prerequisites"
+msgstr ""
+
+#: ../../intro.rst:14
+msgid ""
+"discord.py works with Python 3.5.3 or higher. Support for earlier "
+"versions of Python is not provided. Python 2.7 or lower is not supported."
+" Python 3.4 or lower is not supported due to one of the dependencies "
+"(``aiohttp``) not supporting Python 3.4."
+msgstr ""
+
+#: ../../intro.rst:22
+msgid "Installing"
+msgstr ""
+
+#: ../../intro.rst:24
+msgid "You can get the library directly from PyPI: ::"
+msgstr ""
+
+#: ../../intro.rst:28
+msgid "If you are using Windows, then the following should be used instead: ::"
+msgstr ""
+
+#: ../../intro.rst:33
+msgid ""
+"To get voice support, you should use ``discord.py[voice]`` instead of "
+"``discord.py``, e.g. ::"
+msgstr ""
+
+#: ../../intro.rst:37
+msgid ""
+"On Linux environments, installing voice requires getting the following "
+"dependencies:"
+msgstr ""
+
+#: ../../intro.rst:39
+msgid "libffi"
+msgstr ""
+
+#: ../../intro.rst:40
+msgid "libnacl"
+msgstr ""
+
+#: ../../intro.rst:41
+msgid "python3-dev"
+msgstr ""
+
+#: ../../intro.rst:43
+msgid ""
+"For a debian-based system, the following command will help get those "
+"dependencies:"
+msgstr ""
+
+#: ../../intro.rst:49
+msgid "Remember to check your permissions!"
+msgstr ""
+
+#: ../../intro.rst:52
+msgid "Virtual Environments"
+msgstr ""
+
+#: ../../intro.rst:54
+msgid ""
+"Sometimes we don't want to pollute our system installs with a library or "
+"we want to maintain different versions of a library than the currently "
+"system installed one. Or we don't have permissions to install a library "
+"along side with the system installed ones. For this purpose, the standard"
+" library as of 3.3 comes with a concept called \"Virtual Environment\" to"
+" help maintain these separate versions."
+msgstr ""
+
+#: ../../intro.rst:59
+msgid ""
+"A more in-depth tutorial is found on `the official documentation. "
+"<https://docs.python.org/3/tutorial/venv.html>`_"
+msgstr ""
+
+#: ../../intro.rst:61
+msgid "However, for the quick and dirty:"
+msgstr ""
+
+#: ../../intro.rst:63
+msgid "Go to your project's working directory:"
+msgstr ""
+
+#: ../../intro.rst:70
+msgid "Activate the virtual environment:"
+msgstr ""
+
+#: ../../intro.rst:76
+msgid "On Windows you activate it with:"
+msgstr ""
+
+#: ../../intro.rst:82
+msgid "Use pip like usual:"
+msgstr ""
+
+#: ../../intro.rst:88
+msgid ""
+"Congratulations. You now have a virtual environment all set up without "
+"messing with your system installation."
+msgstr ""
+
+#: ../../intro.rst:91
+msgid "Basic Concepts"
+msgstr ""
+
+#: ../../intro.rst:93
+msgid ""
+"discord.py revolves around the concept of :ref:`events <discord-api-"
+"events>`. An event is something you listen to and then respond to. For "
+"example, when a message happens, you will receive an event about it and "
+"you can then respond to it."
+msgstr ""
+
+#: ../../intro.rst:97
+msgid "A quick example to showcase how events work:"
+msgstr ""
+
