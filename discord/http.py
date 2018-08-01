@@ -24,18 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import aiohttp
 import asyncio
 import json
-import sys
 import logging
-import weakref
+import sys
 from urllib.parse import quote as _uriquote
+import weakref
 
-log = logging.getLogger(__name__)
+import aiohttp
 
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
 from . import __version__, utils
+
+log = logging.getLogger(__name__)
 
 async def json_or_text(response):
     text = await response.text(encoding='utf-8')

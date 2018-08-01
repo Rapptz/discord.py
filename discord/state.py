@@ -24,6 +24,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+from collections import deque, namedtuple, OrderedDict
+import copy
+import datetime
+import enum
+import itertools
+import logging
+import math
+import weakref
+
 from .guild import Guild
 from .activity import _ActivityTag
 from .user import User, ClientUser
@@ -37,14 +47,6 @@ from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
 from .embeds import Embed
-
-from collections import deque, namedtuple, OrderedDict
-import copy, enum, math
-import datetime
-import asyncio
-import logging
-import weakref
-import itertools
 
 class ListenerType(enum.Enum):
     chunk = 0

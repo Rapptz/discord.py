@@ -17,6 +17,9 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2017 Rapptz'
 __version__ = '1.0.0a'
 
+from collections import namedtuple
+import logging
+
 from .client import Client, AppInfo
 from .user import User, ClientUser, Profile
 from .emoji import Emoji, PartialEmoji
@@ -37,7 +40,6 @@ from .object import Object
 from .reaction import Reaction
 from . import utils, opus, abc
 from .enums import *
-from collections import namedtuple
 from .embeds import Embed
 from .shard import AutoShardedClient
 from .player import *
@@ -45,8 +47,6 @@ from .webhook import *
 from .voice_client import VoiceClient
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 from .raw_models import *
-
-import logging
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 

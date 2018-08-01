@@ -24,6 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+from collections import namedtuple
+import logging
+import re
+import signal
+import sys
+import traceback
+
+import aiohttp
+import websockets
+
 from .user import User, Profile
 from .invite import Invite
 from .object import Object
@@ -38,15 +49,6 @@ from .state import ConnectionState
 from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-
-import asyncio
-import aiohttp
-import websockets
-
-import logging, traceback
-import sys, re
-import signal
-from collections import namedtuple
 
 log = logging.getLogger(__name__)
 

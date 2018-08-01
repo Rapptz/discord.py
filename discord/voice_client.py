@@ -45,7 +45,11 @@ import logging
 import struct
 import threading
 
-log = logging.getLogger(__name__)
+from . import opus
+from .backoff import ExponentialBackoff
+from .gateway import *
+from .errors import ClientException, ConnectionClosed
+from .player import AudioPlayer, AudioSource
 
 try:
     import nacl.secret
@@ -53,11 +57,8 @@ try:
 except ImportError:
     has_nacl = False
 
-from . import opus
-from .backoff import ExponentialBackoff
-from .gateway import *
-from .errors import ClientException, ConnectionClosed
-from .player import AudioPlayer, AudioSource
+
+log = logging.getLogger(__name__)
 
 class VoiceClient:
     """Represents a Discord voice connection.

@@ -25,10 +25,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-import inspect
-import discord
 import functools
+import inspect
 import typing
+
+import discord
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping

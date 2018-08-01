@@ -24,13 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import array
 import ctypes
 import ctypes.util
-import array
-from .errors import DiscordException
 import logging
-import sys
 import os.path
+import sys
+
+from .errors import DiscordException
 
 log = logging.getLogger(__name__)
 c_int_ptr = ctypes.POINTER(ctypes.c_int)

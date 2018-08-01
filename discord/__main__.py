@@ -24,10 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import discord
 import argparse
 import sys
 from pathlib import Path
+
+import discord
 
 def core(parser, args):
     pass
