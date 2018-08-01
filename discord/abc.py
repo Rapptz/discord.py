@@ -978,12 +978,12 @@ class Connectable(metaclass=abc.ABCMeta):
 
         try:
             await voice.connect(reconnect=reconnect)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             try:
                 await voice.disconnect(force=True)
             except Exception:
                 # we don't care if disconnect failed because connection failed
                 pass
-            raise e # re-raise
+            raise # re-raise
 
         return voice

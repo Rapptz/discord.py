@@ -81,10 +81,7 @@ def libopus_loader(name):
 
     # register the functions...
     for item in exported_functions:
-        try:
-            func = getattr(lib, item[0])
-        except Exception as e:
-            raise e
+        func = getattr(lib, item[0])
 
         try:
             if item[1]:
@@ -110,7 +107,7 @@ try:
         _lib = libopus_loader(_filename)
     else:
         _lib = libopus_loader(ctypes.util.find_library('opus'))
-except Exception as e:
+except Exception:
     _lib = None
 
 def load_opus(name):
