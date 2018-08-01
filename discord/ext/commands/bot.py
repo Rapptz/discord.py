@@ -26,12 +26,13 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import collections
-import discord
 import inspect
 import importlib
 import sys
 import traceback
 import re
+
+import discord
 
 from .core import GroupMixin, Command
 from .view import StringView

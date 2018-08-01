@@ -24,14 +24,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from collections import namedtuple
+
+import discord.abc
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
 from .errors import ClientException, InvalidArgument
 from .colour import Colour
-
-from collections import namedtuple
-
-import discord.abc
 
 VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}

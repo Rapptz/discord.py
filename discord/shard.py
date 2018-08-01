@@ -24,17 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+import itertools
+import logging
+
+import websockets
+
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
 from .errors import ClientException, InvalidArgument
 from . import utils
 from .enums import Status
-
-import asyncio
-import logging
-import websockets
-import itertools
 
 log = logging.getLogger(__name__)
 

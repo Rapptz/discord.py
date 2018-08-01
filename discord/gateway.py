@@ -24,19 +24,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+from collections import namedtuple
+import json
+import logging
+import struct
 import sys
 import time
+import threading
+import zlib
+
 import websockets
-import asyncio
 
 from . import utils
 from .activity import _ActivityTag
 from .errors import ConnectionClosed, InvalidArgument
-import logging
-import zlib, json
-from collections import namedtuple
-import threading
-import struct
 
 log = logging.getLogger(__name__)
 

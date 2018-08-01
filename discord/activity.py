@@ -24,9 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import datetime
+
 from .enums import ActivityType, try_enum
 from .colour import Colour
-import datetime
 
 __all__ = ['Activity', 'Streaming', 'Game', 'Spotify']
 

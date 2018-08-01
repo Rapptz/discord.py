@@ -24,11 +24,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import aiohttp
 import asyncio
 import json
 import time
 import re
+
+import aiohttp
 
 from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound

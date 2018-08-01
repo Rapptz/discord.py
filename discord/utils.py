@@ -24,18 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from re import split as re_split
-from .errors import InvalidArgument
-from base64 import b64encode
-from email.utils import parsedate_to_datetime
-from inspect import isawaitable as _isawaitable
-from bisect import bisect_left
-
-import datetime
-import asyncio
-import json
-import warnings, functools
 import array
+import asyncio
+from base64 import b64encode
+from bisect import bisect_left
+import datetime
+from email.utils import parsedate_to_datetime
+import functools
+from inspect import isawaitable as _isawaitable
+import json
+from re import split as re_split
+import warnings
+
+from .errors import InvalidArgument
 
 DISCORD_EPOCH = 1420070400000
 

@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-
 from collections import namedtuple, defaultdict
 
 from . import utils

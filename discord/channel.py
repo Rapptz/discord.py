@@ -24,17 +24,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import time
+import asyncio
+
+import discord.abc
 from .permissions import Permissions
 from .enums import ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
 from .errors import ClientException, NoMoreItems
 from .webhook import Webhook
-
-import discord.abc
-
-import time
-import asyncio
 
 __all__ = ['TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory']
 
