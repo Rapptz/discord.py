@@ -244,10 +244,10 @@ class HTTPClient:
 
         try:
             data = await self.request(Route('GET', '/users/@me'))
-        except HTTPException as e:
+        except HTTPException as exc:
             self._token(old_token, bot=old_bot)
-            if e.response.status == 401:
-                raise LoginFailure('Improper token has been passed.') from e
+            if exc.response.status == 401:
+                raise LoginFailure('Improper token has been passed.') from exc
             raise
 
         return data
@@ -742,8 +742,8 @@ class HTTPClient:
     async def get_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway'))
-        except HTTPException as e:
-            raise GatewayNotFound() from e
+        except HTTPException as exc:
+            raise GatewayNotFound() from exc
         if zlib:
             value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
@@ -753,8 +753,8 @@ class HTTPClient:
     async def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
-        except HTTPException as e:
-            raise GatewayNotFound() from e
+        except HTTPException as exc:
+            raise GatewayNotFound() from exc
 
         if zlib:
             value = '{0}?encoding={1}&v={2}&compress=zlib-stream'

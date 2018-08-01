@@ -413,8 +413,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
             try:
                 valid = entry.predicate(data)
-            except Exception as e:
-                future.set_exception(e)
+            except Exception as exc:
+                future.set_exception(exc)
                 removed.append(index)
             else:
                 if valid:
@@ -445,13 +445,13 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         try:
             msg = await self.recv()
             await self.received_message(msg)
-        except websockets.exceptions.ConnectionClosed as e:
-            if self._can_handle_close(e.code):
-                log.info('Websocket closed with %s (%s), attempting a reconnect.', e.code, e.reason)
-                raise ResumeWebSocket(self.shard_id) from e
+        except websockets.exceptions.ConnectionClosed as exc:
+            if self._can_handle_close(exc.code):
+                log.info('Websocket closed with %s (%s), attempting a reconnect.', exc.code, exc.reason)
+                raise ResumeWebSocket(self.shard_id) from exc
             else:
-                log.info('Websocket closed with %s (%s), cannot reconnect.', e.code, e.reason)
-                raise ConnectionClosed(e, shard_id=self.shard_id) from e
+                log.info('Websocket closed with %s (%s), cannot reconnect.', exc.code, exc.reason)
+                raise ConnectionClosed(exc, shard_id=self.shard_id) from exc
 
     async def send(self, data):
         self._dispatch('socket_raw_send', data)
@@ -459,10 +459,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def send_as_json(self, data):
         try:
-            await self.send(utils.to_json(data))
-        except websockets.exceptions.ConnectionClosed as e:
-            if not self._can_handle_close(e.code):
-                raise ConnectionClosed(e, shard_id=self.shard_id) from e
+            await super().send(utils.to_json(data))
+        except websockets.exceptions.ConnectionClosed as exc:
+            if not self._can_handle_close(exc.code):
+                raise ConnectionClosed(exc, shard_id=self.shard_id) from exc
 
     async def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
         if activity is not None:
@@ -679,8 +679,8 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         try:
             msg = await asyncio.wait_for(self.recv(), timeout=30.0, loop=self.loop)
             await self.received_message(json.loads(msg))
-        except websockets.exceptions.ConnectionClosed as e:
-            raise ConnectionClosed(e, shard_id=None) from e
+        except websockets.exceptions.ConnectionClosed as exc:
+            raise ConnectionClosed(exc, shard_id=None) from exc
 
     async def close_connection(self, *args, **kwargs):
         if self._keep_alive:

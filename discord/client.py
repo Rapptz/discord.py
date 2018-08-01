@@ -246,8 +246,8 @@ class Client:
 
                 try:
                     result = condition(*args)
-                except Exception as e:
-                    future.set_exception(e)
+                except Exception as exc:
+                    future.set_exception(exc)
                     removed.append(i)
                 else:
                     if result:
@@ -406,11 +406,11 @@ class Client:
                     aiohttp.ClientError,
                     asyncio.TimeoutError,
                     websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as e:
+                    websockets.WebSocketProtocolError) as exc:
 
                 if not reconnect:
                     await self.close()
-                    if isinstance(e, ConnectionClosed) and e.code == 1000:
+                    if isinstance(exc, ConnectionClosed) and exc.code == 1000:
                         # clean close, don't re-raise this
                         return
                     raise
@@ -422,8 +422,8 @@ class Client:
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
                 # regardless and rely on is_closed instead
-                if isinstance(e, ConnectionClosed):
-                    if e.code != 1000:
+                if isinstance(exc, ConnectionClosed):
+                    if exc.code != 1000:
                         await self.close()
                         raise
 
