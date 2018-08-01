@@ -49,8 +49,8 @@ def wrap_callback(coro):
             raise
         except asyncio.CancelledError:
             return
-        except Exception as e:
-            raise CommandInvokeError(e) from e
+        except Exception as exc:
+            raise CommandInvokeError(exc) from exc
         return ret
     return wrapped
 
@@ -65,9 +65,9 @@ def hooked_wrapped_callback(command, ctx, coro):
         except asyncio.CancelledError:
             ctx.command_failed = True
             return
-        except Exception as e:
+        except Exception as exc:
             ctx.command_failed = True
-            raise CommandInvokeError(e) from e
+            raise CommandInvokeError(exc) from exc
         finally:
             await command.call_after_hooks(ctx)
         return ret
@@ -262,20 +262,20 @@ class Command:
                 return ret
         except CommandError:
             raise
-        except Exception as e:
-            raise ConversionError(converter, e) from e
+        except Exception as exc:
+            raise ConversionError(converter, exc) from exc
 
         try:
             return converter(argument)
         except CommandError:
             raise
-        except Exception as e:
+        except Exception as exc:
             try:
                 name = converter.__name__
             except AttributeError:
                 name = converter.__class__.__name__
 
-            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from exc
 
     async def do_conversion(self, ctx, converter, argument, param):
         try:
@@ -296,8 +296,8 @@ class Command:
 
                     try:
                         value = await self._actual_conversion(ctx, conv, argument, param)
-                    except CommandError as e:
-                        errors.append(e)
+                    except CommandError as exc:
+                        errors.append(exc)
                     else:
                         return value
 

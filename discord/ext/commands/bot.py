@@ -897,8 +897,8 @@ class BotBase(GroupMixin):
             try:
                 if (await self.can_run(ctx, call_once=True)):
                     await ctx.command.invoke(ctx)
-            except CommandError as e:
-                await ctx.command.dispatch_error(ctx, e)
+            except CommandError as exc:
+                await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:

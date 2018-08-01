@@ -115,8 +115,8 @@ class ConnectionState:
 
             try:
                 passed = listener.predicate(argument)
-            except Exception as e:
-                future.set_exception(e)
+            except Exception as exc:
+                future.set_exception(exc)
                 removed.append(i)
             else:
                 if passed:

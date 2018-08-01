@@ -224,9 +224,9 @@ class VoiceClient:
         while True:
             try:
                 await self.ws.poll_event()
-            except (ConnectionClosed, asyncio.TimeoutError) as e:
-                if isinstance(e, ConnectionClosed):
-                    if e.code == 1000:
+            except (ConnectionClosed, asyncio.TimeoutError) as exc:
+                if isinstance(exc, ConnectionClosed):
+                    if exc.code == 1000:
                         await self.disconnect()
                         break
 
