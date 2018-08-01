@@ -133,7 +133,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110011111111)
+        return cls(0b01111111111101111111110111111111)
 
     @classmethod
     def all_channel(cls):
@@ -166,7 +166,7 @@ class Permissions:
     def voice(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to True."""
-        return cls(0b00000011111100000000000000000000)
+        return cls(0b00000011111100000000000100000000)
 
     def update(self, **kwargs):
         """Bulk updates this permission object.
@@ -292,7 +292,16 @@ class Permissions:
     def view_audit_log(self, value):
         self._set(7, value)
 
-    # 2 unused
+    @property
+    def priority_speaker(self):
+        """Returns True if a user can be more easily heard while talking."""
+        return self._bit(8)
+
+    @priority_speaker.setter
+    def priority_speaker(self, value):
+        self._set(8, value)
+
+    # 1 unused
 
     @property
     def read_messages(self):
