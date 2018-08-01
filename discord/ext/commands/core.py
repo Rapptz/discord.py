@@ -260,15 +260,15 @@ class Command:
             elif isinstance(converter, converters.Converter):
                 ret = await converter.convert(ctx, argument)
                 return ret
-        except CommandError as e:
-            raise e
+        except CommandError:
+            raise
         except Exception as e:
             raise ConversionError(converter, e) from e
 
         try:
             return converter(argument)
-        except CommandError as e:
-            raise e
+        except CommandError:
+            raise
         except Exception as e:
             try:
                 name = converter.__name__
@@ -363,7 +363,7 @@ class Command:
             argument = quoted_word(view)
             try:
                 value = await self.do_conversion(ctx, converter, argument, param)
-            except CommandError as e:
+            except CommandError:
                 if not result:
                     if required:
                         raise

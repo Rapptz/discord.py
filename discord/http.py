@@ -248,7 +248,7 @@ class HTTPClient:
             self._token(old_token, bot=old_bot)
             if e.response.status == 401:
                 raise LoginFailure('Improper token has been passed.') from e
-            raise e
+            raise
 
         return data
 
