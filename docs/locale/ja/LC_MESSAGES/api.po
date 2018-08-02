@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discord.py 1.0.0a\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"POT-Creation-Date: 2018-08-01 20:28-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9857,6 +9857,10 @@ msgstr ""
 
 #: discord.Permissions.view_audit_log:1 of
 msgid "Returns True if a user can view the guild's audit log."
+msgstr ""
+
+#: discord.Permissions.priority_speaker:1 of
+msgid "Returns True if a user can be more easily heard while talking."
 msgstr ""
 
 #: discord.Permissions.read_messages:1 of
