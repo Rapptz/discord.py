@@ -30,7 +30,7 @@ msgid ""
 "as no errors or warnings will be output if it is not set up. Configuration "
 "of the ``logging`` module can be as simple as::"
 msgstr ""
-"*discord.py*はPythonの :mod:`logging` "
+"*discord.py* はPythonの :mod:`logging` "
 "モジュールを介してエラーやデバッグの情報を記録します。loggingモジュールが設定されていない場合は、エラーや警告が出力されないため、設定するとを強くおすすめします。loggingモジュールの設定は下記手順で簡単に実装が可能です。"
 
 #: ../../logging.rst:16

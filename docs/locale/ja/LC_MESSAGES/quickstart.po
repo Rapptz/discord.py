@@ -124,7 +124,8 @@ msgid ""
 "Now that we've made a bot, we have to *run* the bot. Luckily, this is simple"
 " since this is just a Python script, we can run it directly."
 msgstr ""
-"さて、これでBotは完成なので、Botを*実行*してみましょう。幸いにも、これはただのPythonスクリプトなので実行は簡単です。直接実行が可能です。"
+"さて、これでBotは完成なので、Botを *実行* "
+"してみましょう。幸いにも、これはただのPythonスクリプトなので実行は簡単です。直接実行が可能です。"
 
 #: ../../quickstart.rst:64
 msgid "On Windows:"
