@@ -5,8 +5,9 @@
 
 discord.py is an API wrapper for Discord written in Python.
 
-This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the [documentation][doc].
+This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the [documentation][doc]. This [page][makebot] details how to create a bot account, generate a token, and invite it to a discord channel.
 
+[makebot]: https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
 [doc]: http://discordpy.rtfd.org/en/latest
 
 ### Breaking Changes
@@ -52,6 +53,7 @@ Please note that on Linux installing voice you must install the following packag
 - python<version>-dev (e.g. `python3.5-dev` for Python 3.5)
 
 ## Quick Example
+*Bear in mind that you must enter your bot's token into the client.run() function at the bottom of the script.*
 
 ```py
 import discord
