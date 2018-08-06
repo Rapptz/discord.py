@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
 [![PyPI](https://img.shields.io/pypi/pyversions/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
 
-discord.py is an API wrapper for Discord written in Python.
+discord.py is an API wrapper for Discord written in Python. The documentation can be found at [https://discordpy.readthedocs.io/en/latest/api.html](https://discordpy.readthedocs.io/en/latest/api.html)
 
 This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the [documentation][doc].
 
