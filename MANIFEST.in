@@ -2,3 +2,5 @@ include README.md
 include LICENSE
 include requirements.txt
 include discord/bin/*.dll
+include discord/py.typed
+recursive-include discord *.pyi

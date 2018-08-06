@@ -32,7 +32,14 @@ from .utils import time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
 
-class _AsyncIterator:
+from typing import TYPE_CHECKING, Generic, TypeVar
+
+if TYPE_CHECKING:
+    from .message import Message
+
+IT = TypeVar('IT')
+
+class _AsyncIterator(Generic[IT]):
     __slots__ = ()
 
     def get(self, **attrs):
@@ -90,7 +97,7 @@ class _AsyncIterator:
 def _identity(x):
     return x
 
-class _MappedAsyncIterator(_AsyncIterator):
+class _MappedAsyncIterator(_AsyncIterator[IT]):
     def __init__(self, iterator, func):
         self.iterator = iterator
         self.func = func
@@ -100,7 +107,7 @@ class _MappedAsyncIterator(_AsyncIterator):
         item = await self.iterator.next()
         return await maybe_coroutine(self.func, item)
 
-class _FilteredAsyncIterator(_AsyncIterator):
+class _FilteredAsyncIterator(_AsyncIterator[IT]):
     def __init__(self, iterator, predicate):
         self.iterator = iterator
 
@@ -119,7 +126,7 @@ class _FilteredAsyncIterator(_AsyncIterator):
             if ret:
                 return item
 
-class ReactionIterator(_AsyncIterator):
+class ReactionIterator(_AsyncIterator[IT]):
     def __init__(self, message, emoji, limit=100, after=None):
         self.message = message
         self.limit = limit
@@ -167,7 +174,7 @@ class ReactionIterator(_AsyncIterator):
                     else:
                         await self.users.put(User(state=self.state, data=element))
 
-class HistoryIterator(_AsyncIterator):
+class HistoryIterator(_AsyncIterator['Message']):
     """Iterator for receiving a channel's message history.
 
     The messages endpoint has two behaviours we care about here:
@@ -352,7 +359,7 @@ class HistoryIterator(_AsyncIterator):
             return data
         return []
 
-class AuditLogIterator(_AsyncIterator):
+class AuditLogIterator(_AsyncIterator[AuditLogEntry]):
     def __init__(self, guild, limit=None, before=None, after=None, reverse=None, user_id=None, action_type=None):
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))

@@ -39,7 +39,8 @@ extras_require = {
         'sphinx==1.7.4',
         'sphinxcontrib-asyncio',
         'sphinxcontrib-websupport',
-    ]
+    ],
+    'typings': ['mypy-extensions>=0.3.0', 'typing-extensions>=3.6.5']
 }
 
 setup(name='discord.py',

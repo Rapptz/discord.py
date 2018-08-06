@@ -1,0 +1,6 @@
+from typing import Union
+
+class ExponentialBackoff:
+    def __init__(self, base: int = ..., *, integral: bool = ...) -> None: ...
+
+    def delay(self) -> Union[int, float]: ...

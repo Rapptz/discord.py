@@ -35,6 +35,7 @@ from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
+from .context import Context
 
 __all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
            'has_role', 'has_permissions', 'has_any_role', 'check',
@@ -102,7 +103,9 @@ class _CaseInsensitiveDict(dict):
     def __setitem__(self, k, v):
         super().__setitem__(k.lower(), v)
 
-class Command:
+CT = typing.TypeVar('CT', bound=Context)
+
+class Command(typing.Generic[CT]):
     r"""A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
@@ -817,7 +820,7 @@ class Command:
         finally:
             ctx.command = original
 
-class GroupMixin:
+class GroupMixin(typing.Generic[CT]):
     """A mixin that implements common functionality for classes that behave
     similar to :class:`.Group` and are allowed to register commands.
 
@@ -976,7 +979,7 @@ class GroupMixin:
 
         return decorator
 
-class Group(GroupMixin, Command):
+class Group(GroupMixin[CT], Command[CT], typing.Generic[CT]):
     """A class that implements a grouping protocol for commands to be
     executed as subcommands.
 

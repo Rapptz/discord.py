@@ -13,3 +13,6 @@ docs/_build
 *.jpg
 *.flac
 *.mo
+/venv
+/.mypy_cache
+/discord.py.egg-info
