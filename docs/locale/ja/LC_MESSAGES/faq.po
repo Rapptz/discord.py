@@ -97,8 +97,8 @@ msgid ""
 ":func:`time.sleep`. Don't do that. Use :func:`asyncio.sleep` instead. "
 "Similar to this example: ::"
 msgstr ""
-"長時間ブロックの原因として一般的なのは ``time.sleep`` などです。 これは使用せず、下記の例のように ``asyncio.sleep`` "
-"を使用してください。"
+"長時間ブロックの原因として一般的なのは :func:`time.sleep` などです。 これは使用せず、下記の例のように "
+":func:`asyncio.sleep` を使用してください。"
 
 #: ../../faq.rst:50
 msgid ""
@@ -110,7 +110,7 @@ msgid ""
 msgstr ""
 "また、これだけでなく、有名なモジュール ``requests`` のHTTPリクエストも長時間ブロックの原因になります。 ``requests`` "
 "モジュールは非非同期プログラミングでは素晴らしいモジュールですが、特定のリクエストがイベントループを長時間ブロックする可能性があるため、``asyncio``"
-" には適していません。 代わりにこのライブラリと一緒にインストールされた ``aiohttp`` を使用してください。"
+" には適していません。 代わりにこのライブラリと一緒にインストールされた :mod:`aiohttp` を使用してください。"
 
 #: ../../faq.rst:54
 msgid "Consider the following example: ::"
@@ -264,7 +264,7 @@ msgid ""
 "coroutine from another thread."
 msgstr ""
 "コルーチンを呼び出すという動作はスレッドセーフなものではないということを最初に理解しておく必要があります。技術的に別スレッドなので、スレッドセーフに呼び出す際には注意が必要です。幸運にも、"
-" :mod:`asyncio` には ``asyncio.run_coroutine_threadsafe`` "
+" :mod:`asyncio` には :func:`asyncio.run_coroutine_threadsafe` "
 "という関数があります。これを用いることで、別スレッドからコルーチンを呼び出すことが可能です。"
 
 #: ../../faq.rst:177
@@ -273,7 +273,7 @@ msgid ""
 "call it we have to fetch its result. Putting all of this together we can do "
 "the following: ::"
 msgstr ""
-"しかし、この関数は ``concurrent.Future`` "
+"しかし、この関数は :class:`concurrent.Future` "
 "を返すので、実際にはそこから結果を読み出す必要があります。これをすべてまとめると、次のことができます。"
 
 #: ../../faq.rst:192
