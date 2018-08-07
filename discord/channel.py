@@ -36,7 +36,7 @@ import discord.abc
 import time
 import asyncio
 
-__all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory')
+__all__ = ['TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory']
 
 async def _single_delete_strategy(messages):
     for m in messages:
