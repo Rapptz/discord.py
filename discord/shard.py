@@ -74,12 +74,10 @@ class Shard:
     async def poll(self):
         try:
             await self.ws.poll_event()
-        except ResumeWebSocket as e:
+        except ResumeWebSocket:
             log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
-            coro = DiscordWebSocket.from_client(self._client, resume=True,
-                                                              shard_id=self.id,
-                                                              session=self.ws.session_id,
-                                                              sequence=self.ws.sequence)
+            coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
+                                                session=self.ws.session_id, sequence=self.ws.sequence)
             self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     def get_future(self):
@@ -212,7 +210,7 @@ class AutoShardedClient(Client):
         try:
             coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
             ws = await asyncio.wait_for(coro, loop=self.loop, timeout=180.0)
-        except Exception as e:
+        except Exception:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0, loop=self.loop)
             return (await self.launch_shard(gateway, shard_id))
@@ -265,7 +263,7 @@ class AutoShardedClient(Client):
 
         while True:
             pollers = [shard.get_future() for shard in self.shards.values()]
-            done, pending = await asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
+            done, _ = await asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
             for f in done:
                 # we wanna re-raise to the main Client.connect handler if applicable
                 f.result()

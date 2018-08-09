@@ -30,7 +30,7 @@ import websockets
 import asyncio
 
 from . import utils
-from .activity import create_activity, _ActivityTag
+from .activity import _ActivityTag
 from .errors import ConnectionClosed, InvalidArgument
 import logging
 import zlib, json
@@ -40,8 +40,8 @@ import struct
 
 log = logging.getLogger(__name__)
 
-__all__ = [ 'DiscordWebSocket', 'KeepAliveHandler', 'VoiceKeepAliveHandler',
-            'DiscordVoiceWebSocket', 'ResumeWebSocket' ]
+__all__ = ['DiscordWebSocket', 'KeepAliveHandler', 'VoiceKeepAliveHandler',
+           'DiscordVoiceWebSocket', 'ResumeWebSocket']
 
 class ResumeWebSocket(Exception):
     """Signals to initialise via RESUME opcode instead of IDENTIFY."""
@@ -69,7 +69,7 @@ class KeepAliveHandler(threading.Thread):
     def run(self):
         while not self._stop_ev.wait(self.interval):
             if self._last_ack + self.heartbeat_timeout < time.monotonic():
-                log.warn("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
+                log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
@@ -381,7 +381,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             self.sequence = msg['s']
             self.session_id = data['session_id']
             log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
-                      self.shard_id, ', '.join(trace), self.session_id)
+                     self.shard_id, ', '.join(trace), self.session_id)
 
         if event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
@@ -684,5 +684,3 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             self._keep_alive.stop()
 
         await super().close_connection(*args, **kwargs)
-
-

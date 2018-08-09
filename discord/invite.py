@@ -24,8 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
-
 from .utils import parse_time
 from .mixins import Hashable
 from .object import Object
@@ -80,8 +78,8 @@ class Invite(Hashable):
     """
 
 
-    __slots__ = ( 'max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                  'temporary', 'max_uses', 'inviter', 'channel', '_state' )
+    __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
+                 'temporary', 'max_uses', 'inviter', 'channel', '_state')
 
     def __init__(self, *, state, data):
         self._state = state

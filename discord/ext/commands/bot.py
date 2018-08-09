@@ -33,7 +33,7 @@ import sys
 import traceback
 import re
 
-from .core import GroupMixin, Command, command
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
@@ -137,7 +137,7 @@ async def _default_help_command(ctx, *commands : str):
         pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
-        characters = sum(map(lambda l: len(l), pages))
+        characters = sum(map(len, pages))
         # modify destination based on length of pages.
         if characters > 1000:
             destination = ctx.message.author

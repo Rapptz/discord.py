@@ -25,18 +25,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import discord
-import asyncio
 import re
 import inspect
 
 from .errors import BadArgument, NoPrivateMessage
-from .view import StringView
 
-__all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
-            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
-            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
-            'IDConverter', 'clean_content' ]
+__all__ = ['Converter', 'MemberConverter', 'UserConverter',
+           'TextChannelConverter', 'InviteConverter', 'RoleConverter',
+           'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
+           'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
+           'IDConverter', 'clean_content']
 
 def _get_from_guilds(bot, getter, argument):
     result = None

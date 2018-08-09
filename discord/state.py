@@ -35,7 +35,6 @@ from .raw_models import *
 from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
-from .calls import GroupCall
 from . import utils
 from .embeds import Embed
 
@@ -241,7 +240,7 @@ class ConnectionState:
         return guild
 
     def chunks_needed(self, guild):
-        for chunk in range(math.ceil(guild._member_count / 1000)):
+        for _ in range(math.ceil(guild._member_count / 1000)):
             yield self.receive_chunk(guild.id)
 
     def _get_guild_channel(self, data):
@@ -406,7 +405,7 @@ class ConnectionState:
         raw = RawReactionClearEvent(data)
         self.dispatch('raw_reaction_clear', raw)
 
-        message =  self._get_message(raw.message_id)
+        message = self._get_message(raw.message_id)
         if message is not None:
             old_reactions = message.reactions.copy()
             message.reactions.clear()
@@ -424,7 +423,7 @@ class ConnectionState:
             emoji = self._upgrade_partial_emoji(emoji)
             try:
                 reaction = message._remove_reaction(data, emoji, raw.user_id)
-            except (AttributeError, ValueError) as e: # eventual consistency lol
+            except (AttributeError, ValueError): # eventual consistency lol
                 pass
             else:
                 user = self._get_reaction_user(message.channel, raw.user_id)
@@ -458,7 +457,7 @@ class ConnectionState:
         self.user = ClientUser(state=self, data=data)
 
     def parse_channel_delete(self, data):
-        guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = int(data['id'])
         if guild is not None:
             channel = guild.get_channel(channel_id)

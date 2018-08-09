@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -35,7 +36,7 @@ import discord.abc
 import time
 import asyncio
 
-__all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory')
+__all__ = ['TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory']
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -79,8 +80,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         top channel is position 0.
     """
 
-    __slots__ = ( 'name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                  'category_id', 'position', '_overwrites' )
+    __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
+                 'category_id', 'position', '_overwrites')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -414,8 +415,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'bitrate',  'user_limit',
-                 '_state', 'position', '_overwrites', 'category_id' )
+    __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
+                 '_state', 'position', '_overwrites', 'category_id')
 
     def __init__(self, *, state, guild, data):
         self._state = state

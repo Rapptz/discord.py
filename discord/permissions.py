@@ -493,7 +493,7 @@ class Permissions:
     # after these 32 bits, there's 21 more unused ones technically
 
 def augment_from_permissions(cls):
-    cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+    cls.VALID_NAMES = {name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property)}
 
     # make descriptors for all the valid names
     for name in cls.VALID_NAMES:
@@ -562,7 +562,7 @@ class PermissionOverwrite:
         """
 
         allow = Permissions.none()
-        deny  = Permissions.none()
+        deny = Permissions.none()
 
         for key, value in self._values.items():
             if value is True:

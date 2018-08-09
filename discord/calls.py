@@ -110,7 +110,7 @@ class GroupCall:
         lookup = {u.id: u for u in self.call.channel.recipients}
         me = self.call.channel.me
         lookup[me.id] = me
-        self.ringing = list(filter(None, map(lambda i: lookup.get(i), kwargs.get('ringing', []))))
+        self.ringing = list(filter(None, map(lookup.get, kwargs.get('ringing', []))))
 
     def _update_voice_state(self, data):
         user_id = int(data['user_id'])
@@ -153,4 +153,3 @@ class GroupCall:
         """
 
         return self._voice_states.get(user.id)
-
