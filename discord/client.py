@@ -158,7 +158,7 @@ class Client:
 
         await self.ws.send_as_json(payload)
 
-    def handle_ready(self):
+    def _handle_ready(self):
         self._ready.set()
 
     def _resolve_invite(self, invite):
@@ -229,7 +229,7 @@ class Client:
     def dispatch(self, event, *args, **kwargs):
         log.debug('Dispatching event %s', event)
         method = 'on_' + event
-        handler = 'handle_' + event
+        handler = '_handle_' + event
 
         listeners = self._listeners.get(event)
         if listeners:
