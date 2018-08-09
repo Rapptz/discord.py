@@ -742,6 +742,9 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: southafrica
 
         The South Africa region.
+    .. attribute:: japan
+
+        The Japan region.
     .. attribute:: vip_us_east
 
         The US East region for VIP guilds.
