@@ -271,7 +271,7 @@ def _parse_ratelimit_header(request):
 async def maybe_coroutine(f, *args, **kwargs):
     value = f(*args, **kwargs)
     if _isawaitable(value):
-        return (await value)
+        return await value
     else:
         return value
 

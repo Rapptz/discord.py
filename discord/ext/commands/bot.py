@@ -340,7 +340,7 @@ class BotBase(GroupMixin):
         if len(data) == 0:
             return True
 
-        return (await discord.utils.async_all(f(ctx) for f in data))
+        return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
         """Checks if a :class:`.User` or :class:`.Member` is the owner of
@@ -895,7 +895,7 @@ class BotBase(GroupMixin):
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
-                if (await self.can_run(ctx, call_once=True)):
+                if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
             except CommandError as exc:
                 await ctx.command.dispatch_error(ctx, exc)

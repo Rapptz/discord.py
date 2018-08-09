@@ -228,7 +228,7 @@ class HelpFormatter:
 
             cmd = tup[1]
             try:
-                return (await cmd.can_run(self.context))
+                return await cmd.can_run(self.context)
             except CommandError:
                 return False
 
@@ -274,7 +274,7 @@ class HelpFormatter:
         """
         self.context = context
         self.command = command_or_bot
-        return (await self.format())
+        return await self.format()
 
     async def format(self):
         """Handles the actual behaviour involved with formatting.
