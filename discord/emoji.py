@@ -141,8 +141,10 @@ class Emoji(Hashable):
         If this emoji is managed by a Twitch integration.
     guild_id: :class:`int`
         The guild ID the emoji belongs to.
+    author: Optional[:class:`Member`]
+        The :class:`Member` that created the emoji.
     """
-    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id', '_state')
+    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id', '_state', 'author')
 
     def __init__(self, *, guild, state, data):
         self.guild_id = guild.id
@@ -156,6 +158,9 @@ class Emoji(Hashable):
         self.name = emoji['name']
         self.animated = emoji.get('animated', False)
         self._roles = set(emoji.get('roles', []))
+        self.author = author = emoji.get('user')
+        if author is not None and self.guild is not None:
+            self.author = self.guild.get_member(author['id'])
 
     def _iterator(self):
         for attr in self.__slots__:
