@@ -739,7 +739,7 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: russia
 
         The Russia region.
-    ..attribute:: southafrica
+    .. attribute:: southafrica
 
         The South Africa region.
     .. attribute:: vip_us_east
