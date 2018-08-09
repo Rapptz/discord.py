@@ -109,6 +109,12 @@ class Invite(Hashable):
             guild = Object(id=guild_id)
             channel = Object(id=channel_id)
             guild.name = data['guild']['name']
+
+            guild.splash = data['guild']['splash']
+            guild.splash_url = ''
+            if guild.splash:
+                guild.splash_url = 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(guild)
+
             channel.name = data['channel']['name']
 
         data['guild'] = guild
