@@ -66,6 +66,7 @@ class VoiceRegion(Enum):
     brazil        = 'brazil'
     hongkong      = 'hongkong'
     russia        = 'russia'
+    southafrica   = 'southafrica'
     vip_us_east   = 'vip-us-east'
     vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
