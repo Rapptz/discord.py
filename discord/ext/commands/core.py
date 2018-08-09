@@ -349,7 +349,7 @@ class Command:
             argument = quoted_word(view)
         view.previous = previous
 
-        return (await self.do_conversion(ctx, converter, argument, param))
+        return await self.do_conversion(ctx, converter, argument, param)
 
     async def _transform_greedy_pos(self, ctx, param, required, converter):
         view = ctx.view
@@ -514,7 +514,7 @@ class Command:
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
 
-        if not (await self.can_run(ctx)):
+        if not await self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
     async def call_before_hooks(self, ctx):
@@ -793,7 +793,7 @@ class Command:
         ctx.command = self
 
         try:
-            if not (await ctx.bot.can_run(ctx)):
+            if not await ctx.bot.can_run(ctx):
                 raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
 
             cog = self.instance
@@ -812,7 +812,7 @@ class Command:
                 # since we have no checks, then we just return True.
                 return True
 
-            return (await discord.utils.async_all(predicate(ctx) for predicate in predicates))
+            return await discord.utils.async_all(predicate(ctx) for predicate in predicates)
         finally:
             ctx.command = original
 
@@ -1376,7 +1376,7 @@ def is_owner():
     """
 
     async def predicate(ctx):
-        if not (await ctx.bot.is_owner(ctx.author)):
+        if not await ctx.bot.is_owner(ctx.author):
             raise NotOwner('You do not own this bot.')
         return True
 
