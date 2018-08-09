@@ -291,7 +291,7 @@ async def sane_wait_for(futures, *, timeout, loop):
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 2048]."""
-    return ((size != 0) and not (size & (size - 1))) and size in range(16, 2049)
+    return not size & (size - 1) and size in range(16, 2049)
 
 class SnowflakeList(array.array):
     """Internal data storage class to efficiently store a list of snowflakes.
