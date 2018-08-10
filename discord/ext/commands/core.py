@@ -173,8 +173,20 @@ class Command:
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
+
         signature = inspect.signature(callback)
+        annotations = typing.get_type_hints(callback)
+
         self.params = signature.parameters.copy()
+
+        # PEP-563 allows postponing evaluation of annotations with a __future__
+        # import. When postponed, Parameter.annotation will be a string and must
+        # be replaced with the real class from typing.get_type_hints() for the
+        # converters to work later on
+        for key, value in self.params.items():
+            if isinstance(value.annotation, str) and key in annotations:
+                self.params[key] = value.replace(annotation=annotations[key])
+
         self.checks = kwargs.get('checks', [])
         self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
