@@ -152,7 +152,7 @@ class Guild(Hashable):
         return self.name
 
     def __repr__(self):
-        return '<Guild id={0.id} name={0.name!r} chunked={0.chunked}>'.format(self)
+        return '<Guild id={0.id} name={0.name!r}>'.format(self)
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
