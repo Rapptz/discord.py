@@ -152,7 +152,7 @@ class Guild(Hashable):
         return self.name
 
     def __repr__(self):
-        return '<Guild id={0.id} name={0.name!r} chunked={0.chunked}>'.format(self)
+        return '<Guild id={0.id} name={0.name!r}>'.format(self)
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
@@ -429,21 +429,6 @@ class Guild(Hashable):
     def member_count(self):
         """Returns the true member count regardless of it being loaded fully or not."""
         return self._member_count
-
-    @property
-    def chunked(self):
-        """Returns a boolean indicating if the guild is "chunked".
-
-        A chunked guild means that :attr:`member_count` is equal to the
-        number of members stored in the internal :attr:`members` cache.
-
-        If this value returns ``False``, then you should request for
-        offline members.
-        """
-        count = getattr(self, '_member_count', None)
-        if count is None:
-            return False
-        return count == len(self._members)
 
     @property
     def shard_id(self):
