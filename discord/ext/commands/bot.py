@@ -734,6 +734,8 @@ class BotBase(GroupMixin):
 
         # first remove all the commands from the module
         for cmd in self.all_commands.copy().values():
+            if cmd.module is None:
+                continue
             if _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
