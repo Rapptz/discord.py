@@ -1,17 +1,9 @@
 from setuptools import setup, find_packages
-import re, os
-
-on_rtd = os.getenv('READTHEDOCS') == 'True'
+import re
 
 requirements = []
 with open('requirements.txt') as f:
   requirements = f.read().splitlines()
-
-if on_rtd:
-  requirements.append('sphinx==1.7.4')
-  requirements.append('sphinxcontrib-napoleon')
-  requirements.append('sphinxcontrib-asyncio')
-  requirements.append('sphinxcontrib-websupport')
 
 version = ''
 with open('discord/__init__.py') as f:
@@ -43,7 +35,11 @@ with open('README.rst') as f:
 
 extras_require = {
     'voice': ['PyNaCl==1.1.2'],
-    'docs': ['sphinxcontrib-asyncio']
+    'docs': [
+        'sphinx==1.7.4',
+        'sphinxcontrib-asyncio',
+        'sphinxcontrib-websupport',
+    ]
 }
 
 setup(name='discord.py',
