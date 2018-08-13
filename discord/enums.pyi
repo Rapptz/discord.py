@@ -36,6 +36,8 @@ class VoiceRegion(Enum):
     amsterdam: str
     frankfurt: str
     brazil: str
+    hongkong: str
+    russia: str
     vip_us_east: str
     vip_us_west: str
     vip_amsterdam: str

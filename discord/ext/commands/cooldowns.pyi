@@ -5,10 +5,10 @@ from .context import Context
 from typing import Optional, TypeVar, Type
 
 class BucketType(enum.Enum):
-    default = 0
-    user = 0
-    guild = 2
-    channel = 2
+    default: int
+    user: int
+    guild: int
+    channel: int
 
 class Cooldown:
     rate: int

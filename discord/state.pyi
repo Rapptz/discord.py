@@ -14,7 +14,7 @@ from .voice_client import VoiceClient
 from typing import Any, Optional, Union, List, Tuple, Dict, Callable, Iterator, NamedTuple
 
 class ListenerType(enum.Enum):
-    chunk = 0
+    chunk: int
 
 class Listener(NamedTuple):
     type: ListenerType
