@@ -763,6 +763,9 @@ class ConnectionState:
             if role is not None:
                 old_role = copy.copy(role)
                 role._update(role_data)
+                if role.position != old_role.position:
+                    for member in role.members:
+                        member.roles.sort()
                 self.dispatch('guild_role_update', old_role, role)
         else:
             log.warning('GUILD_ROLE_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
