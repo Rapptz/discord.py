@@ -307,7 +307,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         This is useful for figuring where a member stands in the role
         hierarchy chain.
         """
-        return self.roles[-1]
+        return max(self.roles, key=lambda r: r.position)
 
     @property
     def guild_permissions(self):
