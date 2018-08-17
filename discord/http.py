@@ -766,3 +766,10 @@ class HTTPClient:
 
     def get_user_profile(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
+
+    def change_hypesquad_house(self, house_id):
+        payload = {'house_id': house_id}
+        return self.request(Route('POST', '/hypesquad/online'), json=payload)
+
+    def leave_hypesquad_house(self):
+        return self.request(Route('DELETE', '/hypesquad/online'))
