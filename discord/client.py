@@ -29,7 +29,7 @@ from .invite import Invite
 from .object import Object
 from .guild import Guild
 from .errors import *
-from .enums import Status, VoiceRegion
+from .enums import Status, VoiceRegion, HypesquadHouse
 from .gateway import *
 from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
@@ -1053,3 +1053,48 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def change_hypesquad_house(self, house, first_name, last_name):
+        """|coro|
+
+        Change the users hypesquad house. This can only be used by non-bot accounts.
+
+        Parameters
+        ------------
+        house: Union[int, :class:`HypesquadHouse`]
+            The ID of the user to fetch their profile for.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to change house.
+        HTTPException
+            Changing house failed.
+
+        Returns
+        --------
+        :class:`HypesquadHouse`
+            The house changed into..
+        """
+
+        if isinstance(house, HypesquadHouse):
+            house_id = house.value
+        else:
+            house_id = int(house)
+
+        await self.http.change_hypesquad_house(house_id, first_name, last_name)
+        return house
+
+    async def leave_hypesquad_house(self):
+        """|coro|
+
+        Leave the users hypesquad house. This can only be used by non-bot accounts.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to leave the house.
+        HTTPException
+            leaving house failed.
+        """
+        return await self.http.leave_hypesquad_house()

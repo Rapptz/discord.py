@@ -29,7 +29,7 @@ from enum import Enum, IntEnum
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
            'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', ]
+           'ActivityType', 'HypesquadHouse']
 
 class ChannelType(Enum):
     text     = 0
@@ -219,6 +219,12 @@ class ActivityType(IntEnum):
     streaming = 1
     listening = 2
     watching = 3
+
+
+class HypesquadHouse(Enum):
+    bravery = 1
+    brilliance = 2
+    balance = 3
 
 
 def try_enum(cls, val):
