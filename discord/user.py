@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
-from .enums import DefaultAvatar, RelationshipType, UserFlags
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypesquadHouse
 from .errors import ClientException, InvalidArgument
 
 from collections import namedtuple
@@ -338,6 +338,11 @@ class ClientUser(BaseUser):
         email: str
             The new email you wish to change to.
             Only applicable to user accounts.
+        house: Union[int, :class:HypesquadHouse]
+            If this is supplied also supply ``first_name`` and ``last_name`` fields of str type.
+            The hypesquad house you wish to change to.
+            Could be ``None`` to leave the current house.
+            Only applicable to user accounts.
         username :str
             The new username you wish to change to.
         avatar: bytes
@@ -382,6 +387,24 @@ class ClientUser(BaseUser):
                 args['new_password'] = fields['new_password']
 
         http = self._state.http
+
+        try:
+            house = fields['house']
+            if house is None:
+                await http.leave_hypesquad_house()
+
+            elif 'first_name' not in fields or 'last_name' not in fields:
+                raise ClientException('When changing hypesquad houses first_name and last_name fields are required.')
+
+            else:
+                if isinstance(house, HypesquadHouse):
+                    value = house.value
+                else:
+                    value = int(house)
+
+                await http.change_hypesquad_house(value, fields['first_name'], fields['last_name'])
+        except KeyError:
+            pass
 
         data = await http.edit_profile(**args)
         if not_bot_account:
