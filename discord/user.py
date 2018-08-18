@@ -61,6 +61,9 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
     def partner(self):
         return self._has_flag(UserFlags.partner)
 
+    @property
+    def hypesquad_houses(self):
+        return [house for house, flag in zip(HypesquadHouse, (64, 128, 256)) if (self.flags & flag) == flag]
 
 _BaseUser = discord.abc.User
 
