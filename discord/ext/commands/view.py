@@ -88,20 +88,24 @@ class StringView:
         self.index += 1
         return result
 
-    def get_word(self):
+    def get_word(self, space_insensitive):
         pos = 0
+        non_space = False
         while not self.eof:
             try:
                 current = self.buffer[self.index + pos]
                 if current.isspace():
-                    break
+                    if non_space or not space_insensitive:
+                        break
+                else:
+                    non_space = True
                 pos += 1
             except IndexError:
                 break
         self.previous = self.index
         result = self.buffer[self.index:self.index + pos]
         self.index += pos
-        return result
+        return result.strip()
 
     def __repr__(self):
         return '<StringView pos: {0.index} prev: {0.previous} end: {0.end} eof: {0.eof}>'.format(self)

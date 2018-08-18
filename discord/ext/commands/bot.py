@@ -161,6 +161,7 @@ class BotBase(GroupMixin):
         self.owner_id = options.get('owner_id')
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
+        self.space_insensitive = options.get('space_insensitive', False)
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -872,7 +873,7 @@ class BotBase(GroupMixin):
                 # Getting here shouldn't happen
                 raise
 
-        invoker = view.get_word()
+        invoker = view.get_word(self.space_insensitive)
         ctx.invoked_with = invoker
         ctx.prefix = invoked_prefix
         ctx.command = self.all_commands.get(invoker)
@@ -975,6 +976,9 @@ class Bot(BotBase, discord.Client):
         Whether the commands should be case insensitive. Defaults to ``False``. This
         attribute does not carry over to groups. You must set it to every group if
         you require group commands to be case insensitive as well.
+    space_insensitive: :class:`bool`
+        Whether commands should be space insensitive. Defaults to ``False``. This
+        would mean that ``!    ping`` and ``!ping`` would be equivelant.
     description : :class:`str`
         The content prefixed into the default help message.
     self_bot : :class:`bool`
