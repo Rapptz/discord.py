@@ -978,7 +978,7 @@ class Bot(BotBase, discord.Client):
         you require group commands to be case insensitive as well.
     space_insensitive: :class:`bool`
         Whether commands should be space insensitive. Defaults to ``False``. This
-        would mean that ``!    ping`` and ``!ping`` would be equivelant.
+        would mean that ``!    ping`` and ``!ping`` would be equivalent.
     description : :class:`str`
         The content prefixed into the default help message.
     self_bot : :class:`bool`
