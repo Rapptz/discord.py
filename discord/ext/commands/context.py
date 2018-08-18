@@ -167,7 +167,7 @@ class Context(discord.abc.Messageable):
             to_call = cmd.root_parent or cmd
             view.index = len(self.prefix)
             view.previous = 0
-            view.get_word() # advance to get the root command
+            view.get_word(self.bot.space_insensitive) # advance to get the root command
         else:
             to_call = cmd
 
