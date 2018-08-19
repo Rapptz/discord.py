@@ -220,12 +220,10 @@ class ActivityType(IntEnum):
     listening = 2
     watching = 3
 
-
 class HypesquadHouse(Enum):
     bravery = 1
     brilliance = 2
     balance = 3
-
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
