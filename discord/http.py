@@ -779,4 +779,4 @@ class HTTPClient:
         return self.request(Route('POST', '/hypesquad/online'), json=payload)
 
     def leave_hypesquad_house(self):
-        return self.request(self.route(Route('DELETE', '/hypesquad/online')))
+        return self.request(Route('DELETE', '/hypesquad/online'))
