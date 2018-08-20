@@ -641,7 +641,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             log.info('Voice RESUME failed.')
             await self.identify()
         elif op == self.SESSION_DESCRIPTION:
-            yield from self.load_secret_key(data)
+            await self.load_secret_key(data)
         elif op == self.SPEAKING:
             user_id = int(data['user_id'])
             ssrc = int(data['ssrc'])
@@ -692,10 +692,4 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         if self._keep_alive:
             self._keep_alive.stop()
 
-<<<<<<< HEAD
-        await super().close_connection(*args, **kwargs)
-
-
-=======
-        yield from super().close_connection(force=force)
->>>>>>> f89a5d533dce0f1f25fe4a70601b1b72c0fcffc6
+        await super().close_connection(force=force)
