@@ -525,6 +525,48 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param before: The previous relationship status.
     :param after: The updated relationship status.
 
+.. function:: on_raw_voice_receive(voice_client, voice_packet)
+
+    Called when raw Opus data has been received, but before it has
+    been decoded.
+
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is talking in.
+    :param voice_packet: A :class:`VoicePacket` containing the raw data for
+                         the packet that has been received.
+
+.. function:: on_pcm_data_receive(voice_client, voice_packet)
+
+    Similar to the above function, but the Opus data has been
+    decoded to reveal the PCM data.
+
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is talking in.
+    :param voice_packet: A :class:`VoicePacket` containing the decoded data
+                         for the packet that has been received.
+
+.. function:: on_voice_receive(voice_client, user, data)
+
+    Called when a voice packet has been received and buffered.
+    Voice packets sent to this function will be reordered ensuring
+    that the audio is almost entirely intact.
+
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is talking in.
+    :param user: A :class:`User` relating to the user speaking.
+    :param data: The buffered PCM data, including padded silence when a user is
+                 not speaking unless `voice_client.pad_silence` is set to
+                 `False`.
+
+.. function:: on_voice_speaking_state(voice_client, user, speaking)
+
+    Called when a user starts or stops speaking in a voice channel.
+
+    :param voice_client: The :class:`VoiceClient` relating to the channel the
+                         user is currently in.
+    :param user: The :class:`User` converned.
+    :param speaking: A bool dictating if the user is now speaking or not.
+
 .. _discord-api-utils:
 
 Utility Functions
