@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2017 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,8 +26,8 @@ DEALINGS IN THE SOFTWARE.
 
 import datetime
 
-from .colour import Colour
 from . import utils
+from .colour import Colour
 
 class _EmptyEmbed:
     def __bool__(self):
@@ -42,6 +42,9 @@ class EmbedProxy:
     def __init__(self, layer):
         self.__dict__.update(layer)
 
+    def __len__(self):
+        return len(self.__dict__)
+
     def __repr__(self):
         return 'EmbedProxy(%s)' % ', '.join(('%s=%r' % (k, v) for k, v in self.__dict__.items() if not k.startswith('_')))
 
@@ -55,27 +58,27 @@ class Embed:
     of the object:
 
     Certain properties return an ``EmbedProxy``. Which is a type
-    that acts similar to a regular `dict` except access the attributes
+    that acts similar to a regular :class:`dict` except access the attributes
     via dotted access, e.g. ``embed.author.icon_url``. If the attribute
     is invalid or empty, then a special sentinel value is returned,
     :attr:`Embed.Empty`.
 
-    For ease of use, all parameters that expect a ``str`` are implicitly
-    casted to ``str`` for you.
+    For ease of use, all parameters that expect a :class:`str` are implicitly
+    casted to :class:`str` for you.
 
     Attributes
     -----------
-    title: str
+    title: :class:`str`
         The title of the embed.
-    type: str
+    type: :class:`str`
         The type of embed. Usually "rich".
-    description: str
+    description: :class:`str`
         The description of the embed.
-    url: str
+    url: :class:`str`
         The URL of the embed.
     timestamp: `datetime.datetime`
-        The timestamp of the embed content.
-    colour: :class:`Colour` or int
+        The timestamp of the embed content. This could be a naive or aware datetime.
+    colour: :class:`Colour` or :class:`int`
         The colour code of the embed. Aliased to ``color`` as well.
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
@@ -132,7 +135,7 @@ class Embed:
         except KeyError:
             pass
 
-        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields'):
+        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields', 'image', 'footer'):
             try:
                 value = data[attr]
             except KeyError:
@@ -170,7 +173,7 @@ class Embed:
 
     @property
     def footer(self):
-        """Returns a ``EmbedProxy`` denoting the footer contents.
+        """Returns an ``EmbedProxy`` denoting the footer contents.
 
         See :meth:`set_footer` for possible values you can access.
 
@@ -203,7 +206,7 @@ class Embed:
 
     @property
     def image(self):
-        """Returns a ``EmbedProxy`` denoting the image contents.
+        """Returns an ``EmbedProxy`` denoting the image contents.
 
         Possible attributes you can access are:
 
@@ -236,7 +239,7 @@ class Embed:
 
     @property
     def thumbnail(self):
-        """Returns a ``EmbedProxy`` denoting the thumbnail contents.
+        """Returns an ``EmbedProxy`` denoting the thumbnail contents.
 
         Possible attributes you can access are:
 
@@ -269,7 +272,7 @@ class Embed:
 
     @property
     def video(self):
-        """Returns a ``EmbedProxy`` denoting the video contents.
+        """Returns an ``EmbedProxy`` denoting the video contents.
 
         Possible attributes include:
 
@@ -283,7 +286,7 @@ class Embed:
 
     @property
     def provider(self):
-        """Returns a ``EmbedProxy`` denoting the provider contents.
+        """Returns an ``EmbedProxy`` denoting the provider contents.
 
         The only attributes that might be accessed are ``name`` and ``url``.
 
@@ -293,7 +296,7 @@ class Embed:
 
     @property
     def author(self):
-        """Returns a ``EmbedProxy`` denoting the author contents.
+        """Returns an ``EmbedProxy`` denoting the author contents.
 
         See :meth:`set_author` for possible values you can access.
 
@@ -331,7 +334,7 @@ class Embed:
 
     @property
     def fields(self):
-        """Returns a list of ``EmbedProxy`` denoting the field contents.
+        """Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 

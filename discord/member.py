@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2017 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,127 +24,209 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .user import User
-from .game import Game
-from .permissions import Permissions
-from . import utils
-from .enums import Status, ChannelType
-from .colour import Colour
+import asyncio
+import itertools
 import copy
+
+import discord.abc
+
+from . import utils
+from .user import BaseUser, User
+from .activity import create_activity
+from .permissions import Permissions
+from .enums import Status, try_enum
+from .colour import Colour
+from .object import Object
 
 class VoiceState:
     """Represents a Discord user's voice state.
 
     Attributes
     ------------
-    deaf: bool
-        Indicates if the user is currently deafened by the server.
-    mute: bool
-        Indicates if the user is currently muted by the server.
-    self_mute: bool
+    deaf: :class:`bool`
+        Indicates if the user is currently deafened by the guild.
+    mute: :class:`bool`
+        Indicates if the user is currently muted by the guild.
+    self_mute: :class:`bool`
         Indicates if the user is currently muted by their own accord.
-    self_deaf: bool
+    self_deaf: :class:`bool`
         Indicates if the user is currently deafened by their own accord.
-    is_afk: bool
-        Indicates if the user is currently in the AFK channel in the server.
-    voice_channel: Optional[Union[:class:`Channel`, :class:`PrivateChannel`]]
+    afk: :class:`bool`
+        Indicates if the user is currently in the AFK channel in the guild.
+    channel: :class:`VoiceChannel`
         The voice channel that the user is currently connected to. None if the user
         is not currently in a voice channel.
     """
 
-    __slots__ = [ 'session_id', 'deaf', 'mute', 'self_mute',
-                  'self_deaf', 'is_afk', 'voice_channel' ]
+    __slots__ = ( 'session_id', 'deaf', 'mute', 'self_mute',
+                  'self_deaf', 'afk', 'channel' )
 
-    def __init__(self, **kwargs):
-        self.session_id = kwargs.get('session_id')
-        self._update_voice_state(**kwargs)
+    def __init__(self, *, data, channel=None):
+        self.session_id = data.get('session_id')
+        self._update(data, channel)
 
-    def _update_voice_state(self, **kwargs):
-        self.self_mute = kwargs.get('self_mute', False)
-        self.self_deaf = kwargs.get('self_deaf', False)
-        self.is_afk = kwargs.get('suppress', False)
-        self.mute = kwargs.get('mute', False)
-        self.deaf = kwargs.get('deaf', False)
-        self.voice_channel = kwargs.get('voice_channel')
+    def _update(self, data, channel):
+        self.self_mute = data.get('self_mute', False)
+        self.self_deaf = data.get('self_deaf', False)
+        self.afk = data.get('suppress', False)
+        self.mute = data.get('mute', False)
+        self.deaf = data.get('deaf', False)
+        self.channel = channel
 
-def flatten_voice_states(cls):
-    for attr in VoiceState.__slots__:
-        def getter(self, x=attr):
-            return getattr(self.voice, x)
-        setattr(cls, attr, property(getter))
+    def __repr__(self):
+        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} channel={0.channel!r}>'.format(self)
+
+def flatten_user(cls):
+    for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
+        # ignore private/special methods
+        if attr.startswith('_'):
+            continue
+
+        # don't override what we already have
+        if attr in cls.__dict__:
+            continue
+
+        # if it's a slotted attribute or a property, redirect it
+        # slotted members are implemented as member_descriptors in Type.__dict__
+        if not hasattr(value, '__annotations__'):
+            def getter(self, x=attr):
+                return getattr(self._user, x)
+            setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
+        else:
+            # probably a member function by now
+            def generate_function(x):
+                def general(self, *args, **kwargs):
+                    return getattr(self._user, x)(*args, **kwargs)
+
+                general.__name__ = x
+                return general
+
+            func = generate_function(attr)
+            func.__doc__ = value.__doc__
+            setattr(cls, attr, func)
+
     return cls
 
-@flatten_voice_states
-class Member(User):
-    """Represents a Discord member to a :class:`Server`.
+_BaseUser = discord.abc.User
 
-    This is a subclass of :class:`User` that extends more functionality
-    that server members have such as roles and permissions.
+@flatten_user
+class Member(discord.abc.Messageable, _BaseUser):
+    """Represents a Discord member to a :class:`Guild`.
+
+    This implements a lot of the functionality of :class:`User`.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two members are equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: x != y
+
+            Checks if two members are not equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: hash(x)
+
+            Returns the member's hash.
+
+        .. describe:: str(x)
+
+            Returns the member's name with the discriminator.
 
     Attributes
     ----------
-    voice: :class:`VoiceState`
-        The member's voice state. Properties are defined to mirror access of the attributes.
-        e.g. ``Member.is_afk`` is equivalent to `Member.voice.is_afk``.
-    roles
-        A list of :class:`Role` that the member belongs to. Note that the first element of this
-        list is always the default '@everyone' role.
-    joined_at : `datetime.datetime`
-        A datetime object that specifies the date and time in UTC that the member joined the server for
+    roles: List[:class:`Role`]
+        A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
+        list is always the default '@everyone' role. These roles are sorted by their position
+        in the role hierarchy.
+    joined_at: `datetime.datetime`
+        A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`
-        The member's status. There is a chance that the status will be a ``str``
+        The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    game : :class:`Game`
-        The game that the user is currently playing. Could be None if no game is being played.
-    server : :class:`Server`
-        The server that the member belongs to.
-    nick : Optional[str]
-        The server specific nickname of the user.
+    activity: Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]
+        The activity that the user is currently doing. Could be None if no activity is being done.
+    guild: :class:`Guild`
+        The guild that the member belongs to.
+    nick: Optional[:class:`str`]
+        The guild specific nickname of the user.
     """
 
-    __slots__ = [ 'roles', 'joined_at', 'status', 'game', 'server', 'nick', 'voice' ]
+    __slots__ = ('roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs.get('user'))
-        self.voice = VoiceState(**kwargs)
-        self.joined_at = utils.parse_time(kwargs.get('joined_at'))
-        self.roles = kwargs.get('roles', [])
+    def __init__(self, *, data, guild, state):
+        self._state = state
+        self._user = state.store_user(data['user'])
+        self.guild = guild
+        self.joined_at = utils.parse_time(data.get('joined_at'))
+        self._update_roles(data)
         self.status = Status.offline
-        game = kwargs.get('game', {})
-        self.game = Game(**game) if game else None
-        self.server = kwargs.get('server', None)
-        self.nick = kwargs.get('nick', None)
+        self.activity = create_activity(data.get('game'))
+        self.nick = data.get('nick', None)
 
-    def _update_voice_state(self, **kwargs):
-        self.voice.self_mute = kwargs.get('self_mute', False)
-        self.voice.self_deaf = kwargs.get('self_deaf', False)
-        self.voice.is_afk = kwargs.get('suppress', False)
-        self.voice.mute = kwargs.get('mute', False)
-        self.voice.deaf = kwargs.get('deaf', False)
-        old_channel = getattr(self, 'voice_channel', None)
-        vc = kwargs.get('voice_channel')
+    def __str__(self):
+        return str(self._user)
 
-        if old_channel is None and vc is not None:
-            # we joined a channel
-            vc.voice_members.append(self)
-        elif old_channel is not None:
-            try:
-                # we either left a channel or we switched channels
-                old_channel.voice_members.remove(self)
-            except ValueError:
-                pass
-            finally:
-                # we switched channels
-                if vc is not None:
-                    vc.voice_members.append(self)
+    def __repr__(self):
+        return '<Member id={1.id} name={1.name!r} discriminator={1.discriminator!r}' \
+               ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
 
-        self.voice.voice_channel = vc
+    def __eq__(self, other):
+        return isinstance(other, _BaseUser) and other.id == self.id
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self._user.id)
+
+    async def _get_channel(self):
+        ch = await self.create_dm()
+        return ch
+
+    def _update_roles(self, data):
+        # update the roles
+        self.roles = [self.guild.default_role]
+        for roleid in map(int, data['roles']):
+            role = utils.find(lambda r: r.id == roleid, self.guild.roles)
+            if role is not None:
+                self.roles.append(role)
+
+        # sort the roles by hierarchy since they can be "randomised"
+        self.roles.sort()
+
+    def _update(self, data, user=None):
+        if user:
+            self._user.name = user['username']
+            self._user.discriminator = user['discriminator']
+            self._user.avatar = user['avatar']
+            self._user.bot = user.get('bot', False)
+
+        # the nickname change is optional,
+        # if it isn't in the payload then it didn't change
+        try:
+            self.nick = data['nick']
+        except KeyError:
+            pass
+
+        self._update_roles(data)
+
+    def _presence_update(self, data, user):
+        self.status = try_enum(Status, data['status'])
+        self.activity = create_activity(data.get('game'))
+
+        u = self._user
+        u.name = user.get('username', u.name)
+        u.avatar = user.get('avatar', u.avatar)
+        u.discriminator = user.get('discriminator', u.discriminator)
 
     def _copy(self):
-        ret = copy.copy(self)
-        ret.voice = copy.copy(self.voice)
-        return ret
+        c = copy.copy(self)
+        c._user = copy.copy(self._user)
+        return c
 
     @property
     def colour(self):
@@ -155,31 +237,44 @@ class Member(User):
         There is an alias for this under ``color``.
         """
 
-        default_colour = Colour.default()
+        roles = self.roles[1:] # remove @everyone
+
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
         # is chosen instead
-        if self.roles:
-            roles = sorted(self.roles, key=lambda r: r.position, reverse=True)
-            for role in roles:
-                if role.colour == default_colour:
-                    continue
-                else:
-                    return role.colour
-
-        return default_colour
+        for role in reversed(roles):
+            if role.colour.value:
+                return role.colour
+        return Colour.default()
 
     color = colour
 
     @property
     def mention(self):
+        """Returns a string that mentions the member."""
         if self.nick:
-            return '<@!{}>'.format(self.id)
-        return '<@{}>'.format(self.id)
+            return '<@!%s>' % self.id
+        return '<@%s>' % self.id
+
+    @property
+    def display_name(self):
+        """Returns the user's display name.
+
+        For regular users this is just their username, but
+        if they have a guild specific nickname then that
+        is returned instead.
+        """
+        return self.nick if self.nick is not None else self.name
 
     def mentioned_in(self, message):
-        mentioned = super().mentioned_in(message)
-        if mentioned:
+        """Checks if the member is mentioned in the specified message.
+
+        Parameters
+        -----------
+        message: :class:`Message`
+            The message to check if you're mentioned in.
+        """
+        if self._user.mentioned_in(message):
             return True
 
         for role in message.role_mentions:
@@ -189,6 +284,22 @@ class Member(User):
 
         return False
 
+    def permissions_in(self, channel):
+        """An alias for :meth:`abc.GuildChannel.permissions_for`.
+
+        Basically equivalent to:
+
+        .. code-block:: python3
+
+            channel.permissions_for(self)
+
+        Parameters
+        -----------
+        channel
+            The channel to check your permissions for.
+        """
+        return channel.permissions_for(self)
+
     @property
     def top_role(self):
         """Returns the member's highest role.
@@ -196,27 +307,23 @@ class Member(User):
         This is useful for figuring where a member stands in the role
         hierarchy chain.
         """
-
-        if self.roles:
-            roles = sorted(self.roles, reverse=True)
-            return roles[0]
-        return None
+        return self.roles[-1]
 
     @property
-    def server_permissions(self):
-        """Returns the member's server permissions.
+    def guild_permissions(self):
+        """Returns the member's guild permissions.
 
-        This only takes into consideration the server permissions
+        This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
         calculation, please use either :meth:`permissions_in` or
-        :meth:`Channel.permissions_for`.
+        :meth:`abc.GuildChannel.permissions_for`.
 
-        This does take into consideration server ownership and the
+        This does take into consideration guild ownership and the
         administrator implication.
         """
 
-        if self.server.owner == self:
+        if self.guild.owner == self:
             return Permissions.all()
 
         base = Permissions.none()
@@ -227,3 +334,217 @@ class Member(User):
             return Permissions.all()
 
         return base
+
+    @property
+    def voice(self):
+        """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
+        return self.guild._voice_state_for(self._user.id)
+
+    async def ban(self, **kwargs):
+        """|coro|
+
+        Bans this member. Equivalent to :meth:`Guild.ban`
+        """
+        await self.guild.ban(self, **kwargs)
+
+    async def unban(self, *, reason=None):
+        """|coro|
+
+        Unbans this member. Equivalent to :meth:`Guild.unban`
+        """
+        await self.guild.unban(self, reason=reason)
+
+    async def kick(self, *, reason=None):
+        """|coro|
+
+        Kicks this member. Equivalent to :meth:`Guild.kick`
+        """
+        await self.guild.kick(self, reason=reason)
+
+    async def edit(self, *, reason=None, **fields):
+        """|coro|
+
+        Edits the member's data.
+
+        Depending on the parameter passed, this requires different permissions listed below:
+
+        +---------------+--------------------------------------+
+        |   Parameter   |              Permission              |
+        +---------------+--------------------------------------+
+        | nick          | :attr:`Permissions.manage_nicknames` |
+        +---------------+--------------------------------------+
+        | mute          | :attr:`Permissions.mute_members`     |
+        +---------------+--------------------------------------+
+        | deafen        | :attr:`Permissions.deafen_members`   |
+        +---------------+--------------------------------------+
+        | roles         | :attr:`Permissions.manage_roles`     |
+        +---------------+--------------------------------------+
+        | voice_channel | :attr:`Permissions.move_members`     |
+        +---------------+--------------------------------------+
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        nick: str
+            The member's new nickname. Use ``None`` to remove the nickname.
+        mute: bool
+            Indicates if the member should be guild muted or un-muted.
+        deafen: bool
+            Indicates if the member should be guild deafened or un-deafened.
+        roles: List[:class:`Roles`]
+            The member's new list of roles. This *replaces* the roles.
+        voice_channel: :class:`VoiceChannel`
+            The voice channel to move the member to.
+        reason: Optional[str]
+            The reason for editing this member. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to the action requested.
+        HTTPException
+            The operation failed.
+        """
+        http = self._state.http
+        guild_id = self.guild.id
+        payload = {}
+
+        try:
+            nick = fields['nick']
+        except KeyError:
+            # nick not present so...
+            pass
+        else:
+            nick = nick if nick else ''
+            if self._state.self_id == self.id:
+                await http.change_my_nickname(guild_id, nick, reason=reason)
+            else:
+                payload['nick'] = nick
+
+        deafen = fields.get('deafen')
+        if deafen is not None:
+            payload['deaf'] = deafen
+
+        mute = fields.get('mute')
+        if mute is not None:
+            payload['mute'] = mute
+
+        try:
+            vc = fields['voice_channel']
+        except KeyError:
+            pass
+        else:
+            payload['channel_id'] = vc.id
+
+        try:
+            roles = fields['roles']
+        except KeyError:
+            pass
+        else:
+            payload['roles'] = tuple(r.id for r in roles)
+
+        await http.edit_member(guild_id, self.id, reason=reason, **payload)
+
+        # TODO: wait for WS event for modify-in-place behaviour
+
+    async def move_to(self, channel, *, reason=None):
+        """|coro|
+
+        Moves a member to a new voice channel (they must be connected first).
+
+        You must have the :attr:`~Permissions.move_members` permission to
+        use this.
+
+        This raises the same exceptions as :meth:`edit`.
+
+        Parameters
+        -----------
+        channel: :class:`VoiceChannel`
+            The new voice channel to move the member to.
+        reason: Optional[str]
+            The reason for doing this action. Shows up on the audit log.
+        """
+        await self.edit(voice_channel=channel, reason=reason)
+
+    async def add_roles(self, *roles, reason=None, atomic=True):
+        """|coro|
+
+        Gives the member a number of :class:`Role`\s.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        use this.
+
+        Parameters
+        -----------
+        \*roles
+            An argument list of :class:`abc.Snowflake` representing a :class:`Role`
+            to give to the member.
+        reason: Optional[str]
+            The reason for adding these roles. Shows up on the audit log.
+        atomic: bool
+            Whether to atomically add roles. This will ensure that multiple
+            operations will always be applied regardless of the current
+            state of the cache.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add these roles.
+        HTTPException
+            Adding roles failed.
+        """
+
+        if not atomic:
+            new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
+            await self.edit(roles=new_roles, reason=reason)
+        else:
+            req = self._state.http.add_role
+            guild_id = self.guild.id
+            user_id = self.id
+            for role in roles:
+                await req(guild_id, user_id, role.id, reason=reason)
+
+    async def remove_roles(self, *roles, reason=None, atomic=True):
+        """|coro|
+
+        Removes :class:`Role`\s from this member.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        use this.
+
+        Parameters
+        -----------
+        \*roles
+            An argument list of :class:`abc.Snowflake` representing a :class:`Role`
+            to remove from the member.
+        reason: Optional[str]
+            The reason for removing these roles. Shows up on the audit log.
+        atomic: bool
+            Whether to atomically remove roles. This will ensure that multiple
+            operations will always be applied regardless of the current
+            state of the cache.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove these roles.
+        HTTPException
+            Removing the roles failed.
+        """
+
+        if not atomic:
+            new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
+            for role in roles:
+                try:
+                    new_roles.remove(Object(id=role.id))
+                except ValueError:
+                    pass
+
+            await self.edit(roles=new_roles, reason=reason)
+        else:
+            req = self._state.http.remove_role
+            guild_id = self.guild.id
+            user_id = self.id
+            for role in roles:
+                await req(guild_id, user_id, role.id, reason=reason)

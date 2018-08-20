@@ -2,11 +2,41 @@
 
 .. _whats_new:
 
-What's New
+Changelog
 ============
 
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
+
+.. _vp0p16p6:
+
+v0.16.6
+--------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix issue with :meth:`Client.create_server` that made it stop working.
+- Fix main thread being blocked upon calling ``StreamPlayer.stop``.
+- Handle HEARTBEAT_ACK and resume gracefully when it occurs.
+- Fix race condition when pre-emptively rate limiting that caused releasing an already released lock.
+- Fix invalid state errors when immediately cancelling a coroutine.
+
+.. _vp0p16p1:
+
+v0.16.1
+--------
+
+This release is just a bug fix release with some better rate limit implementation.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Servers are now properly chunked for user bots.
+- The CDN URL is now used instead of the API URL for assets.
+- Rate limit implementation now tries to use header information if possible.
+- Event loop is now properly propagated (:issue:`420`)
+- Allow falsey values in :meth:`Client.send_message` and :meth:`Client.send_file`.
 
 .. _vp0p16p0:
 

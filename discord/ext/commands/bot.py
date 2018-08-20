@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2017 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import collections
 import discord
 import inspect
 import importlib
@@ -38,45 +39,45 @@ from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
 
-def _get_variable(name):
-    stack = inspect.stack()
-    try:
-        for frames in stack:
-            try:
-                frame = frames[0]
-                current_locals = frame.f_locals
-                if name in current_locals:
-                    return current_locals[name]
-            finally:
-                del frame
-    finally:
-        del stack
-
 def when_mentioned(bot, msg):
-    """A callable that implements a command prefix equivalent
-    to being mentioned, e.g. ``@bot ``."""
-    server = msg.server
-    if server is not None:
-        return '{0.me.mention} '.format(server)
-    return '{0.user.mention} '.format(bot)
+    """A callable that implements a command prefix equivalent to being mentioned.
+
+    These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
+    """
+    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
 
+    These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
+
     Example
     --------
 
-    .. code-block:: python
+    .. code-block:: python3
 
         bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'))
 
+
+    .. note::
+
+        This callable returns another callable, so if this is done inside a custom
+        callable, you must call the returned callable, for example:
+
+        .. code-block:: python3
+
+            async def get_prefix(bot, message):
+                extras = await prefixes_for(message.guild) # returns a list
+                return commands.when_mentioned_or(*extras)(bot, message)
+
+
     See Also
     ----------
-    :func:`when_mentioned`
+    :func:`.when_mentioned`
     """
     def inner(bot, msg):
         r = list(prefixes)
-        r.append(when_mentioned(bot, msg))
+        r.extend(when_mentioned(bot, msg))
         return r
 
     return inner
@@ -88,8 +89,10 @@ _mentions_transforms = {
 
 _mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
 
-@asyncio.coroutine
-def _default_help_command(ctx, *commands : str):
+def _is_submodule(parent, child):
+    return parent == child or child.startswith(parent + ".")
+
+async def _default_help_command(ctx, *commands : str):
     """Shows this message."""
     bot = ctx.bot
     destination = ctx.message.author if bot.pm_help else ctx.message.channel
@@ -99,7 +102,7 @@ def _default_help_command(ctx, *commands : str):
 
     # help by itself just lists our own commands.
     if len(commands) == 0:
-        pages = bot.formatter.format_help_for(ctx, bot)
+        pages = await bot.formatter.format_help_for(ctx, bot)
     elif len(commands) == 1:
         # try to see if it is a cog name
         name = _mention_pattern.sub(repl, commands[0])
@@ -107,31 +110,31 @@ def _default_help_command(ctx, *commands : str):
         if name in bot.cogs:
             command = bot.cogs[name]
         else:
-            command = bot.commands.get(name)
+            command = bot.all_commands.get(name)
             if command is None:
-                yield from bot.send_message(destination, bot.command_not_found.format(name))
+                await destination.send(bot.command_not_found.format(name))
                 return
 
-        pages = bot.formatter.format_help_for(ctx, command)
+        pages = await bot.formatter.format_help_for(ctx, command)
     else:
         name = _mention_pattern.sub(repl, commands[0])
-        command = bot.commands.get(name)
+        command = bot.all_commands.get(name)
         if command is None:
-            yield from bot.send_message(destination, bot.command_not_found.format(name))
+            await destination.send(bot.command_not_found.format(name))
             return
 
         for key in commands[1:]:
             try:
                 key = _mention_pattern.sub(repl, key)
-                command = command.commands.get(key)
+                command = command.all_commands.get(key)
                 if command is None:
-                    yield from bot.send_message(destination, bot.command_not_found.format(key))
+                    await destination.send(bot.command_not_found.format(key))
                     return
             except AttributeError:
-                yield from bot.send_message(destination, bot.command_has_no_subcommands.format(command, key))
+                await destination.send(bot.command_has_no_subcommands.format(command, key))
                 return
 
-        pages = bot.formatter.format_help_for(ctx, command)
+        pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
         characters = sum(map(lambda l: len(l), pages))
@@ -140,69 +143,9 @@ def _default_help_command(ctx, *commands : str):
             destination = ctx.message.author
 
     for page in pages:
-        yield from bot.send_message(destination, page)
+        await destination.send(page)
 
-
-class Bot(GroupMixin, discord.Client):
-    """Represents a discord bot.
-
-    This class is a subclass of :class:`discord.Client` and as a result
-    anything that you can do with a :class:`discord.Client` you can do with
-    this bot.
-
-    This class also subclasses :class:`GroupMixin` to provide the functionality
-    to manage commands.
-
-    Attributes
-    -----------
-    command_prefix
-        The command prefix is what the message content must contain initially
-        to have a command invoked. This prefix could either be a string to
-        indicate what the prefix should be, or a callable that takes in the bot
-        as its first parameter and :class:`discord.Message` as its second
-        parameter and returns the prefix. This is to facilitate "dynamic"
-        command prefixes. This callable can be either a regular function or
-        a coroutine.
-
-        The command prefix could also be a list or a tuple indicating that
-        multiple checks for the prefix should be used and the first one to
-        match will be the invocation prefix. You can get this prefix via
-        :attr:`Context.prefix`.
-    description : str
-        The content prefixed into the default help message.
-    self_bot : bool
-        If ``True``, the bot will only listen to commands invoked by itself rather
-        than ignoring itself. If ``False`` (the default) then the bot will ignore
-        itself. This cannot be changed once initialised.
-    formatter : :class:`HelpFormatter`
-        The formatter used to format the help message. By default, it uses a
-        the :class:`HelpFormatter`. Check it for more info on how to override it.
-        If you want to change the help command completely (add aliases, etc) then
-        a call to :meth:`remove_command` with 'help' as the argument would do the
-        trick.
-    pm_help : Optional[bool]
-        A tribool that indicates if the help command should PM the user instead of
-        sending it to the channel it received it from. If the boolean is set to
-        ``True``, then all help output is PM'd. If ``False``, none of the help
-        output is PM'd. If ``None``, then the bot will only PM when the help
-        message becomes too long (dictated by more than 1000 characters).
-        Defaults to ``False``.
-    help_attrs : dict
-        A dictionary of options to pass in for the construction of the help command.
-        This allows you to change the command behaviour without actually changing
-        the implementation of the command. The attributes will be the same as the
-        ones passed in the :class:`Command` constructor. Note that ``pass_context``
-        will always be set to ``True`` regardless of what you pass in.
-    command_not_found : str
-        The format string used when the help command is invoked with a command that
-        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
-        The only format argument is the name of the command passed.
-    command_has_no_subcommands : str
-        The format string used when the help command is invoked with requests for a
-        subcommand but the command does not have any subcommands. Defaults to
-        ``"Command {0.name} has no subcommands."``. The first format argument is the
-        :class:`Command` attempted to get a subcommand and the second is the name.
-    """
+class BotBase(GroupMixin):
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
@@ -210,15 +153,21 @@ class Bot(GroupMixin, discord.Client):
         self.cogs = {}
         self.extensions = {}
         self._checks = []
+        self._check_once = []
+        self._before_invoke = None
+        self._after_invoke = None
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
+        self.owner_id = options.get('owner_id')
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
-        self._skip_check = discord.User.__ne__ if options.pop('self_bot', False) else discord.User.__eq__
+        if options.pop('self_bot', False):
+            self._skip_check = lambda x, y: x != y
+        else:
+            self._skip_check = lambda x, y: x == y
 
         self.help_attrs = options.pop('help_attrs', {})
-        self.help_attrs['pass_context'] = True
 
         if 'name' not in self.help_attrs:
             self.help_attrs['name'] = 'help'
@@ -235,39 +184,14 @@ class Bot(GroupMixin, discord.Client):
 
     # internal helpers
 
-    @asyncio.coroutine
-    def _get_prefix(self, message):
-        prefix = self.command_prefix
-        if callable(prefix):
-            ret = prefix(self, message)
-            if asyncio.iscoroutine(ret):
-                ret = yield from ret
-            return ret
-        else:
-            return prefix
-
-    @asyncio.coroutine
-    def _run_extra(self, coro, event_name, *args, **kwargs):
-        try:
-            yield from coro(*args, **kwargs)
-        except asyncio.CancelledError:
-            pass
-        except Exception:
-            try:
-                yield from self.on_error(event_name, *args, **kwargs)
-            except asyncio.CancelledError:
-                pass
-
     def dispatch(self, event_name, *args, **kwargs):
         super().dispatch(event_name, *args, **kwargs)
         ev = 'on_' + event_name
-        if ev in self.extra_events:
-            for event in self.extra_events[ev]:
-                coro = self._run_extra(event, event_name, *args, **kwargs)
-                discord.compat.create_task(coro, loop=self.loop)
+        for event in self.extra_events.get(ev, []):
+            coro = self._run_event(event, event_name, *args, **kwargs)
+            asyncio.ensure_future(coro, loop=self.loop)
 
-    @asyncio.coroutine
-    def close(self):
+    async def close(self):
         for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
@@ -280,10 +204,9 @@ class Bot(GroupMixin, discord.Client):
             except:
                 pass
 
-        yield from super().close()
+        await super().close()
 
-    @asyncio.coroutine
-    def on_command_error(self, exception, context):
+    async def on_command_error(self, context, exception):
         """|coro|
 
         The default command error handler provided by the bot.
@@ -296,216 +219,67 @@ class Bot(GroupMixin, discord.Client):
         if self.extra_events.get('on_command_error', None):
             return
 
-        if hasattr(context.command, "on_error"):
+        if hasattr(context.command, 'on_error'):
             return
 
-        print('Ignoring exception in command {}'.format(context.command), file=sys.stderr)
+        cog = context.cog
+        if cog:
+            attr = '_{0.__class__.__name__}__error'.format(cog)
+            if hasattr(cog, attr):
+                return
+
+        print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
-
-    # utility "send_*" functions
-
-    @asyncio.coroutine
-    def _augmented_msg(self, coro, **kwargs):
-        msg = yield from coro
-        delete_after = kwargs.get('delete_after')
-        if delete_after is not None:
-            @asyncio.coroutine
-            def delete():
-                yield from asyncio.sleep(delete_after, loop=self.loop)
-                yield from self.delete_message(msg)
-
-            discord.compat.create_task(delete(), loop=self.loop)
-
-        return msg
-
-    def say(self, *args, **kwargs):
-        """|coro|
-
-        A helper function that is equivalent to doing
-
-        .. code-block:: python
-
-            self.send_message(message.channel, *args, **kwargs)
-
-        The following keyword arguments are "extensions" that augment the
-        behaviour of the standard wrapped call.
-
-        Parameters
-        ------------
-        delete_after: float
-            Number of seconds to wait before automatically deleting the
-            message.
-
-        See Also
-        ---------
-        :meth:`Client.send_message`
-        """
-        destination = _get_variable('_internal_channel')
-
-        extensions = ('delete_after',)
-        params = {
-            k: kwargs.pop(k, None) for k in extensions
-        }
-
-        coro = self.send_message(destination, *args, **kwargs)
-        return self._augmented_msg(coro, **params)
-
-    def whisper(self, *args, **kwargs):
-        """|coro|
-
-        A helper function that is equivalent to doing
-
-        .. code-block:: python
-
-            self.send_message(message.author, *args, **kwargs)
-
-        The following keyword arguments are "extensions" that augment the
-        behaviour of the standard wrapped call.
-
-        Parameters
-        ------------
-        delete_after: float
-            Number of seconds to wait before automatically deleting the
-            message.
-
-        See Also
-        ---------
-        :meth:`Client.send_message`
-        """
-        destination = _get_variable('_internal_author')
-
-        extensions = ('delete_after',)
-        params = {
-            k: kwargs.pop(k, None) for k in extensions
-        }
-
-        coro = self.send_message(destination, *args, **kwargs)
-        return self._augmented_msg(coro, **params)
-
-    def reply(self, content, *args, **kwargs):
-        """|coro|
-
-        A helper function that is equivalent to doing
-
-        .. code-block:: python
-
-            msg = '{0.mention}, {1}'.format(message.author, content)
-            self.send_message(message.channel, msg, *args, **kwargs)
-
-        The following keyword arguments are "extensions" that augment the
-        behaviour of the standard wrapped call.
-
-        Parameters
-        ------------
-        delete_after: float
-            Number of seconds to wait before automatically deleting the
-            message.
-
-        See Also
-        ---------
-        :meth:`Client.send_message`
-        """
-        author = _get_variable('_internal_author')
-        destination = _get_variable('_internal_channel')
-        fmt = '{0.mention}, {1}'.format(author, str(content))
-
-        extensions = ('delete_after',)
-        params = {
-            k: kwargs.pop(k, None) for k in extensions
-        }
-
-        coro = self.send_message(destination, fmt, *args, **kwargs)
-        return self._augmented_msg(coro, **params)
-
-    def upload(self, *args, **kwargs):
-        """|coro|
-
-        A helper function that is equivalent to doing
-
-        .. code-block:: python
-
-            self.send_file(message.channel, *args, **kwargs)
-
-        The following keyword arguments are "extensions" that augment the
-        behaviour of the standard wrapped call.
-
-        Parameters
-        ------------
-        delete_after: float
-            Number of seconds to wait before automatically deleting the
-            message.
-
-        See Also
-        ---------
-        :meth:`Client.send_file`
-        """
-        destination = _get_variable('_internal_channel')
-
-        extensions = ('delete_after',)
-        params = {
-            k: kwargs.pop(k, None) for k in extensions
-        }
-
-        coro = self.send_file(destination, *args, **kwargs)
-        return self._augmented_msg(coro, **params)
-
-    def type(self):
-        """|coro|
-
-        A helper function that is equivalent to doing
-
-        .. code-block:: python
-
-            self.send_typing(message.channel)
-
-        See Also
-        ---------
-        The :meth:`Client.send_typing` function.
-        """
-        destination = _get_variable('_internal_channel')
-        return self.send_typing(destination)
 
     # global check registration
 
     def check(self, func):
         """A decorator that adds a global check to the bot.
 
-        A global check is similar to a :func:`check` that is applied
+        A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
         have been verified and applies to every command the bot has.
 
-        .. warning::
+        .. note::
 
-            This function must be a *regular* function and not a coroutine.
+            This function can either be a regular function or a coroutine.
 
-        Similar to a command :func:`check`\, this takes a single parameter
-        of type :class:`Context` and can only raise exceptions derived from
-        :exc:`CommandError`.
+        Similar to a command :func:`.check`\, this takes a single parameter
+        of type :class:`.Context` and can only raise exceptions derived from
+        :exc:`.CommandError`.
 
         Example
         ---------
 
-        .. code-block:: python
+        .. code-block:: python3
 
             @bot.check
-            def whitelist(ctx):
-                return ctx.message.author.id in my_whitelist
+            def check_commands(ctx):
+                return ctx.command.qualified_name in allowed_commands
 
         """
         self.add_check(func)
         return func
 
-    def add_check(self, func):
+    def add_check(self, func, *, call_once=False):
         """Adds a global check to the bot.
 
-        This is the non-decorator interface to :meth:`check`.
+        This is the non-decorator interface to :meth:`.check`
+        and :meth:`.check_once`.
 
         Parameters
         -----------
         func
             The function that was used as a global check.
+        call_once: bool
+            If the function should only be called once per
+            :meth:`.Command.invoke` call.
         """
-        self._checks.append(func)
+
+        if call_once:
+            self._check_once.append(func)
+        else:
+            self._checks.append(func)
 
     def remove_check(self, func):
         """Removes a global check from the bot.
@@ -522,19 +296,143 @@ class Bot(GroupMixin, discord.Client):
         try:
             self._checks.remove(func)
         except ValueError:
-            pass
+            try:
+                self._check_once.remove(func)
+            except ValueError:
+                pass
 
-    def can_run(self, ctx):
-        return all(f(ctx) for f in self._checks)
+    def check_once(self, func):
+        """A decorator that adds a "call once" global check to the bot.
+
+        Unlike regular global checks, this one is called only once
+        per :meth:`.Command.invoke` call.
+
+        Regular global checks are called whenever a command is called
+        or :meth:`.Command.can_run` is called. This type of check
+        bypasses that and ensures that it's called only once, even inside
+        the default help command.
+
+        .. note::
+
+            This function can either be a regular function or a coroutine.
+
+        Similar to a command :func:`.check`\, this takes a single parameter
+        of type :class:`.Context` and can only raise exceptions derived from
+        :exc:`.CommandError`.
+
+        Example
+        ---------
+
+        .. code-block:: python3
+
+            @bot.check_once
+            def whitelist(ctx):
+                return ctx.message.author.id in my_whitelist
+
+        """
+        self.add_check(func, call_once=True)
+        return func
+
+    async def can_run(self, ctx, *, call_once=False):
+        data = self._check_once if call_once else self._checks
+
+        if len(data) == 0:
+            return True
+
+        return (await discord.utils.async_all(f(ctx) for f in data))
+
+    async def is_owner(self, user):
+        """Checks if a :class:`.User` or :class:`.Member` is the owner of
+        this bot.
+
+        If an :attr:`owner_id` is not set, it is fetched automatically
+        through the use of :meth:`~.Bot.application_info`.
+
+        Parameters
+        -----------
+        user: :class:`.abc.User`
+            The user to check for.
+        """
+
+        if self.owner_id is None:
+            app = await self.application_info()
+            self.owner_id = owner_id = app.owner.id
+            return user.id == owner_id
+        return user.id == self.owner_id
+
+    def before_invoke(self, coro):
+        """A decorator that registers a coroutine as a pre-invoke hook.
+
+        A pre-invoke hook is called directly before the command is
+        called. This makes it a useful function to set up database
+        connections or any type of set up required.
+
+        This pre-invoke hook takes a sole parameter, a :class:`.Context`.
+
+        .. note::
+
+            The :meth:`~.Bot.before_invoke` and :meth:`~.Bot.after_invoke` hooks are
+            only called if all checks and argument parsing procedures pass
+            without error. If any check or argument parsing procedures fail
+            then the hooks are not called.
+
+        Parameters
+        -----------
+        coro
+            The coroutine to register as the pre-invoke hook.
+
+        Raises
+        -------
+        :exc:`.ClientException`
+            The coroutine is not actually a coroutine.
+        """
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The error handler must be a coroutine.')
+
+        self._before_invoke = coro
+        return coro
+
+    def after_invoke(self, coro):
+        """A decorator that registers a coroutine as a post-invoke hook.
+
+        A post-invoke hook is called directly after the command is
+        called. This makes it a useful function to clean-up database
+        connections or any type of clean up required.
+
+        This post-invoke hook takes a sole parameter, a :class:`.Context`.
+
+        .. note::
+
+            Similar to :meth:`~.Bot.before_invoke`\, this is not called unless
+            checks and argument parsing procedures succeed. This hook is,
+            however, **always** called regardless of the internal command
+            callback raising an error (i.e. :exc:`.CommandInvokeError`\).
+            This makes it ideal for clean-up scenarios.
+
+        Parameters
+        -----------
+        coro
+            The coroutine to register as the post-invoke hook.
+
+        Raises
+        -------
+        :exc:`.ClientException`
+            The coroutine is not actually a coroutine.
+        """
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The error handler must be a coroutine.')
+
+        self._after_invoke = coro
+        return coro
 
     # listener registration
 
     def add_listener(self, func, name=None):
-        """The non decorator alternative to :meth:`listen`.
+        """The non decorator alternative to :meth:`.listen`.
 
         Parameters
         -----------
-        func : coroutine
+        func : :ref:`coroutine <coroutine>`
             The extra event to listen to.
         name : Optional[str]
             The name of the command to use. Defaults to ``func.__name__``.
@@ -542,7 +440,7 @@ class Bot(GroupMixin, discord.Client):
         Example
         --------
 
-        .. code-block:: python
+        .. code-block:: python3
 
             async def on_ready(): pass
             async def my_message(message): pass
@@ -584,14 +482,14 @@ class Bot(GroupMixin, discord.Client):
     def listen(self, name=None):
         """A decorator that registers another function as an external
         event listener. Basically this allows you to listen to multiple
-        events from different places e.g. such as :func:`discord.on_ready`
+        events from different places e.g. such as :func:`.on_ready`
 
         The functions being listened to must be a coroutine.
 
         Example
         --------
 
-        .. code-block:: python
+        .. code-block:: python3
 
             @bot.listen()
             async def on_message(message):
@@ -607,7 +505,7 @@ class Bot(GroupMixin, discord.Client):
 
         Raises
         -------
-        discord.ClientException
+        :exc:`.ClientException`
             The function being listened to is not a coroutine.
         """
 
@@ -627,8 +525,10 @@ class Bot(GroupMixin, discord.Client):
         They are meant as a way to organize multiple relevant commands
         into a singular class that shares some state or no state at all.
 
-        The cog can also have a ``__check`` member function that allows
-        you to define a global check. See :meth:`check` for more info.
+        The cog can also have a ``__global_check`` member function that allows
+        you to define a global check. See :meth:`.check` for more info. If
+        the name is ``__global_check_once`` then it's equivalent to the
+        :meth:`.check_once` decorator.
 
         More information will be documented soon.
 
@@ -641,24 +541,30 @@ class Bot(GroupMixin, discord.Client):
         self.cogs[type(cog).__name__] = cog
 
         try:
-            check = getattr(cog, '_{.__class__.__name__}__check'.format(cog))
+            check = getattr(cog, '_{.__class__.__name__}__global_check'.format(cog))
         except AttributeError:
             pass
         else:
             self.add_check(check)
 
+        try:
+            check = getattr(cog, '_{.__class__.__name__}__global_check_once'.format(cog))
+        except AttributeError:
+            pass
+        else:
+            self.add_check(check, call_once=True)
+
         members = inspect.getmembers(cog)
         for name, member in members:
             # register commands the cog has
             if isinstance(member, Command):
-                member.instance = cog
                 if member.parent is None:
                     self.add_command(member)
                 continue
 
             # register event listeners the cog has
             if name.startswith('on_'):
-                self.add_listener(member)
+                self.add_listener(member, name)
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -672,14 +578,38 @@ class Bot(GroupMixin, discord.Client):
         """
         return self.cogs.get(name)
 
+    def get_cog_commands(self, name):
+        """Gets a unique set of the cog's registered commands
+        without aliases.
+
+        If the cog is not found, an empty set is returned.
+
+        Parameters
+        ------------
+        name: str
+            The name of the cog whose commands you are requesting.
+
+        Returns
+        ---------
+        Set[:class:`.Command`]
+            A unique set of commands without aliases that belong
+            to the cog.
+        """
+
+        try:
+            cog = self.cogs[name]
+        except KeyError:
+            return set()
+
+        return {c for c in self.all_commands.values() if c.instance is cog}
+
     def remove_cog(self, name):
         """Removes a cog from the bot.
 
         All registered commands and event listeners that the
         cog has registered will be removed as well.
 
-        If no cog is found then ``None`` is returned, otherwise
-        the cog instance that is being removed is returned.
+        If no cog is found then this method has no effect.
 
         If the cog defines a special member function named ``__unload``
         then it is called when removal has completed. This function
@@ -693,13 +623,12 @@ class Bot(GroupMixin, discord.Client):
 
         cog = self.cogs.pop(name, None)
         if cog is None:
-            return cog
+            return
 
         members = inspect.getmembers(cog)
         for name, member in members:
             # remove commands the cog has
             if isinstance(member, Command):
-                member.instance = None
                 if member.parent is None:
                     self.remove_command(member.name)
                 continue
@@ -709,7 +638,14 @@ class Bot(GroupMixin, discord.Client):
                 self.remove_listener(member)
 
         try:
-            check = getattr(cog, '_{0.__class__.__name__}__check'.format(cog))
+            check = getattr(cog, '_{0.__class__.__name__}__global_check'.format(cog))
+        except AttributeError:
+            pass
+        else:
+            self.remove_check(check)
+
+        try:
+            check = getattr(cog, '_{0.__class__.__name__}__global_check_once'.format(cog))
         except AttributeError:
             pass
         else:
@@ -728,6 +664,30 @@ class Bot(GroupMixin, discord.Client):
     # extensions
 
     def load_extension(self, name):
+        """Loads an extension.
+
+        An extension is a python module that contains commands, cogs, or
+        listeners.
+
+        An extension must have a global function, ``setup`` defined as
+        the entry point on what to do when the extension is loaded. This entry
+        point must have a single argument, the ``bot``.
+
+        Parameters
+        ------------
+        name: str
+            The extension name to load. It must be dot separated like
+            regular Python imports if accessing a sub-module. e.g.
+            ``foo.test`` if you want to import ``foo/test.py``.
+
+        Raises
+        --------
+        ClientException
+            The extension does not have a setup function.
+        ImportError
+            The extension could not be imported.
+        """
+
         if name in self.extensions:
             return
 
@@ -741,30 +701,49 @@ class Bot(GroupMixin, discord.Client):
         self.extensions[name] = lib
 
     def unload_extension(self, name):
+        """Unloads an extension.
+
+        When the extension is unloaded, all commands, listeners, and cogs are
+        removed from the bot and the module is un-imported.
+
+        The extension can provide an optional global function, ``teardown``,
+        to do miscellaneous clean-up if necessary. This function takes a single
+        parameter, the ``bot``, similar to ``setup`` from
+        :func:`~.Bot.load_extension`.
+
+        Parameters
+        ------------
+        name: str
+            The extension name to unload. It must be dot separated like
+            regular Python imports if accessing a sub-module. e.g.
+            ``foo.test`` if you want to import ``foo/test.py``.
+        """
+
         lib = self.extensions.get(name)
         if lib is None:
             return
+
+        lib_name = lib.__name__
 
         # find all references to the module
 
         # remove the cogs registered from the module
         for cogname, cog in self.cogs.copy().items():
-            if inspect.getmodule(cog) is lib:
+            if _is_submodule(lib_name, cog.__module__):
                 self.remove_cog(cogname)
 
         # first remove all the commands from the module
-        for command in self.commands.copy().values():
-            if command.module is lib:
-                command.module = None
-                if isinstance(command, GroupMixin):
-                    command.recursively_remove_all_commands()
-                self.remove_command(command.name)
+        for cmd in self.all_commands.copy().values():
+            if _is_submodule(lib_name, cmd.module):
+                if isinstance(cmd, GroupMixin):
+                    cmd.recursively_remove_all_commands()
+                self.remove_command(cmd.name)
 
         # then remove all the listeners from the module
         for event_list in self.extra_events.copy().values():
             remove = []
             for index, event in enumerate(event_list):
-                if inspect.getmodule(event) is lib:
+                if _is_submodule(lib_name, event.__module__):
                     remove.append(index)
 
             for index in reversed(remove):
@@ -776,7 +755,7 @@ class Bot(GroupMixin, discord.Client):
             pass
         else:
             try:
-                func(bot)
+                func(self)
             except:
                 pass
         finally:
@@ -784,76 +763,261 @@ class Bot(GroupMixin, discord.Client):
             del lib
             del self.extensions[name]
             del sys.modules[name]
+            for module in list(sys.modules.keys()):
+                if _is_submodule(lib_name, module):
+                    del sys.modules[module]
 
     # command processing
 
-    @asyncio.coroutine
-    def process_commands(self, message):
+    async def get_prefix(self, message):
+        """|coro|
+
+        Retrieves the prefix the bot is listening to
+        with the message as a context.
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message context to get the prefix of.
+
+        Returns
+        --------
+        Union[List[str], str]
+            A list of prefixes or a single prefix that the bot is
+            listening for.
+        """
+        prefix = ret = self.command_prefix
+        if callable(prefix):
+            ret = await discord.utils.maybe_coroutine(prefix, self, message)
+
+        if not isinstance(ret, str):
+            try:
+                ret = list(ret)
+            except TypeError:
+                # It's possible that a generator raised this exception.  Don't
+                # replace it with our own error if that's the case.
+                if isinstance(ret, collections.Iterable):
+                    raise
+
+                raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
+                                "returning either of these, not {}".format(ret.__class__.__name__))
+
+            if not ret:
+                raise ValueError("Iterable command_prefix must contain at least one prefix")
+
+        return ret
+
+    async def get_context(self, message, *, cls=Context):
+        """|coro|
+
+        Returns the invocation context from the message.
+
+        This is a more low-level counter-part for :meth:`.process_commands`
+        to allow users more fine grained control over the processing.
+
+        The returned context is not guaranteed to be a valid invocation
+        context, :attr:`.Context.valid` must be checked to make sure it is.
+        If the context is not valid then it is not a valid candidate to be
+        invoked under :meth:`~.Bot.invoke`.
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message to get the invocation context from.
+        cls
+            The factory class that will be used to create the context.
+            By default, this is :class:`.Context`. Should a custom
+            class be provided, it must be similar enough to :class:`.Context`\'s
+            interface.
+
+        Returns
+        --------
+        :class:`.Context`
+            The invocation context. The type of this can change via the
+            ``cls`` parameter.
+        """
+
+        view = StringView(message.content)
+        ctx = cls(prefix=None, view=view, bot=self, message=message)
+
+        if self._skip_check(message.author.id, self.user.id):
+            return ctx
+
+        prefix = await self.get_prefix(message)
+        invoked_prefix = prefix
+
+        if isinstance(prefix, str):
+            if not view.skip_string(prefix):
+                return ctx
+        else:
+            try:
+                # if the context class' __init__ consumes something from the view this
+                # will be wrong.  That seems unreasonable though.
+                if message.content.startswith(tuple(prefix)):
+                    invoked_prefix = discord.utils.find(view.skip_string, prefix)
+                else:
+                    return ctx
+
+            except TypeError:
+                if not isinstance(prefix, list):
+                    raise TypeError("get_prefix must return either a string or a list of string, "
+                                    "not {}".format(prefix.__class__.__name__))
+
+                # It's possible a bad command_prefix got us here.
+                for value in prefix:
+                    if not isinstance(value, str):
+                        raise TypeError("Iterable command_prefix or list returned from get_prefix must "
+                                        "contain only strings, not {}".format(value.__class__.__name__))
+
+                # Getting here shouldn't happen
+                raise
+
+        invoker = view.get_word()
+        ctx.invoked_with = invoker
+        ctx.prefix = invoked_prefix
+        ctx.command = self.all_commands.get(invoker)
+        return ctx
+
+    async def invoke(self, ctx):
+        """|coro|
+
+        Invokes the command given under the invocation context and
+        handles all the internal event dispatch mechanisms.
+
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context to invoke.
+        """
+        if ctx.command is not None:
+            self.dispatch('command', ctx)
+            try:
+                if (await self.can_run(ctx, call_once=True)):
+                    await ctx.command.invoke(ctx)
+            except CommandError as e:
+                await ctx.command.dispatch_error(ctx, e)
+            else:
+                self.dispatch('command_completion', ctx)
+        elif ctx.invoked_with:
+            exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            self.dispatch('command_error', ctx, exc)
+
+    async def process_commands(self, message):
         """|coro|
 
         This function processes the commands that have been registered
         to the bot and other groups. Without this coroutine, none of the
         commands will be triggered.
 
-        By default, this coroutine is called inside the :func:`on_message`
-        event. If you choose to override the :func:`on_message` event, then
+        By default, this coroutine is called inside the :func:`.on_message`
+        event. If you choose to override the :func:`.on_message` event, then
         you should invoke this coroutine as well.
 
-        Warning
-        --------
-        This function is necessary for :meth:`say`, :meth:`whisper`,
-        :meth:`type`, :meth:`reply`, and :meth:`upload` to work due to the
-        way they are written. It is also required for the :func:`on_command`
-        and :func:`on_command_completion` events.
+        This is built using other low level tools, and is equivalent to a
+        call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
         Parameters
         -----------
         message : discord.Message
             The message to process commands for.
         """
-        _internal_channel = message.channel
-        _internal_author = message.author
+        ctx = await self.get_context(message)
+        await self.invoke(ctx)
 
-        view = StringView(message.content)
-        if self._skip_check(message.author, self.user):
-            return
+    async def on_message(self, message):
+        await self.process_commands(message)
 
-        prefix = yield from self._get_prefix(message)
-        invoked_prefix = prefix
+class Bot(BotBase, discord.Client):
+    """Represents a discord bot.
 
-        if not isinstance(prefix, (tuple, list)):
-            if not view.skip_string(prefix):
-                return
-        else:
-            invoked_prefix = discord.utils.find(view.skip_string, prefix)
-            if invoked_prefix is None:
-                return
+    This class is a subclass of :class:`discord.Client` and as a result
+    anything that you can do with a :class:`discord.Client` you can do with
+    this bot.
 
+    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
+    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
 
-        invoker = view.get_word()
-        tmp = {
-            'bot': self,
-            'invoked_with': invoker,
-            'message': message,
-            'view': view,
-            'prefix': invoked_prefix
-        }
-        ctx = Context(**tmp)
-        del tmp
+    This class also subclasses :class:`.GroupMixin` to provide the functionality
+    to manage commands.
 
-        if invoker in self.commands:
-            command = self.commands[invoker]
-            self.dispatch('command', command, ctx)
-            try:
-                yield from command.invoke(ctx)
-            except CommandError as e:
-                ctx.command.dispatch_error(e, ctx)
-            else:
-                self.dispatch('command_completion', command, ctx)
-        elif invoker:
-            exc = CommandNotFound('Command "{}" is not found'.format(invoker))
-            self.dispatch('command_error', exc, ctx)
+    Attributes
+    -----------
+    command_prefix
+        The command prefix is what the message content must contain initially
+        to have a command invoked. This prefix could either be a string to
+        indicate what the prefix should be, or a callable that takes in the bot
+        as its first parameter and :class:`discord.Message` as its second
+        parameter and returns the prefix. This is to facilitate "dynamic"
+        command prefixes. This callable can be either a regular function or
+        a coroutine.
 
-    @asyncio.coroutine
-    def on_message(self, message):
-        yield from self.process_commands(message)
+        An empty string as the prefix always matches, enabling prefix-less
+        command invocation. While this may be useful in DMs it should be avoided
+        in servers, as it's likely to cause performance issues and unintended
+        command invocations.
+
+        The command prefix could also be an iterable of strings indicating that
+        multiple checks for the prefix should be used and the first one to
+        match will be the invocation prefix. You can get this prefix via
+        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
+        allowed.
+
+        .. note::
+
+            When passing multiple prefixes be careful to not pass a prefix
+            that matches a longer prefix occuring later in the sequence.  For
+            example, if the command prefix is ``('!', '!?')``  the ``'!?'``
+            prefix will never be matched to any message as the previous one
+            matches messages starting with ``!?``. This is especially important
+            when passing an empty string, it should always be last as no prefix
+            after it will be matched.
+    case_insensitive: :class:`bool`
+        Whether the commands should be case insensitive. Defaults to ``False``. This
+        attribute does not carry over to groups. You must set it to every group if
+        you require group commands to be case insensitive as well.
+    description : :class:`str`
+        The content prefixed into the default help message.
+    self_bot : :class:`bool`
+        If ``True``, the bot will only listen to commands invoked by itself rather
+        than ignoring itself. If ``False`` (the default) then the bot will ignore
+        itself. This cannot be changed once initialised.
+    formatter : :class:`.HelpFormatter`
+        The formatter used to format the help message. By default, it uses
+        the :class:`.HelpFormatter`. Check it for more info on how to override it.
+        If you want to change the help command completely (add aliases, etc) then
+        a call to :meth:`~.Bot.remove_command` with 'help' as the argument would do the
+        trick.
+    pm_help : Optional[:class:`bool`]
+        A tribool that indicates if the help command should PM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is PM'd. If ``False``, none of the help
+        output is PM'd. If ``None``, then the bot will only PM when the help
+        message becomes too long (dictated by more than 1000 characters).
+        Defaults to ``False``.
+    help_attrs : :class:`dict`
+        A dictionary of options to pass in for the construction of the help command.
+        This allows you to change the command behaviour without actually changing
+        the implementation of the command. The attributes will be the same as the
+        ones passed in the :class:`.Command` constructor. Note that ``pass_context``
+        will always be set to ``True`` regardless of what you pass in.
+    command_not_found : :class:`str`
+        The format string used when the help command is invoked with a command that
+        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
+        The only format argument is the name of the command passed.
+    command_has_no_subcommands : :class:`str`
+        The format string used when the help command is invoked with requests for a
+        subcommand but the command does not have any subcommands. Defaults to
+        ``"Command {0.name} has no subcommands."``. The first format argument is the
+        :class:`.Command` attempted to get a subcommand and the second is the name.
+    owner_id: Optional[:class:`int`]
+        The ID that owns the bot. If this is not set and is then queried via
+        :meth:`.is_owner` then it is fetched automatically using
+        :meth:`~.Bot.application_info`.
+    """
+    pass
+
+class AutoShardedBot(BotBase, discord.AutoShardedClient):
+    """This is similar to :class:`.Bot` except that it is derived from
+    :class:`discord.AutoShardedClient` instead.
+    """
+    pass

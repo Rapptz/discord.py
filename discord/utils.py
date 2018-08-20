@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2017 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,9 +25,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from re import split as re_split
-from .errors import HTTPException, Forbidden, NotFound, InvalidArgument
+from .errors import InvalidArgument
 import datetime
 from base64 import b64encode
+from email.utils import parsedate_to_datetime
+from inspect import isawaitable as _isawaitable
 import asyncio
 import json
 import warnings, functools
@@ -91,9 +93,9 @@ def deprecated(instead=None):
         return decorated
     return actual_decorator
 
-def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
+def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     """A helper function that returns the OAuth2 URL for inviting the bot
-    into servers.
+    into guilds.
 
     Parameters
     -----------
@@ -102,16 +104,16 @@ def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
     permissions : :class:`Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
-    server : :class:`Server`
-        The server to pre-select in the authorization screen, if available.
+    guild : :class:`Guild`
+        The guild to pre-select in the authorization screen, if available.
     redirect_uri : str
         An optional valid redirect URI.
     """
     url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
-    if server is not None:
-        url = url + "&guild_id=" + server.id
+    if guild is not None:
+        url = url + "&guild_id=" + str(guild.id)
     if redirect_uri is not None:
         from urllib.parse import urlencode
         url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
@@ -120,7 +122,7 @@ def oauth_url(client_id, permissions=None, server=None, redirect_uri=None):
 
 def snowflake_time(id):
     """Returns the creation date in UTC of a discord id."""
-    return datetime.datetime.utcfromtimestamp(((int(id) >> 22) + DISCORD_EPOCH) / 1000)
+    return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
 
 def time_snowflake(datetime_obj, high=False):
     """Returns a numeric snowflake pretending to be created at the given date.
@@ -144,7 +146,7 @@ def find(predicate, seq):
     """A helper to return the first element found in the sequence
     that meets the predicate. For example: ::
 
-        member = find(lambda m: m.name == 'Mighty', channel.server.members)
+        member = find(lambda m: m.name == 'Mighty', channel.guild.members)
 
     would find the first :class:`Member` whose name is 'Mighty' and return it.
     If an entry is not found, then ``None`` is returned.
@@ -188,21 +190,21 @@ def get(iterable, **attrs):
 
     Basic usage:
 
-    .. code-block:: python
+    .. code-block:: python3
 
-        member = discord.utils.get(message.server.members, name='Foo')
+        member = discord.utils.get(message.guild.members, name='Foo')
 
     Multiple attribute matching:
 
-    .. code-block:: python
+    .. code-block:: python3
 
-        channel = discord.utils.get(server.channels, name='Foo', type=ChannelType.voice)
+        channel = discord.utils.get(guild.voice_channels, name='Foo', bitrate=64000)
 
     Nested attribute matching:
 
-    .. code-block:: python
+    .. code-block:: python3
 
-        channel = discord.utils.get(client.get_all_channels(), server__name='Cool', name='general')
+        channel = discord.utils.get(client.get_all_channels(), guild__name='Cool', name='general')
 
     Parameters
     -----------
@@ -231,14 +233,21 @@ def _unique(iterable):
     adder = seen.add
     return [x for x in iterable if not (x in seen or adder(x))]
 
-def _null_event(*args, **kwargs):
-    pass
+def _get_as_snowflake(data, key):
+    try:
+        value = data[key]
+    except KeyError:
+        return None
+    else:
+        return value and int(value)
 
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data.startswith(b'\xFF\xD8') and data.endswith(b'\xFF\xD9'):
+    elif data.startswith(b'\xFF\xD8') and data.rstrip(b'\0').endswith(b'\xFF\xD9'):
         return 'image/jpeg'
+    elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
+        return 'image/gif'
     else:
         raise InvalidArgument('Unsupported image type given')
 
@@ -251,3 +260,32 @@ def _bytes_to_base64_data(data):
 def to_json(obj):
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
+def _parse_ratelimit_header(request):
+    now = parsedate_to_datetime(request.headers['Date'])
+    reset = datetime.datetime.fromtimestamp(int(request.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
+    return (reset - now).total_seconds()
+
+async def maybe_coroutine(f, *args, **kwargs):
+    value = f(*args, **kwargs)
+    if _isawaitable(value):
+        return (await value)
+    else:
+        return value
+
+async def async_all(gen, *, check=_isawaitable):
+    for elem in gen:
+        if check(elem):
+            elem = await elem
+        if not elem:
+            return False
+    return True
+
+async def sane_wait_for(futures, *, timeout, loop):
+    done, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
+
+    if len(pending) != 0:
+        raise asyncio.TimeoutError()
+
+def valid_icon_size(size):
+    """Icons must be power of 2 within [16, 1024]."""
+    return ((size != 0) and not (size & (size - 1))) and size in range(16, 1025)
