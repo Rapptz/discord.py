@@ -692,4 +692,4 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         if self._keep_alive:
             self._keep_alive.stop()
 
-        await super().close_connection(force=force)
+        await super().close_connection(*args, **kwargs)
