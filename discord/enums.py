@@ -212,6 +212,9 @@ class UserFlags(Enum):
     staff = 1
     partner = 2
     hypesquad = 4
+    hypesquad_bravery = 64
+    hypesquad_brilliance = 128
+    hypesquad_balance = 256
 
 class ActivityType(IntEnum):
     unknown = -1

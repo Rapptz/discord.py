@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
-from .enums import DefaultAvatar, RelationshipType, UserFlags, HypesquadHouse
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
 from .errors import ClientException, InvalidArgument
 
 from collections import namedtuple
@@ -63,7 +63,8 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
 
     @property
     def hypesquad_houses(self):
-        return [house for house, flag in zip(HypesquadHouse, (64, 128, 256)) if (self.flags & flag) == flag]
+        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
+        return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
 
 _BaseUser = discord.abc.User
 
@@ -341,7 +342,7 @@ class ClientUser(BaseUser):
         email: str
             The new email you wish to change to.
             Only applicable to user accounts.
-        house: Union[int, :class:HypesquadHouse]
+        Optional[:class:`HypeSquadHouse`]
             If this is supplied also supply ``first_name`` and ``last_name`` fields of str type.
             The hypesquad house you wish to change to.
             Could be ``None`` to leave the current house.
@@ -360,6 +361,7 @@ class ClientUser(BaseUser):
             Wrong image format passed for ``avatar``.
         ClientException
             Password is required for non-bot accounts.
+            house keyword argument supplied but ``first_name`` and ``last_name`` fields were not.
         """
 
         try:
@@ -395,17 +397,14 @@ class ClientUser(BaseUser):
             house = fields['house']
             if house is None:
                 await http.leave_hypesquad_house()
-
             elif 'first_name' not in fields or 'last_name' not in fields:
                 raise ClientException('When changing hypesquad houses first_name and last_name fields are required.')
-
+            elif isinstance(house, HypeSquadHouse):
+                value = house.value
             else:
-                if isinstance(house, HypesquadHouse):
-                    value = house.value
-                else:
-                    value = int(house)
+                value = int(house)
 
-                await http.change_hypesquad_house(value, fields['first_name'], fields['last_name'])
+            await http.change_hypesquad_house(value, fields['first_name'], fields['last_name'])
         except KeyError:
             pass
 
