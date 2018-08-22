@@ -343,7 +343,6 @@ class ClientUser(BaseUser):
             The new email you wish to change to.
             Only applicable to user accounts.
         Optional[:class:`HypeSquadHouse`]
-            If this is supplied also supply ``first_name`` and ``last_name`` fields of str type.
             The hypesquad house you wish to change to.
             Could be ``None`` to leave the current house.
             Only applicable to user accounts.
@@ -361,7 +360,7 @@ class ClientUser(BaseUser):
             Wrong image format passed for ``avatar``.
         ClientException
             Password is required for non-bot accounts.
-            house keyword argument supplied but ``first_name`` and ``last_name`` fields were not.
+            House field was not a HypeSquadHouse.
         """
 
         try:
@@ -393,20 +392,16 @@ class ClientUser(BaseUser):
 
         http = self._state.http
 
-        try:
+        if 'house' in fields:
             house = fields['house']
             if house is None:
                 await http.leave_hypesquad_house()
-            elif 'first_name' not in fields or 'last_name' not in fields:
-                raise ClientException('When changing hypesquad houses first_name and last_name fields are required.')
-            elif isinstance(house, HypeSquadHouse):
-                value = house.value
+            elif not isinstance(house, HypeSquadHouse):
+                raise ClientException('`house` parameter was not a HypeSquadHouse')
             else:
-                value = int(house)
+                value = house.value
 
-            await http.change_hypesquad_house(value, fields['first_name'], fields['last_name'])
-        except KeyError:
-            pass
+            await http.change_hypesquad_house(value)
 
         data = await http.edit_profile(**args)
         if not_bot_account:
