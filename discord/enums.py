@@ -29,7 +29,7 @@ from enum import Enum, IntEnum
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
            'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', 'HypesquadHouse']
+           'ActivityType', 'HypeSquadHouse']
 
 class ChannelType(Enum):
     text     = 0
@@ -223,7 +223,7 @@ class ActivityType(IntEnum):
     listening = 2
     watching = 3
 
-class HypesquadHouse(Enum):
+class HypeSquadHouse(Enum):
     bravery = 1
     brilliance = 2
     balance = 3
