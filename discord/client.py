@@ -547,11 +547,12 @@ class Client:
         is blocking. That means that registration of events or anything being
         called after this function call will not execute until it returns.
         """
-        is_windows = sys.platform == 'win32'
         loop = self.loop
-        if not is_windows:
+        try:
             loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
             loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
+        except (NotImplementedError, RuntimeError):
+            pass
 
         task = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
 
@@ -566,7 +567,7 @@ class Client:
             log.info('Received signal to terminate bot and event loop.')
         finally:
             task.remove_done_callback(stop_loop_on_finish)
-            if is_windows:
+            if sys.platform == 'win32':
                 self._do_cleanup()
 
             loop.close()
