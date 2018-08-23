@@ -916,11 +916,17 @@ class BotBase(GroupMixin):
         This is built using other low level tools, and is equivalent to a
         call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
+        This also checks if the message's author is a bot and doesn't
+        call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
+
         Parameters
         -----------
-        message : discord.Message
+        message: :class:`discord.Message`
             The message to process commands for.
         """
+        if message.author.bot:
+            return
+
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 
