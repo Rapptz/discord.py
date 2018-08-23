@@ -128,7 +128,7 @@ class Command:
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
     parent: Optional[command]
-        The parent command that this command belongs to. ``None`` is there
+        The parent command that this command belongs to. ``None`` if there
         isn't one.
     checks
         A list of predicates that verifies if the command could be executed
