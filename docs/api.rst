@@ -384,7 +384,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called whenever a webhook is created, modified, or removed from a guild channel.
 
-    :param channel: The :class:`abc.GuildChannel` that had it's webhooks updated.
+    :param channel: The :class:`abc.GuildChannel` that had its webhooks updated.
 
 .. function:: on_member_join(member)
               on_member_remove(member)
