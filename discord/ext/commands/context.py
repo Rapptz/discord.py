@@ -66,7 +66,10 @@ class Context(discord.abc.Messageable):
         The string that was attempted to call a subcommand. This does not have
         to point to a valid registered subcommand and could just point to a
         nonsense string. If nothing was passed to attempt a call to a
-        subcommand then this is set to `None`.
+        subcommand then this is set to `None`. Subcommand processing is only
+        performed after the command is invoked, so something like 
+        `(await bot.get_context(message)).subcommand_passed` will evaluate to
+        `None`.
     command_failed: :class:`bool`
         A boolean that indicates if the command failed to be parsed, checked,
         or invoked.
