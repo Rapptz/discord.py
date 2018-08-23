@@ -780,8 +780,9 @@ class ConnectionState:
         self.process_listeners(ListenerType.chunk, guild, len(members))
 
     def parse_webhooks_update(self, data):
-        channel = self.get_channel(int(data["channel_id"]))
-        self.dispatch("webhooks_update", channel)
+        channel = self.get_channel(int(data['channel_id']))
+        if channel:
+            self.dispatch('webhooks_update', channel)
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
