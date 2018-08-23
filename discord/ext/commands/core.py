@@ -174,27 +174,32 @@ class Command:
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
 
-        signature = inspect.signature(callback)
-        annotations = typing.get_type_hints(callback)
-
-        self.params = signature.parameters.copy()
-
-        # PEP-563 allows postponing evaluation of annotations with a __future__
-        # import. When postponed, Parameter.annotation will be a string and must
-        # be replaced with the real class from typing.get_type_hints() for the
-        # converters to work later on
-        for key, value in self.params.items():
-            if isinstance(value.annotation, str) and key in annotations:
-                self.params[key] = value.replace(annotation=annotations[key])
-
         self.checks = kwargs.get('checks', [])
-        self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
         self._buckets = CooldownMapping(kwargs.get('cooldown'))
         self._before_invoke = None
         self._after_invoke = None
+
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, function):
+        self._callback = function
+        self.module = function.__module__
+
+        signature = inspect.signature(function)
+        self.params = signature.parameters.copy()
+
+        # PEP-563 allows postponing evaluation of annotations with a __future__
+        # import. When postponed, Parameter.annotation will be a string and must
+        # be replaced with the real value for the converters to work later on
+        for key, value in self.params.items():
+            if isinstance(value.annotation, str):
+                self.params[key] = value.replace(annotation=eval(value.annotation, function.__globals__))
 
     async def dispatch_error(self, ctx, error):
         ctx.command_failed = True
