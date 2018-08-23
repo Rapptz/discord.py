@@ -456,7 +456,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def send_as_json(self, data):
         try:
-            await super().send(utils.to_json(data))
+            await self.send(utils.to_json(data))
         except websockets.exceptions.ConnectionClosed as e:
             if not self._can_handle_close(e.code):
                 raise ConnectionClosed(e, shard_id=self.shard_id) from e
