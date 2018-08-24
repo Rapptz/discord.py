@@ -64,6 +64,7 @@ class KeepAliveHandler(threading.Thread):
         self._stop_ev = threading.Event()
         self._last_ack = time.monotonic()
         self._last_send = time.monotonic()
+        self.latency = float('inf')
         self.heartbeat_timeout = ws._max_heartbeat_timeout
 
     def run(self):
@@ -103,7 +104,9 @@ class KeepAliveHandler(threading.Thread):
         self._stop_ev.set()
 
     def ack(self):
-        self._last_ack = time.monotonic()
+        ack_time = time.monotonic()
+        self._last_ack = ack_time
+        self.latency = ack_time - self._last_send
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
@@ -426,7 +429,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     def latency(self):
         """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
         heartbeat = self._keep_alive
-        return float('inf') if heartbeat is None else heartbeat._last_ack - heartbeat._last_send
+        return float('inf') if heartbeat is None else heartbeat.latency
 
     def _can_handle_close(self, code):
         return code not in (1000, 4004, 4010, 4011)
