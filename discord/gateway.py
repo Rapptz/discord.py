@@ -62,13 +62,14 @@ class KeepAliveHandler(threading.Thread):
         self.shard_id = shard_id
         self.msg = 'Keeping websocket alive with sequence %s.'
         self._stop_ev = threading.Event()
-        self._last_ack = time.monotonic()
-        self._last_send = time.monotonic()
+        self._last_ack = time.perf_counter()
+        self._last_send = time.perf_counter()
+        self.latency = float('inf')
         self.heartbeat_timeout = ws._max_heartbeat_timeout
 
     def run(self):
         while not self._stop_ev.wait(self.interval):
-            if self._last_ack + self.heartbeat_timeout < time.monotonic():
+            if self._last_ack + self.heartbeat_timeout < time.perf_counter():
                 log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
@@ -91,7 +92,7 @@ class KeepAliveHandler(threading.Thread):
             except Exception:
                 self.stop()
             else:
-                self._last_send = time.monotonic()
+                self._last_send = time.perf_counter()
 
     def get_payload(self):
         return {
@@ -103,7 +104,9 @@ class KeepAliveHandler(threading.Thread):
         self._stop_ev.set()
 
     def ack(self):
-        self._last_ack = time.monotonic()
+        ack_time = time.perf_counter()
+        self._last_ack = ack_time
+        self.latency = ack_time - self._last_send
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
@@ -426,7 +429,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     def latency(self):
         """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
         heartbeat = self._keep_alive
-        return float('inf') if heartbeat is None else heartbeat._last_ack - heartbeat._last_send
+        return float('inf') if heartbeat is None else heartbeat.latency
 
     def _can_handle_close(self, code):
         return code not in (1000, 4004, 4010, 4011)
