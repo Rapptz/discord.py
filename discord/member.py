@@ -180,7 +180,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash(self._user.id)
+        return hash(self._user)
 
     async def _get_channel(self):
         ch = await self.create_dm()
