@@ -129,17 +129,6 @@ class Reaction:
             winner = random.choice(users)
             await channel.send('{} has won the raffle.'.format(winner))
 
-        Python 3.4 Usage ::
-
-            iterator = reaction.users()
-            while True:
-                try:
-                    user = await iterator.next()
-                except discord.NoMoreItems:
-                    break
-                else:
-                    await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
-
         Yields
         --------
         Union[:class:`User`, :class:`Member`]
