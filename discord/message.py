@@ -720,7 +720,8 @@ class Message:
     @staticmethod
     def _emoji_reaction(emoji):
         if isinstance(emoji, Reaction):
-            return emoji.emoji
+            emoji = emoji.emoji
+
         if isinstance(emoji, Emoji):
             return '%s:%s' % (emoji.name, emoji.id)
         if isinstance(emoji, PartialEmoji):
