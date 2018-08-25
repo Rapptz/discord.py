@@ -74,9 +74,9 @@ class CallMessage:
             The timedelta object representing the duration.
         """
         if self.ended_timestamp is None:
-            return datetime.datetime.utcnow() - self.message.timestamp
+            return datetime.datetime.utcnow() - self.message.created_at
         else:
-            return self.ended_timestamp - self.message.timestamp
+            return self.ended_timestamp - self.message.created_at
 
 class GroupCall:
     """Represents the actual group call from Discord.
