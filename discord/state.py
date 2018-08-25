@@ -968,7 +968,7 @@ class AutoShardedConnectionState(ConnectionState):
         for guild_data in data['guilds']:
             guild = self._add_guild_from_data(guild_data)
             if guild.large:
-                guilds.append(guild)
+                guilds.append((guild, guild.unavailable))
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
