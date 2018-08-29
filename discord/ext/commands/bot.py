@@ -77,7 +77,7 @@ def when_mentioned_or(*prefixes):
     """
     def inner(bot, msg):
         r = list(prefixes)
-        r.extend(when_mentioned(bot, msg))
+        r = when_mentioned(bot, msg) + r
         return r
 
     return inner
