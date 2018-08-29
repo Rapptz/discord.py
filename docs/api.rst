@@ -614,6 +614,9 @@ Profile
     .. attribute:: hypesquad
 
         A boolean indicating if the user is in Discord HypeSquad.
+    .. attribute:: hypesquad_houses
+
+        A list of :class:`HypeSquadHouse` that the user is in.
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this
@@ -684,7 +687,6 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: pins_add
 
         The system message denoting that a pinned message has been added to a channel.
-
     .. attribute:: new_member
 
         The system message denoting that a new member has joined a Guild.
@@ -709,6 +711,20 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: watching
 
         A "Watching" activity type.
+
+.. class:: HypeSquadHouse
+
+    Specifies the HypeSquad house a user belongs to.
+
+    .. attribute:: bravery
+
+        The "Bravery" house.
+    .. attribute:: brilliance
+
+        The "Brilliance" house.
+    .. attribute:: balance
+
+        The "Balance" house.
 
 .. class:: VoiceRegion
 
