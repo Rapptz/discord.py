@@ -86,7 +86,7 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
     def _as_reaction(self):
         if self.id is None:
             return self.name
-        return ':%s:%s' % (self.name, self.id)
+        return '%s:%s' % (self.name, self.id)
 
     @property
     def url(self):
