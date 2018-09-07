@@ -25,11 +25,13 @@ _C = TypeVar('_C', bound=_CoroType)
 
 class BotBase(GroupMixin[CT]):
     command_prefix: CommandPrefix
+    cogs: Dict[str, Any]
+    extra_events: Dict[str, List[Callable[..., Coroutine[Any, Any, None]]]]
+    extensions: Dict[str, Any]
     case_insensitive: bool
     description: str
-    self_bot: bool
     formatter: HelpFormatter  # noqa
-    pm_help: Optional[bool]
+    pm_help: bool
     help_attrs: Dict[str, Any]
     command_not_found: str
     command_has_no_subcommands: str
