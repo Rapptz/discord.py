@@ -190,7 +190,7 @@ class AutoShardedClient(Client):
 
         Parameters
         -----------
-        \*guilds
+        \\*guilds
             An argument list of guilds to request offline members for.
 
         Raises

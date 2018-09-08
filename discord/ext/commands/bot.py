@@ -244,7 +244,7 @@ class BotBase(GroupMixin):
 
             This function can either be a regular function or a coroutine.
 
-        Similar to a command :func:`.check`\, this takes a single parameter
+        Similar to a command :func:`.check`\\, this takes a single parameter
         of type :class:`.Context` and can only raise exceptions derived from
         :exc:`.CommandError`.
 
@@ -316,7 +316,7 @@ class BotBase(GroupMixin):
 
             This function can either be a regular function or a coroutine.
 
-        Similar to a command :func:`.check`\, this takes a single parameter
+        Similar to a command :func:`.check`\\, this takes a single parameter
         of type :class:`.Context` and can only raise exceptions derived from
         :exc:`.CommandError`.
 
@@ -403,7 +403,7 @@ class BotBase(GroupMixin):
 
         .. note::
 
-            Similar to :meth:`~.Bot.before_invoke`\, this is not called unless
+            Similar to :meth:`~.Bot.before_invoke`\\, this is not called unless
             checks and argument parsing procedures succeed. This hook is,
             however, **always** called regardless of the internal command
             callback raising an error (i.e. :exc:`.CommandInvokeError`\).

@@ -93,7 +93,7 @@ class Client:
         The total number of shards.
     fetch_offline_members: :class:`bool`
         Indicates if :func:`on_ready` should be delayed to fetch all offline
-        members from the guilds the bot belongs to. If this is ``False``\, then
+        members from the guilds the bot belongs to. If this is ``False``\\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
     status: Optional[:class:`Status`]
@@ -166,7 +166,7 @@ class Client:
         if isinstance(invite, Invite) or isinstance(invite, Object):
             return invite.id
         else:
-            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
+            rx = r'(?:https?\\:\/\/)?discord\.gg\/(.+)'
             m = re.match(rx, invite)
             if m:
                 return m.group(1)
@@ -302,7 +302,7 @@ class Client:
 
         Parameters
         -----------
-        \*guilds
+        \\*guilds
             An argument list of guilds to request offline members for.
 
         Raises

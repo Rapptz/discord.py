@@ -819,7 +819,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Parameters
         -----------
-        \*recipients: :class:`User`
+        \\*recipients: :class:`User`
             An argument list of users to add to this group.
 
         Raises
@@ -841,7 +841,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Parameters
         -----------
-        \*recipients: :class:`User`
+        \\*recipients: :class:`User`
             An argument list of users to remove from this group.
 
         Raises
