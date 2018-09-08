@@ -169,7 +169,7 @@ class Client:
             rx = r'(?:https?\:\/\/)?(discord\.gg\/|discordapp.com\/invite\/)(.+)'
             m = re.match(rx, invite)
             if m:
-                return m.group(1)
+                return m.group(2)
         return invite
 
     @property
