@@ -476,7 +476,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles
+        \\*roles
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to give to the member.
         reason: Optional[str]
@@ -514,7 +514,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles
+        \\*roles
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to remove from the member.
         reason: Optional[str]

@@ -533,7 +533,7 @@ class GuildChannel:
             The :class:`Member` or :class:`Role` to overwrite permissions for.
         overwrite: :class:`PermissionOverwrite`
             The permissions to allow and deny to the target.
-        \*\*permissions
+        \\*\\*permissions
             A keyword argument list of permissions to set for ease of use.
             Cannot be mixed with ``overwrite``.
         reason: Optional[str]

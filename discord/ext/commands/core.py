@@ -140,7 +140,7 @@ class Command:
     description: :class:`str`
         The message prefixed into the default help command.
     hidden: :class:`bool`
-        If ``True``\, the default help command does not show this in the
+        If ``True``\\, the default help command does not show this in the
         help output.
     rest_is_raw: :class:`bool`
         If ``False`` and a keyword-only argument is provided then the keyword
@@ -150,7 +150,7 @@ class Command:
         then the keyword-only argument will pass in the rest of the arguments
         in a completely raw matter. Defaults to ``False``.
     ignore_extra: :class:`bool`
-        If ``True``\, ignores extraneous strings passed to a command if all its
+        If ``True``\\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
         are called with :exc:`.TooManyArguments`. Defaults to ``True``.
@@ -1173,7 +1173,7 @@ def has_any_role(*names):
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
-    Similar to :func:`.has_role`\, the names passed in must be exact.
+    Similar to :func:`.has_role`\\, the names passed in must be exact.
 
     Parameters
     -----------

@@ -424,7 +424,7 @@ class ClientUser(BaseUser):
 
         Parameters
         -----------
-        \*recipients
+        \\*recipients
             An argument :class:`list` of :class:`User` to have in
             your group.
 

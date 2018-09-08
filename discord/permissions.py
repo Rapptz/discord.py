@@ -177,7 +177,7 @@ class Permissions:
 
         Parameters
         ------------
-        \*\*kwargs
+        \\*\\*kwargs
             A list of key/value pairs to bulk update permissions with.
         """
         for key, value in kwargs.items():
@@ -512,7 +512,7 @@ def augment_from_permissions(cls):
 class PermissionOverwrite:
     """A type that is used to represent a channel specific permission.
 
-    Unlike a regular :class:`Permissions`\, the default value of a
+    Unlike a regular :class:`Permissions`\\, the default value of a
     permission is equivalent to ``None`` and not ``False``. Setting
     a value to ``False`` is **explicitly** denying that permission,
     while setting a value to ``True`` is **explicitly** allowing
@@ -534,7 +534,7 @@ class PermissionOverwrite:
 
     Parameters
     -----------
-    \*\*kwargs
+    \\*\\*kwargs
         Set the value of permissions by their name.
     """
 
@@ -603,7 +603,7 @@ class PermissionOverwrite:
 
         Parameters
         ------------
-        \*\*kwargs
+        \\*\\*kwargs
             A list of key/value pairs to bulk update with.
         """
         for key, value in kwargs.items():

@@ -48,7 +48,7 @@ class Context(discord.abc.Messageable):
         then this list could be incomplete.
     kwargs: :class:`dict`
         A dictionary of transformed arguments that were passed into the command.
-        Similar to :attr:`args`\, if this is accessed in the
+        Similar to :attr:`args`\\, if this is accessed in the
         :func:`on_command_error` event then this dict could be incomplete.
     prefix: :class:`str`
         The prefix that was used to invoke the command.
@@ -106,9 +106,9 @@ class Context(discord.abc.Messageable):
         -----------
         command: :class:`.Command`
             A command or superclass of a command that is going to be called.
-        \*args
+        \\*args
             The arguments to to use.
-        \*\*kwargs
+        \\*\\*kwargs
             The keyword arguments to use.
         """
 
@@ -219,6 +219,6 @@ class Context(discord.abc.Messageable):
 
     @property
     def voice_client(self):
-        """Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
+        """Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\\, if applicable."""
         g = self.guild
         return g.voice_client if g else None

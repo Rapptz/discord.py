@@ -149,7 +149,7 @@ class Message:
     mentions: :class:`list`
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list will be of :class:`User` instead. For messages that are not of type
-        :attr:`MessageType.default`\, this array can be used to aid in system messages.
+        :attr:`MessageType.default`\\, this array can be used to aid in system messages.
         For more information, see :attr:`system_content`.
 
         .. warning::
@@ -444,7 +444,7 @@ class Message:
         """A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
-        In the case of :attr:`MessageType.default`\, this just returns the
+        In the case of :attr:`MessageType.default`\\, this just returns the
         regular :attr:`Message.content`. Otherwise this returns an English
         message denoting the contents of the system message.
         """
