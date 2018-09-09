@@ -467,7 +467,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         await self.edit(voice_channel=channel, reason=reason)
 
     async def add_roles(self, *roles, reason=None, atomic=True):
-        """|coro|
+        r"""|coro|
 
         Gives the member a number of :class:`Role`\s.
 
@@ -505,7 +505,7 @@ class Member(discord.abc.Messageable, _BaseUser):
                 await req(guild_id, user_id, role.id, reason=reason)
 
     async def remove_roles(self, *roles, reason=None, atomic=True):
-        """|coro|
+        r"""|coro|
 
         Removes :class:`Role`\s from this member.
 

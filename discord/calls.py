@@ -58,7 +58,7 @@ class CallMessage:
 
     @property
     def channel(self):
-        """:class:`GroupChannel`\: The private channel associated with this message."""
+        r""":class:`GroupChannel`\: The private channel associated with this message."""
         return self.message.channel
 
     @property

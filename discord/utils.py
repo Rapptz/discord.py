@@ -171,7 +171,7 @@ def find(predicate, seq):
     return None
 
 def get(iterable, **attrs):
-    """A helper that returns the first element in the iterable that meets
+    r"""A helper that returns the first element in the iterable that meets
     all the traits passed in ``attrs``. This is an alternative for
     :func:`discord.utils.find`.
 

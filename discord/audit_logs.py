@@ -178,7 +178,7 @@ class AuditLogChanges:
         setattr(second, 'roles', data)
 
 class AuditLogEntry:
-    """Represents an Audit Log entry.
+    r"""Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
 
