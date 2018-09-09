@@ -58,7 +58,7 @@ class CallMessage:
 
     @property
     def channel(self):
-        """:class:`GroupChannel`\: The private channel associated with this message."""
+        r""":class:`GroupChannel`\: The private channel associated with this message."""
         return self.message.channel
 
     @property
@@ -132,7 +132,7 @@ class GroupCall:
 
     @property
     def channel(self):
-        """:class:`GroupChannel`\: Returns the channel the group call is in."""
+        r""":class:`GroupChannel`\: Returns the channel the group call is in."""
         return self.call.channel
 
     def voice_state_for(self, user):

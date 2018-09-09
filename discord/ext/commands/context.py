@@ -28,7 +28,7 @@ import discord.abc
 import discord.utils
 
 class Context(discord.abc.Messageable):
-    """Represents the context in which a command is being invoked under.
+    r"""Represents the context in which a command is being invoked under.
 
     This class contains a lot of meta data to help you understand more about
     the invocation context. This class is not created manually and is instead
@@ -87,7 +87,7 @@ class Context(discord.abc.Messageable):
         self._state = self.message._state
 
     async def invoke(self, *args, **kwargs):
-        """|coro|
+        r"""|coro|
 
         Calls a command with the arguments given.
 
@@ -219,6 +219,6 @@ class Context(discord.abc.Messageable):
 
     @property
     def voice_client(self):
-        """Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
+        r"""Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
         g = self.guild
         return g.voice_client if g else None

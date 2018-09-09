@@ -808,7 +808,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return base
 
     async def add_recipients(self, *recipients):
-        """|coro|
+        r"""|coro|
 
         Adds recipients to this group.
 
@@ -835,7 +835,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             await req(self.id, recipient.id)
 
     async def remove_recipients(self, *recipients):
-        """|coro|
+        r"""|coro|
 
         Removes recipients from this group.
 
