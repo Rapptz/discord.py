@@ -24,15 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from re import split as re_split
-from .errors import InvalidArgument
-import datetime
+import asyncio
 from base64 import b64encode
+from collections import OrderedDict
+import datetime
 from email.utils import parsedate_to_datetime
 from inspect import isawaitable as _isawaitable
-import asyncio
 import json
+from re import split as re_split
 import warnings, functools
+
+from .errors import InvalidArgument
 
 DISCORD_EPOCH = 1420070400000
 
@@ -229,9 +231,7 @@ def get(iterable, **attrs):
 
 
 def _unique(iterable):
-    seen = set()
-    adder = seen.add
-    return [x for x in iterable if not (x in seen or adder(x))]
+    return list(OrderedDict.fromkeys(iterable))
 
 def _get_as_snowflake(data, key):
     try:
