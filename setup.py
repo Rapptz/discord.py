@@ -34,7 +34,7 @@ with open('README.rst') as f:
     readme = f.read()
 
 extras_require = {
-    'voice': ['PyNaCl==1.1.2'],
+    'voice': ['PyNaCl==1.2.1'],
     'docs': [
         'sphinx==1.7.4',
         'sphinxcontrib-asyncio',
@@ -62,6 +62,7 @@ setup(name='discord.py',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Internet',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
