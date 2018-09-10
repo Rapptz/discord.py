@@ -29,10 +29,11 @@ from base64 import b64encode
 from collections import OrderedDict
 import datetime
 from email.utils import parsedate_to_datetime
+import functools
 from inspect import isawaitable as _isawaitable
 import json
 from re import split as re_split
-import warnings, functools
+import warnings
 
 from .errors import InvalidArgument
 
