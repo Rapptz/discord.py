@@ -11,12 +11,14 @@ This was written to allow easier writing of bots or chat logs. Make sure to fami
 
 ### Breaking Changes
 
-The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before `v1.0.0`.
+The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before `v1.0.0`. Please note, that this page mentions stable, but old version of discord.py v0.16.12. For any new development, make sure to check API in the [rewrite branch][rewrite], together with it's new [documentation][rewrite_doc].
 
-I recommend joining either the [official discord.py server][guild] or the [Discord API server][ch] for help and discussion about the library.
+[rewrite]: https://github.com/Rapptz/discord.py/tree/rewrite
+[rewrite_doc]: https://discordpy.readthedocs.io/en/rewrite/index.html
 
-[guild]: https://discord.gg/r3sSKJJ
-[ch]: https://discord.gg/discord-api
+I recommend that you follow the discussion in the [unofficial Discord API discord channel][ch] and update your installation periodically. I will attempt to make note of breaking changes in the API channel so make sure to subscribe to library news by typing `?sub news` in the channel.
+
+[ch]: https://discord.gg/0SBTUU1wZTUzBx2q
 
 ## Installing
 
@@ -97,3 +99,12 @@ You can find examples in the examples directory.
       debian based systems by doing `sudo apt-get install libffi-dev`.
 
 Usually `pip` will handle these for you.
+
+## Related Projects
+
+- [discord.js](https://github.com/discord-js/discord.js)
+- [discord.io](https://github.com/izy521/discord.io)
+- [Discord.NET](https://github.com/RogueException/Discord.Net)
+- [DiscordSharp](https://github.com/Luigifan/DiscordSharp)
+- [Discord4J](https://github.com/knobody/Discord4J)
+- [discordrb](https://github.com/meew0/discordrb)
