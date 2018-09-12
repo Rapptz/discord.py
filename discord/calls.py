@@ -132,7 +132,7 @@ class GroupCall:
 
     @property
     def channel(self):
-        """:class:`GroupChannel`\: Returns the channel the group call is in."""
+        r""":class:`GroupChannel`\: Returns the channel the group call is in."""
         return self.call.channel
 
     def voice_state_for(self, user):
