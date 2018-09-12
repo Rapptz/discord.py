@@ -169,7 +169,7 @@ class Permissions:
         return cls(0b00000011111100000000000100000000)
 
     def update(self, **kwargs):
-        """Bulk updates this permission object.
+        r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
         arguments. The names must be equivalent to the properties
@@ -510,7 +510,7 @@ def augment_from_permissions(cls):
 
 @augment_from_permissions
 class PermissionOverwrite:
-    """A type that is used to represent a channel specific permission.
+    r"""A type that is used to represent a channel specific permission.
 
     Unlike a regular :class:`Permissions`\, the default value of a
     permission is equivalent to ``None`` and not ``False``. Setting
@@ -595,7 +595,7 @@ class PermissionOverwrite:
         return all(x is None for x in self._values.values())
 
     def update(self, **kwargs):
-        """Bulk updates this permission overwrite object.
+        r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword
         arguments. The names must be equivalent to the properties

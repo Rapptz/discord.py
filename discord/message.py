@@ -110,7 +110,7 @@ class Attachment:
             return written
 
 class Message:
-    """Represents a message from Discord.
+    r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
 
@@ -441,7 +441,7 @@ class Message:
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
-        """A property that returns the content that is rendered
+        r"""A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
         In the case of :attr:`MessageType.default`\, this just returns the

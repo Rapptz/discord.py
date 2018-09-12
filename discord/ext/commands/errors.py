@@ -35,7 +35,7 @@ __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'BadUnionArgument']
 
 class CommandError(DiscordException):
-    """The base exception type for all command related errors.
+    r"""The base exception type for all command related errors.
 
     This inherits from :exc:`discord.DiscordException`.
 

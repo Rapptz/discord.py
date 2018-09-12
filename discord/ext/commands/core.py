@@ -102,7 +102,7 @@ class _CaseInsensitiveDict(dict):
         super().__setitem__(k.lower(), v)
 
 class Command:
-    """A class that implements the protocol for a bot text command.
+    r"""A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
     decorator or functional interface.
@@ -1078,7 +1078,7 @@ def group(name=None, **attrs):
     return command(name=name, cls=Group, **attrs)
 
 def check(predicate):
-    """A decorator that adds a check to the :class:`.Command` or its
+    r"""A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
     These checks should be predicates that take in a single parameter taking
@@ -1169,7 +1169,7 @@ def has_role(name):
     return check(predicate)
 
 def has_any_role(*names):
-    """A :func:`.check` that is added that checks if the member invoking the
+    r"""A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 

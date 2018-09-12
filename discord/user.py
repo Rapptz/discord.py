@@ -305,12 +305,12 @@ class ClientUser(BaseUser):
 
     @property
     def friends(self):
-        """Returns a :class:`list` of :class:`User`\s that the user is friends with."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        """Returns a :class:`list` of :class:`User`\s that the user has blocked."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
     async def edit(self, **fields):
@@ -414,7 +414,7 @@ class ClientUser(BaseUser):
         self.__init__(state=self._state, data=data)
 
     async def create_group(self, *recipients):
-        """|coro|
+        r"""|coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship

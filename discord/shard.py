@@ -176,7 +176,7 @@ class AutoShardedClient(Client):
         return [(shard_id, shard.ws.latency) for shard_id, shard in self.shards.items()]
 
     async def request_offline_members(self, *guilds):
-        """|coro|
+        r"""|coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`Guild.members` cache. This function is usually not
