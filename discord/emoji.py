@@ -228,7 +228,7 @@ class Emoji(Hashable):
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
     async def edit(self, *, name, roles=None, reason=None):
-        """|coro|
+        r"""|coro|
 
         Edits the custom emoji.
 
@@ -240,7 +240,7 @@ class Emoji(Hashable):
         name: str
             The new emoji name.
         roles: Optional[list[:class:`Role`]]
-            A :class:`list` of :class:`Role`s that can use this emoji. Leave empty to make it available to everyone.
+            A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
             The reason for editing this emoji. Shows up on the audit log.
 

@@ -323,10 +323,10 @@ class ClientUser(BaseUser):
 
         Note
         -----
-        To upload an avatar, a *bytes-like object* must be passed in that
+        To upload an avatar, a :term:`py:bytes-like object` must be passed in that
         represents the image being uploaded. If this is done through a file
         then the file must be opened via ``open('some_filename', 'rb')`` and
-        the *bytes-like object* is given through the use of ``fp.read()``.
+        the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
         The only image formats supported for uploading is JPEG and PNG.
 
@@ -341,14 +341,14 @@ class ClientUser(BaseUser):
         email: str
             The new email you wish to change to.
             Only applicable to user accounts.
-        Optional[:class:`HypeSquadHouse`]
+        house: Optional[:class:`HypeSquadHouse`]
             The hypesquad house you wish to change to.
             Could be ``None`` to leave the current house.
             Only applicable to user accounts.
         username :str
             The new username you wish to change to.
         avatar: bytes
-            A *bytes-like object* representing the image to upload.
+            A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
 
         Raises

@@ -46,7 +46,7 @@ extlinks = {
 }
 
 # Links used for cross-referencing stuff in other documentation
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {'py': ('https://docs.python.org/3', None)}
 
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.
@@ -314,4 +314,4 @@ texinfo_documents = [
 def setup(app):
   app.add_javascript('custom.js')
   if app.config.language == 'ja':
-    app.config.intersphinx_mapping['python'] = ('https://docs.python.org/ja/3', None)
+    app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)

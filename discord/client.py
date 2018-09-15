@@ -855,7 +855,7 @@ class Client:
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
         icon: bytes
-            The *bytes-like* object representing the icon. See :meth:`~ClientUser.edit`
+            The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
         Raises

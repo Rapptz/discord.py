@@ -525,7 +525,7 @@ class Webhook:
         name: Optional[str]
             The webhook's new default name.
         avatar: Optional[bytes]
-            A *bytes-like* object representing the webhook's new default avatar.
+            A :term:`py:bytes-like object` representing the webhook's new default avatar.
 
         Raises
         -------

@@ -688,10 +688,10 @@ class Guild(Hashable):
         name: str
             The new name of the guild.
         icon: bytes
-            A *bytes-like* object representing the icon. Only PNG/JPEG supported.
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
         splash: bytes
-            A *bytes-like* object representing the invite splash.
+            A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. Only available for partnered guilds with ``INVITE_SPLASH``
             feature.
@@ -987,7 +987,7 @@ class Guild(Hashable):
         return result
 
     async def create_custom_emoji(self, *, name, image, roles=None, reason=None):
-        """|coro|
+        r"""|coro|
 
         Creates a custom :class:`Emoji` for the guild.
 
@@ -1003,10 +1003,10 @@ class Guild(Hashable):
         name: str
             The emoji name. Must be at least 2 characters.
         image: bytes
-            The *bytes-like* object representing the image data to use.
+            The :term:`py:bytes-like object` representing the image data to use.
             Only JPG and PNG images are supported.
         roles: Optional[list[:class:`Role`]]
-            A :class:`list` of :class:`Role`s that can use this emoji. Leave empty to make it available to everyone.
+            A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
             The reason for creating this emoji. Shows up on the audit log.
 

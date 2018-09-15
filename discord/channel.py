@@ -363,7 +363,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         name: str
             The webhook's name.
         avatar: Optional[bytes]
-            A *bytes-like* object representing the webhook's default avatar.
+            A :term:`py:bytes-like object` representing the webhook's default avatar.
             This operates similarly to :meth:`~ClientUser.edit`.
 
         Raises
@@ -877,7 +877,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             The new name to change the group to.
             Could be ``None`` to remove the name.
         icon: Optional[bytes]
-            A bytes-like object representing the new icon.
+            A :term:`py:bytes-like object` representing the new icon.
             Could be ``None`` to remove the icon.
 
         Raises

@@ -392,7 +392,7 @@ class VoiceClient:
         Parameters
         ----------
         data: bytes
-            The *bytes-like object* denoting PCM or Opus voice data.
+            The :term:`py:bytes-like object` denoting PCM or Opus voice data.
         encode: bool
             Indicates if ``data`` should be encoded into Opus.
 
