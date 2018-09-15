@@ -7350,8 +7350,12 @@ msgid ""
 "instance of :meth:`Colour.default` is returned."
 msgstr ""
 
-#: discord.Member.color:5 discord.Member.colour:5 of
+#: discord.Member.colour:5 of
 msgid "There is an alias for this under ``color``."
+msgstr ""
+
+#: discord.Member.color:5 of
+msgid "There is an alias for this under ``colour``."
 msgstr ""
 
 #: discord.Member.mention:1 of
