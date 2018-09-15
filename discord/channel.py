@@ -78,10 +78,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of `0` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
     """
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                 'category_id', 'position', '_overwrites')
+                 'category_id', 'position', 'slowmode_delay', '_overwrites')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -98,6 +103,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.topic = data.get('topic')
         self.position = data['position']
         self.nsfw = data.get('nsfw', False)
+        # Does this need coercion into `int`? No idea yet.
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._fill_overwrites(data)
 
     async def _get_channel(self):
@@ -133,21 +140,24 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new channel name.
-        topic: str
+        topic: :class:`str`
             The new channel's topic.
-        position: int
+        position: :class:`int`
             The new channel's position.
-        nsfw: bool
+        nsfw: :class:`bool`
             To mark the channel as NSFW or not.
-        sync_permissions: bool
+        sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
-        reason: Optional[str]
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel. A value of
+            `0` disables slowmode. The maximum value possible is `120`.
+        reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
 
         Raises

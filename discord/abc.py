@@ -231,6 +231,11 @@ class GuildChannel:
         else:
             parent_id = parent and parent.id
 
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
+
         lock_permissions = options.pop('sync_permissions', False)
 
         try:
