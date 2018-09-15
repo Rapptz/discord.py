@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discord.py 1.0.0a\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"POT-Creation-Date: 2018-09-15 09:50-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -679,7 +679,7 @@ msgstr ""
 
 #: discord.ext.commands.Bot.create_guild:12 of
 msgid ""
-"The *bytes-like* object representing the icon. See "
+"The :term:`py:bytes-like object` representing the icon. See "
 ":meth:`~ClientUser.edit` for more details on what is expected."
 msgstr ""
 
@@ -868,7 +868,7 @@ msgstr ""
 msgid ""
 "The factory class that will be used to create the context. By default, "
 "this is :class:`.Context`. Should a custom class be provided, it must be "
-"similar enough to :class:`.Context`'s interface."
+"similar enough to :class:`.Context`\\'s interface."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_context:20 of
@@ -1223,6 +1223,12 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Bot.process_commands:14 of
+msgid ""
+"This also checks if the message's author is a bot and doesn't call "
+":meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so."
+msgstr ""
+
+#: discord.ext.commands.Bot.process_commands:17 of
 msgid "The message to process commands for."
 msgstr ""
 
@@ -1678,7 +1684,7 @@ msgstr ""
 #: discord.ext.commands.Command:40 of
 msgid ""
 "*Optional[command]* -- The parent command that this command belongs to. "
-"``None`` is there isn't one."
+"``None`` if there isn't one."
 msgstr ""
 
 #: discord.ext.commands.Command:45 of
@@ -2229,25 +2235,29 @@ msgstr ""
 msgid "``BucketType.channel`` for a per-channel basis."
 msgstr ""
 
-#: discord.ext.commands.cooldown:15 of
+#: discord.ext.commands.cooldown:14 of
+msgid "``BucketType.member`` for a per-member basis."
+msgstr ""
+
+#: discord.ext.commands.cooldown:16 of
 msgid ""
 "If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered "
 "in :func:`.on_command_error` and the local error handler."
 msgstr ""
 
-#: discord.ext.commands.cooldown:18 of
+#: discord.ext.commands.cooldown:19 of
 msgid "A command can only have a single cooldown."
 msgstr ""
 
-#: discord.ext.commands.cooldown:20 of
+#: discord.ext.commands.cooldown:21 of
 msgid "The number of times a command can be used before triggering a cooldown."
 msgstr ""
 
-#: discord.ext.commands.cooldown:22 of
+#: discord.ext.commands.cooldown:23 of
 msgid "The amount of seconds to wait for a cooldown when it's been triggered."
 msgstr ""
 
-#: discord.ext.commands.cooldown:24 of
+#: discord.ext.commands.cooldown:25 of
 msgid "The type of cooldown to have."
 msgstr ""
 
@@ -3097,4 +3107,25 @@ msgstr ""
 #: discord.ext.commands.BotMissingPermissions:1 of
 msgid "Exception raised when the bot lacks permissions to run command."
 msgstr ""
+
+#~ msgid ""
+#~ "The *bytes-like* object representing the"
+#~ " icon. See :meth:`~ClientUser.edit` for "
+#~ "more details on what is expected."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The factory class that will be "
+#~ "used to create the context. By "
+#~ "default, this is :class:`.Context`. Should "
+#~ "a custom class be provided, it "
+#~ "must be similar enough to "
+#~ ":class:`.Context`'s interface."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "*Optional[command]* -- The parent command "
+#~ "that this command belongs to. ``None``"
+#~ " is there isn't one."
+#~ msgstr ""
 

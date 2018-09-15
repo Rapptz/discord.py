@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discord.py 1.0.0a\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-01 20:28-0400\n"
+"POT-Creation-Date: 2018-09-15 09:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -339,7 +339,7 @@ msgstr ""
 msgid "Returns a generator with every :class:`Member` the client can see."
 msgstr ""
 
-#: ../../api.rst:1322 ../../api.rst:1329 ../../api.rst:1339 ../../api.rst:1358
+#: ../../api.rst:1361 ../../api.rst:1368 ../../api.rst:1378 ../../api.rst:1397
 #: discord.Attachment.save:1 discord.AutoShardedClient.change_presence:1
 #: discord.AutoShardedClient.close:1
 #: discord.AutoShardedClient.request_offline_members:1
@@ -381,8 +381,8 @@ msgstr ""
 #: discord.Message.add_reaction:1 discord.Message.clear_reactions:1
 #: discord.Message.delete:1 discord.Message.edit:1 discord.Message.pin:1
 #: discord.Message.remove_reaction:1 discord.Message.unpin:1
-#: discord.Reaction.users:1 discord.Relationship.accept:1
-#: discord.Relationship.delete:1 discord.Role.delete:1 discord.Role.edit:1
+#: discord.Relationship.accept:1 discord.Relationship.delete:1
+#: discord.Role.delete:1 discord.Role.edit:1
 #: discord.TextChannel.create_invite:1 discord.TextChannel.create_webhook:1
 #: discord.TextChannel.delete:1 discord.TextChannel.delete_messages:1
 #: discord.TextChannel.edit:1 discord.TextChannel.get_message:1
@@ -437,7 +437,7 @@ msgstr ""
 #: discord.CategoryChannel.set_permissions:21 discord.Client.wait_for:22
 #: discord.DMChannel.history:34 discord.GroupChannel.history:34
 #: discord.Guild.audit_logs:29 discord.Guild.create_text_channel:14
-#: discord.Member.history:34 discord.Reaction.users:19
+#: discord.Member.history:34 discord.Reaction.users:16
 #: discord.TextChannel.history:34 discord.TextChannel.purge:36
 #: discord.TextChannel.set_permissions:21 discord.User.history:34
 #: discord.VoiceChannel.set_permissions:21
@@ -752,7 +752,7 @@ msgstr ""
 
 #: discord.Client.create_guild:12 of
 msgid ""
-"The *bytes-like* object representing the icon. See "
+"The :term:`py:bytes-like object` representing the icon. See "
 ":meth:`~ClientUser.edit` for more details on what is expected."
 msgstr ""
 
@@ -1188,12 +1188,12 @@ msgstr ""
 msgid "Indicates if we're currently playing audio."
 msgstr ""
 
-#: discord.VoiceClient.disconnect:3 of
-msgid "Disconnects this voice client from voice."
-msgstr ""
-
 #: discord.VoiceClient.is_paused:1 of
 msgid "Indicates if we're playing audio, but if we're paused."
+msgstr ""
+
+#: discord.VoiceClient.disconnect:3 of
+msgid "Disconnects this voice client from voice."
 msgstr ""
 
 #: discord.VoiceClient.move_to:3 of
@@ -1237,7 +1237,7 @@ msgid "You must be connected to play audio."
 msgstr ""
 
 #: discord.VoiceClient.send_audio_packet:5 of
-msgid "The *bytes-like object* denoting PCM or Opus voice data."
+msgid "The :term:`py:bytes-like object` denoting PCM or Opus voice data."
 msgstr ""
 
 #: discord.VoiceClient.send_audio_packet:7 of
@@ -1286,8 +1286,8 @@ msgstr ""
 #: discord.AudioSource.read:5 discord.FFmpegPCMAudio.read:5
 #: discord.PCMAudio.read:5 discord.PCMVolumeTransformer.read:5 of
 msgid ""
-"If the audio is complete, then returning an empty *bytes-like* object to "
-"signal this is the way to do so."
+"If the audio is complete, then returning an empty :term:`py:bytes-like "
+"object` to signal this is the way to do so."
 msgstr ""
 
 #: discord.AudioSource.read:8 discord.FFmpegPCMAudio.read:8
@@ -1781,7 +1781,7 @@ msgstr ""
 
 #: ../../api.rst:293
 msgid ""
-"Called when a reaction has a reaction added. Unlike "
+"Called when a message has a reaction added. Unlike "
 ":func:`on_reaction_add`, this is called regardless of the state of the "
 "internal message cache."
 msgstr ""
@@ -2310,572 +2310,619 @@ msgid ""
 "owner's information at the time of the call."
 msgstr ""
 
-#: ../../api.rst:571
-msgid "Profile"
-msgstr ""
-
-#: ../../api.rst:575
-msgid "A namedtuple representing a user's Discord public profile."
+#: ../../api.rst:572
+msgid ""
+"``True`` if the bot is considered as public, else ``False``. Determines "
+"if the bot can be invited by anyone or if it is locked to the token "
+"owner. Correspond to the \"Public bot\" box in the token settings."
 msgstr ""
 
 #: ../../api.rst:579
-msgid "The :class:`User` the profile belongs to."
-msgstr ""
-
-#: ../../api.rst:582
-msgid "A boolean indicating if the user has premium (i.e. Discord Nitro)."
+msgid ""
+"``True`` if the bot requires code grant, else ``False``. Correspond to "
+"the \"Bot requires code grant\" box in the token settings."
 msgstr ""
 
 #: ../../api.rst:585
+msgid ""
+"Returns an array of RPC origin URL strings, if RPC is enabled. If RPC "
+"isn't enabled, returns ``None``."
+msgstr ""
+
+#: ../../api.rst:589
+msgid "Profile"
+msgstr ""
+
+#: ../../api.rst:593
+msgid "A namedtuple representing a user's Discord public profile."
+msgstr ""
+
+#: ../../api.rst:597
+msgid "The :class:`User` the profile belongs to."
+msgstr ""
+
+#: ../../api.rst:600
+msgid "A boolean indicating if the user has premium (i.e. Discord Nitro)."
+msgstr ""
+
+#: ../../api.rst:603
 msgid "An alias for :attr:`premium`."
 msgstr ""
 
-#: ../../api.rst:588
+#: ../../api.rst:606
 msgid ""
 "A naive UTC datetime indicating how long the user has been premium since."
 " This could be ``None`` if not applicable."
 msgstr ""
 
-#: ../../api.rst:592
+#: ../../api.rst:610
 msgid "A boolean indicating if the user is Discord Staff."
 msgstr ""
 
-#: ../../api.rst:595
+#: ../../api.rst:613
 msgid "A boolean indicating if the user is a Discord Partner."
 msgstr ""
 
-#: ../../api.rst:598
+#: ../../api.rst:616
 msgid "A boolean indicating if the user is in Discord HypeSquad."
 msgstr ""
 
-#: ../../api.rst:601
+#: ../../api.rst:619
+msgid "A list of :class:`HypeSquadHouse` that the user is in."
+msgstr ""
+
+#: ../../api.rst:622
 msgid ""
 "A list of :class:`Guild` that the :class:`ClientUser` shares with this "
 "user."
 msgstr ""
 
-#: ../../api.rst:605
+#: ../../api.rst:626
 msgid "A list of dict objects indicating the accounts the user has connected."
 msgstr ""
 
-#: ../../api.rst:607
+#: ../../api.rst:628
 msgid "An example entry can be seen below: ::"
 msgstr ""
 
-#: ../../api.rst:614
+#: ../../api.rst:635
 msgid "Enumerations"
 msgstr ""
 
-#: ../../api.rst:616
+#: ../../api.rst:637
 msgid ""
 "The API provides some enumerations for certain types of strings to avoid "
 "the API from being stringly typed in case the strings change in the "
 "future."
 msgstr ""
 
-#: ../../api.rst:619
+#: ../../api.rst:640
 msgid "All enumerations are subclasses of `enum`_."
 msgstr ""
 
-#: ../../api.rst:625
+#: ../../api.rst:646
 msgid "Specifies the type of channel."
 msgstr ""
 
-#: ../../api.rst:629
+#: ../../api.rst:650
 msgid "A text channel."
 msgstr ""
 
-#: ../../api.rst:632
+#: ../../api.rst:653
 msgid "A voice channel."
 msgstr ""
 
-#: ../../api.rst:635
+#: ../../api.rst:656
 msgid "A private text channel. Also called a direct message."
 msgstr ""
 
-#: ../../api.rst:638
+#: ../../api.rst:659
 msgid "A private group text channel."
 msgstr ""
 
-#: ../../api.rst:642
+#: ../../api.rst:663
 msgid ""
 "Specifies the type of :class:`Message`. This is used to denote if a "
 "message is to be interpreted as a system message or a regular message."
 msgstr ""
 
-#: ../../api.rst:647
+#: ../../api.rst:668
 msgid "The default message type. This is the same as regular messages."
 msgstr ""
 
-#: ../../api.rst:650
+#: ../../api.rst:671
 msgid ""
 "The system message when a recipient is added to a group private message, "
 "i.e. a private channel of type :attr:`ChannelType.group`."
 msgstr ""
 
-#: ../../api.rst:654
+#: ../../api.rst:675
 msgid ""
 "The system message when a recipient is removed from a group private "
 "message, i.e. a private channel of type :attr:`ChannelType.group`."
 msgstr ""
 
-#: ../../api.rst:658
+#: ../../api.rst:679
 msgid ""
 "The system message denoting call state, e.g. missed call, started call, "
 "etc."
 msgstr ""
 
-#: ../../api.rst:662
+#: ../../api.rst:683
 msgid "The system message denoting that a channel's name has been changed."
 msgstr ""
 
-#: ../../api.rst:665
+#: ../../api.rst:686
 msgid "The system message denoting that a channel's icon has been changed."
 msgstr ""
 
-#: ../../api.rst:668
+#: ../../api.rst:689
 msgid ""
 "The system message denoting that a pinned message has been added to a "
 "channel."
 msgstr ""
 
-#: ../../api.rst:672
+#: ../../api.rst:692
 msgid "The system message denoting that a new member has joined a Guild."
 msgstr ""
 
-#: ../../api.rst:676
+#: ../../api.rst:696
 msgid ""
 "Specifies the type of :class:`Activity`. This is used to check how to "
 "interpret the activity itself."
 msgstr ""
 
-#: ../../api.rst:681
+#: ../../api.rst:701
 msgid "An unknown activity type. This should generally not happen."
 msgstr ""
 
-#: ../../api.rst:684
+#: ../../api.rst:704
 msgid "A \"Playing\" activity type."
 msgstr ""
 
-#: ../../api.rst:687
+#: ../../api.rst:707
 msgid "A \"Streaming\" activity type."
 msgstr ""
 
-#: ../../api.rst:690
+#: ../../api.rst:710
 msgid "A \"Listening\" activity type."
 msgstr ""
 
-#: ../../api.rst:693
+#: ../../api.rst:713
 msgid "A \"Watching\" activity type."
 msgstr ""
 
-#: ../../api.rst:697
-msgid "Specifies the region a voice server belongs to."
+#: ../../api.rst:717
+msgid "Specifies the HypeSquad house a user belongs to."
 msgstr ""
 
-#: ../../api.rst:701
-msgid "The US West region."
+#: ../../api.rst:721
+msgid "The \"Bravery\" house."
 msgstr ""
 
-#: ../../api.rst:704
-msgid "The US East region."
+#: ../../api.rst:724
+msgid "The \"Brilliance\" house."
 msgstr ""
 
-#: ../../api.rst:707
-msgid "The US South region."
-msgstr ""
-
-#: ../../api.rst:710
-msgid "The US Central region."
-msgstr ""
-
-#: ../../api.rst:713
-msgid "The EU West region."
-msgstr ""
-
-#: ../../api.rst:716
-msgid "The EU Central region."
-msgstr ""
-
-#: ../../api.rst:719
-msgid "The Singapore region."
-msgstr ""
-
-#: ../../api.rst:722
-msgid "The London region."
-msgstr ""
-
-#: ../../api.rst:725
-msgid "The Sydney region."
-msgstr ""
-
-#: ../../api.rst:728
-msgid "The Amsterdam region."
+#: ../../api.rst:727
+msgid "The \"Balance\" house."
 msgstr ""
 
 #: ../../api.rst:731
-msgid "The Frankfurt region."
+msgid "Specifies the region a voice server belongs to."
 msgstr ""
 
 #: ../../api.rst:735
-msgid "The Brazil region."
+msgid "The Amsterdam region."
 msgstr ""
 
 #: ../../api.rst:738
-msgid "The Hong Kong region."
+msgid "The Brazil region."
 msgstr ""
 
 #: ../../api.rst:741
-msgid "The Russia region."
+msgid "The EU Central region."
 msgstr ""
 
 #: ../../api.rst:744
-msgid "The US East region for VIP guilds."
+msgid "The EU West region."
 msgstr ""
 
 #: ../../api.rst:747
-msgid "The US West region for VIP guilds."
+msgid "The Frankfurt region."
 msgstr ""
 
 #: ../../api.rst:750
+msgid "The Hong Kong region."
+msgstr ""
+
+#: ../../api.rst:753
+msgid "The Japan region."
+msgstr ""
+
+#: ../../api.rst:756
+msgid "The London region."
+msgstr ""
+
+#: ../../api.rst:759
+msgid "The Russia region."
+msgstr ""
+
+#: ../../api.rst:762
+msgid "The Singapore region."
+msgstr ""
+
+#: ../../api.rst:765
+msgid "The South Africa region."
+msgstr ""
+
+#: ../../api.rst:768
+msgid "The Sydney region."
+msgstr ""
+
+#: ../../api.rst:771
+msgid "The US Central region."
+msgstr ""
+
+#: ../../api.rst:774
+msgid "The US East region."
+msgstr ""
+
+#: ../../api.rst:777
+msgid "The US South region."
+msgstr ""
+
+#: ../../api.rst:780
+msgid "The US West region."
+msgstr ""
+
+#: ../../api.rst:783
 msgid "The Amsterdam region for VIP guilds."
 msgstr ""
 
-#: ../../api.rst:754
+#: ../../api.rst:786
+msgid "The US East region for VIP guilds."
+msgstr ""
+
+#: ../../api.rst:789
+msgid "The US West region for VIP guilds."
+msgstr ""
+
+#: ../../api.rst:793
 msgid ""
 "Specifies a :class:`Guild`\\'s verification level, which is the criteria "
 "in which a member must meet before being able to send messages to the "
 "guild."
 msgstr ""
 
-#: ../../api.rst:761
+#: ../../api.rst:800
 msgid "Checks if two verification levels are equal."
 msgstr ""
 
-#: ../../api.rst:764
+#: ../../api.rst:803
 msgid "Checks if two verification levels are not equal."
 msgstr ""
 
-#: ../../api.rst:767
+#: ../../api.rst:806
 msgid "Checks if a verification level is higher than another."
 msgstr ""
 
-#: ../../api.rst:770
+#: ../../api.rst:809
 msgid "Checks if a verification level is lower than another."
 msgstr ""
 
-#: ../../api.rst:773
+#: ../../api.rst:812
 msgid "Checks if a verification level is higher or equal to another."
 msgstr ""
 
-#: ../../api.rst:776
+#: ../../api.rst:815
 msgid "Checks if a verification level is lower or equal to another."
 msgstr ""
 
-#: ../../api.rst:780
+#: ../../api.rst:819
 msgid "No criteria set."
 msgstr ""
 
-#: ../../api.rst:783
+#: ../../api.rst:822
 msgid "Member must have a verified email on their Discord account."
 msgstr ""
 
-#: ../../api.rst:786
+#: ../../api.rst:825
 msgid ""
 "Member must have a verified email and be registered on Discord for more "
 "than five minutes."
 msgstr ""
 
-#: ../../api.rst:790
+#: ../../api.rst:829
 msgid ""
 "Member must have a verified email, be registered on Discord for more than"
 " five minutes, and be a member of the guild itself for more than ten "
 "minutes."
 msgstr ""
 
-#: ../../api.rst:795
+#: ../../api.rst:834
 msgid "An alias for :attr:`high`."
 msgstr ""
 
-#: ../../api.rst:798
+#: ../../api.rst:837
 msgid "Member must have a verified phone on their Discord account."
 msgstr ""
 
-#: ../../api.rst:802
+#: ../../api.rst:841
 msgid "An alias for :attr:`extreme`."
 msgstr ""
 
-#: ../../api.rst:806
+#: ../../api.rst:845
 msgid ""
 "Specifies a :class:`Guild`\\'s explicit content filter, which is the "
 "machine learning algorithms that Discord uses to detect if an image "
 "contains pornography or otherwise explicit content."
 msgstr ""
 
-#: ../../api.rst:814
+#: ../../api.rst:853
 msgid "Checks if two content filter levels are equal."
 msgstr ""
 
-#: ../../api.rst:817
+#: ../../api.rst:856
 msgid "Checks if two content filter levels are not equal."
 msgstr ""
 
-#: ../../api.rst:820
+#: ../../api.rst:859
 msgid "Checks if a content filter level is higher than another."
 msgstr ""
 
-#: ../../api.rst:823
+#: ../../api.rst:862
 msgid "Checks if a content filter level is lower than another."
 msgstr ""
 
-#: ../../api.rst:826
+#: ../../api.rst:865
 msgid "Checks if a content filter level is higher or equal to another."
 msgstr ""
 
-#: ../../api.rst:829
+#: ../../api.rst:868
 msgid "Checks if a content filter level is lower or equal to another."
 msgstr ""
 
-#: ../../api.rst:833
+#: ../../api.rst:872
 msgid "The guild does not have the content filter enabled."
 msgstr ""
 
-#: ../../api.rst:836
+#: ../../api.rst:875
 msgid "The guild has the content filter enabled for members without a role."
 msgstr ""
 
-#: ../../api.rst:839
+#: ../../api.rst:878
 msgid "The guild has the content filter enabled for every member."
 msgstr ""
 
-#: ../../api.rst:843
+#: ../../api.rst:882
 msgid "Specifies a :class:`Member` 's status."
 msgstr ""
 
-#: ../../api.rst:847
+#: ../../api.rst:886
 msgid "The member is online."
 msgstr ""
 
-#: ../../api.rst:850
+#: ../../api.rst:889
 msgid "The member is offline."
 msgstr ""
 
-#: ../../api.rst:853
+#: ../../api.rst:892
 msgid "The member is idle."
 msgstr ""
 
-#: ../../api.rst:856
+#: ../../api.rst:895
 msgid "The member is \"Do Not Disturb\"."
 msgstr ""
 
-#: ../../api.rst:859
+#: ../../api.rst:898
 msgid "An alias for :attr:`dnd`."
 msgstr ""
 
-#: ../../api.rst:862
+#: ../../api.rst:901
 msgid ""
 "The member is \"invisible\". In reality, this is only used in sending a "
 "presence a la :meth:`Client.change_presence`. When you receive a user's "
 "presence this will be :attr:`offline` instead."
 msgstr ""
 
-#: ../../api.rst:868
+#: ../../api.rst:907
 msgid "Specifies the type of :class:`Relationship`"
 msgstr ""
 
-#: ../../api.rst:872
+#: ../../api.rst:911
 msgid "You are friends with this user."
 msgstr ""
 
-#: ../../api.rst:875
+#: ../../api.rst:914
 msgid "You have blocked this user."
 msgstr ""
 
-#: ../../api.rst:878
+#: ../../api.rst:917
 msgid "The user has sent you a friend request."
 msgstr ""
 
-#: ../../api.rst:881
+#: ../../api.rst:920
 msgid "You have sent a friend request to this user."
 msgstr ""
 
-#: ../../api.rst:886
+#: ../../api.rst:925
 msgid ""
 "Represents the type of action being done for a :class:`AuditLogEntry`\\, "
 "which is retrievable via :meth:`Guild.audit_logs`."
 msgstr ""
 
-#: ../../api.rst:891
+#: ../../api.rst:930
 msgid "The guild has updated. Things that trigger this include:"
 msgstr ""
 
-#: ../../api.rst:893
+#: ../../api.rst:932
 msgid "Changing the guild vanity URL"
 msgstr ""
 
-#: ../../api.rst:894
+#: ../../api.rst:933
 msgid "Changing the guild invite splash"
 msgstr ""
 
-#: ../../api.rst:895
+#: ../../api.rst:934
 msgid "Changing the guild AFK channel or timeout"
 msgstr ""
 
-#: ../../api.rst:896
+#: ../../api.rst:935
 msgid "Changing the guild voice server region"
 msgstr ""
 
-#: ../../api.rst:897
+#: ../../api.rst:936
 msgid "Changing the guild icon"
 msgstr ""
 
-#: ../../api.rst:898
+#: ../../api.rst:937
 msgid "Changing the guild moderation settings"
 msgstr ""
 
-#: ../../api.rst:899
+#: ../../api.rst:938
 msgid "Changing things related to the guild widget"
 msgstr ""
 
-#: ../../api.rst:901
+#: ../../api.rst:940
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Guild`."
 msgstr ""
 
-#: ../../api.rst:904 ../../api.rst:927 ../../api.rst:946 ../../api.rst:965
-#: ../../api.rst:984 ../../api.rst:1000 ../../api.rst:1015 ../../api.rst:1074
-#: ../../api.rst:1088 ../../api.rst:1099 ../../api.rst:1119 ../../api.rst:1134
-#: ../../api.rst:1149 ../../api.rst:1173 ../../api.rst:1190 ../../api.rst:1206
-#: ../../api.rst:1218 ../../api.rst:1231 ../../api.rst:1242 ../../api.rst:1253
+#: ../../api.rst:943 ../../api.rst:966 ../../api.rst:985 ../../api.rst:1004
+#: ../../api.rst:1023 ../../api.rst:1039 ../../api.rst:1054 ../../api.rst:1113
+#: ../../api.rst:1127 ../../api.rst:1138 ../../api.rst:1158 ../../api.rst:1173
+#: ../../api.rst:1188 ../../api.rst:1212 ../../api.rst:1229 ../../api.rst:1245
+#: ../../api.rst:1257 ../../api.rst:1270 ../../api.rst:1281 ../../api.rst:1292
 msgid "Possible attributes for :class:`AuditLogDiff`:"
 msgstr ""
 
-#: ../../api.rst:906
+#: ../../api.rst:945
 msgid ":attr:`~AuditLogDiff.afk_channel`"
 msgstr ""
 
-#: ../../api.rst:907
+#: ../../api.rst:946
 msgid ":attr:`~AuditLogDiff.system_channel`"
 msgstr ""
 
-#: ../../api.rst:908
+#: ../../api.rst:947
 msgid ":attr:`~AuditLogDiff.afk_timeout`"
 msgstr ""
 
-#: ../../api.rst:909
+#: ../../api.rst:948
 msgid ":attr:`~AuditLogDiff.default_message_notifications`"
 msgstr ""
 
-#: ../../api.rst:910
+#: ../../api.rst:949
 msgid ":attr:`~AuditLogDiff.explicit_content_filter`"
 msgstr ""
 
-#: ../../api.rst:911
+#: ../../api.rst:950
 msgid ":attr:`~AuditLogDiff.mfa_level`"
 msgstr ""
 
-#: ../../api.rst:912 ../../api.rst:929 ../../api.rst:948 ../../api.rst:967
-#: ../../api.rst:1104 ../../api.rst:1124 ../../api.rst:1139 ../../api.rst:1193
-#: ../../api.rst:1209 ../../api.rst:1221 ../../api.rst:1233 ../../api.rst:1244
-#: ../../api.rst:1255
+#: ../../api.rst:951 ../../api.rst:968 ../../api.rst:987 ../../api.rst:1006
+#: ../../api.rst:1143 ../../api.rst:1163 ../../api.rst:1178 ../../api.rst:1232
+#: ../../api.rst:1248 ../../api.rst:1260 ../../api.rst:1272 ../../api.rst:1283
+#: ../../api.rst:1294
 msgid ":attr:`~AuditLogDiff.name`"
 msgstr ""
 
-#: ../../api.rst:913
+#: ../../api.rst:952
 msgid ":attr:`~AuditLogDiff.owner`"
 msgstr ""
 
-#: ../../api.rst:914
+#: ../../api.rst:953
 msgid ":attr:`~AuditLogDiff.splash`"
 msgstr ""
 
-#: ../../api.rst:915
+#: ../../api.rst:954
 msgid ":attr:`~AuditLogDiff.vanity_url_code`"
 msgstr ""
 
-#: ../../api.rst:919
+#: ../../api.rst:958
 msgid "A new channel was created."
 msgstr ""
 
-#: ../../api.rst:921
+#: ../../api.rst:960
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is "
 "either a :class:`abc.GuildChannel` or :class:`Object` with an ID."
 msgstr ""
 
-#: ../../api.rst:924
+#: ../../api.rst:963
 msgid ""
 "A more filled out object in the :class:`Object` case can be found by "
 "using :attr:`~AuditLogEntry.after`."
 msgstr ""
 
-#: ../../api.rst:930 ../../api.rst:949 ../../api.rst:968 ../../api.rst:989
-#: ../../api.rst:1005 ../../api.rst:1020
+#: ../../api.rst:969 ../../api.rst:988 ../../api.rst:1007 ../../api.rst:1028
+#: ../../api.rst:1044 ../../api.rst:1059
 msgid ":attr:`~AuditLogDiff.type`"
 msgstr ""
 
-#: ../../api.rst:931 ../../api.rst:951 ../../api.rst:969
+#: ../../api.rst:970 ../../api.rst:990 ../../api.rst:1008
 msgid ":attr:`~AuditLogDiff.overwrites`"
 msgstr ""
 
-#: ../../api.rst:935
+#: ../../api.rst:974
 msgid "A channel was updated. Things that trigger this include:"
 msgstr ""
 
-#: ../../api.rst:937
+#: ../../api.rst:976
 msgid "The channel name or topic was changed"
 msgstr ""
 
-#: ../../api.rst:938
+#: ../../api.rst:977
 msgid "The channel bitrate was changed"
 msgstr ""
 
-#: ../../api.rst:940 ../../api.rst:975
+#: ../../api.rst:979 ../../api.rst:1014
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`abc.GuildChannel` or :class:`Object` with an ID."
 msgstr ""
 
-#: ../../api.rst:943
+#: ../../api.rst:982
 msgid ""
 "A more filled out object in the :class:`Object` case can be found by "
 "using :attr:`~AuditLogEntry.after` or :attr:`~AuditLogEntry.before`."
 msgstr ""
 
-#: ../../api.rst:950
+#: ../../api.rst:989
 msgid ":attr:`~AuditLogDiff.position`"
 msgstr ""
 
-#: ../../api.rst:952
+#: ../../api.rst:991
 msgid ":attr:`~AuditLogDiff.topic`"
 msgstr ""
 
-#: ../../api.rst:953
+#: ../../api.rst:992
 msgid ":attr:`~AuditLogDiff.bitrate`"
 msgstr ""
 
-#: ../../api.rst:957
+#: ../../api.rst:996
 msgid "A channel was deleted."
 msgstr ""
 
-#: ../../api.rst:959
+#: ../../api.rst:998
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is an "
 ":class:`Object` with an ID."
 msgstr ""
 
-#: ../../api.rst:962
+#: ../../api.rst:1001
 msgid ""
 "A more filled out object can be found by using the "
 ":attr:`~AuditLogEntry.before` object."
 msgstr ""
 
-#: ../../api.rst:973
+#: ../../api.rst:1012
 msgid "A channel permission overwrite was created."
 msgstr ""
 
-#: ../../api.rst:978
+#: ../../api.rst:1017
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.extra` is "
 "either a :class:`Role` or :class:`Member`. If the object is not found "
@@ -2884,350 +2931,350 @@ msgid ""
 "dictate what type of ID it is."
 msgstr ""
 
-#: ../../api.rst:986 ../../api.rst:1002 ../../api.rst:1017
+#: ../../api.rst:1025 ../../api.rst:1041 ../../api.rst:1056
 msgid ":attr:`~AuditLogDiff.deny`"
 msgstr ""
 
-#: ../../api.rst:987 ../../api.rst:1003 ../../api.rst:1018
+#: ../../api.rst:1026 ../../api.rst:1042 ../../api.rst:1057
 msgid ":attr:`~AuditLogDiff.allow`"
 msgstr ""
 
-#: ../../api.rst:988 ../../api.rst:1004 ../../api.rst:1019
+#: ../../api.rst:1027 ../../api.rst:1043 ../../api.rst:1058
 msgid ":attr:`~AuditLogDiff.id`"
 msgstr ""
 
-#: ../../api.rst:993
+#: ../../api.rst:1032
 msgid ""
 "A channel permission overwrite was changed, this is typically when the "
 "permission values change."
 msgstr ""
 
-#: ../../api.rst:996 ../../api.rst:1011
+#: ../../api.rst:1035 ../../api.rst:1050
 msgid ""
 "See :attr:`overwrite_create` for more information on how the "
 ":attr:`~AuditLogEntry.target` and :attr:`~AuditLogEntry.extra` fields are"
 " set."
 msgstr ""
 
-#: ../../api.rst:1009
+#: ../../api.rst:1048
 msgid "A channel permission overwrite was deleted."
 msgstr ""
 
-#: ../../api.rst:1024
+#: ../../api.rst:1063
 msgid "A member was kicked."
 msgstr ""
 
-#: ../../api.rst:1026
+#: ../../api.rst:1065
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`User` who got kicked."
 msgstr ""
 
-#: ../../api.rst:1029 ../../api.rst:1044 ../../api.rst:1053 ../../api.rst:1062
+#: ../../api.rst:1068 ../../api.rst:1083 ../../api.rst:1092 ../../api.rst:1101
 msgid "When this is the action, :attr:`~AuditLogEntry.changes` is empty."
 msgstr ""
 
-#: ../../api.rst:1033
+#: ../../api.rst:1072
 msgid "A member prune was triggered."
 msgstr ""
 
-#: ../../api.rst:1035
+#: ../../api.rst:1074
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is set"
 " to `None`."
 msgstr ""
 
-#: ../../api.rst:1038 ../../api.rst:1266
+#: ../../api.rst:1077 ../../api.rst:1305
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.extra` is set "
 "to an unspecified proxy object with two attributes:"
 msgstr ""
 
-#: ../../api.rst:1041
+#: ../../api.rst:1080
 msgid "``delete_members_days``: An integer specifying how far the prune was."
 msgstr ""
 
-#: ../../api.rst:1042
+#: ../../api.rst:1081
 msgid "``members_removed``: An integer specifying how many members were removed."
 msgstr ""
 
-#: ../../api.rst:1048
+#: ../../api.rst:1087
 msgid "A member was banned."
 msgstr ""
 
-#: ../../api.rst:1050
+#: ../../api.rst:1089
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`User` who got banned."
 msgstr ""
 
-#: ../../api.rst:1057
+#: ../../api.rst:1096
 msgid "A member was unbanned."
 msgstr ""
 
-#: ../../api.rst:1059
+#: ../../api.rst:1098
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`User` who got unbanned."
 msgstr ""
 
-#: ../../api.rst:1066
+#: ../../api.rst:1105
 msgid "A member has updated. This triggers in the following situations:"
 msgstr ""
 
-#: ../../api.rst:1068
+#: ../../api.rst:1107
 msgid "A nickname was changed"
 msgstr ""
 
-#: ../../api.rst:1069
+#: ../../api.rst:1108
 msgid "They were server muted or deafened (or it was undo'd)"
 msgstr ""
 
-#: ../../api.rst:1071
+#: ../../api.rst:1110
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Member` or :class:`User` who got updated."
 msgstr ""
 
-#: ../../api.rst:1076
+#: ../../api.rst:1115
 msgid ":attr:`~AuditLogDiff.nick`"
 msgstr ""
 
-#: ../../api.rst:1077
+#: ../../api.rst:1116
 msgid ":attr:`~AuditLogDiff.mute`"
 msgstr ""
 
-#: ../../api.rst:1078
+#: ../../api.rst:1117
 msgid ":attr:`~AuditLogDiff.deaf`"
 msgstr ""
 
-#: ../../api.rst:1082
+#: ../../api.rst:1121
 msgid ""
 "A member's role has been updated. This triggers when a member either "
 "gains a role or losses a role."
 msgstr ""
 
-#: ../../api.rst:1085
+#: ../../api.rst:1124
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Member` or :class:`User` who got the role."
 msgstr ""
 
-#: ../../api.rst:1090
+#: ../../api.rst:1129
 msgid ":attr:`~AuditLogDiff.roles`"
 msgstr ""
 
-#: ../../api.rst:1094
+#: ../../api.rst:1133
 msgid "A new role was created."
 msgstr ""
 
-#: ../../api.rst:1096 ../../api.rst:1116 ../../api.rst:1131
+#: ../../api.rst:1135 ../../api.rst:1155 ../../api.rst:1170
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Role` or a :class:`Object` with the ID."
 msgstr ""
 
-#: ../../api.rst:1101 ../../api.rst:1121 ../../api.rst:1136
+#: ../../api.rst:1140 ../../api.rst:1160 ../../api.rst:1175
 msgid ":attr:`~AuditLogDiff.colour`"
 msgstr ""
 
-#: ../../api.rst:1102 ../../api.rst:1122 ../../api.rst:1137
+#: ../../api.rst:1141 ../../api.rst:1161 ../../api.rst:1176
 msgid ":attr:`~AuditLogDiff.mentionable`"
 msgstr ""
 
-#: ../../api.rst:1103 ../../api.rst:1123 ../../api.rst:1138
+#: ../../api.rst:1142 ../../api.rst:1162 ../../api.rst:1177
 msgid ":attr:`~AuditLogDiff.hoist`"
 msgstr ""
 
-#: ../../api.rst:1105 ../../api.rst:1125 ../../api.rst:1140
+#: ../../api.rst:1144 ../../api.rst:1164 ../../api.rst:1179
 msgid ":attr:`~AuditLogDiff.permissions`"
 msgstr ""
 
-#: ../../api.rst:1109
+#: ../../api.rst:1148
 msgid "A role was updated. This triggers in the following situations:"
 msgstr ""
 
-#: ../../api.rst:1111
+#: ../../api.rst:1150
 msgid "The name has changed"
 msgstr ""
 
-#: ../../api.rst:1112
+#: ../../api.rst:1151
 msgid "The permissions have changed"
 msgstr ""
 
-#: ../../api.rst:1113
+#: ../../api.rst:1152
 msgid "The colour has changed"
 msgstr ""
 
-#: ../../api.rst:1114
+#: ../../api.rst:1153
 msgid "Its hoist/mentionable state has changed"
 msgstr ""
 
-#: ../../api.rst:1129
+#: ../../api.rst:1168
 msgid "A role was deleted."
 msgstr ""
 
-#: ../../api.rst:1144
+#: ../../api.rst:1183
 msgid "An invite was created."
 msgstr ""
 
-#: ../../api.rst:1146
+#: ../../api.rst:1185
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Invite` that was created."
 msgstr ""
 
-#: ../../api.rst:1151 ../../api.rst:1175
+#: ../../api.rst:1190 ../../api.rst:1214
 msgid ":attr:`~AuditLogDiff.max_age`"
 msgstr ""
 
-#: ../../api.rst:1152 ../../api.rst:1176
+#: ../../api.rst:1191 ../../api.rst:1215
 msgid ":attr:`~AuditLogDiff.code`"
 msgstr ""
 
-#: ../../api.rst:1153 ../../api.rst:1177
+#: ../../api.rst:1192 ../../api.rst:1216
 msgid ":attr:`~AuditLogDiff.temporary`"
 msgstr ""
 
-#: ../../api.rst:1154 ../../api.rst:1178
+#: ../../api.rst:1193 ../../api.rst:1217
 msgid ":attr:`~AuditLogDiff.inviter`"
 msgstr ""
 
-#: ../../api.rst:1155 ../../api.rst:1179 ../../api.rst:1192 ../../api.rst:1208
-#: ../../api.rst:1220
+#: ../../api.rst:1194 ../../api.rst:1218 ../../api.rst:1231 ../../api.rst:1247
+#: ../../api.rst:1259
 msgid ":attr:`~AuditLogDiff.channel`"
 msgstr ""
 
-#: ../../api.rst:1156 ../../api.rst:1180
+#: ../../api.rst:1195 ../../api.rst:1219
 msgid ":attr:`~AuditLogDiff.uses`"
 msgstr ""
 
-#: ../../api.rst:1157 ../../api.rst:1181
+#: ../../api.rst:1196 ../../api.rst:1220
 msgid ":attr:`~AuditLogDiff.max_uses`"
 msgstr ""
 
-#: ../../api.rst:1161
+#: ../../api.rst:1200
 msgid "An invite was updated."
 msgstr ""
 
-#: ../../api.rst:1163
+#: ../../api.rst:1202
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Invite` that was updated."
 msgstr ""
 
-#: ../../api.rst:1168
+#: ../../api.rst:1207
 msgid "An invite was deleted."
 msgstr ""
 
-#: ../../api.rst:1170
+#: ../../api.rst:1209
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Invite` that was deleted."
 msgstr ""
 
-#: ../../api.rst:1185
+#: ../../api.rst:1224
 msgid "A webhook was created."
 msgstr ""
 
-#: ../../api.rst:1187 ../../api.rst:1203 ../../api.rst:1215
+#: ../../api.rst:1226 ../../api.rst:1242 ../../api.rst:1254
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Object` with the webhook ID."
 msgstr ""
 
-#: ../../api.rst:1194 ../../api.rst:1222
+#: ../../api.rst:1233 ../../api.rst:1261
 msgid ":attr:`~AuditLogDiff.type` (always set to ``1`` if so)"
 msgstr ""
 
-#: ../../api.rst:1198
+#: ../../api.rst:1237
 msgid "A webhook was updated. This trigger in the following situations:"
 msgstr ""
 
-#: ../../api.rst:1200
+#: ../../api.rst:1239
 msgid "The webhook name changed"
 msgstr ""
 
-#: ../../api.rst:1201
+#: ../../api.rst:1240
 msgid "The webhook channel changed"
 msgstr ""
 
-#: ../../api.rst:1213
+#: ../../api.rst:1252
 msgid "A webhook was deleted."
 msgstr ""
 
-#: ../../api.rst:1226
+#: ../../api.rst:1265
 msgid "An emoji was created."
 msgstr ""
 
-#: ../../api.rst:1228 ../../api.rst:1239
+#: ../../api.rst:1267 ../../api.rst:1278
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Emoji` or :class:`Object` with the emoji ID."
 msgstr ""
 
-#: ../../api.rst:1237
+#: ../../api.rst:1276
 msgid "An emoji was updated. This triggers when the name has changed."
 msgstr ""
 
-#: ../../api.rst:1248
+#: ../../api.rst:1287
 msgid "An emoji was deleted."
 msgstr ""
 
-#: ../../api.rst:1250
+#: ../../api.rst:1289
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Object` with the emoji ID."
 msgstr ""
 
-#: ../../api.rst:1259
+#: ../../api.rst:1298
 msgid ""
 "A message was deleted by a moderator. Note that this only triggers if the"
 " message was deleted by either bulk delete or deletion by someone other "
 "than the author."
 msgstr ""
 
-#: ../../api.rst:1263
+#: ../../api.rst:1302
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Member` or :class:`User` who had their message deleted."
 msgstr ""
 
-#: ../../api.rst:1269
+#: ../../api.rst:1308
 msgid "``count``: An integer specifying how many messages were deleted."
 msgstr ""
 
-#: ../../api.rst:1270
+#: ../../api.rst:1309
 msgid ""
 "``channel``: A :class:`TextChannel` or :class:`Object` with the channel "
 "ID where the message got deleted."
 msgstr ""
 
-#: ../../api.rst:1275
+#: ../../api.rst:1314
 msgid "Represents the category that the :class:`AuditLogAction` belongs to."
 msgstr ""
 
-#: ../../api.rst:1277
+#: ../../api.rst:1316
 msgid "This can be retrieved via :attr:`AuditLogEntry.category`."
 msgstr ""
 
-#: ../../api.rst:1281
+#: ../../api.rst:1320
 msgid "The action is the creation of something."
 msgstr ""
 
-#: ../../api.rst:1285
+#: ../../api.rst:1324
 msgid "The action is the deletion of something."
 msgstr ""
 
-#: ../../api.rst:1289
+#: ../../api.rst:1328
 msgid "The action is the update of something."
 msgstr ""
 
-#: ../../api.rst:1294
+#: ../../api.rst:1333
 msgid "Async Iterator"
 msgstr ""
 
-#: ../../api.rst:1296
+#: ../../api.rst:1335
 msgid ""
 "Some API functions return an \"async iterator\". An async iterator is "
 "something that is capable of being used in an `async for "
@@ -3235,71 +3282,71 @@ msgid ""
 "statement>`_ statement."
 msgstr ""
 
-#: ../../api.rst:1300
+#: ../../api.rst:1339
 msgid "These async iterators can be used as follows: ::"
 msgstr ""
 
-#: ../../api.rst:1305
+#: ../../api.rst:1344
 msgid ""
 "Certain utilities make working with async iterators easier, detailed "
 "below."
 msgstr ""
 
-#: ../../api.rst:1309
+#: ../../api.rst:1348
 msgid ""
 "Represents the \"AsyncIterator\" concept. Note that no such class exists,"
 " it is purely abstract."
 msgstr ""
 
-#: ../../api.rst:1316
+#: ../../api.rst:1355
 msgid ""
 "Iterates over the contents of the async iterator. Note that this is only "
 "available in Python 3.5 or higher."
 msgstr ""
 
-#: ../../api.rst:1324
+#: ../../api.rst:1363
 msgid ""
 "Advances the iterator by one, if possible. If no more items are found "
 "then this raises :exc:`NoMoreItems`."
 msgstr ""
 
-#: ../../api.rst:1331
+#: ../../api.rst:1370
 msgid "Similar to :func:`utils.get` except run over the async iterator."
 msgstr ""
 
-#: ../../api.rst:1333
+#: ../../api.rst:1372
 msgid "Getting the last message by a user named 'Dave' or ``None``: ::"
 msgstr ""
 
-#: ../../api.rst:1341
+#: ../../api.rst:1380
 msgid "Similar to :func:`utils.find` except run over the async iterator."
 msgstr ""
 
-#: ../../api.rst:1343
+#: ../../api.rst:1382
 msgid "Unlike :func:`utils.find`\\, the predicate provided can be a coroutine."
 msgstr ""
 
-#: ../../api.rst:1346
+#: ../../api.rst:1385
 msgid "Getting the last audit log with a reason or ``None``: ::"
 msgstr ""
 
-#: ../../api.rst:1353
+#: ../../api.rst:1392
 msgid "The predicate to use. Can be a coroutine."
 msgstr ""
 
-#: ../../api.rst:1354
+#: ../../api.rst:1393
 msgid "The first element that returns ``True`` for the predicate or ``None``."
 msgstr ""
 
-#: ../../api.rst:1360
+#: ../../api.rst:1399
 msgid "Flattens the async iterator into a :class:`list` with all the elements."
 msgstr ""
 
-#: ../../api.rst:1362
+#: ../../api.rst:1401
 msgid "A list of every element in the async iterator."
 msgstr ""
 
-#: ../../api.rst:1367
+#: ../../api.rst:1406
 msgid ""
 "This is similar to the built-in :func:`map <python:map>` function. "
 "Another :class:`AsyncIterator` is returned that executes the function on "
@@ -3307,38 +3354,38 @@ msgid ""
 " function or a coroutine."
 msgstr ""
 
-#: ../../api.rst:1372
+#: ../../api.rst:1411
 msgid "Creating a content iterator: ::"
 msgstr ""
 
-#: ../../api.rst:1380
+#: ../../api.rst:1419
 msgid "The function to call on every element. Could be a coroutine."
 msgstr ""
 
-#: ../../api.rst:1381 ../../api.rst:1398
+#: ../../api.rst:1420 ../../api.rst:1437
 msgid "An async iterator."
 msgstr ""
 
-#: ../../api.rst:1385
+#: ../../api.rst:1424
 msgid ""
 "This is similar to the built-in :func:`filter <python:filter>` function. "
 "Another :class:`AsyncIterator` is returned that filters over the original"
 " async iterator. This predicate can be a regular function or a coroutine."
 msgstr ""
 
-#: ../../api.rst:1389
+#: ../../api.rst:1428
 msgid "Getting messages by non-bot accounts: ::"
 msgstr ""
 
-#: ../../api.rst:1397
+#: ../../api.rst:1436
 msgid "The predicate to call on every element. Could be a coroutine."
 msgstr ""
 
-#: ../../api.rst:1402
+#: ../../api.rst:1441
 msgid "Audit Log Data"
 msgstr ""
 
-#: ../../api.rst:1404
+#: ../../api.rst:1443
 msgid ""
 "Working with :meth:`Guild.audit_logs` is a complicated process with a lot"
 " of machinery involved. The library attempts to make it easy to use and "
@@ -3408,91 +3455,91 @@ msgstr ""
 msgid ":class:`AuditLogDiff` -- The target's subsequent state."
 msgstr ""
 
-#: ../../api.rst:1413
+#: ../../api.rst:1452
 msgid "An audit log change set."
 msgstr ""
 
-#: ../../api.rst:1417
+#: ../../api.rst:1456
 msgid "The old value. The attribute has the type of :class:`AuditLogDiff`."
 msgstr ""
 
-#: ../../api.rst:1419 ../../api.rst:1439
+#: ../../api.rst:1458 ../../api.rst:1478
 msgid ""
 "Depending on the :class:`AuditLogActionCategory` retrieved by "
 ":attr:`~AuditLogEntry.category`\\, the data retrieved by this attribute "
 "differs:"
 msgstr ""
 
-#: ../../api.rst:1424 ../../api.rst:1444
+#: ../../api.rst:1463 ../../api.rst:1483
 msgid "Category"
 msgstr ""
 
-#: ../../api.rst:1424 ../../api.rst:1444 discord.PermissionOverwrite:15 of
+#: ../../api.rst:1463 ../../api.rst:1483 discord.PermissionOverwrite:15 of
 msgid "Description"
 msgstr ""
 
-#: ../../api.rst:1426 ../../api.rst:1446
+#: ../../api.rst:1465 ../../api.rst:1485
 msgid ":attr:`~AuditLogActionCategory.create`"
 msgstr ""
 
-#: ../../api.rst:1426
+#: ../../api.rst:1465
 msgid "All attributes are set to ``None``."
 msgstr ""
 
-#: ../../api.rst:1428 ../../api.rst:1448
+#: ../../api.rst:1467 ../../api.rst:1487
 msgid ":attr:`~AuditLogActionCategory.delete`"
 msgstr ""
 
-#: ../../api.rst:1428
+#: ../../api.rst:1467
 msgid "All attributes are set the value before deletion."
 msgstr ""
 
-#: ../../api.rst:1430 ../../api.rst:1450
+#: ../../api.rst:1469 ../../api.rst:1489
 msgid ":attr:`~AuditLogActionCategory.update`"
 msgstr ""
 
-#: ../../api.rst:1430
+#: ../../api.rst:1469
 msgid "All attributes are set the value before updating."
 msgstr ""
 
-#: ../../api.rst:1432 ../../api.rst:1452
+#: ../../api.rst:1471 ../../api.rst:1491
 msgid "``None``"
 msgstr ""
 
-#: ../../api.rst:1432 ../../api.rst:1452
+#: ../../api.rst:1471 ../../api.rst:1491
 msgid "No attributes are set."
 msgstr ""
 
-#: ../../api.rst:1437
+#: ../../api.rst:1476
 msgid "The new value. The attribute has the type of :class:`AuditLogDiff`."
 msgstr ""
 
-#: ../../api.rst:1446
+#: ../../api.rst:1485
 msgid "All attributes are set to the created value"
 msgstr ""
 
-#: ../../api.rst:1448
+#: ../../api.rst:1487
 msgid "All attributes are set to ``None``"
 msgstr ""
 
-#: ../../api.rst:1450
+#: ../../api.rst:1489
 msgid "All attributes are set the value after updating."
 msgstr ""
 
-#: ../../api.rst:1457
+#: ../../api.rst:1496
 msgid ""
 "Represents an audit log \"change\" object. A change object has dynamic "
 "attributes that depend on the type of action being done. Certain actions "
 "map to certain attributes being set."
 msgstr ""
 
-#: ../../api.rst:1461
+#: ../../api.rst:1500
 msgid ""
 "Note that accessing an attribute that does not match the specified action"
 " will lead to an attribute error."
 msgstr ""
 
-#: ../../api.rst:1464
+#: ../../api.rst:1503
 msgid ""
 "To get a list of attributes that have been set, you can iterate over "
 "them. To see a list of all possible attributes that could be set based on"
@@ -3501,157 +3548,157 @@ msgid ""
 "attributes that are possible."
 msgstr ""
 
-#: ../../api.rst:1471
+#: ../../api.rst:1510
 msgid "Return an iterator over (attribute, value) tuple of this diff."
 msgstr ""
 
-#: ../../api.rst:1475
+#: ../../api.rst:1514
 msgid ":class:`str` – A name of something."
 msgstr ""
 
-#: ../../api.rst:1479
+#: ../../api.rst:1518
 msgid ":class:`str` – A guild's icon hash. See also :attr:`Guild.icon`."
 msgstr ""
 
-#: ../../api.rst:1483
+#: ../../api.rst:1522
 msgid ""
 ":class:`str` – The guild's invite splash hash. See also "
 ":attr:`Guild.splash`."
 msgstr ""
 
-#: ../../api.rst:1487
+#: ../../api.rst:1526
 msgid ""
 "Union[:class:`Member`, :class:`User`] – The guild's owner. See also "
 ":attr:`Guild.owner`"
 msgstr ""
 
-#: ../../api.rst:1491
+#: ../../api.rst:1530
 msgid ""
 ":class:`GuildRegion` – The guild's voice region. See also "
 ":attr:`Guild.region`."
 msgstr ""
 
-#: ../../api.rst:1495
+#: ../../api.rst:1534
 msgid "Union[:class:`VoiceChannel`, :class:`Object`] – The guild's AFK channel."
 msgstr ""
 
-#: ../../api.rst:1497 ../../api.rst:1506
+#: ../../api.rst:1536 ../../api.rst:1545
 msgid ""
 "If this could not be found, then it falls back to a :class:`Object` with "
 "the ID being set."
 msgstr ""
 
-#: ../../api.rst:1500
+#: ../../api.rst:1539
 msgid "See :attr:`Guild.afk_channel`."
 msgstr ""
 
-#: ../../api.rst:1504
+#: ../../api.rst:1543
 msgid "Union[:class:`TextChannel`, :class:`Object`] – The guild's system channel."
 msgstr ""
 
-#: ../../api.rst:1509
+#: ../../api.rst:1548
 msgid "See :attr:`Guild.system_channel`."
 msgstr ""
 
-#: ../../api.rst:1513
+#: ../../api.rst:1552
 msgid ":class:`int` – The guild's AFK timeout. See :attr:`Guild.afk_timeout`."
 msgstr ""
 
-#: ../../api.rst:1517
+#: ../../api.rst:1556
 msgid ":class:`int` - The guild's MFA level. See :attr:`Guild.mfa_level`."
 msgstr ""
 
-#: ../../api.rst:1521
+#: ../../api.rst:1560
 msgid ":class:`bool` – The guild's widget has been enabled or disabled."
 msgstr ""
 
-#: ../../api.rst:1525
+#: ../../api.rst:1564
 msgid "Union[:class:`TextChannel`, :class:`Object`] – The widget's channel."
 msgstr ""
 
-#: ../../api.rst:1527
+#: ../../api.rst:1566
 msgid ""
 "If this could not be found then it falls back to a :class:`Object` with "
 "the ID being set."
 msgstr ""
 
-#: ../../api.rst:1532
+#: ../../api.rst:1571
 msgid ":class:`VerificationLevel` – The guild's verification level."
 msgstr ""
 
-#: ../../api.rst:1534
+#: ../../api.rst:1573
 msgid "See also :attr:`Guild.verification_level`."
 msgstr ""
 
-#: ../../api.rst:1538
+#: ../../api.rst:1577
 msgid ":class:`ContentFilter` – The guild's content filter."
 msgstr ""
 
-#: ../../api.rst:1540
+#: ../../api.rst:1579
 msgid "See also :attr:`Guild.explicit_content_filter`."
 msgstr ""
 
-#: ../../api.rst:1544
+#: ../../api.rst:1583
 msgid ":class:`int` – The guild's default message notification setting."
 msgstr ""
 
-#: ../../api.rst:1548
+#: ../../api.rst:1587
 msgid ":class:`str` – The guild's vanity URL."
 msgstr ""
 
-#: ../../api.rst:1550
+#: ../../api.rst:1589
 msgid ""
 "See also :meth:`Guild.vanity_invite` and "
 ":meth:`Guild.change_vanity_invite`."
 msgstr ""
 
-#: ../../api.rst:1554
+#: ../../api.rst:1593
 msgid ""
 ":class:`int` – The position of a :class:`Role` or "
 ":class:`abc.GuildChannel`."
 msgstr ""
 
-#: ../../api.rst:1558
+#: ../../api.rst:1597
 msgid "*Union[int, str]* – The type of channel or channel permission overwrite."
 msgstr ""
 
-#: ../../api.rst:1560
+#: ../../api.rst:1599
 msgid ""
 "If the type is an :class:`int`, then it is a type of channel which can be"
 " either ``0`` to indicate a text channel or ``1`` to indicate a voice "
 "channel."
 msgstr ""
 
-#: ../../api.rst:1563
+#: ../../api.rst:1602
 msgid ""
 "If the type is a :class:`str`, then it is a type of permission overwrite "
 "which can be either ``'role'`` or ``'member'``."
 msgstr ""
 
-#: ../../api.rst:1568
+#: ../../api.rst:1607
 msgid ":class:`str` – The topic of a :class:`TextChannel`."
 msgstr ""
 
-#: ../../api.rst:1570
+#: ../../api.rst:1609
 msgid "See also :attr:`TextChannel.topic`."
 msgstr ""
 
-#: ../../api.rst:1574
+#: ../../api.rst:1613
 msgid ":class:`int` – The bitrate of a :class:`VoiceChannel`."
 msgstr ""
 
-#: ../../api.rst:1576
+#: ../../api.rst:1615
 msgid "See also :attr:`VoiceChannel.bitrate`."
 msgstr ""
 
-#: ../../api.rst:1580
+#: ../../api.rst:1619
 msgid ""
 "List[Tuple[target, :class:`PermissionOverwrite`]] – A list of permission "
 "overwrite tuples that represents a target and a "
 ":class:`PermissionOverwrite` for said target."
 msgstr ""
 
-#: ../../api.rst:1584
+#: ../../api.rst:1623
 msgid ""
 "The first element is the object being targeted, which can either be a "
 ":class:`Member` or :class:`User` or :class:`Role`. If this object is not "
@@ -3660,153 +3707,153 @@ msgid ""
 "type of ID it is."
 msgstr ""
 
-#: ../../api.rst:1592
+#: ../../api.rst:1631
 msgid ""
 "List[Union[:class:`Role`, :class:`Object`]] – A list of roles being added"
 " or removed from a member."
 msgstr ""
 
-#: ../../api.rst:1595
+#: ../../api.rst:1634
 msgid ""
 "If a role is not found then it is a :class:`Object` with the ID and name "
 "being filled in."
 msgstr ""
 
-#: ../../api.rst:1600
+#: ../../api.rst:1639
 msgid "*Optional[str]* – The nickname of a member."
 msgstr ""
 
-#: ../../api.rst:1602
+#: ../../api.rst:1641
 msgid "See also :attr:`Member.nick`"
 msgstr ""
 
-#: ../../api.rst:1606
+#: ../../api.rst:1645
 msgid ":class:`bool` – Whether the member is being server deafened."
 msgstr ""
 
-#: ../../api.rst:1608
+#: ../../api.rst:1647
 msgid "See also :attr:`VoiceState.deaf`."
 msgstr ""
 
-#: ../../api.rst:1612
+#: ../../api.rst:1651
 msgid ":class:`bool` – Whether the member is being server muted."
 msgstr ""
 
-#: ../../api.rst:1614
+#: ../../api.rst:1653
 msgid "See also :attr:`VoiceState.mute`."
 msgstr ""
 
-#: ../../api.rst:1618
+#: ../../api.rst:1657
 msgid ":class:`Permissions` – The permissions of a role."
 msgstr ""
 
-#: ../../api.rst:1620
+#: ../../api.rst:1659
 msgid "See also :attr:`Role.permissions`."
 msgstr ""
 
-#: ../../api.rst:1625
+#: ../../api.rst:1664
 msgid ":class:`Colour` – The colour of a role."
 msgstr ""
 
-#: ../../api.rst:1627
+#: ../../api.rst:1666
 msgid "See also :attr:`Role.colour`"
 msgstr ""
 
-#: ../../api.rst:1631
+#: ../../api.rst:1670
 msgid ":class:`bool` – Whether the role is being hoisted or not."
 msgstr ""
 
-#: ../../api.rst:1633
+#: ../../api.rst:1672
 msgid "See also :attr:`Role.hoist`"
 msgstr ""
 
-#: ../../api.rst:1637
+#: ../../api.rst:1676
 msgid ":class:`bool` – Whether the role is mentionable or not."
 msgstr ""
 
-#: ../../api.rst:1639
+#: ../../api.rst:1678
 msgid "See also :attr:`Role.mentionable`"
 msgstr ""
 
-#: ../../api.rst:1643
+#: ../../api.rst:1682
 msgid ":class:`str` – The invite's code."
 msgstr ""
 
-#: ../../api.rst:1645
+#: ../../api.rst:1684
 msgid "See also :attr:`Invite.code`"
 msgstr ""
 
-#: ../../api.rst:1649
+#: ../../api.rst:1688
 msgid "Union[:class:`abc.GuildChannel`, :class:`Object`] – A guild channel."
 msgstr ""
 
-#: ../../api.rst:1651
+#: ../../api.rst:1690
 msgid ""
 "If the channel is not found then it is a :class:`Object` with the ID "
 "being set. In some cases the channel name is also set."
 msgstr ""
 
-#: ../../api.rst:1656
+#: ../../api.rst:1695
 msgid ":class:`User` – The user who created the invite."
 msgstr ""
 
-#: ../../api.rst:1658
+#: ../../api.rst:1697
 msgid "See also :attr:`Invite.inviter`."
 msgstr ""
 
-#: ../../api.rst:1662
+#: ../../api.rst:1701
 msgid ":class:`int` – The invite's max uses."
 msgstr ""
 
-#: ../../api.rst:1664
+#: ../../api.rst:1703
 msgid "See also :attr:`Invite.max_uses`."
 msgstr ""
 
-#: ../../api.rst:1668
+#: ../../api.rst:1707
 msgid ":class:`int` – The invite's current uses."
 msgstr ""
 
-#: ../../api.rst:1670
+#: ../../api.rst:1709
 msgid "See also :attr:`Invite.uses`."
 msgstr ""
 
-#: ../../api.rst:1674
+#: ../../api.rst:1713
 msgid ":class:`int` – The invite's max age in seconds."
 msgstr ""
 
-#: ../../api.rst:1676
+#: ../../api.rst:1715
 msgid "See also :attr:`Invite.max_age`."
 msgstr ""
 
-#: ../../api.rst:1680
+#: ../../api.rst:1719
 msgid ":class:`bool` – If the invite is a temporary invite."
 msgstr ""
 
-#: ../../api.rst:1682
+#: ../../api.rst:1721
 msgid "See also :attr:`Invite.temporary`."
 msgstr ""
 
-#: ../../api.rst:1687
+#: ../../api.rst:1726
 msgid ":class:`Permissions` – The permissions being allowed or denied."
 msgstr ""
 
-#: ../../api.rst:1691
+#: ../../api.rst:1730
 msgid ":class:`int` – The ID of the object being changed."
 msgstr ""
 
-#: ../../api.rst:1695
+#: ../../api.rst:1734
 msgid ":class:`str` – The avatar hash of a member."
 msgstr ""
 
-#: ../../api.rst:1697
+#: ../../api.rst:1736
 msgid "See also :attr:`User.avatar`."
 msgstr ""
 
-#: ../../api.rst:1703
+#: ../../api.rst:1742
 msgid "Webhook Support"
 msgstr ""
 
-#: ../../api.rst:1705
+#: ../../api.rst:1744
 msgid ""
 "discord.py offers support for creating, editing, and executing webhooks "
 "through the :class:`Webhook` class."
@@ -4019,7 +4066,9 @@ msgid "The webhook's new default name."
 msgstr ""
 
 #: discord.Webhook.edit:10 of
-msgid "A *bytes-like* object representing the webhook's new default avatar."
+msgid ""
+"A :term:`py:bytes-like object` representing the webhook's new default "
+"avatar."
 msgstr ""
 
 #: discord.Webhook.edit:13 of
@@ -4137,11 +4186,11 @@ msgstr ""
 msgid "An alias for :meth:`~.Webhook.send`."
 msgstr ""
 
-#: ../../api.rst:1711
+#: ../../api.rst:1750
 msgid "Adapters"
 msgstr ""
 
-#: ../../api.rst:1713
+#: ../../api.rst:1752
 msgid ""
 "Adapters allow you to change how the request should be handled. They all "
 "build on a single interface, :meth:`WebhookAdapter.request`."
@@ -4249,11 +4298,11 @@ msgid ""
 "then this will raise an :exc:`HTTPException` instead."
 msgstr ""
 
-#: ../../api.rst:1728
+#: ../../api.rst:1767
 msgid "Abstract Base Classes"
 msgstr ""
 
-#: ../../api.rst:1730
+#: ../../api.rst:1769
 msgid ""
 "An abstract base class (also known as an ``abc``) is a class that models "
 "can inherit to get their behaviour. The Python implementation of an `abc "
@@ -4263,7 +4312,7 @@ msgid ""
 "``issubclass``\\."
 msgstr ""
 
-#: ../../api.rst:1735
+#: ../../api.rst:1774
 msgid ""
 "This library has a module related to abstract base classes, some of which"
 " are actually from the ``abc`` standard module, others which are not."
@@ -4898,14 +4947,14 @@ msgid ":class:`Message` -- The message with the message data parsed."
 msgstr ""
 
 #: discord.DMChannel.history:35 discord.GroupChannel.history:35
-#: discord.Member.history:35 discord.Reaction.users:20
+#: discord.Member.history:35 discord.Reaction.users:17
 #: discord.TextChannel.history:35 discord.User.history:35
 #: discord.abc.Messageable.history:35 of
 msgid "Usage ::"
 msgstr ""
 
 #: discord.DMChannel.history:42 discord.GroupChannel.history:42
-#: discord.Member.history:42 discord.Reaction.users:26
+#: discord.Member.history:42 discord.Reaction.users:23
 #: discord.TextChannel.history:42 discord.User.history:42
 #: discord.abc.Messageable.history:42 of
 msgid "Flattening into a list: ::"
@@ -5102,29 +5151,29 @@ msgid ""
 "to a voice server."
 msgstr ""
 
-#: ../../api.rst:1765
+#: ../../api.rst:1804
 msgid "Discord Models"
 msgstr ""
 
-#: ../../api.rst:1767
+#: ../../api.rst:1806
 msgid ""
 "Models are classes that are received from Discord and are not meant to be"
 " created by the user of the library."
 msgstr ""
 
-#: ../../api.rst:1772
+#: ../../api.rst:1811
 msgid ""
 "The classes listed below are **not intended to be created by users** and "
 "are also **read-only**."
 msgstr ""
 
-#: ../../api.rst:1775
+#: ../../api.rst:1814
 msgid ""
 "For example, this means that you should not make your own :class:`User` "
 "instances nor should you modify the :class:`User` instance yourself."
 msgstr ""
 
-#: ../../api.rst:1778
+#: ../../api.rst:1817
 msgid ""
 "If you want to get one of these model classes instances they'd have to be"
 " through the cache, and a common way of doing so is through the "
@@ -5132,20 +5181,20 @@ msgid ""
 "receive from the events specified in the :ref:`discord-api-events`."
 msgstr ""
 
-#: ../../api.rst:1785 ../../api.rst:2011
+#: ../../api.rst:1824 ../../api.rst:2050
 msgid ""
 "Nearly all classes here have ``__slots__`` defined which means that it is"
 " impossible to have dynamic attributes to the data classes."
 msgstr ""
 
-#: ../../api.rst:1788 ../../api.rst:2017
+#: ../../api.rst:1827 ../../api.rst:2056
 msgid ""
 "More information about ``__slots__`` can be found `in the official python"
 " documentation "
 "<https://docs.python.org/3/reference/datamodel.html#slots>`_."
 msgstr ""
 
-#: ../../api.rst:1793
+#: ../../api.rst:1832
 msgid "ClientUser"
 msgstr ""
 
@@ -5349,10 +5398,10 @@ msgstr ""
 
 #: discord.ClientUser.edit:10 of
 msgid ""
-"To upload an avatar, a *bytes-like object* must be passed in that "
-"represents the image being uploaded. If this is done through a file then "
-"the file must be opened via ``open('some_filename', 'rb')`` and the "
-"*bytes-like object* is given through the use of ``fp.read()``."
+"To upload an avatar, a :term:`py:bytes-like object` must be passed in "
+"that represents the image being uploaded. If this is done through a file "
+"then the file must be opened via ``open('some_filename', 'rb')`` and the "
+":term:`py:bytes-like object` is given through the use of ``fp.read()``."
 msgstr ""
 
 #: discord.ClientUser.edit:15 of
@@ -5374,25 +5423,33 @@ msgid "The new email you wish to change to. Only applicable to user accounts."
 msgstr ""
 
 #: discord.ClientUser.edit:26 of
+msgid ""
+"The hypesquad house you wish to change to. Could be ``None`` to leave the"
+" current house. Only applicable to user accounts."
+msgstr ""
+
+#: discord.ClientUser.edit:30 of
 msgid "The new username you wish to change to."
 msgstr ""
 
-#: discord.ClientUser.edit:28 of
+#: discord.ClientUser.edit:32 of
 msgid ""
-"A *bytes-like object* representing the image to upload. Could be ``None``"
-" to denote no avatar."
+"A :term:`py:bytes-like object` representing the image to upload. Could be"
+" ``None`` to denote no avatar."
 msgstr ""
 
-#: discord.ClientUser.edit:32 of
+#: discord.ClientUser.edit:36 of
 msgid ":exc:`HTTPException` -- Editing your profile failed."
 msgstr ""
 
-#: discord.ClientUser.edit:33 of
+#: discord.ClientUser.edit:37 of
 msgid ":exc:`InvalidArgument` -- Wrong image format passed for ``avatar``."
 msgstr ""
 
-#: discord.ClientUser.edit:34 of
-msgid ":exc:`ClientException` -- Password is required for non-bot accounts."
+#: discord.ClientUser.edit:38 of
+msgid ""
+":exc:`ClientException` -- Password is required for non-bot accounts. "
+"House field was not a HypeSquadHouse."
 msgstr ""
 
 #: discord.ClientUser.is_avatar_animated:1 discord.Member.is_avatar_animated:1
@@ -5424,7 +5481,7 @@ msgstr ""
 msgid "The channel to check your permissions for."
 msgstr ""
 
-#: ../../api.rst:1800
+#: ../../api.rst:1839
 msgid "Relationship"
 msgstr ""
 
@@ -5462,7 +5519,7 @@ msgstr ""
 msgid ":exc:`HTTPException` -- Deleting the relationship failed."
 msgstr ""
 
-#: ../../api.rst:1806
+#: ../../api.rst:1845
 msgid "User"
 msgstr ""
 
@@ -5556,7 +5613,7 @@ msgstr ""
 msgid ":exc:`HTTPException` -- Unblocking the user failed."
 msgstr ""
 
-#: ../../api.rst:1820
+#: ../../api.rst:1859
 msgid "Attachment"
 msgstr ""
 
@@ -5630,7 +5687,7 @@ msgstr ""
 msgid "The number of bytes written."
 msgstr ""
 
-#: ../../api.rst:1826
+#: ../../api.rst:1865
 msgid "Message"
 msgstr ""
 
@@ -5656,7 +5713,8 @@ msgstr ""
 #: discord.Message:16 of
 msgid ""
 "A :class:`Member` that sent the message. If :attr:`channel` is a private "
-"channel, then it is a :class:`User` instead."
+"channel or the user has the left the guild, then it is a :class:`User` "
+"instead."
 msgstr ""
 
 #: discord.Message:21 of
@@ -6068,7 +6126,7 @@ msgstr ""
 msgid ":exc:`HTTPException` -- Unpinning the message failed."
 msgstr ""
 
-#: ../../api.rst:1832
+#: ../../api.rst:1871
 msgid "Reaction"
 msgstr ""
 
@@ -6119,37 +6177,33 @@ msgstr ""
 msgid ":class:`Message` -- Message this reaction is for."
 msgstr ""
 
-#: discord.Reaction.users:3 of
+#: discord.Reaction.users:1 of
 msgid ""
 "Returns an :class:`AsyncIterator` representing the users that have "
 "reacted to the message."
 msgstr ""
 
-#: discord.Reaction.users:6 of
+#: discord.Reaction.users:3 of
 msgid ""
 "The ``after`` parameter must represent a member and meet the "
 ":class:`abc.Snowflake` abc."
 msgstr ""
 
-#: discord.Reaction.users:9 of
+#: discord.Reaction.users:6 of
 msgid ""
 "The maximum number of results to return. If not provided, returns all the"
 " users who reacted to the message."
 msgstr ""
 
-#: discord.Reaction.users:13 of
+#: discord.Reaction.users:10 of
 msgid "For pagination, reactions are sorted by member."
 msgstr ""
 
-#: discord.Reaction.users:16 of
+#: discord.Reaction.users:13 of
 msgid ":exc:`HTTPException` -- Getting the users for the reaction failed."
 msgstr ""
 
-#: discord.Reaction.users:33 of
-msgid "Python 3.4 Usage ::"
-msgstr ""
-
-#: discord.Reaction.users:44 of
+#: discord.Reaction.users:30 of
 msgid ""
 "Union[:class:`User`, :class:`Member`] -- The member (if retrievable) or "
 "the user that has reacted to this message. The case where it can be a "
@@ -6161,7 +6215,7 @@ msgstr ""
 msgid ":class:`bool` -- If this is a custom emoji."
 msgstr ""
 
-#: ../../api.rst:1842
+#: ../../api.rst:1881
 msgid "CallMessage"
 msgstr ""
 
@@ -6213,7 +6267,7 @@ msgstr ""
 msgid "The timedelta object representing the duration."
 msgstr ""
 
-#: ../../api.rst:1848
+#: ../../api.rst:1887
 msgid "GroupCall"
 msgstr ""
 
@@ -6277,7 +6331,7 @@ msgstr ""
 msgid "Optional[:class:`VoiceState`]"
 msgstr ""
 
-#: ../../api.rst:1854
+#: ../../api.rst:1893
 msgid "Guild"
 msgstr ""
 
@@ -6772,27 +6826,33 @@ msgstr ""
 
 #: discord.Guild.create_custom_emoji:14 of
 msgid ""
-"The *bytes-like* object representing the image data to use. Only JPG and "
-"PNG images are supported."
+"The :term:`py:bytes-like object` representing the image data to use. Only"
+" JPG and PNG images are supported."
 msgstr ""
 
-#: discord.Guild.create_custom_emoji:17 of
+#: discord.Emoji.edit:10 discord.Guild.create_custom_emoji:17 of
+msgid ""
+"A :class:`list` of :class:`Role`\\s that can use this emoji. Leave empty "
+"to make it available to everyone."
+msgstr ""
+
+#: discord.Guild.create_custom_emoji:19 of
 msgid "The reason for creating this emoji. Shows up on the audit log."
 msgstr ""
 
-#: discord.Guild.create_custom_emoji:20 of
+#: discord.Guild.create_custom_emoji:22 of
 msgid "The created emoji."
 msgstr ""
 
-#: discord.Guild.create_custom_emoji:21 of
+#: discord.Guild.create_custom_emoji:23 of
 msgid ":class:`Emoji`"
 msgstr ""
 
-#: discord.Guild.create_custom_emoji:23 of
+#: discord.Guild.create_custom_emoji:25 of
 msgid ":exc:`Forbidden` -- You are not allowed to create emojis."
 msgstr ""
 
-#: discord.Guild.create_custom_emoji:24 of
+#: discord.Guild.create_custom_emoji:26 of
 msgid ":exc:`HTTPException` -- An error occurred creating an emoji."
 msgstr ""
 
@@ -6957,15 +7017,15 @@ msgstr ""
 
 #: discord.Guild.edit:10 of
 msgid ""
-"A *bytes-like* object representing the icon. Only PNG/JPEG supported. "
-"Could be ``None`` to denote removal of the icon."
+"A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG "
+"supported. Could be ``None`` to denote removal of the icon."
 msgstr ""
 
 #: discord.Guild.edit:13 of
 msgid ""
-"A *bytes-like* object representing the invite splash. Only PNG/JPEG "
-"supported. Could be ``None`` to denote removing the splash. Only "
-"available for partnered guilds with ``INVITE_SPLASH`` feature."
+"A :term:`py:bytes-like object` representing the invite splash. Only "
+"PNG/JPEG supported. Could be ``None`` to denote removing the splash. Only"
+" available for partnered guilds with ``INVITE_SPLASH`` feature."
 msgstr ""
 
 #: discord.Guild.edit:18 of
@@ -7215,7 +7275,7 @@ msgstr ""
 msgid "Marks every message in this guild as read."
 msgstr ""
 
-#: ../../api.rst:1864
+#: ../../api.rst:1903
 msgid "Member"
 msgstr ""
 
@@ -7554,7 +7614,7 @@ msgstr ""
 msgid "Unbans this member. Equivalent to :meth:`Guild.unban`"
 msgstr ""
 
-#: ../../api.rst:1878
+#: ../../api.rst:1917
 msgid "Spotify"
 msgstr ""
 
@@ -7657,7 +7717,7 @@ msgstr ""
 msgid ":class:`str` -- The party ID of the listening party."
 msgstr ""
 
-#: ../../api.rst:1884
+#: ../../api.rst:1923
 msgid "VoiceState"
 msgstr ""
 
@@ -7697,7 +7757,7 @@ msgid ""
 "connected to. None if the user is not currently in a voice channel."
 msgstr ""
 
-#: ../../api.rst:1890
+#: ../../api.rst:1929
 msgid "Emoji"
 msgstr ""
 
@@ -7761,14 +7821,6 @@ msgstr ""
 msgid "Returns a URL version of the emoji."
 msgstr ""
 
-#: discord.Emoji.roles:1 of
-msgid "List[:class:`Role`] -- A list of roles that is allowed to use this emoji."
-msgstr ""
-
-#: discord.Emoji.roles:3 of
-msgid "If roles is empty, the emoji is unrestricted."
-msgstr ""
-
 #: discord.Emoji.guild:1 of
 msgid ":class:`Guild` -- The guild this emoji belongs to."
 msgstr ""
@@ -7802,10 +7854,6 @@ msgid "Edits the custom emoji."
 msgstr ""
 
 #: discord.Emoji.edit:8 of
-msgid "Note that bot accounts can only edit custom emojis they own."
-msgstr ""
-
-#: discord.Emoji.edit:10 of
 msgid "The new emoji name."
 msgstr ""
 
@@ -7821,7 +7869,15 @@ msgstr ""
 msgid ":exc:`HTTPException` -- An error occurred editing the emoji."
 msgstr ""
 
-#: ../../api.rst:1896
+#: discord.Emoji.roles:1 of
+msgid "List[:class:`Role`] -- A list of roles that is allowed to use this emoji."
+msgstr ""
+
+#: discord.Emoji.roles:3 of
+msgid "If roles is empty, the emoji is unrestricted."
+msgstr ""
+
+#: ../../api.rst:1935
 msgid "PartialEmoji"
 msgstr ""
 
@@ -7867,7 +7923,7 @@ msgstr ""
 msgid "Returns a URL version of the emoji, if it is custom."
 msgstr ""
 
-#: ../../api.rst:1902
+#: ../../api.rst:1941
 msgid "Role"
 msgstr ""
 
@@ -8023,7 +8079,7 @@ msgid ""
 "role was asked to be moved."
 msgstr ""
 
-#: ../../api.rst:1908
+#: ../../api.rst:1947
 msgid "TextChannel"
 msgstr ""
 
@@ -8062,6 +8118,14 @@ msgstr ""
 msgid "Optional[:class:`str`] -- The channel's topic. None if it doesn't exist."
 msgstr ""
 
+#: discord.TextChannel:48 of
+msgid ""
+":class:`int` -- The number of seconds a member must wait between sending "
+"messages in this channel. A value of `0` denotes that it is disabled. "
+"Bots and users with :attr:`~Permissions.manage_channels` or "
+":attr:`~Permissions.manage_messages` bypass slowmode."
+msgstr ""
+
 #: discord.TextChannel.members:1 of
 msgid "Returns a :class:`list` of :class:`Member` that can see this channel."
 msgstr ""
@@ -8080,8 +8144,8 @@ msgstr ""
 
 #: discord.TextChannel.create_webhook:9 of
 msgid ""
-"A *bytes-like* object representing the webhook's default avatar. This "
-"operates similarly to :meth:`~ClientUser.edit`."
+"A :term:`py:bytes-like object` representing the webhook's default avatar."
+" This operates similarly to :meth:`~ClientUser.edit`."
 msgstr ""
 
 #: discord.TextChannel.create_webhook:13 of
@@ -8183,21 +8247,27 @@ msgstr ""
 msgid "The new category for this channel. Can be ``None`` to remove the category."
 msgstr ""
 
-#: discord.TextChannel.edit:22 discord.VoiceChannel.edit:22 of
+#: discord.TextChannel.edit:22 of
+msgid ""
+"Specifies the slowmode rate limit for user in this channel. A value of "
+"`0` disables slowmode. The maximum value possible is `120`."
+msgstr ""
+
+#: discord.TextChannel.edit:25 discord.VoiceChannel.edit:22 of
 msgid "The reason for editing this channel. Shows up on the audit log."
 msgstr ""
 
-#: discord.TextChannel.edit:25 of
+#: discord.TextChannel.edit:28 of
 msgid ""
 ":exc:`InvalidArgument` -- If position is less than 0 or greater than the "
 "number of channels."
 msgstr ""
 
-#: discord.TextChannel.edit:26 discord.VoiceChannel.edit:25 of
+#: discord.TextChannel.edit:29 discord.VoiceChannel.edit:25 of
 msgid ":exc:`Forbidden` -- You do not have permissions to edit the channel."
 msgstr ""
 
-#: discord.TextChannel.edit:27 discord.VoiceChannel.edit:26 of
+#: discord.TextChannel.edit:30 discord.VoiceChannel.edit:26 of
 msgid ":exc:`HTTPException` -- Editing the channel failed."
 msgstr ""
 
@@ -8285,7 +8355,7 @@ msgstr ""
 msgid "The webhooks for this channel."
 msgstr ""
 
-#: ../../api.rst:1922
+#: ../../api.rst:1961
 msgid "VoiceChannel"
 msgstr ""
 
@@ -8359,7 +8429,7 @@ msgstr ""
 msgid "The new channel's user limit."
 msgstr ""
 
-#: ../../api.rst:1929
+#: ../../api.rst:1968
 msgid "CategoryChannel"
 msgstr ""
 
@@ -8443,7 +8513,7 @@ msgstr ""
 msgid ":exc:`HTTPException` -- Editing the category failed."
 msgstr ""
 
-#: ../../api.rst:1936
+#: ../../api.rst:1975
 msgid "DMChannel"
 msgstr ""
 
@@ -8509,7 +8579,7 @@ msgstr ""
 msgid "The resolved permissions."
 msgstr ""
 
-#: ../../api.rst:1950
+#: ../../api.rst:1989
 msgid "GroupChannel"
 msgstr ""
 
@@ -8572,8 +8642,8 @@ msgstr ""
 
 #: discord.GroupChannel.edit:8 of
 msgid ""
-"A bytes-like object representing the new icon. Could be ``None`` to "
-"remove the icon."
+"A :term:`py:bytes-like object` representing the new icon. Could be "
+"``None`` to remove the icon."
 msgstr ""
 
 #: discord.GroupChannel.edit:12 of
@@ -8616,7 +8686,7 @@ msgstr ""
 msgid "The resolved permissions for the user."
 msgstr ""
 
-#: ../../api.rst:1965
+#: ../../api.rst:2004
 msgid "Invite"
 msgstr ""
 
@@ -8709,7 +8779,7 @@ msgstr ""
 msgid "The reason for deleting this invite. Shows up on the audit log."
 msgstr ""
 
-#: ../../api.rst:1971
+#: ../../api.rst:2010
 msgid "RawMessageDeleteEvent"
 msgstr ""
 
@@ -8731,7 +8801,7 @@ msgstr ""
 msgid ":class:`int` -- The message ID that got deleted."
 msgstr ""
 
-#: ../../api.rst:1977
+#: ../../api.rst:2016
 msgid "RawBulkMessageDeleteEvent"
 msgstr ""
 
@@ -8755,7 +8825,7 @@ msgid ""
 "applicable."
 msgstr ""
 
-#: ../../api.rst:1983
+#: ../../api.rst:2022
 msgid "RawMessageUpdateEvent"
 msgstr ""
 
@@ -8773,7 +8843,7 @@ msgid ""
 "<https://discordapp.com/developers/docs/topics/gateway#message-update>`_"
 msgstr ""
 
-#: ../../api.rst:1989
+#: ../../api.rst:2028
 msgid "RawReactionActionEvent"
 msgstr ""
 
@@ -8805,7 +8875,7 @@ msgstr ""
 msgid ":class:`PartialEmoji` -- The custom or unicode emoji being used."
 msgstr ""
 
-#: ../../api.rst:1995
+#: ../../api.rst:2034
 msgid "RawReactionClearEvent"
 msgstr ""
 
@@ -8825,27 +8895,27 @@ msgstr ""
 msgid "Optional[:class:`int`] -- The guild ID where the reactions got cleared."
 msgstr ""
 
-#: ../../api.rst:2004
+#: ../../api.rst:2043
 msgid "Data Classes"
 msgstr ""
 
-#: ../../api.rst:2006
+#: ../../api.rst:2045
 msgid "Some classes are just there to be data containers, this lists them."
 msgstr ""
 
-#: ../../api.rst:2008
+#: ../../api.rst:2047
 msgid ""
 "Unlike :ref:`models <discord_api_models>` you are allowed to create these"
 " yourself, even if they can also be used to hold attributes."
 msgstr ""
 
-#: ../../api.rst:2014
+#: ../../api.rst:2053
 msgid ""
 "The only exception to this rule is :class:`Object`, which is made with "
 "dynamic attributes in mind."
 msgstr ""
 
-#: ../../api.rst:2022
+#: ../../api.rst:2061
 msgid "Object"
 msgstr ""
 
@@ -8890,7 +8960,7 @@ msgstr ""
 msgid "Returns the snowflake's creation time in UTC."
 msgstr ""
 
-#: ../../api.rst:2028
+#: ../../api.rst:2067
 msgid "Embed"
 msgstr ""
 
@@ -9149,7 +9219,7 @@ msgstr ""
 msgid "Converts this embed object into a dict."
 msgstr ""
 
-#: ../../api.rst:2034
+#: ../../api.rst:2073
 msgid "File"
 msgstr ""
 
@@ -9184,7 +9254,7 @@ msgid ""
 "given."
 msgstr ""
 
-#: ../../api.rst:2040
+#: ../../api.rst:2079
 msgid "Colour"
 msgstr ""
 
@@ -9236,6 +9306,10 @@ msgstr ""
 
 #: discord.Colour.from_rgb:1 of
 msgid "Constructs a :class:`Colour` from an RGB tuple."
+msgstr ""
+
+#: discord.Colour.from_hsv:1 of
+msgid "Constructs a :class:`Colour` from an HSV tuple."
 msgstr ""
 
 #: discord.Colour.default:1 of
@@ -9374,7 +9448,7 @@ msgid ""
 "``0x99aab5``."
 msgstr ""
 
-#: ../../api.rst:2046
+#: ../../api.rst:2085
 msgid "Activity"
 msgstr ""
 
@@ -9522,7 +9596,7 @@ msgid ""
 "this activity if applicable."
 msgstr ""
 
-#: ../../api.rst:2052
+#: ../../api.rst:2091
 msgid "Game"
 msgstr ""
 
@@ -9594,7 +9668,7 @@ msgid ""
 "this game in UTC, if applicable."
 msgstr ""
 
-#: ../../api.rst:2058
+#: ../../api.rst:2097
 msgid "Streaming"
 msgstr ""
 
@@ -9665,7 +9739,7 @@ msgid ""
 "Typically set by the Discord client."
 msgstr ""
 
-#: ../../api.rst:2064
+#: ../../api.rst:2103
 msgid "Permissions"
 msgstr ""
 
@@ -9963,7 +10037,7 @@ msgstr ""
 msgid "Returns True if a user can create, edit, or delete emojis."
 msgstr ""
 
-#: ../../api.rst:2070
+#: ../../api.rst:2109
 msgid "PermissionOverwrite"
 msgstr ""
 
@@ -10037,11 +10111,11 @@ msgstr ""
 msgid "A list of key/value pairs to bulk update with."
 msgstr ""
 
-#: ../../api.rst:2076
+#: ../../api.rst:2115
 msgid "Exceptions"
 msgstr ""
 
-#: ../../api.rst:2078
+#: ../../api.rst:2117
 msgid "The following exceptions are thrown by the library."
 msgstr ""
 
@@ -10158,4 +10232,97 @@ msgstr ""
 #: discord.opus.OpusNotLoaded:1 of
 msgid "An exception that is thrown for when libopus is not loaded."
 msgstr ""
+
+#~ msgid ""
+#~ "The *bytes-like* object representing the"
+#~ " icon. See :meth:`~ClientUser.edit` for "
+#~ "more details on what is expected."
+#~ msgstr ""
+
+#~ msgid "The *bytes-like object* denoting PCM or Opus voice data."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "If the audio is complete, then "
+#~ "returning an empty *bytes-like* object"
+#~ " to signal this is the way to"
+#~ " do so."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Called when a reaction has a "
+#~ "reaction added. Unlike :func:`on_reaction_add`, "
+#~ "this is called regardless of the "
+#~ "state of the internal message cache."
+#~ msgstr ""
+
+#~ msgid "A *bytes-like* object representing the webhook's new default avatar."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "To upload an avatar, a *bytes-like"
+#~ " object* must be passed in that "
+#~ "represents the image being uploaded. If"
+#~ " this is done through a file "
+#~ "then the file must be opened via"
+#~ " ``open('some_filename', 'rb')`` and the "
+#~ "*bytes-like object* is given through "
+#~ "the use of ``fp.read()``."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A *bytes-like object* representing the"
+#~ " image to upload. Could be ``None``"
+#~ " to denote no avatar."
+#~ msgstr ""
+
+#~ msgid ":exc:`ClientException` -- Password is required for non-bot accounts."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A :class:`Member` that sent the message."
+#~ " If :attr:`channel` is a private "
+#~ "channel, then it is a :class:`User` "
+#~ "instead."
+#~ msgstr ""
+
+#~ msgid "Python 3.4 Usage ::"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The *bytes-like* object representing the"
+#~ " image data to use. Only JPG "
+#~ "and PNG images are supported."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A *bytes-like* object representing the"
+#~ " icon. Only PNG/JPEG supported. Could "
+#~ "be ``None`` to denote removal of "
+#~ "the icon."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A *bytes-like* object representing the"
+#~ " invite splash. Only PNG/JPEG supported."
+#~ " Could be ``None`` to denote removing"
+#~ " the splash. Only available for "
+#~ "partnered guilds with ``INVITE_SPLASH`` "
+#~ "feature."
+#~ msgstr ""
+
+#~ msgid "Note that bot accounts can only edit custom emojis they own."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A *bytes-like* object representing the"
+#~ " webhook's default avatar. This operates"
+#~ " similarly to :meth:`~ClientUser.edit`."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A bytes-like object representing the "
+#~ "new icon. Could be ``None`` to "
+#~ "remove the icon."
+#~ msgstr ""
 
