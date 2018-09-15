@@ -243,7 +243,7 @@ msgstr ""
 
 #: discord.ext.commands.Bot.add_cog:1 of
 msgid "Adds a \"cog\" to the bot."
-msgstr "botに\"cog\"を追加します。"
+msgstr "botに\"コグ\"を追加します。"
 
 #: discord.ext.commands.Bot.add_cog:3 of
 msgid "A cog is a class that has its own event listeners and commands."
@@ -2993,7 +2993,7 @@ msgstr ":class:`discord.ext.commands.Converter` -- 例外が発生したConverte
 msgid ""
 "The original exception that was raised. You can also get this via the "
 "``__cause__`` attribute."
-msgstr "Convereter内で発生した例外。 ``__cause__`` からも取得できます。"
+msgstr "Converter内で発生した元の例外。 ``__cause__`` からも取得できます。"
 
 #: discord.ext.commands.MissingRequiredArgument:1 of
 msgid ""
