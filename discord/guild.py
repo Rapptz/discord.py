@@ -996,8 +996,6 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
 
-        Note that bot accounts can only edit and delete emojis they have created.
-
         Parameters
         -----------
         name: str
