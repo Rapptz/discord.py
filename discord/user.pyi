@@ -1,7 +1,7 @@
 import discord.abc
 
 from .channel import DMChannel, GroupChannel
-from .enums import DefaultAvatar
+from .enums import DefaultAvatar, HypeSquadHouse
 from .guild import Guild
 from .permissions import Permissions
 from .message import Message
@@ -33,6 +33,9 @@ class Profile(NamedTuple):
 
     @property
     def partner(self) -> bool: ...
+
+    @property
+    def hypesquad_houses(self) -> List[HypeSquadHouse]: ...
 
 
 _BaseUser = discord.abc.User

@@ -139,6 +139,9 @@ class UserFlags(Enum):
     staff: int
     partner: int
     hypesquad: int
+    hypesquad_bravery: int
+    hypesquad_brilliance: int
+    hypesquad_balance: int
 
 
 class ActivityType(Enum):
@@ -147,6 +150,11 @@ class ActivityType(Enum):
     streaming: int
     listening: int
     watching: int
+
+class HypeSquadHouse(Enum):
+    bravery: int
+    brilliance: int
+    balance: int
 
 _EnumType = TypeVar('_EnumType', bound=Enum)
 _IntEnumType = TypeVar('_IntEnumType', bound=IntEnum)
