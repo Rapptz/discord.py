@@ -1,7 +1,7 @@
 import datetime
 
 from .mixins import Hashable
-from .abc import GuildChannel, Snowflake
+from .abc import Snowflake
 from .channel import VoiceChannel, TextChannel, CategoryChannel
 from .member import Member
 from .voice_client import VoiceClient
@@ -46,7 +46,7 @@ class Guild(Hashable):
     def __repr__(self) -> str: ...
 
     @property
-    def channels(self) -> List[GuildChannel]: ...
+    def channels(self) -> List[Union[TextChannel, VoiceChannel, CategoryChannel]]: ...
 
     @property
     def large(self) -> bool: ...
@@ -68,7 +68,7 @@ class Guild(Hashable):
 
     def by_category(self) -> List[Tuple[Optional[CategoryChannel], List[Union[TextChannel, VoiceChannel]]]]: ...
 
-    def get_channel(self, channel_id: int) -> Optional[GuildChannel]: ...
+    def get_channel(self, channel_id: int) -> Optional[Union[TextChannel, VoiceChannel, CategoryChannel]]: ...
 
     @property
     def system_channel(self) -> Optional[TextChannel]: ...

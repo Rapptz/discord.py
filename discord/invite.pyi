@@ -3,9 +3,9 @@ import datetime
 from .mixins import Hashable
 from .guild import Guild
 from .user import User
-from .abc import GuildChannel
+from .channel import TextChannel, VoiceChannel
 
-from typing import Optional
+from typing import Optional, Union
 
 class Invite(Hashable):
     max_age: int
@@ -17,7 +17,7 @@ class Invite(Hashable):
     uses: int
     max_uses: int
     inviter: User
-    channel: GuildChannel
+    channel: Union[TextChannel, VoiceChannel]
 
     def __str__(self) -> str: ...
 
