@@ -24,7 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
 import itertools
 import copy
 
@@ -58,8 +57,8 @@ class VoiceState:
         is not currently in a voice channel.
     """
 
-    __slots__ = ( 'session_id', 'deaf', 'mute', 'self_mute',
-                  'self_deaf', 'afk', 'channel' )
+    __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
+                 'self_deaf', 'afk', 'channel')
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -181,7 +180,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash(self._user.id)
+        return hash(self._user)
 
     async def _get_channel(self):
         ch = await self.create_dm()
@@ -468,7 +467,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         await self.edit(voice_channel=channel, reason=reason)
 
     async def add_roles(self, *roles, reason=None, atomic=True):
-        """|coro|
+        r"""|coro|
 
         Gives the member a number of :class:`Role`\s.
 
@@ -506,7 +505,7 @@ class Member(discord.abc.Messageable, _BaseUser):
                 await req(guild_id, user_id, role.id, reason=reason)
 
     async def remove_roles(self, *roles, reason=None, atomic=True):
-        """|coro|
+        r"""|coro|
 
         Removes :class:`Role`\s from this member.
 

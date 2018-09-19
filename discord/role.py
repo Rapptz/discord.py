@@ -24,8 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
-
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
@@ -94,7 +92,7 @@ class Role(Hashable):
     """
 
     __slots__ = ('id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', '_state' )
+                 'managed', 'mentionable', 'hoist', 'guild', '_state')
 
     def __init__(self, *, guild, state, data):
         self.guild = guild

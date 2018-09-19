@@ -50,7 +50,8 @@ from collections import namedtuple
 
 log = logging.getLogger(__name__)
 
-AppInfo = namedtuple('AppInfo', 'id name description icon owner')
+AppInfo = namedtuple('AppInfo',
+                     'id name description rpc_origins bot_public bot_require_code_grant icon owner')
 
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
@@ -366,12 +367,10 @@ class Client:
         while True:
             try:
                 await self.ws.poll_event()
-            except ResumeWebSocket as e:
+            except ResumeWebSocket:
                 log.info('Got a request to RESUME the websocket.')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id,
-                                                          session=self.ws.session_id,
-                                                          sequence=self.ws.sequence,
-                                                          resume=True)
+                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
+                                                    sequence=self.ws.sequence, resume=True)
                 self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     async def connect(self, *, reconnect=True):
@@ -856,7 +855,7 @@ class Client:
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
         icon: bytes
-            The *bytes-like* object representing the icon. See :meth:`~ClientUser.edit`
+            The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
         Raises
@@ -962,8 +961,12 @@ class Client:
             Retrieving the information failed somehow.
         """
         data = await self.http.application_info()
+        if 'rpc_origins' not in data:
+            data['rpc_origins'] = None
         return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
+                       rpc_origins=data['rpc_origins'], bot_public=data['bot_public'],
+                       bot_require_code_grant=data['bot_require_code_grant'],
                        owner=User(state=self._connection, data=data['owner']))
 
     async def get_user_info(self, user_id):

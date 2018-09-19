@@ -231,6 +231,11 @@ class GuildChannel:
         else:
             parent_id = parent and parent.id
 
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
+
         lock_permissions = options.pop('sync_permissions', False)
 
         try:
@@ -489,7 +494,7 @@ class GuildChannel:
         await self._state.http.delete_channel(self.id, reason=reason)
 
     async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
-        """|coro|
+        r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
         channel.
@@ -742,7 +747,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = await state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
-                                                        content=content, tts=tts, embed=embed, nonce=nonce)
+                                                   content=content, tts=tts, embed=embed, nonce=nonce)
             finally:
                 file.close()
 
@@ -753,7 +758,7 @@ class Messageable(metaclass=abc.ABCMeta):
             try:
                 param = [(f.open_file(), f.filename) for f in files]
                 data = await state.http.send_files(channel.id, files=param, content=content, tts=tts,
-                                                        embed=embed, nonce=nonce)
+                                                   embed=embed, nonce=nonce)
             finally:
                 for f in files:
                     f.close()
@@ -959,7 +964,7 @@ class Connectable(metaclass=abc.ABCMeta):
         :class:`VoiceClient`
             A voice client that is fully connected to the voice server.
         """
-        key_id, key_name = self._get_voice_client_key()
+        key_id, _ = self._get_voice_client_key()
         state = self._state
 
         if state._get_voice_client(key_id):

@@ -35,10 +35,10 @@ from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
 
-__all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
-            'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown', 'guild_only', 'is_owner', 'is_nsfw', ]
+__all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
+           'has_role', 'has_permissions', 'has_any_role', 'check',
+           'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+           'cooldown', 'guild_only', 'is_owner', 'is_nsfw']
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -102,7 +102,7 @@ class _CaseInsensitiveDict(dict):
         super().__setitem__(k.lower(), v)
 
 class Command:
-    """A class that implements the protocol for a bot text command.
+    r"""A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
     decorator or functional interface.
@@ -128,7 +128,7 @@ class Command:
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
     parent: Optional[command]
-        The parent command that this command belongs to. ``None`` is there
+        The parent command that this command belongs to. ``None`` if there
         isn't one.
     checks
         A list of predicates that verifies if the command could be executed
@@ -173,16 +173,33 @@ class Command:
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
-        signature = inspect.signature(callback)
-        self.params = signature.parameters.copy()
+
         self.checks = kwargs.get('checks', [])
-        self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
         self._buckets = CooldownMapping(kwargs.get('cooldown'))
         self._before_invoke = None
         self._after_invoke = None
+
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, function):
+        self._callback = function
+        self.module = function.__module__
+
+        signature = inspect.signature(function)
+        self.params = signature.parameters.copy()
+
+        # PEP-563 allows postponing evaluation of annotations with a __future__
+        # import. When postponed, Parameter.annotation will be a string and must
+        # be replaced with the real value for the converters to work later on
+        for key, value in self.params.items():
+            if isinstance(value.annotation, str):
+                self.params[key] = value.replace(annotation=eval(value.annotation, function.__globals__))
 
     async def dispatch_error(self, ctx, error):
         ctx.command_failed = True
@@ -321,7 +338,7 @@ class Command:
         try:
             # first/second parameter is context
             result.popitem(last=False)
-        except Exception as e:
+        except Exception:
             raise ValueError('Missing context parameter') from None
 
         return result
@@ -1061,7 +1078,7 @@ def group(name=None, **attrs):
     return command(name=name, cls=Group, **attrs)
 
 def check(predicate):
-    """A decorator that adds a check to the :class:`.Command` or its
+    r"""A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
     These checks should be predicates that take in a single parameter taking
@@ -1152,7 +1169,7 @@ def has_role(name):
     return check(predicate)
 
 def has_any_role(*names):
-    """A :func:`.check` that is added that checks if the member invoking the
+    r"""A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
@@ -1321,6 +1338,7 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.user`` for a per-user basis.
     - ``BucketType.guild`` for a per-guild basis.
     - ``BucketType.channel`` for a per-channel basis.
+    - ``BucketType.member`` for a per-member basis.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.

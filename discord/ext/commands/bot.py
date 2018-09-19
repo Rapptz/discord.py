@@ -33,7 +33,7 @@ import sys
 import traceback
 import re
 
-from .core import GroupMixin, Command, command
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
@@ -77,7 +77,7 @@ def when_mentioned_or(*prefixes):
     """
     def inner(bot, msg):
         r = list(prefixes)
-        r.extend(when_mentioned(bot, msg))
+        r = when_mentioned(bot, msg) + r
         return r
 
     return inner
@@ -137,7 +137,7 @@ async def _default_help_command(ctx, *commands : str):
         pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
-        characters = sum(map(lambda l: len(l), pages))
+        characters = sum(map(len, pages))
         # modify destination based on length of pages.
         if characters > 1000:
             destination = ctx.message.author
@@ -234,7 +234,7 @@ class BotBase(GroupMixin):
     # global check registration
 
     def check(self, func):
-        """A decorator that adds a global check to the bot.
+        r"""A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
@@ -302,7 +302,7 @@ class BotBase(GroupMixin):
                 pass
 
     def check_once(self, func):
-        """A decorator that adds a "call once" global check to the bot.
+        r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
         per :meth:`.Command.invoke` call.
@@ -393,7 +393,7 @@ class BotBase(GroupMixin):
         return coro
 
     def after_invoke(self, coro):
-        """A decorator that registers a coroutine as a post-invoke hook.
+        r"""A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
@@ -734,6 +734,8 @@ class BotBase(GroupMixin):
 
         # first remove all the commands from the module
         for cmd in self.all_commands.copy().values():
+            if cmd.module is None:
+                continue
             if _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
@@ -808,7 +810,7 @@ class BotBase(GroupMixin):
         return ret
 
     async def get_context(self, message, *, cls=Context):
-        """|coro|
+        r"""|coro|
 
         Returns the invocation context from the message.
 
@@ -916,11 +918,17 @@ class BotBase(GroupMixin):
         This is built using other low level tools, and is equivalent to a
         call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
+        This also checks if the message's author is a bot and doesn't
+        call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
+
         Parameters
         -----------
-        message : discord.Message
+        message: :class:`discord.Message`
             The message to process commands for.
         """
+        if message.author.bot:
+            return
+
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 

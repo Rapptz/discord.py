@@ -171,7 +171,7 @@ def find(predicate, seq):
     return None
 
 def get(iterable, **attrs):
-    """A helper that returns the first element in the iterable that meets
+    r"""A helper that returns the first element in the iterable that meets
     all the traits passed in ``attrs``. This is an alternative for
     :func:`discord.utils.find`.
 
@@ -281,7 +281,7 @@ async def async_all(gen, *, check=_isawaitable):
     return True
 
 async def sane_wait_for(futures, *, timeout, loop):
-    done, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
+    _, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()

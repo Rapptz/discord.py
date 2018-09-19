@@ -24,7 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import sys
 import asyncio
 import datetime
 
@@ -396,7 +395,7 @@ class AuditLogIterator(_AsyncIterator):
     async def _before_strategy(self, retrieve):
         before = self.before.id if self.before else None
         data = await self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
-                                       action_type=self.action_type, before=before)
+                                  action_type=self.action_type, before=before)
 
         entries = data.get('audit_log_entries', [])
         if len(data) and entries:
@@ -408,7 +407,7 @@ class AuditLogIterator(_AsyncIterator):
     async def _after_strategy(self, retrieve):
         after = self.after.id if self.after else None
         data = await self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
-                                       action_type=self.action_type, after=after)
+                                  action_type=self.action_type, after=after)
         entries = data.get('audit_log_entries', [])
         if len(data) and entries:
             if self.limit is not None:

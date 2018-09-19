@@ -34,7 +34,7 @@ from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .user import BaseUser, User
 
-__all__ = ('WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook')
+__all__ = ['WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook']
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -222,7 +222,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
             data = utils.to_json(payload)
 
         if multipart is not None:
-            data = { 'payload_json': multipart.pop('payload_json') }
+            data = {'payload_json': multipart.pop('payload_json')}
 
         for tries in range(5):
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
@@ -525,7 +525,7 @@ class Webhook:
         name: Optional[str]
             The webhook's new default name.
         avatar: Optional[bytes]
-            A *bytes-like* object representing the webhook's new default avatar.
+            A :term:`py:bytes-like object` representing the webhook's new default avatar.
 
         Raises
         -------
