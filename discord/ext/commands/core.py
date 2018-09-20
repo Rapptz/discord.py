@@ -231,6 +231,9 @@ class Command:
         return self
 
     async def _actual_conversion(self, ctx, converter, argument, param):
+        if converter is bool:
+            return _convert_to_bool(argument)
+
         try:
             module = converter.__module__
         except:
@@ -271,9 +274,6 @@ class Command:
             raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
 
     async def do_conversion(self, ctx, converter, argument, param):
-        if converter is bool:
-            return _convert_to_bool(argument)
-
         try:
             origin = converter.__origin__
         except AttributeError:
@@ -282,6 +282,11 @@ class Command:
             if origin is typing.Union:
                 errors = []
                 for conv in converter.__args__:
+                    if conv is type(None) and param.kind != param.VAR_POSITIONAL:
+                        ctx.view.undo()
+                        if param.default is param.empty:
+                            return None
+                        return param.default
                     try:
                         value = await self._actual_conversion(ctx, conv, argument, param)
                     except CommandError as e:
@@ -317,10 +322,12 @@ class Command:
                 raise MissingRequiredArgument(param)
             return param.default
 
+        previous = view.index
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
             argument = quoted_word(view)
+        view.previous = previous
 
         return (await self.do_conversion(ctx, converter, argument, param))
 
