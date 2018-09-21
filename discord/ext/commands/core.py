@@ -231,6 +231,9 @@ class Command:
         return self
 
     async def _actual_conversion(self, ctx, converter, argument, param):
+        if converter is bool:
+            return _convert_to_bool(argument)
+
         try:
             module = converter.__module__
         except:
@@ -271,9 +274,6 @@ class Command:
             raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
 
     async def do_conversion(self, ctx, converter, argument, param):
-        if converter is bool:
-            return _convert_to_bool(argument)
-
         try:
             origin = converter.__origin__
         except AttributeError:
