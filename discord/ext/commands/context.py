@@ -167,7 +167,7 @@ class Context(discord.abc.Messageable):
             to_call = cmd.root_parent or cmd
             view.index = len(self.prefix)
             view.previous = 0
-            view.get_word() # advance to get the root command
+            view.get_word()  # advance to get the root command
         else:
             to_call = cmd
 
@@ -196,6 +196,13 @@ class Context(discord.abc.Messageable):
         if self.command is None:
             return None
         return self.command.instance
+
+    async def add_reaction(self, emoji):
+        """|coro|
+
+        Adds an reaction to the message associated with this context. Shorthand for :attr:`Message.add_reaction`.
+        """
+        return await self.message.add_reaction(emoji)
 
     @discord.utils.cached_property
     def guild(self):
