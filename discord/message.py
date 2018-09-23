@@ -647,7 +647,7 @@ class Message:
         await self._state.http.unpin_message(self.channel.id, self.id)
         self.pinned = False
 
-    async def add_reaction(self, emoji):
+    async def add_reaction(self, emoji, remove_after:int=None):
         """|coro|
 
         Add a reaction to the message.
@@ -663,6 +663,9 @@ class Message:
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
             The emoji to react with.
 
+        remove_after: Optional[:class:`int`]
+            How long to wait (seconds) until removing the reaction
+
         Raises
         --------
         HTTPException
@@ -677,6 +680,9 @@ class Message:
 
         emoji = self._emoji_reaction(emoji)
         await self._state.http.add_reaction(self.id, self.channel.id, emoji)
+        if remove_after:
+            await asyncio.sleep(remove_after)
+            await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
 
     async def remove_reaction(self, emoji, member):
         """|coro|
