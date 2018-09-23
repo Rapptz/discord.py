@@ -281,7 +281,15 @@ class Command:
         else:
             if origin is typing.Union:
                 errors = []
+                _NoneType = type(None)
                 for conv in converter.__args__:
+                    # if we got to this part in the code, then the previous conversions have failed
+                    # so we should just undo the view, return the default, and allow parsing to continue
+                    # with the other parameters
+                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                        ctx.view.undo()
+                        return None if param.default is param.empty else param.default
+
                     try:
                         value = await self._actual_conversion(ctx, conv, argument, param)
                     except CommandError as e:
@@ -317,10 +325,12 @@ class Command:
                 raise MissingRequiredArgument(param)
             return param.default
 
+        previous = view.index
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
             argument = quoted_word(view)
+        view.previous = previous
 
         return (await self.do_conversion(ctx, converter, argument, param))
 
