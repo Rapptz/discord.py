@@ -429,7 +429,7 @@ commands in an easy to use manner.
 typing.Union
 ^^^^^^^^^^^^^^
 
-A :class:`typing.Union` is a special type hint that allows for the command to take in any of the specific types instead of
+A :data:`typing.Union` is a special type hint that allows for the command to take in any of the specific types instead of
 a singular type. For example, given the following:
 
 .. code-block:: python3
@@ -446,12 +446,12 @@ The way this works is through a left-to-right order. It first attempts to conver
 :class:`discord.TextChannel`, and if it fails it tries to convert it to a :class:`discord.Member`. If all converters fail,
 then a special error is raised, :exc:`~ext.commands.BadUnionArgument`.
 
-Note that any valid converter discussed above can be passed in to the argument list of a :class:`typing.Union`.
+Note that any valid converter discussed above can be passed in to the argument list of a :data:`typing.Union`.
 
 typing.Optional
 ^^^^^^^^^^^^^^^^^
 
-A :class:`typing.Optional` is a special type hint that allows for "back-referencing" behaviour. If the converter fails to
+A :data:`typing.Optional` is a special type hint that allows for "back-referencing" behaviour. If the converter fails to
 parse into the specified type, the parser will skip the parameter and then either ``None`` or the specified default will be
 passed into the parameter instead. The parser will then continue on to the next parameters and converters, if any.
 
@@ -474,7 +474,7 @@ resumes handling, which in this case would be to pass it into the ``liquid`` par
 Greedy
 ^^^^^^^^
 
-The :class:`~ext.commands.Greedy` converter is a generalisation of the :class:`typing.Optional` converter, except applied
+The :data:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied
 to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert
 any further.
 
@@ -495,13 +495,13 @@ The type passed when using this converter depends on the parameter type that it 
 
 - Positional parameter types will receive either the default parameter or a :class:`list` of the converted values.
 - Variable parameter types will be a :class:`tuple` as usual.
-- Keyword-only parameter types will be the same as if :class:`~ext.commands.Greedy` was not passed at all.
+- Keyword-only parameter types will be the same as if :data:`~ext.commands.Greedy` was not passed at all.
 
-:class:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
+:data:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
 
-When mixed with the :class:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
+When mixed with the :data:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
 
-.. command-block:: python3
+.. code-block:: python3
 
     import typing
 
@@ -524,10 +524,10 @@ This command can be invoked any of the following ways:
 
 .. warning::
 
-    The usage of :class:`~ext.commands.Greedy` and :class:`typing.Optional` are powerful and useful, however as a
+    The usage of :data:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a
     price, they open you up to some parsing ambiguities that might surprise some people.
 
-    For example, a signature expecting a :class:`typing.Union` of a :class:`discord.Member` followed by a
+    For example, a signature expecting a :data:`typing.Optional` of a :class:`discord.Member` followed by a
     :class:`int` could catch a member named after a number due to the different ways a
     :class:`~ext.commands.MemberConverter` decides to fetch members. You should take care to not introduce
     unintended parsing ambiguities in your code. One technique would be to clamp down the expected syntaxes

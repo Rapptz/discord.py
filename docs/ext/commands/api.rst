@@ -179,7 +179,7 @@ Converters
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
-.. class:: Greedy
+.. data:: ext.commands.Greedy
 
     A special converter that greedily consumes arguments until it can't.
     As a consequence of this behaviour, most input errors are silently discarded,

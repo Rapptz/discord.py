@@ -54,6 +54,8 @@ class CommandError(DiscordException):
 class ConversionError(CommandError):
     """Exception raised when a Converter class raises non-CommandError.
 
+    This inherits from :exc:`.CommandError`.
+
     Attributes
     ----------
     converter: :class:`discord.ext.commands.Converter`
@@ -61,8 +63,6 @@ class ConversionError(CommandError):
     original
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
-
-    This inherits from :exc:`.CommandError`.
     """
     def __init__(self, converter, original):
         self.converter = converter
