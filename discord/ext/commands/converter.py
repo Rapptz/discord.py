@@ -34,7 +34,7 @@ __all__ = ['Converter', 'MemberConverter', 'UserConverter',
            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
-           'IDConverter', 'clean_content']
+           'IDConverter', 'clean_content', 'Greedy']
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -483,3 +483,26 @@ class clean_content(Converter):
 
         # Completely ensure no mentions escape:
         return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
+
+class _Greedy:
+    __slots__ = ('converter',)
+
+    def __init__(self, *, converter=None):
+        self.converter = converter
+
+    def __getitem__(self, params):
+        if not isinstance(params, tuple):
+            params = (params,)
+        if len(params) != 1:
+            raise TypeError('Greedy[...] only takes a single argument')
+        converter = params[0]
+
+        if not inspect.isclass(converter):
+            raise TypeError('Greedy[...] expects a type.')
+
+        if converter is str or converter is type(None) or converter is _Greedy:
+            raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+
+        return self.__class__(converter=converter)
+
+Greedy = _Greedy()

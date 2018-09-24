@@ -179,6 +179,28 @@ Converters
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
+.. class:: Greedy
+
+    A special converter that greedily consumes arguments until it can't.
+    As a consequence of this behaviour, most input errors are silently discarded,
+    since it is used as an indicator of when to stop parsing.
+
+    When a parser error is met the greedy converter stops converting, it undos the
+    internal string parsing routine, and continues parsing regularly.
+
+    For example, in the following code:
+
+    .. code-block:: python3
+
+        @commands.command()
+        async def test(ctx, numbers: Greedy[int], reason: str):
+            await ctx.send("numbers: {}, reason: {}".format(numbers, reason))
+
+    An invocation of ``[p]test 1 2 3 4 5 6 hello`` would pass ``numbers`` with
+    ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
+
+    For more information, check :ref:`ext_commands_special_converters`.
+
 .. _ext_commands_api_errors:
 
 Errors

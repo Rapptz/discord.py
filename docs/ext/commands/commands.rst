@@ -417,6 +417,122 @@ This can get tedious, so an inline advanced converter is possible through a ``cl
         else:
             await ctx.send("Hm you're not so new.")
 
+.. _ext_commands_special_converters:
+
+Special Converters
+++++++++++++++++++++
+
+The command extension also has support for certain converters to allow for more advanced and intricate use cases that go
+beyond the generic linear parsing. These converters allow you to introduce some more relaxed and dynamic grammar to your
+commands in an easy to use manner.
+
+typing.Union
+^^^^^^^^^^^^^^
+
+A :class:`typing.Union` is a special type hint that allows for the command to take in any of the specific types instead of
+a singular type. For example, given the following:
+
+.. code-block:: python3
+
+    import typing
+
+    @bot.command()
+    async def union(ctx, what: typing.Union[discord.TextChannel, discord.Member]):
+        await ctx.send(what)
+
+
+The ``what`` parameter would either take a :class:`discord.TextChannel` converter or a :class:`discord.Member` converter.
+The way this works is through a left-to-right order. It first attempts to convert the input to a
+:class:`discord.TextChannel`, and if it fails it tries to convert it to a :class:`discord.Member`. If all converters fail,
+then a special error is raised, :exc:`~ext.commands.BadUnionArgument`.
+
+Note that any valid converter discussed above can be passed in to the argument list of a :class:`typing.Union`.
+
+typing.Optional
+^^^^^^^^^^^^^^^^^
+
+A :class:`typing.Optional` is a special type hint that allows for "back-referencing" behaviour. If the converter fails to
+parse into the specified type, the parser will skip the parameter and then either ``None`` or the specified default will be
+passed into the parameter instead. The parser will then continue on to the next parameters and converters, if any.
+
+Consider the following example:
+
+.. code-block:: python3
+
+    import typing
+
+    @bot.command()
+    async def bottles(ctx, amount: typing.Optional[int] = 99, *, liquid="beer"):
+        await ctx.send('{} bottles of {} on the wall!'.format(amount, liquid))
+
+
+.. image:: /images/commands/optional1.png
+
+In this example, since the argument could not be converted into an ``int``, the default of ``99`` is passed and the parser
+resumes handling, which in this case would be to pass it into the ``liquid`` parameter.
+
+Greedy
+^^^^^^^^
+
+The :class:`~ext.commands.Greedy` converter is a generalisation of the :class:`typing.Optional` converter, except applied
+to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert
+any further.
+
+Consider the following example:
+
+.. code-block:: python3
+
+    @bot.command()
+    async def slap(ctx, members: commands.Greedy[discord.Member], *, reason='no reason'):
+        slapped = ", ".join(x.name for x in members)
+        await ctx.send('{} just got slapped for {}'.format(slapped, reason))
+
+When invoked, it allows for any number of members to be passed in:
+
+.. image:: /images/commands/greedy1.png
+
+The type passed when using this converter depends on the parameter type that it is being attached to:
+
+- Positional parameter types will receive either the default parameter or a :class:`list` of the converted values.
+- Variable parameter types will be a :class:`tuple` as usual.
+- Keyword-only parameter types will be the same as if :class:`~ext.commands.Greedy` was not passed at all.
+
+:class:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
+
+When mixed with the :class:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
+
+.. command-block:: python3
+
+    import typing
+
+    @bot.command()
+    async def ban(ctx, members: commands.Greedy[discord.Member],
+                       delete_days: typing.Optional[int] = 0, *,
+                       reason: str):
+        """Mass bans members with an optional delete_days parameter"""
+        for member in members:
+            await member.ban(delete_message_days=delete_days, reason=reason)
+
+
+This command can be invoked any of the following ways:
+
+.. code-block:: none
+
+    $ban @Member @Member2 spam bot
+    $ban @Member @Member2 7 spam bot
+    $ban @Member spam
+
+.. warning::
+
+    The usage of :class:`~ext.commands.Greedy` and :class:`typing.Optional` are powerful and useful, however as a
+    price, they open you up to some parsing ambiguities that might surprise some people.
+
+    For example, a signature expecting a :class:`typing.Union` of a :class:`discord.Member` followed by a
+    :class:`int` could catch a member named after a number due to the different ways a
+    :class:`~ext.commands.MemberConverter` decides to fetch members. You should take care to not introduce
+    unintended parsing ambiguities in your code. One technique would be to clamp down the expected syntaxes
+    allowed through custom converters or reordering the parameters to minimise clashes.
+
 .. _ext_commands_error_handler:
 
 Error Handling
