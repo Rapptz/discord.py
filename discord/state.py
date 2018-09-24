@@ -268,7 +268,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -625,7 +625,7 @@ class ConnectionState:
         await self.chunker(guild)
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks), loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks))
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -917,7 +917,7 @@ class AutoShardedConnectionState(ConnectionState):
         # wait for the chunks
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 

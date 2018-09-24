@@ -256,7 +256,7 @@ class AutoShardedClient(Client):
             shards_to_wait_for.append(shard.wait())
 
         # wait for all pending tasks to finish
-        await utils.sane_wait_for(shards_to_wait_for, timeout=300.0, loop=self.loop)
+        await utils.sane_wait_for(shards_to_wait_for, timeout=300.0)
 
     async def _connect(self):
         await self.launch_shards()
