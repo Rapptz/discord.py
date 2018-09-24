@@ -99,7 +99,7 @@ class VoiceClient:
         self._state = state
         # this will be used in the AudioPlayer thread
         self._connected = threading.Event()
-        self._handshake_complete = asyncio.Event(loop=self.loop)
+        self._handshake_complete = asyncio.Event()
 
         self._connections = 0
         self.sequence = 0
@@ -141,7 +141,7 @@ class VoiceClient:
         await ws.voice_state(guild_id, channel_id)
 
         try:
-            await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout, loop=self.loop)
+            await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout)
         except asyncio.TimeoutError as e:
             await self.terminate_handshake(remove=True)
             raise e
@@ -210,7 +210,7 @@ class VoiceClient:
         except (ConnectionClosed, asyncio.TimeoutError):
             if reconnect and _tries < 5:
                 log.exception('Failed to connect to voice... Retrying...')
-                await asyncio.sleep(1 + _tries * 2.0, loop=self.loop)
+                await asyncio.sleep(1 + _tries * 2.0)
                 await self.terminate_handshake()
                 await self.connect(reconnect=reconnect, _tries=_tries + 1)
             else:
@@ -237,7 +237,7 @@ class VoiceClient:
                 retry = backoff.delay()
                 log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 self._connected.clear()
-                await asyncio.sleep(retry, loop=self.loop)
+                await asyncio.sleep(retry)
                 await self.terminate_handshake()
                 try:
                     await self.connect(reconnect=True)

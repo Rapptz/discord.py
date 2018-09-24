@@ -282,7 +282,7 @@ class ConnectionState:
                     # this snippet of code is basically waiting 2 seconds
                     # until the last GUILD_CREATE was sent
                     launch.set()
-                    await asyncio.sleep(2, loop=self.loop)
+                    await asyncio.sleep(2)
 
             guilds = next(zip(*self._ready_state.guilds), [])
             if self._fetch_offline:
@@ -339,7 +339,7 @@ class ConnectionState:
             self._add_private_channel(factory(me=self.user, data=pm, state=self))
 
         self.dispatch('connect')
-        self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+        self._ready_task = asyncio.ensure_future(self._delay_ready())
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
@@ -664,7 +664,7 @@ class ConnectionState:
             # since we're not waiting for 'useful' READY we'll just
             # do the chunk request here if wanted
             if self._fetch_offline:
-                asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
+                asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable))
                 return
 
         # Dispatch available if newly available
@@ -927,7 +927,7 @@ class AutoShardedConnectionState(ConnectionState):
             # this snippet of code is basically waiting 2 seconds
             # until the last GUILD_CREATE was sent
             launch.set()
-            await asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
+            await asyncio.sleep(2.0 * self.shard_count)
 
         if self._fetch_offline:
             guilds = sorted(self._ready_state.guilds, key=lambda g: g[0].shard_id)
@@ -981,4 +981,4 @@ class AutoShardedConnectionState(ConnectionState):
 
         self.dispatch('connect')
         if self._ready_task is None:
-            self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+            self._ready_task = asyncio.ensure_future(self._delay_ready())

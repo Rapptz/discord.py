@@ -129,8 +129,8 @@ class Client:
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
-        self._closed = asyncio.Event(loop=self.loop)
-        self._ready = asyncio.Event(loop=self.loop)
+        self._closed = asyncio.Event()
+        self._ready = asyncio.Event()
         self._connection._get_websocket = lambda g: self.ws
 
         if VoiceClient.warn_nacl:
@@ -273,7 +273,7 @@ class Client:
         except AttributeError:
             pass
         else:
-            asyncio.ensure_future(self._run_event(coro, method, *args, **kwargs), loop=self.loop)
+            asyncio.ensure_future(self._run_event(coro, method, *args, **kwargs))
 
     async def on_error(self, event_method, *args, **kwargs):
         """|coro|
@@ -363,7 +363,7 @@ class Client:
 
     async def _connect(self):
         coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
-        self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+        self.ws = await asyncio.wait_for(coro, timeout=180.0)
         while True:
             try:
                 await self.ws.poll_event()
@@ -371,7 +371,7 @@ class Client:
                 log.info('Got a request to RESUME the websocket.')
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
                                                     sequence=self.ws.sequence, resume=True)
-                self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+                self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     async def connect(self, *, reconnect=True):
         """|coro|
@@ -432,7 +432,7 @@ class Client:
 
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in %.2fs", retry)
-                await asyncio.sleep(retry, loop=self.loop)
+                await asyncio.sleep(retry)
 
     async def close(self):
         """|coro|
@@ -487,7 +487,7 @@ class Client:
         if loop.is_closed():
             return # we're already cleaning up
 
-        task = asyncio.ensure_future(self.close(), loop=loop)
+        task = asyncio.ensure_future(self.close())
 
         def _silence_gathered(fut):
             try:
@@ -498,10 +498,10 @@ class Client:
                 loop.stop()
 
         def when_future_is_done(fut):
-            pending = asyncio.Task.all_tasks(loop=loop)
+            pending = asyncio.Task.all_tasks()
             if pending:
                 log.info('Cleaning up after %s tasks', len(pending))
-                gathered = asyncio.gather(*pending, loop=loop)
+                gathered = asyncio.gather(*pending)
                 gathered.cancel()
                 gathered.add_done_callback(_silence_gathered)
             else:
@@ -547,12 +547,11 @@ class Client:
         called after this function call will not execute until it returns.
         """
         is_windows = sys.platform == 'win32'
-        loop = self.loop
         if not is_windows:
             loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
             loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
-        task = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
+        task = asyncio.ensure_future(self.start(*args, **kwargs))
 
         def stop_loop_on_finish(fut):
             loop.stop()
@@ -758,7 +757,7 @@ class Client:
             self._listeners[ev] = listeners
 
         listeners.append((future, check))
-        return asyncio.wait_for(future, timeout, loop=self.loop)
+        return asyncio.wait_for(future, timeout)
 
     # event registration
 

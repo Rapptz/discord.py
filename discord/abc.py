@@ -768,12 +768,12 @@ class Messageable(metaclass=abc.ABCMeta):
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
             async def delete():
-                await asyncio.sleep(delete_after, loop=state.loop)
+                await asyncio.sleep(delete_after)
                 try:
                     await ret.delete()
                 except:
                     pass
-            asyncio.ensure_future(delete(), loop=state.loop)
+            asyncio.ensure_future(delete())
         return ret
 
     async def trigger_typing(self):

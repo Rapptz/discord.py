@@ -596,13 +596,13 @@ class Message:
         else:
             if delete_after is not None:
                 async def delete():
-                    await asyncio.sleep(delete_after, loop=self._state.loop)
+                    await asyncio.sleep(delete_after)
                     try:
                         await self._state.http.delete_message(self.channel.id, self.id)
                     except:
                         pass
 
-                asyncio.ensure_future(delete(), loop=self._state.loop)
+                asyncio.ensure_future(delete())
 
     async def pin(self):
         """|coro|

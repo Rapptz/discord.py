@@ -130,7 +130,7 @@ class ReactionIterator(_AsyncIterator):
         self.emoji = emoji
         self.guild = message.guild
         self.channel_id = message.channel.id
-        self.users = asyncio.Queue(loop=state.loop)
+        self.users = asyncio.Queue()
 
     async def next(self):
         if self.users.empty():
@@ -227,7 +227,7 @@ class HistoryIterator(_AsyncIterator):
 
         self.state = self.messageable._state
         self.logs_from = self.state.http.logs_from
-        self.messages = asyncio.Queue(loop=self.state.loop)
+        self.messages = asyncio.Queue()
 
         if self.around:
             if self.limit is None:
@@ -361,7 +361,6 @@ class AuditLogIterator(_AsyncIterator):
 
 
         self.guild = guild
-        self.loop = guild._state.loop
         self.request = guild._state.http.get_audit_logs
         self.limit = limit
         self.before = before
@@ -378,7 +377,7 @@ class AuditLogIterator(_AsyncIterator):
 
         self._filter = None  # entry dict -> bool
 
-        self.entries = asyncio.Queue(loop=self.loop)
+        self.entries = asyncio.Queue()
 
         if self.before and self.after:
             if self.reverse:

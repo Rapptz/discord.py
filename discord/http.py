@@ -90,7 +90,7 @@ class HTTPClient:
         self.connector = connector
         self._session = aiohttp.ClientSession(connector=connector, loop=self.loop)
         self._locks = weakref.WeakValueDictionary()
-        self._global_over = asyncio.Event(loop=self.loop)
+        self._global_over = asyncio.Event()
         self._global_over.set()
         self.token = None
         self.bot_token = False
@@ -111,7 +111,7 @@ class HTTPClient:
 
         lock = self._locks.get(bucket)
         if lock is None:
-            lock = asyncio.Lock(loop=self.loop)
+            lock = asyncio.Lock()
             if bucket is not None:
                 self._locks[bucket] = lock
 
@@ -188,7 +188,7 @@ class HTTPClient:
                             log.info('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self._global_over.clear()
 
-                        await asyncio.sleep(retry_after, loop=self.loop)
+                        await asyncio.sleep(retry_after)
                         log.debug('Done sleeping for the rate limit. Retrying...')
 
                         # release the global lock now that the
@@ -201,7 +201,7 @@ class HTTPClient:
 
                     # we've received a 500 or 502, unconditional retry
                     if r.status in {500, 502}:
-                        await asyncio.sleep(1 + tries * 2, loop=self.loop)
+                        await asyncio.sleep(1 + tries * 2)
                         continue
 
                     # the usual error cases
