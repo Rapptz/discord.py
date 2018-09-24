@@ -45,7 +45,7 @@ class Shard:
         self.loop = self._client.loop
         self._current = self.loop.create_future()
         self._current.set_result(None) # we just need an already done future
-        self._pending = asyncio.Event(loop=self.loop)
+        self._pending = asyncio.Event()
         self._pending_task = None
 
     @property
@@ -66,7 +66,7 @@ class Shard:
             pass
 
     def launch_pending_reads(self):
-        self._pending_task = asyncio.ensure_future(self._pending_reads(), loop=self.loop)
+        self._pending_task = asyncio.ensure_future(self._pending_reads())
 
     def wait(self):
         return self._pending_task
@@ -78,11 +78,11 @@ class Shard:
             log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
             coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
                                                 session=self.ws.session_id, sequence=self.ws.sequence)
-            self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+            self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     def get_future(self):
         if self._current.done():
-            self._current = asyncio.ensure_future(self.poll(), loop=self.loop)
+            self._current = asyncio.ensure_future(self.poll())
 
         return self._current
 
@@ -209,10 +209,10 @@ class AutoShardedClient(Client):
     async def launch_shard(self, gateway, shard_id):
         try:
             coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
-            ws = await asyncio.wait_for(coro, loop=self.loop, timeout=180.0)
+            ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
-            await asyncio.sleep(5.0, loop=self.loop)
+            await asyncio.sleep(5.0)
             return (await self.launch_shard(gateway, shard_id))
 
         ws.token = self.http.token
@@ -225,17 +225,17 @@ class AutoShardedClient(Client):
 
         try:
             # OP HELLO
-            await asyncio.wait_for(ws.poll_event(), loop=self.loop, timeout=180.0)
-            await asyncio.wait_for(ws.identify(), loop=self.loop, timeout=180.0)
+            await asyncio.wait_for(ws.poll_event(), timeout=180.0)
+            await asyncio.wait_for(ws.identify(), timeout=180.0)
         except asyncio.TimeoutError:
             log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
-            await asyncio.sleep(5.0, loop=self.loop)
-            return (await self.launch_shard(gateway, shard_id))
+            await asyncio.sleep(5.0)
+            return await self.launch_shard(gateway, shard_id)
 
         # keep reading the shard while others connect
         self.shards[shard_id] = ret = Shard(ws, self)
         ret.launch_pending_reads()
-        await asyncio.sleep(5.0, loop=self.loop)
+        await asyncio.sleep(5.0)
 
     async def launch_shards(self):
         if self.shard_count is None:
@@ -256,14 +256,14 @@ class AutoShardedClient(Client):
             shards_to_wait_for.append(shard.wait())
 
         # wait for all pending tasks to finish
-        await utils.sane_wait_for(shards_to_wait_for, timeout=300.0, loop=self.loop)
+        await utils.sane_wait_for(shards_to_wait_for, timeout=300.0)
 
     async def _connect(self):
         await self.launch_shards()
 
         while True:
             pollers = [shard.get_future() for shard in self.shards.values()]
-            done, _ = await asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
+            done, _ = await asyncio.wait(pollers, return_when=asyncio.FIRST_COMPLETED)
             for f in done:
                 # we wanna re-raise to the main Client.connect handler if applicable
                 f.result()
@@ -285,7 +285,7 @@ class AutoShardedClient(Client):
                 pass
 
         to_close = [shard.ws.close() for shard in self.shards.values()]
-        await asyncio.wait(to_close, loop=self.loop)
+        await asyncio.wait(to_close)
         await self.http.close()
 
     async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):

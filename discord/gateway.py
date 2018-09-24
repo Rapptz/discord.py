@@ -72,7 +72,7 @@ class KeepAliveHandler(threading.Thread):
             if self._last_ack + self.heartbeat_timeout < time.perf_counter():
                 log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting." % self.shard_id)
                 coro = self.ws.close(4000)
-                f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+                f = asyncio.run_coroutine_threadsafe(coro)
 
                 try:
                     f.result()
@@ -85,7 +85,7 @@ class KeepAliveHandler(threading.Thread):
             data = self.get_payload()
             log.debug(self.msg, data['d'])
             coro = self.ws.send_as_json(data)
-            f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+            f = asyncio.run_coroutine_threadsafe(coro)
             try:
                 # block until sending is complete
                 f.result()
@@ -363,7 +363,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         if op == self.INVALIDATE_SESSION:
             if data == True:
-                await asyncio.sleep(5.0, loop=self.loop)
+                await asyncio.sleep(5.0)
                 await self.close()
                 raise ResumeWebSocket(self.shard_id)
 
@@ -677,7 +677,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def poll_event(self):
         try:
-            msg = await asyncio.wait_for(self.recv(), timeout=30.0, loop=self.loop)
+            msg = await asyncio.wait_for(self.recv(), timeout=30.0)
             await self.received_message(json.loads(msg))
         except websockets.exceptions.ConnectionClosed as e:
             raise ConnectionClosed(e, shard_id=None) from e

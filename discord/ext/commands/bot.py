@@ -189,7 +189,7 @@ class BotBase(GroupMixin):
         ev = 'on_' + event_name
         for event in self.extra_events.get(ev, []):
             coro = self._run_event(event, event_name, *args, **kwargs)
-            asyncio.ensure_future(coro, loop=self.loop)
+            asyncio.ensure_future(coro)
 
     async def close(self):
         for extension in tuple(self.extensions):
