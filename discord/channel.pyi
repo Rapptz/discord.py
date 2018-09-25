@@ -7,7 +7,6 @@ from .member import Member
 from .message import Message
 from .mixins import Hashable
 from .permissions import Permissions
-from .state import ConnectionState
 from .types import RawChannelDict
 from .user import User, ClientUser
 from .voice_client import VoiceClient
@@ -25,11 +24,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     slowmode_delay: int
     nsfw: bool
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: RawChannelDict) -> None: ...
-
     def __repr__(self) -> str: ...
-
-    def _update(self, guild: Guild, data: RawChannelDict) -> None: ...
 
     def permissions_for(self, member: Member) -> Permissions: ...
 
@@ -65,15 +60,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     bitrate: int
     user_limit: int
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: RawChannelDict) -> None: ...
-
     def __repr__(self) -> str: ...
-
-    def _get_voice_client_key(self) -> Tuple[int, str]: ...
-
-    def _get_voice_state_pair(self) -> Tuple[int, int]: ...
-
-    def _update(self, guild: Guild, data: RawChannelDict) -> None: ...
 
     @property
     def members(self) -> List[Member]: ...
@@ -89,11 +76,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     nsfw: bool
     position: int
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: RawChannelDict) -> None: ...
-
     def __repr__(self) -> str: ...
-
-    def _update(self, guild: Guild, data: RawChannelDict) -> None: ...
 
     def is_nsfw(self) -> bool: ...
 
@@ -108,8 +91,6 @@ class DMChannel(discord.abc.Messageable, Hashable):
     recipient: User
     me: ClientUser
 
-    def __init__(self, *, me: ClientUser, state: ConnectionState, data: RawChannelDict) -> None: ...
-
     def __str__(self) -> str: ...
 
     def __repr__(self) -> str: ...
@@ -123,8 +104,6 @@ class DMChannel(discord.abc.Messageable, Hashable):
 class GroupChannel(discord.abc.Messageable, Hashable):
     id: int
     me: ClientUser
-
-    def __init__(self, *, me: ClientUser, state: ConnectionState, data: RawChannelDict) -> None: ...
 
     def __str__(self) -> str: ...
 

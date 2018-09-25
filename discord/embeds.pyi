@@ -22,7 +22,7 @@ class EmbedProxy:
 
     def __getattr__(self, attr: str) -> _EmptyEmbed: ...
 
-_T = TypeVar('_T', bound='Embed')
+_T = TypeVar('_T', bound=Embed)
 
 class Embed:
     title: str

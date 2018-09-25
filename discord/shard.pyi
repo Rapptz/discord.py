@@ -25,9 +25,15 @@ class Shard:
 
 
 class AutoShardedClient(Client):
-    shard_ids: Optional[List[int]]
+    shard_ids: Optional[Union[List[int], Tuple[int]]]
 
-    def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = ..., **kwargs: Any) -> None: ...
+    def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = ...,
+                 shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
+                 connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
+                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
+                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                 heartbeat_timeout: float = ..., **kwargs: Any) -> None: ...
 
     @property
     def latency(self) -> float: ...

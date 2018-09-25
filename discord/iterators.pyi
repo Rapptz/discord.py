@@ -14,7 +14,7 @@ from .enums import AuditLogAction
 from typing import Any, Optional, Union, TypeVar, List, Generic, Coroutine, Callable
 
 IT = TypeVar('IT')
-_AIT = TypeVar('_AIT', bound='_AsyncIterator')
+_AIT = TypeVar('_AIT', bound=_AsyncIterator)
 
 class _AsyncIterator(Generic[IT]):
     @abc.abstractmethod
@@ -24,9 +24,9 @@ class _AsyncIterator(Generic[IT]):
 
     async def find(self, predicate: Callable[[IT], bool]) -> Optional[IT]: ...
 
-    def map(self, func: Callable[[IT], Union[IT, Coroutine[Any, Any, IT]]]) -> '_MappedAsyncIterator[IT]': ...
+    def map(self, func: Callable[[IT], Union[IT, Coroutine[Any, Any, IT]]]) -> _MappedAsyncIterator[IT]: ...
 
-    def filter(self, predicate: Callable[[IT], Union[IT, Coroutine[Any, Any, IT]]]) -> '_FilteredAsyncIterator[IT]': ...
+    def filter(self, predicate: Callable[[IT], Union[IT, Coroutine[Any, Any, IT]]]) -> _FilteredAsyncIterator[IT]: ...
 
     async def flatten(self) -> List[IT]: ...
 

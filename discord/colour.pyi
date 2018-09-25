@@ -1,6 +1,6 @@
 from typing import Any, Tuple, TypeVar, Type
 
-_T = TypeVar('_T', bound='Colour')
+_T = TypeVar('_T', bound=Colour)
 
 class Colour:
     def __init__(self, value: int) -> None: ...

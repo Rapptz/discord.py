@@ -6,7 +6,6 @@ from . import enums, utils
 from .abc import User as ABCUser
 from .guild import Guild
 from .member import Member
-from .state import ConnectionState
 from .user import User
 
 
@@ -22,8 +21,6 @@ class AuditLogChanges:
     before: AuditLogDiff
     after: AuditLogDiff
 
-    def __init__(self, entry: 'AuditLogEntry', data: List[Dict[str, Any]]) -> None: ...
-
 
 class AuditLogEntry:
     id: int
@@ -32,9 +29,6 @@ class AuditLogEntry:
     user: ABCUser
     reason: Optional[str]
     extra: Any
-    _state: ConnectionState
-
-    def __init__(self, *, users: Any, data: Any, guild: Guild) -> None: ...
 
     def __repr__(self) -> str: ...
 

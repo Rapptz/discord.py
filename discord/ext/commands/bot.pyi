@@ -1,20 +1,23 @@
 import discord
+import asyncio
+import aiohttp
 
 from .core import GroupMixin, Command
 from .context import Context
 from .formatter import HelpFormatter
 
-from typing import Any, Optional, Union, Callable, Coroutine, List, Dict, Set, TypeVar, Type, overload
+from typing import Any, Optional, Union, Callable, Coroutine, List, Tuple, Dict, Set, TypeVar, Type, overload
+
 
 CommandPrefix = Union[
     str,
-    Callable[['Bot', discord.Message], Union[str, Coroutine[Any, Any, str]]]]
+    Callable[[Bot, discord.Message], Union[str, Coroutine[Any, Any, str]]]]
 
 
-def when_mentioned(bot: 'Bot', msg: discord.Message) -> List[str]: ...
+def when_mentioned(bot: Bot, msg: discord.Message) -> List[str]: ...
 
 
-def when_mentioned_or(*prefixes: str) -> Callable[['Bot', discord.Message], List[str]]: ...
+def when_mentioned_or(*prefixes: str) -> Callable[[Bot, discord.Message], List[str]]: ...
 
 CT = TypeVar('CT', bound=Context)
 _OT = TypeVar('_OT', bound=Context)
@@ -37,7 +40,8 @@ class BotBase(GroupMixin[CT]):
     command_has_no_subcommands: str
     owner_id: Optional[int]
 
-    def __init__(self, command_prefix: CommandPrefix, **options: Any) -> None: ...
+    def __init__(self, command_prefix: CommandPrefix, formatter: Optional[HelpFormatter] = ...,
+                 description: Optional[str] = ..., pm_help: bool = ..., **options: Any) -> None: ...
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None: ...
 
@@ -95,8 +99,24 @@ class BotBase(GroupMixin[CT]):
 
 
 class Bot(BotBase[CT], discord.Client):
-    ...
+    def __init__(self, command_prefix: CommandPrefix, formatter: Optional[HelpFormatter] = ...,
+                 description: Optional[str] = ..., pm_help: bool = ..., *,
+                 case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
+                 shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
+                 connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
+                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
+                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                 heartbeat_timeout: float = ..., **options: Any) -> None: ...
 
 
 class AutoShardedBot(BotBase[CT], discord.AutoShardedClient):
-    ...
+    def __init__(self, command_prefix: CommandPrefix, formatter: Optional[HelpFormatter] = ...,
+                 description: Optional[str] = ..., pm_help: bool = ..., *,
+                 case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
+                 shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
+                 connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
+                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
+                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                 heartbeat_timeout: float = ..., **options: Any) -> None: ...

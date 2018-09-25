@@ -1,6 +1,6 @@
 from typing import Any, Iterator, Tuple, TypeVar, Optional, Type, ClassVar, Set
 
-_T = TypeVar('_T', bound='Permissions')
+_T = TypeVar('_T', bound=Permissions)
 
 class Permissions:
     value: int
@@ -35,7 +35,7 @@ class Permissions:
     manage_webhooks: bool
     manage_emojis: bool
 
-    def __init__(self, permissions: int = 0) -> None: ...
+    def __init__(self, permissions: int = ...) -> None: ...
 
     def __eq__(self, other: Any) -> bool: ...
 
@@ -85,7 +85,7 @@ class Permissions:
 
     def handle_overwrite(self, allow: int, deny: int) -> None: ...
 
-_OT = TypeVar('_OT', bound='PermissionOverwrite')
+_OT = TypeVar('_OT', bound=PermissionOverwrite)
 
 class PermissionOverwrite:
     VALID_NAMES: ClassVar[Set[str]]

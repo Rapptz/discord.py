@@ -53,8 +53,6 @@ class Activity(_ActivityTag):
 
 class Game(_ActivityTag):
     name: str
-    _start: int
-    _end: int
 
     @overload
     def __init__(self, name: str, *, timestamps: RawTimestampsDict) -> None: ...
@@ -110,14 +108,6 @@ class Streaming(_ActivityTag):
     def __hash__(self) -> int: ...
 
 class Spotify:
-    _state: Optional[str]
-    _details: Optional[str]
-    _timestamps: RawTimestampsDict
-    _assets: RawActivityAssetsDict
-    _party: RawActivityPartyDict
-    _sync_id: str
-    _session_id: str
-
     @property
     def type(self) -> ActivityType: ...
 

@@ -17,7 +17,7 @@ from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar,
 class WebhookAdapter:
     BASE: ClassVar[str]
 
-    webhook: 'Webhook'
+    webhook: Webhook
 
     def request(self, verb: str, url: str, payload: Optional[Dict[str, Any]] = ...,
                 multipart: Optional[Dict[str, Any]] = ...) -> Any: ...
@@ -52,7 +52,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
     def handle_execution_response(self, response: Any, *, wait: bool) -> Message: ...
 
-_T = TypeVar('_T', bound='Webhook')
+_T = TypeVar('_T', bound=Webhook)
 
 class Webhook:
     id: int

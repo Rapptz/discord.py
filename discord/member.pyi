@@ -95,7 +95,8 @@ class Member(discord.abc.Messageable, discord.abc.User):
     @property
     def colour(self) -> Colour: ...
 
-    color = colour
+    @property
+    def color(self) -> Colour: ...
 
     @property
     def mention(self) -> str: ...

@@ -41,7 +41,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
     ...
 
 
-_T = TypeVar('_T', bound='DiscordWebSocket')
+_T = TypeVar('_T', bound=DiscordWebSocket)
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     DISPATCH: ClassVar[int]
@@ -89,11 +89,11 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def request_sync(self, guild_ids: Iterable[int]) -> None: ...
 
-    async def voice_state(self, guild_id: int, channel_id: Optional[int], self_mute: bool = False, self_deaf: bool = False) -> None: ...
+    async def voice_state(self, guild_id: int, channel_id: Optional[int], self_mute: bool = ..., self_deaf: bool = ...) -> None: ...
 
     async def close_connection(self, *args: Any, **kwargs: Any) -> None: ...
 
-_VT = TypeVar('_VT', bound='DiscordVoiceWebSocket')
+_VT = TypeVar('_VT', bound=DiscordVoiceWebSocket)
 
 class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     IDENTIFY: ClassVar[int]
@@ -114,7 +114,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     async def identify(self) -> None: ...
 
     @classmethod
-    async def from_client(cls: Type[_VT], client: VoiceClient, *, resume: bool = False) -> _VT: ...
+    async def from_client(cls: Type[_VT], client: VoiceClient, *, resume: bool = ...) -> _VT: ...
 
     async def select_protocol(self, ip: str, port: str) -> None: ...
 
