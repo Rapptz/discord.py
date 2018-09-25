@@ -345,6 +345,13 @@ class Client:
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
+
+        Warning
+        -------
+        Selfbots are _technically_ agains the Discord ToS and as such you risk account
+        termination when you use them. If anything happens to your account due to using
+        a selfbot, it is your fault, and yours alone. Danny nor any of the contributers
+        are responsible for your selfbot use.
         """
 
         log.info('logging in using static token')
