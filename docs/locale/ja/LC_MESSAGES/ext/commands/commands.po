@@ -2,22 +2,23 @@
 # Copyright (C) 2015-2017, Rapptz
 # This file is distributed under the same license as the discord.py package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
-# 
+#
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: discord.py 1.0.0a\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-31 14:21-0400\n"
+"POT-Creation-Date: 2018-09-24 23:41-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: 竹内 歩夢 <take000a@gmail.com>, 2018\n"
-"Language-Team: Japanese (Japan) (https://www.transifex.com/discord-py/teams/88924/ja_JP/)\n"
+"Language: ja_JP\n"
+"Language-Team: Japanese (Japan) (https://www.transifex.com/discord-"
+"py/teams/88924/ja_JP/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.5.3\n"
-"Language: ja_JP\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: ../../ext/commands/commands.rst:6
 msgid "Commands"
@@ -25,16 +26,16 @@ msgstr "Commands"
 
 #: ../../ext/commands/commands.rst:8
 msgid ""
-"One of the most appealing aspect of the command extension is how easy it is "
-"to define commands and how you can arbitrarily nest groups and commands to "
-"have a rich sub-command system."
+"One of the most appealing aspect of the command extension is how easy it "
+"is to define commands and how you can arbitrarily nest groups and "
+"commands to have a rich sub-command system."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:11
 msgid ""
 "Commands are defined by attaching it to a regular Python function. The "
-"command is then invoked by the user using a similar signature to the Python "
-"function."
+"command is then invoked by the user using a similar signature to the "
+"Python function."
 msgstr "コマンドは、Pythonの関数と関連付けすることによって定義され、同様のシグネチャを使用してユーザーに呼び出されます。"
 
 #: ../../ext/commands/commands.rst:14
@@ -42,8 +43,7 @@ msgid "For example, in the given command definition:"
 msgstr "例えば、指定されたコマンド定義を使うと次のようになります:"
 
 #: ../../ext/commands/commands.rst:22
-msgid ""
-"With the following prefix (``$``), it would be invoked by the user via:"
+msgid "With the following prefix (``$``), it would be invoked by the user via:"
 msgstr "Prefixを (``$``) としたとすると、このコマンドは次の用に実行できます。"
 
 #: ../../ext/commands/commands.rst:28
@@ -55,8 +55,8 @@ msgstr ""
 #: ../../ext/commands/commands.rst:30
 msgid ""
 "There are two ways of registering a command. The first one is by using "
-":meth:`.Bot.command` decorator, as seen in the example above. The second is "
-"using the :func:`~ext.commands.command` decorator followed by "
+":meth:`.Bot.command` decorator, as seen in the example above. The second "
+"is using the :func:`~ext.commands.command` decorator followed by "
 ":meth:`.Bot.add_command` on the instance."
 msgstr ""
 
@@ -72,9 +72,9 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:55
 msgid ""
-"Any parameter that is accepted by the :class:`.Command` constructor can be "
-"passed into the decorator. For example, to change the name to something "
-"other than the function would be as simple as doing this:"
+"Any parameter that is accepted by the :class:`.Command` constructor can "
+"be passed into the decorator. For example, to change the name to "
+"something other than the function would be as simple as doing this:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:65
@@ -89,8 +89,8 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:70
 msgid ""
-"Certain parameter types do different things in the user side and most forms "
-"of parameter types are supported."
+"Certain parameter types do different things in the user side and most "
+"forms of parameter types are supported."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:73
@@ -99,14 +99,14 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:75
 msgid ""
-"The most basic form of parameter passing is the positional parameter. This "
-"is where we pass a parameter as-is:"
+"The most basic form of parameter passing is the positional parameter. "
+"This is where we pass a parameter as-is:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:84
 msgid ""
-"On the bot using side, you can provide positional arguments by just passing "
-"a regular string:"
+"On the bot using side, you can provide positional arguments by just "
+"passing a regular string:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:88
@@ -115,14 +115,14 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:92
 msgid ""
-"As a note of warning, if you omit the quotes, you will only get the first "
-"word:"
+"As a note of warning, if you omit the quotes, you will only get the first"
+" word:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:96
 msgid ""
-"Since positional arguments are just regular Python arguments, you can have "
-"as many as you want:"
+"Since positional arguments are just regular Python arguments, you can "
+"have as many as you want:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:105
@@ -131,16 +131,16 @@ msgstr "変数"
 
 #: ../../ext/commands/commands.rst:107
 msgid ""
-"Sometimes you want users to pass in an undetermined number of parameters. "
-"The library supports this similar to how variable list parameters are done "
-"in Python:"
+"Sometimes you want users to pass in an undetermined number of parameters."
+" The library supports this similar to how variable list parameters are "
+"done in Python:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:116
 msgid ""
-"This allows our user to accept either one or many arguments as they please. "
-"This works similar to positional arguments, so multi-word parameters should "
-"be quoted."
+"This allows our user to accept either one or many arguments as they "
+"please. This works similar to positional arguments, so multi-word "
+"parameters should be quoted."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:119
@@ -149,8 +149,8 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:123
 msgid ""
-"If the user wants to input a multi-word argument, they have to quote it like"
-" earlier:"
+"If the user wants to input a multi-word argument, they have to quote it "
+"like earlier:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:127
@@ -162,8 +162,8 @@ msgstr ""
 #: ../../ext/commands/commands.rst:132
 msgid ""
 "Since the ``args`` variable is a `tuple "
-"<https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-"
-"range>`_, you can do anything you would usually do with one."
+"<https://docs.python.org/3/library/stdtypes.html#sequence-types-list-"
+"tuple-range>`_, you can do anything you would usually do with one."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:136
@@ -172,15 +172,14 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:138
 msgid ""
-"When you want to handle parsing of the argument yourself or do not feel like"
-" you want to wrap multi-word user input into quotes, you can ask the library"
-" to give you the rest as a single argument. We do this by using a **keyword-"
-"only argument**, seen below:"
+"When you want to handle parsing of the argument yourself or do not feel "
+"like you want to wrap multi-word user input into quotes, you can ask the "
+"library to give you the rest as a single argument. We do this by using a "
+"**keyword-only argument**, seen below:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:150
-msgid ""
-"You can only have one keyword-only argument due to parsing ambiguities."
+msgid "You can only have one keyword-only argument due to parsing ambiguities."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:152
@@ -193,8 +192,8 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:160
 msgid ""
-"By default, the keyword-only arguments are stripped of white space to make "
-"it easier to work with. This behaviour can be toggled by the "
+"By default, the keyword-only arguments are stripped of white space to "
+"make it easier to work with. This behaviour can be toggled by the "
 ":attr:`.Command.rest_is_raw` argument in the decorator."
 msgstr ""
 
@@ -204,20 +203,19 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:168
 msgid ""
-"As seen earlier, every command must take at least a single parameter, called"
-" the :class:`~ext.commands.Context`."
+"As seen earlier, every command must take at least a single parameter, "
+"called the :class:`~ext.commands.Context`."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:170
 msgid ""
 "This parameter gives you access to something called the \"invocation "
-"context\". Essentially all the information you need to know how the command "
-"was executed. It contains a lot of useful information:"
+"context\". Essentially all the information you need to know how the "
+"command was executed. It contains a lot of useful information:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:173
-msgid ""
-":attr:`.Context.guild` to fetch the :class:`Guild` of the command, if any."
+msgid ":attr:`.Context.guild` to fetch the :class:`Guild` of the command, if any."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:174
@@ -226,20 +224,20 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:175
 msgid ""
-":attr:`.Context.author` to fetch the :class:`Member` or :class:`User` that "
-"called the command."
+":attr:`.Context.author` to fetch the :class:`Member` or :class:`User` "
+"that called the command."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:176
 msgid ""
-":meth:`.Context.send` to send a message to the channel the command was used "
-"in."
+":meth:`.Context.send` to send a message to the channel the command was "
+"used in."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:178
 msgid ""
-"The context implements the :class:`abc.Messageable` interface, so anything "
-"you can do on a :class:`abc.Messageable` you can do on the "
+"The context implements the :class:`abc.Messageable` interface, so "
+"anything you can do on a :class:`abc.Messageable` you can do on the "
 ":class:`~ext.commands.Context`."
 msgstr ""
 
@@ -251,8 +249,8 @@ msgstr "コンバーター"
 msgid ""
 "Adding bot arguments with function parameters is only the first step in "
 "defining your bot's command interface. To actually make use of the "
-"arguments, we usually want to convert the data into a target type. We call "
-"these :ref:`ext_commands_api_converters`."
+"arguments, we usually want to convert the data into a target type. We "
+"call these :ref:`ext_commands_api_converters`."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:188
@@ -281,26 +279,27 @@ msgstr "基本的なコンバーター"
 
 #: ../../ext/commands/commands.rst:199
 msgid ""
-"At its core, a basic converter is a callable that takes in an argument and "
-"turns it into something else."
+"At its core, a basic converter is a callable that takes in an argument "
+"and turns it into something else."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:201
 msgid ""
-"For example, if we wanted to add two numbers together, we could request that"
-" they are turned into integers for us by specifying the converter:"
+"For example, if we wanted to add two numbers together, we could request "
+"that they are turned into integers for us by specifying the converter:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:210
 msgid ""
-"We specify converters by using something called a **function annotation**. "
-"This is a Python 3 exclusive feature that was introduced in :pep:`3107`."
+"We specify converters by using something called a **function "
+"annotation**. This is a Python 3 exclusive feature that was introduced in"
+" :pep:`3107`."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:213
 msgid ""
-"This works with any callable, such as a function that would convert a string"
-" to all upper-case:"
+"This works with any callable, such as a function that would convert a "
+"string to all upper-case:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:227
@@ -309,18 +308,19 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:229
 msgid ""
-"Sometimes a basic converter doesn't have enough information that we need. "
-"For example, sometimes we want to get some information from the "
-":class:`Message` that called the command or we want to do some asynchronous "
-"processing."
+"Sometimes a basic converter doesn't have enough information that we need."
+" For example, sometimes we want to get some information from the "
+":class:`Message` that called the command or we want to do some "
+"asynchronous processing."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:232
 msgid ""
 "For this, the library provides the :class:`~ext.commands.Converter` "
-"interface. This allows you to have access to the :class:`.Context` and have "
-"the callable be asynchronous. Defining a custom converter using this "
-"interface requires overriding a single method, :meth:`.Converter.convert`."
+"interface. This allows you to have access to the :class:`.Context` and "
+"have the callable be asynchronous. Defining a custom converter using this"
+" interface requires overriding a single method, "
+":meth:`.Converter.convert`."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:236
@@ -329,22 +329,22 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:251
 msgid ""
-"The converter provided can either be constructed or not. Essentially these "
-"two are equivalent:"
+"The converter provided can either be constructed or not. Essentially "
+"these two are equivalent:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:265
 msgid ""
-"Having the possibility of the converter be constructed allows you to set up "
-"some state in the converter's ``__init__`` for fine tuning the converter. An"
-" example of this is actually in the library, "
+"Having the possibility of the converter be constructed allows you to set "
+"up some state in the converter's ``__init__`` for fine tuning the "
+"converter. An example of this is actually in the library, "
 ":class:`~ext.commands.clean_content`."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:281
 msgid ""
-"If a converter fails to convert an argument to its designated target type, "
-"the :exc:`.BadArgument` exception must be raised."
+"If a converter fails to convert an argument to its designated target "
+"type, the :exc:`.BadArgument` exception must be raised."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:285
@@ -365,11 +365,12 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:298
 msgid ""
-"When this command is executed, it attempts to convert the string given into "
-"a :class:`Member` and then passes it as a parameter for the function. This "
-"works by checking if the string is a mention, an ID, a nickname, a username "
-"+ discriminator, or just a regular username. The default set of converters "
-"have been written to be as easy to use as possible."
+"When this command is executed, it attempts to convert the string given "
+"into a :class:`Member` and then passes it as a parameter for the "
+"function. This works by checking if the string is a mention, an ID, a "
+"nickname, a username + discriminator, or just a regular username. The "
+"default set of converters have been written to be as easy to use as "
+"possible."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:302
@@ -488,8 +489,8 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:348
 msgid ""
-"By providing the converter it allows us to use them as building blocks for "
-"another converter:"
+"By providing the converter it allows us to use them as building blocks "
+"for another converter:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:363
@@ -498,8 +499,8 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:365
 msgid ""
-"If we don't want to inherit from :class:`~ext.commands.Converter`, we can "
-"still provide a converter that has the advanced functionalities of an "
+"If we don't want to inherit from :class:`~ext.commands.Converter`, we can"
+" still provide a converter that has the advanced functionalities of an "
 "advanced converter and save us from specifying two types."
 msgstr ""
 
@@ -511,154 +512,308 @@ msgstr ""
 
 #: ../../ext/commands/commands.rst:394
 msgid ""
-"This can get tedious, so an inline advanced converter is possible through a "
-"``classmethod`` inside the type:"
+"This can get tedious, so an inline advanced converter is possible through"
+" a ``classmethod`` inside the type:"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:423
-msgid "Error Handling"
-msgstr ""
+#, fuzzy
+msgid "Special Converters"
+msgstr "基本的なコンバーター"
 
 #: ../../ext/commands/commands.rst:425
 msgid ""
-"When our commands fail to either parse we will, by default, receive a noisy "
-"error in ``stderr`` of our console that tells us that an error has happened "
-"and has been silently ignored."
+"The command extension also has support for certain converters to allow "
+"for more advanced and intricate use cases that go beyond the generic "
+"linear parsing. These converters allow you to introduce some more relaxed"
+" and dynamic grammar to your commands in an easy to use manner."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:428
-msgid ""
-"In order to handle our errors, we must use something called an error "
-"handler. There is a global error handler, called :func:`on_command_error` "
-"which works like any other event in the :ref:`discord-api-events`. This "
-"global error handler is called for every error reached."
+#: ../../ext/commands/commands.rst:430
+msgid "typing.Union"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:432
 msgid ""
-"Most of the time however, we want to handle an error local to the command "
-"itself. Luckily, commands come with local error handlers that allow us to do"
-" just that. First we decorate an error handler function with "
-":meth:`.Command.error`:"
+"A :data:`typing.Union` is a special type hint that allows for the command"
+" to take in any of the specific types instead of a singular type. For "
+"example, given the following:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:448
+#: ../../ext/commands/commands.rst:444
 msgid ""
-"The first parameter of the error handler is the :class:`.Context` while the "
-"second one is an exception that is derived from "
-":exc:`~ext.commands.CommandError`. A list of errors is found in the "
-":ref:`ext_commands_api_errors` page of the documentation."
+"The ``what`` parameter would either take a :class:`discord.TextChannel` "
+"converter or a :class:`discord.Member` converter. The way this works is "
+"through a left-to-right order. It first attempts to convert the input to "
+"a :class:`discord.TextChannel`, and if it fails it tries to convert it to"
+" a :class:`discord.Member`. If all converters fail, then a special error "
+"is raised, :exc:`~ext.commands.BadUnionArgument`."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:449
+msgid ""
+"Note that any valid converter discussed above can be passed in to the "
+"argument list of a :data:`typing.Union`."
 msgstr ""
 
 #: ../../ext/commands/commands.rst:452
-msgid "Checks"
+msgid "typing.Optional"
 msgstr ""
 
 #: ../../ext/commands/commands.rst:454
 msgid ""
-"There are cases when we don't want a user to use our commands. They don't "
-"have permissions to do so or maybe we blocked them from using our bot "
-"earlier. The commands extension comes with full support for these things in "
-"a concept called a :ref:`ext_commands_api_checks`."
+"A :data:`typing.Optional` is a special type hint that allows for \"back-"
+"referencing\" behaviour. If the converter fails to parse into the "
+"specified type, the parser will skip the parameter and then either "
+"``None`` or the specified default will be passed into the parameter "
+"instead. The parser will then continue on to the next parameters and "
+"converters, if any."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:458
+#: ../../ext/commands/commands.rst:458 ../../ext/commands/commands.rst:485
+msgid "Consider the following example:"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:471
+msgid ""
+"In this example, since the argument could not be converted into an "
+"``int``, the default of ``99`` is passed and the parser resumes handling,"
+" which in this case would be to pass it into the ``liquid`` parameter."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:476
+msgid ""
+"This converter only works in regular positional parameters, not variable "
+"parameters or keyword-only parameters."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:479
+msgid "Greedy"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:481
+msgid ""
+"The :data:`~ext.commands.Greedy` converter is a generalisation of the "
+":data:`typing.Optional` converter, except applied to a list of arguments."
+" In simple terms, this means that it tries to convert as much as it can "
+"until it can't convert any further."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:494
+msgid "When invoked, it allows for any number of members to be passed in:"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:498
+msgid ""
+"The type passed when using this converter depends on the parameter type "
+"that it is being attached to:"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:500
+msgid ""
+"Positional parameter types will receive either the default parameter or a"
+" :class:`list` of the converted values."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:501
+msgid "Variable parameter types will be a :class:`tuple` as usual."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:502
+msgid ""
+"Keyword-only parameter types will be the same as if "
+":data:`~ext.commands.Greedy` was not passed at all."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:504
+msgid ""
+":data:`~ext.commands.Greedy` parameters can also be made optional by "
+"specifying an optional value."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:506
+msgid ""
+"When mixed with the :data:`typing.Optional` converter you can provide "
+"simple and expressive command invocation syntaxes:"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:521
+msgid "This command can be invoked any of the following ways:"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:531
+msgid ""
+"The usage of :data:`~ext.commands.Greedy` and :data:`typing.Optional` are"
+" powerful and useful, however as a price, they open you up to some "
+"parsing ambiguities that might surprise some people."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:534
+msgid ""
+"For example, a signature expecting a :data:`typing.Optional` of a "
+":class:`discord.Member` followed by a :class:`int` could catch a member "
+"named after a number due to the different ways a "
+":class:`~ext.commands.MemberConverter` decides to fetch members. You "
+"should take care to not introduce unintended parsing ambiguities in your "
+"code. One technique would be to clamp down the expected syntaxes allowed "
+"through custom converters or reordering the parameters to minimise "
+"clashes."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:540
+msgid ""
+"To help aid with some parsing ambiguities, :class:`str`, ``None`` and "
+":data:`~ext.commands.Greedy` are forbidden as parameters for the "
+":data:`~ext.commands.Greedy` converter."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:546
+msgid "Error Handling"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:548
+msgid ""
+"When our commands fail to either parse we will, by default, receive a "
+"noisy error in ``stderr`` of our console that tells us that an error has "
+"happened and has been silently ignored."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:551
+msgid ""
+"In order to handle our errors, we must use something called an error "
+"handler. There is a global error handler, called :func:`on_command_error`"
+" which works like any other event in the :ref:`discord-api-events`. This "
+"global error handler is called for every error reached."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:555
+msgid ""
+"Most of the time however, we want to handle an error local to the command"
+" itself. Luckily, commands come with local error handlers that allow us "
+"to do just that. First we decorate an error handler function with "
+":meth:`.Command.error`:"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:571
+msgid ""
+"The first parameter of the error handler is the :class:`.Context` while "
+"the second one is an exception that is derived from "
+":exc:`~ext.commands.CommandError`. A list of errors is found in the "
+":ref:`ext_commands_api_errors` page of the documentation."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:575
+msgid "Checks"
+msgstr ""
+
+#: ../../ext/commands/commands.rst:577
+msgid ""
+"There are cases when we don't want a user to use our commands. They don't"
+" have permissions to do so or maybe we blocked them from using our bot "
+"earlier. The commands extension comes with full support for these things "
+"in a concept called a :ref:`ext_commands_api_checks`."
+msgstr ""
+
+#: ../../ext/commands/commands.rst:581
 msgid ""
 "A check is a basic predicate that can take in a :class:`.Context` as its "
 "sole parameter. Within it, you have the following options:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:461
+#: ../../ext/commands/commands.rst:584
 msgid "Return ``True`` to signal that the person can run the command."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:462
+#: ../../ext/commands/commands.rst:585
 msgid "Return ``False`` to signal that the person cannot run the command."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:463
+#: ../../ext/commands/commands.rst:586
 msgid ""
-"Raise a :exc:`~ext.commands.CommandError` derived exception to signal the "
-"person cannot run the command."
+"Raise a :exc:`~ext.commands.CommandError` derived exception to signal the"
+" person cannot run the command."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:465
+#: ../../ext/commands/commands.rst:588
 msgid ""
 "This allows you to have custom error messages for you to handle in the "
 ":ref:`error handlers <ext_commands_error_handler>`."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:468
+#: ../../ext/commands/commands.rst:591
 msgid ""
-"To register a check for a command, we would have two ways of doing so. The "
-"first is using the :meth:`~ext.commands.check` decorator. For example:"
+"To register a check for a command, we would have two ways of doing so. "
+"The first is using the :meth:`~ext.commands.check` decorator. For "
+"example:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:482
+#: ../../ext/commands/commands.rst:605
 msgid ""
-"This would only evaluate the command if the function ``is_owner`` returns "
-"``True``. Sometimes we re-use a check often and want to split it into its "
-"own decorator. To do that we can just add another level of depth:"
+"This would only evaluate the command if the function ``is_owner`` returns"
+" ``True``. Sometimes we re-use a check often and want to split it into "
+"its own decorator. To do that we can just add another level of depth:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:499
+#: ../../ext/commands/commands.rst:622
 msgid ""
 "Since an owner check is so common, the library provides it for you "
 "(:func:`~ext.commands.is_owner`):"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:509
+#: ../../ext/commands/commands.rst:632
 msgid "When multiple checks are specified, **all** of them must be ``True``:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:524
+#: ../../ext/commands/commands.rst:647
 msgid ""
-"If any of those checks fail in the example above, then the command will not "
-"be run."
+"If any of those checks fail in the example above, then the command will "
+"not be run."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:526
+#: ../../ext/commands/commands.rst:649
 msgid ""
-"When an error happens, the error is propagated to the :ref:`error handlers "
-"<ext_commands_error_handler>`. If you do not raise a custom "
+"When an error happens, the error is propagated to the :ref:`error "
+"handlers <ext_commands_error_handler>`. If you do not raise a custom "
 ":exc:`~ext.commands.CommandError` derived exception, then it will get "
 "wrapped up into a :exc:`~ext.commands.CheckFailure` exception as so:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:543
+#: ../../ext/commands/commands.rst:666
 msgid ""
-"If you want a more robust error system, you can derive from the exception "
-"and raise it instead of returning ``False``:"
+"If you want a more robust error system, you can derive from the exception"
+" and raise it instead of returning ``False``:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:568
+#: ../../ext/commands/commands.rst:691
 msgid ""
-"Since having a ``guild_only`` decorator is pretty common, it comes built-in "
-"via :func:`~ext.commands.guild_only`."
+"Since having a ``guild_only`` decorator is pretty common, it comes built-"
+"in via :func:`~ext.commands.guild_only`."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:571
+#: ../../ext/commands/commands.rst:694
 msgid "Global Checks"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:573
+#: ../../ext/commands/commands.rst:696
 msgid ""
-"Sometimes we want to apply a check to **every** command, not just certain "
-"commands. The library supports this as well using the global check concept."
+"Sometimes we want to apply a check to **every** command, not just certain"
+" commands. The library supports this as well using the global check "
+"concept."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:576
+#: ../../ext/commands/commands.rst:699
 msgid ""
-"Global checks work similarly to regular checks except they are registered "
-"with the :func:`.Bot.check` decorator."
+"Global checks work similarly to regular checks except they are registered"
+" with the :func:`.Bot.check` decorator."
 msgstr ""
 
-#: ../../ext/commands/commands.rst:578
+#: ../../ext/commands/commands.rst:701
 msgid "For example, to block all DMs we could do the following:"
 msgstr ""
 
-#: ../../ext/commands/commands.rst:588
+#: ../../ext/commands/commands.rst:711
 msgid ""
-"Be careful on how you write your global checks, as it could also lock you "
-"out of your own bot."
+"Be careful on how you write your global checks, as it could also lock you"
+" out of your own bot."
 msgstr ""
+
