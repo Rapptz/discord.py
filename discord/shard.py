@@ -286,7 +286,9 @@ class AutoShardedClient(Client):
                 pass
 
         to_close = [shard.ws.close() for shard in self.shards.values()]
-        await asyncio.wait(to_close, loop=self.loop)
+        if to_close:
+            await asyncio.wait(to_close, loop=self.loop)
+
         await self.http.close()
 
     async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
