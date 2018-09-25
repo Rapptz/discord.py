@@ -458,7 +458,7 @@ class clean_content(Converter):
 
         if ctx.guild:
             def resolve_role(_id, *, _find=ctx.guild.get_role):
-                r = _find(_id, _roles)
+                r = _find(_id)
                 return '@' + r.name if r else '@deleted-role'
 
             transformations.update(
