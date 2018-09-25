@@ -189,8 +189,8 @@ class Member(discord.abc.Messageable, _BaseUser):
     def _update_roles(self, data):
         # update the roles
         self.roles = [self.guild.default_role]
-        for roleid in map(int, data['roles']):
-            role = utils.find(lambda r: r.id == roleid, self.guild.roles)
+        for role_id in map(int, data['roles']):
+            role = self.guild.get_role(role_id)
             if role is not None:
                 self.roles.append(role)
 

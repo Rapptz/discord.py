@@ -188,10 +188,7 @@ class Role(Hashable):
         http = self._state.http
 
         change_range = range(min(self.position, position), max(self.position, position) + 1)
-        sorted_roles = sorted((x for x in self.guild.roles if x.position in change_range and x.id != self.id),
-                              key=lambda x: x.position)
-
-        roles = [r.id for r in sorted_roles]
+        roles = [r.id for r in self.guild.roles[1:] if x.position in change_range]
 
         if self.position > position:
             roles.insert(0, self.id)

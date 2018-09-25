@@ -75,8 +75,6 @@ class Guild(Hashable):
     ----------
     name: :class:`str`
         The guild name.
-    roles
-        A :class:`list` of :class:`Role` that the guild has available.
     emojis
         A :class:`tuple` of :class:`Emoji` that the guild owns.
     region: :class:`VoiceRegion`
@@ -121,7 +119,7 @@ class Guild(Hashable):
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'unavailable', 'name', 'region', '_state',
-                 '_default_role', 'roles', '_member_count', '_large',
+                 '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', )
@@ -181,20 +179,22 @@ class Guild(Hashable):
         # its position because it's stuck at position 0. Luckily x += False
         # is equivalent to adding 0. So we cast the position to a bool and
         # increment it.
-        for r in self.roles:
-            r.position += bool(r.position)
+        for r in self._roles.values():
+            r.position += (not r.is_default())
 
-        self.roles.append(role)
+        self._roles[role.id] = role
 
-    def _remove_role(self, role):
-        # this raises ValueError if it fails..
-        self.roles.remove(role)
+    def _remove_role(self, role_id):
+        # this raises KeyError if it fails..
+        role = self._roles.pop(role_id)
 
         # since it didn't, we can change the positions now
         # basically the same as above except we only decrement
         # the position if we're above the role we deleted.
-        for r in self.roles:
+        for r in self._roles.values():
             r.position -= r.position > role.position
+
+        return role
 
     def _from_data(self, guild):
         # according to Stan, this is always available even if the guild is unavailable
@@ -211,15 +211,20 @@ class Guild(Hashable):
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
-        self.roles = [Role(guild=self, data=r, state=self._state) for r in guild.get('roles', [])]
+        self._roles = {}
+        state = self._state # speed up attribute access
+        for r in guild.get('roles', []):
+            role = Role(guild=self, data=r, state=state)
+            self._roles[role.id] = role
+
         self.mfa_level = guild.get('mfa_level')
-        self.emojis = tuple(map(lambda d: self._state.store_emoji(self, d), guild.get('emojis', [])))
+        self.emojis = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
 
         for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=self._state)
+            member = Member(data=mdata, guild=self, state=state)
             self._add_member(member)
 
         self._sync(guild)
@@ -370,10 +375,23 @@ class Guild(Hashable):
         """Returns a :class:`Member` with the given ID. If not found, returns None."""
         return self._members.get(user_id)
 
+    @property
+    def roles(self):
+        """Returns a :class:`list` of the guild's roles in hierarchy order.
+
+        The first element of this list will be the lowest role in the
+        hierarchy.
+        """
+        return sorted(self._roles.values())
+
+    def get_role(self, role_id):
+        """Returns a :class:`Role` with the given ID. If not found, returns None."""
+        return self._roles.get(role_id)
+
     @utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_default(), self.roles)
+        return utils.find(lambda r: r.is_default(), self._roles.values())
 
     @property
     def owner(self):
@@ -457,15 +475,6 @@ class Guild(Hashable):
     def created_at(self):
         """Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
-
-    @property
-    def role_hierarchy(self):
-        """Returns the guild's roles in the order of the hierarchy.
-
-        The first element of this list will be the highest role in the
-        hierarchy.
-        """
-        return sorted(self.roles, reverse=True)
 
     def get_member_named(self, name):
         """Returns the first member found that matches the name provided.

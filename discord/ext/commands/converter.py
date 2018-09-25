@@ -320,8 +320,11 @@ class RoleConverter(IDConverter):
             raise NoPrivateMessage()
 
         match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
-        params = dict(id=int(match.group(1))) if match else dict(name=argument)
-        result = discord.utils.get(guild.roles, **params)
+        if match:
+            result = guild.get_role(int(match.group(1)))
+        else:
+            result = discord.utils.get(guild._roles.values(), name=argument)
+
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(argument))
         return result
@@ -454,8 +457,8 @@ class clean_content(Converter):
         )
 
         if ctx.guild:
-            def resolve_role(id, *, _find=discord.utils.find, _roles=ctx.guild.roles):
-                r = _find(lambda x: x.id == id, _roles)
+            def resolve_role(_id, *, _find=ctx.guild.get_role):
+                r = _find(_id, _roles)
                 return '@' + r.name if r else '@deleted-role'
 
             transformations.update(

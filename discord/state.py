@@ -743,10 +743,9 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             role_id = int(data['role_id'])
-            role = utils.find(lambda r: r.id == role_id, guild.roles)
             try:
-                guild._remove_role(role)
-            except ValueError:
+                role = guild._remove_role(role_id)
+            except KeyError:
                 return
             else:
                 self.dispatch('guild_role_delete', role)
@@ -758,7 +757,7 @@ class ConnectionState:
         if guild is not None:
             role_data = data['role']
             role_id = int(role_data['id'])
-            role = utils.find(lambda r: r.id == role_id, guild.roles)
+            role = guild.get_role(role_id)
             if role is not None:
                 old_role = copy.copy(role)
                 role._update(role_data)
