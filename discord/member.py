@@ -136,10 +136,6 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     Attributes
     ----------
-    roles: List[:class:`Role`]
-        A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
-        list is always the default '@everyone' role. These roles are sorted by their position
-        in the role hierarchy.
     joined_at: `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
@@ -154,7 +150,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         The guild specific nickname of the user.
     """
 
-    __slots__ = ('roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('_roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -187,15 +183,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         return ch
 
     def _update_roles(self, data):
-        # update the roles
-        self.roles = [self.guild.default_role]
-        for role_id in map(int, data['roles']):
-            role = self.guild.get_role(role_id)
-            if role is not None:
-                self.roles.append(role)
-
-        # sort the roles by hierarchy since they can be "randomised"
-        self.roles.sort()
+        self._roles = utils.SnowflakeList(map(int, data['roles']))
 
     def _update(self, data, user=None):
         if user:
@@ -247,6 +235,24 @@ class Member(discord.abc.Messageable, _BaseUser):
         return Colour.default()
 
     color = colour
+
+    @property
+    def roles(self):
+        """A :class:`list` of :class:`Role` that the member belongs to. Note
+        that the first element of this list is always the default '@everyone'
+        role.
+
+        These roles are sorted by their position in the role hierarchy.
+        """
+        result = []
+        g = self.guild
+        for role_id in self._roles:
+            role = g.get_role(role_id)
+            if role:
+                result.append(role)
+        result.append(g.default_role)
+        result.sort()
+        return result
 
     @property
     def mention(self):
