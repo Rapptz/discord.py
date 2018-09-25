@@ -91,6 +91,19 @@ class BaseUser(_BaseUser):
     def __hash__(self):
         return self.id >> 22
 
+    @classmethod
+    def _copy(cls, user):
+        self = cls.__new__(cls) # bypass __init__
+
+        self.name = user.name
+        self.id = user.id
+        self.discriminator = user.discriminator
+        self.avatar = user.avatar
+        self.bot = user.bot
+        self._state = user._state
+
+        return self
+
     @property
     def avatar_url(self):
         """Returns a friendly URL version of the avatar the user has.

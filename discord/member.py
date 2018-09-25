@@ -178,6 +178,20 @@ class Member(discord.abc.Messageable, _BaseUser):
     def __hash__(self):
         return hash(self._user)
 
+    @classmethod
+    def _copy(cls, member):
+        self = cls.__new__(cls) # to bypass __init__
+
+        self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
+        self.joined_at = member.joined_at
+        self.status = member.status
+        self.guild = member.guild
+        self.nick = member.nick
+        self.activity = member.activity
+        self._state = member._state
+        self._user = User._copy(member._user)
+        return self
+
     async def _get_channel(self):
         ch = await self.create_dm()
         return ch
@@ -205,10 +219,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.status = try_enum(Status, data['status'])
         self.activity = create_activity(data.get('game'))
 
-        u = self._user
-        u.name = user.get('username', u.name)
-        u.avatar = user.get('avatar', u.avatar)
-        u.discriminator = user.get('discriminator', u.discriminator)
+        if len(user) > 1:
+            u = self._user
+            u.name = user.get('username', u.name)
+            u.avatar = user.get('avatar', u.avatar)
+            u.discriminator = user.get('discriminator', u.discriminator)
 
     def _copy(self):
         c = copy.copy(self)
