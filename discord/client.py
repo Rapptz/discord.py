@@ -125,7 +125,11 @@ class Client:
         proxy_auth = options.pop('proxy_auth', None)
         self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+        self._handlers = {
+            'ready': self._handle_ready
+        }
+
+        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
@@ -260,13 +264,6 @@ class Client:
             else:
                 for idx in reversed(removed):
                     del listeners[idx]
-
-        try:
-            actual_handler = getattr(self, handler)
-        except AttributeError:
-            pass
-        else:
-            actual_handler(*args, **kwargs)
 
         try:
             coro = getattr(self, method)

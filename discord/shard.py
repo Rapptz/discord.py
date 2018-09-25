@@ -124,7 +124,8 @@ class AutoShardedClient(Client):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
         self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
-                                                      syncer=self._syncer, http=self.http, loop=self.loop, **kwargs)
+                                                      handlers=self._handlers, syncer=self._syncer,
+                                                      http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id

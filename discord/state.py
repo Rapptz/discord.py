@@ -54,7 +54,7 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
 class ConnectionState:
-    def __init__(self, *, dispatch, chunker, syncer, http, loop, **options):
+    def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
         self.max_messages = max(options.get('max_messages', 5000), 100)
@@ -62,6 +62,7 @@ class ConnectionState:
         self.chunker = chunker
         self.syncer = syncer
         self.is_bot = None
+        self.handlers = handlers
         self.shard_count = None
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
@@ -126,6 +127,14 @@ class ConnectionState:
 
         for index in reversed(removed):
             del self._listeners[index]
+
+    def call_handlers(self, key, *args, **kwargs):
+        try:
+            func = self.handlers[key]
+        except KeyError:
+            pass
+        else:
+            func(*args, **kwargs)
 
     @property
     def self_id(self):
@@ -308,6 +317,7 @@ class ConnectionState:
             pass
         else:
             # dispatch the event
+            self.call_handlers('ready')
             self.dispatch('ready')
         finally:
             self._ready_task = None
@@ -960,6 +970,7 @@ class AutoShardedConnectionState(ConnectionState):
         self._ready_task = None
 
         # dispatch the event
+        self.call_handlers('ready')
         self.dispatch('ready')
 
     def parse_ready(self, data):
