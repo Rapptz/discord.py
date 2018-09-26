@@ -111,6 +111,7 @@ class AuditLogChanges:
         'splash_hash':             ('splash', None),
         'icon_hash':               ('icon', None),
         'avatar_hash':             ('avatar', None),
+        'rate_limit_per_user':     ('slowmode_delay', None),
     }
 
     def __init__(self, entry, data):
