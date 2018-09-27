@@ -26,7 +26,6 @@ class BanEntry(NamedTuple):
 
 class Guild(Hashable):
     name: str
-    roles: List[Role]
     emojis: Tuple[Emoji]
     region: VoiceRegion
     afk_timeout: int
@@ -79,6 +78,11 @@ class Guild(Hashable):
     def get_member(self, user_id: int) -> Optional[Member]: ...
 
     @property
+    def roles(self) -> List[Role]: ...
+
+    def get_role(self, role_id: int) -> Optional[Role]: ...
+
+    @property
     def default_role(self) -> Role: ...
 
     @property
@@ -103,9 +107,6 @@ class Guild(Hashable):
 
     @property
     def created_at(self) -> datetime.datetime: ...
-
-    @property
-    def role_hierarchy(self) -> List[Role]: ...
 
     def get_member_named(self, name: str) -> Optional[Member]: ...
 

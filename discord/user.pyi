@@ -2,6 +2,7 @@ import discord.abc
 
 from .channel import DMChannel, GroupChannel
 from .enums import DefaultAvatar, HypeSquadHouse
+from .colour import Colour
 from .guild import Guild
 from .permissions import Permissions
 from .message import Message
@@ -68,6 +69,12 @@ class BaseUser(_BaseUser):
 
     @property
     def default_avatar_url(self) -> str: ...
+
+    @property
+    def colour(self) -> Colour: ...
+
+    @property
+    def color(self) -> Colour: ...
 
     @property
     def mention(self) -> str: ...

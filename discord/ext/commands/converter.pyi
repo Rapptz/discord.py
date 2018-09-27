@@ -2,7 +2,7 @@ import discord
 
 from .context import Context
 
-from typing import Any
+from typing import Any, List
 
 
 class Converter:
@@ -61,3 +61,5 @@ class clean_content(Converter):
     def __init__(self, *, fix_channel_mentions: bool = ..., use_nicknames: bool = ..., escape_markdown: bool = ...) -> None: ...
 
     async def convert(self, ctx: Context, argument: str) -> str: ...
+
+Greedy = List

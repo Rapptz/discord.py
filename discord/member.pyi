@@ -27,7 +27,6 @@ class VoiceState:
 
 
 class Member(discord.abc.Messageable, discord.abc.User):
-    roles: List[Role]
     joined_at: datetime.datetime
     status: Status
     activity: Union[Activity, Game, Streaming, Spotify]
@@ -97,6 +96,9 @@ class Member(discord.abc.Messageable, discord.abc.User):
 
     @property
     def color(self) -> Colour: ...
+
+    @property
+    def roles(self) -> List[Role]: ...
 
     @property
     def mention(self) -> str: ...
