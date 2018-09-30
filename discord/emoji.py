@@ -75,6 +75,18 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
             return '<a:%s:%s>' % (self.name, self.id)
         return '<:%s:%s>' % (self.name, self.id)
 
+    def __eq__(self, other_emoji):
+        if type(other_emoji) == Emoji:
+            # If PartialEmoji doesn't have any id, check for name only
+            return self.__str__() == other_emoji.__str__() or self.__str__() == other_emoji.__str__().split(":")[1]
+        return super().__eq__(other_emoji)
+
+    def __ne__(self, other_emoji):
+        if type(other_emoji) == Emoji:
+            # If PartialEmoji doesn't have any id, check for name only
+            return self.__str__() != other_emoji.__str__() and self.__str__() != other_emoji.__str__().split(":")[1]
+        return super().__ne__(other_emoji)
+
     def is_custom_emoji(self):
         """Checks if this is a custom non-Unicode emoji."""
         return self.id is not None
@@ -173,6 +185,16 @@ class Emoji(Hashable):
 
     def __repr__(self):
         return '<Emoji id={0.id} name={0.name!r}>'.format(self)
+
+    def __eq__(self, other_emoji):
+        if type(other_emoji) == PartialEmoji:
+            return other_emoji == self
+        return super().__eq__(other_emoji)
+
+    def __ne__(self, other_emoji):
+        if type(other_emoji) == PartialEmoji:
+            return other_emoji != self
+        return super().__ne__(other_emoji)
 
     @property
     def created_at(self):
