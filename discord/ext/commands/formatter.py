@@ -313,7 +313,7 @@ class HelpFormatter:
         max_width = self.max_name_size
 
         def category(tup):
-            cog = tup[1].cog_name
+            cog = tup[1].instance.cog_name if hasattr(tup[1].instance, 'cog_name') else tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
             return cog + ':' if cog is not None else '\u200bNo Category:'
