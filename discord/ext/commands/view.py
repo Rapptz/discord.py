@@ -151,9 +151,6 @@ def quoted_word(view):
     while not view.eof:
         current = view.get()
         if not current:
-            if is_quoted:
-                # unexpected EOF
-                raise BadArgument('Expected closing {}.'.format(close_quote))
             return ''.join(result)
 
         # currently we accept strings in the format of "hello world"
@@ -171,15 +168,15 @@ def quoted_word(view):
             if next_char in _escaped_quotes:
                 # escaped quote
                 result.append(next_char)
+                return ''.join(result)
             else:
                 # different escape character, ignore it
                 view.undo()
                 result.append(current)
-            continue
-
+        
         if not is_quoted and current in _all_quotes:
             # we aren't quoted
-            raise BadArgument('Unexpected quote mark in non-quoted string')
+            is_quoted = True
 
         # closing quote
         if is_quoted and current == close_quote:
