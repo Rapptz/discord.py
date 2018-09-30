@@ -34,7 +34,7 @@ __all__ = ['Converter', 'MemberConverter', 'UserConverter',
            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
-           'IDConverter', 'clean_content', 'Greedy']
+           'IDConverter', 'clean_content', 'Greedy', 'GuildConverter']
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -404,6 +404,28 @@ class PartialEmojiConverter(Converter):
             return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
 
         raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+
+class GuildConverter(IDConverter):
+    """Converts to a :class:`Guild`.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by name.
+    """
+
+    async def convert(self, ctx, argument):
+        match = self._get_id_match(argument)
+
+        if match:
+            result = ctx.bot.get_guild(int(match.group(1)))
+        else:
+            result = discord.utils.get(ctx.bot.guilds, name=argument)
+
+        if result is None:
+            raise BadArgument('Guild "{}" not found.'.format(argument))
+
+        return result
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
