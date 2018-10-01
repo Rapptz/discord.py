@@ -25,13 +25,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
-from .enums import DefaultAvatar, RelationshipType, UserFlags
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
 from .errors import ClientException, InvalidArgument
+from .colour import Colour
 
 from collections import namedtuple
 
 import discord.abc
-import asyncio
 
 VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
@@ -61,6 +61,10 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
     def partner(self):
         return self._has_flag(UserFlags.partner)
 
+    @property
+    def hypesquad_houses(self):
+        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
+        return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
 
 _BaseUser = discord.abc.User
 
@@ -86,6 +90,19 @@ class BaseUser(_BaseUser):
 
     def __hash__(self):
         return self.id >> 22
+
+    @classmethod
+    def _copy(cls, user):
+        self = cls.__new__(cls) # bypass __init__
+
+        self.name = user.name
+        self.id = user.id
+        self.discriminator = user.discriminator
+        self.avatar = user.avatar
+        self.bot = user.bot
+        self._state = user._state
+
+        return self
 
     @property
     def avatar_url(self):
@@ -155,10 +172,7 @@ class BaseUser(_BaseUser):
             else:
                 format = static_format
 
-        # Discord has trouble animating gifs if the url does not end in `.gif`
-        gif_fix = '&_=.gif' if format == 'gif' else ''
-
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}{3}'.format(self, format, size, gif_fix)
+        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
 
     @property
     def default_avatar(self):
@@ -169,6 +183,17 @@ class BaseUser(_BaseUser):
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
         return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
+
+    @property
+    def colour(self):
+        """A property that returns a :class:`Colour` denoting the rendered colour
+        for the user. This always returns :meth:`Colour.default`.
+
+        There is an alias for this under ``color``.
+        """
+        return Colour.default()
+
+    color = colour
 
     @property
     def mention(self):
@@ -305,12 +330,12 @@ class ClientUser(BaseUser):
 
     @property
     def friends(self):
-        """Returns a :class:`list` of :class:`User`\s that the user is friends with."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        """Returns a :class:`list` of :class:`User`\s that the user has blocked."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
     async def edit(self, **fields):
@@ -323,10 +348,10 @@ class ClientUser(BaseUser):
 
         Note
         -----
-        To upload an avatar, a *bytes-like object* must be passed in that
+        To upload an avatar, a :term:`py:bytes-like object` must be passed in that
         represents the image being uploaded. If this is done through a file
         then the file must be opened via ``open('some_filename', 'rb')`` and
-        the *bytes-like object* is given through the use of ``fp.read()``.
+        the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
         The only image formats supported for uploading is JPEG and PNG.
 
@@ -341,10 +366,14 @@ class ClientUser(BaseUser):
         email: str
             The new email you wish to change to.
             Only applicable to user accounts.
+        house: Optional[:class:`HypeSquadHouse`]
+            The hypesquad house you wish to change to.
+            Could be ``None`` to leave the current house.
+            Only applicable to user accounts.
         username :str
             The new username you wish to change to.
         avatar: bytes
-            A *bytes-like object* representing the image to upload.
+            A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
 
         Raises
@@ -355,6 +384,7 @@ class ClientUser(BaseUser):
             Wrong image format passed for ``avatar``.
         ClientException
             Password is required for non-bot accounts.
+            House field was not a HypeSquadHouse.
         """
 
         try:
@@ -386,6 +416,17 @@ class ClientUser(BaseUser):
 
         http = self._state.http
 
+        if 'house' in fields:
+            house = fields['house']
+            if house is None:
+                await http.leave_hypesquad_house()
+            elif not isinstance(house, HypeSquadHouse):
+                raise ClientException('`house` parameter was not a HypeSquadHouse')
+            else:
+                value = house.value
+
+            await http.change_hypesquad_house(value)
+
         data = await http.edit_profile(**args)
         if not_bot_account:
             self.email = data['email']
@@ -398,7 +439,7 @@ class ClientUser(BaseUser):
         self.__init__(state=self._state, data=data)
 
     async def create_group(self, *recipients):
-        """|coro|
+        r"""|coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
@@ -432,7 +473,7 @@ class ClientUser(BaseUser):
             raise ClientException('You must have two or more recipients to create a group.')
 
         users = [str(u.id) for u in recipients]
-        data = await self._state.http.create_group(self.id, users)
+        data = await self._state.http.start_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
 
 class User(BaseUser, discord.abc.Messageable):
@@ -470,7 +511,7 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a bot account.
     """
 
-    __slots__ = ('__weakref__')
+    __slots__ = ('__weakref__',)
 
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)

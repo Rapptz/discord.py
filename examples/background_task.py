@@ -1,5 +1,4 @@
 import discord
-import asyncio
 
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):

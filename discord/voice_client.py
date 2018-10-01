@@ -132,7 +132,6 @@ class VoiceClient:
     async def start_handshake(self):
         log.info('Starting voice handshake...')
 
-        key_id, key_name = self.channel._get_voice_client_key()
         guild_id, channel_id = self.channel._get_voice_state_pair()
         state = self._state
         self.main_ws = ws = state._get_websocket(guild_id)
@@ -393,7 +392,7 @@ class VoiceClient:
         Parameters
         ----------
         data: bytes
-            The *bytes-like object* denoting PCM or Opus voice data.
+            The :term:`py:bytes-like object` denoting PCM or Opus voice data.
         encode: bool
             Indicates if ``data`` should be encoded into Opus.
 

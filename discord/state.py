@@ -35,7 +35,6 @@ from .raw_models import *
 from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
-from .calls import GroupCall
 from . import utils
 from .embeds import Embed
 
@@ -55,7 +54,7 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
 class ConnectionState:
-    def __init__(self, *, dispatch, chunker, syncer, http, loop, **options):
+    def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
         self.max_messages = max(options.get('max_messages', 5000), 100)
@@ -63,6 +62,7 @@ class ConnectionState:
         self.chunker = chunker
         self.syncer = syncer
         self.is_bot = None
+        self.handlers = handlers
         self.shard_count = None
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
@@ -127,6 +127,14 @@ class ConnectionState:
 
         for index in reversed(removed):
             del self._listeners[index]
+
+    def call_handlers(self, key, *args, **kwargs):
+        try:
+            func = self.handlers[key]
+        except KeyError:
+            pass
+        else:
+            func(*args, **kwargs)
 
     @property
     def self_id(self):
@@ -241,7 +249,7 @@ class ConnectionState:
         return guild
 
     def chunks_needed(self, guild):
-        for chunk in range(math.ceil(guild._member_count / 1000)):
+        for _ in range(math.ceil(guild._member_count / 1000)):
             yield self.receive_chunk(guild.id)
 
     def _get_guild_channel(self, data):
@@ -309,6 +317,7 @@ class ConnectionState:
             pass
         else:
             # dispatch the event
+            self.call_handlers('ready')
             self.dispatch('ready')
         finally:
             self._ready_task = None
@@ -406,7 +415,7 @@ class ConnectionState:
         raw = RawReactionClearEvent(data)
         self.dispatch('raw_reaction_clear', raw)
 
-        message =  self._get_message(raw.message_id)
+        message = self._get_message(raw.message_id)
         if message is not None:
             old_reactions = message.reactions.copy()
             message.reactions.clear()
@@ -424,7 +433,7 @@ class ConnectionState:
             emoji = self._upgrade_partial_emoji(emoji)
             try:
                 reaction = message._remove_reaction(data, emoji, raw.user_id)
-            except (AttributeError, ValueError) as e: # eventual consistency lol
+            except (AttributeError, ValueError): # eventual consistency lol
                 pass
             else:
                 user = self._get_reaction_user(message.channel, raw.user_id)
@@ -450,7 +459,7 @@ class ConnectionState:
             member = Member(guild=guild, data=data, state=self)
             guild._add_member(member)
 
-        old_member = member._copy()
+        old_member = Member._copy(member)
         member._presence_update(data=data, user=user)
         self.dispatch('member_update', old_member, member)
 
@@ -458,7 +467,7 @@ class ConnectionState:
         self.user = ClientUser(state=self, data=data)
 
     def parse_channel_delete(self, data):
-        guild =  self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = int(data['id'])
         if guild is not None:
             channel = guild.get_channel(channel_id)
@@ -744,10 +753,9 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             role_id = int(data['role_id'])
-            role = utils.find(lambda r: r.id == role_id, guild.roles)
             try:
-                guild._remove_role(role)
-            except ValueError:
+                role = guild._remove_role(role_id)
+            except KeyError:
                 return
             else:
                 self.dispatch('guild_role_delete', role)
@@ -759,7 +767,7 @@ class ConnectionState:
         if guild is not None:
             role_data = data['role']
             role_id = int(role_data['id'])
-            role = utils.find(lambda r: r.id == role_id, guild.roles)
+            role = guild.get_role(role_id)
             if role is not None:
                 old_role = copy.copy(role)
                 role._update(role_data)
@@ -779,6 +787,11 @@ class ConnectionState:
 
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         self.process_listeners(ListenerType.chunk, guild, len(members))
+
+    def parse_webhooks_update(self, data):
+        channel = self.get_channel(int(data['channel_id']))
+        if channel:
+            self.dispatch('webhooks_update', channel)
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -819,7 +832,7 @@ class ConnectionState:
             user_id = utils._get_as_snowflake(data, 'user_id')
             if isinstance(channel, DMChannel):
                 member = channel.recipient
-            elif isinstance(channel, TextChannel):
+            elif isinstance(channel, TextChannel) and guild is not None:
                 member = guild.get_member(user_id)
             elif isinstance(channel, GroupChannel):
                 member = utils.find(lambda x: x.id == user_id, channel.recipients)
@@ -957,6 +970,7 @@ class AutoShardedConnectionState(ConnectionState):
         self._ready_task = None
 
         # dispatch the event
+        self.call_handlers('ready')
         self.dispatch('ready')
 
     def parse_ready(self, data):
@@ -969,7 +983,7 @@ class AutoShardedConnectionState(ConnectionState):
         for guild_data in data['guilds']:
             guild = self._add_guild_from_data(guild_data)
             if guild.large:
-                guilds.append(guild)
+                guilds.append((guild, guild.unavailable))
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])

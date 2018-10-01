@@ -231,6 +231,11 @@ class GuildChannel:
         else:
             parent_id = parent and parent.id
 
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
+
         lock_permissions = options.pop('sync_permissions', False)
 
         try:
@@ -283,8 +288,9 @@ class GuildChannel:
         """Returns a :class:`list` of :class:`Roles` that have been overridden from
         their default values in the :attr:`Guild.roles` attribute."""
         ret = []
+        g = self.guild
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
-            role = utils.get(self.guild.roles, id=overwrite.id)
+            role = g.get_role(overwrite.id)
             if role is None:
                 continue
 
@@ -353,8 +359,7 @@ class GuildChannel:
             overwrite = PermissionOverwrite.from_pair(allow, deny)
 
             if ow.type == 'role':
-                # accidentally quadratic
-                target = utils.find(lambda r: r.id == ow.id, self.guild.roles)
+                target = self.guild.get_role(ow.id)
             elif ow.type == 'member':
                 target = self.guild.get_member(ow.id)
 
@@ -410,9 +415,10 @@ class GuildChannel:
 
         default = self.guild.default_role
         base = Permissions(default.permissions.value)
+        roles = member.roles
 
         # Apply guild roles that the member has.
-        for role in member.roles:
+        for role in roles:
             base.value |= role.permissions.value
 
         # Guild-wide Administrator -> True for everything
@@ -431,7 +437,13 @@ class GuildChannel:
         except IndexError:
             remaining_overwrites = self._overwrites
 
-        member_role_ids = set(map(lambda r: r.id, member.roles))
+        # not sure if doing member._roles.get(...) is better than the
+        # set approach. While this is O(N) to re-create into a set for O(1)
+        # the direct approach would just be O(log n) for searching with no
+        # extra memory overhead. For now, I'll keep the set cast
+        # Note that the member.roles accessor up top also creates a
+        # temporary list
+        member_role_ids = {r.id for r in roles}
         denies = 0
         allows = 0
 
@@ -489,7 +501,7 @@ class GuildChannel:
         await self._state.http.delete_channel(self.id, reason=reason)
 
     async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
-        """|coro|
+        r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
         channel.
@@ -747,8 +759,8 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = await state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
-                                                        content=content, tts=tts, embed=embed, nonce=nonce,
-                                                        message_transform=message_transform)
+                                                   content=content, tts=tts, embed=embed, nonce=nonce,
+                                                   message_transform=message_transform)
             finally:
                 file.close()
 
@@ -759,7 +771,7 @@ class Messageable(metaclass=abc.ABCMeta):
             try:
                 param = [(f.open_file(), f.filename) for f in files]
                 data = await state.http.send_files(channel.id, files=param, content=content, tts=tts,
-                                                        embed=embed, nonce=nonce, message_transform=message_transform)
+                                                   embed=embed, nonce=nonce, message_transform=message_transform)
             finally:
                 for f in files:
                     f.close()
@@ -962,7 +974,7 @@ class Connectable(metaclass=abc.ABCMeta):
         :class:`VoiceClient`
             A voice client that is fully connected to the voice server.
         """
-        key_id, key_name = self._get_voice_client_key()
+        key_id, _ = self._get_voice_client_key()
         state = self._state
 
         if state._get_voice_client(key_id):
