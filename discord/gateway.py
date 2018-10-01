@@ -645,6 +645,15 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             await self.identify()
         elif op == self.SESSION_DESCRIPTION:
             await self.load_secret_key(data)
+        elif op == self.SPEAKING:
+            user_id = int(data['user_id'])
+            ssrc = int(data['ssrc'])
+
+            if 'speaking' in data:
+                user = self._connection._state.get_user(user_id)
+
+                self._connection.decoders[ssrc].user = user
+                self._connection.decoders[ssrc].speaking_state(data['speaking'])
 
     async def initial_connection(self, data):
         state = self._connection
