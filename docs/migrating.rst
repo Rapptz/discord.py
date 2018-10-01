@@ -368,11 +368,17 @@ They will be enumerated here.
 
     - Use :attr:`Member.activity` instead.
 
+- ``Guild.role_hierarchy`` / ``Server.role_hierarchy``
+
+    - Use :attr:`Guild.roles` instead. Note that while sorted, it is in the opposite order
+      of what the old ``Guild.role_hierarchy`` used to be.
+
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
 - :attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` objects.
 - :attr:`Message.attachments` is now a list of :class:`Attachment` instead of ``dict`` object.
+- :attr:`Guild.roles` is now sorted through hierarchy. The first element is always the ``@everyone`` role.
 
 **Added**
 
@@ -398,6 +404,7 @@ They will be enumerated here.
 - :attr:`Message.activity` and :attr:`Message.application` for Rich Presence related information.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
 - :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
+- :meth:`Guild.get_role` to get a role by its ID.
 
 .. _migrating_1_0_sending_messages:
 

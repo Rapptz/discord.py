@@ -124,7 +124,8 @@ class AutoShardedClient(Client):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
         self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
-                                                      syncer=self._syncer, http=self.http, loop=self.loop, **kwargs)
+                                                      handlers=self._handlers, syncer=self._syncer,
+                                                      http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
@@ -285,7 +286,9 @@ class AutoShardedClient(Client):
                 pass
 
         to_close = [shard.ws.close() for shard in self.shards.values()]
-        await asyncio.wait(to_close, loop=self.loop)
+        if to_close:
+            await asyncio.wait(to_close, loop=self.loop)
+
         await self.http.close()
 
     async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):

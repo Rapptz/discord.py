@@ -113,6 +113,12 @@ class Role(Hashable):
         if self.guild != other.guild:
             raise RuntimeError('cannot compare roles from two different guilds.')
 
+        # the @everyone role is always the lowest role in hierarchy
+        guild_id = self.guild.id
+        if self.id == guild_id:
+            # everyone_role < everyone_role -> False
+            return other.id != guild_id
+
         if self.position < other.position:
             return True
 
@@ -167,7 +173,8 @@ class Role(Hashable):
         if self.is_default():
             return all_members
 
-        return [member for member in all_members if self in member.roles]
+        role_id = self.id
+        return [member for member in all_members if member._roles.has(role_id)]
 
     async def _move(self, position, reason):
         if position <= 0:
@@ -182,10 +189,7 @@ class Role(Hashable):
         http = self._state.http
 
         change_range = range(min(self.position, position), max(self.position, position) + 1)
-        sorted_roles = sorted((x for x in self.guild.roles if x.position in change_range and x.id != self.id),
-                              key=lambda x: x.position)
-
-        roles = [r.id for r in sorted_roles]
+        roles = [r.id for r in self.guild.roles[1:] if r.position in change_range and r.id != self.id]
 
         if self.position > position:
             roles.insert(0, self.id)

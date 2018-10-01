@@ -312,7 +312,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     async def received_message(self, msg):
         self._dispatch('socket_raw_receive', msg)
 
-        if isinstance(msg, bytes):
+        if type(msg) is bytes:
             self._buffer.extend(msg)
 
             if len(msg) >= 4:
@@ -336,44 +336,44 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         if seq is not None:
             self.sequence = seq
 
-        if op == self.RECONNECT:
-            # "reconnect" can only be handled by the Client
-            # so we terminate our connection and raise an
-            # internal exception signalling to reconnect.
-            log.info('Received RECONNECT opcode.')
-            await self.close()
-            raise ResumeWebSocket(self.shard_id)
-
-        if op == self.HEARTBEAT_ACK:
-            self._keep_alive.ack()
-            return
-
-        if op == self.HEARTBEAT:
-            beat = self._keep_alive.get_payload()
-            await self.send_as_json(beat)
-            return
-
-        if op == self.HELLO:
-            interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = KeepAliveHandler(ws=self, interval=interval, shard_id=self.shard_id)
-            # send a heartbeat immediately
-            await self.send_as_json(self._keep_alive.get_payload())
-            self._keep_alive.start()
-            return
-
-        if op == self.INVALIDATE_SESSION:
-            if data == True:
-                await asyncio.sleep(5.0, loop=self.loop)
+        if op != self.DISPATCH:
+            if op == self.RECONNECT:
+                # "reconnect" can only be handled by the Client
+                # so we terminate our connection and raise an
+                # internal exception signalling to reconnect.
+                log.info('Received RECONNECT opcode.')
                 await self.close()
                 raise ResumeWebSocket(self.shard_id)
 
-            self.sequence = None
-            self.session_id = None
-            log.info('Shard ID %s session has been invalidated.' % self.shard_id)
-            await self.identify()
-            return
+            if op == self.HEARTBEAT_ACK:
+                self._keep_alive.ack()
+                return
 
-        if op != self.DISPATCH:
+            if op == self.HEARTBEAT:
+                beat = self._keep_alive.get_payload()
+                await self.send_as_json(beat)
+                return
+
+            if op == self.HELLO:
+                interval = data['heartbeat_interval'] / 1000.0
+                self._keep_alive = KeepAliveHandler(ws=self, interval=interval, shard_id=self.shard_id)
+                # send a heartbeat immediately
+                await self.send_as_json(self._keep_alive.get_payload())
+                self._keep_alive.start()
+                return
+
+            if op == self.INVALIDATE_SESSION:
+                if data == True:
+                    await asyncio.sleep(5.0, loop=self.loop)
+                    await self.close()
+                    raise ResumeWebSocket(self.shard_id)
+
+                self.sequence = None
+                self.session_id = None
+                log.info('Shard ID %s session has been invalidated.' % self.shard_id)
+                await self.identify()
+                return
+
             log.warning('Unknown OP code %s.', op)
             return
 
@@ -386,7 +386,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
                      self.shard_id, ', '.join(trace), self.session_id)
 
-        if event == 'RESUMED':
+        elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
             log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
                      self.shard_id, self.session_id, ', '.join(trace))

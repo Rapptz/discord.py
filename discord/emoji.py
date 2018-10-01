@@ -154,7 +154,7 @@ class Emoji(Hashable):
         self.id = int(emoji['id'])
         self.name = emoji['name']
         self.animated = emoji.get('animated', False)
-        self._roles = set(emoji.get('roles', []))
+        self._roles = utils.SnowflakeList(map(int, emoji.get('roles', [])))
 
     def _iterator(self):
         for attr in self.__slots__:
@@ -187,7 +187,7 @@ class Emoji(Hashable):
 
     @property
     def roles(self):
-        """List[:class:`Role`]: A list of roles that is allowed to use this emoji.
+        """List[:class:`Role`]: A :class:`list` of roles that is allowed to use this emoji.
 
         If roles is empty, the emoji is unrestricted.
         """
@@ -195,7 +195,7 @@ class Emoji(Hashable):
         if guild is None:
             return []
 
-        return [role for role in guild.roles if role.id in self._roles]
+        return [role for role in guild.roles if self._roles.has(role.id)]
 
     @property
     def guild(self):

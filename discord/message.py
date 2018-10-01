@@ -309,7 +309,7 @@ class Message:
         self.role_mentions = []
         if self.guild is not None:
             for role_id in map(int, role_mentions):
-                role = utils.get(self.guild.roles, id=role_id)
+                role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
 

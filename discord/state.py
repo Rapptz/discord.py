@@ -54,7 +54,7 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
 class ConnectionState:
-    def __init__(self, *, dispatch, chunker, syncer, http, loop, **options):
+    def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
         self.max_messages = max(options.get('max_messages', 5000), 100)
@@ -62,6 +62,7 @@ class ConnectionState:
         self.chunker = chunker
         self.syncer = syncer
         self.is_bot = None
+        self.handlers = handlers
         self.shard_count = None
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
@@ -126,6 +127,14 @@ class ConnectionState:
 
         for index in reversed(removed):
             del self._listeners[index]
+
+    def call_handlers(self, key, *args, **kwargs):
+        try:
+            func = self.handlers[key]
+        except KeyError:
+            pass
+        else:
+            func(*args, **kwargs)
 
     @property
     def self_id(self):
@@ -308,6 +317,7 @@ class ConnectionState:
             pass
         else:
             # dispatch the event
+            self.call_handlers('ready')
             self.dispatch('ready')
         finally:
             self._ready_task = None
@@ -449,7 +459,7 @@ class ConnectionState:
             member = Member(guild=guild, data=data, state=self)
             guild._add_member(member)
 
-        old_member = member._copy()
+        old_member = Member._copy(member)
         member._presence_update(data=data, user=user)
         self.dispatch('member_update', old_member, member)
 
@@ -743,10 +753,9 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             role_id = int(data['role_id'])
-            role = utils.find(lambda r: r.id == role_id, guild.roles)
             try:
-                guild._remove_role(role)
-            except ValueError:
+                role = guild._remove_role(role_id)
+            except KeyError:
                 return
             else:
                 self.dispatch('guild_role_delete', role)
@@ -758,7 +767,7 @@ class ConnectionState:
         if guild is not None:
             role_data = data['role']
             role_id = int(role_data['id'])
-            role = utils.find(lambda r: r.id == role_id, guild.roles)
+            role = guild.get_role(role_id)
             if role is not None:
                 old_role = copy.copy(role)
                 role._update(role_data)
@@ -961,6 +970,7 @@ class AutoShardedConnectionState(ConnectionState):
         self._ready_task = None
 
         # dispatch the event
+        self.call_handlers('ready')
         self.dispatch('ready')
 
     def parse_ready(self, data):

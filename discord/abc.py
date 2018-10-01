@@ -288,8 +288,9 @@ class GuildChannel:
         """Returns a :class:`list` of :class:`Roles` that have been overridden from
         their default values in the :attr:`Guild.roles` attribute."""
         ret = []
+        g = self.guild
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
-            role = utils.get(self.guild.roles, id=overwrite.id)
+            role = g.get_role(overwrite.id)
             if role is None:
                 continue
 
@@ -358,8 +359,7 @@ class GuildChannel:
             overwrite = PermissionOverwrite.from_pair(allow, deny)
 
             if ow.type == 'role':
-                # accidentally quadratic
-                target = utils.find(lambda r: r.id == ow.id, self.guild.roles)
+                target = self.guild.get_role(ow.id)
             elif ow.type == 'member':
                 target = self.guild.get_member(ow.id)
 
@@ -415,9 +415,10 @@ class GuildChannel:
 
         default = self.guild.default_role
         base = Permissions(default.permissions.value)
+        roles = member.roles
 
         # Apply guild roles that the member has.
-        for role in member.roles:
+        for role in roles:
             base.value |= role.permissions.value
 
         # Guild-wide Administrator -> True for everything
@@ -436,7 +437,13 @@ class GuildChannel:
         except IndexError:
             remaining_overwrites = self._overwrites
 
-        member_role_ids = set(map(lambda r: r.id, member.roles))
+        # not sure if doing member._roles.get(...) is better than the
+        # set approach. While this is O(N) to re-create into a set for O(1)
+        # the direct approach would just be O(log n) for searching with no
+        # extra memory overhead. For now, I'll keep the set cast
+        # Note that the member.roles accessor up top also creates a
+        # temporary list
+        member_role_ids = {r.id for r in roles}
         denies = 0
         allows = 0
 

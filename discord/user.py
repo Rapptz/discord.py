@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
 from .errors import ClientException, InvalidArgument
+from .colour import Colour
 
 from collections import namedtuple
 
@@ -89,6 +90,19 @@ class BaseUser(_BaseUser):
 
     def __hash__(self):
         return self.id >> 22
+
+    @classmethod
+    def _copy(cls, user):
+        self = cls.__new__(cls) # bypass __init__
+
+        self.name = user.name
+        self.id = user.id
+        self.discriminator = user.discriminator
+        self.avatar = user.avatar
+        self.bot = user.bot
+        self._state = user._state
+
+        return self
 
     @property
     def avatar_url(self):
@@ -169,6 +183,17 @@ class BaseUser(_BaseUser):
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
         return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
+
+    @property
+    def colour(self):
+        """A property that returns a :class:`Colour` denoting the rendered colour
+        for the user. This always returns :meth:`Colour.default`.
+
+        There is an alias for this under ``color``.
+        """
+        return Colour.default()
+
+    color = colour
 
     @property
     def mention(self):

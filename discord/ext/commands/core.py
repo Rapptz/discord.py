@@ -199,7 +199,11 @@ class Command:
         # be replaced with the real value for the converters to work later on
         for key, value in self.params.items():
             if isinstance(value.annotation, str):
-                self.params[key] = value.replace(annotation=eval(value.annotation, function.__globals__))
+                self.params[key] = value = value.replace(annotation=eval(value.annotation, function.__globals__))
+
+            # fail early for when someone passes an unparameterized Greedy type
+            if value.annotation is converters.Greedy:
+                raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
     async def dispatch_error(self, ctx, error):
         ctx.command_failed = True
@@ -231,6 +235,9 @@ class Command:
         return self
 
     async def _actual_conversion(self, ctx, converter, argument, param):
+        if converter is bool:
+            return _convert_to_bool(argument)
+
         try:
             module = converter.__module__
         except:
@@ -271,9 +278,6 @@ class Command:
             raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
 
     async def do_conversion(self, ctx, converter, argument, param):
-        if converter is bool:
-            return _convert_to_bool(argument)
-
         try:
             origin = converter.__origin__
         except AttributeError:
@@ -281,7 +285,15 @@ class Command:
         else:
             if origin is typing.Union:
                 errors = []
+                _NoneType = type(None)
                 for conv in converter.__args__:
+                    # if we got to this part in the code, then the previous conversions have failed
+                    # so we should just undo the view, return the default, and allow parsing to continue
+                    # with the other parameters
+                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                        ctx.view.undo()
+                        return None if param.default is param.empty else param.default
+
                     try:
                         value = await self._actual_conversion(ctx, conv, argument, param)
                     except CommandError as e:
@@ -310,6 +322,19 @@ class Command:
         view = ctx.view
         view.skip_ws()
 
+        # The greedy converter is simple -- it keeps going until it fails in which case,
+        # it undos the view ready for the next parameter to use instead
+        if type(converter) is converters._Greedy:
+            if param.kind == param.POSITIONAL_OR_KEYWORD:
+                return await self._transform_greedy_pos(ctx, param, required, converter.converter)
+            elif param.kind == param.VAR_POSITIONAL:
+                return await self._transform_greedy_var_pos(ctx, param, converter.converter)
+            else:
+                # if we're here, then it's a KEYWORD_ONLY param type
+                # since this is mostly useless, we'll helpfully transform Greedy[X]
+                # into just X and do the parsing that way.
+                converter = converter.converter
+
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError() # break the loop
@@ -317,12 +342,51 @@ class Command:
                 raise MissingRequiredArgument(param)
             return param.default
 
+        previous = view.index
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
             argument = quoted_word(view)
+        view.previous = previous
 
         return (await self.do_conversion(ctx, converter, argument, param))
+
+    async def _transform_greedy_pos(self, ctx, param, required, converter):
+        view = ctx.view
+        result = []
+        while not view.eof:
+            # for use with a manual undo
+            previous = view.index
+
+            # parsing errors get propagated
+            view.skip_ws()
+            argument = quoted_word(view)
+            try:
+                value = await self.do_conversion(ctx, converter, argument, param)
+            except CommandError as e:
+                if not result:
+                    if required:
+                        raise
+                    else:
+                        view.index = previous
+                        return param.default
+                view.index = previous
+                break
+            else:
+                result.append(value)
+        return result
+
+    async def _transform_greedy_var_pos(self, ctx, param, converter):
+        view = ctx.view
+        previous = view.index
+        argument = quoted_word(view)
+        try:
+            value = await self.do_conversion(ctx, converter, argument, param)
+        except CommandError:
+            view.index = previous
+            raise RuntimeError() from None # break loop
+        else:
+            return value
 
     @property
     def clean_params(self):
@@ -612,7 +676,7 @@ class Command:
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
@@ -639,7 +703,7 @@ class Command:
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
