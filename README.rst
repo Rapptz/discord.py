@@ -20,9 +20,32 @@ I recommend joining either the `official discord.py server <https://discord.gg/r
 Installing
 ----------
 
-```
-python3 -m pip install -U git+https://github.com/Crypti-x/discord.py@rewrite#egg=discord.py[voice]
-```
+To install the library without full voice support, you can just run the following command:
+
+.. code:: sh
+
+    python3 -m pip install -U discord.py
+
+Otherwise to get voice support you should run the following command:
+
+.. code:: sh
+
+    python3 -m pip install -U discord.py[voice]
+
+
+To install the development version, do the following:
+
+.. code:: sh
+
+    python3 -m pip install -U https://github.com/Rapptz/discord.py/archive/master.zip#egg=discord.py[voice]
+
+or the more long winded from cloned source:
+
+.. code:: sh
+
+    $ git clone https://github.com/Rapptz/discord.py
+    $ cd discord.py
+    $ python3 -m pip install -U .[voice]
 
 Please note that on Linux installing voice you must install the following packages via your favourite package manager (e.g. ``apt``, ``yum``, etc) before running the above command:
 
@@ -34,32 +57,32 @@ Quick Example
 
 .. code:: py
 
-   client = discord.Client()
+    import discord
+    import asyncio
 
-f = open('f.pcm', 'wb')
+    class MyClient(discord.Client):
+        async def on_ready(self):
+            print('Logged in as')
+            print(self.user.name)
+            print(self.user.id)
+            print('------')
 
-@client.event
-async def on_ready():
-	print("up!")
+        async def on_message(self, message):
+            # don't respond to ourselves
+            if message.author == self.user:
+                return
+            if message.content.startswith('!test'):
+                counter = 0
+                tmp = await message.channel.send('Calculating messages...')
+                async for msg in message.channel.history(limit=100):
+                    if msg.author == message.author:
+                        counter += 1
 
-
-@client.event
-async def on_message(msg):
-	if msg.author.id != 332864061496623104:
-		return
-
-	if msg.content == "join":
-		await msg.author.voice.channel.connect()
-
-
-
-
-
-@client.event
-async def on_voice_receive(vc, user, data):
-    f.write(data)
-
-
+                await tmp.edit(content='You have {} messages.'.format(counter))
+            elif message.content.startswith('!sleep'):
+                with message.channel.typing():
+                    await asyncio.sleep(5.0)
+                    await message.channel.send('Done sleeping.')
 
     client = MyClient()
     client.run('token')
