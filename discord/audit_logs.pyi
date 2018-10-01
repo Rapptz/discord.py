@@ -2,7 +2,7 @@ import datetime
 
 from typing import Any, Union, Optional, List, Dict, Tuple, Iterable, Iterator
 
-from . import enums, utils
+from . import enums
 from .abc import User as ABCUser
 from .guild import Guild
 from .member import Member
@@ -31,21 +31,9 @@ class AuditLogEntry:
     extra: Any
 
     def __repr__(self) -> str: ...
-
-    @utils.cached_property
     def created_at(self) -> datetime.datetime: ...
-
-    @utils.cached_property
     def target(self) -> Any: ...
-
-    @utils.cached_property
     def category(self) -> Optional[enums.AuditLogActionCategory]: ...
-
-    @utils.cached_property
     def changes(self) -> AuditLogChanges: ...
-
-    @utils.cached_property
     def before(self) -> AuditLogDiff: ...
-
-    @utils.cached_property
     def after(self) -> AuditLogDiff: ...
