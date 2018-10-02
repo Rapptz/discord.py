@@ -1000,7 +1000,7 @@ class Guild(Hashable):
 
         Creates a custom :class:`Emoji` for the guild.
 
-        There is currently a limit of 50 local emotes per guild.
+        There is currently a limit of 50 static and animated emojis respectively per guild.
 
         You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
@@ -1011,7 +1011,7 @@ class Guild(Hashable):
             The emoji name. Must be at least 2 characters.
         image: bytes
             The :term:`py:bytes-like object` representing the image data to use.
-            Only JPG and PNG images are supported.
+            Only JPG, PNG and GIF images are supported.
         roles: Optional[list[:class:`Role`]]
             A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
