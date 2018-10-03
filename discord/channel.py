@@ -45,6 +45,11 @@ async def _single_delete_strategy(messages):
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
 
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
+    - :class:`discord.abc.GuildChannel`
+
     .. container:: operations
 
         .. describe:: x == y
@@ -388,6 +393,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 
+    **Inherited Classes**
+
+    - :class:`discord.abc.Connectable`
+    - :class:`discord.abc.GuildChannel`
+
     .. container:: operations
 
         .. describe:: x == y
@@ -615,6 +625,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
+
     .. container:: operations
 
         .. describe:: x == y
@@ -696,6 +710,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
 class GroupChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord group channel.
+
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
 
     .. container:: operations
 

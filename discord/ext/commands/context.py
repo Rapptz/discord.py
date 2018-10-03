@@ -34,7 +34,9 @@ class Context(discord.abc.Messageable):
     the invocation context. This class is not created manually and is instead
     passed around to commands as the first parameter.
 
-    This class implements the :class:`abc.Messageable` ABC.
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
 
     Attributes
     -----------

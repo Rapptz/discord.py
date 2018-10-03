@@ -479,6 +479,10 @@ class ClientUser(BaseUser):
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
 
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
+
     .. container:: operations
 
         .. describe:: x == y
