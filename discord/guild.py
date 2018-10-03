@@ -1000,7 +1000,8 @@ class Guild(Hashable):
 
         Creates a custom :class:`Emoji` for the guild.
 
-        There is currently a limit of 50 static and animated emojis respectively per guild.
+        There is currently a limit of 50 static and animated emojis respectively per guild,
+        unless the guild has the ``MORE_EMOJI``feature which extends the limit.
 
         You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
