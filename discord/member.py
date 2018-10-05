@@ -150,6 +150,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
         The guild specific nickname of the user.
+    join_order: [:class:`int`]
+        The member's join position including bots.
     """
 
     __slots__ = ('_roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
@@ -365,16 +367,19 @@ class Member(discord.abc.Messageable, _BaseUser):
     @property
     def join_order(self):
         """
-        The join order that the member joined including bots. [:class:`int`]
+        The join position that the member joined including bots. [:class:`int`]
         """
         return sorted([f.joined_at for f in self.guild.members]).index(self.joined_at) + 1
     
     @property
     def join_order_exclude_bot(self):
         """
-        The join order that the member join excluding bots. [:class:`int`]
+        The join position that the member join excluding bots. [:class:`int`]
         """
-        return sorted([f.joined_at for f in self.guild.members if not f.bot]).index(self.joined_at) + 1
+        if self.bot:
+            return None
+        else:
+            return sorted([f.joined_at for f in self.guild.members if not f.bot]).index(self.joined_at) + 1
     
     async def ban(self, **kwargs):
         """|coro|
