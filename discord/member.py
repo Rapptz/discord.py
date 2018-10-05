@@ -361,7 +361,21 @@ class Member(discord.abc.Messageable, _BaseUser):
     def voice(self):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
-
+    
+    @property
+    def join_order(self):
+        """
+        The join order that the member joined including bots. [:class:`int`]
+        """
+        return sorted([f.joined_at for f in self.guild.members]).index(self.joined_at) + 1
+    
+    @property
+    def join_order_exclude_bot(self):
+        """
+        The join order that the member join excluding bots. [:class:`int`]
+        """
+        return sorted([f.joined_at for f in self.guild.members if not f.bot]).index(self.joined_at) + 1
+    
     async def ban(self, **kwargs):
         """|coro|
 
