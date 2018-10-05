@@ -237,18 +237,6 @@ Commands Extension
 
 Questions regarding ``discord.ext.commands`` belong here.
 
-Is there any documentation for this?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Not at the moment. Writing documentation for stuff takes time. A lot of people get by reading the docstrings in the source
-code. Others get by via asking questions in the `Discord server <https://discord.gg/discord-api>`_. Others look at the
-source code of `other existing bots <https://github.com/Rapptz/RoboDanny>`_.
-
-There is a `basic example <https://github.com/Rapptz/discord.py/blob/rewrite/examples/basic_bot.py>`_ showcasing some
-functionality.
-
-**Documentation is being worked on, it will just take some time to polish it**.
-
 Why does ``on_message`` make my commands stop working?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
