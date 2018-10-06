@@ -9,3 +9,5 @@ docs/_build
 *.png
 *.jpg
 *.flac
+*.sublime-*
+
