@@ -404,7 +404,7 @@ class Guild(Hashable):
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """Returns a friendly URL version of the guild's icon. Returns and empty string if it has no icon.
+        """Returns a friendly URL version of the guild's icon. Returns an empty string if it has no icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 2048.
@@ -441,8 +441,8 @@ class Guild(Hashable):
         """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
         return self.icon_url_as()
 
-    def splash_url_as(self, *, format='webp', size=1024):
-        """Returns a friendly URL version of the guild's invite splash. Returns and empty string if it has no splash.
+    def splash_url_as(self, *, format='webp', size=2048):
+        """Returns a friendly URL version of the guild's invite splash. Returns an empty string if it has no splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 2048.
