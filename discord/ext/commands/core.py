@@ -28,23 +28,23 @@ import asyncio
 import inspect
 import discord
 import functools
+import typing
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
 
-__all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
-            'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown', 'guild_only', 'is_owner', 'is_nsfw', ]
+__all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
+           'has_role', 'has_permissions', 'has_any_role', 'check',
+           'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+           'cooldown', 'guild_only', 'is_owner', 'is_nsfw']
 
 def wrap_callback(coro):
     @functools.wraps(coro)
-    @asyncio.coroutine
-    def wrapped(*args, **kwargs):
+    async def wrapped(*args, **kwargs):
         try:
-            ret = yield from coro(*args, **kwargs)
+            ret = await coro(*args, **kwargs)
         except CommandError:
             raise
         except asyncio.CancelledError:
@@ -56,10 +56,9 @@ def wrap_callback(coro):
 
 def hooked_wrapped_callback(command, ctx, coro):
     @functools.wraps(coro)
-    @asyncio.coroutine
-    def wrapped(*args, **kwargs):
+    async def wrapped(*args, **kwargs):
         try:
-            ret = yield from coro(*args, **kwargs)
+            ret = await coro(*args, **kwargs)
         except CommandError:
             ctx.command_failed = True
             raise
@@ -70,7 +69,7 @@ def hooked_wrapped_callback(command, ctx, coro):
             ctx.command_failed = True
             raise CommandInvokeError(e) from e
         finally:
-            yield from command.call_after_hooks(ctx)
+            await command.call_after_hooks(ctx)
         return ret
     return wrapped
 
@@ -83,8 +82,27 @@ def _convert_to_bool(argument):
     else:
         raise BadArgument(lowered + ' is not a recognised boolean option')
 
+class _CaseInsensitiveDict(dict):
+    def __contains__(self, k):
+        return super().__contains__(k.lower())
+
+    def __delitem__(self, k):
+        return super().__delitem__(k.lower())
+
+    def __getitem__(self, k):
+        return super().__getitem__(k.lower())
+
+    def get(self, k, default=None):
+        return super().get(k.lower(), default)
+
+    def pop(self, k, default=None):
+        return super().pop(k.lower(), default)
+
+    def __setitem__(self, k, v):
+        super().__setitem__(k.lower(), v)
+
 class Command:
-    """A class that implements the protocol for a bot text command.
+    r"""A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
     decorator or functional interface.
@@ -110,7 +128,7 @@ class Command:
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
     parent: Optional[command]
-        The parent command that this command belongs to. ``None`` is there
+        The parent command that this command belongs to. ``None`` if there
         isn't one.
     checks
         A list of predicates that verifies if the command could be executed
@@ -155,10 +173,8 @@ class Command:
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
-        signature = inspect.signature(callback)
-        self.params = signature.parameters.copy()
+
         self.checks = kwargs.get('checks', [])
-        self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
@@ -166,8 +182,30 @@ class Command:
         self._before_invoke = None
         self._after_invoke = None
 
-    @asyncio.coroutine
-    def dispatch_error(self, ctx, error):
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, function):
+        self._callback = function
+        self.module = function.__module__
+
+        signature = inspect.signature(function)
+        self.params = signature.parameters.copy()
+
+        # PEP-563 allows postponing evaluation of annotations with a __future__
+        # import. When postponed, Parameter.annotation will be a string and must
+        # be replaced with the real value for the converters to work later on
+        for key, value in self.params.items():
+            if isinstance(value.annotation, str):
+                self.params[key] = value = value.replace(annotation=eval(value.annotation, function.__globals__))
+
+            # fail early for when someone passes an unparameterized Greedy type
+            if value.annotation is converters.Greedy:
+                raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
+
+    async def dispatch_error(self, ctx, error):
         ctx.command_failed = True
         cog = self.instance
         try:
@@ -177,9 +215,9 @@ class Command:
         else:
             injected = wrap_callback(coro)
             if cog is not None:
-                yield from injected(cog, ctx, error)
+                await injected(cog, ctx, error)
             else:
-                yield from injected(ctx, error)
+                await injected(ctx, error)
 
         try:
             local = getattr(cog, '_{0.__class__.__name__}__error'.format(cog))
@@ -187,7 +225,7 @@ class Command:
             pass
         else:
             wrapped = wrap_callback(local)
-            yield from wrapped(ctx, error)
+            await wrapped(ctx, error)
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
@@ -196,8 +234,7 @@ class Command:
             self.instance = instance
         return self
 
-    @asyncio.coroutine
-    def do_conversion(self, ctx, converter, argument):
+    async def _actual_conversion(self, ctx, converter, argument, param):
         if converter is bool:
             return _convert_to_bool(argument)
 
@@ -209,21 +246,65 @@ class Command:
             if module.startswith('discord.') and not module.endswith('converter'):
                 converter = getattr(converters, converter.__name__ + 'Converter')
 
-        if inspect.isclass(converter):
-            if issubclass(converter, converters.Converter):
-                instance = converter()
-                ret = yield from instance.convert(ctx, argument)
-                return ret
-            else:
-                method = getattr(converter, 'convert', None)
-                if method is not None and inspect.ismethod(method):
-                    ret = yield from method(ctx, argument)
+        try:
+            if inspect.isclass(converter):
+                if issubclass(converter, converters.Converter):
+                    instance = converter()
+                    ret = await instance.convert(ctx, argument)
                     return ret
-        elif isinstance(converter, converters.Converter):
-            ret = yield from converter.convert(ctx, argument)
-            return ret
+                else:
+                    method = getattr(converter, 'convert', None)
+                    if method is not None and inspect.ismethod(method):
+                        ret = await method(ctx, argument)
+                        return ret
+            elif isinstance(converter, converters.Converter):
+                ret = await converter.convert(ctx, argument)
+                return ret
+        except CommandError as e:
+            raise e
+        except Exception as e:
+            raise ConversionError(converter, e) from e
 
-        return converter(argument)
+        try:
+            return converter(argument)
+        except CommandError as e:
+            raise e
+        except Exception as e:
+            try:
+                name = converter.__name__
+            except AttributeError:
+                name = converter.__class__.__name__
+
+            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+
+    async def do_conversion(self, ctx, converter, argument, param):
+        try:
+            origin = converter.__origin__
+        except AttributeError:
+            pass
+        else:
+            if origin is typing.Union:
+                errors = []
+                _NoneType = type(None)
+                for conv in converter.__args__:
+                    # if we got to this part in the code, then the previous conversions have failed
+                    # so we should just undo the view, return the default, and allow parsing to continue
+                    # with the other parameters
+                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                        ctx.view.undo()
+                        return None if param.default is param.empty else param.default
+
+                    try:
+                        value = await self._actual_conversion(ctx, conv, argument, param)
+                    except CommandError as e:
+                        errors.append(e)
+                    else:
+                        return value
+
+                # if we're  here, then we failed all the converters
+                raise BadUnionArgument(param, converter.__args__, errors)
+
+        return await self._actual_conversion(ctx, converter, argument, param)
 
     def _get_converter(self, param):
         converter = param.annotation
@@ -234,13 +315,25 @@ class Command:
                 converter = str
         return converter
 
-    @asyncio.coroutine
-    def transform(self, ctx, param):
+    async def transform(self, ctx, param):
         required = param.default is param.empty
         converter = self._get_converter(param)
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
         view.skip_ws()
+
+        # The greedy converter is simple -- it keeps going until it fails in which case,
+        # it undos the view ready for the next parameter to use instead
+        if type(converter) is converters._Greedy:
+            if param.kind == param.POSITIONAL_OR_KEYWORD:
+                return await self._transform_greedy_pos(ctx, param, required, converter.converter)
+            elif param.kind == param.VAR_POSITIONAL:
+                return await self._transform_greedy_var_pos(ctx, param, converter.converter)
+            else:
+                # if we're here, then it's a KEYWORD_ONLY param type
+                # since this is mostly useless, we'll helpfully transform Greedy[X]
+                # into just X and do the parsing that way.
+                converter = converter.converter
 
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
@@ -249,22 +342,51 @@ class Command:
                 raise MissingRequiredArgument(param)
             return param.default
 
+        previous = view.index
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
             argument = quoted_word(view)
+        view.previous = previous
 
-        try:
-            return (yield from self.do_conversion(ctx, converter, argument))
-        except CommandError as e:
-            raise e
-        except Exception as e:
+        return (await self.do_conversion(ctx, converter, argument, param))
+
+    async def _transform_greedy_pos(self, ctx, param, required, converter):
+        view = ctx.view
+        result = []
+        while not view.eof:
+            # for use with a manual undo
+            previous = view.index
+
+            # parsing errors get propagated
+            view.skip_ws()
+            argument = quoted_word(view)
             try:
-                name = converter.__name__
-            except AttributeError:
-                name = converter.__class__.__name__
+                value = await self.do_conversion(ctx, converter, argument, param)
+            except CommandError as e:
+                if not result:
+                    if required:
+                        raise
+                    else:
+                        view.index = previous
+                        return param.default
+                view.index = previous
+                break
+            else:
+                result.append(value)
+        return result
 
-            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+    async def _transform_greedy_var_pos(self, ctx, param, converter):
+        view = ctx.view
+        previous = view.index
+        argument = quoted_word(view)
+        try:
+            value = await self.do_conversion(ctx, converter, argument, param)
+        except CommandError:
+            view.index = previous
+            raise RuntimeError() from None # break loop
+        else:
+            return value
 
     @property
     def clean_params(self):
@@ -280,7 +402,7 @@ class Command:
         try:
             # first/second parameter is context
             result.popitem(last=False)
-        except Exception as e:
+        except Exception:
             raise ValueError('Missing context parameter') from None
 
         return result
@@ -338,8 +460,7 @@ class Command:
     def __str__(self):
         return self.qualified_name
 
-    @asyncio.coroutine
-    def _parse_arguments(self, ctx):
+    async def _parse_arguments(self, ctx):
         ctx.args = [ctx] if self.instance is None else [self.instance, ctx]
         ctx.kwargs = {}
         args = ctx.args
@@ -366,21 +487,21 @@ class Command:
 
         for name, param in iterator:
             if param.kind == param.POSITIONAL_OR_KEYWORD:
-                transformed = yield from self.transform(ctx, param)
+                transformed = await self.transform(ctx, param)
                 args.append(transformed)
             elif param.kind == param.KEYWORD_ONLY:
                 # kwarg only param denotes "consume rest" semantics
                 if self.rest_is_raw:
                     converter = self._get_converter(param)
                     argument = view.read_rest()
-                    kwargs[name] = yield from self.do_conversion(ctx, converter, argument)
+                    kwargs[name] = await self.do_conversion(ctx, converter, argument, param)
                 else:
-                    kwargs[name] = yield from self.transform(ctx, param)
+                    kwargs[name] = await self.transform(ctx, param)
                 break
             elif param.kind == param.VAR_POSITIONAL:
                 while not view.eof:
                     try:
-                        transformed = yield from self.transform(ctx, param)
+                        transformed = await self.transform(ctx, param)
                         args.append(transformed)
                     except RuntimeError:
                         break
@@ -389,24 +510,22 @@ class Command:
             if not view.eof:
                 raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-    @asyncio.coroutine
-    def _verify_checks(self, ctx):
+    async def _verify_checks(self, ctx):
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
 
-        if not (yield from self.can_run(ctx)):
+        if not (await self.can_run(ctx)):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
-    @asyncio.coroutine
-    def call_before_hooks(self, ctx):
+    async def call_before_hooks(self, ctx):
         # now that we're done preparing we can call the pre-command hooks
         # first, call the command local hook:
         cog = self.instance
         if self._before_invoke is not None:
             if cog is None:
-                yield from self._before_invoke(ctx)
+                await self._before_invoke(ctx)
             else:
-                yield from self._before_invoke(cog, ctx)
+                await self._before_invoke(cog, ctx)
 
         # call the cog local hook if applicable:
         try:
@@ -414,37 +533,35 @@ class Command:
         except AttributeError:
             pass
         else:
-            yield from hook(ctx)
+            await hook(ctx)
 
         # call the bot global hook if necessary
         hook = ctx.bot._before_invoke
         if hook is not None:
-            yield from hook(ctx)
+            await hook(ctx)
 
-    @asyncio.coroutine
-    def call_after_hooks(self, ctx):
+    async def call_after_hooks(self, ctx):
         cog = self.instance
         if self._after_invoke is not None:
             if cog is None:
-                yield from self._after_invoke(ctx)
+                await self._after_invoke(ctx)
             else:
-                yield from self._after_invoke(cog, ctx)
+                await self._after_invoke(cog, ctx)
 
         try:
             hook = getattr(cog, '_{0.__class__.__name__}__after_invoke'.format(cog))
         except AttributeError:
             pass
         else:
-            yield from hook(ctx)
+            await hook(ctx)
 
         hook = ctx.bot._after_invoke
         if hook is not None:
-            yield from hook(ctx)
+            await hook(ctx)
 
-    @asyncio.coroutine
-    def prepare(self, ctx):
+    async def prepare(self, ctx):
         ctx.command = self
-        yield from self._verify_checks(ctx)
+        await self._verify_checks(ctx)
 
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
@@ -452,8 +569,8 @@ class Command:
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
-        yield from self._parse_arguments(ctx)
-        yield from self.call_before_hooks(ctx)
+        await self._parse_arguments(ctx)
+        await self.call_before_hooks(ctx)
 
     def is_on_cooldown(self, ctx):
         """Checks whether the command is currently on cooldown.
@@ -486,34 +603,32 @@ class Command:
             bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
 
-    @asyncio.coroutine
-    def invoke(self, ctx):
-        yield from self.prepare(ctx)
+    async def invoke(self, ctx):
+        await self.prepare(ctx)
 
         # terminate the invoked_subcommand chain.
         # since we're in a regular command (and not a group) then
         # the invoked subcommand is None.
         ctx.invoked_subcommand = None
         injected = hooked_wrapped_callback(self, ctx, self.callback)
-        yield from injected(*ctx.args, **ctx.kwargs)
+        await injected(*ctx.args, **ctx.kwargs)
 
-    @asyncio.coroutine
-    def reinvoke(self, ctx, *, call_hooks=False):
+    async def reinvoke(self, ctx, *, call_hooks=False):
         ctx.command = self
-        yield from self._parse_arguments(ctx)
+        await self._parse_arguments(ctx)
 
         if call_hooks:
-            yield from self.call_before_hooks(ctx)
+            await self.call_before_hooks(ctx)
 
         ctx.invoked_subcommand = None
         try:
-            yield from self.callback(*ctx.args, **ctx.kwargs)
+            await self.callback(*ctx.args, **ctx.kwargs)
         except:
             ctx.command_failed = True
             raise
         finally:
             if call_hooks:
-                yield from self.call_after_hooks(ctx)
+                await self.call_after_hooks(ctx)
 
     def error(self, coro):
         """A decorator that registers a coroutine as a local error handler.
@@ -561,7 +676,7 @@ class Command:
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
@@ -588,7 +703,7 @@ class Command:
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
@@ -651,8 +766,7 @@ class Command:
 
         return ' '.join(result)
 
-    @asyncio.coroutine
-    def can_run(self, ctx):
+    async def can_run(self, ctx):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
@@ -679,7 +793,7 @@ class Command:
         ctx.command = self
 
         try:
-            if not (yield from ctx.bot.can_run(ctx)):
+            if not (await ctx.bot.can_run(ctx)):
                 raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
 
             cog = self.instance
@@ -689,7 +803,7 @@ class Command:
                 except AttributeError:
                     pass
                 else:
-                    ret = yield from discord.utils.maybe_coroutine(local_check, ctx)
+                    ret = await discord.utils.maybe_coroutine(local_check, ctx)
                     if not ret:
                         return False
 
@@ -698,7 +812,7 @@ class Command:
                 # since we have no checks, then we just return True.
                 return True
 
-            return (yield from discord.utils.async_all(predicate(ctx) for predicate in predicates))
+            return (await discord.utils.async_all(predicate(ctx) for predicate in predicates))
         finally:
             ctx.command = original
 
@@ -711,9 +825,13 @@ class GroupMixin:
     all_commands: :class:`dict`
         A mapping of command name to :class:`.Command` or superclass
         objects.
+    case_insensitive: :class:`bool`
+        Whether the commands should be case insensitive. Defaults to ``False``.
     """
     def __init__(self, **kwargs):
-        self.all_commands = {}
+        case_insensitive = kwargs.get('case_insensitive', False)
+        self.all_commands = _CaseInsensitiveDict() if case_insensitive else {}
+        self.case_insensitive = case_insensitive
         super().__init__(**kwargs)
 
     @property
@@ -875,16 +993,18 @@ class Group(GroupMixin, Command):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
+    case_insensitive: :class:`bool`
+        Indicates if the group's commands should be case insensitive.
+        Defaults to ``False``.
     """
     def __init__(self, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)
         super().__init__(**attrs)
 
-    @asyncio.coroutine
-    def invoke(self, ctx):
+    async def invoke(self, ctx):
         early_invoke = not self.invoke_without_command
         if early_invoke:
-            yield from self.prepare(ctx)
+            await self.prepare(ctx)
 
         view = ctx.view
         previous = view.index
@@ -897,26 +1017,25 @@ class Group(GroupMixin, Command):
 
         if early_invoke:
             injected = hooked_wrapped_callback(self, ctx, self.callback)
-            yield from injected(*ctx.args, **ctx.kwargs)
+            await injected(*ctx.args, **ctx.kwargs)
 
         if trigger and ctx.invoked_subcommand:
             ctx.invoked_with = trigger
-            yield from ctx.invoked_subcommand.invoke(ctx)
+            await ctx.invoked_subcommand.invoke(ctx)
         elif not early_invoke:
             # undo the trigger parsing
             view.index = previous
             view.previous = previous
-            yield from super().invoke(ctx)
+            await super().invoke(ctx)
 
-    @asyncio.coroutine
-    def reinvoke(self, ctx, *, call_hooks=False):
+    async def reinvoke(self, ctx, *, call_hooks=False):
         early_invoke = not self.invoke_without_command
         if early_invoke:
             ctx.command = self
-            yield from self._parse_arguments(ctx)
+            await self._parse_arguments(ctx)
 
             if call_hooks:
-                yield from self.call_before_hooks(ctx)
+                await self.call_before_hooks(ctx)
 
         view = ctx.view
         previous = view.index
@@ -929,22 +1048,22 @@ class Group(GroupMixin, Command):
 
         if early_invoke:
             try:
-                yield from self.callback(*ctx.args, **ctx.kwargs)
+                await self.callback(*ctx.args, **ctx.kwargs)
             except:
                 ctx.command_failed = True
                 raise
             finally:
                 if call_hooks:
-                    yield from self.call_after_hooks(ctx)
+                    await self.call_after_hooks(ctx)
 
         if trigger and ctx.invoked_subcommand:
             ctx.invoked_with = trigger
-            yield from ctx.invoked_subcommand.reinvoke(ctx, call_hooks=call_hooks)
+            await ctx.invoked_subcommand.reinvoke(ctx, call_hooks=call_hooks)
         elif not early_invoke:
             # undo the trigger parsing
             view.index = previous
             view.previous = previous
-            yield from super().reinvoke(ctx, call_hooks=call_hooks)
+            await super().reinvoke(ctx, call_hooks=call_hooks)
 
 # Decorators
 
@@ -1023,7 +1142,7 @@ def group(name=None, **attrs):
     return command(name=name, cls=Group, **attrs)
 
 def check(predicate):
-    """A decorator that adds a check to the :class:`.Command` or its
+    r"""A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
     These checks should be predicates that take in a single parameter taking
@@ -1114,7 +1233,7 @@ def has_role(name):
     return check(predicate)
 
 def has_any_role(*names):
-    """A :func:`.check` that is added that checks if the member invoking the
+    r"""A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
@@ -1256,9 +1375,8 @@ def is_owner():
     from :exc:`.CheckFailure`.
     """
 
-    @asyncio.coroutine
-    def predicate(ctx):
-        if not (yield from ctx.bot.is_owner(ctx.author)):
+    async def predicate(ctx):
+        if not (await ctx.bot.is_owner(ctx.author)):
             raise NotOwner('You do not own this bot.')
         return True
 
@@ -1284,6 +1402,7 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.user`` for a per-user basis.
     - ``BucketType.guild`` for a per-guild basis.
     - ``BucketType.channel`` for a per-channel basis.
+    - ``BucketType.member`` for a per-member basis.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.

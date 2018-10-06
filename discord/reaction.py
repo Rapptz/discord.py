@@ -94,10 +94,7 @@ class Reaction:
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
 
     def users(self, limit=None, after=None):
-        """|coro|
-
-        Returns an :class:`AsyncIterator` representing the
-        users that have reacted to the message.
+        """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
 
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.
@@ -131,17 +128,6 @@ class Reaction:
             # users is now a list...
             winner = random.choice(users)
             await channel.send('{} has won the raffle.'.format(winner))
-
-        Python 3.4 Usage ::
-
-            iterator = reaction.users()
-            while True:
-                try:
-                    user = yield from iterator.next()
-                except discord.NoMoreItems:
-                    break
-                else:
-                    await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
 
         Yields
         --------

@@ -1,17 +1,9 @@
 from setuptools import setup, find_packages
-import re, os
-
-on_rtd = os.getenv('READTHEDOCS') == 'True'
+import re
 
 requirements = []
 with open('requirements.txt') as f:
   requirements = f.read().splitlines()
-
-if on_rtd:
-  requirements.append('sphinx==1.6.5')
-  requirements.append('sphinxcontrib-napoleon')
-  requirements.append('sphinxcontrib-asyncio')
-  requirements.append('sphinxcontrib-websupport')
 
 version = ''
 with open('discord/__init__.py') as f:
@@ -42,8 +34,12 @@ with open('README.rst') as f:
     readme = f.read()
 
 extras_require = {
-    'voice': ['PyNaCl==1.1.2'],
-    'docs': ['sphinxcontrib-asyncio']
+    'voice': ['PyNaCl==1.2.1'],
+    'docs': [
+        'sphinx==1.7.4',
+        'sphinxcontrib-asyncio',
+        'sphinxcontrib-websupport',
+    ]
 }
 
 setup(name='discord.py',
@@ -57,15 +53,16 @@ setup(name='discord.py',
       include_package_data=True,
       install_requires=requirements,
       extras_require=extras_require,
+      python_requires='>=3.5.3',
       classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Internet',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',

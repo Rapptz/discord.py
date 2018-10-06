@@ -34,7 +34,7 @@ from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .user import BaseUser, User
 
-__all__ = ('WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook')
+__all__ = ['WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook']
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -135,8 +135,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = session.loop
 
-    @asyncio.coroutine
-    def request(self, verb, url, payload=None, multipart=None):
+    async def request(self, verb, url, payload=None, multipart=None):
         headers = {}
         data = None
         if payload:
@@ -152,9 +151,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 data.add_field(key, value)
 
         for tries in range(5):
-            r = yield from self.session.request(verb, url, headers=headers, data=data)
-            try:
-                data = yield from r.text(encoding='utf-8')
+            async with self.session.request(verb, url, headers=headers, data=data) as r:
+                data = await r.text(encoding='utf-8')
                 if r.headers['Content-Type'] == 'application/json':
                     data = json.loads(data)
 
@@ -162,7 +160,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 remaining = r.headers.get('X-Ratelimit-Remaining')
                 if remaining == '0' and r.status != 429:
                     delta = utils._parse_ratelimit_header(r)
-                    yield from asyncio.sleep(delta, loop=self.loop)
+                    await asyncio.sleep(delta, loop=self.loop)
 
                 if 300 > r.status >= 200:
                     return data
@@ -170,11 +168,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 # we are being rate limited
                 if r.status == 429:
                     retry_after = data['retry_after'] / 1000.0
-                    yield from asyncio.sleep(retry_after, loop=self.loop)
+                    await asyncio.sleep(retry_after, loop=self.loop)
                     continue
 
                 if r.status in (500, 502):
-                    yield from asyncio.sleep(1 + tries * 2, loop=self.loop)
+                    await asyncio.sleep(1 + tries * 2, loop=self.loop)
                     continue
 
                 if r.status == 403:
@@ -183,12 +181,9 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     raise NotFound(r, data)
                 else:
                     raise HTTPException(r, data)
-            finally:
-                yield from r.release()
 
-    @asyncio.coroutine
-    def handle_execution_response(self, response, *, wait):
-        data = yield from response
+    async def handle_execution_response(self, response, *, wait):
+        data = await response
         if not wait:
             return data
 
@@ -227,7 +222,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
             data = utils.to_json(payload)
 
         if multipart is not None:
-            data = { 'payload_json': multipart.pop('payload_json') }
+            data = {'payload_json': multipart.pop('payload_json')}
 
         for tries in range(5):
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
@@ -429,7 +424,7 @@ class Webhook:
 
         If this is a partial webhook, then this will always return ``None``.
         """
-        return self._state and self._state.get_guild(self.guild_id)
+        return self._state and self._state._get_guild(self.guild_id)
 
     @property
     def channel(self):
@@ -530,7 +525,7 @@ class Webhook:
         name: Optional[str]
             The webhook's new default name.
         avatar: Optional[bytes]
-            A *bytes-like* object representing the webhook's new default avatar.
+            A :term:`py:bytes-like object` representing the webhook's new default avatar.
 
         Raises
         -------

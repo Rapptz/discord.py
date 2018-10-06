@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import collections
 import discord
 import inspect
 import importlib
@@ -32,7 +33,7 @@ import sys
 import traceback
 import re
 
-from .core import GroupMixin, Command, command
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
@@ -76,7 +77,7 @@ def when_mentioned_or(*prefixes):
     """
     def inner(bot, msg):
         r = list(prefixes)
-        r.extend(when_mentioned(bot, msg))
+        r = when_mentioned(bot, msg) + r
         return r
 
     return inner
@@ -91,8 +92,7 @@ _mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
 def _is_submodule(parent, child):
     return parent == child or child.startswith(parent + ".")
 
-@asyncio.coroutine
-def _default_help_command(ctx, *commands : str):
+async def _default_help_command(ctx, *commands : str):
     """Shows this message."""
     bot = ctx.bot
     destination = ctx.message.author if bot.pm_help else ctx.message.channel
@@ -102,7 +102,7 @@ def _default_help_command(ctx, *commands : str):
 
     # help by itself just lists our own commands.
     if len(commands) == 0:
-        pages = yield from bot.formatter.format_help_for(ctx, bot)
+        pages = await bot.formatter.format_help_for(ctx, bot)
     elif len(commands) == 1:
         # try to see if it is a cog name
         name = _mention_pattern.sub(repl, commands[0])
@@ -112,15 +112,15 @@ def _default_help_command(ctx, *commands : str):
         else:
             command = bot.all_commands.get(name)
             if command is None:
-                yield from destination.send(bot.command_not_found.format(name))
+                await destination.send(bot.command_not_found.format(name))
                 return
 
-        pages = yield from bot.formatter.format_help_for(ctx, command)
+        pages = await bot.formatter.format_help_for(ctx, command)
     else:
         name = _mention_pattern.sub(repl, commands[0])
         command = bot.all_commands.get(name)
         if command is None:
-            yield from destination.send(bot.command_not_found.format(name))
+            await destination.send(bot.command_not_found.format(name))
             return
 
         for key in commands[1:]:
@@ -128,22 +128,22 @@ def _default_help_command(ctx, *commands : str):
                 key = _mention_pattern.sub(repl, key)
                 command = command.all_commands.get(key)
                 if command is None:
-                    yield from destination.send(bot.command_not_found.format(key))
+                    await destination.send(bot.command_not_found.format(key))
                     return
             except AttributeError:
-                yield from destination.send(bot.command_has_no_subcommands.format(command, key))
+                await destination.send(bot.command_has_no_subcommands.format(command, key))
                 return
 
-        pages = yield from bot.formatter.format_help_for(ctx, command)
+        pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
-        characters = sum(map(lambda l: len(l), pages))
+        characters = sum(map(len, pages))
         # modify destination based on length of pages.
         if characters > 1000:
             destination = ctx.message.author
 
     for page in pages:
-        yield from destination.send(page)
+        await destination.send(page)
 
 class BotBase(GroupMixin):
     def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
@@ -189,10 +189,9 @@ class BotBase(GroupMixin):
         ev = 'on_' + event_name
         for event in self.extra_events.get(ev, []):
             coro = self._run_event(event, event_name, *args, **kwargs)
-            discord.compat.create_task(coro, loop=self.loop)
+            asyncio.ensure_future(coro, loop=self.loop)
 
-    @asyncio.coroutine
-    def close(self):
+    async def close(self):
         for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
@@ -205,10 +204,9 @@ class BotBase(GroupMixin):
             except:
                 pass
 
-        yield from super().close()
+        await super().close()
 
-    @asyncio.coroutine
-    def on_command_error(self, context, exception):
+    async def on_command_error(self, context, exception):
         """|coro|
 
         The default command error handler provided by the bot.
@@ -236,7 +234,7 @@ class BotBase(GroupMixin):
     # global check registration
 
     def check(self, func):
-        """A decorator that adds a global check to the bot.
+        r"""A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
@@ -304,7 +302,7 @@ class BotBase(GroupMixin):
                 pass
 
     def check_once(self, func):
-        """A decorator that adds a "call once" global check to the bot.
+        r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
         per :meth:`.Command.invoke` call.
@@ -335,17 +333,15 @@ class BotBase(GroupMixin):
         self.add_check(func, call_once=True)
         return func
 
-    @asyncio.coroutine
-    def can_run(self, ctx, *, call_once=False):
+    async def can_run(self, ctx, *, call_once=False):
         data = self._check_once if call_once else self._checks
 
         if len(data) == 0:
             return True
 
-        return (yield from discord.utils.async_all(f(ctx) for f in data))
+        return (await discord.utils.async_all(f(ctx) for f in data))
 
-    @asyncio.coroutine
-    def is_owner(self, user):
+    async def is_owner(self, user):
         """Checks if a :class:`.User` or :class:`.Member` is the owner of
         this bot.
 
@@ -359,7 +355,7 @@ class BotBase(GroupMixin):
         """
 
         if self.owner_id is None:
-            app = yield from self.application_info()
+            app = await self.application_info()
             self.owner_id = owner_id = app.owner.id
             return user.id == owner_id
         return user.id == self.owner_id
@@ -391,13 +387,13 @@ class BotBase(GroupMixin):
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
 
     def after_invoke(self, coro):
-        """A decorator that registers a coroutine as a post-invoke hook.
+        r"""A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
@@ -424,7 +420,7 @@ class BotBase(GroupMixin):
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
@@ -738,6 +734,8 @@ class BotBase(GroupMixin):
 
         # first remove all the commands from the module
         for cmd in self.all_commands.copy().values():
+            if cmd.module is None:
+                continue
             if _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
@@ -773,8 +771,7 @@ class BotBase(GroupMixin):
 
     # command processing
 
-    @asyncio.coroutine
-    def get_prefix(self, message):
+    async def get_prefix(self, message):
         """|coro|
 
         Retrieves the prefix the bot is listening to
@@ -785,14 +782,6 @@ class BotBase(GroupMixin):
         message: :class:`discord.Message`
             The message context to get the prefix of.
 
-        Raises
-        --------
-        :exc:`.ClientException`
-            The prefix was invalid. This could be if the prefix
-            function returned None, the prefix list returned no
-            elements that aren't None, or the prefix string is
-            empty.
-
         Returns
         --------
         Union[List[str], str]
@@ -801,21 +790,27 @@ class BotBase(GroupMixin):
         """
         prefix = ret = self.command_prefix
         if callable(prefix):
-            ret = prefix(self, message)
-            if asyncio.iscoroutine(ret):
-                ret = yield from ret
+            ret = await discord.utils.maybe_coroutine(prefix, self, message)
 
-        if isinstance(ret, (list, tuple)):
-            ret = [p for p in ret if p]
+        if not isinstance(ret, str):
+            try:
+                ret = list(ret)
+            except TypeError:
+                # It's possible that a generator raised this exception.  Don't
+                # replace it with our own error if that's the case.
+                if isinstance(ret, collections.Iterable):
+                    raise
 
-        if not ret:
-            raise discord.ClientException('invalid prefix (could be an empty string, empty list, or None)')
+                raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
+                                "returning either of these, not {}".format(ret.__class__.__name__))
+
+            if not ret:
+                raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
-    @asyncio.coroutine
-    def get_context(self, message, *, cls=Context):
-        """|coro|
+    async def get_context(self, message, *, cls=Context):
+        r"""|coro|
 
         Returns the invocation context from the message.
 
@@ -850,16 +845,34 @@ class BotBase(GroupMixin):
         if self._skip_check(message.author.id, self.user.id):
             return ctx
 
-        prefix = yield from self.get_prefix(message)
+        prefix = await self.get_prefix(message)
         invoked_prefix = prefix
 
         if isinstance(prefix, str):
             if not view.skip_string(prefix):
                 return ctx
         else:
-            invoked_prefix = discord.utils.find(view.skip_string, prefix)
-            if invoked_prefix is None:
-                return ctx
+            try:
+                # if the context class' __init__ consumes something from the view this
+                # will be wrong.  That seems unreasonable though.
+                if message.content.startswith(tuple(prefix)):
+                    invoked_prefix = discord.utils.find(view.skip_string, prefix)
+                else:
+                    return ctx
+
+            except TypeError:
+                if not isinstance(prefix, list):
+                    raise TypeError("get_prefix must return either a string or a list of string, "
+                                    "not {}".format(prefix.__class__.__name__))
+
+                # It's possible a bad command_prefix got us here.
+                for value in prefix:
+                    if not isinstance(value, str):
+                        raise TypeError("Iterable command_prefix or list returned from get_prefix must "
+                                        "contain only strings, not {}".format(value.__class__.__name__))
+
+                # Getting here shouldn't happen
+                raise
 
         invoker = view.get_word()
         ctx.invoked_with = invoker
@@ -867,8 +880,7 @@ class BotBase(GroupMixin):
         ctx.command = self.all_commands.get(invoker)
         return ctx
 
-    @asyncio.coroutine
-    def invoke(self, ctx):
+    async def invoke(self, ctx):
         """|coro|
 
         Invokes the command given under the invocation context and
@@ -882,18 +894,17 @@ class BotBase(GroupMixin):
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
-                if (yield from self.can_run(ctx, call_once=True)):
-                    yield from ctx.command.invoke(ctx)
+                if (await self.can_run(ctx, call_once=True)):
+                    await ctx.command.invoke(ctx)
             except CommandError as e:
-                yield from ctx.command.dispatch_error(ctx, e)
+                await ctx.command.dispatch_error(ctx, e)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
             exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
-    @asyncio.coroutine
-    def process_commands(self, message):
+    async def process_commands(self, message):
         """|coro|
 
         This function processes the commands that have been registered
@@ -907,17 +918,22 @@ class BotBase(GroupMixin):
         This is built using other low level tools, and is equivalent to a
         call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
+        This also checks if the message's author is a bot and doesn't
+        call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
+
         Parameters
         -----------
-        message : discord.Message
+        message: :class:`discord.Message`
             The message to process commands for.
         """
-        ctx = yield from self.get_context(message)
-        yield from self.invoke(ctx)
+        if message.author.bot:
+            return
 
-    @asyncio.coroutine
-    def on_message(self, message):
-        yield from self.process_commands(message)
+        ctx = await self.get_context(message)
+        await self.invoke(ctx)
+
+    async def on_message(self, message):
+        await self.process_commands(message)
 
 class Bot(BotBase, discord.Client):
     """Represents a discord bot.
@@ -943,10 +959,30 @@ class Bot(BotBase, discord.Client):
         command prefixes. This callable can be either a regular function or
         a coroutine.
 
-        The command prefix could also be a :class:`list` or a :class:`tuple` indicating that
+        An empty string as the prefix always matches, enabling prefix-less
+        command invocation. While this may be useful in DMs it should be avoided
+        in servers, as it's likely to cause performance issues and unintended
+        command invocations.
+
+        The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`.
+        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
+        allowed.
+
+        .. note::
+
+            When passing multiple prefixes be careful to not pass a prefix
+            that matches a longer prefix occuring later in the sequence.  For
+            example, if the command prefix is ``('!', '!?')``  the ``'!?'``
+            prefix will never be matched to any message as the previous one
+            matches messages starting with ``!?``. This is especially important
+            when passing an empty string, it should always be last as no prefix
+            after it will be matched.
+    case_insensitive: :class:`bool`
+        Whether the commands should be case insensitive. Defaults to ``False``. This
+        attribute does not carry over to groups. You must set it to every group if
+        you require group commands to be case insensitive as well.
     description : :class:`str`
         The content prefixed into the default help message.
     self_bot : :class:`bool`

@@ -30,7 +30,6 @@ import json
 import sys
 import logging
 import weakref
-import datetime
 from urllib.parse import quote as _uriquote
 
 log = logging.getLogger(__name__)
@@ -38,9 +37,8 @@ log = logging.getLogger(__name__)
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
 from . import __version__, utils
 
-@asyncio.coroutine
-def json_or_text(response):
-    text = yield from response.text(encoding='utf-8')
+async def json_or_text(response):
+    text = await response.text(encoding='utf-8')
     if response.headers['content-type'] == 'application/json':
         return json.loads(text)
     return text
@@ -106,8 +104,7 @@ class HTTPClient:
         if self._session.closed:
             self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
 
-    @asyncio.coroutine
-    def request(self, route, *, header_bypass_delay=None, **kwargs):
+    async def request(self, route, *, header_bypass_delay=None, **kwargs):
         bucket = route.bucket
         method = route.method
         url = route.url
@@ -148,16 +145,16 @@ class HTTPClient:
 
         if not self._global_over.is_set():
             # wait until the global lock is complete
-            yield from self._global_over.wait()
+            await self._global_over.wait()
 
-        yield from lock
+        await lock
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
-                r = yield from self._session.request(method, url, **kwargs)
-                log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
-                try:
+                async with self._session.request(method, url, **kwargs) as r:
+                    log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
+
                     # even errors have text involved in them so this is safe to call
-                    data = yield from json_or_text(r)
+                    data = await json_or_text(r)
 
                     # check if we have rate limit header information
                     remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -191,7 +188,7 @@ class HTTPClient:
                             log.info('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self._global_over.clear()
 
-                        yield from asyncio.sleep(retry_after, loop=self.loop)
+                        await asyncio.sleep(retry_after, loop=self.loop)
                         log.debug('Done sleeping for the rate limit. Retrying...')
 
                         # release the global lock now that the
@@ -204,7 +201,7 @@ class HTTPClient:
 
                     # we've received a 500 or 502, unconditional retry
                     if r.status in {500, 502}:
-                        yield from asyncio.sleep(1 + tries * 2, loop=self.loop)
+                        await asyncio.sleep(1 + tries * 2, loop=self.loop)
                         continue
 
                     # the usual error cases
@@ -214,31 +211,25 @@ class HTTPClient:
                         raise NotFound(r, data)
                     else:
                         raise HTTPException(r, data)
-                finally:
-                    # clean-up just in case
-                    yield from r.release()
+
             # We've run out of retries, raise.
             raise HTTPException(r, data)
 
-    def get_attachment(self, url):
-        resp = yield from self._session.get(url)
-        try:
+    async def get_attachment(self, url):
+        async with self._session.get(url) as resp:
             if resp.status == 200:
-                return (yield from resp.read())
+                return (await resp.read())
             elif resp.status == 404:
                 raise NotFound(resp, 'attachment not found')
             elif resp.status == 403:
                 raise Forbidden(resp, 'cannot retrieve attachment')
             else:
                 raise HTTPException(resp, 'failed to get attachment')
-        finally:
-            yield from resp.release()
 
     # state management
 
-    @asyncio.coroutine
-    def close(self):
-        yield from self._session.close()
+    async def close(self):
+        await self._session.close()
 
     def _token(self, token, *, bot=True):
         self.token = token
@@ -247,13 +238,12 @@ class HTTPClient:
 
     # login management
 
-    @asyncio.coroutine
-    def static_login(self, token, *, bot):
+    async def static_login(self, token, *, bot):
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
         try:
-            data = yield from self.request(Route('GET', '/users/@me'))
+            data = await self.request(Route('GET', '/users/@me'))
         except HTTPException as e:
             self._token(old_token, bot=old_bot)
             if e.response.status == 401:
@@ -348,19 +338,16 @@ class HTTPClient:
 
         return self.request(r, data=form)
 
-    @asyncio.coroutine
-    def ack_message(self, channel_id, message_id):
-        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id,
-                                                                          message_id=message_id)
-        data = yield from self.request(r, json={'token': self._ack_token})
+    async def ack_message(self, channel_id, message_id):
+        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
+        data = await self.request(r, json={'token': self._ack_token})
         self._ack_token = data['token']
 
     def ack_guild(self, guild_id):
         return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
 
     def delete_message(self, channel_id, message_id, *, reason=None):
-        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
-                                                                            message_id=message_id)
+        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, reason=reason)
 
     def delete_messages(self, channel_id, message_ids, *, reason=None):
@@ -372,8 +359,7 @@ class HTTPClient:
         return self.request(r, json=payload, reason=reason)
 
     def edit_message(self, message_id, channel_id, **fields):
-        r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id,
-                                                                           message_id=message_id)
+        r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
     def add_reaction(self, message_id, channel_id, emoji):
@@ -393,7 +379,7 @@ class HTTPClient:
 
     def get_reaction_users(self, message_id, channel_id, emoji, limit, after=None):
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
-                         channel_id=channel_id, message_id=message_id, emoji=emoji)
+                  channel_id=channel_id, message_id=message_id, emoji=emoji)
 
         params = {'limit': limit}
         if after:
@@ -426,11 +412,11 @@ class HTTPClient:
 
     def pin_message(self, channel_id, message_id):
         return self.request(Route('PUT', '/channels/{channel_id}/pins/{message_id}',
-                            channel_id=channel_id, message_id=message_id))
+                                  channel_id=channel_id, message_id=message_id))
 
     def unpin_message(self, channel_id, message_id):
         return self.request(Route('DELETE', '/channels/{channel_id}/pins/{message_id}',
-                            channel_id=channel_id, message_id=message_id))
+                                  channel_id=channel_id, message_id=message_id))
 
     def pins_from(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
@@ -509,7 +495,8 @@ class HTTPClient:
 
     def edit_channel(self, channel_id, *, reason=None, **options):
         r = Route('PATCH', '/channels/{channel_id}', channel_id=channel_id)
-        valid_keys = ('name', 'parent_id', 'topic', 'bitrate', 'nsfw', 'user_limit', 'position', 'permission_overwrites')
+        valid_keys = ('name', 'parent_id', 'topic', 'bitrate', 'nsfw',
+                      'user_limit', 'position', 'permission_overwrites', 'rate_limit_per_user')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }
@@ -539,10 +526,10 @@ class HTTPClient:
 
     # Webhook management
 
-    def create_webhook(self, channel_id, *, name=None, avatar=None):
-        payload = {}
-        if name is not None:
-            payload['name'] = name
+    def create_webhook(self, channel_id, *, name, avatar=None):
+        payload = {
+            'name': name
+        }
         if avatar is not None:
             payload['avatar'] = avatar
 
@@ -588,11 +575,14 @@ class HTTPClient:
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
+    def get_ban(self, user_id, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
+
     def get_vanity_code(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
 
     def change_vanity_code(self, guild_id, code, *, reason=None):
-        payload = { 'code': code }
+        payload = {'code': code}
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
 
     def prune_members(self, guild_id, days, *, reason=None):
@@ -607,10 +597,11 @@ class HTTPClient:
         }
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
-    def create_custom_emoji(self, guild_id, name, image, *, reason=None):
+    def create_custom_emoji(self, guild_id, name, image, *, roles=None, reason=None):
         payload = {
             'name': name,
-            'image': image
+            'image': image,
+            'roles': roles or []
         }
 
         r = Route('POST', '/guilds/{guild_id}/emojis', guild_id=guild_id)
@@ -620,15 +611,16 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, reason=reason)
 
-    def edit_custom_emoji(self, guild_id, emoji_id, *, name, reason=None):
+    def edit_custom_emoji(self, guild_id, emoji_id, *, name, roles=None, reason=None):
         payload = {
-            'name': name
+            'name': name,
+            'roles': roles or []
         }
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
 
     def get_audit_logs(self, guild_id, limit=100, before=None, after=None, user_id=None, action_type=None):
-        params = { 'limit': limit }
+        params = {'limit': limit}
         if before:
             params['before'] = before
         if after:
@@ -747,10 +739,9 @@ class HTTPClient:
     def application_info(self):
         return self.request(Route('GET', '/oauth2/applications/@me'))
 
-    @asyncio.coroutine
-    def get_gateway(self, *, encoding='json', v=6, zlib=True):
+    async def get_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
-            data = yield from self.request(Route('GET', '/gateway'))
+            data = await self.request(Route('GET', '/gateway'))
         except HTTPException as e:
             raise GatewayNotFound() from e
         if zlib:
@@ -759,10 +750,9 @@ class HTTPClient:
             value = '{0}?encoding={1}&v={2}'
         return value.format(data['url'], encoding, v)
 
-    @asyncio.coroutine
-    def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
+    async def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
-            data = yield from self.request(Route('GET', '/gateway/bot'))
+            data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as e:
             raise GatewayNotFound() from e
 
@@ -777,3 +767,10 @@ class HTTPClient:
 
     def get_user_profile(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
+
+    def change_hypesquad_house(self, house_id):
+        payload = {'house_id': house_id}
+        return self.request(Route('POST', '/hypesquad/online'), json=payload)
+
+    def leave_hypesquad_house(self):
+        return self.request(Route('DELETE', '/hypesquad/online'))

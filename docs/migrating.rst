@@ -14,6 +14,13 @@ new library.
 Part of the redesign involves making things more easy to use and natural. Things are done on the
 :ref:`models <discord_api_models>` instead of requiring a :class:`Client` instance to do any work.
 
+Python Version Change
+-----------------------
+
+In order to make development easier and also to allow for our dependencies to upgrade to allow usage of 3.7 or higher,
+the library had to remove support for Python versions lower than 3.5.3, which essentially means that **support for Python 3.4
+is dropped**.
+
 Major Model Changes
 ---------------------
 
@@ -357,11 +364,21 @@ They will be enumerated here.
 
     - Use :attr:`Permissions.view_audit_log` instead.
 
+- ``Member.game``
+
+    - Use :attr:`Member.activity` instead.
+
+- ``Guild.role_hierarchy`` / ``Server.role_hierarchy``
+
+    - Use :attr:`Guild.roles` instead. Note that while sorted, it is in the opposite order
+      of what the old ``Guild.role_hierarchy`` used to be.
+
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
 - :attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` objects.
 - :attr:`Message.attachments` is now a list of :class:`Attachment` instead of ``dict`` object.
+- :attr:`Guild.roles` is now sorted through hierarchy. The first element is always the ``@everyone`` role.
 
 **Added**
 
@@ -384,8 +401,10 @@ They will be enumerated here.
 - :meth:`Guild.vanity_invite` to fetch the guild's vanity invite.
 - :meth:`Guild.audit_logs` to fetch the guild's audit logs.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
+- :attr:`Message.activity` and :attr:`Message.application` for Rich Presence related information.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
 - :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
+- :meth:`Guild.get_role` to get a role by its ID.
 
 .. _migrating_1_0_sending_messages:
 
@@ -436,14 +455,14 @@ Prior to v1.0, certain functions like ``Client.logs_from`` would return a differ
 In v1.0, this change has been reverted and will now return a singular type meeting an abstract concept called
 :class:`AsyncIterator`.
 
-This allows you to iterate over it like normal in Python 3.5+: ::
+This allows you to iterate over it like normal: ::
 
     async for message in channel.history():
         print(message)
 
-Or turn it into a list for either Python 3.4 or 3.5+: ::
+Or turn it into a list: ::
 
-    messages = await channel.history().flatten() # use yield from for 3.4!
+    messages = await channel.history().flatten()
     for message in messages:
         print(message)
 

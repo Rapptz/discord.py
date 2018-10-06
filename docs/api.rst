@@ -93,17 +93,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. warning::
 
     All the events must be a |corourl|_. If they aren't, then you might get unexpected
-    errors. In order to turn a function into a coroutine they must either be ``async def``
-    functions or in 3.4 decorated with :func:`asyncio.coroutine`.
-
-    The following two functions are examples of coroutine functions: ::
-
-        async def on_ready():
-            pass
-
-        @asyncio.coroutine
-        def on_ready():
-            pass
+    errors. In order to turn a function into a coroutine they must be ``async def``
+    functions.
 
 .. function:: on_connect()
 
@@ -232,22 +223,21 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param message: A :class:`Message` of the deleted message.
 
-.. function:: on_raw_message_delete(message_id, channel_id)
+.. function:: on_raw_message_delete(payload)
 
     Called when a message is deleted. Unlike :func:`on_message_delete`, this is
     called regardless of the message being in the internal message cache or not.
 
-    :param int message_id: The message ID of the message being deleted.
-    :param int channel_id: The channel ID where the message was deleted.
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMessageDeleteEvent`
 
-.. function:: on_raw_bulk_message_delete(message_ids, channel_id)
+.. function:: on_raw_bulk_message_delete(payload)
 
     Called when a bulk delete is triggered. This event is called regardless
     of the message IDs being in the internal message cache or not.
 
-    :param message_ids: The message IDs that were bulk deleted.
-    :type message_ids: Set[int]
-    :param int channel_id: The channel ID where the messages were deleted.
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawBulkMessageDeleteEvent`
 
 .. function:: on_message_edit(before, after)
 
@@ -269,7 +259,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param before: A :class:`Message` of the previous version of the message.
     :param after: A :class:`Message` of the current version of the message.
 
-.. function:: on_raw_message_edit(message_id, data)
+.. function:: on_raw_message_edit(payload)
 
     Called when a message is edited. Unlike :func:`on_message_edit`, this is called
     regardless of the state of the internal message cache.
@@ -282,8 +272,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     denotes an "embed" only edit, which is an edit in which only the embeds are updated by the Discord
     embed server.
 
-    :param int message_id: The message ID of the message being edited.
-    :param dict data: The raw data being passed to the MESSAGE_UPDATE gateway event.
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMessageUpdateEvent`
 
 .. function:: on_reaction_add(reaction, user)
 
@@ -298,16 +288,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who added the reaction.
 
-.. function:: on_raw_reaction_add(emoji, message_id, channel_id, user_id)
+.. function:: on_raw_reaction_add(payload)
 
-    Called when a reaction has a reaction added. Unlike :func:`on_reaction_add`, this is
+    Called when a message has a reaction added. Unlike :func:`on_reaction_add`, this is
     called regardless of the state of the internal message cache.
 
-    :param emoji: The custom or unicode emoji being reacted to.
-    :type emoji: :class:`PartialEmoji`
-    :param int message_id: The message ID of the message being reacted.
-    :param int channel_id: The channel ID where the message belongs to.
-    :param int user_id: The user ID of the user who did the reaction.
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawReactionActionEvent`
 
 .. function:: on_reaction_remove(reaction, user)
 
@@ -322,16 +309,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
     :param user: A :class:`User` or :class:`Member` of the user who removed the reaction.
 
-.. function:: on_raw_reaction_remove(emoji, message_id, channel_id, user_id)
+.. function:: on_raw_reaction_remove(payload)
 
     Called when a reaction has a reaction removed. Unlike :func:`on_reaction_remove`, this is
     called regardless of the state of the internal message cache.
 
-    :param emoji: The custom or unicode emoji that got un-reacted.
-    :type emoji: :class:`PartialEmoji`
-    :param int message_id: The message ID of the message being un-reacted.
-    :param int channel_id: The channel ID where the message belongs to.
-    :param int user_id: The user ID of the user who removed the reaction.
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawReactionActionEvent`
 
 .. function:: on_reaction_clear(message, reactions)
 
@@ -342,13 +326,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param message: The :class:`Message` that had its reactions cleared.
     :param reactions: A list of :class:`Reaction`\s that were removed.
 
-.. function:: on_raw_reaction_clear(message_id, channel_id)
+.. function:: on_raw_reaction_clear(payload)
 
     Called when a message has all its reactions removed. Unlike :func:`on_reaction_clear`,
     this is called regardless of the state of the internal message cache.
 
-    :param int message_id: The message ID of the message having its reactions removed.
-    :param int channel_id: The channel ID of where the message belongs to.
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawReactionClearEvent`
 
 .. function:: on_private_channel_delete(channel)
               on_private_channel_create(channel)
@@ -395,6 +379,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param channel: The :class:`abc.GuildChannel` that had it's pins updated.
     :param last_pin: A ``datetime.datetime`` object representing when the latest message
                      was pinned or ``None`` if there are no pins.
+
+.. function:: on_webhooks_update(channel)
+
+    Called whenever a webhook is created, modified, or removed from a guild channel.
+
+    :param channel: The :class:`abc.GuildChannel` that had its webhooks updated.
 
 .. function:: on_member_join(member)
               on_member_remove(member)
@@ -583,6 +573,24 @@ Application Info
         The owner of the application. This is a :class:`User` instance
         with the owner's information at the time of the call.
 
+    .. attribute:: bot_public
+
+        ``True`` if the bot is considered as public, else ``False``.
+        Determines if the bot can be invited by anyone or if it is locked
+        to the token owner. Correspond to the "Public bot" box in the
+        token settings.
+
+    .. attribute:: bot_require_code_grant
+
+        ``True`` if the bot requires code grant, else ``False``.
+        Correspond to the "Bot requires code grant" box in the token
+        settings.
+
+    .. attribute:: rpc_origins
+
+        Returns an array of RPC origin URL strings, if RPC is enabled.
+        If RPC isn't enabled, returns ``None``.
+
 Profile
 ---------
 
@@ -612,6 +620,9 @@ Profile
     .. attribute:: hypesquad
 
         A boolean indicating if the user is in Discord HypeSquad.
+    .. attribute:: hypesquad_houses
+
+        A list of :class:`HypeSquadHouse` that the user is in.
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this
@@ -682,67 +693,106 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: pins_add
 
         The system message denoting that a pinned message has been added to a channel.
-
     .. attribute:: new_member
 
         The system message denoting that a new member has joined a Guild.
+
+.. class:: ActivityType
+
+    Specifies the type of :class:`Activity`. This is used to check how to
+    interpret the activity itself.
+
+    .. attribute:: unknown
+
+        An unknown activity type. This should generally not happen.
+    .. attribute:: playing
+
+        A "Playing" activity type.
+    .. attribute:: streaming
+
+        A "Streaming" activity type.
+    .. attribute:: listening
+
+        A "Listening" activity type.
+    .. attribute:: watching
+
+        A "Watching" activity type.
+
+.. class:: HypeSquadHouse
+
+    Specifies the HypeSquad house a user belongs to.
+
+    .. attribute:: bravery
+
+        The "Bravery" house.
+    .. attribute:: brilliance
+
+        The "Brilliance" house.
+    .. attribute:: balance
+
+        The "Balance" house.
 
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
 
-    .. attribute:: us_west
+    .. attribute:: amsterdam
 
-        The US West region.
+        The Amsterdam region.
+    .. attribute:: brazil
+
+        The Brazil region.
+    .. attribute:: eu_central
+
+        The EU Central region.
+    .. attribute:: eu_west
+
+        The EU West region.
+    .. attribute:: frankfurt
+
+        The Frankfurt region.
+    .. attribute:: hongkong
+
+        The Hong Kong region.
+    .. attribute:: japan
+
+        The Japan region.
+    .. attribute:: london
+
+        The London region.
+    .. attribute:: russia
+
+        The Russia region.
+    .. attribute:: singapore
+
+        The Singapore region.
+    .. attribute:: southafrica
+
+        The South Africa region.
+    .. attribute:: sydney
+
+        The Sydney region.
+    .. attribute:: us_central
+
+        The US Central region.
     .. attribute:: us_east
 
         The US East region.
     .. attribute:: us_south
-    
+
         The US South region.
-    .. attribute:: us_central
+    .. attribute:: us_west
 
-        The US Central region.
-    .. attribute:: eu_west
+        The US West region.
+    .. attribute:: vip_amsterdam
 
-        The EU West region.
-    .. attribute:: eu_central
-
-        The EU Central region.
-    .. attribute:: singapore
-
-        The Singapore region.
-    .. attribute:: london
-
-        The London region.
-    .. attribute:: sydney
-
-        The Sydney region.
-    .. attribute:: amsterdam
-
-        The Amsterdam region.
-    .. attribute:: frankfurt
-
-        The Frankfurt region.
-
-    .. attribute:: brazil
-
-        The Brazil region.
-    .. attribute:: hongkong
-    
-        The Hong Kong region.
-    .. attribute:: russia
-    
-        The Russia region.
+        The Amsterdam region for VIP guilds.
     .. attribute:: vip_us_east
 
         The US East region for VIP guilds.
     .. attribute:: vip_us_west
 
         The US West region for VIP guilds.
-    .. attribute:: vip_amsterdam
-
-        The Amsterdam region for VIP guilds.
 
 .. class:: VerificationLevel
 
@@ -1292,21 +1342,10 @@ Some API functions return an "async iterator". An async iterator is something th
 capable of being used in an `async for <https://docs.python.org/3/reference/compound_stmts.html#the-async-for-statement>`_
 statement.
 
-These async iterators can be used as follows in 3.5 or higher: ::
+These async iterators can be used as follows: ::
 
     async for elem in channel.history():
         # do stuff with elem here
-
-If you are using 3.4 however, you will have to use the more verbose way: ::
-
-    iterator = channel.history() # or whatever returns an async iterator
-    while True:
-        try:
-            item = yield from iterator.next()
-        except discord.NoMoreItems:
-            break
-
-        # do stuff with item here
 
 Certain utilities make working with async iterators easier, detailed below.
 
@@ -1702,6 +1741,13 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
         See also :attr:`User.avatar`.
 
+    .. attribute:: slowmode_delay
+
+        :class:`int` – The number of seconds members have to wait before
+        sending another message in the channel.
+
+        See also :attr:`TextChannel.slowmode_delay`.
+
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
 
@@ -1800,7 +1846,6 @@ ClientUser
 
 .. autoclass:: ClientUser()
     :members:
-    :inherited-members:
 
 Relationship
 ~~~~~~~~~~~~~~
@@ -1813,14 +1858,6 @@ User
 
 .. autoclass:: User()
     :members:
-    :inherited-members:
-    :exclude-members: history, typing
-
-    .. autocomethod:: history
-        :async-for:
-
-    .. autocomethod:: typing
-        :async-with:
 
 Attachment
 ~~~~~~~~~~~
@@ -1871,14 +1908,12 @@ Member
 
 .. autoclass:: Member()
     :members:
-    :inherited-members:
-    :exclude-members: history, typing
 
-    .. autocomethod:: history
-        :async-for:
+Spotify
+~~~~~~~~
 
-    .. autocomethod:: typing
-        :async-with:
+.. autoclass:: Spotify()
+    :members:
 
 VoiceState
 ~~~~~~~~~~~
@@ -1909,56 +1944,31 @@ TextChannel
 
 .. autoclass:: TextChannel()
     :members:
-    :inherited-members:
-    :exclude-members: history, typing
-
-    .. autocomethod:: history
-        :async-for:
-
-    .. autocomethod:: typing
-        :async-with:
 
 VoiceChannel
 ~~~~~~~~~~~~~
 
 .. autoclass:: VoiceChannel()
     :members:
-    :inherited-members:
 
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
 
 .. autoclass:: CategoryChannel()
     :members:
-    :inherited-members:
 
 DMChannel
 ~~~~~~~~~
 
 .. autoclass:: DMChannel()
     :members:
-    :inherited-members:
-    :exclude-members: history, typing
 
-    .. autocomethod:: history
-        :async-for:
-
-    .. autocomethod:: typing
-        :async-with:
 
 GroupChannel
 ~~~~~~~~~~~~
 
 .. autoclass:: GroupChannel()
     :members:
-    :inherited-members:
-    :exclude-members: history, typing
-
-    .. autocomethod:: history
-        :async-for:
-
-    .. autocomethod:: typing
-        :async-with:
 
 
 Invite
@@ -1966,6 +1976,37 @@ Invite
 
 .. autoclass:: Invite()
     :members:
+
+RawMessageDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RawMessageDeleteEvent()
+    :members:
+
+RawBulkMessageDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RawBulkMessageDeleteEvent()
+    :members:
+
+RawMessageUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RawMessageUpdateEvent()
+    :members:
+
+RawReactionActionEvent
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RawReactionActionEvent()
+    :members:
+
+RawReactionClearEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RawReactionClearEvent()
+    :members:
+
 
 .. _discord_api_data:
 
@@ -2011,10 +2052,22 @@ Colour
 .. autoclass:: Colour
     :members:
 
+Activity
+~~~~~~~~~
+
+.. autoclass:: Activity
+    :members:
+
 Game
-~~~~
+~~~~~
 
 .. autoclass:: Game
+    :members:
+
+Streaming
+~~~~~~~~~~~
+
+.. autoclass:: Streaming
     :members:
 
 Permissions
