@@ -36,6 +36,7 @@ from .enums import ChannelType, try_enum, Status
 from .calls import GroupCall
 from . import utils, compat
 from .embeds import Embed
+from .message_cache import MessageCache
 
 from collections import deque, namedtuple, OrderedDict
 import copy, enum, math
@@ -56,7 +57,8 @@ class ConnectionState:
     def __init__(self, *, dispatch, chunker, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
-        self.max_messages = max(options.get('max_messages', 5000), 100)
+        self.max_mixed_messages = max(options.get('max_messages', 5000), 100)
+        self.max_important_messages = max(options.get('max_important_messages', self.max_mixed_messages), 100)
         self.dispatch = dispatch
         self.chunker = chunker
         self.syncer = syncer
@@ -95,7 +97,10 @@ class ConnectionState:
         self._private_channels = OrderedDict()
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
-        self._messages = deque(maxlen=self.max_messages)
+        self._messages = MessageCache(
+            max_mixed_messages=self.max_mixed_messages,
+            max_important_messages=self.max_important_messages
+        )
 
     def process_listeners(self, listener_type, argument, result):
         removed = []
@@ -686,7 +691,7 @@ class ConnectionState:
             return
 
         # do a cleanup of the messages cache
-        self._messages = deque((msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages)
+        self._messages = self._message.filter(lambda msg: msg.guild != guild)
 
         self._remove_guild(guild)
         self.dispatch('guild_remove', guild)

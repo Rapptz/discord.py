@@ -169,6 +169,8 @@ class Message:
         Specifies if the message is currently pinned.
     reactions : List[:class:`Reaction`]
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
+    important: `:class:`bool`
+        Specifies if the message has been flagged as "important" and will be kept around in the message cache for longer.
     """
 
     __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
@@ -176,13 +178,14 @@ class Message:
                   '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                   '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                   'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_cs_guild', '_state', 'reactions' )
+                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'important')
 
     def __init__(self, *, state, channel, data):
         self._state = state
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.important = False
         self._update(channel, data)
 
     def __repr__(self):
@@ -743,3 +746,11 @@ class Message:
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return state.http.ack_message(self.channel.id, self.id)
+
+    def mark_as_important(self):
+        """
+
+        Marks the message as important, so that it will be kept in the message cache for longer.
+        If the message has already been dropped from the cache, it will not add it back into the cache.
+        """
+        self.important = True
