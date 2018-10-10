@@ -69,11 +69,11 @@ class Embed:
     Attributes
     -----------
     title: :class:`str`
-        The title of the embed.
+        The title of the embed. Max 256 characters.
     type: :class:`str`
         The type of embed. Usually "rich".
     description: :class:`str`
-        The description of the embed.
+        The description of the embed. Max 2048 characters.
     url: :class:`str`
         The URL of the embed.
     timestamp: `datetime.datetime`
@@ -190,7 +190,7 @@ class Embed:
         Parameters
         -----------
         text: str
-            The footer text.
+            The footer text. Max 2048 characters.
         icon_url: str
             The URL of the footer icon. Only HTTP(S) is supported.
         """
@@ -313,7 +313,7 @@ class Embed:
         Parameters
         -----------
         name: str
-            The name of the author.
+            The name of the author. Max 256 characters.
         url: str
             The URL for the author.
         icon_url: str
@@ -343,7 +343,7 @@ class Embed:
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]
 
     def add_field(self, *, name, value, inline=True):
-        """Adds a field to the embed object.
+        """Adds a field to the embed object. Will get ignored if there are already 25 fields.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -351,9 +351,9 @@ class Embed:
         Parameters
         -----------
         name: str
-            The name of the field.
+            The name of the field. Max 256 characters.
         value: str
-            The value of the field.
+            The value of the field. Max 1024 characters
         inline: bool
             Whether the field should be displayed inline.
         """
@@ -412,9 +412,9 @@ class Embed:
         index: int
             The index of the field to modify.
         name: str
-            The name of the field.
+            The name of the field. Max 256 characters.
         value: str
-            The value of the field.
+            The value of the field. Max 1024 characters
         inline: bool
             Whether the field should be displayed inline.
 
