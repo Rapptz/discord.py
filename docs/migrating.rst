@@ -14,6 +14,13 @@ new library.
 Part of the redesign involves making things more easy to use and natural. Things are done on the
 :ref:`models <discord_api_models>` instead of requiring a :class:`Client` instance to do any work.
 
+Python Version Change
+-----------------------
+
+In order to make development easier and also to allow for our dependencies to upgrade to allow usage of 3.7 or higher,
+the library had to remove support for Python versions lower than 3.5.3, which essentially means that **support for Python 3.4
+is dropped**.
+
 Major Model Changes
 ---------------------
 
@@ -22,7 +29,7 @@ Below are major model changes that have happened in v1.0
 Snowflakes are int
 ~~~~~~~~~~~~~~~~~~~~
 
-Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to ``int``.
+Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to :class:`int`.
 
 Quick example: ::
 
@@ -101,13 +108,13 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.create_custom_emoji``        | :meth:`Guild.create_custom_emoji`                                            |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.create_invite``              | :meth:`Guild.create_invite` or :meth:`abc.GuildChannel.create_invite`        |
+| ``Client.create_invite``              | :meth:`abc.GuildChannel.create_invite`                                       |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.create_role``                | :meth:`Guild.create_role`                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.delete_channel``             | :meth:`abc.GuildChannel.delete`                                              |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.delete_channel_permissions`` | :meth:`abc.GuildChannel.set_permissions` with ``overwrites`` set to ``None`` |
+| ``Client.delete_channel_permissions`` | :meth:`abc.GuildChannel.set_permissions` with ``overwrite`` set to ``None``  |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.delete_custom_emoji``        | :meth:`Emoji.delete`                                                         |
 +---------------------------------------+------------------------------------------------------------------------------+
@@ -137,7 +144,7 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.estimate_pruned_members``    | :meth:`Guild.estimate_pruned_members`                                        |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.get_all_emojis``             | :meth:`Client.emojis`                                                        |
+| ``Client.get_all_emojis``             | :attr:`Client.emojis`                                                        |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.get_bans``                   | :meth:`Guild.bans`                                                           |
 +---------------------------------------+------------------------------------------------------------------------------+
@@ -207,7 +214,6 @@ In order to be a bit more consistent, certain things that were properties were c
 
 The following are now methods instead of properties (requires parentheses):
 
-- :meth:`TextChannel.is_default`
 - :meth:`Role.is_default`
 - :meth:`Client.is_ready`
 - :meth:`Client.is_closed`
@@ -337,6 +343,11 @@ They will be enumerated here.
 
     - There is no replacement for this one. This functionality is deprecated API wise.
 
+- ``Guild.default_channel`` / ``Server.default_channel`` and ``Channel.is_default``
+
+    - The concept of a default channel was removed from Discord.
+      See `#329 <https://github.com/hammerandchisel/discord-api-docs/pull/329>`_.
+
 - ``Message.edited_timestamp``
 
     - Use :attr:`Message.edited_at` instead.
@@ -353,20 +364,34 @@ They will be enumerated here.
 
     - Use :attr:`Permissions.view_audit_log` instead.
 
+- ``Member.game``
+
+    - Use :attr:`Member.activity` instead.
+
+- ``Guild.role_hierarchy`` / ``Server.role_hierarchy``
+
+    - Use :attr:`Guild.roles` instead. Note that while sorted, it is in the opposite order
+      of what the old ``Guild.role_hierarchy`` used to be.
+
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
 - :attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` objects.
 - :attr:`Message.attachments` is now a list of :class:`Attachment` instead of ``dict`` object.
+- :attr:`Guild.roles` is now sorted through hierarchy. The first element is always the ``@everyone`` role.
 
 **Added**
 
 - :class:`Attachment` to represent a discord attachment.
+- :class:`CategoryChannel` to represent a channel category.
 - :attr:`VoiceChannel.members` for fetching members connected to a voice channel.
 - :attr:`TextChannel.members` for fetching members that can see the channel.
 - :attr:`Role.members` for fetching members that have the role.
 - :attr:`Guild.text_channels` for fetching text channels only.
 - :attr:`Guild.voice_channels` for fetching voice channels only.
+- :attr:`Guild.categories` for fetching channel categories only.
+- :attr:`TextChannel.category` and :attr:`VoiceChannel.category` to get the category a channel belongs to.
+- :meth:`Guild.by_category` to get channels grouped by their category.
 - :attr:`Guild.chunked` to check member chunking status.
 - :attr:`Guild.explicit_content_filter` to fetch the content filter.
 - :attr:`Guild.shard_id` to get a guild's Shard ID if you're sharding.
@@ -376,8 +401,10 @@ They will be enumerated here.
 - :meth:`Guild.vanity_invite` to fetch the guild's vanity invite.
 - :meth:`Guild.audit_logs` to fetch the guild's audit logs.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
+- :attr:`Message.activity` and :attr:`Message.application` for Rich Presence related information.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
 - :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
+- :meth:`Guild.get_role` to get a role by its ID.
 
 .. _migrating_1_0_sending_messages:
 
@@ -428,16 +455,16 @@ Prior to v1.0, certain functions like ``Client.logs_from`` would return a differ
 In v1.0, this change has been reverted and will now return a singular type meeting an abstract concept called
 :class:`AsyncIterator`.
 
-This allows you to iterate over it like normal in Python 3.5+: ::
+This allows you to iterate over it like normal: ::
 
-    async for msg in channel.history():
-        print(msg)
+    async for message in channel.history():
+        print(message)
 
-Or turn it into a list for either Python 3.4 or 3.5+: ::
+Or turn it into a list: ::
 
-    messages = yield from channel.history().flatten()
+    messages = await channel.history().flatten()
     for message in messages:
-        print(messages)
+        print(message)
 
 A handy aspect of returning :class:`AsyncIterator` is that it allows you to chain functions together such as
 :meth:`AsyncIterator.map` or :meth:`AsyncIterator.filter`: ::
@@ -466,7 +493,7 @@ Event Changes
 
 A lot of events have gone through some changes.
 
-Many events with ``server`` in the name where changed to use ``guild`` instead.
+Many events with ``server`` in the name were changed to use ``guild`` instead.
 
 Before:
 
@@ -645,11 +672,11 @@ arguments.
 
 For example, to wait for a reaction: ::
 
-    reaction, user = await client.wait_for('reaction_add', check=lambda u, r: u.id == 176995180300206080)
+    reaction, user = await client.wait_for('reaction_add', check=lambda r, u: u.id == 176995180300206080)
 
     # use user and reaction
 
-Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a ``asyncio.TimeoutError``
+Since this function now can return multiple arguments, the ``timeout`` parameter will now raise a :exc:`asyncio.TimeoutError`
 when reached instead of setting the return to ``None``. For example:
 
 .. code-block:: python3
@@ -750,7 +777,7 @@ Context Changes
 
 In v1.0, the :class:`.Context` has received a lot of changes with how it's retrieved and used.
 
-The biggest change is that ``pass_context=True`` is now the default behaviour. Ergo:
+The biggest change is that ``pass_context=True`` no longer exists, :class:`.Context` is always passed. Ergo:
 
 .. code-block:: python3
 
@@ -845,8 +872,8 @@ For a full list of changes, see below:
 Command Changes
 ~~~~~~~~~~~~~~~~~
 
-As mentioned earlier, the first command change is that ``pass_context=True`` is now the
-default, so there is no need to pass this as a parameter.
+As mentioned earlier, the first command change is that ``pass_context=True`` no longer
+exists, so there is no need to pass this as a parameter.
 
 Another change is the removal of ``no_pm=True``. Instead, use the new :func:`~ext.commands.guild_only` built-in
 check.
@@ -890,8 +917,8 @@ All command extension events have changed.
 
 Before: ::
 
-    on_command(ctx, command)
-    on_command_completion(ctx, command)
+    on_command(command, ctx)
+    on_command_completion(command, ctx)
     on_command_error(error, ctx)
 
 After: ::
@@ -1023,9 +1050,9 @@ The invocation order is as follows:
 2. Cog local before invocation hook
 3. Global before invocation hook
 4. The actual command
-5. Command local after invocation hooko
-6. Cog local after invocation hooko
-7. Global after invocation hooko
+5. Command local after invocation hook
+6. Cog local after invocation hook
+7. Global after invocation hook
 
 Converter Changes
 ~~~~~~~~~~~~~~~~~~~

@@ -58,27 +58,27 @@ class Embed:
     of the object:
 
     Certain properties return an ``EmbedProxy``. Which is a type
-    that acts similar to a regular `dict` except access the attributes
+    that acts similar to a regular :class:`dict` except access the attributes
     via dotted access, e.g. ``embed.author.icon_url``. If the attribute
     is invalid or empty, then a special sentinel value is returned,
     :attr:`Embed.Empty`.
 
-    For ease of use, all parameters that expect a ``str`` are implicitly
-    casted to ``str`` for you.
+    For ease of use, all parameters that expect a :class:`str` are implicitly
+    casted to :class:`str` for you.
 
     Attributes
     -----------
-    title: str
+    title: :class:`str`
         The title of the embed.
-    type: str
+    type: :class:`str`
         The type of embed. Usually "rich".
-    description: str
+    description: :class:`str`
         The description of the embed.
-    url: str
+    url: :class:`str`
         The URL of the embed.
     timestamp: `datetime.datetime`
         The timestamp of the embed content. This could be a naive or aware datetime.
-    colour: :class:`Colour` or int
+    colour: :class:`Colour` or :class:`int`
         The colour code of the embed. Aliased to ``color`` as well.
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
@@ -119,7 +119,7 @@ class Embed:
         # fill in the basic fields
 
         self.title = data.get('title', EmptyEmbed)
-        self.type  = data.get('type', EmptyEmbed)
+        self.type = data.get('type', EmptyEmbed)
         self.description = data.get('description', EmptyEmbed)
         self.url = data.get('url', EmptyEmbed)
 
@@ -173,7 +173,7 @@ class Embed:
 
     @property
     def footer(self):
-        """Returns a ``EmbedProxy`` denoting the footer contents.
+        """Returns an ``EmbedProxy`` denoting the footer contents.
 
         See :meth:`set_footer` for possible values you can access.
 
@@ -206,7 +206,7 @@ class Embed:
 
     @property
     def image(self):
-        """Returns a ``EmbedProxy`` denoting the image contents.
+        """Returns an ``EmbedProxy`` denoting the image contents.
 
         Possible attributes you can access are:
 
@@ -239,7 +239,7 @@ class Embed:
 
     @property
     def thumbnail(self):
-        """Returns a ``EmbedProxy`` denoting the thumbnail contents.
+        """Returns an ``EmbedProxy`` denoting the thumbnail contents.
 
         Possible attributes you can access are:
 
@@ -272,7 +272,7 @@ class Embed:
 
     @property
     def video(self):
-        """Returns a ``EmbedProxy`` denoting the video contents.
+        """Returns an ``EmbedProxy`` denoting the video contents.
 
         Possible attributes include:
 
@@ -286,7 +286,7 @@ class Embed:
 
     @property
     def provider(self):
-        """Returns a ``EmbedProxy`` denoting the provider contents.
+        """Returns an ``EmbedProxy`` denoting the provider contents.
 
         The only attributes that might be accessed are ``name`` and ``url``.
 
@@ -296,7 +296,7 @@ class Embed:
 
     @property
     def author(self):
-        """Returns a ``EmbedProxy`` denoting the author contents.
+        """Returns an ``EmbedProxy`` denoting the author contents.
 
         See :meth:`set_author` for possible values you can access.
 
@@ -334,7 +334,7 @@ class Embed:
 
     @property
     def fields(self):
-        """Returns a list of ``EmbedProxy`` denoting the field contents.
+        """Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 
@@ -460,14 +460,7 @@ class Embed:
             pass
         else:
             if timestamp:
-                try:
-                    aware = timestamp.astimezone(datetime.timezone.utc)
-                except ValueError:
-                    # naive date time
-                    result['timestamp'] = timestamp.isoformat()
-                else:
-                    result['timestamp'] = aware.isoformat().replace('+00:00', 'Z')
-
+                result['timestamp'] = timestamp.isoformat()
 
         # add in the non raw attribute ones
         if self.type:

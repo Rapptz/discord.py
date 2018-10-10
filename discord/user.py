@@ -24,16 +24,47 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time
-from .enums import DefaultAvatar, RelationshipType
-from .errors import ClientException
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
+from .errors import ClientException, InvalidArgument
+from .colour import Colour
 
 from collections import namedtuple
 
 import discord.abc
-import asyncio
 
-Profile = namedtuple('Profile', 'premium user mutual_guilds connected_accounts premium_since')
+VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
+VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+
+class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
+    __slots__ = ()
+
+    @property
+    def nitro(self):
+        return self.premium_since is not None
+
+    premium = nitro
+
+    def _has_flag(self, o):
+        v = o.value
+        return (self.flags & v) == v
+
+    @property
+    def staff(self):
+        return self._has_flag(UserFlags.staff)
+
+    @property
+    def hypesquad(self):
+        return self._has_flag(UserFlags.hypesquad)
+
+    @property
+    def partner(self):
+        return self._has_flag(UserFlags.partner)
+
+    @property
+    def hypesquad_houses(self):
+        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
+        return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
 
 _BaseUser = discord.abc.User
 
@@ -60,6 +91,19 @@ class BaseUser(_BaseUser):
     def __hash__(self):
         return self.id >> 22
 
+    @classmethod
+    def _copy(cls, user):
+        self = cls.__new__(cls) # bypass __init__
+
+        self.name = user.name
+        self.id = user.id
+        self.discriminator = user.discriminator
+        self.avatar = user.avatar
+        self.bot = user.bot
+        self._state = user._state
+
+        return self
+
     @property
     def avatar_url(self):
         """Returns a friendly URL version of the avatar the user has.
@@ -72,22 +116,30 @@ class BaseUser(_BaseUser):
         """
         return self.avatar_url_as(format=None, size=1024)
 
-    def avatar_url_as(self, *, format, size=1024):
+    def is_avatar_animated(self):
+        """:class:`bool`: Returns True if the user has an animated avatar."""
+        return bool(self.avatar and self.avatar.startswith('a_'))
+
+    def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
         """Returns a friendly URL version of the avatar the user has.
 
         If the user does not have a traditional avatar, their default
         avatar URL is returned instead.
 
-        The format must be one of 'webp', 'jpeg', 'png' or 'gif'. The
-        size must be a power of 2 (128, 256, 512, 1024).
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 1024.
 
         Parameters
         -----------
         format: Optional[str]
             The format to attempt to convert the avatar to.
             If the format is ``None``, then it is automatically
-            detected into either 'gif' or 'webp' depending on the
+            detected into either 'gif' or static_format depending on the
             avatar being animated or not.
+        static_format: 'str'
+            Format to attempt to convert only non-animated avatars to.
+            Defaults to 'webp'
         size: int
             The size of the image to display.
 
@@ -95,28 +147,53 @@ class BaseUser(_BaseUser):
         --------
         str
             The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or ``static_format``, or
+            invalid ``size``.
         """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not self.is_avatar_animated():
+            raise InvalidArgument("non animated avatars do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
 
         if self.avatar is None:
             return self.default_avatar_url
 
         if format is None:
-            if self.avatar.startswith('a_'):
+            if self.is_avatar_animated():
                 format = 'gif'
             else:
-                format = 'webp'
+                format = static_format
 
         return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
 
     @property
     def default_avatar(self):
-        """Returns the default avatar for a given user. This is calculated by the user's descriminator"""
+        """Returns the default avatar for a given user. This is calculated by the user's discriminator"""
         return DefaultAvatar(int(self.discriminator) % len(DefaultAvatar))
 
     @property
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
         return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
+
+    @property
+    def colour(self):
+        """A property that returns a :class:`Colour` denoting the rendered colour
+        for the user. This always returns :meth:`Colour.default`.
+
+        There is an alias for this under ``color``.
+        """
+        return Colour.default()
+
+    color = colour
 
     @property
     def mention(self):
@@ -197,23 +274,23 @@ class ClientUser(BaseUser):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The user's username.
-    id: int
+    id: :class:`int`
         The user's unique ID.
-    discriminator: str
+    discriminator: :class:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: Optional[str]
+    avatar: Optional[:class:`str`]
         The avatar hash the user has. Could be None.
-    bot: bool
+    bot: :class:`bool`
         Specifies if the user is a bot account.
-    verified: bool
+    verified: :class:`bool`
         Specifies if the user is a verified account.
-    email: Optional[str]
+    email: Optional[:class:`str`]
         The email the user used when registering.
-    mfa_enabled: bool
+    mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
-    premium: bool
+    premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
     """
     __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', '_relationships')
@@ -248,21 +325,20 @@ class ClientUser(BaseUser):
 
     @property
     def relationships(self):
-        """Returns a list of :class:`Relationship` that the user has."""
+        """Returns a :class:`list` of :class:`Relationship` that the user has."""
         return list(self._relationships.values())
 
     @property
     def friends(self):
-        """Returns a list of :class:`User`\s that the user is friends with."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        """Returns a list of :class:`User`\s that the user has blocked."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
-    @asyncio.coroutine
-    def edit(self, **fields):
+    async def edit(self, **fields):
         """|coro|
 
         Edits the current profile of the client.
@@ -272,10 +348,10 @@ class ClientUser(BaseUser):
 
         Note
         -----
-        To upload an avatar, a *bytes-like object* must be passed in that
+        To upload an avatar, a :term:`py:bytes-like object` must be passed in that
         represents the image being uploaded. If this is done through a file
         then the file must be opened via ``open('some_filename', 'rb')`` and
-        the *bytes-like object* is given through the use of ``fp.read()``.
+        the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
         The only image formats supported for uploading is JPEG and PNG.
 
@@ -290,10 +366,14 @@ class ClientUser(BaseUser):
         email: str
             The new email you wish to change to.
             Only applicable to user accounts.
+        house: Optional[:class:`HypeSquadHouse`]
+            The hypesquad house you wish to change to.
+            Could be ``None`` to leave the current house.
+            Only applicable to user accounts.
         username :str
             The new username you wish to change to.
         avatar: bytes
-            A *bytes-like object* representing the image to upload.
+            A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
 
         Raises
@@ -304,6 +384,7 @@ class ClientUser(BaseUser):
             Wrong image format passed for ``avatar``.
         ClientException
             Password is required for non-bot accounts.
+            House field was not a HypeSquadHouse.
         """
 
         try:
@@ -335,7 +416,18 @@ class ClientUser(BaseUser):
 
         http = self._state.http
 
-        data = yield from http.edit_profile(**args)
+        if 'house' in fields:
+            house = fields['house']
+            if house is None:
+                await http.leave_hypesquad_house()
+            elif not isinstance(house, HypeSquadHouse):
+                raise ClientException('`house` parameter was not a HypeSquadHouse')
+            else:
+                value = house.value
+
+            await http.change_hypesquad_house(value)
+
+        data = await http.edit_profile(**args)
         if not_bot_account:
             self.email = data['email']
             try:
@@ -346,9 +438,8 @@ class ClientUser(BaseUser):
         # manually update data by calling __init__ explicitly.
         self.__init__(state=self._state, data=data)
 
-    @asyncio.coroutine
-    def create_group(self, *recipients):
-        """|coro|
+    async def create_group(self, *recipients):
+        r"""|coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
@@ -359,7 +450,7 @@ class ClientUser(BaseUser):
         Parameters
         -----------
         \*recipients
-            An argument list of :class:`User` to have in
+            An argument :class:`list` of :class:`User` to have in
             your group.
 
         Return
@@ -382,11 +473,15 @@ class ClientUser(BaseUser):
             raise ClientException('You must have two or more recipients to create a group.')
 
         users = [str(u.id) for u in recipients]
-        data = yield from self._state.http.create_group(self.id, users)
+        data = await self._state.http.start_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
 
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
+
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
 
     .. container:: operations
 
@@ -408,26 +503,25 @@ class User(BaseUser, discord.abc.Messageable):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The user's username.
-    id: int
+    id: :class:`int`
         The user's unique ID.
-    discriminator: str
+    discriminator: :class:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: Optional[str]
+    avatar: Optional[:class:`str`]
         The avatar hash the user has. Could be None.
-    bot: bool
+    bot: :class:`bool`
         Specifies if the user is a bot account.
     """
 
-    __slots__ = ('__weakref__')
+    __slots__ = ('__weakref__',)
 
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
 
-    @asyncio.coroutine
-    def _get_channel(self):
-        ch = yield from self.create_dm()
+    async def _get_channel(self):
+        ch = await self.create_dm()
         return ch
 
     @property
@@ -439,8 +533,7 @@ class User(BaseUser, discord.abc.Messageable):
         """
         return self._state._get_private_channel_by_user(self.id)
 
-    @asyncio.coroutine
-    def create_dm(self):
+    async def create_dm(self):
         """Creates a :class:`DMChannel` with this user.
 
         This should be rarely called, as this is done transparently for most
@@ -451,7 +544,7 @@ class User(BaseUser, discord.abc.Messageable):
             return found
 
         state = self._state
-        data = yield from state.http.start_private_message(self.id)
+        data = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
 
     @property
@@ -460,21 +553,20 @@ class User(BaseUser, discord.abc.Messageable):
         return self._state.user.get_relationship(self.id)
 
     def is_friend(self):
-        """bool: Checks if the user is your friend."""
+        """:class:`bool`: Checks if the user is your friend."""
         r = self.relationship
         if r is None:
             return False
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """bool: Checks if the user is blocked."""
+        """:class:`bool`: Checks if the user is blocked."""
         r = self.relationship
         if r is None:
             return False
         return r.type is RelationshipType.blocked
 
-    @asyncio.coroutine
-    def block(self):
+    async def block(self):
         """|coro|
 
         Blocks the user.
@@ -487,10 +579,9 @@ class User(BaseUser, discord.abc.Messageable):
             Blocking the user failed.
         """
 
-        yield from self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
+        await self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
 
-    @asyncio.coroutine
-    def unblock(self):
+    async def unblock(self):
         """|coro|
 
         Unblocks the user.
@@ -502,10 +593,9 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Unblocking the user failed.
         """
-        yield from self._state.http.remove_relationship(self.id)
+        await self._state.http.remove_relationship(self.id)
 
-    @asyncio.coroutine
-    def remove_friend(self):
+    async def remove_friend(self):
         """|coro|
 
         Removes the user as a friend.
@@ -517,10 +607,9 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Removing the user as a friend failed.
         """
-        yield from self._state.http.remove_relationship(self.id)
+        await self._state.http.remove_relationship(self.id)
 
-    @asyncio.coroutine
-    def send_friend_request(self):
+    async def send_friend_request(self):
         """|coro|
 
         Sends the user a friend request.
@@ -532,10 +621,9 @@ class User(BaseUser, discord.abc.Messageable):
         HTTPException
             Sending the friend request failed.
         """
-        yield from self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
+        await self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
 
-    @asyncio.coroutine
-    def profile(self):
+    async def profile(self):
         """|coro|
 
         Gets the user's profile. This can only be used by non-bot accounts.
@@ -554,14 +642,14 @@ class User(BaseUser, discord.abc.Messageable):
         """
 
         state = self._state
-        data = yield from state.http.get_user_profile(self.id)
+        data = await state.http.get_user_profile(self.id)
 
         def transform(d):
             return state._get_guild(int(d['id']))
 
         since = data.get('premium_since')
         mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        return Profile(premium=since is not None,
+        return Profile(flags=data['user'].get('flags', 0),
                        premium_since=parse_time(since),
                        mutual_guilds=mutual_guilds,
                        user=self,

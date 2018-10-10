@@ -16,12 +16,11 @@ import sys
 import os
 import re
 
-on_rtd = os.getenv('READTHEDOCS') == 'True'
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('extensions'))
 
 # -- General configuration ------------------------------------------------
 
@@ -34,13 +33,11 @@ sys.path.insert(0, os.path.abspath('..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
-    'sphinxcontrib.asyncio'
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinxcontrib.asyncio',
+    'details'
 ]
-
-if on_rtd:
-  extensions.append('sphinxcontrib.napoleon')
-else:
-  extensions.append('sphinx.ext.napoleon')
 
 autodoc_member_order = 'bysource'
 
@@ -48,8 +45,12 @@ extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
 }
 
+# Links used for cross-referencing stuff in other documentation
+intersphinx_mapping = {'py': ('https://docs.python.org/3', None)}
+
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.
+.. |maybecoro| replace:: This function *could be a* |corourl|_.
 .. |corourl| replace:: *coroutine*
 .. _corourl: https://docs.python.org/3/library/asyncio-task.html#coroutine
 """
@@ -90,6 +91,9 @@ release = version
 # Usually you set "language" from the command line for these cases.
 language = None
 
+locale_dirs = ['locale/']
+gettext_compact = False
+
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
 #today = ''
@@ -126,6 +130,8 @@ pygments_style = 'friendly'
 
 
 # -- Options for HTML output ----------------------------------------------
+
+html_experimental_html5_writer = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -307,3 +313,5 @@ texinfo_documents = [
 
 def setup(app):
   app.add_javascript('custom.js')
+  if app.config.language == 'ja':
+    app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)

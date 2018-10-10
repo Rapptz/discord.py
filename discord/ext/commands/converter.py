@@ -25,17 +25,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import discord
-import asyncio
 import re
 import inspect
 
 from .errors import BadArgument, NoPrivateMessage
-from .view import StringView
 
-__all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
-            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
-            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter', 'IDConverter', 'clean_content' ]
+__all__ = ['Converter', 'MemberConverter', 'UserConverter',
+           'TextChannelConverter', 'InviteConverter', 'RoleConverter',
+           'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
+           'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
+           'IDConverter', 'clean_content', 'Greedy']
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -56,8 +55,7 @@ class Converter:
     method to do its conversion logic. This method must be a coroutine.
     """
 
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         """|coro|
 
         The method to override to do conversion logic.
@@ -98,8 +96,7 @@ class MemberConverter(IDConverter):
     5. Lookup by nickname
     """
 
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         message = ctx.message
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -135,8 +132,7 @@ class UserConverter(IDConverter):
     3. Lookup by name#discrim
     4. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
         result = None
         state = ctx._state
@@ -175,8 +171,7 @@ class TextChannelConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         bot = ctx.bot
 
         match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
@@ -215,8 +210,7 @@ class VoiceChannelConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
         result = None
@@ -242,6 +236,45 @@ class VoiceChannelConverter(IDConverter):
 
         return result
 
+class CategoryChannelConverter(IDConverter):
+    """Converts to a :class:`CategoryChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+    """
+    async def convert(self, ctx, argument):
+        bot = ctx.bot
+
+        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        result = None
+        guild = ctx.guild
+
+        if match is None:
+            # not a mention
+            if guild:
+                result = discord.utils.get(guild.categories, name=argument)
+            else:
+                def check(c):
+                    return isinstance(c, discord.CategoryChannel) and c.name == argument
+                result = discord.utils.find(check, bot.get_all_channels())
+        else:
+            channel_id = int(match.group(1))
+            if guild:
+                result = guild.get_channel(channel_id)
+            else:
+                result = _get_from_guilds(bot, 'get_channel', channel_id)
+
+        if not isinstance(result, discord.CategoryChannel):
+            raise BadArgument('Channel "{}" not found.'.format(argument))
+
+        return result
+
 class ColourConverter(Converter):
     """Converts to a :class:`Colour`.
 
@@ -254,8 +287,7 @@ class ColourConverter(Converter):
 
         - The ``_`` in the name can be optionally replaced with spaces.
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         arg = argument.replace('0x', '').lower()
 
         if arg[0] == '#':
@@ -282,23 +314,24 @@ class RoleConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         guild = ctx.message.guild
         if not guild:
             raise NoPrivateMessage()
 
         match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
-        params = dict(id=int(match.group(1))) if match else dict(name=argument)
-        result = discord.utils.get(guild.roles, **params)
+        if match:
+            result = guild.get_role(int(match.group(1)))
+        else:
+            result = discord.utils.get(guild._roles.values(), name=argument)
+
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(argument))
         return result
 
 class GameConverter(Converter):
     """Converts to :class:`Game`."""
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         return discord.Game(name=argument)
 
 class InviteConverter(Converter):
@@ -306,10 +339,9 @@ class InviteConverter(Converter):
 
     This is done via an HTTP request using :meth:`.Bot.get_invite`.
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         try:
-            invite = yield from ctx.bot.get_invite(argument)
+            invite = await ctx.bot.get_invite(argument)
             return invite
         except Exception as e:
             raise BadArgument('Invite is invalid or expired') from e
@@ -327,9 +359,8 @@ class EmojiConverter(IDConverter):
     2. Lookup by extracting ID from the emoji.
     3. Lookup by name
     """
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
+    async def convert(self, ctx, argument):
+        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild
@@ -356,6 +387,24 @@ class EmojiConverter(IDConverter):
 
         return result
 
+class PartialEmojiConverter(Converter):
+    """Converts to a :class:`PartialEmoji`.
+
+
+    This is done by extracting the animated flag, name and ID from the emoji.
+    """
+    async def convert(self, ctx, argument):
+        match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
+
+        if match:
+            emoji_animated = bool(match.group(1))
+            emoji_name = match.group(2)
+            emoji_id = int(match.group(3))
+
+            return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+
+        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
     said content.
@@ -364,11 +413,11 @@ class clean_content(Converter):
 
     Attributes
     ------------
-    fix_channel_mentions: bool
+    fix_channel_mentions: :obj:`bool`
         Whether to clean channel mentions.
-    use_nicknames: bool
+    use_nicknames: :obj:`bool`
         Whether to use nicknames when transforming mentions.
-    escape_markdown: bool
+    escape_markdown: :obj:`bool`
         Whether to also escape special markdown characters.
     """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False):
@@ -376,42 +425,46 @@ class clean_content(Converter):
         self.use_nicknames = use_nicknames
         self.escape_markdown = escape_markdown
 
-    @asyncio.coroutine
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         message = ctx.message
         transformations = {}
 
-        if self.fix_channel_mentions:
-            transformations.update(
-                ('<#%s>' % channel.id, '#' + channel.name)
-                for channel in message.channel_mentions
-            )
+        if self.fix_channel_mentions and ctx.guild:
+            def resolve_channel(id, *, _get=ctx.guild.get_channel):
+                ch = _get(id)
+                return ('<#%s>' % id), ('#' + ch.name if ch else '#deleted-channel')
 
-        if self.use_nicknames:
-            transformations.update(
-                ('<@%s>' % member.id, '@' + member.display_name)
-                for member in message.mentions
-            )
+            transformations.update(resolve_channel(channel) for channel in message.raw_channel_mentions)
 
-            transformations.update(
-                ('<@!%s>' % member.id, '@' + member.display_name)
-                for member in message.mentions
-            )
+        if self.use_nicknames and ctx.guild:
+            def resolve_member(id, *, _get=ctx.guild.get_member):
+                m = _get(id)
+                return '@' + m.display_name if m else '@deleted-user'
         else:
-            transformations.update(
-                ('<@%s>' % member.id, '@' + member.name)
-                for member in message.mentions
-            )
+            def resolve_member(id, *, _get=ctx.bot.get_user):
+                m = _get(id)
+                return '@' + m.name if m else '@deleted-user'
 
-            transformations.update(
-                ('<@!%s>' % member.id, '@' + member.name)
-                for member in message.mentions
-            )
 
         transformations.update(
-            ('<@&%s>' % role.id, '@' + role.name)
-            for role in message.role_mentions
+            ('<@%s>' % member_id, resolve_member(member_id))
+            for member_id in message.raw_mentions
         )
+
+        transformations.update(
+            ('<@!%s>' % member_id, resolve_member(member_id))
+            for member_id in message.raw_mentions
+        )
+
+        if ctx.guild:
+            def resolve_role(_id, *, _find=ctx.guild.get_role):
+                r = _find(_id)
+                return '@' + r.name if r else '@deleted-role'
+
+            transformations.update(
+                ('<@&%s>' % role_id, resolve_role(role_id))
+                for role_id in message.raw_role_mentions
+            )
 
         def repl(obj):
             return transformations.get(obj.group(0), '')
@@ -431,13 +484,28 @@ class clean_content(Converter):
             pattern = re.compile('|'.join(transformations.keys()))
             result = pattern.sub(replace, result)
 
-        transformations = {
-            '@everyone': '@\u200beveryone',
-            '@here': '@\u200bhere'
-        }
+        # Completely ensure no mentions escape:
+        return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
 
-        def repl2(obj):
-            return transformations.get(obj.group(0), '')
+class _Greedy:
+    __slots__ = ('converter',)
 
-        pattern = re.compile('|'.join(transformations.keys()))
-        return pattern.sub(repl2, result)
+    def __init__(self, *, converter=None):
+        self.converter = converter
+
+    def __getitem__(self, params):
+        if not isinstance(params, tuple):
+            params = (params,)
+        if len(params) != 1:
+            raise TypeError('Greedy[...] only takes a single argument')
+        converter = params[0]
+
+        if not inspect.isclass(converter):
+            raise TypeError('Greedy[...] expects a type.')
+
+        if converter is str or converter is type(None) or converter is _Greedy:
+            raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+
+        return self.__class__(converter=converter)
+
+Greedy = _Greedy()

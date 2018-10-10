@@ -24,17 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from enum import Enum
+from enum import Enum, IntEnum
 
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
-           'AuditLogAction', 'AuditLogActionCategory', ]
+           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
+           'ActivityType', 'HypeSquadHouse']
 
 class ChannelType(Enum):
-    text    = 0
-    private = 1
-    voice   = 2
-    group   = 3
+    text     = 0
+    private  = 1
+    voice    = 2
+    group    = 3
+    category = 4
 
     def __str__(self):
         return self.name
@@ -62,6 +64,10 @@ class VoiceRegion(Enum):
     amsterdam     = 'amsterdam'
     frankfurt     = 'frankfurt'
     brazil        = 'brazil'
+    hongkong      = 'hongkong'
+    russia        = 'russia'
+    japan         = 'japan'
+    southafrica   = 'southafrica'
     vip_us_east   = 'vip-us-east'
     vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
@@ -69,7 +75,7 @@ class VoiceRegion(Enum):
     def __str__(self):
         return self.value
 
-class VerificationLevel(Enum):
+class VerificationLevel(IntEnum):
     none              = 0
     low               = 1
     medium            = 2
@@ -81,7 +87,7 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
-class ContentFilter(Enum):
+class ContentFilter(IntEnum):
     disabled    = 0
     no_role     = 1
     all_members = 2
@@ -203,6 +209,26 @@ class AuditLogAction(Enum):
             return 'emoji'
         elif v < 80:
             return 'message'
+
+class UserFlags(Enum):
+    staff = 1
+    partner = 2
+    hypesquad = 4
+    hypesquad_bravery = 64
+    hypesquad_brilliance = 128
+    hypesquad_balance = 256
+
+class ActivityType(IntEnum):
+    unknown = -1
+    playing = 0
+    streaming = 1
+    listening = 2
+    watching = 3
+
+class HypeSquadHouse(Enum):
+    bravery = 1
+    brilliance = 2
+    balance = 3
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

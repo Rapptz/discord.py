@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -108,21 +109,51 @@ class StringView:
 
 # Parser
 
+# map from opening quotes to closing quotes
+_quotes = {
+    '"': '"',
+    "«": "»",
+    "‘": "’",
+    "‚": "‛",
+    "“": "”",
+    "„": "‟",
+    "‹": "›",
+    "⹂": "⹂",
+    "「": "」",
+    "『": "』",
+    "〝": "〞",
+    "﹁": "﹂",
+    "﹃": "﹄",
+    "＂": "＂",
+    "｢": "｣",
+    "«": "»",
+    "‹": "›",
+    "《": "》",
+    "〈": "〉",
+}
+_all_quotes = set(_quotes.keys()) | set(_quotes.values())
+
 def quoted_word(view):
     current = view.current
 
     if current is None:
         return None
 
-    is_quoted = current == '"'
-    result = [] if is_quoted else [current]
+    close_quote = _quotes.get(current)
+    is_quoted = bool(close_quote)
+    if is_quoted:
+        result = []
+        _escaped_quotes = (current, close_quote)
+    else:
+        result = [current]
+        _escaped_quotes = _all_quotes
 
     while not view.eof:
         current = view.get()
         if not current:
             if is_quoted:
                 # unexpected EOF
-                raise BadArgument('Expected closing "')
+                raise BadArgument('Expected closing {}.'.format(close_quote))
             return ''.join(result)
 
         # currently we accept strings in the format of "hello world"
@@ -133,32 +164,32 @@ def quoted_word(view):
                 # string ends with \ and no character after it
                 if is_quoted:
                     # if we're quoted then we're expecting a closing quote
-                    raise BadArgument('Expected closing "')
+                    raise BadArgument('Expected closing {}.'.format(close_quote))
                 # if we aren't then we just let it through
                 return ''.join(result)
 
-            if next_char == '"':
+            if next_char in _escaped_quotes:
                 # escaped quote
-                result.append('"')
+                result.append(next_char)
             else:
                 # different escape character, ignore it
                 view.undo()
                 result.append(current)
             continue
 
+        if not is_quoted and current in _all_quotes:
+            # we aren't quoted
+            raise BadArgument('Unexpected quote mark in non-quoted string')
+
         # closing quote
-        if current == '"':
+        if is_quoted and current == close_quote:
             next_char = view.get()
             valid_eof = not next_char or next_char.isspace()
-            if is_quoted:
-                if not valid_eof:
-                    raise BadArgument('Expected space after closing quotation')
+            if not valid_eof:
+                raise BadArgument('Expected space after closing quotation')
 
-                # we're quoted so it's okay
-                return ''.join(result)
-            else:
-                # we aren't quoted
-                raise BadArgument('Unexpected quote mark in non-quoted string')
+            # we're quoted so it's okay
+            return ''.join(result)
 
         if current.isspace() and not is_quoted:
             # end of word found

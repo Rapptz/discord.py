@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 import itertools
 import inspect
-import asyncio
 
 from .core import GroupMixin, Command
 from .errors import CommandError
@@ -58,11 +57,11 @@ class Paginator:
 
     Attributes
     -----------
-    prefix: str
+    prefix: :class:`str`
         The prefix inserted to every page. e.g. three backticks.
-    suffix: str
+    suffix: :class:`str`
         The suffix appended at the end of every page. e.g. three backticks.
-    max_size: int
+    max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
     """
     def __init__(self, prefix='```', suffix='```', max_size=2000):
@@ -133,13 +132,13 @@ class HelpFormatter:
 
     Attributes
     -----------
-    show_hidden: bool
+    show_hidden: :class:`bool`
         Dictates if hidden commands should be shown in the output.
         Defaults to ``False``.
-    show_check_failure: bool
+    show_check_failure: :class:`bool`
         Dictates if commands that have their :attr:`.Command.checks` failed
         shown. Defaults to ``False``.
-    width: int
+    width: :class:`int`
         The maximum number of characters that fit in a line.
         Defaults to 80.
     """
@@ -149,15 +148,15 @@ class HelpFormatter:
         self.show_check_failure = show_check_failure
 
     def has_subcommands(self):
-        """bool: Specifies if the command has subcommands."""
+        """:class:`bool`: Specifies if the command has subcommands."""
         return isinstance(self.command, GroupMixin)
 
     def is_bot(self):
-        """bool: Specifies if the command being formatted is the bot itself."""
+        """:class:`bool`: Specifies if the command being formatted is the bot itself."""
         return self.command is self.context.bot
 
     def is_cog(self):
-        """bool: Specifies if the command being formatted is actually a cog."""
+        """:class:`bool`: Specifies if the command being formatted is actually a cog."""
         return not self.is_bot() and not isinstance(self.command, Command)
 
     def shorten(self, text):
@@ -168,7 +167,7 @@ class HelpFormatter:
 
     @property
     def max_name_size(self):
-        """int: Returns the largest name length of a command or if it has subcommands
+        """:class:`int`: Returns the largest name length of a command or if it has subcommands
         the largest subcommand name."""
         try:
             commands = self.command.all_commands if not self.is_cog() else self.context.bot.all_commands
@@ -181,12 +180,12 @@ class HelpFormatter:
     @property
     def clean_prefix(self):
         """The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
-        user = self.context.bot.user
+        user = self.context.guild.me if self.context.guild else self.context.bot.user
         # this breaks if the prefix mention is not the bot itself but I
         # consider this to be an *incredibly* strange use case. I'd rather go
         # for this common use case rather than waste performance for the
         # odd one.
-        return self.context.prefix.replace(user.mention, '@' + user.name)
+        return self.context.prefix.replace(user.mention, '@' + user.display_name)
 
     def get_command_signature(self):
         """Retrieves the signature portion of the help page."""
@@ -199,8 +198,7 @@ class HelpFormatter:
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
 
-    @asyncio.coroutine
-    def filter_command_list(self):
+    async def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
         provided, :attr:`show_check_failure` and :attr:`show_hidden`.
         Also filters based on if :meth:`~.HelpFormatter.is_cog` is valid.
@@ -209,7 +207,7 @@ class HelpFormatter:
         --------
         iterable
             An iterable with the filter being applied. The resulting value is
-            a (key, value) tuple of the command name and the command itself.
+            a (key, value) :class:`tuple` of the command name and the command itself.
         """
 
         def sane_no_suspension_point_predicate(tup):
@@ -224,14 +222,13 @@ class HelpFormatter:
 
             return True
 
-        @asyncio.coroutine
-        def predicate(tup):
+        async def predicate(tup):
             if sane_no_suspension_point_predicate(tup) is False:
                 return False
 
             cmd = tup[1]
             try:
-                return (yield from cmd.can_run(self.context))
+                return (await cmd.can_run(self.context))
             except CommandError:
                 return False
 
@@ -242,7 +239,7 @@ class HelpFormatter:
         # Gotta run every check and verify it
         ret = []
         for elem in iterator:
-            valid = yield from predicate(elem)
+            valid = await predicate(elem)
             if valid:
                 ret.append(elem)
 
@@ -258,8 +255,7 @@ class HelpFormatter:
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 
-    @asyncio.coroutine
-    def format_help_for(self, context, command_or_bot):
+    async def format_help_for(self, context, command_or_bot):
         """Formats the help page and handles the actual heavy lifting of how
         the help command looks like. To change the behaviour, override the
         :meth:`~.HelpFormatter.format` method.
@@ -278,10 +274,9 @@ class HelpFormatter:
         """
         self.context = context
         self.command = command_or_bot
-        return (yield from self.format())
+        return (await self.format())
 
-    @asyncio.coroutine
-    def format(self):
+    async def format(self):
         """Handles the actual behaviour involved with formatting.
 
         To change the behaviour, this method should be overridden.
@@ -323,7 +318,7 @@ class HelpFormatter:
             # last place sorting position.
             return cog + ':' if cog is not None else '\u200bNo Category:'
 
-        filtered = yield from self.filter_command_list()
+        filtered = await self.filter_command_list()
         if self.is_bot():
             data = sorted(filtered, key=category)
             for category, commands in itertools.groupby(data, key=category):

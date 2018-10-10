@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -31,8 +32,9 @@ __all__ = ['BucketType', 'Cooldown', 'CooldownMapping']
 class BucketType(enum.Enum):
     default = 0
     user    = 1
-    guild  = 2
+    guild   = 2
     channel = 3
+    member  = 4
 
 class Cooldown:
     __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
@@ -48,20 +50,27 @@ class Cooldown:
         if not isinstance(self.type, BucketType):
             raise TypeError('Cooldown type must be a BucketType')
 
-    def is_rate_limited(self):
+    def get_tokens(self, current=None):
+        if not current:
+            current = time.time()
+
+        tokens = self._tokens
+
+        if current > self._window + self.per:
+            tokens = self.rate
+        return tokens
+
+    def update_rate_limit(self):
         current = time.time()
         self._last = current
+
+        self._tokens = self.get_tokens(current)
 
         # first token used means that we start a new rate limit window
         if self._tokens == self.rate:
             self._window = current
 
-        # check if our window has passed and we can refresh our tokens
-        if current > self._window + self.per:
-            self._tokens = self.rate
-            self._window = current
-
-        # check if we're rate limited
+        # check if we are rate limited
         if self._tokens == 0:
             return self.per - (current - self._window)
 
@@ -92,15 +101,20 @@ class CooldownMapping:
     def valid(self):
         return self._cooldown is not None
 
-    def _bucket_key(self, ctx):
-        msg = ctx.message
+    @classmethod
+    def from_cooldown(cls, rate, per, type):
+        return cls(Cooldown(rate, per, type))
+
+    def _bucket_key(self, msg):
         bucket_type = self._cooldown.type
         if bucket_type is BucketType.user:
             return msg.author.id
         elif bucket_type is BucketType.guild:
-            return getattr(msg.guild, 'id', msg.author.id)
+            return (msg.guild or msg.author).id
         elif bucket_type is BucketType.channel:
             return msg.channel.id
+        elif bucket_type is BucketType.member:
+            return ((msg.guild and msg.guild.id), msg.author.id)
 
     def _verify_cache_integrity(self):
         # we want to delete all cache objects that haven't been used
@@ -111,12 +125,12 @@ class CooldownMapping:
         for k in dead_keys:
             del self._cache[k]
 
-    def get_bucket(self, ctx):
+    def get_bucket(self, message):
         if self._cooldown.type is BucketType.default:
             return self._cooldown
 
         self._verify_cache_integrity()
-        key = self._bucket_key(ctx)
+        key = self._bucket_key(message)
         if key not in self._cache:
             bucket = self._cooldown.copy()
             self._cache[key] = bucket

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -26,13 +27,15 @@ DEALINGS IN THE SOFTWARE.
 from discord.errors import DiscordException
 
 
-__all__ = [ 'CommandError', 'MissingRequiredArgument', 'BadArgument',
+__all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
-           'UserInputError', 'CommandOnCooldown', 'NotOwner' ]
+           'UserInputError', 'CommandOnCooldown', 'NotOwner',
+           'MissingPermissions', 'BotMissingPermissions', 'ConversionError',
+           'BadUnionArgument']
 
 class CommandError(DiscordException):
-    """The base exception type for all command related errors.
+    r"""The base exception type for all command related errors.
 
     This inherits from :exc:`discord.DiscordException`.
 
@@ -47,6 +50,23 @@ class CommandError(DiscordException):
             super().__init__(m, *args)
         else:
             super().__init__(*args)
+
+class ConversionError(CommandError):
+    """Exception raised when a Converter class raises non-CommandError.
+
+    This inherits from :exc:`.CommandError`.
+
+    Attributes
+    ----------
+    converter: :class:`discord.ext.commands.Converter`
+        The converter that failed.
+    original
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    """
+    def __init__(self, converter, original):
+        self.converter = converter
+        self.original = original
 
 class UserInputError(CommandError):
     """The base exception type for errors that involve errors
@@ -71,11 +91,11 @@ class MissingRequiredArgument(UserInputError):
 
     Attributes
     -----------
-    param: str
+    param: :class:`inspect.Parameter`
         The argument that is missing.
     """
     def __init__(self, param):
-        self.param = param.name
+        self.param = param
         super().__init__('{0.name} is a required argument that is missing.'.format(param))
 
 class TooManyArguments(UserInputError):
@@ -129,10 +149,83 @@ class CommandOnCooldown(CommandError):
     cooldown: Cooldown
         A class with attributes ``rate``, ``per``, and ``type`` similar to
         the :func:`.cooldown` decorator.
-    retry_after: float
+    retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
     def __init__(self, cooldown, retry_after):
         self.cooldown = cooldown
         self.retry_after = retry_after
         super().__init__('You are on cooldown. Try again in {:.2f}s'.format(retry_after))
+
+class MissingPermissions(CheckFailure):
+    """Exception raised when the command invoker lacks permissions to run
+    command.
+
+    Attributes
+    -----------
+    missing_perms: :class:`list`
+        The required permissions that are missing.
+    """
+    def __init__(self, missing_perms, *args):
+        self.missing_perms = missing_perms
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = 'You are missing {} permission(s) to run command.'.format(fmt)
+        super().__init__(message, *args)
+
+class BotMissingPermissions(CheckFailure):
+    """Exception raised when the bot lacks permissions to run command.
+
+    Attributes
+    -----------
+    missing_perms: :class:`list`
+        The required permissions that are missing.
+    """
+    def __init__(self, missing_perms, *args):
+        self.missing_perms = missing_perms
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = 'Bot requires {} permission(s) to run command.'.format(fmt)
+        super().__init__(message, *args)
+
+class BadUnionArgument(UserInputError):
+    """Exception raised when a :class:`typing.Union` converter fails for all
+    its associated types.
+
+    Attributes
+    -----------
+    param: :class:`inspect.Parameter`
+        The parameter that failed being converted.
+    converters: Tuple[Type, ...]
+        A tuple of converters attempted in conversion, in order of failure.
+    errors: List[:class:`CommandError`]
+        A list of errors that were caught from failing the conversion.
+    """
+    def __init__(self, param, converters, errors):
+        self.param = param
+        self.converters = converters
+        self.errors = errors
+
+        def _get_name(x):
+            try:
+                return x.__name__
+            except AttributeError:
+                return x.__class__.__name__
+
+        to_string = [_get_name(x) for x in converters]
+        if len(to_string) > 2:
+            fmt = '{}, or {}'.format(', '.join(to_string[:-1]), to_string[-1])
+        else:
+            fmt = ' or '.join(to_string)
+
+        super().__init__('Could not convert "{0.name}" into {1}.'.format(param, fmt))

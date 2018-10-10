@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -24,8 +25,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import utils
+from .mixins import Hashable
 
-class Object:
+class Object(Hashable):
     """Represents a generic Discord object.
 
     The purpose of this class is to allow you to create 'miniature'
@@ -39,9 +41,23 @@ class Object:
     receive this class rather than the actual data class. These cases are
     extremely rare.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two objects are equal.
+
+        .. describe:: x != y
+
+            Checks if two objects are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the object's hash.
+
     Attributes
     -----------
-    id : str
+    id : :class:`str`
         The ID of the object.
     """
 

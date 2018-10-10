@@ -36,7 +36,7 @@ from .opus import Encoder as OpusEncoder
 
 log = logging.getLogger(__name__)
 
-__all__ = [ 'AudioSource', 'PCMAudio', 'FFmpegPCMAudio', 'PCMVolumeTransformer' ]
+__all__ = ['AudioSource', 'PCMAudio', 'FFmpegPCMAudio', 'PCMVolumeTransformer']
 
 class AudioSource:
     """Represents an audio stream.
@@ -54,8 +54,8 @@ class AudioSource:
 
         Subclasses must implement this.
 
-        If the audio is complete, then returning an empty *bytes-like* object
-        to signal this is the way to do so.
+        If the audio is complete, then returning an empty
+        :term:`py:bytes-like object` to signal this is the way to do so.
 
         If :meth:`is_opus` method returns ``True``, then it must return
         20ms worth of Opus encoded audio. Otherwise, it must be 20ms
@@ -83,6 +83,9 @@ class AudioSource:
         it is done playing audio.
         """
         pass
+
+    def __del__(self):
+        self.cleanup()
 
 class PCMAudio(AudioSource):
     """Represents raw 16-bit 48KHz stereo PCM audio source.
@@ -153,6 +156,7 @@ class FFmpegPCMAudio(AudioSource):
 
         args.append('pipe:1')
 
+        self._process = None
         try:
             self._process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
             self._stdout = self._process.stdout
@@ -169,9 +173,19 @@ class FFmpegPCMAudio(AudioSource):
 
     def cleanup(self):
         proc = self._process
+        if proc is None:
+            return
+
+        log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
         proc.kill()
         if proc.poll() is None:
+            log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
             proc.communicate()
+            log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
+        else:
+            log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
+
+        self._process = None
 
 class PCMVolumeTransformer(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.
@@ -253,6 +267,7 @@ class AudioPlayer(threading.Thread):
             if not self._resumed.is_set():
                 # wait until we aren't
                 self._resumed.wait()
+                continue
 
             # are we disconnected from voice?
             if not self._connected.is_set():
@@ -281,8 +296,8 @@ class AudioPlayer(threading.Thread):
             self._current_error = e
             self.stop()
         finally:
-            self._call_after()
             self.source.cleanup()
+            self._call_after()
 
     def _call_after(self):
         if self.after is not None:
@@ -293,6 +308,7 @@ class AudioPlayer(threading.Thread):
 
     def stop(self):
         self._end.set()
+        self._resumed.set()
 
     def pause(self):
         self._resumed.clear()

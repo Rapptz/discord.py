@@ -36,7 +36,7 @@ Extensions
 -----------
 
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 3
 
   ext/commands/index.rst
 

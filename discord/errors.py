@@ -40,9 +40,7 @@ class ClientException(DiscordException):
 
 class NoMoreItems(DiscordException):
     """Exception that is thrown when an async iteration operation has no more
-    items. This is mainly exposed for Python 3.4 support where `StopAsyncIteration`
-    is not provided.
-    """
+    items."""
     pass
 
 class GatewayNotFound(DiscordException):
@@ -76,15 +74,16 @@ class HTTPException(DiscordException):
     ------------
     response: aiohttp.ClientResponse
         The response of the failed HTTP request. This is an
-        instance of `aiohttp.ClientResponse`__.
+        instance of `aiohttp.ClientResponse`__. In some cases
+        this could also be a ``requests.Response``.
 
         __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
 
-    text: str
+    text: :class:`str`
         The text of the error. Could be an empty string.
-    status: int
+    status: :class:`int`
         The status code of the HTTP request.
-    code: int
+    code: :class:`int`
         The Discord specific error code for the failure.
     """
 
@@ -149,11 +148,11 @@ class ConnectionClosed(ClientException):
 
     Attributes
     -----------
-    code: int
+    code: :class:`int`
         The close code of the websocket.
-    reason: str
+    reason: :class:`str`
         The reason provided for the closure.
-    shard_id: Optional[int]
+    shard_id: Optional[:class:`int`]
         The shard ID that got closed if applicable.
     """
     def __init__(self, original, *, shard_id):

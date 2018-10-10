@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -28,21 +29,26 @@ from .enums import ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
 from .errors import ClientException, NoMoreItems
+from .webhook import Webhook
 
 import discord.abc
 
 import time
 import asyncio
 
-__all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'GroupChannel', '_channel_factory')
+__all__ = ['TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory']
 
-@asyncio.coroutine
-def _single_delete_strategy(messages, *, reason):
+async def _single_delete_strategy(messages):
     for m in messages:
-        yield from m.delete(reason=reason)
+        await m.delete()
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
+
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
+    - :class:`discord.abc.GuildChannel`
 
     .. container:: operations
 
@@ -64,21 +70,28 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The channel name.
     guild: :class:`Guild`
         The guild the channel belongs to.
-    id: int
+    id: :class:`int`
         The channel ID.
-    topic: Optional[str]
+    category_id: :class:`int`
+        The category channel ID this channel belongs to.
+    topic: Optional[:class:`str`]
         The channel's topic. None if it doesn't exist.
-    position: int
+    position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of `0` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
     """
 
-    __slots__ = ( 'name', 'id', 'guild', 'topic', '_state',
-                  'position', '_overwrites' )
+    __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
+                 'category_id', 'position', 'slowmode_delay', '_overwrites')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -91,12 +104,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.topic = data.get('topic')
         self.position = data['position']
+        self.nsfw = data.get('nsfw', False)
+        # Does this need coercion into `int`? No idea yet.
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._fill_overwrites(data)
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self
 
     def permissions_for(self, member):
@@ -111,32 +127,42 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """Returns a list of :class:`Member` that can see this channel."""
+        """Returns a :class:`list` of :class:`Member` that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
         n = self.name
-        return n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
 
-        You must have the :attr:`Permissions.manage_channel` permission to
+        You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new channel name.
-        topic: str
+        topic: :class:`str`
             The new channel's topic.
-        position: int
+        position: :class:`int`
             The new channel's position.
-        reason: Optional[str]
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+        sync_permissions: :class:`bool`
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel. A value of
+            `0` disables slowmode. The maximum value possible is `120`.
+        reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
 
         Raises
@@ -148,66 +174,69 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Editing the channel failed.
         """
-        try:
-            position = options.pop('position')
-        except KeyError:
-            pass
-        else:
-            yield from self._move(position, reason=reason)
-            self.position = position
+        await self._edit(options, reason=reason)
 
-        if options:
-            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
-            self._update(self.guild, data)
-
-    @asyncio.coroutine
-    def delete_messages(self, messages, *, reason=None):
+    async def delete_messages(self, messages):
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
 
+        As a special case, if the number of messages is 0, then nothing
+        is done. If the number of messages is 1 then single message
+        delete is done. If it's more than two, then bulk delete is used.
+
+        You cannot bulk delete more than 100 messages or messages that
+        are older than 14 days old.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to
+        use this.
+
         Usable only by bot accounts.
 
         Parameters
         -----------
-        messages: iterable of :class:`Message`
+        messages: Iterable[:class:`abc.Snowflake`]
             An iterable of messages denoting which ones to bulk delete.
-        reason: Optional[str]
-            The reason for bulk deleting these messages. Shows up on the audit log.
 
         Raises
         ------
         ClientException
-            The number of messages to delete is less than 2 or more than 100.
+            The number of messages to delete was more than 100.
         Forbidden
             You do not have proper permissions to delete the messages or
             you're not using a bot account.
         HTTPException
             Deleting the messages failed.
         """
+        if not isinstance(messages, (list, tuple)):
+            messages = list(messages)
 
-        messages = list(messages)
-        if len(messages) > 100 or len(messages) < 2:
-            raise ClientException('Can only delete messages in the range of [2, 100]')
+        if len(messages) == 0:
+            return # do nothing
+
+        if len(messages) == 1:
+            message_id = messages[0].id
+            await self._state.http.delete_message(self.id, message_id)
+            return
+
+        if len(messages) > 100:
+            raise ClientException('Can only bulk delete messages up to 100 messages')
 
         message_ids = [m.id for m in messages]
-        channel = yield from self._get_channel()
+        await self._state.http.delete_messages(self.id, message_ids)
 
-        yield from self._state.http.delete_messages(channel.id, message_ids, reason=reason)
-
-    @asyncio.coroutine
-    def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reason=None):
+    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, bulk=True):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        You must have :attr:`Permissions.manage_messages` permission to delete
-        messages even if they are your own (unless you are a user account).
-        The :attr:`Permissions.read_message_history` permission is also needed
-        to retrieve message history.
+        You must have the :attr:`~Permissions.manage_messages` permission to
+        delete messages even if they are your own (unless you are a user
+        account). The :attr:`~Permissions.read_message_history` permission is
+        also needed to retrieve message history.
 
         Internally, this employs a different number of strategies depending
         on the conditions met such as if a bulk delete is possible or if
@@ -227,8 +256,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``after`` in :meth:`history`.
         around
             Same as ``around`` in :meth:`history`.
-        reason: Optional[str]
-            The reason for doing this action. Shows up on the audit log.
+        reverse
+            Same as ``reverse`` in :meth:`history`.
+        bulk: bool
+            If True, use bulk delete. bulk=False is useful for mass-deleting
+            a bot's own messages without manage_messages. When True, will fall
+            back to single delete if current account is a user bot, or if
+            messages are older than two weeks.
 
         Raises
         -------
@@ -257,43 +291,43 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if check is None:
             check = lambda m: True
 
-        iterator = self.history(limit=limit, before=before, after=after, around=around)
+        iterator = self.history(limit=limit, before=before, after=after, reverse=reverse, around=around)
         ret = []
         count = 0
 
         minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if self._state.is_bot else _single_delete_strategy
+        strategy = self.delete_messages if self._state.is_bot and bulk else _single_delete_strategy
 
         while True:
             try:
-                msg = yield from iterator.get()
+                msg = await iterator.next()
             except NoMoreItems:
                 # no more messages to poll
                 if count >= 2:
                     # more than 2 messages -> bulk delete
                     to_delete = ret[-count:]
-                    yield from strategy(to_delete, reason=reason)
+                    await strategy(to_delete)
                 elif count == 1:
                     # delete a single message
-                    yield from ret[-1].delete(reason=reason)
+                    await ret[-1].delete()
 
                 return ret
             else:
                 if count == 100:
                     # we've reached a full 'queue'
                     to_delete = ret[-100:]
-                    yield from strategy(to_delete, reason=reason)
+                    await strategy(to_delete)
                     count = 0
-                    yield from asyncio.sleep(1)
+                    await asyncio.sleep(1)
 
                 if check(msg):
                     if msg.id < minimum_time:
                         # older than 14 days old
                         if count == 1:
-                            yield from ret[-1].delete()
+                            await ret[-1].delete()
                         elif count >= 2:
                             to_delete = ret[-count:]
-                            yield from strategy(to_delete, reason=reason)
+                            await strategy(to_delete)
 
                         count = 0
                         strategy = _single_delete_strategy
@@ -301,8 +335,68 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                     count += 1
                     ret.append(msg)
 
+    async def webhooks(self):
+        """|coro|
+
+        Gets the list of webhooks from this channel.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the webhooks.
+
+        Returns
+        --------
+        List[:class:`Webhook`]
+            The webhooks for this channel.
+        """
+
+        data = await self._state.http.channel_webhooks(self.id)
+        return [Webhook.from_state(d, state=self._state) for d in data]
+
+    async def create_webhook(self, *, name, avatar=None):
+        """|coro|
+
+        Creates a webhook for this channel.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Parameters
+        -------------
+        name: str
+            The webhook's name.
+        avatar: Optional[bytes]
+            A :term:`py:bytes-like object` representing the webhook's default avatar.
+            This operates similarly to :meth:`~ClientUser.edit`.
+
+        Raises
+        -------
+        HTTPException
+            Creating the webhook failed.
+        Forbidden
+            You do not have permissions to create a webhook.
+
+        Returns
+        --------
+        :class:`Webhook`
+            The created webhook.
+        """
+
+        if avatar is not None:
+            avatar = utils._bytes_to_base64_data(avatar)
+
+        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar)
+        return Webhook.from_state(data, state=self._state)
+
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
+
+    **Inherited Classes**
+
+    - :class:`discord.abc.Connectable`
+    - :class:`discord.abc.GuildChannel`
 
     .. container:: operations
 
@@ -324,23 +418,25 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     Attributes
     -----------
-    name: str
+    name: :class:`str`
         The channel name.
     guild: :class:`Guild`
         The guild the channel belongs to.
-    id: int
+    id: :class:`int`
         The channel ID.
-    position: int
+    category_id: :class:`int`
+        The category channel ID this channel belongs to.
+    position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
-    bitrate: int
+    bitrate: :class:`int`
         The channel's preferred audio bitrate in bits per second.
-    user_limit: int
+    user_limit: :class:`int`
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'bitrate',  'user_limit',
-                 '_state', 'position', '_overwrites' )
+    __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
+                 '_state', 'position', '_overwrites', 'category_id')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -359,6 +455,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
         self.user_limit = data.get('user_limit')
@@ -375,23 +472,30 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                     ret.append(member)
         return ret
 
-    @asyncio.coroutine
-    def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason=None, **options):
         """|coro|
 
         Edits the channel.
 
-        You must have the :attr:`Permissions.manage_channel` permission to
+        You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
         Parameters
         ----------
+        name: str
+            The new channel's name.
         bitrate: int
             The new channel's bitrate.
         user_limit: int
             The new channel's user limit.
         position: int
             The new channel's position.
+        sync_permissions: bool
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
         reason: Optional[str]
             The reason for editing this channel. Shows up on the audit log.
 
@@ -403,20 +507,127 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             Editing the channel failed.
         """
 
+        await self._edit(options, reason=reason)
+
+class CategoryChannel(discord.abc.GuildChannel, Hashable):
+    """Represents a Discord channel category.
+
+    These are useful to group channels to logical compartments.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the category's hash.
+
+        .. describe:: str(x)
+
+            Returns the category's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The category name.
+    guild: :class:`Guild`
+        The guild the category belongs to.
+    id: :class:`int`
+        The category channel ID.
+    position: :class:`int`
+        The position in the category list. This is a number that starts at 0. e.g. the
+        top category is position 0.
+    """
+
+    __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id')
+
+    def __init__(self, *, state, guild, data):
+        self._state = state
+        self.id = int(data['id'])
+        self._update(guild, data)
+
+    def __repr__(self):
+        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+
+    def _update(self, guild, data):
+        self.guild = guild
+        self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
+        self.nsfw = data.get('nsfw', False)
+        self.position = data['position']
+        self._fill_overwrites(data)
+
+    def is_nsfw(self):
+        """Checks if the category is NSFW."""
+        n = self.name
+        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+
+    async def edit(self, *, reason=None, **options):
+        """|coro|
+
+        Edits the channel.
+
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
+        Parameters
+        ----------
+        name: str
+            The new category's name.
+        position: int
+            The new category's position.
+        nsfw: bool
+            To mark the category as NSFW or not.
+        reason: Optional[str]
+            The reason for editing this category. Shows up on the audit log.
+
+        Raises
+        ------
+        InvalidArgument
+            If position is less than 0 or greater than the number of categories.
+        Forbidden
+            You do not have permissions to edit the category.
+        HTTPException
+            Editing the category failed.
+        """
+
         try:
             position = options.pop('position')
         except KeyError:
             pass
         else:
-            yield from self._move(position, reason=reason)
+            await self._move(position, reason=reason)
             self.position = position
 
         if options:
-            data = yield from self._state.http.edit_channel(self.id, reason=reason, **options)
+            data = await self._state.http.edit_channel(self.id, reason=reason, **options)
             self._update(self.guild, data)
+
+    @property
+    def channels(self):
+        """List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
+
+        These are sorted by the official Discord UI, which places voice channels below the text channels.
+        """
+        def comparator(channel):
+            return (not isinstance(channel, TextChannel), channel.position)
+
+        ret = [c for c in self.guild.channels if c.category_id == self.id]
+        ret.sort(key=comparator)
+        return ret
 
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
+
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
 
     .. container:: operations
 
@@ -442,7 +653,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         The user you are participating with in the direct message channel.
     me: :class:`ClientUser`
         The user presenting yourself.
-    id: int
+    id: :class:`int`
         The direct message channel ID.
     """
 
@@ -454,8 +665,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.me = me
         self.id = int(data['id'])
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self
 
     def __str__(self):
@@ -501,6 +711,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 class GroupChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord group channel.
 
+    **Inherited Classes**
+
+    - :class:`discord.abc.Messageable`
+
     .. container:: operations
 
         .. describe:: x == y
@@ -521,17 +735,17 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipients: list of :class:`User`
+    recipients: :class:`list` of :class:`User`
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
         The user presenting yourself.
-    id: int
+    id: :class:`int`
         The group channel ID.
     owner: :class:`User`
         The user that owns the group channel.
-    icon: Optional[str]
+    icon: Optional[:class:`str`]
         The group channel's icon hash if provided.
-    name: Optional[str]
+    name: Optional[:class:`str`]
         The group channel's name if provided.
     """
 
@@ -558,8 +772,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         else:
             self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
 
-    @asyncio.coroutine
-    def _get_channel(self):
+    async def _get_channel(self):
         return self
 
     def __str__(self):
@@ -622,9 +835,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         return base
 
-    @asyncio.coroutine
-    def add_recipients(self, *recipients):
-        """|coro|
+    async def add_recipients(self, *recipients):
+        r"""|coro|
 
         Adds recipients to this group.
 
@@ -648,11 +860,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         req = self._state.http.add_group_recipient
         for recipient in recipients:
-            yield from req(self.id, recipient.id)
+            await req(self.id, recipient.id)
 
-    @asyncio.coroutine
-    def remove_recipients(self, *recipients):
-        """|coro|
+    async def remove_recipients(self, *recipients):
+        r"""|coro|
 
         Removes recipients from this group.
 
@@ -671,10 +882,9 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         req = self._state.http.remove_group_recipient
         for recipient in recipients:
-            yield from req(self.id, recipient.id)
+            await req(self.id, recipient.id)
 
-    @asyncio.coroutine
-    def edit(self, **fields):
+    async def edit(self, **fields):
         """|coro|
 
         Edits the group.
@@ -685,7 +895,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             The new name to change the group to.
             Could be ``None`` to remove the name.
         icon: Optional[bytes]
-            A bytes-like object representing the new icon.
+            A :term:`py:bytes-like object` representing the new icon.
             Could be ``None`` to remove the icon.
 
         Raises
@@ -702,11 +912,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             if icon_bytes is not None:
                 fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
 
-        data = yield from self._state.http.edit_group(self.id, **fields)
+        data = await self._state.http.edit_group(self.id, **fields)
         self._update_group(data)
 
-    @asyncio.coroutine
-    def leave(self):
+    async def leave(self):
         """|coro|
 
         Leave the group.
@@ -719,7 +928,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             Leaving the group failed.
         """
 
-        yield from self._state.http.leave_group(self.id)
+        await self._state.http.leave_group(self.id)
 
 def _channel_factory(channel_type):
     value = try_enum(ChannelType, channel_type)
@@ -729,6 +938,8 @@ def _channel_factory(channel_type):
         return VoiceChannel, value
     elif value is ChannelType.private:
         return DMChannel, value
+    elif value is ChannelType.category:
+        return CategoryChannel, value
     elif value is ChannelType.group:
         return GroupChannel, value
     else:

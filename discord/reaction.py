@@ -54,11 +54,11 @@ class Reaction:
 
     Attributes
     -----------
-    emoji: :class:`Emoji` or str
+    emoji: :class:`Emoji` or :class:`str`
         The reaction emoji. May be a custom emoji, or a unicode emoji.
-    count: int
+    count: :class:`int`
         Number of times this reaction was made
-    me: bool
+    me: :class:`bool`
         If the user sent this reaction.
     message: :class:`Message`
         Message this reaction is for.
@@ -73,7 +73,7 @@ class Reaction:
 
     @property
     def custom_emoji(self):
-        """bool: If this is a custom emoji."""
+        """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
     def __eq__(self, other):
@@ -94,10 +94,7 @@ class Reaction:
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
 
     def users(self, limit=None, after=None):
-        """|coro|
-
-        Returns an :class:`AsyncIterator` representing the
-        users that have reacted to the message.
+        """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
 
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.
@@ -131,17 +128,6 @@ class Reaction:
             # users is now a list...
             winner = random.choice(users)
             await channel.send('{} has won the raffle.'.format(winner))
-
-        Python 3.4 Usage ::
-
-            iterator = reaction.users()
-            while True:
-                try:
-                    user = yield from iterator.get()
-                except discord.NoMoreItems:
-                    break
-                else:
-                    await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
 
         Yields
         --------

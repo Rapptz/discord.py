@@ -19,8 +19,8 @@ __version__ = '1.0.0a'
 
 from .client import Client, AppInfo
 from .user import User, ClientUser, Profile
-from .game import Game
-from .emoji import Emoji, PartialReactionEmoji
+from .emoji import Emoji, PartialEmoji
+from .activity import *
 from .channel import *
 from .guild import Guild
 from .relationship import Relationship
@@ -35,14 +35,16 @@ from .colour import Color, Colour
 from .invite import Invite
 from .object import Object
 from .reaction import Reaction
-from . import utils, opus, compat, abc
+from . import utils, opus, abc
 from .enums import *
 from collections import namedtuple
 from .embeds import Embed
 from .shard import AutoShardedClient
 from .player import *
+from .webhook import *
 from .voice_client import VoiceClient
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
+from .raw_models import *
 
 import logging
 

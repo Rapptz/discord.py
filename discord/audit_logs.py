@@ -71,7 +71,7 @@ def _transform_overwrites(entry, data):
         ow_type = elem['type']
         ow_id = int(elem['id'])
         if ow_type == 'role':
-            target = utils.find(lambda r: r.id == ow_id, entry.guild.roles)
+            target = entry.guild.get_role(ow_id)
         else:
             target = entry._get_member(ow_id)
 
@@ -105,11 +105,13 @@ class AuditLogChanges:
         'inviter_id':              ('inviter', _transform_inviter_id),
         'channel_id':              ('channel', _transform_channel),
         'afk_channel_id':          ('afk_channel', _transform_channel),
+        'system_channel_id':       ('system_channel', _transform_channel),
         'widget_channel_id':       ('widget_channel', _transform_channel),
         'permission_overwrites':   ('overwrites', _transform_overwrites),
         'splash_hash':             ('splash', None),
         'icon_hash':               ('icon', None),
         'avatar_hash':             ('avatar', None),
+        'rate_limit_per_user':     ('slowmode_delay', None),
     }
 
     def __init__(self, entry, data):
@@ -162,11 +164,11 @@ class AuditLogChanges:
         setattr(first, 'roles', [])
 
         data = []
-        roles = entry.guild.roles
+        g = entry.guild
 
         for e in elem:
             role_id = int(e['id'])
-            role = utils.find(lambda r: r.id == role_id, roles)
+            role = g.get_role(role_id)
 
             if role is None:
                 role = Object(id=role_id)
@@ -177,7 +179,7 @@ class AuditLogChanges:
         setattr(second, 'roles', data)
 
 class AuditLogEntry:
-    """Represents an Audit Log entry.
+    r"""Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
 
@@ -188,12 +190,12 @@ class AuditLogEntry:
     user: :class:`abc.User`
         The user who initiated this action. Usually a :class:`Member`\, unless gone
         then it's a :class:`User`.
-    id: int
+    id: :class:`int`
         The entry ID.
     target: Any
         The target that got changed. The exact type of this depends on
         the action being done.
-    reason: Optional[str]
+    reason: Optional[:class:`str`]
         The reason this action was done.
     extra: Any
         Extra information that this entry has that might be useful.
@@ -234,7 +236,7 @@ class AuditLogEntry:
                 if the_type == 'member':
                     self.extra = self._get_member(instance_id)
                 else:
-                    role = utils.find(lambda r: r.id == instance_id, self.guild.roles)
+                    role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
                         role.name = self.extra.get('role_name')
@@ -247,7 +249,7 @@ class AuditLogEntry:
         # into meaningful data when requested
         self._changes = data.get('changes', [])
 
-        self.user = self._get_member(int(data['user_id']))
+        self.user = self._get_member(utils._get_as_snowflake(data, 'user_id'))
         self._target_id = utils._get_as_snowflake(data, 'target_id')
 
     def _get_member(self, user_id):
@@ -305,7 +307,7 @@ class AuditLogEntry:
         return self._get_member(target_id)
 
     def _convert_target_role(self, target_id):
-        role = utils.find(lambda r: r.id == target_id, self.guild.roles)
+        role = self.guild.get_role(target_id)
         if role is None:
             return Object(id=target_id)
         return role

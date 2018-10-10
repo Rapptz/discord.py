@@ -32,7 +32,7 @@ class File:
 
     Attributes
     -----------
-    fp: Union[str, BinaryIO]
+    fp: Union[:class:`str`, BinaryIO]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
         open.
@@ -44,7 +44,7 @@ class File:
 
             To pass binary data, consider usage of ``io.BytesIO``.
 
-    filename: Optional[str]
+    filename: Optional[:class:`str`]
         The filename to display when uploading to Discord.
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
