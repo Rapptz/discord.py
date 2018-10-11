@@ -697,8 +697,13 @@ class BotBase(GroupMixin):
             del sys.modules[name]
             raise discord.ClientException('extension does not have a setup function')
 
-        lib.setup(self)
         self.extensions[name] = lib
+
+        try:
+            lib.setup(self)
+        except:
+            self.unload_extension(name)
+            raise
 
     def unload_extension(self, name):
         """Unloads an extension.
