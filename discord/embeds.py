@@ -69,11 +69,11 @@ class Embed:
     Attributes
     -----------
     title: :class:`str`
-        The title of the embed. Max 256 characters.
+        The title of the embed which can not have more than 256 characters.
     type: :class:`str`
         The type of embed. Usually "rich".
     description: :class:`str`
-        The description of the embed. Max 2048 characters.
+        The description of the embed whcih can not have more than 2048 characters.
     url: :class:`str`
         The URL of the embed.
     timestamp: `datetime.datetime`
@@ -190,7 +190,7 @@ class Embed:
         Parameters
         -----------
         text: str
-            The footer text. Max 2048 characters.
+            The footer text whcih can not have more than 2048 characters.
         icon_url: str
             The URL of the footer icon. Only HTTP(S) is supported.
         """
@@ -313,7 +313,7 @@ class Embed:
         Parameters
         -----------
         name: str
-            The name of the author. Max 256 characters.
+            The name of the author which can not have more than 256 characters.
         url: str
             The URL for the author.
         icon_url: str
@@ -351,9 +351,9 @@ class Embed:
         Parameters
         -----------
         name: str
-            The name of the field. Max 256 characters.
+            The name of the field which can not have more than 256 characters.
         value: str
-            The value of the field. Max 1024 characters
+            The value of the field whcih can not have more than 1024 characters
         inline: bool
             Whether the field should be displayed inline.
         """
@@ -412,9 +412,9 @@ class Embed:
         index: int
             The index of the field to modify.
         name: str
-            The name of the field. Max 256 characters.
+            The name of the field which can not have more than 256 characters.
         value: str
-            The value of the field. Max 1024 characters
+            The value of the field which can not have more than 1024 characters
         inline: bool
             Whether the field should be displayed inline.
 
