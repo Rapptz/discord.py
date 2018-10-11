@@ -100,9 +100,11 @@ class Embed:
 
         self.colour = colour
         self.title = kwargs.get('title', EmptyEmbed)
+        if len(self.title) > 256: raise EmbedError('Embed title is over 256 limit.')
         self.type = kwargs.get('type', 'rich')
         self.url = kwargs.get('url', EmptyEmbed)
         self.description = kwargs.get('description', EmptyEmbed)
+        if len(self.descripẗion) > 2048: raise EmbedError('Embed description is over 2048 limit.')
 
         try:
             timestamp = kwargs['timestamp']
@@ -197,6 +199,7 @@ class Embed:
 
         self._footer = {}
         if text is not EmptyEmbed:
+            if len(text) > 2048: raise EmbedError('Embed footer text is over 2048 limit.')
             self._footer['text'] = str(text)
 
         if icon_url is not EmptyEmbed:
@@ -323,7 +326,9 @@ class Embed:
         self._author = {
             'name': str(name)
         }
-
+        
+        if len(self.author['name']) > 256: raise EmbedError('Embed author name is over 256 limit.')
+        
         if url is not EmptyEmbed:
             self._author['url'] = str(url)
 
@@ -363,6 +368,10 @@ class Embed:
             'name': str(name),
             'value': str(value)
         }
+        
+        if len(self.fields) >= 25: raise EmbedError('Embed fields is at 25 limit.')
+        if len(field['name']) > 256: raise EmbedError('Embed field name is over 256 limit.')
+        if len(field['value']) > 1024: raise EmbedError('Embed field value is over 1024 limit.')
 
         try:
             self._fields.append(field)
@@ -428,6 +437,10 @@ class Embed:
             field = self._fields[index]
         except (TypeError, IndexError, AttributeError):
             raise IndexError('field index out of range')
+            
+        if len(self.fields) >= 25: raise EmbedError('Embed fields is at 25 limit.')
+        if len(field['name']) > 256: raise EmbedError('Embed field name is over 256 limit.')
+        if len(field['value']) > 1024: raise EmbedError('Embed field value is over 1024 limit.')
 
         field['name'] = str(name)
         field['value'] = str(value)
