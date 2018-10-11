@@ -124,6 +124,10 @@ class NotFound(HTTPException):
     """
     pass
 
+class EmbedError(Exception):
+    """Exception that's thrown when a embed is out of it's limits..
+    """
+    pass
 
 class InvalidArgument(ClientException):
     """Exception that's thrown when an argument to a function
