@@ -711,7 +711,7 @@ class Command:
     @property
     def cog_name(self):
         """The name of the cog this command belongs to. None otherwise."""
-        return type(self.instance).__name__ if self.instance is not None else None
+        return self.instance.cog_name if self.instance is not None else None
 
     @property
     def short_doc(self):
