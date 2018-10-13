@@ -224,9 +224,10 @@ class BotBase(GroupMixin):
 
         cog = context.cog
         if cog:
-            attr = '_{0.__class__.__name__}__error'.format(cog)
-            if hasattr(cog, attr):
-                return
+            for cls in inspect.getmro(cog.__class__)[:-1]:
+                attr = '_{0.__name__}__error'.format(cls)
+                if hasattr(cog, attr):
+                    return
 
         print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
@@ -541,19 +542,22 @@ class BotBase(GroupMixin):
 
         self.cogs[type(cog).__name__] = cog
 
-        try:
-            check = getattr(cog, '_{.__class__.__name__}__global_check'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.add_check(check)
+        for cls in inspect.getmro(cog.__class__)[:-1]:
+            try:
+                check = getattr(cog, '_{.__name__}__global_check'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                self.add_check(check)
+                break
 
-        try:
-            check = getattr(cog, '_{.__class__.__name__}__global_check_once'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.add_check(check, call_once=True)
+            try:
+                check = getattr(cog, '_{.__name__}__global_check_once'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                self.add_check(check, call_once=True)
+                break
 
         members = inspect.getmembers(cog)
         for name, member in members:
@@ -638,27 +642,33 @@ class BotBase(GroupMixin):
             if name.startswith('on_'):
                 self.remove_listener(member)
 
-        try:
-            check = getattr(cog, '_{0.__class__.__name__}__global_check'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.remove_check(check)
+        mro = inspect.getmro(cog.__class__)[:-1]
+        for cls in mro:
+            try:
+                check = getattr(cog, '_{0.__name__}__global_check'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                self.remove_check(check)
+                break
 
-        try:
-            check = getattr(cog, '_{0.__class__.__name__}__global_check_once'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.remove_check(check, call_once=True)
+        for cls in mro:
+            try:
+                check = getattr(cog, '_{0.__name__}__global_check_once'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                self.remove_check(check, call_once=True)
+                break
 
-        unloader_name = '_{0.__class__.__name__}__unload'.format(cog)
-        try:
-            unloader = getattr(cog, unloader_name)
-        except AttributeError:
-            pass
-        else:
-            unloader()
+        for cls in mro:
+            try:
+                unloader = getattr(cog, '_{0.__name__}__unload'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                unloader()
+                break
 
         del cog
 
