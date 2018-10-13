@@ -220,12 +220,15 @@ class Command:
                 await injected(ctx, error)
 
         try:
-            local = getattr(cog, '_{0.__class__.__name__}__error'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            wrapped = wrap_callback(local)
-            await wrapped(ctx, error)
+            for cls in inspect.getmro(cog.__class__)[:-1]:
+                try:
+                    local = getattr(cog, '_{0.__name__}__error'.format(cls))
+                except AttributeError:
+                    pass
+                else:
+                    wrapped = wrap_callback(local)
+                    await wrapped(ctx, error)
+                    break
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
@@ -528,12 +531,14 @@ class Command:
                 await self._before_invoke(cog, ctx)
 
         # call the cog local hook if applicable:
-        try:
-            hook = getattr(cog, '_{0.__class__.__name__}__before_invoke'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            await hook(ctx)
+        for cls in inspect.getmro(cog.__class__)[:-1]:
+            try:
+                hook = getattr(cog, '_{0.__name__}__before_invoke'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                await hook(ctx)
+                break
 
         # call the bot global hook if necessary
         hook = ctx.bot._before_invoke
@@ -548,12 +553,14 @@ class Command:
             else:
                 await self._after_invoke(cog, ctx)
 
-        try:
-            hook = getattr(cog, '_{0.__class__.__name__}__after_invoke'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            await hook(ctx)
+        for cls in inspect.getmro(cog.__class__)[:-1]:
+            try:
+                hook = getattr(cog, '_{0.__name__}__after_invoke'.format(cls))
+            except AttributeError:
+                pass
+            else:
+                await hook(ctx)
+                break
 
         hook = ctx.bot._after_invoke
         if hook is not None:
@@ -798,14 +805,16 @@ class Command:
 
             cog = self.instance
             if cog is not None:
-                try:
-                    local_check = getattr(cog, '_{0.__class__.__name__}__local_check'.format(cog))
-                except AttributeError:
-                    pass
-                else:
-                    ret = await discord.utils.maybe_coroutine(local_check, ctx)
-                    if not ret:
-                        return False
+                for cls in inspect.getmro(cog.__class__)[:-1]:
+                    try:
+                        local_check = getattr(cog, '_{0.__name__}__local_check'.format(cls))
+                    except AttributeError:
+                        pass
+                    else:
+                        ret = await discord.utils.maybe_coroutine(local_check, ctx)
+                        if not ret:
+                            return False
+                        break
 
             predicates = self.checks
             if not predicates:
