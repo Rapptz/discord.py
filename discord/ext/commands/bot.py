@@ -542,7 +542,8 @@ class BotBase(GroupMixin):
 
         self.cogs[type(cog).__name__] = cog
 
-        for cls in inspect.getmro(cog.__class__)[:-1]:
+        mro = inspect.getmro(cog.__class__)[:-1]
+        for cls in mro:
             try:
                 check = getattr(cog, '_{.__name__}__global_check'.format(cls))
             except AttributeError:
@@ -551,6 +552,7 @@ class BotBase(GroupMixin):
                 self.add_check(check)
                 break
 
+        for cls in mro:
             try:
                 check = getattr(cog, '_{.__name__}__global_check_once'.format(cls))
             except AttributeError:
