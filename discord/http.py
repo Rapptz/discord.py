@@ -218,7 +218,7 @@ class HTTPClient:
     async def get_attachment(self, url):
         async with self._session.get(url) as resp:
             if resp.status == 200:
-                return (await resp.read())
+                return await resp.read()
             elif resp.status == 404:
                 raise NotFound(resp, 'attachment not found')
             elif resp.status == 403:
