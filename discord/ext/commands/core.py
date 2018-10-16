@@ -770,18 +770,13 @@ class Command:
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`.checks` attribute.
+        inside the :attr:`.checks` attribute. If any of these checks were to
+        error, instead return False as the command cannot be invoked.
 
         Parameters
         -----------
         ctx: :class:`.Context`
             The ctx of the command currently being invoked.
-
-        Raises
-        -------
-        :class:`CommandError`
-            Any command error that was raised during a check call will be propagated
-            by this function.
 
         Returns
         --------
@@ -794,7 +789,7 @@ class Command:
 
         try:
             if not (await ctx.bot.can_run(ctx)):
-                raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
+                return False  # the context cannot be invoked, so return False
 
             cog = self.instance
             if cog is not None:
@@ -811,8 +806,10 @@ class Command:
             if not predicates:
                 # since we have no checks, then we just return True.
                 return True
-
-            return (await discord.utils.async_all(predicate(ctx) for predicate in predicates))
+            try:  # check each predicate, would raise error if any of these checks fail
+                return await discord.utils.async_all(predicate(ctx) for predicate in predicates)
+            except:  # otherwise, return False, as the command cannot be invoked
+                return False
         finally:
             ctx.command = original
 
