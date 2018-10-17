@@ -65,7 +65,7 @@ def app_info_icon_url(self):
 AppInfo.icon_url = property(app_info_icon_url)
 
 class Client:
-    """Represents a client connection that connects to Discord.
+    r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
     A number of options can be passed to the :class:`Client`.
@@ -287,7 +287,7 @@ class Client:
         traceback.print_exc()
 
     async def request_offline_members(self, *guilds):
-        """|coro|
+        r"""|coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`Guild.members` cache. This function is usually not
