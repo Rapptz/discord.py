@@ -617,6 +617,12 @@ Profile
     .. attribute:: partner
 
         A boolean indicating if the user is a Discord Partner.
+    .. attribute:: bug_hunter
+
+        A boolean indicating if the user is a Bug Hunter.
+    .. attribute:: early_supporter
+
+        A boolean indicating if the user has had premium before 10 October, 2018.
     .. attribute:: hypesquad
 
         A boolean indicating if the user is in Discord HypeSquad.
