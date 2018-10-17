@@ -83,6 +83,12 @@ class Embed:
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
         to denote that the value or attribute is empty.
+        
+    Raises
+    ------
+    EmbedError
+        If title is over 256 limit or description is over 2048 limit.
+
     """
 
     __slots__ = ('title', 'url', 'type', '_timestamp', '_colour', '_footer',
@@ -195,6 +201,11 @@ class Embed:
             The footer text whcih can not have more than 2048 characters.
         icon_url: str
             The URL of the footer icon. Only HTTP(S) is supported.
+            
+        Raises
+        ------
+        EmbedError
+            If text is over 2048 limit.
         """
 
         self._footer = {}
@@ -321,6 +332,11 @@ class Embed:
             The URL for the author.
         icon_url: str
             The URL of the author icon. Only HTTP(S) is supported.
+            
+        Raises
+        ------
+        EmbedError
+            If name is over 256 limit.
         """
 
         self._author = {
@@ -361,6 +377,11 @@ class Embed:
             The value of the field whcih can not have more than 1024 characters
         inline: bool
             Whether the field should be displayed inline.
+            
+        Raises
+        ------
+        EmbedError
+            If name is over 256 limit or value is over 1024 limit.
         """
 
         field = {
@@ -431,6 +452,11 @@ class Embed:
         -------
         IndexError
             An invalid index was provided.
+            
+        Raises
+        ------
+        EmbedError
+            If name is over 256 limit or value is over 1024 limit.
         """
 
         try:
