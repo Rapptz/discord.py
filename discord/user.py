@@ -53,12 +53,20 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
         return self._has_flag(UserFlags.staff)
 
     @property
-    def hypesquad(self):
-        return self._has_flag(UserFlags.hypesquad)
-
-    @property
     def partner(self):
         return self._has_flag(UserFlags.partner)
+
+    @property
+    def bug_hunter(self):
+        return self._has_flag(UserFlags.bug_hunter)
+
+    @property
+    def early_supporter(self):
+        return self._has_flag(UserFlags.early_supporter)
+
+    @property
+    def hypesquad(self):
+        return self._has_flag(UserFlags.hypesquad)
 
     @property
     def hypesquad_houses(self):
