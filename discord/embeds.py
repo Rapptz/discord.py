@@ -110,6 +110,13 @@ class Embed:
 
     @classmethod
     def from_data(cls, data):
+        """Returns an embed.
+        
+        Parameters
+        -----------
+        data: dict
+            The dict containing the data for the embed.
+        """
         # we are bypassing __init__ here since it doesn't apply here
         self = cls.__new__(cls)
 
