@@ -593,6 +593,11 @@ class Client:
     # helpers/getters
 
     @property
+    def is_ready(self):
+        """Return whether the the client's internal cache is all ready."""
+        return self._ready.is_set()
+
+    @property
     def users(self):
         """Returns a :obj:`list` of all the :class:`User` the bot can see."""
         return list(self._connection._users.values())
