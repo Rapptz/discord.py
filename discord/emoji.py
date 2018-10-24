@@ -42,10 +42,12 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         .. describe:: x == y
 
             Checks if two emoji are the same.
+            Works with Emoji instances too.
 
         .. describe:: x != y
 
             Checks if two emoji are not the same.
+            Works with Emoji instances too.
 
         .. describe:: hash(x)
 
@@ -118,10 +120,12 @@ class Emoji(Hashable):
         .. describe:: x == y
 
             Checks if two emoji are the same.
+            Works with PatialEmoji instances too.
 
         .. describe:: x != y
 
             Checks if two emoji are not the same.
+            Works with PartialEmoji instances too.
 
         .. describe:: hash(x)
 
