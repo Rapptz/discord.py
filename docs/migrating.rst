@@ -366,7 +366,7 @@ They will be enumerated here.
 
 - ``Member.game``
 
-    - Use :attr:`Member.activity` instead.
+    - Use :attr:`Member.activities` instead.
 
 - ``Guild.role_hierarchy`` / ``Server.role_hierarchy``
 

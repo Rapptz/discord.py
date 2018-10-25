@@ -246,7 +246,7 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member.status = try_enum(Status, presence['status'])
-                member.activity = create_activity(presence.get('game'))
+                member.activities = tuple(map(create_activity, presence.get('activities', [])))
 
         if 'channels' in data:
             channels = data['channels']

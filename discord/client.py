@@ -833,7 +833,7 @@ class Client:
             if me is None:
                 continue
 
-            me.activity = activity
+            me.activities = (activity,)
             me.status = status_enum
 
     # Guild stuff

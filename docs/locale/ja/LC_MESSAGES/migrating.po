@@ -987,8 +987,8 @@ msgid "``Member.game``"
 msgstr "``Member.game``"
 
 #: ../../migrating.rst:369
-msgid "Use :attr:`Member.activity` instead."
-msgstr "代わりに :attr:`Member.activity` 使用してください。"
+msgid "Use :attr:`Member.activities` instead."
+msgstr "代わりに :attr:`Member.activities` 使用してください。"
 
 #: ../../migrating.rst:371
 msgid "``Guild.role_hierarchy`` / ``Server.role_hierarchy``"
