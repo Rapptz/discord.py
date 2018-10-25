@@ -142,7 +142,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    activities: List[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
         The guild that the member belongs to.
@@ -159,7 +159,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self.status = Status.offline
-        self.activities = [create_activity(x) for x in data.get('activities', [])]
+        self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -217,7 +217,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _presence_update(self, data, user):
         self.status = try_enum(Status, data['status'])
-        self.activities = [create_activity(x) for x in data.get('activities', [])]
+        self.activities = tuple(map(create_activity, data.get('activities', [])))
 
         if len(user) > 1:
             u = self._user
