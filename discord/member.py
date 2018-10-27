@@ -286,6 +286,18 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         return self.nick if self.nick is not None else self.name
 
+    @property
+    def activity(self):
+        """Returns a class Union[:class:`Game`, :class:`Streaming`, :class:`Activity`] for the primary
+        activity the user is currently doing. Could be None if no activity is being done.
+
+        .. note::
+
+            A user may have multiple activities, these can be accessed under :attr:`activities`.
+        """
+        if self.activities:
+            return self.activities[0]
+
     def mentioned_in(self, message):
         """Checks if the member is mentioned in the specified message.
 
