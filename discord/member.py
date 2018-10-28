@@ -142,7 +142,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    activity: Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]
+    activity: Union[:class:`Game`, :class:`Streaming`, :class:`Activity`, :class:`Spotify`]
         The activity that the user is currently doing. Could be None if no activity is being done.
     guild: :class:`Guild`
         The guild that the member belongs to.
