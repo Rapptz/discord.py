@@ -210,8 +210,6 @@ class Emoji(Hashable):
         You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
 
-        Note that bot accounts can only delete custom emojis they own.
-
         Parameters
         -----------
         reason: Optional[str]
