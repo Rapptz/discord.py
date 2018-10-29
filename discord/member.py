@@ -142,7 +142,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
         The guild that the member belongs to.
@@ -288,7 +288,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def activity(self):
-        """Returns a class Union[:class:`Game`, :class:`Streaming`, :class:`Activity`] for the primary
+        """Returns a class Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`] for the primary
         activity the user is currently doing. Could be None if no activity is being done.
 
         .. note::
