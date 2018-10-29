@@ -318,6 +318,6 @@ class SnowflakeList(array.array):
         i = bisect_left(self, element)
         return self[i] if i != len(self) and self[i] == element else None
 
-    def has(self, element):
+    def __contains__(self, element):
         i = bisect_left(self, element)
         return i != len(self) and self[i] == element

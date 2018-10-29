@@ -195,7 +195,7 @@ class Emoji(Hashable):
         if guild is None:
             return []
 
-        return [role for role in guild.roles if self._roles.has(role.id)]
+        return [role for role in guild.roles if role_id in self._roles]
 
     @property
     def guild(self):

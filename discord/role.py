@@ -174,7 +174,7 @@ class Role(Hashable):
             return all_members
 
         role_id = self.id
-        return [member for member in all_members if member._roles.has(role_id)]
+        return [member for member in all_members if role_id in member._roles]
 
     async def _move(self, position, reason):
         if position <= 0:
