@@ -308,7 +308,7 @@ class SnowflakeList(array.array):
     __slots__ = ()
 
     def __new__(cls, data, *, is_sorted=False):
-        return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))
+        return super().__new__(cls, 'Q', data if is_sorted else sorted(data))
 
     def add(self, element):
         i = bisect_left(self, element)
