@@ -315,8 +315,7 @@ class SnowflakeList(array.array):
         self.insert(i, element)
 
     def get(self, element):
-        i = bisect_left(self, element)
-        return self[i] if i != len(self) and self[i] == element else None
+        return element if self.has(element) else None
 
     def has(self, element):
         i = bisect_left(self, element)
