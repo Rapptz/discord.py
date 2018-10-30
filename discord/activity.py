@@ -513,7 +513,7 @@ class Spotify:
     @property
     def artists(self):
         """List[:class:`str`]: The artists of the song being played."""
-        return self._state.split(';')
+        return self._state.split('; ')
 
     @property
     def artist(self):
