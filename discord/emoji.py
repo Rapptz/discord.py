@@ -79,12 +79,12 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
 
     def __eq__(self, other_emoji):
         if type(other_emoji) == Emoji:
-            return self.__str__() == other_emoji.__str__()
+            return str(self) == str(other_emoji)
         return super().__eq__(other_emoji)
 
     def __ne__(self, other_emoji):
         if type(other_emoji) == Emoji:
-            return self.__str__() != other_emoji.__str__()
+            return str(self) != str(other_emoji)
         return super().__ne__(other_emoji)
 
     def is_custom_emoji(self):
