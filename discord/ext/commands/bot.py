@@ -734,20 +734,18 @@ class BotBase(GroupMixin):
             if _is_submodule(lib_name, cog.__module__):
                 self.remove_cog(cogname)
 
-        # first remove all the commands from the module
+        # remove all the commands from the module
         for cmd in self.all_commands.copy().values():
-            if cmd.module is None:
-                continue
-            if _is_submodule(lib_name, cmd.module):
+            if cmd.module is not None and _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
                 self.remove_command(cmd.name)
 
-        # then remove all the listeners from the module
+        # remove all the listeners from the module
         for event_list in self.extra_events.copy().values():
             remove = []
             for index, event in enumerate(event_list):
-                if _is_submodule(lib_name, event.__module__):
+                if event.__module__ is not None and _is_submodule(lib_name, event.__module__):
                     remove.append(index)
 
             for index in reversed(remove):
