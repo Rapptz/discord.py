@@ -221,6 +221,18 @@ This works with any callable, such as a function that would convert a string to 
     async def up(ctx, *, content: to_upper):
         await ctx.send(content)
 
+bool
+^^^^^^
+
+Unlike the other basic converters, the :class:`bool` converter is treated slightly different. Instead of casting directly to the :class:`bool` type, which would result in any non-empty argument returning ``True``, it instead evaluates the argument as ``True`` or ``False`` based on it's given content:
+
+.. code-block:: python3
+
+    if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+        return True
+    elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+        return False
+
 .. _ext_commands_adv_converters:
 
 Advanced Converters
