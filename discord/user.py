@@ -52,18 +52,21 @@ class User:
         The user's unique ID.
     discriminator : str or int
         The user's discriminator. This is given when the username has conflicts.
+    tag : str 
+        The user's full tag.
     avatar : str
         The avatar hash the user has. Could be None.
     bot : bool
         Specifies if the user is a bot account.
     """
 
-    __slots__ = ['name', 'id', 'discriminator', 'avatar', 'bot']
+    __slots__ = ['name', 'id', 'discriminator', 'tag', 'avatar', 'bot']
 
     def __init__(self, **kwargs):
         self.name = kwargs.get('username')
         self.id = kwargs.get('id')
         self.discriminator = kwargs.get('discriminator')
+        self.tag = self.name + "#" + self.discriminator 
         self.avatar = kwargs.get('avatar')
         self.bot = kwargs.get('bot', False)
 
