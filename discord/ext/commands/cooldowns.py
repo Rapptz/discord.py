@@ -30,11 +30,12 @@ import time
 __all__ = ['BucketType', 'Cooldown', 'CooldownMapping']
 
 class BucketType(enum.Enum):
-    default = 0
-    user    = 1
-    guild   = 2
-    channel = 3
-    member  = 4
+    default  = 0
+    user     = 1
+    guild    = 2
+    channel  = 3
+    member   = 4
+    category = 5
 
 class Cooldown:
     __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
@@ -115,6 +116,8 @@ class CooldownMapping:
             return msg.channel.id
         elif bucket_type is BucketType.member:
             return ((msg.guild and msg.guild.id), msg.author.id)
+        elif bucket_type is BucketType.category:
+            return (msg.channel.category or msg.channel).id
 
     def _verify_cache_integrity(self):
         # we want to delete all cache objects that haven't been used
