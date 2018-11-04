@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import collections
 import discord
 import inspect
 import importlib
@@ -32,7 +33,7 @@ import sys
 import traceback
 import re
 
-from .core import GroupMixin, Command, command
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
@@ -76,7 +77,7 @@ def when_mentioned_or(*prefixes):
     """
     def inner(bot, msg):
         r = list(prefixes)
-        r.extend(when_mentioned(bot, msg))
+        r = when_mentioned(bot, msg) + r
         return r
 
     return inner
@@ -136,7 +137,7 @@ async def _default_help_command(ctx, *commands : str):
         pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
-        characters = sum(map(lambda l: len(l), pages))
+        characters = sum(map(len, pages))
         # modify destination based on length of pages.
         if characters > 1000:
             destination = ctx.message.author
@@ -233,7 +234,7 @@ class BotBase(GroupMixin):
     # global check registration
 
     def check(self, func):
-        """A decorator that adds a global check to the bot.
+        r"""A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
@@ -280,7 +281,7 @@ class BotBase(GroupMixin):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func):
+    def remove_check(self, func, *, call_once=False):
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
@@ -290,18 +291,19 @@ class BotBase(GroupMixin):
         -----------
         func
             The function to remove from the global checks.
+        call_once: bool
+            If the function was added with ``call_once=True`` in
+            the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
+        l = self._check_once if call_once else self._checks
 
         try:
-            self._checks.remove(func)
+            l.remove(func)
         except ValueError:
-            try:
-                self._check_once.remove(func)
-            except ValueError:
-                pass
+            pass
 
     def check_once(self, func):
-        """A decorator that adds a "call once" global check to the bot.
+        r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
         per :meth:`.Command.invoke` call.
@@ -386,13 +388,13 @@ class BotBase(GroupMixin):
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
 
     def after_invoke(self, coro):
-        """A decorator that registers a coroutine as a post-invoke hook.
+        r"""A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
@@ -419,7 +421,7 @@ class BotBase(GroupMixin):
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
@@ -648,7 +650,7 @@ class BotBase(GroupMixin):
         except AttributeError:
             pass
         else:
-            self.remove_check(check)
+            self.remove_check(check, call_once=True)
 
         unloader_name = '_{0.__class__.__name__}__unload'.format(cog)
         try:
@@ -733,6 +735,8 @@ class BotBase(GroupMixin):
 
         # first remove all the commands from the module
         for cmd in self.all_commands.copy().values():
+            if cmd.module is None:
+                continue
             if _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
@@ -779,14 +783,6 @@ class BotBase(GroupMixin):
         message: :class:`discord.Message`
             The message context to get the prefix of.
 
-        Raises
-        --------
-        :exc:`.ClientException`
-            The prefix was invalid. This could be if the prefix
-            function returned None, the prefix list returned no
-            elements that aren't None, or the prefix string is
-            empty.
-
         Returns
         --------
         Union[List[str], str]
@@ -797,16 +793,25 @@ class BotBase(GroupMixin):
         if callable(prefix):
             ret = await discord.utils.maybe_coroutine(prefix, self, message)
 
-        if isinstance(ret, (list, tuple)):
-            ret = [p for p in ret if p]
+        if not isinstance(ret, str):
+            try:
+                ret = list(ret)
+            except TypeError:
+                # It's possible that a generator raised this exception.  Don't
+                # replace it with our own error if that's the case.
+                if isinstance(ret, collections.Iterable):
+                    raise
 
-        if not ret:
-            raise discord.ClientException('invalid prefix (could be an empty string, empty list, or None)')
+                raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
+                                "returning either of these, not {}".format(ret.__class__.__name__))
+
+            if not ret:
+                raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
     async def get_context(self, message, *, cls=Context):
-        """|coro|
+        r"""|coro|
 
         Returns the invocation context from the message.
 
@@ -848,9 +853,27 @@ class BotBase(GroupMixin):
             if not view.skip_string(prefix):
                 return ctx
         else:
-            invoked_prefix = discord.utils.find(view.skip_string, prefix)
-            if invoked_prefix is None:
-                return ctx
+            try:
+                # if the context class' __init__ consumes something from the view this
+                # will be wrong.  That seems unreasonable though.
+                if message.content.startswith(tuple(prefix)):
+                    invoked_prefix = discord.utils.find(view.skip_string, prefix)
+                else:
+                    return ctx
+
+            except TypeError:
+                if not isinstance(prefix, list):
+                    raise TypeError("get_prefix must return either a string or a list of string, "
+                                    "not {}".format(prefix.__class__.__name__))
+
+                # It's possible a bad command_prefix got us here.
+                for value in prefix:
+                    if not isinstance(value, str):
+                        raise TypeError("Iterable command_prefix or list returned from get_prefix must "
+                                        "contain only strings, not {}".format(value.__class__.__name__))
+
+                # Getting here shouldn't happen
+                raise
 
         invoker = view.get_word()
         ctx.invoked_with = invoker
@@ -896,11 +919,17 @@ class BotBase(GroupMixin):
         This is built using other low level tools, and is equivalent to a
         call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
+        This also checks if the message's author is a bot and doesn't
+        call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
+
         Parameters
         -----------
-        message : discord.Message
+        message: :class:`discord.Message`
             The message to process commands for.
         """
+        if message.author.bot:
+            return
+
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 
@@ -931,10 +960,26 @@ class Bot(BotBase, discord.Client):
         command prefixes. This callable can be either a regular function or
         a coroutine.
 
-        The command prefix could also be a :class:`list` or a :class:`tuple` indicating that
+        An empty string as the prefix always matches, enabling prefix-less
+        command invocation. While this may be useful in DMs it should be avoided
+        in servers, as it's likely to cause performance issues and unintended
+        command invocations.
+
+        The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`.
+        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
+        allowed.
+
+        .. note::
+
+            When passing multiple prefixes be careful to not pass a prefix
+            that matches a longer prefix occuring later in the sequence.  For
+            example, if the command prefix is ``('!', '!?')``  the ``'!?'``
+            prefix will never be matched to any message as the previous one
+            matches messages starting with ``!?``. This is especially important
+            when passing an empty string, it should always be last as no prefix
+            after it will be matched.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``. This
         attribute does not carry over to groups. You must set it to every group if

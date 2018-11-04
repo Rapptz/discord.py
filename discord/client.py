@@ -50,7 +50,8 @@ from collections import namedtuple
 
 log = logging.getLogger(__name__)
 
-AppInfo = namedtuple('AppInfo', 'id name description icon owner')
+AppInfo = namedtuple('AppInfo',
+                     'id name description rpc_origins bot_public bot_require_code_grant icon owner')
 
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
@@ -124,7 +125,11 @@ class Client:
         proxy_auth = options.pop('proxy_auth', None)
         self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+        self._handlers = {
+            'ready': self._handle_ready
+        }
+
+        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
@@ -158,7 +163,7 @@ class Client:
 
         await self.ws.send_as_json(payload)
 
-    def handle_ready(self):
+    def _handle_ready(self):
         self._ready.set()
 
     def _resolve_invite(self, invite):
@@ -229,7 +234,7 @@ class Client:
     def dispatch(self, event, *args, **kwargs):
         log.debug('Dispatching event %s', event)
         method = 'on_' + event
-        handler = 'handle_' + event
+        handler = '_handle_' + event
 
         listeners = self._listeners.get(event)
         if listeners:
@@ -259,13 +264,6 @@ class Client:
             else:
                 for idx in reversed(removed):
                     del listeners[idx]
-
-        try:
-            actual_handler = getattr(self, handler)
-        except AttributeError:
-            pass
-        else:
-            actual_handler(*args, **kwargs)
 
         try:
             coro = getattr(self, method)
@@ -323,6 +321,13 @@ class Client:
 
         This function can be used in two different ways.
 
+        .. warning::
+
+            Logging on with a user token is against the Discord
+            `Terms of Service <https://support.discordapp.com/hc/en-us/articles/115002192352>`_
+            and doing so might potentially get your account banned.
+            Use this at your own risk.
+
         Parameters
         -----------
         token: str
@@ -359,12 +364,10 @@ class Client:
         while True:
             try:
                 await self.ws.poll_event()
-            except ResumeWebSocket as e:
+            except ResumeWebSocket:
                 log.info('Got a request to RESUME the websocket.')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id,
-                                                          session=self.ws.session_id,
-                                                          sequence=self.ws.sequence,
-                                                          resume=True)
+                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
+                                                    sequence=self.ws.sequence, resume=True)
                 self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     async def connect(self, *, reconnect=True):
@@ -763,19 +766,12 @@ class Client:
 
         The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
 
-        Examples
+        Example
         ---------
 
-        Using the basic :meth:`event` decorator: ::
-
+		::
             @client.event
             async def on_ready():
-                print('Ready!')
-
-        Saving characters by using the :meth:`async_event` decorator: ::
-
-            @client.async_event
-            def on_ready():
                 print('Ready!')
 
         """
@@ -786,13 +782,6 @@ class Client:
         setattr(self, coro.__name__, coro)
         log.debug('%s has successfully been registered as an event', coro.__name__)
         return coro
-
-    def async_event(self, coro):
-        """A shorthand decorator for :func:`asyncio.coroutine` + :meth:`event`."""
-        if not asyncio.iscoroutinefunction(coro):
-            coro = asyncio.coroutine(coro)
-
-        return self.event(coro)
 
     async def change_presence(self, *, activity=None, status=None, afk=False):
         """|coro|
@@ -853,7 +842,7 @@ class Client:
 
         Creates a :class:`Guild`.
 
-        Bot accounts generally are not allowed to create servers.
+        Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
         ----------
@@ -863,7 +852,7 @@ class Client:
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
         icon: bytes
-            The *bytes-like* object representing the icon. See :meth:`~ClientUser.edit`
+            The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
         Raises
@@ -969,8 +958,12 @@ class Client:
             Retrieving the information failed somehow.
         """
         data = await self.http.application_info()
+        if 'rpc_origins' not in data:
+            data['rpc_origins'] = None
         return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
+                       rpc_origins=data['rpc_origins'], bot_public=data['bot_public'],
+                       bot_require_code_grant=data['bot_require_code_grant'],
                        owner=User(state=self._connection, data=data['owner']))
 
     async def get_user_info(self, user_id):

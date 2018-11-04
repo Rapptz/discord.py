@@ -24,7 +24,6 @@ ytdl_format_options = {
 }
 
 ffmpeg_options = {
-    'before_options': '-nostdin',
     'options': '-vn'
 }
 

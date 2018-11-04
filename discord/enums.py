@@ -29,7 +29,7 @@ from enum import Enum, IntEnum
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
            'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', ]
+           'ActivityType', 'HypeSquadHouse']
 
 class ChannelType(Enum):
     text     = 0
@@ -66,6 +66,8 @@ class VoiceRegion(Enum):
     brazil        = 'brazil'
     hongkong      = 'hongkong'
     russia        = 'russia'
+    japan         = 'japan'
+    southafrica   = 'southafrica'
     vip_us_east   = 'vip-us-east'
     vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
@@ -212,6 +214,9 @@ class UserFlags(Enum):
     staff = 1
     partner = 2
     hypesquad = 4
+    hypesquad_bravery = 64
+    hypesquad_brilliance = 128
+    hypesquad_balance = 256
 
 class ActivityType(IntEnum):
     unknown = -1
@@ -220,6 +225,10 @@ class ActivityType(IntEnum):
     listening = 2
     watching = 3
 
+class HypeSquadHouse(Enum):
+    bravery = 1
+    brilliance = 2
+    balance = 3
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

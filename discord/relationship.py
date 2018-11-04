@@ -26,8 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 from .enums import RelationshipType, try_enum
 
-import asyncio
-
 class Relationship:
     """Represents a relationship in Discord.
 

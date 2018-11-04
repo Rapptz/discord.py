@@ -26,13 +26,16 @@ DEALINGS IN THE SOFTWARE.
 
 from re import split as re_split
 from .errors import InvalidArgument
-import datetime
 from base64 import b64encode
 from email.utils import parsedate_to_datetime
 from inspect import isawaitable as _isawaitable
+from bisect import bisect_left
+
+import datetime
 import asyncio
 import json
 import warnings, functools
+import array
 
 DISCORD_EPOCH = 1420070400000
 
@@ -171,7 +174,7 @@ def find(predicate, seq):
     return None
 
 def get(iterable, **attrs):
-    """A helper that returns the first element in the iterable that meets
+    r"""A helper that returns the first element in the iterable that meets
     all the traits passed in ``attrs``. This is an alternative for
     :func:`discord.utils.find`.
 
@@ -281,11 +284,40 @@ async def async_all(gen, *, check=_isawaitable):
     return True
 
 async def sane_wait_for(futures, *, timeout, loop):
-    done, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
+    _, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()
 
 def valid_icon_size(size):
-    """Icons must be power of 2 within [16, 1024]."""
-    return ((size != 0) and not (size & (size - 1))) and size in range(16, 1025)
+    """Icons must be power of 2 within [16, 2048]."""
+    return ((size != 0) and not (size & (size - 1))) and size in range(16, 2049)
+
+class SnowflakeList(array.array):
+    """Internal data storage class to efficiently store a list of snowflakes.
+
+    This should have the following characteristics:
+
+    - Low memory usage
+    - O(n) iteration (obviously)
+    - O(n log n) initial creation if data is unsorted
+    - O(log n) search and indexing
+    - O(n) insertion
+    """
+
+    __slots__ = ()
+
+    def __new__(cls, data, *, is_sorted=False):
+        return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))
+
+    def add(self, element):
+        i = bisect_left(self, element)
+        self.insert(i, element)
+
+    def get(self, element):
+        i = bisect_left(self, element)
+        return self[i] if i != len(self) and self[i] == element else None
+
+    def has(self, element):
+        i = bisect_left(self, element)
+        return i != len(self) and self[i] == element
