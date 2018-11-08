@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The MIT License (MIT)
 
@@ -28,28 +27,40 @@ from itertools import chain
 
 from .. import utils
 
-class MessageCache:
+class TwoStageCache:
 
-    __slots__ = ('cache', 'max_messages')
+    __slots__ = ('mixed', 'important', 'max_mixed_messages', 'max_important_messages')
 
-    def __init__(self, *, max_messages):
-        self.max_messages = max_messages
-        self.cache = deque(maxlen=max_messages)
+    def __init__(self, *, max_mixed_messages, max_important_messages):
+        self.max_mixed_messages = max_mixed_messages
+        self.max_important_messages = max_important_messages
+        self.mixed = deque(maxlen = max_mixed_messages)
+        self.important = deque(maxlen=max_important_messages)
 
     def get_message(self, msg_id):
-        return utils.find(lambda m: m.id == msg_id, self.cache)
+        return utils.find(lambda m: m.id == msg_id, self)
 
     def append(self, message):
-        self.cache.append(message)
+        if len(self.mixed) >= self.max_mixed_messages:
+            dropped = self.mixed.popLeft()
+            if dropped.important:
+                self.important.append(dropped)
+        self.mixed.append(message)
 
     def remove(self, element):
-        self.cache.remove(element)
-
-    def clear(self):
-        self.cache = deque(maxlen=self.max_messages)
+        try:
+            self.mixed.remove(element)
+        except ValueError:
+            self.important.remove(element)
 
     def filter(self, predicate):
-        self.cache = deque((i for i in self.important if predicate(i)), maxlen=self.max_messages)
+        new = MessageCache(
+            max_mixed_messages=self.max_mixed_messages,
+            max_important_messages=self.max_important_messages
+        )
+        new.mixed = deque((i for i in self.mixed if predicate(i)), maxlen=self.max_mixed_messages)
+        new.important = deque((i for i in self.important if predicate(i)), maxlen=self.max_important_messages)
+        return new
 
     def __iter__(self):
-        return iter(self.cache)
+        return chain(self.mixed, self.important)

@@ -58,8 +58,6 @@ class ConnectionState:
     def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
-        self.max_mixed_messages = max(options.get('max_messages', 5000), 100)
-        self.max_important_messages = max(options.get('max_important_messages', self.max_mixed_messages), 100)
         self.dispatch = dispatch
         self.chunker = chunker
         self.syncer = syncer
@@ -88,6 +86,11 @@ class ConnectionState:
         self._activity = activity
         self._status = status
 
+        if options.get('message_cache') is not None:
+            self._messages = options.get('message_cache')
+        else:
+            self._messages = MessageCache(max(options.get('max_messages', 5000), 100))
+
         self.clear()
 
     def clear(self):
@@ -102,10 +105,7 @@ class ConnectionState:
         self._private_channels = OrderedDict()
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
-        self._messages = MessageCache(
-            max_mixed_messages=self.max_mixed_messages,
-            max_important_messages=self.max_important_messages
-        )
+        self._messages.clear()
 
     def process_listeners(self, listener_type, argument, result):
         removed = []
@@ -246,7 +246,7 @@ class ConnectionState:
             self._private_channels_by_user.pop(channel.recipient.id, None)
 
     def _get_message(self, msg_id):
-        return utils.find(lambda m: m.id == msg_id, self._messages)
+        return self._messages.get_message(msg_id)
 
     def _add_guild_from_data(self, guild):
         guild = Guild(data=guild, state=self)
@@ -715,7 +715,7 @@ class ConnectionState:
             return
 
         # do a cleanup of the messages cache
-        self._messages = self._message.filter(lambda msg: msg.guild != guild)
+        self._messages.filter(lambda msg: msg.guild != guild)
 
         self._remove_guild(guild)
         self.dispatch('guild_remove', guild)
