@@ -281,7 +281,7 @@ class BotBase(GroupMixin):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func):
+    def remove_check(self, func, *, call_once=False):
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
@@ -291,15 +291,16 @@ class BotBase(GroupMixin):
         -----------
         func
             The function to remove from the global checks.
+        call_once: bool
+            If the function was added with ``call_once=True`` in
+            the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
+        l = self._check_once if call_once else self._checks
 
         try:
-            self._checks.remove(func)
+            l.remove(func)
         except ValueError:
-            try:
-                self._check_once.remove(func)
-            except ValueError:
-                pass
+            pass
 
     def check_once(self, func):
         r"""A decorator that adds a "call once" global check to the bot.
@@ -649,7 +650,7 @@ class BotBase(GroupMixin):
         except AttributeError:
             pass
         else:
-            self.remove_check(check)
+            self.remove_check(check, call_once=True)
 
         unloader_name = '_{0.__class__.__name__}__unload'.format(cog)
         try:

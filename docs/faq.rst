@@ -74,11 +74,18 @@ General questions regarding library usage belong here.
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is a method for this under :class:`Client` called :meth:`Client.change_presence`. The relevant aspect of this is its
-``game`` keyword argument which takes in a :class:`Game` object. Putting both of these pieces of info together, you get the
-following: ::
+There is a method for this under :class:`Client` called :meth:`Client.change_presence`.
+The relevant aspect of this is its ``activity`` keyword argument which takes in an :class:`Activity` object.
 
-    await client.change_presence(game=discord.Game(name='my game'))
+The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
+For memory optimisation purposes, some activities are offered in slimmed down versions:
+
+- :class:`Game`
+- :class:`Streaming`
+
+Putting both of these pieces of info together, you get the following: ::
+
+    await client.change_presence(activity=discord.Game(name='my game'))
 
 How do I send a message to a specific channel?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,18 +236,6 @@ Commands Extension
 -------------------
 
 Questions regarding ``discord.ext.commands`` belong here.
-
-Is there any documentation for this?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Not at the moment. Writing documentation for stuff takes time. A lot of people get by reading the docstrings in the source
-code. Others get by via asking questions in the `Discord server <https://discord.gg/discord-api>`_. Others look at the
-source code of `other existing bots <https://github.com/Rapptz/RoboDanny>`_.
-
-There is a `basic example <https://github.com/Rapptz/discord.py/blob/rewrite/examples/basic_bot.py>`_ showcasing some
-functionality.
-
-**Documentation is being worked on, it will just take some time to polish it**.
 
 Why does ``on_message`` make my commands stop working?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -404,10 +404,10 @@ class Guild(Hashable):
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """Returns a friendly URL version of the guild's icon. Returns and empty string if it has no icon.
+        """Returns a friendly URL version of the guild's icon. Returns an empty string if it has no icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 1024.
+        size must be a power of 2 between 16 and 2048.
 
         Parameters
         -----------
@@ -427,7 +427,7 @@ class Guild(Hashable):
             Bad image format passed to ``format`` or invalid ``size``.
         """
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -435,13 +435,44 @@ class Guild(Hashable):
             return ''
 
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
-
+    
     @property
     def splash_url(self):
         """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
+        return self.icon_url_as()
+
+    def splash_url_as(self, *, format='webp', size=2048):
+        """Returns a friendly URL version of the guild's invite splash. Returns an empty string if it has no splash.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
+        size must be a power of 2 between 16 and 2048.
+
+        Parameters
+        -----------
+        format: str
+            The format to attempt to convert the splash to.
+        size: int
+            The size of the image to display.
+
+        Returns
+        --------
+        str
+            The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+        """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
         if self.splash is None:
             return ''
-        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(self)
+
+        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.{1}?size={2}'.format(self, format, size)
 
     @property
     def member_count(self):

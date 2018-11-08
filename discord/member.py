@@ -112,9 +112,7 @@ _BaseUser = discord.abc.User
 class Member(discord.abc.Messageable, _BaseUser):
     """Represents a Discord member to a :class:`Guild`.
 
-    **Inherited Classes**
-
-    - :class:`discord.abc.Messageable`
+    This implements a lot of the functionality of :class:`User`.
 
     .. container:: operations
 

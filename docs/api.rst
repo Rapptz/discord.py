@@ -1846,6 +1846,7 @@ ClientUser
 
 .. autoclass:: ClientUser()
     :members:
+    :inherited-members:
 
 Relationship
 ~~~~~~~~~~~~~~
@@ -1858,6 +1859,14 @@ User
 
 .. autoclass:: User()
     :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 Attachment
 ~~~~~~~~~~~
@@ -1908,6 +1917,14 @@ Member
 
 .. autoclass:: Member()
     :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 Spotify
 ~~~~~~~~
@@ -1944,31 +1961,56 @@ TextChannel
 
 .. autoclass:: TextChannel()
     :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 VoiceChannel
 ~~~~~~~~~~~~~
 
 .. autoclass:: VoiceChannel()
     :members:
+    :inherited-members:
 
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
 
 .. autoclass:: CategoryChannel()
     :members:
+    :inherited-members:
 
 DMChannel
 ~~~~~~~~~
 
 .. autoclass:: DMChannel()
     :members:
+    :inherited-members:
+    :exclude-members: history, typing
 
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 GroupChannel
 ~~~~~~~~~~~~
 
 .. autoclass:: GroupChannel()
     :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. autocomethod:: history
+        :async-for:
+
+    .. autocomethod:: typing
+        :async-with:
 
 
 Invite
