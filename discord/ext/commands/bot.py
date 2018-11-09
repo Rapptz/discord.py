@@ -342,25 +342,6 @@ class BotBase(GroupMixin):
 
         return (await discord.utils.async_all(f(ctx) for f in data))
 
-    async def is_owner(self, user):
-        """Checks if a :class:`.User` or :class:`.Member` is the owner of
-        this bot.
-
-        If an :attr:`owner_id` is not set, it is fetched automatically
-        through the use of :meth:`~.Bot.application_info`.
-
-        Parameters
-        -----------
-        user: :class:`.abc.User`
-            The user to check for.
-        """
-
-        if self.owner_id is None:
-            app = await self.application_info()
-            self.owner_id = owner_id = app.owner.id
-            return user.id == owner_id
-        return user.id == self.owner_id
-
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
 

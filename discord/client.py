@@ -966,6 +966,25 @@ class Client:
                        bot_require_code_grant=data['bot_require_code_grant'],
                        owner=User(state=self._connection, data=data['owner']))
 
+    async def is_owner(self, user):
+        """Checks if a :class:`.User` or :class:`.Member` is the owner of
+        this bot.
+
+        If an :attr:`owner_id` is not set, it is fetched automatically
+        through the use of :meth:`~.Bot.application_info`.
+
+        Parameters
+        -----------
+        user: :class:`.abc.User`
+            The user to check for.
+        """
+
+        if self.owner_id is None:
+            app = await self.application_info()
+            self.owner_id = owner_id = app.owner.id
+            return user.id == owner_id
+        return user.id == self.owner_id
+
     async def get_user_info(self, user_id):
         """|coro|
 
