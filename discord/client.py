@@ -758,7 +758,7 @@ class Client:
         then the first reaction emoji that is in the list is returned. If ``None`` is
         passed then the first reaction emoji used is returned.
 
-        This function returns the **first reaction that meets the requirements**.
+        This function returns the **first result that meets the requirements**.
 
         Examples
         ---------
