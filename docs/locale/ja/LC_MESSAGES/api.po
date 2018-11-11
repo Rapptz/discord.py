@@ -8422,7 +8422,7 @@ msgstr ""
 
 #: discord.TextChannel.purge:22 of
 msgid "Same as ``before`` in :meth:`history`."
-msgstr ":meth:`history`での``before``と同じです。"
+msgstr ":meth:`history` での ``before`` と同じです。"
 
 #: discord.TextChannel.purge:23 of
 msgid "Same as ``after`` in :meth:`history`."
