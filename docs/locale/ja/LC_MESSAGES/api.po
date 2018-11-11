@@ -4942,7 +4942,7 @@ msgstr "チャンネルのメッセージ履歴を取得する :class:`AsyncIter
 msgid ""
 "You must have :attr:`~.Permissions.read_message_history` permissions to use "
 "this."
-msgstr "これを行うためには、そのチャンネルの:attr:`~.Permissions.read_message_history` 権限が必要です。"
+msgstr "これを行うためには、そのチャンネルの :attr:`~.Permissions.read_message_history` 権限が必要です。"
 
 #: discord.DMChannel.history:5 discord.GroupChannel.history:5
 #: discord.Member.edit:21 discord.Member.history:5
