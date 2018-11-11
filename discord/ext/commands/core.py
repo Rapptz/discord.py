@@ -1208,42 +1208,47 @@ def check(predicate):
         return func
     return decorator
 
-def has_role(name):
+def has_role(item):
     """A :func:`.check` that is added that checks if the member invoking the
-    command has the role specified via the name specified.
+    command has the role specified via the name or ID specified.
 
-    The name is case sensitive and must be exact. No normalisation is done in
-    the input.
+    If a string is specified, you must give the exact name of the role, including
+    caps and spelling.
+
+    If an integer is specified, you must give the exact snowflake ID of the role.
 
     If the message is invoked in a private message context then the check will
     return ``False``.
 
     Parameters
     -----------
-    name: str
-        The name of the role to check.
+    item: Union[int, str]
+        The name or ID of the role to check.
     """
 
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return False
 
-        role = discord.utils.get(ctx.author.roles, name=name)
+        if isinstance(item, int):
+            role = discord.utils.get(ctx.author.roles, id=item)
+        else:
+            role = discord.utils.get(ctx.author.roles, name=item)
         return role is not None
 
     return check(predicate)
 
-def has_any_role(*names):
+def has_any_role(*items):
     r"""A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
-    Similar to :func:`.has_role`\, the names passed in must be exact.
+    Similar to :func:`.has_role`\, the names or IDs passed in must be exact.
 
     Parameters
     -----------
-    names
-        An argument list of names to check that the member has roles wise.
+    items
+        An argument list of names or IDs to check that the member has roles wise.
 
     Example
     --------
@@ -1251,7 +1256,7 @@ def has_any_role(*names):
     .. code-block:: python3
 
         @bot.command()
-        @commands.has_any_role('Library Devs', 'Moderators')
+        @commands.has_any_role('Library Devs', 'Moderators', 492212595072434186)
         async def cool(ctx):
             await ctx.send('You are cool indeed')
     """
@@ -1260,7 +1265,7 @@ def has_any_role(*names):
             return False
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
-        return any(getter(name=name) is not None for name in names)
+        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
     return check(predicate)
 
 def has_permissions(**perms):
@@ -1302,7 +1307,7 @@ def has_permissions(**perms):
 
     return check(predicate)
 
-def bot_has_role(name):
+def bot_has_role(item):
     """Similar to :func:`.has_role` except checks if the bot itself has the
     role.
     """
@@ -1312,11 +1317,14 @@ def bot_has_role(name):
         if not isinstance(ch, discord.abc.GuildChannel):
             return False
         me = ch.guild.me
-        role = discord.utils.get(me.roles, name=name)
+        if isinstance(item, int):
+            role = discord.utils.get(me.roles, id=item)
+        else:
+            role = discord.utils.get(me.roles, name=item)
         return role is not None
     return check(predicate)
 
-def bot_has_any_role(*names):
+def bot_has_any_role(*items):
     """Similar to :func:`.has_any_role` except checks if the bot itself has
     any of the roles listed.
     """
@@ -1326,7 +1334,7 @@ def bot_has_any_role(*names):
             return False
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
-        return any(getter(name=name) is not None for name in names)
+        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
     return check(predicate)
 
 def bot_has_permissions(**perms):
