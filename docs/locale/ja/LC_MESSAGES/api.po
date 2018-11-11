@@ -8430,7 +8430,7 @@ msgstr ":meth:`history` での ``after`` と同じです。"
 
 #: discord.TextChannel.purge:24 of
 msgid "Same as ``around`` in :meth:`history`."
-msgstr ":meth:`history`での``around``と同じです。"
+msgstr ":meth:`history` での ``around`` と同じです。"
 
 #: discord.TextChannel.purge:25 of
 msgid "Same as ``reverse`` in :meth:`history`."
