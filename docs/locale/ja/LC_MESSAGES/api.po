@@ -4934,7 +4934,7 @@ msgstr ":class:`~ext.commands.Context`"
 msgid ""
 "Return an :class:`AsyncIterator` that enables receiving the destination's "
 "message history."
-msgstr "チャンネルのメッセージ履歴を取得する :class:`AsyncIterator`を返します。"
+msgstr "チャンネルのメッセージ履歴を取得する :class:`AsyncIterator` を返します。"
 
 #: discord.DMChannel.history:3 discord.GroupChannel.history:3
 #: discord.Member.history:3 discord.TextChannel.history:3
