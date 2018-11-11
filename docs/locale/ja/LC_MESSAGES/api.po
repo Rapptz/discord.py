@@ -6064,7 +6064,7 @@ msgid ""
 "use this. If nobody else has reacted to the message using this emoji, the "
 ":attr:`~Permissions.add_reactions` permission is required."
 msgstr ""
-"これを行うためには、そのチャンネルの:attr:`~Permissions.read_message_history` 権限が必要です。 "
+"これを行うためには、そのチャンネルの :attr:`~Permissions.read_message_history` 権限が必要です。 "
 "もし、他の人がその絵文字でリアクションしていない場合、さらに :attr:`~Permissions.add_reactions` 権限が必要です。"
 
 #: discord.Message.add_reaction:11 of
