@@ -8398,7 +8398,7 @@ msgid ""
 ":attr:`~Permissions.read_message_history` permission is also needed to "
 "retrieve message history."
 msgstr ""
-"これを行うためには、そのチャンネルの:attr:`~Permissions.read_message_history` 権限が必要です。 "
+"これを行うためには、そのチャンネルの :attr:`~Permissions.read_message_history` 権限が必要です。 "
 "もし、他の人がその絵文字でリアクションしていない場合、さらに :attr:`~Permissions.add_reactions` 権限が必要です。"
 
 #: discord.TextChannel.purge:12 of
