@@ -5673,7 +5673,7 @@ msgstr ":exc:`HTTPException` -- ユーザーのブロックに失敗した。"
 
 #: discord.Member.create_dm:1 discord.User.create_dm:1 of
 msgid "Creates a :class:`DMChannel` with this user."
-msgstr "このユーザーと:class:`DMChannel`を作ります。"
+msgstr "このユーザーと :class:`DMChannel` を作ります。"
 
 #: discord.Member.create_dm:3 discord.User.create_dm:3 of
 msgid ""
