@@ -648,7 +648,7 @@ When multiple checks are specified, **all** of them must be ``True``:
     def is_in_guild(guild_id):
         async def predicate(ctx):
             return ctx.guild and ctx.guild.id == guild_id
-        return commands.check(is_in_guild)
+        return commands.check(predicate)
 
     @bot.command()
     @is_in_guild(41771983423143937)
