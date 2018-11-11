@@ -5643,7 +5643,7 @@ msgstr ""
 msgid ""
 "If this returns ``None``, you can create a DM channel by calling the "
 ":meth:`create_dm` coroutine function."
-msgstr "これが ``None``を返すなら、あなたは:meth:`create_dm`コルーチン関数を使って、DMチャンネルを作ることができます。"
+msgstr "これが ``None``を返すなら、あなたは :meth:`create_dm` コルーチン関数を使って、DMチャンネルを作ることができます。"
 
 #: discord.User.relationship:1 of
 msgid ""
