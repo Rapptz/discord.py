@@ -35,7 +35,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter
+from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
 from .utils import valid_icon_size
 from .user import User
@@ -103,6 +103,8 @@ class Guild(Hashable):
         The guild's verification level.
     explicit_content_filter: :class:`ContentFilter`
         The guild's explicit content filter.
+    default_notifications: :class:`NotificationLevel`
+        The guild's notification settings.
     features: List[:class:`str`]
         A list of features that the guild has. They are currently as follows:
 
@@ -121,7 +123,7 @@ class Guild(Hashable):
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', )
+                 '_voice_states', '_system_channel_id', 'default_notifications')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -205,6 +207,7 @@ class Guild(Hashable):
         self.name = guild.get('name')
         self.region = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
+        self.default_notifications = try_enum(NotificationLevel, guild.get('default_message_notifications'))
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')

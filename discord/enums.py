@@ -29,7 +29,7 @@ from enum import Enum, IntEnum
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
            'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', 'HypeSquadHouse']
+           'ActivityType', 'HypeSquadHouse', 'NotificationLevel']
 
 class ChannelType(Enum):
     text     = 0
@@ -122,6 +122,10 @@ class RelationshipType(Enum):
     blocked          = 2
     incoming_request = 3
     outgoing_request = 4
+
+class NotificationLevel(Enum):
+    all_messages  = 0
+    only_mentions = 1
 
 class AuditLogActionCategory(Enum):
     create = 1
