@@ -1211,7 +1211,7 @@ def has_role(item):
     """A :func:`.check` that is added that checks if the member invoking the
     command has the role specified via the name or ID specified.
 
-    If a string is specified, you must give an exact name of the role, including
+    If a string is specified, you must give the exact name of the role, including
     caps and spelling.
 
     If an integer is specified, you must give the exact snowflake ID of the role.
