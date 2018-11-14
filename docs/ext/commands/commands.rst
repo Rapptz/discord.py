@@ -15,7 +15,7 @@ For example, in the given command definition:
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def foo(ctx, arg):
         await ctx.send(arg)
 
@@ -37,13 +37,13 @@ Essentially, these two are equivalent: ::
 
     bot = commands.Bot(command_prefix='$')
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def test(ctx):
         pass
 
     # or:
 
-    @commands.command()
+    @commands.command(pass_context=True)
     async def test(ctx):
         pass
 
@@ -57,7 +57,7 @@ the name to something other than the function would be as simple as doing this:
 
 .. code-block:: python3
 
-    @bot.command(name='list')
+    @bot.command(pass_context=True, name='list')
     async def _list(ctx, arg):
         pass
 
@@ -76,7 +76,7 @@ The most basic form of parameter passing is the positional parameter. This is wh
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def test(ctx, arg):
         await ctx.send(arg)
 
@@ -141,7 +141,7 @@ seen below:
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def test(ctx, *, arg):
         await ctx.send(arg)
 
@@ -203,7 +203,7 @@ for us by specifying the converter:
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def add(ctx, a: int, b: int):
         await ctx.send(a + b)
 
@@ -217,7 +217,7 @@ This works with any callable, such as a function that would convert a string to 
     def to_upper(argument):
         return argument.upper()
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def up(ctx, *, content: to_upper):
         await ctx.send(content)
 
@@ -244,7 +244,7 @@ An example converter:
             to_slap = random.choice(ctx.guild.members)
             return '{0.author} slapped {1} because *{2}*'.format(ctx, to_slap, argument)
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def slap(ctx, *, reason: Slapper):
         await ctx.send(reason)
 
@@ -252,13 +252,13 @@ The converter provided can either be constructed or not. Essentially these two a
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def slap(ctx, *, reason: Slapper):
         await ctx.send(reason)
 
     # is the same as...
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def slap(ctx, *, reason: Slapper()):
         await ctx.send(reason)
 
@@ -267,13 +267,13 @@ fine tuning the converter. An example of this is actually in the library, :class
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def clean(ctx, *, content: commands.clean_content):
         await ctx.send(content)
 
     # or for fine-tuning
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def clean(ctx, *, content: commands.clean_content(use_nicknames=False)):
         await ctx.send(content)
 
@@ -291,7 +291,7 @@ For example, to receive a :class:`Member`, you can just pass it as a converter:
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def joined(ctx, *, member: discord.Member):
         await ctx.send('{0} joined on {0.joined_at}'.format(member))
 
@@ -354,7 +354,7 @@ By providing the converter it allows us to use them as building blocks for anoth
             member = await super().convert(ctx, argument)
             return member.roles
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def roles(ctx, *, member: MemberRoles):
         """Tells you a member's roles."""
         await ctx.send('I see the following roles: ' + ', '.join(member))
@@ -383,7 +383,7 @@ For example, a common idiom would be to have a class and a converter for that cl
             member = await super().convert(ctx, argument)
             return JoinDistance(member.joined_at, member.created_at)
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def delta(ctx, *, member: JoinDistanceConverter):
         is_new = member.delta.days < 100
         if is_new:
@@ -409,7 +409,7 @@ This can get tedious, so an inline advanced converter is possible through a ``cl
         def delta(self):
             return self.joined - self.created
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def delta(ctx, *, member: JoinDistance):
         is_new = member.delta.days < 100
         if is_new:
@@ -436,7 +436,7 @@ a singular type. For example, given the following:
 
     import typing
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def union(ctx, what: typing.Union[discord.TextChannel, discord.Member]):
         await ctx.send(what)
 
@@ -461,7 +461,7 @@ Consider the following example:
 
     import typing
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def bottles(ctx, amount: typing.Optional[int] = 99, *, liquid="beer"):
         await ctx.send('{} bottles of {} on the wall!'.format(amount, liquid))
 
@@ -486,7 +486,7 @@ Consider the following example:
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def slap(ctx, members: commands.Greedy[discord.Member], *, reason='no reason'):
         slapped = ", ".join(x.name for x in members)
         await ctx.send('{} just got slapped for {}'.format(slapped, reason))
@@ -509,7 +509,7 @@ When mixed with the :data:`typing.Optional` converter you can provide simple and
 
     import typing
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def ban(ctx, members: commands.Greedy[discord.Member],
                        delete_days: typing.Optional[int] = 0, *,
                        reason: str):
@@ -557,7 +557,7 @@ handlers that allow us to do just that. First we decorate an error handler funct
 
 .. code-block:: python3
 
-    @bot.command()
+    @bot.command(pass_context=True)
     async def info(ctx, *, member: discord.Member):
         """Tells you some info about the member."""
         fmt = '{0} joined on {0.joined_at} and has {1} roles.'
@@ -596,7 +596,7 @@ decorator. For example:
     async def is_owner(ctx):
         return ctx.author.id == 316026178463072268
 
-    @bot.command(name='eval')
+    @bot.command(pass_context=True, name='eval')
     @commands.check(is_owner)
     async def _eval(ctx, *, code):
         """A bad example of an eval command"""
@@ -612,7 +612,7 @@ want to split it into its own decorator. To do that we can just add another leve
             return ctx.author.id == 316026178463072268
         return commands.check(predicate)
 
-    @bot.command(name='eval')
+    @bot.command(pass_context=True, name='eval')
     @is_owner()
     async def _eval(ctx, *, code):
         """A bad example of an eval command"""
