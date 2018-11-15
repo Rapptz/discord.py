@@ -1231,8 +1231,8 @@ def has_role(item):
 
         if isinstance(item, int):
             role = discord.utils.get(ctx.author.roles, id=item)
-            return role is not None
-        role = discord.utils.get(ctx.author.roles, name=item)
+        else:
+            role = discord.utils.get(ctx.author.roles, name=item)
         return role is not None
 
     return check(predicate)
@@ -1318,8 +1318,8 @@ def bot_has_role(item):
         me = ch.guild.me
         if isinstance(item, int):
             role = discord.utils.get(me.roles, id=item)
-            return role is not None
-        role = discord.utils.get(me.roles, name=item)
+        else:
+            role = discord.utils.get(me.roles, name=item)
         return role is not None
     return check(predicate)
 
