@@ -29,7 +29,15 @@ from collections import namedtuple
 from . import utils
 from .mixins import Hashable
 
-class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
+class ComparableEmoji:
+    def __eq__(self, other):
+        return isinstance(other, (Emoji, PartialEmoji)) and self.id == other.id
+
+    def __ne__(self, other):
+        # ensure that __ne__ and __eq__ are consistent instead of using inherited __ne__
+        return not self == other
+
+class PartialEmoji(ComparableEmoji, namedtuple('PartialEmoji', 'animated name id')):
     """Represents a "partial" emoji.
 
     This model will be given in two scenarios:
@@ -97,7 +105,7 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         _format = 'gif' if self.animated else 'png'
         return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
 
-class Emoji(Hashable):
+class Emoji(ComparableEmoji, Hashable):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
