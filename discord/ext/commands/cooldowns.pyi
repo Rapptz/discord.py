@@ -1,6 +1,7 @@
 import enum
 
 from .context import Context
+from ..message import Message
 
 from typing import Optional, TypeVar, Type
 
@@ -38,4 +39,4 @@ class CooldownMapping:
     @classmethod
     def from_cooldown(cls: Type[_T], rate: int, per: float, type: BucketType) -> _T: ...
 
-    def get_bucket(self, ctx: Context) -> Cooldown: ...
+    def get_bucket(self, message: Message) -> Cooldown: ...
