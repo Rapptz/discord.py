@@ -565,7 +565,7 @@ class HTTPClient:
     def edit_guild(self, guild_id, *, reason=None, **fields):
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
-                      'system_channel_id')
+                      'system_channel_id', 'default_message_notifications')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys

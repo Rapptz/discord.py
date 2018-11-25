@@ -123,7 +123,7 @@ class RelationshipType(Enum):
     incoming_request = 3
     outgoing_request = 4
 
-class NotificationLevel(Enum):
+class NotificationLevel(IntEnum):
     all_messages  = 0
     only_mentions = 1
 

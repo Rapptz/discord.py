@@ -855,7 +855,7 @@ All enumerations are subclasses of `enum`_.
 .. class:: NotificationLevel
 
     Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default.
-    
+
     ..attribute:: all_messages
 
         Members receive notifications for every message regardless of them being mentioned.
@@ -1594,6 +1594,12 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         :class:`VerificationLevel` – The guild's verification level.
 
         See also :attr:`Guild.verification_level`.
+
+    .. attribute:: default_notifications
+
+        :class:`NotificationLevel` – The guild's default notification level.
+
+        See also :attr:`Guild.default_notifications`.
 
     .. attribute:: explicit_content_filter
 

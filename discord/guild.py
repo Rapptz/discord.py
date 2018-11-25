@@ -748,6 +748,8 @@ class Guild(Hashable):
             be owner of the guild to do this.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
+        default_notifications: :class:`NotificationLevel`
+            The new default notification level for the guild.
         vanity_code: str
             The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
@@ -797,6 +799,13 @@ class Guild(Hashable):
 
         fields['icon'] = icon
         fields['splash'] = splash
+
+        try:
+            default_message_notifications = int(fields.pop('default_notifications'))
+        except (TypeError, KeyError):
+            pass
+        else:
+            fields['default_message_notifications'] = default_message_notifications
 
         try:
             afk_channel = fields.pop('afk_channel')

@@ -33,6 +33,9 @@ from .invite import Invite
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
 
+def _transform_default_notifications(entry, data):
+    return enums.try_enum(enums.NotificationLevel, data)
+
 def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
@@ -94,24 +97,25 @@ class AuditLogDiff:
 
 class AuditLogChanges:
     TRANSFORMERS = {
-        'verification_level':      (None, _transform_verification_level),
-        'explicit_content_filter': (None, _transform_explicit_content_filter),
-        'allow':                   (None, _transform_permissions),
-        'deny':                    (None, _transform_permissions),
-        'permissions':             (None, _transform_permissions),
-        'id':                      (None, _transform_snowflake),
-        'color':                   ('colour', _transform_color),
-        'owner_id':                ('owner', _transform_owner_id),
-        'inviter_id':              ('inviter', _transform_inviter_id),
-        'channel_id':              ('channel', _transform_channel),
-        'afk_channel_id':          ('afk_channel', _transform_channel),
-        'system_channel_id':       ('system_channel', _transform_channel),
-        'widget_channel_id':       ('widget_channel', _transform_channel),
-        'permission_overwrites':   ('overwrites', _transform_overwrites),
-        'splash_hash':             ('splash', None),
-        'icon_hash':               ('icon', None),
-        'avatar_hash':             ('avatar', None),
-        'rate_limit_per_user':     ('slowmode_delay', None),
+        'verification_level':            (None, _transform_verification_level),
+        'explicit_content_filter':       (None, _transform_explicit_content_filter),
+        'allow':                         (None, _transform_permissions),
+        'deny':                          (None, _transform_permissions),
+        'permissions':                   (None, _transform_permissions),
+        'id':                            (None, _transform_snowflake),
+        'color':                         ('colour', _transform_color),
+        'owner_id':                      ('owner', _transform_owner_id),
+        'inviter_id':                    ('inviter', _transform_inviter_id),
+        'channel_id':                    ('channel', _transform_channel),
+        'afk_channel_id':                ('afk_channel', _transform_channel),
+        'system_channel_id':             ('system_channel', _transform_channel),
+        'widget_channel_id':             ('widget_channel', _transform_channel),
+        'permission_overwrites':         ('overwrites', _transform_overwrites),
+        'splash_hash':                   ('splash', None),
+        'icon_hash':                     ('icon', None),
+        'avatar_hash':                   ('avatar', None),
+        'rate_limit_per_user':           ('slowmode_delay', None),
+        'default_message_notifications': ('default_notifications', _transform_default_notifications),
     }
 
     def __init__(self, entry, data):
