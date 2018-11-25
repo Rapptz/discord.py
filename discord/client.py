@@ -174,8 +174,8 @@ class Client:
         else:
             rx = [r'(?:https?\:\/\/)?discordapp\.com\/invite\/(.+)', r'(?:https?\:\/\/)?discord\.gg\/(.+)']
 	    for reg in rx:
-            	m = re.match(reg, invite)
-            	if m:
+                m = re.match(reg, invite)
+                if m:
                     return m.group(1)
         return invite
 
