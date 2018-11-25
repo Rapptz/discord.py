@@ -172,7 +172,7 @@ class Client:
         if isinstance(invite, Invite) or isinstance(invite, Object):
             return invite.id
         else:
-            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
+            rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
             m = re.match(rx, invite)
             if m:
                 return m.group(1)
