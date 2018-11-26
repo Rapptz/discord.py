@@ -94,7 +94,12 @@ class RelationshipType(Enum):
     outgoing_request: int
 
 
-class AuditLogActionCategory(Enum):
+class NotificationLevel(Enum):
+    all_messages: int
+    only_mentions: int
+
+
+class AuditLogActionCategory(IntEnum):
     create: int
     delete: int
     update: int
@@ -139,9 +144,11 @@ class UserFlags(Enum):
     staff: int
     partner: int
     hypesquad: int
+    bug_hunter: int
     hypesquad_bravery: int
     hypesquad_brilliance: int
     hypesquad_balance: int
+    early_supporter: int
 
 
 class ActivityType(Enum):

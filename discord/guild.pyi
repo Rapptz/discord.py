@@ -7,7 +7,7 @@ from .member import Member
 from .voice_client import VoiceClient
 from .role import Role
 from .emoji import Emoji
-from .enums import VoiceRegion, VerificationLevel, ContentFilter, AuditLogAction
+from .enums import VoiceRegion, VerificationLevel, ContentFilter, NotificationLevel, AuditLogAction
 from .permissions import PermissionOverwrite
 from .user import User
 from .webhook import Webhook
@@ -36,6 +36,7 @@ class Guild(Hashable):
     unavailable: bool
     mfa_level: int
     verification_level: VerificationLevel
+    default_notifications: NotificationLevel
     explicit_content_filter: ContentFilter
     features: List[str]
     splash: Optional[str]
@@ -96,6 +97,8 @@ class Guild(Hashable):
     @property
     def splash_url(self) -> str: ...
 
+    def splash_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+
     @property
     def member_count(self) -> int: ...
 
@@ -132,6 +135,7 @@ class Guild(Hashable):
                    splash: Optional[bytes] = ..., region: VoiceRegion = ...,
                    afk_channel: Optional[VoiceChannel] = ..., afk_timeout: int = ...,
                    owner: Member = ..., verification_level: VerificationLevel = ...,
+                   default_notifications: NotificationLevel = ...,
                    vanity_code: str = ..., system_channel: Optional[TextChannel] = ...) -> None: ...
 
     async def get_ban(self, user: Snowflake) -> BanEntry: ...

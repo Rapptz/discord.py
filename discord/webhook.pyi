@@ -12,7 +12,7 @@ from .types import RawWebhookDict
 from .state import ConnectionState
 from .user import User
 
-from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar, BinaryIO, TypeVar, Type
+from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar, BinaryIO, TypeVar, Type, overload
 
 class WebhookAdapter:
     BASE: ClassVar[str]
@@ -28,7 +28,8 @@ class WebhookAdapter:
 
     def handle_execution_response(self, data: Any, *, wait: bool) -> Any: ...
 
-    def execute_webhook(self, *, payload: Dict[str, Any], wait: bool = ..., file: Optional[Tuple[str, BinaryIO, str]] = ...) -> Any: ...
+    def execute_webhook(self, *, payload: Dict[str, Any], wait: bool = ..., file: Optional[Tuple[str, BinaryIO, str]] = ...,
+                        files: Optional[List[Tuple[str, BinaryIO, str]]] = ...) -> Any: ...
 
 
 class AsyncWebhookAdapter(WebhookAdapter):
@@ -95,8 +96,24 @@ class Webhook:
 
     def edit(self, **kwargs: Any) -> Union[RawWebhookDict, Coroutine[Any, Any, RawWebhookDict]]: ...
 
+    @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
-             avatar_url: Optional[str] = ..., tts: bool = ..., file: Optional[File] = ..., embed: Optional[Embed] = ...,
+             avatar_url: Optional[str] = ..., tts: bool = ..., file: Optional[File] = ...,
+             embed: Optional[Embed] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+
+    @overload
+    def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
+             avatar_url: Optional[str] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
+             embed: Optional[Embed] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+
+    @overload
+    def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
+             avatar_url: Optional[str] = ..., tts: bool = ..., file: Optional[File] = ...,
+             embeds: Optional[List[Embed]] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+
+    @overload
+    def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
+             avatar_url: Optional[str] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
              embeds: Optional[List[Embed]] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
 
     def execute(self, *args: Any, **kwargs: Any) -> Any: ...

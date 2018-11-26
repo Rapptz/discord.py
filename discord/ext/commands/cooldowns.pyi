@@ -10,6 +10,8 @@ class BucketType(enum.Enum):
     user: int
     guild: int
     channel: int
+    member: int
+    category: int
 
 class Cooldown:
     rate: int

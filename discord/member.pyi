@@ -12,7 +12,7 @@ from .guild import Guild
 from .relationship import Relationship
 from .user import Profile
 
-from typing import Any, Optional, List, Union
+from typing import Any, Optional, Union, List, Tuple
 
 class VoiceState:
     deaf: bool
@@ -29,7 +29,7 @@ class VoiceState:
 class Member(discord.abc.Messageable, discord.abc.User):
     joined_at: datetime.datetime
     status: Status
-    activity: Union[Activity, Game, Streaming, Spotify]
+    activities: Tuple[Union[Activity, Game, Streaming, Spotify], ...]
     nick: Optional[str]
     guild: Guild
 
@@ -105,6 +105,9 @@ class Member(discord.abc.Messageable, discord.abc.User):
 
     @property
     def display_name(self) -> str: ...
+
+    @property
+    def activity(self) -> Union[Activity, Game, Streaming, Spotify]: ...
 
     def mentioned_in(self, message: Message) -> bool: ...
 
