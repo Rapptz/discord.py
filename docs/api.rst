@@ -856,10 +856,10 @@ All enumerations are subclasses of `enum`_.
 
     Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default.
 
-    ..attribute:: all_messages
+    .. attribute:: all_messages
 
         Members receive notifications for every message regardless of them being mentioned.
-    ..attribute:: only_mentions
+    .. attribute:: only_mentions
 
         Members receive notifications for messages they are mentioned in.
 
