@@ -30,6 +30,7 @@ import audioop
 import logging
 import shlex
 import time
+import io
 
 from .errors import ClientException
 from .opus import Encoder as OpusEncoder
@@ -116,7 +117,7 @@ class FFmpegPCMAudio(AudioSource):
 
     Parameters
     ------------
-    source: Union[str, BinaryIO]
+    source: Union[str, bytes]
         The input that ffmpeg will take and convert to PCM bytes.
         If ``pipe`` is True then this is a file-like object that is
         passed to the stdin of ffmpeg.
@@ -158,8 +159,10 @@ class FFmpegPCMAudio(AudioSource):
 
         self._process = None
         try:
-            self._process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
-            self._stdout = self._process.stdout
+            self._process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr)
+            self._stdout = io.BytesIO(
+                self._process.communicate(input=stdin)[0]
+            )
         except FileNotFoundError:
             raise ClientException(executable + ' was not found.') from None
         except subprocess.SubprocessError as exc:
