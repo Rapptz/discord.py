@@ -460,6 +460,19 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                 if member is not None:
                     ret.append(member)
         return ret
+    
+    def permissions_for(self, member):
+        base = super().permissions_for(member)
+
+        # voice channels cannot be edited by people who can't connect to them
+        # It also implicitly denies all other voice perms
+        if not base.connect:
+            denied = Permissions.voice()
+            denied.update(manage_channels=True, manage_roles=True)
+            base.value &= ~denied.value
+        return base
+
+    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
