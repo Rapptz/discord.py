@@ -24,17 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+import itertools
+import logging
+
+import websockets
+
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
 from .errors import ClientException, InvalidArgument
 from . import utils
 from .enums import Status
-
-import asyncio
-import logging
-import websockets
-import itertools
 
 log = logging.getLogger(__name__)
 
@@ -214,7 +215,7 @@ class AutoShardedClient(Client):
         except Exception:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0, loop=self.loop)
-            return (await self.launch_shard(gateway, shard_id))
+            return await self.launch_shard(gateway, shard_id)
 
         ws.token = self.http.token
         ws._connection = self._connection
@@ -231,7 +232,7 @@ class AutoShardedClient(Client):
         except asyncio.TimeoutError:
             log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0, loop=self.loop)
-            return (await self.launch_shard(gateway, shard_id))
+            return await self.launch_shard(gateway, shard_id)
 
         # keep reading the shard while others connect
         self.shards[shard_id] = ret = Shard(ws, self)
@@ -282,7 +283,7 @@ class AutoShardedClient(Client):
         for vc in self.voice_clients:
             try:
                 await vc.disconnect()
-            except:
+            except Exception:
                 pass
 
         to_close = [shard.ws.close() for shard in self.shards.values()]
@@ -352,5 +353,5 @@ class AutoShardedClient(Client):
             if me is None:
                 continue
 
-            me.activity = activity
+            me.activities = (activity,)
             me.status = status_enum

@@ -24,9 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import discord
 import re
 import inspect
+
+import discord
 
 from .errors import BadArgument, NoPrivateMessage
 
@@ -343,8 +344,8 @@ class InviteConverter(Converter):
         try:
             invite = await ctx.bot.get_invite(argument)
             return invite
-        except Exception as e:
-            raise BadArgument('Invite is invalid or expired') from e
+        except Exception as exc:
+            raise BadArgument('Invite is invalid or expired') from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.

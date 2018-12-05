@@ -24,13 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import array
 import ctypes
 import ctypes.util
-import array
-from .errors import DiscordException
 import logging
-import sys
 import os.path
+import sys
+
+from .errors import DiscordException
 
 log = logging.getLogger(__name__)
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
@@ -44,14 +45,14 @@ EncoderStructPtr = ctypes.POINTER(EncoderStruct)
 
 def _err_lt(result, func, args):
     if result < 0:
-        log.info('error has happened in {0.__name__}'.format(func))
+        log.info('error has happened in %s', func.__name__)
         raise OpusError(result)
     return result
 
 def _err_ne(result, func, args):
     ret = args[-1]._obj
     if ret.value != 0:
-        log.info('error has happened in {0.__name__}'.format(func))
+        log.info('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
 
@@ -81,10 +82,7 @@ def libopus_loader(name):
 
     # register the functions...
     for item in exported_functions:
-        try:
-            func = getattr(lib, item[0])
-        except Exception as e:
-            raise e
+        func = getattr(lib, item[0])
 
         try:
             if item[1]:
@@ -110,7 +108,7 @@ try:
         _lib = libopus_loader(_filename)
     else:
         _lib = libopus_loader(ctypes.util.find_library('opus'))
-except Exception as e:
+except Exception:
     _lib = None
 
 def load_opus(name):

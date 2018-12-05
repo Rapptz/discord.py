@@ -27,12 +27,11 @@ DEALINGS IN THE SOFTWARE.
 import abc
 import copy
 import asyncio
-
 from collections import namedtuple
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .errors import InvalidArgument, ClientException
+from .errors import InvalidArgument, ClientException, HTTPException
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -578,7 +577,7 @@ class GuildChannel:
                 raise InvalidArgument('No overwrite provided.')
             try:
                 overwrite = PermissionOverwrite(**permissions)
-            except:
+            except (ValueError, TypeError):
                 raise InvalidArgument('Invalid permissions given to keyword arguments.')
         else:
             if len(permissions) > 0:
@@ -778,7 +777,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 await asyncio.sleep(delete_after, loop=state.loop)
                 try:
                     await ret.delete()
-                except:
+                except HTTPException:
                     pass
             asyncio.ensure_future(delete(), loop=state.loop)
         return ret
@@ -978,12 +977,12 @@ class Connectable(metaclass=abc.ABCMeta):
 
         try:
             await voice.connect(reconnect=reconnect)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             try:
                 await voice.disconnect(force=True)
-            except:
+            except Exception:
                 # we don't care if disconnect failed because connection failed
                 pass
-            raise e # re-raise
+            raise # re-raise
 
         return voice

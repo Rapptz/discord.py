@@ -24,6 +24,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+from collections import deque, namedtuple, OrderedDict
+import copy
+import datetime
+import enum
+import itertools
+import logging
+import math
+import weakref
+
 from .guild import Guild
 from .activity import _ActivityTag
 from .user import User, ClientUser
@@ -37,14 +47,6 @@ from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
 from .embeds import Embed
-
-from collections import deque, namedtuple, OrderedDict
-import copy, enum, math
-import datetime
-import asyncio
-import logging
-import weakref
-import itertools
 
 class ListenerType(enum.Enum):
     chunk = 0
@@ -115,8 +117,8 @@ class ConnectionState:
 
             try:
                 passed = listener.predicate(argument)
-            except Exception as e:
-                future.set_exception(e)
+            except Exception as exc:
+                future.set_exception(exc)
                 removed.append(i)
             else:
                 if passed:
@@ -298,7 +300,7 @@ class ConnectionState:
                 await self.request_offline_members(guilds)
 
             for guild, unavailable in self._ready_state.guilds:
-                if unavailable == False:
+                if unavailable is False:
                     self.dispatch('guild_available', guild)
                 else:
                     self.dispatch('guild_join', guild)
@@ -618,7 +620,7 @@ class ConnectionState:
         self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
 
     def _get_create_guild(self, data):
-        if data.get('unavailable') == False:
+        if data.get('unavailable') is False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the guild has become available
             # and is therefore in the cache
@@ -639,14 +641,14 @@ class ConnectionState:
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
-        if unavailable == False:
+        if unavailable is False:
             self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
 
     def parse_guild_create(self, data):
         unavailable = data.get('unavailable')
-        if unavailable == True:
+        if unavailable is True:
             # joined a guild with unavailable == True so..
             return
 
@@ -654,7 +656,7 @@ class ConnectionState:
 
         # check if it requires chunking
         if guild.large:
-            if unavailable == False:
+            if unavailable is False:
                 # check if we're waiting for 'useful' READY
                 # and if we are, we don't want to dispatch any
                 # event such as guild_join or guild_available
@@ -678,7 +680,7 @@ class ConnectionState:
                 return
 
         # Dispatch available if newly available
-        if unavailable == False:
+        if unavailable is False:
             self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
@@ -946,14 +948,14 @@ class AutoShardedConnectionState(ConnectionState):
                 await self.request_offline_members(sub_guilds, shard_id=shard_id)
 
                 for guild, unavailable in zip(sub_guilds, sub_available):
-                    if unavailable == False:
+                    if unavailable is False:
                         self.dispatch('guild_available', guild)
                     else:
                         self.dispatch('guild_join', guild)
                 self.dispatch('shard_ready', shard_id)
         else:
             for guild, unavailable in self._ready_state.guilds:
-                if unavailable == False:
+                if unavailable is False:
                     self.dispatch('guild_available', guild)
                 else:
                     self.dispatch('guild_join', guild)

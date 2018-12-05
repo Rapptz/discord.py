@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import itertools
-import copy
 
 import discord.abc
 
@@ -142,15 +141,15 @@ class Member(discord.abc.Messageable, _BaseUser):
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    activity: Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]
-        The activity that the user is currently doing. Could be None if no activity is being done.
+    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
+        The activities that the user is currently doing.
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
         The guild specific nickname of the user.
     """
 
-    __slots__ = ('_roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('_roles', 'joined_at', 'status', 'activities', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -159,7 +158,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self.status = Status.offline
-        self.activity = create_activity(data.get('game'))
+        self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -187,7 +186,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.status = member.status
         self.guild = member.guild
         self.nick = member.nick
-        self.activity = member.activity
+        self.activities = member.activities
         self._state = member._state
         self._user = User._copy(member._user)
         return self
@@ -217,18 +216,13 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _presence_update(self, data, user):
         self.status = try_enum(Status, data['status'])
-        self.activity = create_activity(data.get('game'))
+        self.activities = tuple(map(create_activity, data.get('activities', [])))
 
         if len(user) > 1:
             u = self._user
             u.name = user.get('username', u.name)
             u.avatar = user.get('avatar', u.avatar)
             u.discriminator = user.get('discriminator', u.discriminator)
-
-    def _copy(self):
-        c = copy.copy(self)
-        c._user = copy.copy(self._user)
-        return c
 
     @property
     def colour(self):
@@ -285,6 +279,18 @@ class Member(discord.abc.Messageable, _BaseUser):
         is returned instead.
         """
         return self.nick if self.nick is not None else self.name
+
+    @property
+    def activity(self):
+        """Returns a class Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`] for the primary
+        activity the user is currently doing. Could be None if no activity is being done.
+
+        .. note::
+
+            A user may have multiple activities, these can be accessed under :attr:`activities`.
+        """
+        if self.activities:
+            return self.activities[0]
 
     def mentioned_in(self, message):
         """Checks if the member is mentioned in the specified message.

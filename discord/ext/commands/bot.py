@@ -26,12 +26,13 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import collections
-import discord
 import inspect
 import importlib
 import sys
 import traceback
 import re
+
+import discord
 
 from .core import GroupMixin, Command
 from .view import StringView
@@ -195,13 +196,13 @@ class BotBase(GroupMixin):
         for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
-            except:
+            except Exception:
                 pass
 
         for cog in tuple(self.cogs):
             try:
                 self.remove_cog(cog)
-            except:
+            except Exception:
                 pass
 
         await super().close()
@@ -340,7 +341,7 @@ class BotBase(GroupMixin):
         if len(data) == 0:
             return True
 
-        return (await discord.utils.async_all(f(ctx) for f in data))
+        return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
         """Checks if a :class:`.User` or :class:`.Member` is the owner of
@@ -733,20 +734,18 @@ class BotBase(GroupMixin):
             if _is_submodule(lib_name, cog.__module__):
                 self.remove_cog(cogname)
 
-        # first remove all the commands from the module
+        # remove all the commands from the module
         for cmd in self.all_commands.copy().values():
-            if cmd.module is None:
-                continue
-            if _is_submodule(lib_name, cmd.module):
+            if cmd.module is not None and _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
                 self.remove_command(cmd.name)
 
-        # then remove all the listeners from the module
+        # remove all the listeners from the module
         for event_list in self.extra_events.copy().values():
             remove = []
             for index, event in enumerate(event_list):
-                if _is_submodule(lib_name, event.__module__):
+                if event.__module__ is not None and _is_submodule(lib_name, event.__module__):
                     remove.append(index)
 
             for index in reversed(remove):
@@ -759,7 +758,7 @@ class BotBase(GroupMixin):
         else:
             try:
                 func(self)
-            except:
+            except Exception:
                 pass
         finally:
             # finally remove the import..
@@ -895,10 +894,10 @@ class BotBase(GroupMixin):
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
-                if (await self.can_run(ctx, call_once=True)):
+                if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
-            except CommandError as e:
-                await ctx.command.dispatch_error(ctx, e)
+            except CommandError as exc:
+                await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:

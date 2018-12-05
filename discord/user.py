@@ -24,14 +24,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from collections import namedtuple
+
+import discord.abc
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
 from .errors import ClientException, InvalidArgument
 from .colour import Colour
-
-from collections import namedtuple
-
-import discord.abc
 
 VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
@@ -54,12 +53,20 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
         return self._has_flag(UserFlags.staff)
 
     @property
-    def hypesquad(self):
-        return self._has_flag(UserFlags.hypesquad)
-
-    @property
     def partner(self):
         return self._has_flag(UserFlags.partner)
+
+    @property
+    def bug_hunter(self):
+        return self._has_flag(UserFlags.bug_hunter)
+
+    @property
+    def early_supporter(self):
+        return self._has_flag(UserFlags.early_supporter)
+
+    @property
+    def hypesquad(self):
+        return self._has_flag(UserFlags.hypesquad)
 
     @property
     def hypesquad_houses(self):

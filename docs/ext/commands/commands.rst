@@ -221,6 +221,18 @@ This works with any callable, such as a function that would convert a string to 
     async def up(ctx, *, content: to_upper):
         await ctx.send(content)
 
+bool
+^^^^^^
+
+Unlike the other basic converters, the :class:`bool` converter is treated slightly different. Instead of casting directly to the :class:`bool` type, which would result in any non-empty argument returning ``True``, it instead evaluates the argument as ``True`` or ``False`` based on it's given content:
+
+.. code-block:: python3
+
+    if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+        return True
+    elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+        return False
+
 .. _ext_commands_adv_converters:
 
 Advanced Converters
@@ -280,6 +292,64 @@ fine tuning the converter. An example of this is actually in the library, :class
 
 If a converter fails to convert an argument to its designated target type, the :exc:`.BadArgument` exception must be
 raised.
+
+Inline Advanced Converters
++++++++++++++++++++++++++++++
+
+If we don't want to inherit from :class:`~ext.commands.Converter`, we can still provide a converter that has the
+advanced functionalities of an advanced converter and save us from specifying two types.
+
+For example, a common idiom would be to have a class and a converter for that class:
+
+.. code-block:: python3
+
+    class JoinDistance:
+        def __init__(self, joined, created):
+            self.joined = joined
+            self.created = created
+
+        @property
+        def delta(self):
+            return self.joined - self.created
+
+    class JoinDistanceConverter(commands.MemberConverter):
+        async def convert(self, ctx, argument):
+            member = await super().convert(ctx, argument)
+            return JoinDistance(member.joined_at, member.created_at)
+
+    @bot.command()
+    async def delta(ctx, *, member: JoinDistanceConverter):
+        is_new = member.delta.days < 100
+        if is_new:
+            await ctx.send("Hey you're pretty new!")
+        else:
+            await ctx.send("Hm you're not so new.")
+
+This can get tedious, so an inline advanced converter is possible through a ``classmethod`` inside the type:
+
+.. code-block:: python3
+
+    class JoinDistance:
+        def __init__(self, joined, created):
+            self.joined = joined
+            self.created = created
+
+        @classmethod
+        async def convert(cls, ctx, argument):
+            member = await commands.MemberConverter().convert(ctx, argument)
+            return cls(member.joined_at, member.created_at)
+
+        @property
+        def delta(self):
+            return self.joined - self.created
+
+    @bot.command()
+    async def delta(ctx, *, member: JoinDistance):
+        is_new = member.delta.days < 100
+        if is_new:
+            await ctx.send("Hey you're pretty new!")
+        else:
+            await ctx.send("Hm you're not so new.")
 
 Discord Converters
 ++++++++++++++++++++
@@ -358,64 +428,6 @@ By providing the converter it allows us to use them as building blocks for anoth
     async def roles(ctx, *, member: MemberRoles):
         """Tells you a member's roles."""
         await ctx.send('I see the following roles: ' + ', '.join(member))
-
-Inline Advanced Converters
-+++++++++++++++++++++++++++++
-
-If we don't want to inherit from :class:`~ext.commands.Converter`, we can still provide a converter that has the
-advanced functionalities of an advanced converter and save us from specifying two types.
-
-For example, a common idiom would be to have a class and a converter for that class:
-
-.. code-block:: python3
-
-    class JoinDistance:
-        def __init__(self, joined, created):
-            self.joined = joined
-            self.created = created
-
-        @property
-        def delta(self):
-            return self.joined - self.created
-
-    class JoinDistanceConverter(commands.MemberConverter):
-        async def convert(self, ctx, argument):
-            member = await super().convert(ctx, argument)
-            return JoinDistance(member.joined_at, member.created_at)
-
-    @bot.command()
-    async def delta(ctx, *, member: JoinDistanceConverter):
-        is_new = member.delta.days < 100
-        if is_new:
-            await ctx.send("Hey you're pretty new!")
-        else:
-            await ctx.send("Hm you're not so new.")
-
-This can get tedious, so an inline advanced converter is possible through a ``classmethod`` inside the type:
-
-.. code-block:: python3
-
-    class JoinDistance:
-        def __init__(self, joined, created):
-            self.joined = joined
-            self.created = created
-
-        @classmethod
-        async def convert(cls, ctx, argument):
-            member = await commands.MemberConverter().convert(ctx, argument)
-            return cls(member.joined_at, member.created_at)
-
-        @property
-        def delta(self):
-            return self.joined - self.created
-
-    @bot.command()
-    async def delta(ctx, *, member: JoinDistance):
-        is_new = member.delta.days < 100
-        if is_new:
-            await ctx.send("Hey you're pretty new!")
-        else:
-            await ctx.send("Hm you're not so new.")
 
 .. _ext_commands_special_converters:
 
@@ -636,7 +648,7 @@ When multiple checks are specified, **all** of them must be ``True``:
     def is_in_guild(guild_id):
         async def predicate(ctx):
             return ctx.guild and ctx.guild.id == guild_id
-        return commands.check(is_in_guild)
+        return commands.check(predicate)
 
     @bot.command()
     @is_in_guild(41771983423143937)

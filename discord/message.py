@@ -32,7 +32,7 @@ from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException
+from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 
 class Attachment:
@@ -599,7 +599,7 @@ class Message:
                     await asyncio.sleep(delete_after, loop=self._state.loop)
                     try:
                         await self._state.http.delete_message(self.channel.id, self.id)
-                    except:
+                    except HTTPException:
                         pass
 
                 asyncio.ensure_future(delete(), loop=self._state.loop)

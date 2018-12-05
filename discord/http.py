@@ -24,18 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import aiohttp
 import asyncio
 import json
-import sys
 import logging
-import weakref
+import sys
 from urllib.parse import quote as _uriquote
+import weakref
 
-log = logging.getLogger(__name__)
+import aiohttp
 
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
 from . import __version__, utils
+
+log = logging.getLogger(__name__)
 
 async def json_or_text(response):
     text = await response.text(encoding='utf-8')
@@ -218,7 +219,7 @@ class HTTPClient:
     async def get_attachment(self, url):
         async with self._session.get(url) as resp:
             if resp.status == 200:
-                return (await resp.read())
+                return await resp.read()
             elif resp.status == 404:
                 raise NotFound(resp, 'attachment not found')
             elif resp.status == 403:
@@ -244,11 +245,11 @@ class HTTPClient:
 
         try:
             data = await self.request(Route('GET', '/users/@me'))
-        except HTTPException as e:
+        except HTTPException as exc:
             self._token(old_token, bot=old_bot)
-            if e.response.status == 401:
-                raise LoginFailure('Improper token has been passed.') from e
-            raise e
+            if exc.response.status == 401:
+                raise LoginFailure('Improper token has been passed.') from exc
+            raise
 
         return data
 
@@ -564,7 +565,7 @@ class HTTPClient:
     def edit_guild(self, guild_id, *, reason=None, **fields):
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
-                      'system_channel_id')
+                      'system_channel_id', 'default_message_notifications')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys
@@ -742,8 +743,8 @@ class HTTPClient:
     async def get_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway'))
-        except HTTPException as e:
-            raise GatewayNotFound() from e
+        except HTTPException as exc:
+            raise GatewayNotFound() from exc
         if zlib:
             value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
@@ -753,8 +754,8 @@ class HTTPClient:
     async def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
-        except HTTPException as e:
-            raise GatewayNotFound() from e
+        except HTTPException as exc:
+            raise GatewayNotFound() from exc
 
         if zlib:
             value = '{0}?encoding={1}&v={2}&compress=zlib-stream'

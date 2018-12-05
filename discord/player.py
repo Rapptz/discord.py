@@ -162,8 +162,8 @@ class FFmpegPCMAudio(AudioSource):
             self._stdout = self._process.stdout
         except FileNotFoundError:
             raise ClientException(executable + ' was not found.') from None
-        except subprocess.SubprocessError as e:
-            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(e)) from e
+        except subprocess.SubprocessError as exc:
+            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
 
     def read(self):
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
@@ -292,8 +292,8 @@ class AudioPlayer(threading.Thread):
     def run(self):
         try:
             self._do_run()
-        except Exception as e:
-            self._current_error = e
+        except Exception as exc:
+            self._current_error = exc
             self.stop()
         finally:
             self.source.cleanup()
@@ -303,7 +303,7 @@ class AudioPlayer(threading.Thread):
         if self.after is not None:
             try:
                 self.after(self._current_error)
-            except:
+            except Exception:
                 log.exception('Calling the after function failed.')
 
     def stop(self):

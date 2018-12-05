@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-
 from collections import namedtuple, defaultdict
 
 from . import utils
@@ -36,7 +35,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter
+from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
 from .utils import valid_icon_size
 from .user import User
@@ -104,6 +103,8 @@ class Guild(Hashable):
         The guild's verification level.
     explicit_content_filter: :class:`ContentFilter`
         The guild's explicit content filter.
+    default_notifications: :class:`NotificationLevel`
+        The guild's notification settings.
     features: List[:class:`str`]
         A list of features that the guild has. They are currently as follows:
 
@@ -122,7 +123,7 @@ class Guild(Hashable):
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', )
+                 '_voice_states', '_system_channel_id', 'default_notifications')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -206,6 +207,7 @@ class Guild(Hashable):
         self.name = guild.get('name')
         self.region = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
+        self.default_notifications = try_enum(NotificationLevel, guild.get('default_message_notifications'))
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
@@ -247,7 +249,7 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member.status = try_enum(Status, presence['status'])
-                member.activity = create_activity(presence.get('game'))
+                member.activities = tuple(map(create_activity, presence.get('activities', [])))
 
         if 'channels' in data:
             channels = data['channels']
@@ -435,11 +437,11 @@ class Guild(Hashable):
             return ''
 
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
-    
+
     @property
     def splash_url(self):
         """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
-        return self.icon_url_as()
+        return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
         """Returns a friendly URL version of the guild's invite splash. Returns an empty string if it has no splash.
@@ -746,6 +748,8 @@ class Guild(Hashable):
             be owner of the guild to do this.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
+        default_notifications: :class:`NotificationLevel`
+            The new default notification level for the guild.
         vanity_code: str
             The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
@@ -795,6 +799,13 @@ class Guild(Hashable):
 
         fields['icon'] = icon
         fields['splash'] = splash
+
+        try:
+            default_message_notifications = int(fields.pop('default_notifications'))
+        except (TypeError, KeyError):
+            pass
+        else:
+            fields['default_message_notifications'] = default_message_notifications
 
         try:
             afk_channel = fields.pop('afk_channel')

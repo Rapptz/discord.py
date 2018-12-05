@@ -24,11 +24,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import aiohttp
 import asyncio
 import json
 import time
 import re
+
+import aiohttp
 
 from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
@@ -103,12 +104,19 @@ class WebhookAdapter:
         # mocks a ConnectionState for appropriate use for Message
         return BaseUser(state=self, data=data)
 
-    def execute_webhook(self, *, payload, wait=False, file=None):
+    def execute_webhook(self, *, payload, wait=False, file=None, files=None):
         if file is not None:
             multipart = {
                 'file': file,
                 'payload_json': utils.to_json(payload)
             }
+            data = None
+        elif files is not None:
+            multipart = {
+                'payload_json': utils.to_json(payload)
+            }
+            for i, file in enumerate(files, start=1):
+                multipart['file%i' % i] = file
             data = None
         else:
             data = payload
@@ -143,12 +151,12 @@ class AsyncWebhookAdapter(WebhookAdapter):
             data = utils.to_json(payload)
 
         if multipart:
-            file = multipart.pop('file', None)
             data = aiohttp.FormData()
-            if file:
-                data.add_field('file', file[1], filename=file[0], content_type=file[2])
             for key, value in multipart.items():
-                data.add_field(key, value)
+                if key.startswith('file'):
+                    data.add_field(key, value[1], filename=value[0], content_type=value[2])
+                else:
+                    data.add_field(key, value)
 
         for tries in range(5):
             async with self.session.request(verb, url, headers=headers, data=data) as r:
@@ -560,8 +568,8 @@ class Webhook:
 
         return self._adapter.edit_webhook(**payload)
 
-    def send(self, content=None, *, wait=False, username=None, avatar_url=None,
-                                    tts=False, file=None, embed=None, embeds=None):
+    def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
+                                    file=None, files=None, embed=None, embeds=None):
         """|maybecoro|
 
         Sends a message using the webhook.
@@ -595,7 +603,10 @@ class Webhook:
         tts: bool
             Indicates if the message should be sent using text-to-speech.
         file: :class:`File`
-            The file to upload.
+            The file to upload. This cannot be mixed with ``files`` parameter.
+        files: List[:class:`File`]
+            A list of files to send with the content. This cannot be mixed with the
+            ``file`` parameter.
         embed: :class:`Embed`
             The rich embed for the content to send. This cannot be mixed with
             ``embeds`` parameter.
@@ -623,6 +634,8 @@ class Webhook:
 
         payload = {}
 
+        if files is not None and file is not None:
+            raise InvalidArgument('Cannot mix file and files keyword arguments.')
         if embeds is not None and embed is not None:
             raise InvalidArgument('Cannot mix embed and embeds keyword arguments.')
 
@@ -649,6 +662,14 @@ class Webhook:
                 return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
             finally:
                 file.close()
+        elif files is not None:
+            try:
+                to_pass = [(file.filename, file.open_file(), 'application/octet-stream')
+                           for file in files]
+                return self._adapter.execute_webhook(wait=wait, files=to_pass, payload=payload)
+            finally:
+                for file in files:
+                    file.close()
         else:
             return self._adapter.execute_webhook(wait=wait, payload=payload)
 

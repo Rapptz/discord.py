@@ -24,6 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+from collections import namedtuple
+import logging
+import re
+import signal
+import sys
+import traceback
+
+import aiohttp
+import websockets
+
 from .user import User, Profile
 from .invite import Invite
 from .object import Object
@@ -38,15 +49,6 @@ from .state import ConnectionState
 from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-
-import asyncio
-import aiohttp
-import websockets
-
-import logging, traceback
-import sys, re
-import signal
-from collections import namedtuple
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +65,7 @@ def app_info_icon_url(self):
 AppInfo.icon_url = property(app_info_icon_url)
 
 class Client:
-    """Represents a client connection that connects to Discord.
+    r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
     A number of options can be passed to the :class:`Client`.
@@ -170,7 +172,7 @@ class Client:
         if isinstance(invite, Invite) or isinstance(invite, Object):
             return invite.id
         else:
-            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
+            rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
             m = re.match(rx, invite)
             if m:
                 return m.group(1)
@@ -234,7 +236,6 @@ class Client:
     def dispatch(self, event, *args, **kwargs):
         log.debug('Dispatching event %s', event)
         method = 'on_' + event
-        handler = '_handle_' + event
 
         listeners = self._listeners.get(event)
         if listeners:
@@ -246,8 +247,8 @@ class Client:
 
                 try:
                     result = condition(*args)
-                except Exception as e:
-                    future.set_exception(e)
+                except Exception as exc:
+                    future.set_exception(exc)
                     removed.append(i)
                 else:
                     if result:
@@ -285,7 +286,7 @@ class Client:
         traceback.print_exc()
 
     async def request_offline_members(self, *guilds):
-        """|coro|
+        r"""|coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`Guild.members` cache. This function is usually not
@@ -406,11 +407,11 @@ class Client:
                     aiohttp.ClientError,
                     asyncio.TimeoutError,
                     websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as e:
+                    websockets.WebSocketProtocolError) as exc:
 
                 if not reconnect:
                     await self.close()
-                    if isinstance(e, ConnectionClosed) and e.code == 1000:
+                    if isinstance(exc, ConnectionClosed) and exc.code == 1000:
                         # clean close, don't re-raise this
                         return
                     raise
@@ -422,8 +423,8 @@ class Client:
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
                 # regardless and rely on is_closed instead
-                if isinstance(e, ConnectionClosed):
-                    if e.code != 1000:
+                if isinstance(exc, ConnectionClosed):
+                    if exc.code != 1000:
                         await self.close()
                         raise
 
@@ -444,7 +445,7 @@ class Client:
         for voice in self.voice_clients:
             try:
                 await voice.disconnect()
-            except:
+            except Exception:
                 # if an error happens during disconnects, disregard it.
                 pass
 
@@ -489,7 +490,7 @@ class Client:
         def _silence_gathered(fut):
             try:
                 fut.result()
-            except:
+            except Exception:
                 pass
             finally:
                 loop.stop()
@@ -516,7 +517,7 @@ class Client:
 
         try:
             return task.result() # suppress unused task warning
-        except:
+        except Exception:
             return None
 
     def run(self, *args, **kwargs):
@@ -832,7 +833,7 @@ class Client:
             if me is None:
                 continue
 
-            me.activity = activity
+            me.activities = (activity,)
             me.status = status_enum
 
     # Guild stuff
