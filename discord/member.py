@@ -24,7 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
 import itertools
+import copy
 
 import discord.abc
 
@@ -56,8 +58,8 @@ class VoiceState:
         is not currently in a voice channel.
     """
 
-    __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_deaf', 'afk', 'channel')
+    __slots__ = ( 'session_id', 'deaf', 'mute', 'self_mute',
+                  'self_deaf', 'afk', 'channel' )
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -135,21 +137,25 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     Attributes
     ----------
+    roles: List[:class:`Role`]
+        A :class:`list` of :class:`Role` that the member belongs to. Note that the first element of this
+        list is always the default '@everyone' role. These roles are sorted by their position
+        in the role hierarchy.
     joined_at: `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
     status : :class:`Status`
         The member's status. There is a chance that the status will be a :class:`str`
         if it is a value that is not recognised by the enumerator.
-    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
-        The activities that the user is currently doing.
+    activity: Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]
+        The activity that the user is currently doing. Could be None if no activity is being done.
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
         The guild specific nickname of the user.
     """
 
-    __slots__ = ('_roles', 'joined_at', 'status', 'activities', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('roles', 'joined_at', 'status', 'activity', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -158,7 +164,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self.status = Status.offline
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activity = create_activity(data.get('game'))
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -175,28 +181,22 @@ class Member(discord.abc.Messageable, _BaseUser):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash(self._user)
-
-    @classmethod
-    def _copy(cls, member):
-        self = cls.__new__(cls) # to bypass __init__
-
-        self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
-        self.joined_at = member.joined_at
-        self.status = member.status
-        self.guild = member.guild
-        self.nick = member.nick
-        self.activities = member.activities
-        self._state = member._state
-        self._user = User._copy(member._user)
-        return self
+        return hash(self._user.id)
 
     async def _get_channel(self):
         ch = await self.create_dm()
         return ch
 
     def _update_roles(self, data):
-        self._roles = utils.SnowflakeList(map(int, data['roles']))
+        # update the roles
+        self.roles = [self.guild.default_role]
+        for roleid in map(int, data['roles']):
+            role = utils.find(lambda r: r.id == roleid, self.guild.roles)
+            if role is not None:
+                self.roles.append(role)
+
+        # sort the roles by hierarchy since they can be "randomised"
+        self.roles.sort()
 
     def _update(self, data, user=None):
         if user:
@@ -216,13 +216,17 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _presence_update(self, data, user):
         self.status = try_enum(Status, data['status'])
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activity = create_activity(data.get('game'))
 
-        if len(user) > 1:
-            u = self._user
-            u.name = user.get('username', u.name)
-            u.avatar = user.get('avatar', u.avatar)
-            u.discriminator = user.get('discriminator', u.discriminator)
+        u = self._user
+        u.name = user.get('username', u.name)
+        u.avatar = user.get('avatar', u.avatar)
+        u.discriminator = user.get('discriminator', u.discriminator)
+
+    def _copy(self):
+        c = copy.copy(self)
+        c._user = copy.copy(self._user)
+        return c
 
     @property
     def colour(self):
@@ -246,24 +250,6 @@ class Member(discord.abc.Messageable, _BaseUser):
     color = colour
 
     @property
-    def roles(self):
-        """A :class:`list` of :class:`Role` that the member belongs to. Note
-        that the first element of this list is always the default '@everyone'
-        role.
-
-        These roles are sorted by their position in the role hierarchy.
-        """
-        result = []
-        g = self.guild
-        for role_id in self._roles:
-            role = g.get_role(role_id)
-            if role:
-                result.append(role)
-        result.append(g.default_role)
-        result.sort()
-        return result
-
-    @property
     def mention(self):
         """Returns a string that mentions the member."""
         if self.nick:
@@ -279,18 +265,6 @@ class Member(discord.abc.Messageable, _BaseUser):
         is returned instead.
         """
         return self.nick if self.nick is not None else self.name
-
-    @property
-    def activity(self):
-        """Returns a class Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`] for the primary
-        activity the user is currently doing. Could be None if no activity is being done.
-
-        .. note::
-
-            A user may have multiple activities, these can be accessed under :attr:`activities`.
-        """
-        if self.activities:
-            return self.activities[0]
 
     def mentioned_in(self, message):
         """Checks if the member is mentioned in the specified message.
@@ -334,6 +308,9 @@ class Member(discord.abc.Messageable, _BaseUser):
         hierarchy chain.
         """
         return self.roles[-1]
+
+    def has_role(self, role):
+        return role in self.roles
 
     @property
     def guild_permissions(self):
@@ -494,7 +471,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         await self.edit(voice_channel=channel, reason=reason)
 
     async def add_roles(self, *roles, reason=None, atomic=True):
-        r"""|coro|
+        """|coro|
 
         Gives the member a number of :class:`Role`\s.
 
@@ -532,7 +509,7 @@ class Member(discord.abc.Messageable, _BaseUser):
                 await req(guild_id, user_id, role.id, reason=reason)
 
     async def remove_roles(self, *roles, reason=None, atomic=True):
-        r"""|coro|
+        """|coro|
 
         Removes :class:`Role`\s from this member.
 
