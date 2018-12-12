@@ -554,7 +554,28 @@ class User(BaseUser, discord.abc.Messageable):
     def relationship(self):
         """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
         return self._state.user.get_relationship(self.id)
+    
+    async def mutual_friends(self):
+        """|coro|
 
+        Get all mutual friends of this user.
+
+        Returns 
+        -------
+        list
+            :class:User objects
+
+        Raises
+        -------
+        HTTPException
+            Getting mutual friends failed.
+        """
+        mutuals = await self._state.http.get_mutual_friends(self.id)
+        users = list()
+        for friend in mutuals:
+            users.append(self._state.get_user(int(friend["id"])))
+        return users
+        
     def is_friend(self):
         """:class:`bool`: Checks if the user is your friend."""
         r = self.relationship

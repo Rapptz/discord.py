@@ -775,3 +775,6 @@ class HTTPClient:
 
     def leave_hypesquad_house(self):
         return self.request(Route('DELETE', '/hypesquad/online'))
+
+    def get_mutual_friends(self, user_id):
+        return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
