@@ -558,24 +558,22 @@ class User(BaseUser, discord.abc.Messageable):
     async def mutual_friends(self):
         """|coro|
 
-        Get all mutual friends of this user.
+        Gets all mutual friends of this user. This can only be used by non-bot accounts
 
         Returns 
         -------
-        list
-            :class:User objects
+            List[:class:`User`] - The users that are mutual friends.
 
         Raises
         -------
+        Forbidden
+            Not allowed to get mutual friends of this user.
         HTTPException
             Getting mutual friends failed.
         """
         mutuals = await self._state.http.get_mutual_friends(self.id)
-        users = list()
-        for friend in mutuals:
-            users.append(self._state.get_user(int(friend["id"])))
-        return users
-        
+        return [self._state.get_user(int(friend["id"])) for friend in mutuals]
+
     def is_friend(self):
         """:class:`bool`: Checks if the user is your friend."""
         r = self.relationship
