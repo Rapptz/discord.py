@@ -142,8 +142,8 @@ class Message:
 
         .. note::
 
-            This does not check if the ``@everyone`` text is in the message itself.
-            Rather this boolean indicates if the ``@everyone`` text is in the message
+            This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
+            Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
             **and** it did end up mentioning everyone.
 
     mentions: :class:`list`
