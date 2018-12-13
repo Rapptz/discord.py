@@ -73,7 +73,7 @@ class Embed:
     type: :class:`str`
         The type of embed. Usually "rich".
     description: :class:`str`
-        The description of the embed whcih can not have more than 2048 characters.
+        The description of the embed which can not have more than 2048 characters.
     url: :class:`str`
         The URL of the embed.
     timestamp: `datetime.datetime`
@@ -198,7 +198,7 @@ class Embed:
         Parameters
         -----------
         text: str
-            The footer text whcih can not have more than 2048 characters.
+            The footer text which can not have more than 2048 characters.
         icon_url: str
             The URL of the footer icon. Only HTTP(S) is supported.
             
@@ -374,7 +374,7 @@ class Embed:
         name: str
             The name of the field which can not have more than 256 characters.
         value: str
-            The value of the field whcih can not have more than 1024 characters
+            The value of the field which can not have more than 1024 characters
         inline: bool
             Whether the field should be displayed inline.
             
@@ -451,10 +451,7 @@ class Embed:
         Raises
         -------
         IndexError
-            An invalid index was provided.
-            
-        Raises
-        ------
+            An invalid index was provided
         EmbedError
             If name is over 256 limit or value is over 1024 limit.
         """
