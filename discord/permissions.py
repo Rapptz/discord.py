@@ -368,7 +368,7 @@ class Permissions:
 
     @property
     def mention_everyone(self):
-        """Returns True if a user's @everyone will mention everyone in the text channel."""
+        """Returns True if a user's @everyone or @here will mention everyone in the text channel."""
         return self._bit(17)
 
     @mention_everyone.setter
