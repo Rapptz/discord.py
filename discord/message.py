@@ -71,6 +71,10 @@ class Attachment:
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
 
+    def is_spoiler(self):
+        """:class:`bool`: Whether this attachment contains a spoiler."""
+        return self.filename.startswith('SPOILER_')
+
     async def save(self, fp, *, seek_begin=True):
         """|coro|
 
