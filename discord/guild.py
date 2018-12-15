@@ -244,12 +244,12 @@ class Guild(Hashable):
         except KeyError:
             pass
 
+        empty_tuple = tuple()
         for presence in data.get('presences', []):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
-                member.status = try_enum(Status, presence['status'])
-                member.activities = tuple(map(create_activity, presence.get('activities', [])))
+                member._presence_update(presence, empty_tuple)
 
         if 'channels' in data:
             channels = data['channels']
