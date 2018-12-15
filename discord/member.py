@@ -232,6 +232,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
         return try_enum(Status, self._client_status[None])
 
+    @status.setter
+    def status(self, value):
+        # internal use only
+        self._client_status[None] = str(value)
+
     @property
     def mobile_status(self):
         """:class:`Status`: The member's status on a mobile device, if applicable."""
