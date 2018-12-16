@@ -117,6 +117,7 @@ class Client:
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
+	self.run_task = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = {}
         self.shard_id = options.get('shard_id')
@@ -550,26 +551,26 @@ class Client:
             loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
             loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
-        task = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
+        self.run_task = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
 
         def stop_loop_on_finish(fut):
             loop.stop()
 
-        task.add_done_callback(stop_loop_on_finish)
+        self.run_task.add_done_callback(stop_loop_on_finish)
 
         try:
             loop.run_forever()
         except KeyboardInterrupt:
             log.info('Received signal to terminate bot and event loop.')
         finally:
-            task.remove_done_callback(stop_loop_on_finish)
+            self.run_task.remove_done_callback(stop_loop_on_finish)
             if is_windows:
                 self._do_cleanup()
 
             loop.close()
-            if task.cancelled() or not task.done():
+            if self.run_task.cancelled() or not self.run_task.done():
                 return None
-            return task.result()
+            return self.run_task.result()
 
     # properties
 
