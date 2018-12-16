@@ -510,6 +510,12 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         log.debug('Updating our voice state to %s.', payload)
         await self.send_as_json(payload)
 
+    async def close(self, code=1000, reason=''):
+        if self._keep_alive:
+            self._keep_alive.stop()
+
+        await super().close(code, reason)
+
     async def close_connection(self, *args, **kwargs):
         if self._keep_alive:
             self._keep_alive.stop()

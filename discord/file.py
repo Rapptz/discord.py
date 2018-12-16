@@ -48,11 +48,13 @@ class File:
         The filename to display when uploading to Discord.
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
+    spoiler: :class:`bool`
+        Whether the attachment is a spoiler.
     """
 
     __slots__ = ('fp', 'filename', '_true_fp')
 
-    def __init__(self, fp, filename=None):
+    def __init__(self, fp, filename=None, *, spoiler=False):
         self.fp = fp
         self._true_fp = None
 
@@ -63,6 +65,9 @@ class File:
                 self.filename = getattr(fp, 'name', None)
         else:
             self.filename = filename
+
+        if spoiler and not self.filename.startswith('SPOILER_'):
+            self.filename = 'SPOILER_' + self.filename
 
     def open_file(self):
         fp = self.fp

@@ -100,7 +100,7 @@ class WebhookAdapter:
         """
         raise NotImplementedError()
 
-    def _store_user(self, data):
+    def store_user(self, data):
         # mocks a ConnectionState for appropriate use for Message
         return BaseUser(state=self, data=data)
 
