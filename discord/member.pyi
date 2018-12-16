@@ -28,7 +28,6 @@ class VoiceState:
 
 class Member(discord.abc.Messageable, discord.abc.User):
     joined_at: datetime.datetime
-    status: Status
     activities: Tuple[Union[Activity, Game, Streaming, Spotify], ...]
     nick: Optional[str]
     guild: Guild
@@ -90,6 +89,17 @@ class Member(discord.abc.Messageable, discord.abc.User):
     def __ne__(self, other: Any) -> bool: ...
 
     def __hash__(self) -> int: ...
+
+    @property
+    def status(self) -> Union[Status, str]: ...
+
+    @property
+    def mobile_status(self) -> Status: ...
+
+    @property
+    def desktop_status(self) -> Status: ...
+
+    def is_on_mobile(self) -> bool: ...
 
     @property
     def colour(self) -> Colour: ...

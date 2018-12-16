@@ -24,6 +24,8 @@ class Attachment:
     url: str
     proxy_url: str
 
+    def is_spoiler(self) -> bool: ...
+
     async def save(self, fp: Union[BinaryIO, str], *, seek_begin: bool = ...) -> int: ...
 
 class MessageActivity(TypedDict, total=False):
