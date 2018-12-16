@@ -117,7 +117,7 @@ class Client:
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
-	self.run_task = None
+        self.run_task = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = {}
         self.shard_id = options.get('shard_id')
