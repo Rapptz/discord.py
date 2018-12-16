@@ -550,6 +550,22 @@ class User(BaseUser, discord.abc.Messageable):
         data = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
 
+    async def can_dm(self):
+        """Determines if you can DM this :class:`User`
+
+        Returns
+        -------
+        :class:`Bool`
+           Whether or not the bot can DM this :class:`User`
+        """
+        try:
+            await self.send("")
+        except Exception as e:
+            if e.status == 400:
+                return True
+            else:
+                return False
+
     @property
     def relationship(self):
         """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
