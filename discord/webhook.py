@@ -657,19 +657,12 @@ class Webhook:
             payload['username'] = username
 
         if file is not None:
-            try:
-                to_pass = (file.filename, file.open_file(), 'application/octet-stream')
-                return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
-            finally:
-                file.close()
+            to_pass = (file.filename, file.open_file(), 'application/octet-stream')
+            return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
         elif files is not None:
-            try:
-                to_pass = [(file.filename, file.open_file(), 'application/octet-stream')
-                           for file in files]
-                return self._adapter.execute_webhook(wait=wait, files=to_pass, payload=payload)
-            finally:
-                for file in files:
-                    file.close()
+            to_pass = [(file.filename, file.open_file(), 'application/octet-stream')
+                       for file in files]
+            return self._adapter.execute_webhook(wait=wait, files=to_pass, payload=payload)
         else:
             return self._adapter.execute_webhook(wait=wait, payload=payload)
 
