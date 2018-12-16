@@ -102,7 +102,7 @@ class WebhookAdapter:
 
     def store_user(self, data):
         # mocks a ConnectionState for appropriate use for Message
-        return BaseUser(state=self, data=data)
+        return BaseUser(state=self.webhook._state, data=data)
 
     def execute_webhook(self, *, payload, wait=False, file=None, files=None):
         if file is not None:
@@ -197,7 +197,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
         # transform into Message object
         from .message import Message
-        return Message(data=data, state=self, channel=self.webhook.channel)
+        return Message(data=data, state=self.webhook._state, channel=self.webhook.channel)
 
 class RequestsWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with ``requests``.
@@ -278,7 +278,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
         # transform into Message object
         from .message import Message
-        return Message(data=response, state=self, channel=self.webhook.channel)
+        return Message(data=response, state=self.webhook._state, channel=self.webhook.channel)
 
 class Webhook:
     """Represents a Discord webhook.
