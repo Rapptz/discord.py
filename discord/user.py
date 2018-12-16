@@ -555,7 +555,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Returns
         -------
-        :class:`Bool`
+        :class:`bool`
            Whether or not the bot can DM this :class:`User`
         """
         try:
