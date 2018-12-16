@@ -24,7 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
 from collections import namedtuple
 
 from . import utils
@@ -87,7 +86,7 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
     def _as_reaction(self):
         if self.id is None:
             return self.name
-        return ':%s:%s' % (self.name, self.id)
+        return '%s:%s' % (self.name, self.id)
 
     @property
     def url(self):
@@ -155,7 +154,7 @@ class Emoji(Hashable):
         self.id = int(emoji['id'])
         self.name = emoji['name']
         self.animated = emoji.get('animated', False)
-        self._roles = set(emoji.get('roles', []))
+        self._roles = utils.SnowflakeList(map(int, emoji.get('roles', [])))
 
     def _iterator(self):
         for attr in self.__slots__:
@@ -188,7 +187,7 @@ class Emoji(Hashable):
 
     @property
     def roles(self):
-        """List[:class:`Role`]: A list of roles that is allowed to use this emoji.
+        """List[:class:`Role`]: A :class:`list` of roles that is allowed to use this emoji.
 
         If roles is empty, the emoji is unrestricted.
         """
@@ -196,7 +195,7 @@ class Emoji(Hashable):
         if guild is None:
             return []
 
-        return [role for role in guild.roles if role.id in self._roles]
+        return [role for role in guild.roles if self._roles.has(role.id)]
 
     @property
     def guild(self):
@@ -210,8 +209,6 @@ class Emoji(Hashable):
 
         You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
-
-        Note that bot accounts can only delete custom emojis they own.
 
         Parameters
         -----------
@@ -228,20 +225,20 @@ class Emoji(Hashable):
 
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    async def edit(self, *, name, reason=None):
-        """|coro|
+    async def edit(self, *, name, roles=None, reason=None):
+        r"""|coro|
 
         Edits the custom emoji.
 
         You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
 
-        Note that bot accounts can only edit custom emojis they own.
-
         Parameters
         -----------
         name: str
             The new emoji name.
+        roles: Optional[list[:class:`Role`]]
+            A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
             The reason for editing this emoji. Shows up on the audit log.
 
@@ -253,4 +250,6 @@ class Emoji(Hashable):
             An error occurred editing the emoji.
         """
 
-        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)

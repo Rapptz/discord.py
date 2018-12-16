@@ -32,7 +32,7 @@ from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException, NotFound
+from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 
 class Attachment:
@@ -70,6 +70,10 @@ class Attachment:
         self.url = data.get('url')
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
+
+    def is_spoiler(self):
+        """:class:`bool`: Whether this attachment contains a spoiler."""
+        return self.filename.startswith('SPOILER_')
 
     async def save(self, fp, *, seek_begin=True):
         """|coro|
@@ -110,7 +114,7 @@ class Attachment:
             return written
 
 class Message:
-    """Represents a message from Discord.
+    r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
 
@@ -123,7 +127,7 @@ class Message:
         in cases where it might be a system message for :attr:`system_content`.
     author
         A :class:`Member` that sent the message. If :attr:`channel` is a
-        private channel, then it is a :class:`User` instead.
+        private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
         The actual contents of the message.
     nonce
@@ -142,9 +146,9 @@ class Message:
 
         .. note::
 
-            This does not check if the ``@everyone`` text is in the message itself.
-            Rather this boolean indicates if the ``@everyone`` text is in the message
-            **and** it did end up mentioning everyone.
+            This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
+            Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
+            **and** it did end up mentioning.
 
     mentions: :class:`list`
         A list of :class:`Member` that were mentioned. If the message is in a private message
@@ -194,13 +198,13 @@ class Message:
         - ``cover_image``: A string representing the embed's image asset ID.
     """
 
-    __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
-                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
-                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
-                  'application', 'activity' )
+    __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
+                 'mention_everyone', 'embeds', 'id', 'mentions', 'author',
+                 '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
+                 '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions',
+                 'application', 'activity')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -309,7 +313,7 @@ class Message:
         self.role_mentions = []
         if self.guild is not None:
             for role_id in map(int, role_mentions):
-                role = utils.get(self.guild.roles, id=role_id)
+                role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
 
@@ -366,7 +370,7 @@ class Message:
     def channel_mentions(self):
         if self.guild is None:
             return []
-        it = filter(None, map(lambda m: self.guild.get_channel(m), self.raw_channel_mentions))
+        it = filter(None, map(self.guild.get_channel, self.raw_channel_mentions))
         return utils._unique(it)
 
     @utils.cached_slot_property('_cs_clean_content')
@@ -441,7 +445,7 @@ class Message:
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
-        """A property that returns the content that is rendered
+        r"""A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
         In the case of :attr:`MessageType.default`\, this just returns the
@@ -599,7 +603,7 @@ class Message:
                     await asyncio.sleep(delete_after, loop=self._state.loop)
                     try:
                         await self._state.http.delete_message(self.channel.id, self.id)
-                    except:
+                    except HTTPException:
                         pass
 
                 asyncio.ensure_future(delete(), loop=self._state.loop)
@@ -675,18 +679,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialEmoji):
-            emoji = emoji._as_reaction()
-        elif isinstance(emoji, str):
-            pass # this is okay
-        else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
-
+        emoji = self._emoji_reaction(emoji)
         await self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
     async def remove_reaction(self, emoji, member):
@@ -721,22 +714,26 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialEmoji):
-            emoji = emoji._as_reaction()
-        elif isinstance(emoji, str):
-            pass # this is okay
-        else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+        emoji = self._emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
             await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
         else:
             await self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+
+    @staticmethod
+    def _emoji_reaction(emoji):
+        if isinstance(emoji, Reaction):
+            emoji = emoji.emoji
+
+        if isinstance(emoji, Emoji):
+            return '%s:%s' % (emoji.name, emoji.id)
+        if isinstance(emoji, PartialEmoji):
+            return emoji._as_reaction()
+        if isinstance(emoji, str):
+            return emoji # this is okay
+
+        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     async def clear_reactions(self):
         """|coro|

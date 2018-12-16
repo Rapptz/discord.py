@@ -24,12 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import discord
 import argparse
 import sys
 from pathlib import Path
-import os
-import re
+
+import discord
 
 def core(parser, args):
     pass
@@ -47,8 +46,8 @@ class Bot(commands.{base}):
         for cog in config.cogs:
             try:
                 self.load_extension(cog)
-            except Exception as e:
-                print('Could not load extension {{0}} due to {{1.__class__.__name__}}: {{1}}'.format(cog, e))
+            except Exception as exc:
+                print('Could not load extension {{0}} due to {{1.__class__.__name__}}: {{1}}'.format(cog, exc))
 
     async def on_ready(self):
         print('Logged on as {{0}} (ID: {{0.id}})'.format(self.user))
@@ -183,8 +182,8 @@ def newbot(parser, args):
     # since we already checked above that we're >3.5
     try:
         new_directory.mkdir(exist_ok=True, parents=True)
-    except OSError as e:
-        parser.error('could not create our bot directory ({})'.format(e))
+    except OSError as exc:
+        parser.error('could not create our bot directory ({})'.format(exc))
 
     cogs = new_directory / 'cogs'
 
@@ -192,28 +191,28 @@ def newbot(parser, args):
         cogs.mkdir(exist_ok=True)
         init = cogs / '__init__.py'
         init.touch()
-    except OSError as e:
-        print('warning: could not create cogs directory ({})'.format(e))
+    except OSError as exc:
+        print('warning: could not create cogs directory ({})'.format(exc))
 
     try:
         with open(str(new_directory / 'config.py'), 'w', encoding='utf-8') as fp:
             fp.write('token = "place your token here"\ncogs = []\n')
-    except OSError as e:
-       parser.error('could not create config file ({})'.format(e))
+    except OSError as exc:
+        parser.error('could not create config file ({})'.format(exc))
 
     try:
         with open(str(new_directory / 'bot.py'), 'w', encoding='utf-8') as fp:
             base = 'Bot' if not args.sharded else 'AutoShardedBot'
             fp.write(bot_template.format(base=base, prefix=args.prefix))
-    except OSError as e:
-        parser.error('could not create bot file ({})'.format(e))
+    except OSError as exc:
+        parser.error('could not create bot file ({})'.format(exc))
 
     if not args.no_git:
         try:
             with open(str(new_directory / '.gitignore'), 'w', encoding='utf-8') as fp:
                 fp.write(gitignore_template)
-        except OSError as e:
-            print('warning: could not create .gitignore file ({})'.format(e))
+        except OSError as exc:
+            print('warning: could not create .gitignore file ({})'.format(exc))
 
     print('successfully made bot at', new_directory)
 
@@ -224,8 +223,8 @@ def newcog(parser, args):
     cog_dir = to_path(parser, args.directory)
     try:
         cog_dir.mkdir(exist_ok=True)
-    except OSError as e:
-        print('warning: could not create cogs directory ({})'.format(e))
+    except OSError as exc:
+        print('warning: could not create cogs directory ({})'.format(exc))
 
     directory = cog_dir / to_path(parser, args.name)
     directory = directory.with_suffix('.py')
@@ -241,8 +240,8 @@ def newcog(parser, args):
                 else:
                     name = name.title()
             fp.write(cog_template.format(name=name, extra=extra))
-    except OSError as e:
-        parser.error('could not create cog file ({})'.format(e))
+    except OSError as exc:
+        parser.error('could not create cog file ({})'.format(exc))
     else:
         print('successfully made cog at', directory)
 

@@ -64,7 +64,7 @@ class RawBulkMessageDeleteEvent:
     __slots__ = ('message_ids', 'channel_id', 'guild_id')
 
     def __init__(self, data):
-        self.message_ids = { int(x) for x in data.get('ids', []) }
+        self.message_ids = {int(x) for x in data.get('ids', [])}
         self.channel_id = int(data['channel_id'])
 
         try:

@@ -26,14 +26,15 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import collections
-import discord
 import inspect
 import importlib
 import sys
 import traceback
 import re
 
-from .core import GroupMixin, Command, command
+import discord
+
+from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
@@ -77,7 +78,7 @@ def when_mentioned_or(*prefixes):
     """
     def inner(bot, msg):
         r = list(prefixes)
-        r.extend(when_mentioned(bot, msg))
+        r = when_mentioned(bot, msg) + r
         return r
 
     return inner
@@ -137,7 +138,7 @@ async def _default_help_command(ctx, *commands : str):
         pages = await bot.formatter.format_help_for(ctx, command)
 
     if bot.pm_help is None:
-        characters = sum(map(lambda l: len(l), pages))
+        characters = sum(map(len, pages))
         # modify destination based on length of pages.
         if characters > 1000:
             destination = ctx.message.author
@@ -195,13 +196,13 @@ class BotBase(GroupMixin):
         for extension in tuple(self.extensions):
             try:
                 self.unload_extension(extension)
-            except:
+            except Exception:
                 pass
 
         for cog in tuple(self.cogs):
             try:
                 self.remove_cog(cog)
-            except:
+            except Exception:
                 pass
 
         await super().close()
@@ -234,7 +235,7 @@ class BotBase(GroupMixin):
     # global check registration
 
     def check(self, func):
-        """A decorator that adds a global check to the bot.
+        r"""A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`.check` that is applied
         on a per command basis except it is run before any command checks
@@ -281,7 +282,7 @@ class BotBase(GroupMixin):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func):
+    def remove_check(self, func, *, call_once=False):
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
@@ -291,18 +292,19 @@ class BotBase(GroupMixin):
         -----------
         func
             The function to remove from the global checks.
+        call_once: bool
+            If the function was added with ``call_once=True`` in
+            the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
+        l = self._check_once if call_once else self._checks
 
         try:
-            self._checks.remove(func)
+            l.remove(func)
         except ValueError:
-            try:
-                self._check_once.remove(func)
-            except ValueError:
-                pass
+            pass
 
     def check_once(self, func):
-        """A decorator that adds a "call once" global check to the bot.
+        r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
         per :meth:`.Command.invoke` call.
@@ -339,7 +341,7 @@ class BotBase(GroupMixin):
         if len(data) == 0:
             return True
 
-        return (await discord.utils.async_all(f(ctx) for f in data))
+        return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
         """Checks if a :class:`.User` or :class:`.Member` is the owner of
@@ -387,13 +389,13 @@ class BotBase(GroupMixin):
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
 
     def after_invoke(self, coro):
-        """A decorator that registers a coroutine as a post-invoke hook.
+        r"""A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
         called. This makes it a useful function to clean-up database
@@ -420,7 +422,7 @@ class BotBase(GroupMixin):
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
@@ -649,7 +651,7 @@ class BotBase(GroupMixin):
         except AttributeError:
             pass
         else:
-            self.remove_check(check)
+            self.remove_check(check, call_once=True)
 
         unloader_name = '_{0.__class__.__name__}__unload'.format(cog)
         try:
@@ -732,18 +734,18 @@ class BotBase(GroupMixin):
             if _is_submodule(lib_name, cog.__module__):
                 self.remove_cog(cogname)
 
-        # first remove all the commands from the module
+        # remove all the commands from the module
         for cmd in self.all_commands.copy().values():
-            if _is_submodule(lib_name, cmd.module):
+            if cmd.module is not None and _is_submodule(lib_name, cmd.module):
                 if isinstance(cmd, GroupMixin):
                     cmd.recursively_remove_all_commands()
                 self.remove_command(cmd.name)
 
-        # then remove all the listeners from the module
+        # remove all the listeners from the module
         for event_list in self.extra_events.copy().values():
             remove = []
             for index, event in enumerate(event_list):
-                if _is_submodule(lib_name, event.__module__):
+                if event.__module__ is not None and _is_submodule(lib_name, event.__module__):
                     remove.append(index)
 
             for index in reversed(remove):
@@ -756,7 +758,7 @@ class BotBase(GroupMixin):
         else:
             try:
                 func(self)
-            except:
+            except Exception:
                 pass
         finally:
             # finally remove the import..
@@ -808,7 +810,7 @@ class BotBase(GroupMixin):
         return ret
 
     async def get_context(self, message, *, cls=Context):
-        """|coro|
+        r"""|coro|
 
         Returns the invocation context from the message.
 
@@ -892,10 +894,10 @@ class BotBase(GroupMixin):
         if ctx.command is not None:
             self.dispatch('command', ctx)
             try:
-                if (await self.can_run(ctx, call_once=True)):
+                if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
-            except CommandError as e:
-                await ctx.command.dispatch_error(ctx, e)
+            except CommandError as exc:
+                await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
@@ -916,11 +918,17 @@ class BotBase(GroupMixin):
         This is built using other low level tools, and is equivalent to a
         call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
+        This also checks if the message's author is a bot and doesn't
+        call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
+
         Parameters
         -----------
-        message : discord.Message
+        message: :class:`discord.Message`
             The message to process commands for.
         """
+        if message.author.bot:
+            return
+
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 

@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-
 from collections import namedtuple, defaultdict
 
 from . import utils
@@ -36,7 +35,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter
+from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
 from .utils import valid_icon_size
 from .user import User
@@ -75,8 +74,6 @@ class Guild(Hashable):
     ----------
     name: :class:`str`
         The guild name.
-    roles
-        A :class:`list` of :class:`Role` that the guild has available.
     emojis
         A :class:`tuple` of :class:`Emoji` that the guild owns.
     region: :class:`VoiceRegion`
@@ -106,6 +103,8 @@ class Guild(Hashable):
         The guild's verification level.
     explicit_content_filter: :class:`ContentFilter`
         The guild's explicit content filter.
+    default_notifications: :class:`NotificationLevel`
+        The guild's notification settings.
     features: List[:class:`str`]
         A list of features that the guild has. They are currently as follows:
 
@@ -121,10 +120,10 @@ class Guild(Hashable):
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'unavailable', 'name', 'region', '_state',
-                 '_default_role', 'roles', '_member_count', '_large',
+                 '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', )
+                 '_voice_states', '_system_channel_id', 'default_notifications')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -181,20 +180,22 @@ class Guild(Hashable):
         # its position because it's stuck at position 0. Luckily x += False
         # is equivalent to adding 0. So we cast the position to a bool and
         # increment it.
-        for r in self.roles:
-            r.position += bool(r.position)
+        for r in self._roles.values():
+            r.position += (not r.is_default())
 
-        self.roles.append(role)
+        self._roles[role.id] = role
 
-    def _remove_role(self, role):
-        # this raises ValueError if it fails..
-        self.roles.remove(role)
+    def _remove_role(self, role_id):
+        # this raises KeyError if it fails..
+        role = self._roles.pop(role_id)
 
         # since it didn't, we can change the positions now
         # basically the same as above except we only decrement
         # the position if we're above the role we deleted.
-        for r in self.roles:
+        for r in self._roles.values():
             r.position -= r.position > role.position
+
+        return role
 
     def _from_data(self, guild):
         # according to Stan, this is always available even if the guild is unavailable
@@ -206,20 +207,26 @@ class Guild(Hashable):
         self.name = guild.get('name')
         self.region = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
+        self.default_notifications = try_enum(NotificationLevel, guild.get('default_message_notifications'))
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
-        self.roles = [Role(guild=self, data=r, state=self._state) for r in guild.get('roles', [])]
+        self._roles = {}
+        state = self._state # speed up attribute access
+        for r in guild.get('roles', []):
+            role = Role(guild=self, data=r, state=state)
+            self._roles[role.id] = role
+
         self.mfa_level = guild.get('mfa_level')
-        self.emojis = tuple(map(lambda d: self._state.store_emoji(self, d), guild.get('emojis', [])))
+        self.emojis = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
 
         for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=self._state)
+            member = Member(data=mdata, guild=self, state=state)
             self._add_member(member)
 
         self._sync(guild)
@@ -237,12 +244,12 @@ class Guild(Hashable):
         except KeyError:
             pass
 
+        empty_tuple = tuple()
         for presence in data.get('presences', []):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
-                member.status = try_enum(Status, presence['status'])
-                member.activity = create_activity(presence.get('game'))
+                member._presence_update(presence, empty_tuple)
 
         if 'channels' in data:
             channels = data['channels']
@@ -370,10 +377,23 @@ class Guild(Hashable):
         """Returns a :class:`Member` with the given ID. If not found, returns None."""
         return self._members.get(user_id)
 
+    @property
+    def roles(self):
+        """Returns a :class:`list` of the guild's roles in hierarchy order.
+
+        The first element of this list will be the lowest role in the
+        hierarchy.
+        """
+        return sorted(self._roles.values())
+
+    def get_role(self, role_id):
+        """Returns a :class:`Role` with the given ID. If not found, returns None."""
+        return self._roles.get(role_id)
+
     @utils.cached_slot_property('_default_role')
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_default(), self.roles)
+        return utils.find(lambda r: r.is_default(), self._roles.values())
 
     @property
     def owner(self):
@@ -386,10 +406,10 @@ class Guild(Hashable):
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """Returns a friendly URL version of the guild's icon. Returns and empty string if it has no icon.
+        """Returns a friendly URL version of the guild's icon. Returns an empty string if it has no icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 1024.
+        size must be a power of 2 between 16 and 2048.
 
         Parameters
         -----------
@@ -409,7 +429,7 @@ class Guild(Hashable):
             Bad image format passed to ``format`` or invalid ``size``.
         """
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -421,9 +441,40 @@ class Guild(Hashable):
     @property
     def splash_url(self):
         """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
+        return self.splash_url_as()
+
+    def splash_url_as(self, *, format='webp', size=2048):
+        """Returns a friendly URL version of the guild's invite splash. Returns an empty string if it has no splash.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
+        size must be a power of 2 between 16 and 2048.
+
+        Parameters
+        -----------
+        format: str
+            The format to attempt to convert the splash to.
+        size: int
+            The size of the image to display.
+
+        Returns
+        --------
+        str
+            The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+        """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
         if self.splash is None:
             return ''
-        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(self)
+
+        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.{1}?size={2}'.format(self, format, size)
 
     @property
     def member_count(self):
@@ -457,15 +508,6 @@ class Guild(Hashable):
     def created_at(self):
         """Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
-
-    @property
-    def role_hierarchy(self):
-        """Returns the guild's roles in the order of the hierarchy.
-
-        The first element of this list will be the highest role in the
-        hierarchy.
-        """
-        return sorted(self.roles, reverse=True)
 
     def get_member_named(self, name):
         """Returns the first member found that matches the name provided.
@@ -688,10 +730,10 @@ class Guild(Hashable):
         name: str
             The new name of the guild.
         icon: bytes
-            A *bytes-like* object representing the icon. Only PNG/JPEG supported.
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
         splash: bytes
-            A *bytes-like* object representing the invite splash.
+            A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. Only available for partnered guilds with ``INVITE_SPLASH``
             feature.
@@ -706,6 +748,8 @@ class Guild(Hashable):
             be owner of the guild to do this.
         verification_level: :class:`VerificationLevel`
             The new verification level for the guild.
+        default_notifications: :class:`NotificationLevel`
+            The new default notification level for the guild.
         vanity_code: str
             The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
@@ -755,6 +799,13 @@ class Guild(Hashable):
 
         fields['icon'] = icon
         fields['splash'] = splash
+
+        try:
+            default_message_notifications = int(fields.pop('default_notifications'))
+        except (TypeError, KeyError):
+            pass
+        else:
+            fields['default_message_notifications'] = default_message_notifications
 
         try:
             afk_channel = fields.pop('afk_channel')
@@ -986,25 +1037,26 @@ class Guild(Hashable):
 
         return result
 
-    async def create_custom_emoji(self, *, name, image, reason=None):
-        """|coro|
+    async def create_custom_emoji(self, *, name, image, roles=None, reason=None):
+        r"""|coro|
 
         Creates a custom :class:`Emoji` for the guild.
 
-        There is currently a limit of 50 local emotes per guild.
+        There is currently a limit of 50 static and animated emojis respectively per guild,
+        unless the guild has the ``MORE_EMOJI`` feature which extends the limit to 200.
 
         You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
-
-        Note that bot accounts can only edit and delete emojis they have created.
 
         Parameters
         -----------
         name: str
             The emoji name. Must be at least 2 characters.
         image: bytes
-            The *bytes-like* object representing the image data to use.
-            Only JPG and PNG images are supported.
+            The :term:`py:bytes-like object` representing the image data to use.
+            Only JPG, PNG and GIF images are supported.
+        roles: Optional[list[:class:`Role`]]
+            A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
         reason: Optional[str]
             The reason for creating this emoji. Shows up on the audit log.
 
@@ -1022,7 +1074,9 @@ class Guild(Hashable):
         """
 
         img = utils._bytes_to_base64_data(image)
-        data = await self._state.http.create_custom_emoji(self.id, name, img, reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+        data = await self._state.http.create_custom_emoji(self.id, name, img, roles=roles, reason=reason)
         return self._state.store_emoji(self, data)
 
     async def create_role(self, *, reason=None, **fields):

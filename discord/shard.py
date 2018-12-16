@@ -24,17 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+import itertools
+import logging
+
+import websockets
+
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
 from .errors import ClientException, InvalidArgument
 from . import utils
 from .enums import Status
-
-import asyncio
-import logging
-import websockets
-import itertools
 
 log = logging.getLogger(__name__)
 
@@ -74,12 +75,10 @@ class Shard:
     async def poll(self):
         try:
             await self.ws.poll_event()
-        except ResumeWebSocket as e:
+        except ResumeWebSocket:
             log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
-            coro = DiscordWebSocket.from_client(self._client, resume=True,
-                                                              shard_id=self.id,
-                                                              session=self.ws.session_id,
-                                                              sequence=self.ws.sequence)
+            coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
+                                                session=self.ws.session_id, sequence=self.ws.sequence)
             self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     def get_future(self):
@@ -126,7 +125,8 @@ class AutoShardedClient(Client):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
         self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
-                                                      syncer=self._syncer, http=self.http, loop=self.loop, **kwargs)
+                                                      handlers=self._handlers, syncer=self._syncer,
+                                                      http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
@@ -178,7 +178,7 @@ class AutoShardedClient(Client):
         return [(shard_id, shard.ws.latency) for shard_id, shard in self.shards.items()]
 
     async def request_offline_members(self, *guilds):
-        """|coro|
+        r"""|coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`Guild.members` cache. This function is usually not
@@ -212,10 +212,10 @@ class AutoShardedClient(Client):
         try:
             coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
             ws = await asyncio.wait_for(coro, loop=self.loop, timeout=180.0)
-        except Exception as e:
+        except Exception:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0, loop=self.loop)
-            return (await self.launch_shard(gateway, shard_id))
+            return await self.launch_shard(gateway, shard_id)
 
         ws.token = self.http.token
         ws._connection = self._connection
@@ -232,7 +232,7 @@ class AutoShardedClient(Client):
         except asyncio.TimeoutError:
             log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0, loop=self.loop)
-            return (await self.launch_shard(gateway, shard_id))
+            return await self.launch_shard(gateway, shard_id)
 
         # keep reading the shard while others connect
         self.shards[shard_id] = ret = Shard(ws, self)
@@ -265,7 +265,7 @@ class AutoShardedClient(Client):
 
         while True:
             pollers = [shard.get_future() for shard in self.shards.values()]
-            done, pending = await asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
+            done, _ = await asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
             for f in done:
                 # we wanna re-raise to the main Client.connect handler if applicable
                 f.result()
@@ -283,11 +283,13 @@ class AutoShardedClient(Client):
         for vc in self.voice_clients:
             try:
                 await vc.disconnect()
-            except:
+            except Exception:
                 pass
 
         to_close = [shard.ws.close() for shard in self.shards.values()]
-        await asyncio.wait(to_close, loop=self.loop)
+        if to_close:
+            await asyncio.wait(to_close, loop=self.loop)
+
         await self.http.close()
 
     async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
@@ -351,5 +353,5 @@ class AutoShardedClient(Client):
             if me is None:
                 continue
 
-            me.activity = activity
+            me.activities = (activity,)
             me.status = status_enum

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -23,6 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import time
+import asyncio
+
+import discord.abc
 from .permissions import Permissions
 from .enums import ChannelType, try_enum
 from .mixins import Hashable
@@ -30,12 +35,7 @@ from . import utils
 from .errors import ClientException, NoMoreItems
 from .webhook import Webhook
 
-import discord.abc
-
-import time
-import asyncio
-
-__all__ = ('TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory')
+__all__ = ['TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory']
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -77,10 +77,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of `0` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
     """
 
-    __slots__ = ( 'name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                  'category_id', 'position', '_overwrites' )
+    __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
+                 'category_id', 'position', 'slowmode_delay', '_overwrites')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -97,6 +102,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.topic = data.get('topic')
         self.position = data['position']
         self.nsfw = data.get('nsfw', False)
+        # Does this need coercion into `int`? No idea yet.
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._fill_overwrites(data)
 
     async def _get_channel(self):
@@ -132,21 +139,24 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new channel name.
-        topic: str
+        topic: :class:`str`
             The new channel's topic.
-        position: int
+        position: :class:`int`
             The new channel's position.
-        nsfw: bool
+        nsfw: :class:`bool`
             To mark the channel as NSFW or not.
-        sync_permissions: bool
+        sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
-        reason: Optional[str]
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel. A value of
+            `0` disables slowmode. The maximum value possible is `120`.
+        reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
 
         Raises
@@ -340,7 +350,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name=None, avatar=None):
+    async def create_webhook(self, *, name, avatar=None):
         """|coro|
 
         Creates a webhook for this channel.
@@ -349,10 +359,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -------------
-        name: Optional[str]
+        name: str
             The webhook's name.
         avatar: Optional[bytes]
-            A *bytes-like* object representing the webhook's default avatar.
+            A :term:`py:bytes-like object` representing the webhook's default avatar.
             This operates similarly to :meth:`~ClientUser.edit`.
 
         Raises
@@ -371,10 +381,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if avatar is not None:
             avatar = utils._bytes_to_base64_data(avatar)
 
-        if name is not None:
-            name = str(name)
-
-        data = await self._state.http.create_webhook(self.id, name=name, avatar=avatar)
+        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar)
         return Webhook.from_state(data, state=self._state)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
@@ -417,8 +424,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'bitrate',  'user_limit',
-                 '_state', 'position', '_overwrites', 'category_id' )
+    __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
+                 '_state', 'position', '_overwrites', 'category_id')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -453,6 +460,19 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                 if member is not None:
                     ret.append(member)
         return ret
+    
+    def permissions_for(self, member):
+        base = super().permissions_for(member)
+
+        # voice channels cannot be edited by people who can't connect to them
+        # It also implicitly denies all other voice perms
+        if not base.connect:
+            denied = Permissions.voice()
+            denied.update(manage_channels=True, manage_roles=True)
+            base.value &= ~denied.value
+        return base
+
+    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -810,7 +830,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return base
 
     async def add_recipients(self, *recipients):
-        """|coro|
+        r"""|coro|
 
         Adds recipients to this group.
 
@@ -837,7 +857,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             await req(self.id, recipient.id)
 
     async def remove_recipients(self, *recipients):
-        """|coro|
+        r"""|coro|
 
         Removes recipients from this group.
 
@@ -869,7 +889,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             The new name to change the group to.
             Could be ``None`` to remove the name.
         icon: Optional[bytes]
-            A bytes-like object representing the new icon.
+            A :term:`py:bytes-like object` representing the new icon.
             Could be ``None`` to remove the icon.
 
         Raises

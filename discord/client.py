@@ -24,6 +24,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
+from collections import namedtuple
+import logging
+import re
+import signal
+import sys
+import traceback
+
+import aiohttp
+import websockets
+
 from .user import User, Profile
 from .invite import Invite
 from .object import Object
@@ -39,18 +50,10 @@ from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 
-import asyncio
-import aiohttp
-import websockets
-
-import logging, traceback
-import sys, re
-import signal
-from collections import namedtuple
-
 log = logging.getLogger(__name__)
 
-AppInfo = namedtuple('AppInfo', 'id name description icon owner')
+AppInfo = namedtuple('AppInfo',
+                     'id name description rpc_origins bot_public bot_require_code_grant icon owner')
 
 def app_info_icon_url(self):
     """Retrieves the application's icon_url if it exists. Empty string otherwise."""
@@ -62,7 +65,7 @@ def app_info_icon_url(self):
 AppInfo.icon_url = property(app_info_icon_url)
 
 class Client:
-    """Represents a client connection that connects to Discord.
+    r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
     A number of options can be passed to the :class:`Client`.
@@ -124,7 +127,11 @@ class Client:
         proxy_auth = options.pop('proxy_auth', None)
         self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+        self._handlers = {
+            'ready': self._handle_ready
+        }
+
+        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
@@ -158,14 +165,14 @@ class Client:
 
         await self.ws.send_as_json(payload)
 
-    def handle_ready(self):
+    def _handle_ready(self):
         self._ready.set()
 
     def _resolve_invite(self, invite):
         if isinstance(invite, Invite) or isinstance(invite, Object):
             return invite.id
         else:
-            rx = r'(?:https?\:\/\/)?discord\.gg\/(.+)'
+            rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
             m = re.match(rx, invite)
             if m:
                 return m.group(1)
@@ -229,7 +236,6 @@ class Client:
     def dispatch(self, event, *args, **kwargs):
         log.debug('Dispatching event %s', event)
         method = 'on_' + event
-        handler = 'handle_' + event
 
         listeners = self._listeners.get(event)
         if listeners:
@@ -241,8 +247,8 @@ class Client:
 
                 try:
                     result = condition(*args)
-                except Exception as e:
-                    future.set_exception(e)
+                except Exception as exc:
+                    future.set_exception(exc)
                     removed.append(i)
                 else:
                     if result:
@@ -259,13 +265,6 @@ class Client:
             else:
                 for idx in reversed(removed):
                     del listeners[idx]
-
-        try:
-            actual_handler = getattr(self, handler)
-        except AttributeError:
-            pass
-        else:
-            actual_handler(*args, **kwargs)
 
         try:
             coro = getattr(self, method)
@@ -287,7 +286,7 @@ class Client:
         traceback.print_exc()
 
     async def request_offline_members(self, *guilds):
-        """|coro|
+        r"""|coro|
 
         Requests previously offline members from the guild to be filled up
         into the :attr:`Guild.members` cache. This function is usually not
@@ -322,6 +321,13 @@ class Client:
         Logs in the client with the specified credentials.
 
         This function can be used in two different ways.
+
+        .. warning::
+
+            Logging on with a user token is against the Discord
+            `Terms of Service <https://support.discordapp.com/hc/en-us/articles/115002192352>`_
+            and doing so might potentially get your account banned.
+            Use this at your own risk.
 
         Parameters
         -----------
@@ -359,12 +365,10 @@ class Client:
         while True:
             try:
                 await self.ws.poll_event()
-            except ResumeWebSocket as e:
+            except ResumeWebSocket:
                 log.info('Got a request to RESUME the websocket.')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id,
-                                                          session=self.ws.session_id,
-                                                          sequence=self.ws.sequence,
-                                                          resume=True)
+                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
+                                                    sequence=self.ws.sequence, resume=True)
                 self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     async def connect(self, *, reconnect=True):
@@ -403,11 +407,11 @@ class Client:
                     aiohttp.ClientError,
                     asyncio.TimeoutError,
                     websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as e:
+                    websockets.WebSocketProtocolError) as exc:
 
                 if not reconnect:
                     await self.close()
-                    if isinstance(e, ConnectionClosed) and e.code == 1000:
+                    if isinstance(exc, ConnectionClosed) and exc.code == 1000:
                         # clean close, don't re-raise this
                         return
                     raise
@@ -419,8 +423,8 @@ class Client:
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
                 # regardless and rely on is_closed instead
-                if isinstance(e, ConnectionClosed):
-                    if e.code != 1000:
+                if isinstance(exc, ConnectionClosed):
+                    if exc.code != 1000:
                         await self.close()
                         raise
 
@@ -441,7 +445,7 @@ class Client:
         for voice in self.voice_clients:
             try:
                 await voice.disconnect()
-            except:
+            except Exception:
                 # if an error happens during disconnects, disregard it.
                 pass
 
@@ -486,7 +490,7 @@ class Client:
         def _silence_gathered(fut):
             try:
                 fut.result()
-            except:
+            except Exception:
                 pass
             finally:
                 loop.stop()
@@ -513,7 +517,7 @@ class Client:
 
         try:
             return task.result() # suppress unused task warning
-        except:
+        except Exception:
             return None
 
     def run(self, *args, **kwargs):
@@ -763,19 +767,12 @@ class Client:
 
         The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
 
-        Examples
+        Example
         ---------
 
-        Using the basic :meth:`event` decorator: ::
-
+		::
             @client.event
             async def on_ready():
-                print('Ready!')
-
-        Saving characters by using the :meth:`async_event` decorator: ::
-
-            @client.async_event
-            def on_ready():
                 print('Ready!')
 
         """
@@ -836,7 +833,7 @@ class Client:
             if me is None:
                 continue
 
-            me.activity = activity
+            me.activities = (activity,)
             me.status = status_enum
 
     # Guild stuff
@@ -846,7 +843,7 @@ class Client:
 
         Creates a :class:`Guild`.
 
-        Bot accounts generally are not allowed to create servers.
+        Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
         ----------
@@ -856,7 +853,7 @@ class Client:
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
         icon: bytes
-            The *bytes-like* object representing the icon. See :meth:`~ClientUser.edit`
+            The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
         Raises
@@ -962,8 +959,12 @@ class Client:
             Retrieving the information failed somehow.
         """
         data = await self.http.application_info()
+        if 'rpc_origins' not in data:
+            data['rpc_origins'] = None
         return AppInfo(id=int(data['id']), name=data['name'],
                        description=data['description'], icon=data['icon'],
+                       rpc_origins=data['rpc_origins'], bot_public=data['bot_public'],
+                       bot_require_code_grant=data['bot_require_code_grant'],
                        owner=User(state=self._connection, data=data['owner']))
 
     async def get_user_info(self, user_id):

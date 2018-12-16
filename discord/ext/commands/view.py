@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
@@ -111,12 +112,10 @@ class StringView:
 # map from opening quotes to closing quotes
 _quotes = {
     '"': '"',
-    "«": "»",
     "‘": "’",
     "‚": "‛",
     "“": "”",
     "„": "‟",
-    "‹": "›",
     "⹂": "⹂",
     "「": "」",
     "『": "』",

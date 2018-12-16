@@ -25,19 +25,21 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-import inspect
-import discord
 import functools
+import inspect
+import typing
+
+import discord
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
 from .view import quoted_word
 from . import converter as converters
 
-__all__ = [ 'Command', 'Group', 'GroupMixin', 'command', 'group',
-            'has_role', 'has_permissions', 'has_any_role', 'check',
-            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-            'cooldown', 'guild_only', 'is_owner', 'is_nsfw', ]
+__all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
+           'has_role', 'has_permissions', 'has_any_role', 'check',
+           'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
+           'cooldown', 'guild_only', 'is_owner', 'is_nsfw']
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -48,8 +50,8 @@ def wrap_callback(coro):
             raise
         except asyncio.CancelledError:
             return
-        except Exception as e:
-            raise CommandInvokeError(e) from e
+        except Exception as exc:
+            raise CommandInvokeError(exc) from exc
         return ret
     return wrapped
 
@@ -64,9 +66,9 @@ def hooked_wrapped_callback(command, ctx, coro):
         except asyncio.CancelledError:
             ctx.command_failed = True
             return
-        except Exception as e:
+        except Exception as exc:
             ctx.command_failed = True
-            raise CommandInvokeError(e) from e
+            raise CommandInvokeError(exc) from exc
         finally:
             await command.call_after_hooks(ctx)
         return ret
@@ -101,7 +103,7 @@ class _CaseInsensitiveDict(dict):
         super().__setitem__(k.lower(), v)
 
 class Command:
-    """A class that implements the protocol for a bot text command.
+    r"""A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
     decorator or functional interface.
@@ -127,7 +129,7 @@ class Command:
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
     parent: Optional[command]
-        The parent command that this command belongs to. ``None`` is there
+        The parent command that this command belongs to. ``None`` if there
         isn't one.
     checks
         A list of predicates that verifies if the command could be executed
@@ -172,16 +174,37 @@ class Command:
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
-        signature = inspect.signature(callback)
-        self.params = signature.parameters.copy()
+
         self.checks = kwargs.get('checks', [])
-        self.module = callback.__module__
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.instance = None
         self.parent = None
         self._buckets = CooldownMapping(kwargs.get('cooldown'))
         self._before_invoke = None
         self._after_invoke = None
+
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, function):
+        self._callback = function
+        self.module = function.__module__
+
+        signature = inspect.signature(function)
+        self.params = signature.parameters.copy()
+
+        # PEP-563 allows postponing evaluation of annotations with a __future__
+        # import. When postponed, Parameter.annotation will be a string and must
+        # be replaced with the real value for the converters to work later on
+        for key, value in self.params.items():
+            if isinstance(value.annotation, str):
+                self.params[key] = value = value.replace(annotation=eval(value.annotation, function.__globals__))
+
+            # fail early for when someone passes an unparameterized Greedy type
+            if value.annotation is converters.Greedy:
+                raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
     async def dispatch_error(self, ctx, error):
         ctx.command_failed = True
@@ -212,33 +235,77 @@ class Command:
             self.instance = instance
         return self
 
-    async def do_conversion(self, ctx, converter, argument):
+    async def _actual_conversion(self, ctx, converter, argument, param):
         if converter is bool:
             return _convert_to_bool(argument)
 
         try:
             module = converter.__module__
-        except:
+        except AttributeError:
             pass
         else:
             if module.startswith('discord.') and not module.endswith('converter'):
                 converter = getattr(converters, converter.__name__ + 'Converter')
 
-        if inspect.isclass(converter):
-            if issubclass(converter, converters.Converter):
-                instance = converter()
-                ret = await instance.convert(ctx, argument)
-                return ret
-            else:
-                method = getattr(converter, 'convert', None)
-                if method is not None and inspect.ismethod(method):
-                    ret = await method(ctx, argument)
+        try:
+            if inspect.isclass(converter):
+                if issubclass(converter, converters.Converter):
+                    instance = converter()
+                    ret = await instance.convert(ctx, argument)
                     return ret
-        elif isinstance(converter, converters.Converter):
-            ret = await converter.convert(ctx, argument)
-            return ret
+                else:
+                    method = getattr(converter, 'convert', None)
+                    if method is not None and inspect.ismethod(method):
+                        ret = await method(ctx, argument)
+                        return ret
+            elif isinstance(converter, converters.Converter):
+                ret = await converter.convert(ctx, argument)
+                return ret
+        except CommandError:
+            raise
+        except Exception as exc:
+            raise ConversionError(converter, exc) from exc
 
-        return converter(argument)
+        try:
+            return converter(argument)
+        except CommandError:
+            raise
+        except Exception as exc:
+            try:
+                name = converter.__name__
+            except AttributeError:
+                name = converter.__class__.__name__
+
+            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from exc
+
+    async def do_conversion(self, ctx, converter, argument, param):
+        try:
+            origin = converter.__origin__
+        except AttributeError:
+            pass
+        else:
+            if origin is typing.Union:
+                errors = []
+                _NoneType = type(None)
+                for conv in converter.__args__:
+                    # if we got to this part in the code, then the previous conversions have failed
+                    # so we should just undo the view, return the default, and allow parsing to continue
+                    # with the other parameters
+                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                        ctx.view.undo()
+                        return None if param.default is param.empty else param.default
+
+                    try:
+                        value = await self._actual_conversion(ctx, conv, argument, param)
+                    except CommandError as exc:
+                        errors.append(exc)
+                    else:
+                        return value
+
+                # if we're  here, then we failed all the converters
+                raise BadUnionArgument(param, converter.__args__, errors)
+
+        return await self._actual_conversion(ctx, converter, argument, param)
 
     def _get_converter(self, param):
         converter = param.annotation
@@ -256,6 +323,19 @@ class Command:
         view = ctx.view
         view.skip_ws()
 
+        # The greedy converter is simple -- it keeps going until it fails in which case,
+        # it undos the view ready for the next parameter to use instead
+        if type(converter) is converters._Greedy:
+            if param.kind == param.POSITIONAL_OR_KEYWORD:
+                return await self._transform_greedy_pos(ctx, param, required, converter.converter)
+            elif param.kind == param.VAR_POSITIONAL:
+                return await self._transform_greedy_var_pos(ctx, param, converter.converter)
+            else:
+                # if we're here, then it's a KEYWORD_ONLY param type
+                # since this is mostly useless, we'll helpfully transform Greedy[X]
+                # into just X and do the parsing that way.
+                converter = converter.converter
+
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError() # break the loop
@@ -263,22 +343,51 @@ class Command:
                 raise MissingRequiredArgument(param)
             return param.default
 
+        previous = view.index
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
             argument = quoted_word(view)
+        view.previous = previous
 
-        try:
-            return (await self.do_conversion(ctx, converter, argument))
-        except CommandError as e:
-            raise e
-        except Exception as e:
+        return await self.do_conversion(ctx, converter, argument, param)
+
+    async def _transform_greedy_pos(self, ctx, param, required, converter):
+        view = ctx.view
+        result = []
+        while not view.eof:
+            # for use with a manual undo
+            previous = view.index
+
+            # parsing errors get propagated
+            view.skip_ws()
+            argument = quoted_word(view)
             try:
-                name = converter.__name__
-            except AttributeError:
-                name = converter.__class__.__name__
+                value = await self.do_conversion(ctx, converter, argument, param)
+            except CommandError:
+                if not result:
+                    if required:
+                        raise
+                    else:
+                        view.index = previous
+                        return param.default
+                view.index = previous
+                break
+            else:
+                result.append(value)
+        return result
 
-            raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from e
+    async def _transform_greedy_var_pos(self, ctx, param, converter):
+        view = ctx.view
+        previous = view.index
+        argument = quoted_word(view)
+        try:
+            value = await self.do_conversion(ctx, converter, argument, param)
+        except CommandError:
+            view.index = previous
+            raise RuntimeError() from None # break loop
+        else:
+            return value
 
     @property
     def clean_params(self):
@@ -294,7 +403,7 @@ class Command:
         try:
             # first/second parameter is context
             result.popitem(last=False)
-        except Exception as e:
+        except Exception:
             raise ValueError('Missing context parameter') from None
 
         return result
@@ -386,7 +495,7 @@ class Command:
                 if self.rest_is_raw:
                     converter = self._get_converter(param)
                     argument = view.read_rest()
-                    kwargs[name] = await self.do_conversion(ctx, converter, argument)
+                    kwargs[name] = await self.do_conversion(ctx, converter, argument, param)
                 else:
                     kwargs[name] = await self.transform(ctx, param)
                 break
@@ -406,7 +515,7 @@ class Command:
         if not self.enabled:
             raise DisabledCommand('{0.name} command is disabled'.format(self))
 
-        if not (await self.can_run(ctx)):
+        if not await self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
     async def call_before_hooks(self, ctx):
@@ -568,7 +677,7 @@ class Command:
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
@@ -595,7 +704,7 @@ class Command:
             The coroutine is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
@@ -685,7 +794,7 @@ class Command:
         ctx.command = self
 
         try:
-            if not (await ctx.bot.can_run(ctx)):
+            if not await ctx.bot.can_run(ctx):
                 raise CheckFailure('The global check functions for command {0.qualified_name} failed.'.format(self))
 
             cog = self.instance
@@ -704,7 +813,7 @@ class Command:
                 # since we have no checks, then we just return True.
                 return True
 
-            return (await discord.utils.async_all(predicate(ctx) for predicate in predicates))
+            return await discord.utils.async_all(predicate(ctx) for predicate in predicates)
         finally:
             ctx.command = original
 
@@ -1034,7 +1143,7 @@ def group(name=None, **attrs):
     return command(name=name, cls=Group, **attrs)
 
 def check(predicate):
-    """A decorator that adds a check to the :class:`.Command` or its
+    r"""A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
     These checks should be predicates that take in a single parameter taking
@@ -1099,42 +1208,47 @@ def check(predicate):
         return func
     return decorator
 
-def has_role(name):
+def has_role(item):
     """A :func:`.check` that is added that checks if the member invoking the
-    command has the role specified via the name specified.
+    command has the role specified via the name or ID specified.
 
-    The name is case sensitive and must be exact. No normalisation is done in
-    the input.
+    If a string is specified, you must give the exact name of the role, including
+    caps and spelling.
+
+    If an integer is specified, you must give the exact snowflake ID of the role.
 
     If the message is invoked in a private message context then the check will
     return ``False``.
 
     Parameters
     -----------
-    name: str
-        The name of the role to check.
+    item: Union[int, str]
+        The name or ID of the role to check.
     """
 
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return False
 
-        role = discord.utils.get(ctx.author.roles, name=name)
+        if isinstance(item, int):
+            role = discord.utils.get(ctx.author.roles, id=item)
+        else:
+            role = discord.utils.get(ctx.author.roles, name=item)
         return role is not None
 
     return check(predicate)
 
-def has_any_role(*names):
-    """A :func:`.check` that is added that checks if the member invoking the
+def has_any_role(*items):
+    r"""A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
     one out of the three roles specified, then this check will return `True`.
 
-    Similar to :func:`.has_role`\, the names passed in must be exact.
+    Similar to :func:`.has_role`\, the names or IDs passed in must be exact.
 
     Parameters
     -----------
-    names
-        An argument list of names to check that the member has roles wise.
+    items
+        An argument list of names or IDs to check that the member has roles wise.
 
     Example
     --------
@@ -1142,7 +1256,7 @@ def has_any_role(*names):
     .. code-block:: python3
 
         @bot.command()
-        @commands.has_any_role('Library Devs', 'Moderators')
+        @commands.has_any_role('Library Devs', 'Moderators', 492212595072434186)
         async def cool(ctx):
             await ctx.send('You are cool indeed')
     """
@@ -1151,7 +1265,7 @@ def has_any_role(*names):
             return False
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
-        return any(getter(name=name) is not None for name in names)
+        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
     return check(predicate)
 
 def has_permissions(**perms):
@@ -1193,7 +1307,7 @@ def has_permissions(**perms):
 
     return check(predicate)
 
-def bot_has_role(name):
+def bot_has_role(item):
     """Similar to :func:`.has_role` except checks if the bot itself has the
     role.
     """
@@ -1203,11 +1317,14 @@ def bot_has_role(name):
         if not isinstance(ch, discord.abc.GuildChannel):
             return False
         me = ch.guild.me
-        role = discord.utils.get(me.roles, name=name)
+        if isinstance(item, int):
+            role = discord.utils.get(me.roles, id=item)
+        else:
+            role = discord.utils.get(me.roles, name=item)
         return role is not None
     return check(predicate)
 
-def bot_has_any_role(*names):
+def bot_has_any_role(*items):
     """Similar to :func:`.has_any_role` except checks if the bot itself has
     any of the roles listed.
     """
@@ -1217,7 +1334,7 @@ def bot_has_any_role(*names):
             return False
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
-        return any(getter(name=name) is not None for name in names)
+        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
     return check(predicate)
 
 def bot_has_permissions(**perms):
@@ -1268,7 +1385,7 @@ def is_owner():
     """
 
     async def predicate(ctx):
-        if not (await ctx.bot.is_owner(ctx.author)):
+        if not await ctx.bot.is_owner(ctx.author):
             raise NotOwner('You do not own this bot.')
         return True
 
@@ -1294,6 +1411,8 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.user`` for a per-user basis.
     - ``BucketType.guild`` for a per-guild basis.
     - ``BucketType.channel`` for a per-channel basis.
+    - ``BucketType.member`` for a per-member basis.
+    - ``BucketType.category`` for a per-category basis.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.

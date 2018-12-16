@@ -24,19 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import discord
-import asyncio
 import re
 import inspect
 
-from .errors import BadArgument, NoPrivateMessage
-from .view import StringView
+import discord
 
-__all__ = [ 'Converter', 'MemberConverter', 'UserConverter',
-            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
-            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
-            'IDConverter', 'clean_content' ]
+from .errors import BadArgument, NoPrivateMessage
+
+__all__ = ['Converter', 'MemberConverter', 'UserConverter',
+           'TextChannelConverter', 'InviteConverter', 'RoleConverter',
+           'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
+           'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
+           'IDConverter', 'clean_content', 'Greedy']
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -99,10 +98,9 @@ class MemberConverter(IDConverter):
     """
 
     async def convert(self, ctx, argument):
-        message = ctx.message
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
-        guild = message.guild
+        guild = ctx.guild
         result = None
         if match is None:
             # not a mention...
@@ -317,13 +315,16 @@ class RoleConverter(IDConverter):
     3. Lookup by name
     """
     async def convert(self, ctx, argument):
-        guild = ctx.message.guild
+        guild = ctx.guild
         if not guild:
             raise NoPrivateMessage()
 
         match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
-        params = dict(id=int(match.group(1))) if match else dict(name=argument)
-        result = discord.utils.get(guild.roles, **params)
+        if match:
+            result = guild.get_role(int(match.group(1)))
+        else:
+            result = discord.utils.get(guild._roles.values(), name=argument)
+
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(argument))
         return result
@@ -342,8 +343,8 @@ class InviteConverter(Converter):
         try:
             invite = await ctx.bot.get_invite(argument)
             return invite
-        except Exception as e:
-            raise BadArgument('Invite is invalid or expired') from e
+        except Exception as exc:
+            raise BadArgument('Invite is invalid or expired') from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.
@@ -456,8 +457,8 @@ class clean_content(Converter):
         )
 
         if ctx.guild:
-            def resolve_role(id, *, _find=discord.utils.find, _roles=ctx.guild.roles):
-                r = _find(lambda x: x.id == id, _roles)
+            def resolve_role(_id, *, _find=ctx.guild.get_role):
+                r = _find(_id)
                 return '@' + r.name if r else '@deleted-role'
 
             transformations.update(
@@ -485,3 +486,26 @@ class clean_content(Converter):
 
         # Completely ensure no mentions escape:
         return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
+
+class _Greedy:
+    __slots__ = ('converter',)
+
+    def __init__(self, *, converter=None):
+        self.converter = converter
+
+    def __getitem__(self, params):
+        if not isinstance(params, tuple):
+            params = (params,)
+        if len(params) != 1:
+            raise TypeError('Greedy[...] only takes a single argument')
+        converter = params[0]
+
+        if not inspect.isclass(converter):
+            raise TypeError('Greedy[...] expects a type.')
+
+        if converter is str or converter is type(None) or converter is _Greedy:
+            raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+
+        return self.__class__(converter=converter)
+
+Greedy = _Greedy()

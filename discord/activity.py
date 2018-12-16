@@ -24,11 +24,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .enums import ActivityType, try_enum
-from .colour import Colour
 import datetime
 
-__all__ = ('Activity', 'Streaming', 'Game', 'Spotify')
+from .enums import ActivityType, try_enum
+from .colour import Colour
+
+__all__ = ['Activity', 'Streaming', 'Game', 'Spotify']
 
 """If curious, this is the current schema for an activity.
 
@@ -512,7 +513,7 @@ class Spotify:
     @property
     def artists(self):
         """List[:class:`str`]: The artists of the song being played."""
-        return self._state.split(';')
+        return self._state.split('; ')
 
     @property
     def artist(self):

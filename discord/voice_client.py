@@ -45,7 +45,11 @@ import logging
 import struct
 import threading
 
-log = logging.getLogger(__name__)
+from . import opus
+from .backoff import ExponentialBackoff
+from .gateway import *
+from .errors import ClientException, ConnectionClosed
+from .player import AudioPlayer, AudioSource
 
 try:
     import nacl.secret
@@ -53,11 +57,8 @@ try:
 except ImportError:
     has_nacl = False
 
-from . import opus
-from .backoff import ExponentialBackoff
-from .gateway import *
-from .errors import ClientException, ConnectionClosed
-from .player import AudioPlayer, AudioSource
+
+log = logging.getLogger(__name__)
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -132,7 +133,6 @@ class VoiceClient:
     async def start_handshake(self):
         log.info('Starting voice handshake...')
 
-        key_id, key_name = self.channel._get_voice_client_key()
         guild_id, channel_id = self.channel._get_voice_state_pair()
         state = self._state
         self.main_ws = ws = state._get_websocket(guild_id)
@@ -143,9 +143,9 @@ class VoiceClient:
 
         try:
             await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout, loop=self.loop)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             await self.terminate_handshake(remove=True)
-            raise e
+            raise
 
         log.info('Voice handshake complete. Endpoint found %s (IP: %s)', self.endpoint, self.endpoint_ip)
 
@@ -178,7 +178,7 @@ class VoiceClient:
         if self.socket:
             try:
                 self.socket.close()
-            except:
+            except Exception:
                 pass
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -225,15 +225,15 @@ class VoiceClient:
         while True:
             try:
                 await self.ws.poll_event()
-            except (ConnectionClosed, asyncio.TimeoutError) as e:
-                if isinstance(e, ConnectionClosed):
-                    if e.code == 1000:
+            except (ConnectionClosed, asyncio.TimeoutError) as exc:
+                if isinstance(exc, ConnectionClosed):
+                    if exc.code == 1000:
                         await self.disconnect()
                         break
 
                 if not reconnect:
                     await self.disconnect()
-                    raise e
+                    raise
 
                 retry = backoff.delay()
                 log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
@@ -393,7 +393,7 @@ class VoiceClient:
         Parameters
         ----------
         data: bytes
-            The *bytes-like object* denoting PCM or Opus voice data.
+            The :term:`py:bytes-like object` denoting PCM or Opus voice data.
         encode: bool
             Indicates if ``data`` should be encoded into Opus.
 

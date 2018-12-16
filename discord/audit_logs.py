@@ -33,6 +33,9 @@ from .invite import Invite
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
 
+def _transform_default_notifications(entry, data):
+    return enums.try_enum(enums.NotificationLevel, data)
+
 def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
@@ -71,7 +74,7 @@ def _transform_overwrites(entry, data):
         ow_type = elem['type']
         ow_id = int(elem['id'])
         if ow_type == 'role':
-            target = utils.find(lambda r: r.id == ow_id, entry.guild.roles)
+            target = entry.guild.get_role(ow_id)
         else:
             target = entry._get_member(ow_id)
 
@@ -94,23 +97,25 @@ class AuditLogDiff:
 
 class AuditLogChanges:
     TRANSFORMERS = {
-        'verification_level':      (None, _transform_verification_level),
-        'explicit_content_filter': (None, _transform_explicit_content_filter),
-        'allow':                   (None, _transform_permissions),
-        'deny':                    (None, _transform_permissions),
-        'permissions':             (None, _transform_permissions),
-        'id':                      (None, _transform_snowflake),
-        'color':                   ('colour', _transform_color),
-        'owner_id':                ('owner', _transform_owner_id),
-        'inviter_id':              ('inviter', _transform_inviter_id),
-        'channel_id':              ('channel', _transform_channel),
-        'afk_channel_id':          ('afk_channel', _transform_channel),
-        'system_channel_id':       ('system_channel', _transform_channel),
-        'widget_channel_id':       ('widget_channel', _transform_channel),
-        'permission_overwrites':   ('overwrites', _transform_overwrites),
-        'splash_hash':             ('splash', None),
-        'icon_hash':               ('icon', None),
-        'avatar_hash':             ('avatar', None),
+        'verification_level':            (None, _transform_verification_level),
+        'explicit_content_filter':       (None, _transform_explicit_content_filter),
+        'allow':                         (None, _transform_permissions),
+        'deny':                          (None, _transform_permissions),
+        'permissions':                   (None, _transform_permissions),
+        'id':                            (None, _transform_snowflake),
+        'color':                         ('colour', _transform_color),
+        'owner_id':                      ('owner', _transform_owner_id),
+        'inviter_id':                    ('inviter', _transform_inviter_id),
+        'channel_id':                    ('channel', _transform_channel),
+        'afk_channel_id':                ('afk_channel', _transform_channel),
+        'system_channel_id':             ('system_channel', _transform_channel),
+        'widget_channel_id':             ('widget_channel', _transform_channel),
+        'permission_overwrites':         ('overwrites', _transform_overwrites),
+        'splash_hash':                   ('splash', None),
+        'icon_hash':                     ('icon', None),
+        'avatar_hash':                   ('avatar', None),
+        'rate_limit_per_user':           ('slowmode_delay', None),
+        'default_message_notifications': ('default_notifications', _transform_default_notifications),
     }
 
     def __init__(self, entry, data):
@@ -163,11 +168,11 @@ class AuditLogChanges:
         setattr(first, 'roles', [])
 
         data = []
-        roles = entry.guild.roles
+        g = entry.guild
 
         for e in elem:
             role_id = int(e['id'])
-            role = utils.find(lambda r: r.id == role_id, roles)
+            role = g.get_role(role_id)
 
             if role is None:
                 role = Object(id=role_id)
@@ -178,7 +183,7 @@ class AuditLogChanges:
         setattr(second, 'roles', data)
 
 class AuditLogEntry:
-    """Represents an Audit Log entry.
+    r"""Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
 
@@ -235,7 +240,7 @@ class AuditLogEntry:
                 if the_type == 'member':
                     self.extra = self._get_member(instance_id)
                 else:
-                    role = utils.find(lambda r: r.id == instance_id, self.guild.roles)
+                    role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
                         role.name = self.extra.get('role_name')
@@ -306,7 +311,7 @@ class AuditLogEntry:
         return self._get_member(target_id)
 
     def _convert_target_role(self, target_id):
-        role = utils.find(lambda r: r.id == target_id, self.guild.roles)
+        role = self.guild.get_role(target_id)
         if role is None:
             return Object(id=target_id)
         return role
