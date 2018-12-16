@@ -138,9 +138,6 @@ class Member(discord.abc.Messageable, _BaseUser):
     joined_at: `datetime.datetime`
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time.
-    status : :class:`Status`
-        The member's status. There is a chance that the status will be a :class:`str`
-        if it is a value that is not recognised by the enumerator.
     activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
@@ -149,7 +146,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         The guild specific nickname of the user.
     """
 
-    __slots__ = ('_roles', 'joined_at', 'status', 'activities', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('_roles', 'joined_at', '_client_status', 'activities', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -157,7 +154,9 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.guild = guild
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
-        self.status = Status.offline
+        self._client_status = {
+            None: Status.offline
+        }
         self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
 
@@ -183,7 +182,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
-        self.status = member.status
+        self._client_status = member._client_status.copy()
         self.guild = member.guild
         self.nick = member.nick
         self.activities = member.activities
@@ -215,14 +214,47 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._update_roles(data)
 
     def _presence_update(self, data, user):
-        self.status = try_enum(Status, data['status'])
         self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self._client_status = {
+            key: value
+            for key, value in data.get('client_status', {}).items()
+        }
+        self._client_status[None] = data['status']
 
         if len(user) > 1:
             u = self._user
             u.name = user.get('username', u.name)
             u.avatar = user.get('avatar', u.avatar)
             u.discriminator = user.get('discriminator', u.discriminator)
+
+    @property
+    def status(self):
+        """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
+        return try_enum(Status, self._client_status[None])
+
+    @status.setter
+    def status(self, value):
+        # internal use only
+        self._client_status[None] = str(value)
+
+    @property
+    def mobile_status(self):
+        """:class:`Status`: The member's status on a mobile device, if applicable."""
+        return try_enum(Status, self._client_status.get('mobile', 'offline'))
+
+    @property
+    def desktop_status(self):
+        """:class:`Status`: The member's status on the desktop client, if applicable."""
+        return try_enum(Status, self._client_status.get('desktop', 'offline'))
+
+    @property
+    def web_status(self):
+        """:class:`Status`: The member's status on the web client, if applicable."""
+        return try_enum(Status, self._client_status.get('web', 'offline'))
+
+    def is_on_mobile(self):
+        """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
+        return 'mobile' in self._client_status
 
     @property
     def colour(self):

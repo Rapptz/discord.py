@@ -71,6 +71,10 @@ class Attachment:
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
 
+    def is_spoiler(self):
+        """:class:`bool`: Whether this attachment contains a spoiler."""
+        return self.filename.startswith('SPOILER_')
+
     async def save(self, fp, *, seek_begin=True):
         """|coro|
 
@@ -142,9 +146,9 @@ class Message:
 
         .. note::
 
-            This does not check if the ``@everyone`` text is in the message itself.
-            Rather this boolean indicates if the ``@everyone`` text is in the message
-            **and** it did end up mentioning everyone.
+            This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
+            Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
+            **and** it did end up mentioning.
 
     mentions: :class:`list`
         A list of :class:`Member` that were mentioned. If the message is in a private message

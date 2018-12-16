@@ -98,10 +98,9 @@ class MemberConverter(IDConverter):
     """
 
     async def convert(self, ctx, argument):
-        message = ctx.message
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
-        guild = message.guild
+        guild = ctx.guild
         result = None
         if match is None:
             # not a mention...
@@ -316,7 +315,7 @@ class RoleConverter(IDConverter):
     3. Lookup by name
     """
     async def convert(self, ctx, argument):
-        guild = ctx.message.guild
+        guild = ctx.guild
         if not guild:
             raise NoPrivateMessage()
 
