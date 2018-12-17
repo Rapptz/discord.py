@@ -750,6 +750,8 @@ class Guild(Hashable):
             The new verification level for the guild.
         default_notifications: :class:`NotificationLevel`
             The new default notification level for the guild.
+        explicit_content_filter: :class:`ContentFilter`
+            The new explicit content filter for the guild.
         vanity_code: str
             The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
@@ -842,6 +844,11 @@ class Guild(Hashable):
 
         fields['verification_level'] = level.value
 
+        explicit_content_filter = fields.get('explicit_content_filter', self.explicit_content_filter)
+        if not isinstance(explicit_content_filter, ContentFilter):
+            raise InvalidArgument('explicit_content_filter field must of type ContentFilter')
+
+        fields['explicit_content_filter'] = explicit_content_filter.value
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def get_ban(self, user):

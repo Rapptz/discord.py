@@ -565,7 +565,8 @@ class HTTPClient:
     def edit_guild(self, guild_id, *, reason=None, **fields):
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
-                      'system_channel_id', 'default_message_notifications')
+                      'system_channel_id', 'default_message_notifications',
+                      'explicit_content_filter')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys
@@ -771,7 +772,7 @@ class HTTPClient:
 
     def get_mutual_friends(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
-        
+
     def change_hypesquad_house(self, house_id):
         payload = {'house_id': house_id}
         return self.request(Route('POST', '/hypesquad/online'), json=payload)
