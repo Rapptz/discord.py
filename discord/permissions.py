@@ -145,7 +145,7 @@ class Permissions:
         - kick_members
         - ban_members
         - administrator
-        - change_nicknames
+        - change_nickname
         - manage_nicknames
         """
         return cls(0b00110011111101111111110001010001)
