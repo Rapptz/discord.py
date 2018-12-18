@@ -136,6 +136,7 @@ class Guild(Hashable):
                    afk_channel: Optional[VoiceChannel] = ..., afk_timeout: int = ...,
                    owner: Member = ..., verification_level: VerificationLevel = ...,
                    default_notifications: NotificationLevel = ...,
+                   explicit_content_filter: ContentFilter = ...,
                    vanity_code: str = ..., system_channel: Optional[TextChannel] = ...) -> None: ...
 
     async def get_ban(self, user: Snowflake) -> BanEntry: ...
