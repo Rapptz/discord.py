@@ -840,13 +840,13 @@ class Guild(Hashable):
 
         level = fields.get('verification_level', self.verification_level)
         if not isinstance(level, VerificationLevel):
-            raise InvalidArgument('verification_level field must of type VerificationLevel')
+            raise InvalidArgument('verification_level field must be of type VerificationLevel')
 
         fields['verification_level'] = level.value
 
         explicit_content_filter = fields.get('explicit_content_filter', self.explicit_content_filter)
         if not isinstance(explicit_content_filter, ContentFilter):
-            raise InvalidArgument('explicit_content_filter field must of type ContentFilter')
+            raise InvalidArgument('explicit_content_filter field must be of type ContentFilter')
 
         fields['explicit_content_filter'] = explicit_content_filter.value
         await http.edit_guild(self.id, reason=reason, **fields)
