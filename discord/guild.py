@@ -555,7 +555,7 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
-    def _create_channel(self, name, overwrites, channel_type, category=None, reason=None):
+    def _create_channel(self, name, overwrites, channel_type, category=None, **options):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
@@ -580,11 +580,16 @@ class Guild(Hashable):
 
             perms.append(payload)
 
-        parent_id = category.id if category else None
-        return self._state.http.create_channel(self.id, name, channel_type.value, parent_id=parent_id,
-                                               permission_overwrites=perms, reason=reason)
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
 
-    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None):
+        parent_id = category.id if category else None
+        return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
+                                               permission_overwrites=perms, **options)
+
+    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         """|coro|
 
         Creates a :class:`TextChannel` for the guild.
@@ -629,6 +634,16 @@ class Guild(Hashable):
             The category to place the newly created channel under.
             The permissions will be automatically synced to category if no
             overwrites are provided.
+        position: Optional[int]
+            The position in the channel list. This is a number that starts 
+            at 0. e.g. the top channel is position 0.
+        topic: Optional[str]
+            The new channel's topic.
+        slowmode_delay: Optional[int]
+            Specifies the slowmode rate limit for user in this channel. A value of
+            `0` disables slowmode. The maximum value possible is `120`.
+        nsfw: Optional[bool]
+            To mark the channel as NSFW or not.
         reason: Optional[str]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -646,19 +661,27 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
         channel = TextChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
         return channel
 
-    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None):
+    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         """|coro|
 
-        Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
+        This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead, in addition
+        to having the following new parameters.
+        
+        Parameters
+        -----------
+        bitrate: :class:`int`
+            The channel’s preferred audio bitrate in bits per second.
+        user_limit: :class:`int`
+            The channel’s limit for number of members that can be in a voice channel.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
