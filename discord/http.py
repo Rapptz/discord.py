@@ -516,7 +516,7 @@ class HTTPClient:
         valid_keys = ('name', 'parent_id', 'topic', 'bitrate', 'nsfw',
                       'user_limit', 'position', 'permission_overwrites', 'rate_limit_per_user')
         payload.update({
-            k: v for k, v in options.items() if k in valid_keys
+            k: v for k, v in options.items() if k in valid_keys and v is not None
         })
 
         return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload, reason=reason)
