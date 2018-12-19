@@ -624,7 +624,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The channel's name.
         overwrites
             A :class:`dict` of target (either a role or a member) to
@@ -634,17 +634,17 @@ class Guild(Hashable):
             The category to place the newly created channel under.
             The permissions will be automatically synced to category if no
             overwrites are provided.
-        position: Optional[int]
+        position: :class:`int`
             The position in the channel list. This is a number that starts 
             at 0. e.g. the top channel is position 0.
-        topic: Optional[str]
+        topic: Optional[:class:`str`]
             The new channel's topic.
-        slowmode_delay: Optional[int]
-            Specifies the slowmode rate limit for user in this channel. A value of
-            `0` disables slowmode. The maximum value possible is `120`.
-        nsfw: Optional[bool]
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel.
+            The maximum value possible is `120`.
+        nsfw: :class:`bool`
             To mark the channel as NSFW or not.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
         Raises
@@ -677,9 +677,9 @@ class Guild(Hashable):
         Parameters
         -----------
         bitrate: :class:`int`
-            The channel’s preferred audio bitrate in bits per second.
+            The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
-            The channel’s limit for number of members that can be in a voice channel.
+            The channel's limit for number of members that can be in a voice channel.
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
