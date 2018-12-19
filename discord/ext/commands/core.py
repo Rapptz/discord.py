@@ -752,7 +752,10 @@ class Command:
             return ' '.join(result)
 
         for name, param in params.items():
-            if param.default is not param.empty:
+            is_optional = (hasattr(param.annotation, "__origin__")
+                           and param.annotation.__origin__ is typing.Union
+                           and isinstance(None, param.annotation.__args__[-1]))
+            if param.default is not param.empty and not isinstance(param.annotation, converters._Greedy): # ignore
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
@@ -760,8 +763,10 @@ class Command:
                     result.append('[%s=%s]' % (name, param.default))
                 else:
                     result.append('[%s]' % name)
-            elif param.kind == param.VAR_POSITIONAL:
-                result.append('[%s...]' % name)
+            elif param.kind == param.VAR_POSITIONAL or isinstance(param.annotation, converters._Greedy):
+                result.append('[%s...]' % name) # greedy takes multiple args
+            elif is_optional:
+                result.append('[%s]' % name)
             else:
                 result.append('<%s>' % name)
 
