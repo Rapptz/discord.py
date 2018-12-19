@@ -601,6 +601,12 @@ class Guild(Hashable):
         channel upon creation. This parameter expects a :class:`dict` of
         overwrites with the target (either a :class:`Member` or a :class:`Role`)
         as the key and a :class:`PermissionOverwrite` as the value.
+        
+        Note
+        --------
+        Creating a channel of a specified position will not update the position of
+        other channels to follow suit. A follow-up call to :meth:`~TextChannel.edit`
+        will be required to update the position of the channel in the channel list.
 
         Examples
         ----------
