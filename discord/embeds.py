@@ -28,6 +28,7 @@ import datetime
 
 from . import utils
 from .colour import Colour
+from .errors import EmbedError
 
 class _EmptyEmbed:
     def __bool__(self):
@@ -35,6 +36,9 @@ class _EmptyEmbed:
 
     def __repr__(self):
         return 'Embed.Empty'
+
+    def __len__(self):
+        return 0
 
 EmptyEmbed = _EmptyEmbed()
 
@@ -83,12 +87,11 @@ class Embed:
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
         to denote that the value or attribute is empty.
-        
+
     Raises
     ------
     EmbedError
         If title is over 256 limit or description is over 2048 limit.
-
     """
 
     __slots__ = ('title', 'url', 'type', '_timestamp', '_colour', '_footer',
@@ -110,8 +113,7 @@ class Embed:
         self.type = kwargs.get('type', 'rich')
         self.url = kwargs.get('url', EmptyEmbed)
         self.description = kwargs.get('description', EmptyEmbed)
-        if len(self.descripẗion) > 2048: raise EmbedError('Embed description is over 2048 limit.')
-
+        if len(self.description) > 2048: raise EmbedError('Embed description is over 2048 limit.')
         try:
             timestamp = kwargs['timestamp']
         except KeyError:
@@ -201,7 +203,7 @@ class Embed:
             The footer text which can not have more than 2048 characters.
         icon_url: str
             The URL of the footer icon. Only HTTP(S) is supported.
-            
+
         Raises
         ------
         EmbedError
@@ -332,7 +334,7 @@ class Embed:
             The URL for the author.
         icon_url: str
             The URL of the author icon. Only HTTP(S) is supported.
-            
+
         Raises
         ------
         EmbedError
@@ -342,9 +344,8 @@ class Embed:
         self._author = {
             'name': str(name)
         }
-        
         if len(self.author['name']) > 256: raise EmbedError('Embed author name is over 256 limit.')
-        
+
         if url is not EmptyEmbed:
             self._author['url'] = str(url)
 
@@ -377,7 +378,7 @@ class Embed:
             The value of the field which can not have more than 1024 characters
         inline: bool
             Whether the field should be displayed inline.
-            
+
         Raises
         ------
         EmbedError
@@ -389,7 +390,7 @@ class Embed:
             'name': str(name),
             'value': str(value)
         }
-        
+
         if len(self.fields) >= 25: raise EmbedError('Embed fields is at 25 limit.')
         if len(field['name']) > 256: raise EmbedError('Embed field name is over 256 limit.')
         if len(field['value']) > 1024: raise EmbedError('Embed field value is over 1024 limit.')
@@ -415,7 +416,7 @@ class Embed:
         silently swallowed.
 
         .. note::
-
+        
             When deleting a field by index, the index of the other fields
             shift to fill the gap just like a regular list.
 
@@ -460,8 +461,7 @@ class Embed:
             field = self._fields[index]
         except (TypeError, IndexError, AttributeError):
             raise IndexError('field index out of range')
-            
-        if len(self.fields) >= 25: raise EmbedError('Embed fields is at 25 limit.')
+
         if len(field['name']) > 256: raise EmbedError('Embed field name is over 256 limit.')
         if len(field['value']) > 1024: raise EmbedError('Embed field value is over 1024 limit.')
 
