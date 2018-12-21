@@ -250,7 +250,7 @@ def _get_mime_type_for_image(data):
         return 'image/png'
     elif data.startswith(b'\xFF\xD8') and data.rstrip(b'\0').endswith(b'\xFF\xD9'):
         return 'image/jpeg'
-    elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
+    elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
     elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
         return 'image/webp'
