@@ -722,9 +722,9 @@ class Command:
         If that lookup leads to an empty string then the first line of the
         :attr:`help` attribute is used instead.
         """
-        if self.brief:
+        if self.brief is not None:
             return self.brief
-        if self.help:
+        if self.help is not None:
             return self.help.split('\n', 1)[0]
         return ''
 
@@ -743,7 +743,7 @@ class Command:
             name = self.name if not parent else parent + ' ' + self.name
             result.append(name)
 
-        if self.usage:
+        if self.usage is not None:
             result.append(self.usage)
             return ' '.join(result)
 
