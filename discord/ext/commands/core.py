@@ -365,8 +365,6 @@ class Command:
                 value = await self.do_conversion(ctx, converter, argument, param)
             except CommandError:
                 view.index = previous
-                if not result and not required:
-                    return param.default
                 break
             else:
                 result.append(value)
