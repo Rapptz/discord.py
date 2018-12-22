@@ -359,22 +359,18 @@ class Command:
             # for use with a manual undo
             previous = view.index
 
-            # parsing errors get propagated
             view.skip_ws()
             argument = quoted_word(view)
             try:
                 value = await self.do_conversion(ctx, converter, argument, param)
             except CommandError:
-                if not result:
-                    if required:
-                        raise
-                    else:
-                        view.index = previous
-                        return param.default
                 view.index = previous
                 break
             else:
                 result.append(value)
+
+        if not result and not required:
+            return param.default
         return result
 
     async def _transform_greedy_var_pos(self, ctx, param, converter):
