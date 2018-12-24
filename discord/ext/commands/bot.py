@@ -361,7 +361,7 @@ class BotBase(GroupMixin):
             app = await self.application_info()
             self.owner_id = owner_id = app.owner.id
             self.owners.append(owner_id)
-        return user.id == self.owner_id if not self.owners else user.id in self.owners
+        return user.id in self.owners
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
