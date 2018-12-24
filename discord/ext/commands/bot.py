@@ -160,6 +160,7 @@ class BotBase(GroupMixin):
         self.description = inspect.cleandoc(description) if description else ''
         self.pm_help = pm_help
         self.owner_id = options.get('owner_id')
+        self.owners = options.get('owners') or ([self.owner_id] if self.owner_id else [])
         self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
         self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
@@ -347,7 +348,7 @@ class BotBase(GroupMixin):
         """Checks if a :class:`.User` or :class:`.Member` is the owner of
         this bot.
 
-        If an :attr:`owner_id` is not set, it is fetched automatically
+        If :attr:`owner_id` or :attr:`owners` are not set, it is fetched automatically
         through the use of :meth:`~.Bot.application_info`.
 
         Parameters
@@ -359,8 +360,8 @@ class BotBase(GroupMixin):
         if self.owner_id is None:
             app = await self.application_info()
             self.owner_id = owner_id = app.owner.id
-            return user.id == owner_id
-        return user.id == self.owner_id
+            self.owners.append(owner_id)
+        return user.id == self.owner_id if not self.owners else user.id in self.owners
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
