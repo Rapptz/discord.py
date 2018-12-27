@@ -181,12 +181,12 @@ class HTTPClient:
 
                         # sleep a bit
                         retry_after = data['retry_after'] / 1000.0
-                        log.info(fmt, retry_after, bucket)
+                        log.warning(fmt, retry_after, bucket)
 
                         # check if it's a global rate limit
                         is_global = data.get('global', False)
                         if is_global:
-                            log.info('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
+                            log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self._global_over.clear()
 
                         await asyncio.sleep(retry_after, loop=self.loop)
