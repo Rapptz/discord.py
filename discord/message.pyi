@@ -2,7 +2,7 @@ import datetime
 
 from .guild import Guild
 from .channel import TextChannel, DMChannel, GroupChannel, CategoryChannel, VoiceChannel
-from .abc import Snowflake
+from .abc import Snowflake, User as _BaseUser
 from .enums import MessageType
 from .member import Member
 from .user import User
@@ -101,7 +101,7 @@ class Message:
 
     async def add_reaction(self, emoji: Union[Emoji, Reaction, PartialEmoji, str]) -> None: ...
 
-    async def remove_reaction(self, emoji: Union[Emoji, Reaction, PartialEmoji, str], member: Member) -> None: ...
+    async def remove_reaction(self, emoji: Union[Emoji, Reaction, PartialEmoji, str], member: _BaseUser) -> None: ...
 
     async def clear_reactions(self) -> None: ...
 

@@ -1,4 +1,5 @@
 import asyncio
+import aiohttp
 
 from .client import Client
 from .guild import Guild
@@ -31,8 +32,8 @@ class AutoShardedClient(Client):
                  shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
-                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
-                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                 fetch_offline_members: bool = ..., status: Optional[Status] = ...,
+                 activity: Optional[Union[Activity, Game, Streaming]] = ...,
                  heartbeat_timeout: float = ..., **kwargs: Any) -> None: ...
 
     @property

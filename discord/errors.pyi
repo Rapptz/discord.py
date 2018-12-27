@@ -1,4 +1,4 @@
-import aiohttp  # type: ignore
+import aiohttp
 import websockets  # type: ignore
 
 from typing import Optional, Dict, Any, Union

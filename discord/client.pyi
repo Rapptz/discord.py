@@ -12,6 +12,7 @@ from .member import Member
 from .channel import TextChannel, VoiceChannel, CategoryChannel, DMChannel, GroupChannel
 
 import asyncio
+import aiohttp
 
 from typing import Any, Union, Optional, List, Callable, Iterator, Coroutine, TypeVar, NamedTuple
 
@@ -36,15 +37,18 @@ class Client:
                  shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
-                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
-                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                 fetch_offline_members: bool = ..., status: Optional[Status] = ...,
+                 activity: Optional[Union[Activity, Game, Streaming]] = ...,
                  heartbeat_timeout: float = ..., **options: Any) -> None: ...
 
     @property
     def latency(self) -> float: ...
 
+    # NOTE: user is actually Optional[ClientUser] because it's None when logged out, but the vast
+    # majority of uses will be while logged in. Because of this fact, it is typed as ClientUser to
+    # prevent false positives
     @property
-    def user(self) -> Optional[ClientUser]: ...
+    def user(self) -> ClientUser: ...
 
     @property
     def guilds(self) -> List[Guild]: ...

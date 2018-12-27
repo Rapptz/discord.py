@@ -1,6 +1,6 @@
 import datetime
 import asyncio
-import aiohttp  # type: ignore
+from aiohttp.web import Request
 from .permissions import Permissions
 from .guild import Guild
 
@@ -59,7 +59,7 @@ def _bytes_to_base64_data(data: Union[bytes, bytearray]) -> str: ...
 
 def to_json(obj: Any) -> str: ...
 
-def _parse_ratelimit_header(request: aiohttp.Request) -> float: ...
+def _parse_ratelimit_header(request: Request) -> float: ...
 
 async def maybe_coroutine(f: Callable[..., Union[T, Coroutine[Any, Any, T]]], *args: Any, **kwargs: Any) -> T: ...
 

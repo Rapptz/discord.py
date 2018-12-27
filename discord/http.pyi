@@ -1,5 +1,5 @@
 import asyncio
-import aiohttp  # type: ignore
+import aiohttp
 
 from .types import RawChannelDict, RawMessageDict, RawUserDict, RawApplicationInfoDict, RawGuildMemberDict, RawRoleDict, RawInviteDict, RawInviteMetaDict, RawWebhookDict, RawGuildDict, RawGuildBanDict, RawGuildPruneDict, RawEmojiDict, RawAuditLogDict
 

@@ -1,4 +1,4 @@
-import aiohttp  # type: ignore
+import aiohttp
 import asyncio
 import datetime
 
