@@ -132,6 +132,8 @@ class FFmpegPCMAudio(AudioSource):
         Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
     before_options: Optional[str]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
+    after_options: Optional[str]
+        Extra command line arguments to pass to ffmpeg after everything else.
 
     Raises
     --------
@@ -139,7 +141,10 @@ class FFmpegPCMAudio(AudioSource):
         The subprocess failed to be created.
     """
 
-    def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
+    def __init__(self, source, *, executable='ffmpeg',
+                 pipe=False, stderr=None, before_options=None,
+                 options=None, after_options=None):
+
         stdin = None if not pipe else source
 
         args = [executable]
@@ -155,6 +160,9 @@ class FFmpegPCMAudio(AudioSource):
             args.extend(shlex.split(options))
 
         args.append('pipe:1')
+
+        if isinstance(after_options, str):
+            args.extend(shlex.split(after_options))
 
         self._process = None
         try:
