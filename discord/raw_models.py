@@ -99,7 +99,7 @@ class RawReactionActionEvent:
     message_id: :class:`int`
         The message ID that got or lost a reaction.
     user_id: :class:`int`
-        The user ID who added or removed the reaction.
+        The user ID who added the reaction or whose reaction was removed.
     channel_id: :class:`int`
         The channel ID where the reaction got added or removed.
     guild_id: Optional[:class:`int`]

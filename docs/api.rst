@@ -307,7 +307,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         To get the message being reacted, access it via :attr:`Reaction.message`.
 
     :param reaction: A :class:`Reaction` showing the current state of the reaction.
-    :param user: A :class:`User` or :class:`Member` of the user who removed the reaction.
+    :param user: A :class:`User` or :class:`Member` of the user whose reaction was removed.
 
 .. function:: on_raw_reaction_remove(payload)
 
