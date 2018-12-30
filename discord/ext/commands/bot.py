@@ -37,6 +37,7 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
+from discord import Embed
 
 def _get_variable(name):
     stack = inspect.stack()
@@ -140,7 +141,10 @@ def _default_help_command(ctx, *commands : str):
             destination = ctx.message.author
 
     for page in pages:
-        yield from bot.send_message(destination, page)
+        if isinstance(page, Embed):
+            yield from bot.send_message(destination, embed=page)
+        else:
+            yield from bot.send_message(destination, page)
 
 
 class Bot(GroupMixin, discord.Client):

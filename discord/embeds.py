@@ -473,3 +473,19 @@ class Embed:
             result['title'] = self.title
 
         return result
+
+    def __len__(self):
+        """Returns total length of strings from the Embed's author.name,
+        footer.text, description, title, all field names and all field
+        values.        
+        """
+        values = [f.name for f in self.fields]
+        values.extend([f.value for f in self.fields]) 
+        values.extend([self.title, self.description, self.author.name, self.footer.text])
+        
+        count = 0
+        for v in values:
+            if isinstance(v, str):
+                count = count + len(v)
+        
+        return count
