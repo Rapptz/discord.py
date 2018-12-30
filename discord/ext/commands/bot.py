@@ -37,7 +37,7 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
-from discord import Embed
+from discord.embeds import Embed
 
 def _get_variable(name):
     stack = inspect.stack()
