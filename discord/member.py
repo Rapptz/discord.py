@@ -255,6 +255,14 @@ class Member(discord.abc.Messageable, _BaseUser):
     def is_on_mobile(self):
         """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
         return 'mobile' in self._client_status
+    
+    def is_on_web(self):
+        """:class:`bool`: A helper function that determines if a member is active on a web browser."""
+        return 'web' in self._client_status
+    
+    def is_on_desktop(self):
+        """:class:`bool`: A helper function that determines if a member is active on the desktop application."""
+        return 'desktop' in self._client_status
 
     @property
     def colour(self):
