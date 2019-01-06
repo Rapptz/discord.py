@@ -165,7 +165,8 @@ class AuditLogChanges:
             self.before.color = self.before.colour
 
     def _handle_role(self, first, second, entry, elem):
-        setattr(first, 'roles', [])
+        if not hasattr(first, 'roles'):
+            setattr(first, 'roles', [])
 
         data = []
         g = entry.guild
