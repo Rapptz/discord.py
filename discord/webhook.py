@@ -31,7 +31,7 @@ import re
 
 import aiohttp
 
-from . import utils
+from . import utils, TextChannel
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .user import BaseUser, User
 
@@ -534,6 +534,8 @@ class Webhook:
             The webhook's new default name.
         avatar: Optional[bytes]
             A :term:`py:bytes-like object` representing the webhook's new default avatar.
+        channel: Optional[:class:`TextChannel`]
+            The channel to move this webhook to.
 
         Raises
         -------
@@ -565,6 +567,16 @@ class Webhook:
                 payload['avatar'] = utils._bytes_to_base64_data(avatar)
             else:
                 payload['avatar'] = None
+        
+        try:
+            channel = kwargs['channel']
+        except KeyError:
+            pass
+        else:
+            if isinstance(channel, TextChannel):
+                payload['channel_id'] = str(channel.id)
+            else:
+                raise TypeError('Expected TextChannel, received {0.__class__.__name__} instead.'.format(channel))
 
         return self._adapter.edit_webhook(**payload)
 
