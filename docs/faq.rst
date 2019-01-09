@@ -276,9 +276,8 @@ message.
 Example: ::
 
     @bot.command()
-    async def joined_at(ctx, member: discord.Member = None):
-        member = member or ctx.author
-        await ctx.send('{0} joined at {0.joined_at}'.format(member))
+    async def length(ctx):
+        await ctx.send('Your message is {} characters long.'.format(len(ctx.message.content)))
 
 How do I make a subcommand?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
