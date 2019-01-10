@@ -368,6 +368,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         return self.roles[-1]
 
     @property
+    def is_owner(self):
+        """Returns if the member is the owner of its guild."""
+        return self.guild.owner == self
+    
+    @property
     def guild_permissions(self):
         """Returns the member's guild permissions.
 
@@ -381,7 +386,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         administrator implication.
         """
 
-        if self.guild.owner == self:
+        if self.is_owner:
             return Permissions.all()
 
         base = Permissions.none()
