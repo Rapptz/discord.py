@@ -76,7 +76,7 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         return '<:%s:%s>' % (self.name, self.id)
 
     def __eq__(self, other):
-        if not self.is_custom_emoji():
+        if self.is_unicode_emoji():
             return isinstance(other, PartialEmoji) and self.name == other.name
 
         if isinstance(other, (PartialEmoji, Emoji)):
