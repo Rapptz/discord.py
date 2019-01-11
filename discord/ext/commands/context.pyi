@@ -1,9 +1,11 @@
-from typing import Any, Optional, List, Dict, Union
+from typing import Any, Optional, TypeVar, List, Dict, Union
 
 import discord
 
 from .core import Command
 from .bot import Bot
+
+_C = TypeVar('_C', bound=Context)
 
 class Context(discord.abc.Messageable):
     message: discord.Message
@@ -11,13 +13,13 @@ class Context(discord.abc.Messageable):
     args: List[Any]
     kwargs: Dict[str, Any]
     prefix: str
-    command: Command
+    command: Command[_C]
     invoked_with: Optional[str]
-    invoked_subcommand: Optional[Command]
+    invoked_subcommand: Optional[Command[_C]]
     subcommand_passed: Optional[str]
     command_failed: bool
 
-    async def invoke(self, command: Command, *args: Any, **kwargs: Any) -> Any: ...
+    async def invoke(self, __command: Command[_C], *args: Any, **kwargs: Any) -> Any: ...
 
     async def reinvoke(self, *, call_hooks: bool = ..., restart: bool = ...) -> None: ...
 

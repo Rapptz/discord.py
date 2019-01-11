@@ -10,6 +10,7 @@ _CheckType = Union[Callable[[CT], bool],
                    Callable[[CT], Coroutine[Any, Any, bool]]]
 _CoroType = Callable[..., Coroutine[Any, Any, Any]]
 _C = TypeVar('_C', bound=_CoroType)
+_CMD = TypeVar('_CMD', bound=Command)
 _F = TypeVar('_F', bound=Union[_CoroType, Command[Any]])
 
 class Command(Generic[CT]):
@@ -36,7 +37,7 @@ class Command(Generic[CT]):
 
     async def dispatch_error(self, ctx: CT, error: Exception) -> None: ...
 
-    def __get__(self, instance: Any, owner: Any) -> Command[CT]: ...
+    def __get__(self: _CMD, instance: Any, owner: Any) -> _CMD: ...
 
     async def do_conversion(self, ctx: CT, converter: Any, argument: str, param: Parameter) -> Any: ...
 
