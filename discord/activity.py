@@ -138,7 +138,7 @@ class Activity(_ActivityTag):
         self.timestamps = kwargs.pop('timestamps', {})
         self.assets = kwargs.pop('assets', {})
         self.party = kwargs.pop('party', {})
-        self.application_id = kwargs.pop('application_id', None)
+        self.application_id = int(kwargs.pop('application_id', None))
         self.name = kwargs.pop('name', None)
         self.url = kwargs.pop('url', None)
         self.flags = kwargs.pop('flags', 0)
