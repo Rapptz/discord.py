@@ -38,6 +38,7 @@ import websockets
 
 from . import utils
 from .activity import _ActivityTag
+from .enums import SpeakingState
 from .errors import ConnectionClosed, InvalidArgument
 
 log = logging.getLogger(__name__)
@@ -547,6 +548,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         Receive only. Tells you that your websocket connection was acknowledged.
     INVALIDATE_SESSION
         Sent only. Tells you that your RESUME request has failed and to re-IDENTIFY.
+    CLIENT_CONNECT
+        Indicates a user has connected to voice.
+    CLIENT_DISCONNECT
+        Receive only.  Indicates a user has disconnected from voice.
     """
 
     IDENTIFY            = 0
@@ -559,6 +564,8 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     RESUME              = 7
     HELLO               = 8
     INVALIDATE_SESSION  = 9
+    CLIENT_CONNECT      = 12
+    CLIENT_DISCONNECT   = 13
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -597,7 +604,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     @classmethod
     async def from_client(cls, client, *, resume=False):
         """Creates a voice websocket for the :class:`VoiceClient`."""
-        gateway = 'wss://' + client.endpoint + '/?v=3'
+        gateway = 'wss://' + client.endpoint + '/?v=4'
         ws = await websockets.connect(gateway, loop=client.loop, klass=cls, compression=None)
         ws.gateway = gateway
         ws._connection = client
@@ -610,7 +617,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
         return ws
 
-    async def select_protocol(self, ip, port):
+    async def select_protocol(self, ip, port, mode):
         payload = {
             'op': self.SELECT_PROTOCOL,
             'd': {
@@ -618,18 +625,28 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
                 'data': {
                     'address': ip,
                     'port': port,
-                    'mode': 'xsalsa20_poly1305'
+                    'mode': mode
                 }
             }
         }
 
         await self.send_as_json(payload)
 
-    async def speak(self, is_speaking=True):
+    async def client_connect(self):
+        payload = {
+            'op': self.CLIENT_CONNECT,
+            'd': {
+                'audio_ssrc': self._connection.ssrc
+            }
+        }
+
+        await self.send_as_json(payload)
+
+    async def speak(self, state=SpeakingState.voice):
         payload = {
             'op': self.SPEAKING,
             'd': {
-                'speaking': is_speaking,
+                'speaking': int(state),
                 'delay': 0
             }
         }
@@ -642,9 +659,6 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         data = msg.get('d')
 
         if op == self.READY:
-            interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=interval)
-            self._keep_alive.start()
             await self.initial_connection(data)
         elif op == self.HEARTBEAT_ACK:
             self._keep_alive.ack()
@@ -652,7 +666,12 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             log.info('Voice RESUME failed.')
             await self.identify()
         elif op == self.SESSION_DESCRIPTION:
+            self._connection.mode = data['mode']
             await self.load_secret_key(data)
+        elif op == self.HELLO:
+            interval = data['heartbeat_interval'] / 1000.0
+            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=interval)
+            self._keep_alive.start()
 
     async def initial_connection(self, data):
         state = self._connection
@@ -673,15 +692,23 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         # the port is a little endian unsigned short in the last two bytes
         # yes, this is different endianness from everything else
         state.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
-
         log.debug('detected ip: %s port: %s', state.ip, state.port)
-        await self.select_protocol(state.ip, state.port)
-        log.info('selected the voice protocol for use')
+
+        # there *should* always be at least one supported mode (xsalsa20_poly1305)
+        modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
+        log.debug('received supported encryption modes: %s', ", ".join(modes))
+
+        mode = modes[0]
+        await self.select_protocol(state.ip, state.port, mode)
+        log.info('selected the voice protocol for use (%s)', mode)
+
+        await self.client_connect()
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
         self._connection.secret_key = data.get('secret_key')
         await self.speak()
+        await self.speak(False)
 
     async def poll_event(self):
         try:
