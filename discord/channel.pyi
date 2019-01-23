@@ -8,7 +8,7 @@ from .message import Message
 from .mixins import Hashable
 from .permissions import Permissions
 from .types import RawChannelDict
-from .user import User, ClientUser
+from .user import BaseUser, User, ClientUser
 from .voice_client import VoiceClient
 from .webhook import Webhook
 
@@ -100,7 +100,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
     @property
     def created_at(self) -> datetime.datetime: ...
 
-    def permissions_for(self, user: Optional[User] = ...) -> Permissions: ...
+    def permissions_for(self, user: Optional[BaseUser] = ...) -> Permissions: ...
 
 
 class GroupChannel(discord.abc.Messageable, Hashable):
@@ -117,7 +117,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     @property
     def created_at(self) -> datetime.datetime: ...
 
-    def permissions_for(self, user: User) -> Permissions: ...
+    def permissions_for(self, user: BaseUser) -> Permissions: ...
 
     async def add_recipients(self, *recipients: User) -> None: ...
 
