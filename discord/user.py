@@ -28,7 +28,7 @@ from collections import namedtuple
 
 import discord.abc
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
-from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
 from .errors import ClientException, InvalidArgument
 from .colour import Colour
 
@@ -299,8 +299,10 @@ class ClientUser(BaseUser):
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
+    premium_type: :class:`PremiumType`
+        Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
     """
-    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', '_relationships')
+    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', 'premium_type', '_relationships')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
@@ -308,6 +310,7 @@ class ClientUser(BaseUser):
         self.email = data.get('email')
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium = data.get('premium', False)
+        self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
         self._relationships = {}
 
     def __repr__(self):
