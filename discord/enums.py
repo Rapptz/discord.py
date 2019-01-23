@@ -29,7 +29,7 @@ from enum import Enum, IntEnum
 __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
            'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
            'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', 'HypeSquadHouse', 'NotificationLevel']
+           'ActivityType', 'HypeSquadHouse', 'NotificationLevel', 'PremiumType']
 
 class ChannelType(Enum):
     text     = 0
@@ -235,6 +235,10 @@ class HypeSquadHouse(Enum):
     bravery = 1
     brilliance = 2
     balance = 3
+
+class PremiumType(Enum):
+    nitro_classic = 1
+    nitro = 2
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
