@@ -300,7 +300,7 @@ class ClientUser(BaseUser):
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
     """
-    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', '_relationships')
+    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', 'premium_type', '_relationships')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
@@ -308,6 +308,11 @@ class ClientUser(BaseUser):
         self.email = data.get('email')
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium = data.get('premium', False)
+        premium_type = self.data.get('premium_type', None)
+        if premium_type is None:
+            self.premium_type = premium_type
+        else:
+            self.premium_type = PremiumType(premium_type)
         self._relationships = {}
 
     def __repr__(self):
@@ -344,15 +349,6 @@ class ClientUser(BaseUser):
     def blocked(self):
         r"""Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
-    
-    @property
-    def premium_type(self):
-        """Returns a :class:`NitroType` or None if the user isnt premium."""
-        premium_type = self.data.get('premium_type', None)
-        if premium_type is None:
-            return premium_type
-        else:
-            return PremiumType(premium_type)
 
     async def edit(self, **fields):
         """|coro|
