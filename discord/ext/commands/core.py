@@ -169,7 +169,7 @@ class Command:
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
 
-        if not isinstance(self.aliases, (list, tuple)):
+        if not isinstance(self.aliases, (list, tuple, set)):
             raise TypeError("Aliases of a command must be a list of strings.")
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
