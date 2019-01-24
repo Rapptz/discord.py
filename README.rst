@@ -11,7 +11,7 @@ discord.py is an API wrapper for Discord written in Python.
 This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the `documentation <http://discordpy.rtfd.org/en/latest>`__.
 
 Breaking Changes
----------------
+----------------
 
 The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before ``v1.0.0``.
 
@@ -53,7 +53,7 @@ Please note that on Linux installing voice you must install the following packag
 * python-dev (e.g. ``python3.5-dev`` for Python 3.5)
 
 Quick Example
-------------
+-------------
 
 .. code:: py
 
