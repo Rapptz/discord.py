@@ -308,7 +308,7 @@ class ClientUser(BaseUser):
         self.email = data.get('email')
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium = data.get('premium', False)
-        premium_type = self.data.get('premium_type', None)
+        premium_type = data.get('premium_type', None)
         if premium_type is None:
             self.premium_type = premium_type
         else:
