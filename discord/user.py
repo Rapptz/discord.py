@@ -28,7 +28,7 @@ from collections import namedtuple
 
 import discord.abc
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
-from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType
 from .errors import ClientException, InvalidArgument
 from .colour import Colour
 
@@ -344,6 +344,15 @@ class ClientUser(BaseUser):
     def blocked(self):
         r"""Returns a :class:`list` of :class:`User`\s that the user has blocked."""
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
+    
+    @property
+    def premium_type(self):
+        """Returns a :class:`NitroType` or None if the user isnt premium."""
+        premium_type = self.data.get('premium_type', None)
+        if premium_type is None:
+            return premium_type
+        else:
+            return PremiumType(premium_type)
 
     async def edit(self, **fields):
         """|coro|
