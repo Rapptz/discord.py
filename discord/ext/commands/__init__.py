@@ -16,3 +16,4 @@ from .help import *
 from .converter import *
 from .cooldowns import *
 from .cog import *
+from .default import CustomDefault
