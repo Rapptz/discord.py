@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 from collections import namedtuple
+import concurrent.futures
 import json
 import logging
 import struct
@@ -64,6 +65,8 @@ class KeepAliveHandler(threading.Thread):
         self.daemon = True
         self.shard_id = shard_id
         self.msg = 'Keeping websocket alive with sequence %s.'
+        self.block_msg = 'Heartbeat blocked for more than %s seconds.'
+        self.behind_msg = 'Can\'t keep up, websocket is %.1fs behind.'
         self._stop_ev = threading.Event()
         self._last_ack = time.perf_counter()
         self._last_send = time.perf_counter()
@@ -91,7 +94,15 @@ class KeepAliveHandler(threading.Thread):
             f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
                 # block until sending is complete
-                f.result()
+                total = 0
+                while True:
+                    try:
+                        f.result(5)
+                        break
+                    except concurrent.futures.TimeoutError:
+                        total += 5
+                        log.warning(self.block_msg, total)
+
             except Exception:
                 self.stop()
             else:
@@ -110,11 +121,15 @@ class KeepAliveHandler(threading.Thread):
         ack_time = time.perf_counter()
         self._last_ack = ack_time
         self.latency = ack_time - self._last_send
+        if self.latency > 10:
+            log.warning(self.behind_msg, self.latency)
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.msg = 'Keeping voice websocket alive with timestamp %s.'
+        self.block_msg = 'Voice heartbeat blocked for more than %s seconds'
+        self.behind_msg = 'Can\'t keep up, voice websocket is %.1fs behind'
 
     def get_payload(self):
         return {
