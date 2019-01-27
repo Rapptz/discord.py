@@ -624,6 +624,24 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret.sort(key=comparator)
         return ret
 
+    @property
+    def text_channels(self):
+        """List[:class:`TextChannel`]: Returns the text channels that are under this category."""
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, TextChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
+        return ret
+
+    @property
+    def voice_channels(self):
+        """List[:class:`VoiceChannel`]: Returns the text channels that are under this category."""
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, VoiceChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
+        return ret
+
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
