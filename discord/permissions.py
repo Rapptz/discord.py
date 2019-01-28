@@ -526,6 +526,10 @@ class PermissionOverwrite:
     +-----------+------------------------------------------+
     | Operation |               Description                |
     +===========+==========================================+
+    | x == y    | Checks if two overwrites are equal.      |
+    +-----------+------------------------------------------+
+    | x != y    | Checks if two overwrites are not equal.  |
+    +-----------+------------------------------------------+
     | iter(x)   | Returns an iterator of (perm, value)     |
     |           | pairs. This allows this class to be used |
     |           | as an iterable in e.g. set/list/dict     |
@@ -548,6 +552,9 @@ class PermissionOverwrite:
                 raise ValueError('no permission called {0}.'.format(key))
 
             setattr(self, key, value)
+
+    def __eq__(self, other):
+        return self._values == other._values
 
     def _set(self, key, value):
         if value not in (True, None, False):
