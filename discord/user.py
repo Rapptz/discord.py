@@ -28,7 +28,7 @@ from collections import namedtuple
 
 import discord.abc
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
-from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
 from .errors import ClientException, InvalidArgument
 from .colour import Colour
 
@@ -310,11 +310,7 @@ class ClientUser(BaseUser):
         self.email = data.get('email')
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium = data.get('premium', False)
-        premium_type = data.get('premium_type', None)
-        if premium_type is None:
-            self.premium_type = premium_type
-        else:
-            self.premium_type = PremiumType(premium_type)
+        self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
         self._relationships = {}
 
     def __repr__(self):
