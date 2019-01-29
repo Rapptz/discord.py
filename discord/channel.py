@@ -630,7 +630,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret = [c for c in self.guild.channels
             if c.category_id == self.id
             and isinstance(c, TextChannel)]
-        ret.sort(key=lambda c: c.position)
+        ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
     @property
@@ -639,7 +639,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret = [c for c in self.guild.channels
             if c.category_id == self.id
             and isinstance(c, VoiceChannel)]
-        ret.sort(key=lambda c: c.position)
+        ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
 class DMChannel(discord.abc.Messageable, Hashable):
