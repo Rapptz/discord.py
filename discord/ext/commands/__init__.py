@@ -6,7 +6,7 @@ discord.ext.commands
 
 An extension module to facilitate creation of bot commands.
 
-:copyright: (c) 2017 Rapptz
+:copyright: (c) 2019 Rapptz
 :license: MIT, see LICENSE for more details.
 """
 
