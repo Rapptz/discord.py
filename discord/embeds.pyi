@@ -25,10 +25,10 @@ class EmbedProxy:
 _T = TypeVar('_T', bound=Embed)
 
 class Embed:
-    title: str
+    title: Union[str, _EmptyEmbed]
     type: str
-    description: str
-    url: str
+    description: Union[str, _EmptyEmbed]
+    url: Union[str, _EmptyEmbed]
     colour: Union[int, Colour, _EmptyEmbed]
     color: Union[int, Colour, _EmptyEmbed]
     timestamp: Union[datetime.datetime, _EmptyEmbed]
@@ -36,8 +36,8 @@ class Embed:
     Empty: ClassVar[_EmptyEmbed]
 
     def __init__(self, *, color: Union[int, Colour, _EmptyEmbed] = ..., colour: Union[int, Colour, _EmptyEmbed] = ...,
-                 title: str = ..., type: str = ..., url: str = ..., description: str = ...,
-                 timestamp: datetime.datetime = ...) -> None: ...
+                 title: Union[str, _EmptyEmbed] = ..., type: str = ..., url: Union[str, _EmptyEmbed] = ...,
+                 description: Union[str, _EmptyEmbed] = ..., timestamp: Union[datetime.datetime, _EmptyEmbed] = ...) -> None: ...
 
     @classmethod
     def from_data(cls: Type[_T], data: RawEmbedDict) -> _T: ...
@@ -45,7 +45,7 @@ class Embed:
     @property
     def footer(self) -> EmbedFooterData: ...
 
-    def set_footer(self, *, text: str = ..., icon_url: str = ...) -> _T: ...
+    def set_footer(self, *, text: Union[str, _EmptyEmbed] = ..., icon_url: Union[str, _EmptyEmbed] = ...) -> _T: ...
 
     @property
     def image(self) -> EmbedImageData: ...
@@ -66,7 +66,7 @@ class Embed:
     @property
     def author(self) -> EmbedAuthorData: ...
 
-    def set_author(self, *, name: str, url: str = ..., icon_url: str = ...) -> _T: ...
+    def set_author(self, *, name: str, url: Union[str, _EmptyEmbed] = ..., icon_url: Union[str, _EmptyEmbed] = ...) -> _T: ...
 
     @property
     def fields(self) -> List[EmbedFieldData]: ...
