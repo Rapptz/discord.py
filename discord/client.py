@@ -440,8 +440,6 @@ class Client:
         if self.is_closed():
             return
 
-        self._closed.set()
-
         for voice in self.voice_clients:
             try:
                 await voice.disconnect()
@@ -452,8 +450,8 @@ class Client:
         if self.ws is not None and self.ws.open:
             await self.ws.close()
 
-
         await self.http.close()
+        self._closed.set()
         self._ready.clear()
 
     def clear(self):
