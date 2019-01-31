@@ -104,7 +104,7 @@ class WebhookAdapter:
         # mocks a ConnectionState for appropriate use for Message
         return BaseUser(state=self.webhook._state, data=data)
 
-    async def execute_webhook(self, *, payload, wait=False, file=None, files=None):
+    def execute_webhook(self, *, payload, wait=False, file=None, files=None, f=None):
         if file is not None:
             multipart = {
                 'file': file,
@@ -123,12 +123,7 @@ class WebhookAdapter:
             multipart = None
         url = '%s?wait=%d' % (self._request_url, wait)
         maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
-        data = await maybe_coro
-        if not wait:
-            return data
-        # transform into Message object
-        from .message import Message
-        return Message(data=data, state=self.webhook._state, channel=self.webhook.channel)
+        return self.handle_execution_response(maybe_coro, wait=wait, f=f)
 
 class AsyncWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with aiohttp.
@@ -194,7 +189,19 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 else:
                     raise HTTPException(r, data)
 
-
+    async def handle_execution_response(self, response, *, wait, f=None):
+        data = await response
+        if f:
+            if isinstance(f, list):
+                for file in f:
+                    file.close()
+            else:
+                f.close()
+        if not wait:
+            return data
+        # transform into Message object
+        from .message import Message
+        return Message(data=data, state=self.webhook._state, channel=self.webhook.channel)
 
 class RequestsWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with ``requests``.
@@ -655,11 +662,11 @@ class Webhook:
 
         if file is not None:
             to_pass = (file.filename, file.open_file(), 'application/octet-stream')
-            return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
+            return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload, f=file)
         elif files is not None:
             to_pass = [(file.filename, file.open_file(), 'application/octet-stream')
                            for file in files]
-            return self._adapter.execute_webhook(wait=wait, files=to_pass, payload=payload)
+            return self._adapter.execute_webhook(wait=wait, files=to_pass, payload=payload, f=files)
 
         else:
             return self._adapter.execute_webhook(wait=wait, payload=payload)
