@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -362,22 +362,18 @@ class Command(typing.Generic[CT]):
             # for use with a manual undo
             previous = view.index
 
-            # parsing errors get propagated
             view.skip_ws()
             argument = quoted_word(view)
             try:
                 value = await self.do_conversion(ctx, converter, argument, param)
             except CommandError:
-                if not result:
-                    if required:
-                        raise
-                    else:
-                        view.index = previous
-                        return param.default
                 view.index = previous
                 break
             else:
                 result.append(value)
+
+        if not result and not required:
+            return param.default
         return result
 
     async def _transform_greedy_var_pos(self, ctx, param, converter):
@@ -725,9 +721,9 @@ class Command(typing.Generic[CT]):
         If that lookup leads to an empty string then the first line of the
         :attr:`help` attribute is used instead.
         """
-        if self.brief:
+        if self.brief is not None:
             return self.brief
-        if self.help:
+        if self.help is not None:
             return self.help.split('\n', 1)[0]
         return ''
 
@@ -746,7 +742,7 @@ class Command(typing.Generic[CT]):
             name = self.name if not parent else parent + ' ' + self.name
             result.append(name)
 
-        if self.usage:
+        if self.usage is not None:
             result.append(self.usage)
             return ' '.join(result)
 

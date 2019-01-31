@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -622,6 +622,24 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         ret = [c for c in self.guild.channels if c.category_id == self.id]
         ret.sort(key=comparator)
+        return ret
+
+    @property
+    def text_channels(self):
+        """List[:class:`TextChannel`]: Returns the text channels that are under this category."""
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, TextChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
+        return ret
+
+    @property
+    def voice_channels(self):
+        """List[:class:`VoiceChannel`]: Returns the text channels that are under this category."""
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, VoiceChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
 class DMChannel(discord.abc.Messageable, Hashable):

@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -74,6 +74,13 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         if self.animated:
             return '<a:%s:%s>' % (self.name, self.id)
         return '<:%s:%s>' % (self.name, self.id)
+
+    def __eq__(self, other):
+        if self.is_unicode_emoji():
+            return isinstance(other, PartialEmoji) and self.name == other.name
+
+        if isinstance(other, (PartialEmoji, Emoji)):
+            return self.id == other.id
 
     def is_custom_emoji(self):
         """Checks if this is a custom non-Unicode emoji."""
@@ -173,6 +180,9 @@ class Emoji(Hashable):
 
     def __repr__(self):
         return '<Emoji id={0.id} name={0.name!r}>'.format(self)
+
+    def __eq__(self, other):
+        return isinstance(other, (PartialEmoji, Emoji)) and self.id == other.id
 
     @property
     def created_at(self):

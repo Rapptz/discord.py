@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -145,7 +145,7 @@ class Permissions:
         - kick_members
         - ban_members
         - administrator
-        - change_nicknames
+        - change_nickname
         - manage_nicknames
         """
         return cls(0b00110011111101111111110001010001)
@@ -526,6 +526,10 @@ class PermissionOverwrite:
     +-----------+------------------------------------------+
     | Operation |               Description                |
     +===========+==========================================+
+    | x == y    | Checks if two overwrites are equal.      |
+    +-----------+------------------------------------------+
+    | x != y    | Checks if two overwrites are not equal.  |
+    +-----------+------------------------------------------+
     | iter(x)   | Returns an iterator of (perm, value)     |
     |           | pairs. This allows this class to be used |
     |           | as an iterable in e.g. set/list/dict     |
@@ -548,6 +552,9 @@ class PermissionOverwrite:
                 raise ValueError('no permission called {0}.'.format(key))
 
             setattr(self, key, value)
+
+    def __eq__(self, other):
+        return self._values == other._values
 
     def _set(self, key, value):
         if value not in (True, None, False):

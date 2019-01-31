@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,10 +26,10 @@ DEALINGS IN THE SOFTWARE.
 
 from enum import Enum, IntEnum
 
-__all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
-           'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
-           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', 'HypeSquadHouse', 'NotificationLevel']
+__all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'SpeakingState',
+           'VerificationLevel', 'ContentFilter', 'Status', 'DefaultAvatar',
+           'RelationshipType', 'AuditLogAction', 'AuditLogActionCategory',
+           'UserFlags', 'ActivityType', 'HypeSquadHouse', 'NotificationLevel']
 
 class ChannelType(Enum):
     text     = 0
@@ -74,6 +74,15 @@ class VoiceRegion(Enum):
 
     def __str__(self):
         return self.value
+
+class SpeakingState(IntEnum):
+    none       = 0
+    voice      = 1
+    soundshare = 2
+    priority   = 4
+
+    def __str__(self):
+        return self.name
 
 class VerificationLevel(IntEnum):
     none              = 0

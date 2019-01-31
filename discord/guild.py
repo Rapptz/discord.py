@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -555,7 +555,7 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
-    def _create_channel(self, name, overwrites, channel_type, category=None, reason=None):
+    def _create_channel(self, name, overwrites, channel_type, category=None, **options):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
@@ -580,11 +580,16 @@ class Guild(Hashable):
 
             perms.append(payload)
 
-        parent_id = category.id if category else None
-        return self._state.http.create_channel(self.id, name, channel_type.value, parent_id=parent_id,
-                                               permission_overwrites=perms, reason=reason)
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
 
-    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None):
+        parent_id = category.id if category else None
+        return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
+                                               permission_overwrites=perms, **options)
+
+    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         """|coro|
 
         Creates a :class:`TextChannel` for the guild.
@@ -596,6 +601,12 @@ class Guild(Hashable):
         channel upon creation. This parameter expects a :class:`dict` of
         overwrites with the target (either a :class:`Member` or a :class:`Role`)
         as the key and a :class:`PermissionOverwrite` as the value.
+        
+        Note
+        --------
+        Creating a channel of a specified position will not update the position of
+        other channels to follow suit. A follow-up call to :meth:`~TextChannel.edit`
+        will be required to update the position of the channel in the channel list.
 
         Examples
         ----------
@@ -619,7 +630,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The channel's name.
         overwrites
             A :class:`dict` of target (either a role or a member) to
@@ -629,7 +640,17 @@ class Guild(Hashable):
             The category to place the newly created channel under.
             The permissions will be automatically synced to category if no
             overwrites are provided.
-        reason: Optional[str]
+        position: :class:`int`
+            The position in the channel list. This is a number that starts 
+            at 0. e.g. the top channel is position 0.
+        topic: Optional[:class:`str`]
+            The new channel's topic.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel.
+            The maximum value possible is `120`.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+        reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
         Raises
@@ -646,19 +667,27 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
         channel = TextChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
         return channel
 
-    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None):
+    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         """|coro|
 
-        Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
+        This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead, in addition
+        to having the following new parameters.
+        
+        Parameters
+        -----------
+        bitrate: :class:`int`
+            The channel's preferred audio bitrate in bits per second.
+        user_limit: :class:`int`
+            The channel's limit for number of members that can be in a voice channel.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
