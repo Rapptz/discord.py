@@ -6,10 +6,11 @@ from .user import ClientUser
 from .channel import VoiceChannel
 from .player import AudioSource
 
-from typing import Optional, Callable, ClassVar
+from typing import Optional, Callable, ClassVar, Tuple
 
 class VoiceClient:
     warn_nacl: ClassVar[bool]
+    supported_modes: ClassVar[Tuple[str, ...]]
 
     session_id: str
     token: str

@@ -87,6 +87,12 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     @property
     def channels(self) -> List[Union[TextChannel, VoiceChannel]]: ...
 
+    @property
+    def text_channels(self) -> List[TextChannel]: ...
+
+    @property
+    def voice_channels(self) -> List[VoiceChannel]: ...
+
 
 class DMChannel(discord.abc.Messageable, Hashable):
     id: int

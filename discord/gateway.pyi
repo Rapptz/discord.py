@@ -3,7 +3,7 @@ import asyncio
 import threading
 from .client import Client, VoiceClient
 from .activity import _ActivityTag
-from .enums import Status
+from .enums import Status, SpeakingState
 
 from typing import Any, Optional, Union, Iterable, NamedTuple, Callable, Dict, ClassVar, TypeVar, Type
 from mypy_extensions import TypedDict
@@ -108,6 +108,8 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     RESUME: ClassVar[int]
     HELLO: ClassVar[int]
     INVALIDATE_SESSION: ClassVar[int]
+    CLIENT_CONNECT: ClassVar[int]
+    CLIENT_DISCONNECT: ClassVar[int]
 
     async def send_as_json(self, data: Any) -> None: ...
 
@@ -118,9 +120,11 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     @classmethod
     async def from_client(cls: Type[_VT], client: VoiceClient, *, resume: bool = ...) -> _VT: ...
 
-    async def select_protocol(self, ip: str, port: str) -> None: ...
+    async def select_protocol(self, ip: str, port: str, mode: str) -> None: ...
 
-    async def speak(self, is_speaking: bool = ...) -> None: ...
+    async def client_connect(self) -> None: ...
+
+    async def speak(self, state: SpeakingState = ...) -> None: ...
 
     async def received_message(self, msg: Dict[str, Any]) -> None: ...
 

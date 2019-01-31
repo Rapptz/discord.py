@@ -115,13 +115,14 @@ class Guild(Hashable):
 
     async def create_text_channel(self, name: str, *,
                                   overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
-                                  category: Optional[CategoryChannel] = ...,
+                                  category: Optional[CategoryChannel] = ..., position: int = ...,
+                                  topic: str = ..., slowmode_delay: int = ..., nsfw: bool = ...,
                                   reason: Optional[str] = ...) -> TextChannel: ...
 
     async def create_voice_channel(self, name: str, *,
                                    overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
-                                   category: Optional[CategoryChannel] = ...,
-                                   reason: Optional[str] = ...) -> VoiceChannel: ...
+                                   category: Optional[CategoryChannel] = ...,  bitrate: int = ...,
+                                   user_limit: int = ..., reason: Optional[str] = ...) -> VoiceChannel: ...
 
     async def create_category(self, name: str, *,
                               overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,

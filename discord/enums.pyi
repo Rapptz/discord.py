@@ -45,6 +45,15 @@ class VoiceRegion(Enum):
     def __str__(self) -> str: ...
 
 
+class SpeakingState(Enum):
+    none: int
+    voice: int
+    soundshare: int
+    priority: int
+
+    def __str__(self) -> str: ...
+
+
 class VerificationLevel(IntEnum):
     none: int
     low: int
