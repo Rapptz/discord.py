@@ -123,10 +123,7 @@ class WebhookAdapter:
             multipart = None
         url = '%s?wait=%d' % (self._request_url, wait)
         maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
-        if isinstance(self.webhook._adapter, RequestsWebhookAdapter):
-            return self.handle_execution_response(maybe_coro, wait=wait)
-        else:
-            return self.handle_execution_response(maybe_coro, wait=wait, f=f)
+        return self.handle_execution_response(maybe_coro, wait=wait, f=f)
 
 class AsyncWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with aiohttp.
@@ -279,7 +276,13 @@ class RequestsWebhookAdapter(WebhookAdapter):
             else:
                 raise HTTPException(r, data)
 
-    def handle_execution_response(self, response, *, wait):
+    def handle_execution_response(self, response, *, wait, f=None):
+        if f:
+            if isinstance(f, list):
+                for file in f:
+                    file.close()
+            else:
+                f.close()
         if not wait:
             return response
 
