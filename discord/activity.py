@@ -200,7 +200,7 @@ class Activity(_ActivityTag):
         except KeyError:
             return None
         else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png?size=640'.format(self.application_id, small_image)
+            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png?size=512'.format(self.application_id, small_image)
     @property
     def large_image_text(self):
         """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
