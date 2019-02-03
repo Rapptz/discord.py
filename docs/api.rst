@@ -80,7 +80,7 @@ overriding the specific events. For example: ::
 
     class MyClient(discord.Client):
         async def on_message(self, message):
-            if message.author != self.user:
+            if message.author == self.user:
                 return
 
             if message.content.startswith('$hello'):
