@@ -247,8 +247,18 @@ class Server(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                channel = Channel(server=self, **c)
-                self._add_channel(channel)
+                if self.get_channel(c["id"]) == None:
+                    parent_id = c["parent_id"] if "parent_id" in c else None
+                    if parent_id != None and self.get_channel(parent_id) == None:
+                        for i in range(len(channels)):
+                            if channels[i]["id"] == parent_id:
+                                parentData = channels[i]
+                                parentChannel = Channel(server=self, **parentData)
+                                self._add_channel(parentChannel)
+                                break
+
+                    channel = Channel(server=self, parent=self.get_channel(parent_id), **c)
+                    self._add_channel(channel)
 
 
     @utils.cached_slot_property('_default_role')

@@ -1991,8 +1991,10 @@ class Client:
             The new channel's bitrate. Voice only.
         user_limit : int
             The new channel's user limit. Voice only.
-		nsfw : bool
+        nsfw : bool
             The new channel's nsfw value. Text only.
+        parent : :class:`Channel`
+            The new category the channel belongs to.
 
         Raises
         ------
@@ -2001,6 +2003,14 @@ class Client:
         HTTPException
             Editing the channel failed.
         """
+
+        if "parent" in options:
+            parent = options["parent"]
+            if not isinstance(parent, Channel):
+                raise InvalidArgument('Expected Channel received {0.__name__}'.format(type(parent)))
+
+            options["parent_id"] = parent.id
+            del options["parent"]
 
         keys = ('name', 'topic', 'position')
         for key in keys:
