@@ -83,11 +83,13 @@ class Channel(Hashable):
         If the channel is a nsfw channel.
     parent : :class:`Channel`
         The category the channel belongs to.
+    rate_limit_per_user : int
+        The amount of seconds a user has to wait before sending another message. None if not a Text channel.
     """
 
     __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
                   'is_private', 'type', 'bitrate', 'user_limit',
-                  '_permission_overwrites', 'nsfw', 'parent' ]
+                  '_permission_overwrites', 'nsfw', 'parent', 'rate_limit_per_user' ]
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -108,6 +110,7 @@ class Channel(Hashable):
         self.user_limit = kwargs.get('user_limit')
         self.nsfw = kwargs.get('nsfw')
         self.parent = kwargs.get('parent')
+        self.rate_limit_per_user = kwargs.get('rate_limit_per_user')
         try:
             self.type = ChannelType(self.type)
         except:

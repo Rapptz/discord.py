@@ -454,7 +454,7 @@ class HTTPClient:
     # Channel management
 
     def edit_channel(self, channel_id, **options):
-        valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position', 'nsfw', 'parent_id')
+        valid_keys = ('name', 'topic', 'bitrate', 'user_limit', 'position', 'nsfw', 'parent_id', 'rate_limit_per_user')
         payload = {
             k: v for k, v in options.items() if k in valid_keys
         }

@@ -1995,6 +1995,8 @@ class Client:
             The new channel's nsfw value. Text only.
         parent : :class:`Channel`
             The new category the channel belongs to.
+        rate_limit_per_user : int
+            The new amount of seconds a user has to wait before sending another message. Text only.
 
         Raises
         ------
