@@ -79,11 +79,13 @@ class Channel(Hashable):
         If :attr:`type` is not :attr:`ChannelType.voice` then this is always an empty array.
     user_limit : int
         The channel's limit for number of members that can be in a voice channel.
+	nsfw : bool
+		If the channel is a nsfw channel.
     """
 
     __slots__ = [ 'voice_members', 'name', 'id', 'server', 'topic', 'position',
                   'is_private', 'type', 'bitrate', 'user_limit',
-                  '_permission_overwrites' ]
+                  '_permission_overwrites', 'nsfw' ]
 
     def __init__(self, **kwargs):
         self._update(**kwargs)
@@ -102,6 +104,7 @@ class Channel(Hashable):
         self.bitrate = kwargs.get('bitrate')
         self.type = kwargs.get('type')
         self.user_limit = kwargs.get('user_limit')
+        self.nsfw = kwargs.get('nsfw')
         try:
             self.type = ChannelType(self.type)
         except:
@@ -442,5 +445,3 @@ class PrivateChannel(Hashable):
             base.kick_members = True
 
         return base
-
-

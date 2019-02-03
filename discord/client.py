@@ -1991,6 +1991,8 @@ class Client:
             The new channel's bitrate. Voice only.
         user_limit : int
             The new channel's user limit. Voice only.
+		nsfw : bool
+            The new channel's nsfw value. Text only.
 
         Raises
         ------
