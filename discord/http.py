@@ -148,7 +148,7 @@ class HTTPClient:
             # wait until the global lock is complete
             await self._global_over.wait()
 
-        await lock
+        await lock.acquire()
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
                 async with self._session.request(method, url, **kwargs) as r:
