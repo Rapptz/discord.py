@@ -64,11 +64,12 @@ class Paginator:
     max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
     """
-    def __init__(self, prefix='```', suffix='```', max_size=2000):
+    def __init__(self, prefix='```', suffix='```', max_size=2000, *, line_ending = "\n"):
         self.prefix = prefix
         self.suffix = suffix
         self.max_size = max_size - len(suffix)
-        self._current_page = [prefix]
+        self.line_ending = line_ending
+        self._current_page = []
         self._count = len(prefix) + 1 # prefix + newline
         self._pages = []
 
@@ -105,8 +106,7 @@ class Paginator:
 
     def close_page(self):
         """Prematurely terminate a page."""
-        self._current_page.append(self.suffix)
-        self._pages.append('\n'.join(self._current_page))
+        self._pages.append(self.prefix + "\n"+ self.line_ending.join(self._current_page) + "\n"+ self.suffix)
         self._current_page = [self.prefix]
         self._count = len(self.prefix) + 1 # prefix + newline
 
