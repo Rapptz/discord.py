@@ -61,10 +61,12 @@ class Paginator:
         The prefix inserted to every page. e.g. three backticks.
     suffix: :class:`str`
         The suffix appended at the end of every page. e.g. three backticks.
+    line_ending: :class:`str`
+        The string inserted at the end of a line. e.g. a newline.
     max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
     """
-    def __init__(self, prefix='```', suffix='```', max_size=2000, *, line_ending = "\n"):
+    def __init__(self, prefix='```', suffix='```', line_ending = "\n", max_size=2000):
         self.prefix = prefix
         self.suffix = suffix
         self.max_size = max_size - len(suffix)
@@ -106,8 +108,8 @@ class Paginator:
 
     def close_page(self):
         """Prematurely terminate a page."""
-        self._pages.append(self.prefix + "\n"+ self.line_ending.join(self._current_page) + "\n"+ self.suffix)
-        self._current_page = [self.prefix]
+        self._pages.append(self.prefix + "\n" + self.line_ending.join(self._current_page) + "\n" + self.suffix)
+        self._current_page = []
         self._count = len(self.prefix) + 1 # prefix + newline
 
     @property
