@@ -62,13 +62,15 @@ class Emoji(Hashable):
         If colons are required to use this emoji in the client (:PJSalt: vs PJSalt).
     managed : bool
         If this emoji is managed by a Twitch integration.
+    animated : bool
+        If this emoji is animated
     server : :class:`Server`
         The server the emoji belongs to.
     roles : List[:class:`Role`]
         A list of :class:`Role` that is allowed to use this emoji. If roles is empty,
         the emoji is unrestricted.
     """
-    __slots__ = ["require_colons", "managed", "id", "name", "roles", 'server']
+    __slots__ = ["require_colons", "managed", "id", "animated", "name", "roles", 'server']
 
     def __init__(self, **kwargs):
         self.server = kwargs.pop('server')
@@ -79,6 +81,7 @@ class Emoji(Hashable):
         self.managed = emoji.get('managed')
         self.id = emoji.get('id')
         self.name = emoji.get('name')
+        self.animated = emoji.get('animated')
         self.roles = emoji.get('roles', [])
         if self.roles:
             roles = set(self.roles)
@@ -94,6 +97,8 @@ class Emoji(Hashable):
         return self._iterator()
 
     def __str__(self):
+        if self.animated:
+            return "<a:{0.name}:{0.id}>".format(self)
         return "<:{0.name}:{0.id}>".format(self)
 
     @property
