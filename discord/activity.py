@@ -94,7 +94,7 @@ class Activity(_ActivityTag):
 
     Attributes
     ------------
-    application_id: :class:`str`
+    application_id: :class:`int`
         The application ID of the game.
     name: :class:`str`
         The name of the activity.
