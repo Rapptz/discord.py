@@ -40,7 +40,6 @@ import warnings
 from .errors import InvalidArgument
 
 DISCORD_EPOCH = 1420070400000
-UNICODE_WIDE_CHAR_TYPE = u"WFA"
 
 class cached_property:
     def __init__(self, function):
@@ -327,9 +326,17 @@ class SnowflakeList(array.array):
         i = bisect_left(self, element)
         return i != len(self) and self[i] == element
 
-def _string_width(string):
+_IS_ASCII = re.compile(r'^[\x00-\x7f]+$')
+
+def _string_width(string, *, _IS_ASCII=_IS_ASCII):
     """Returns string's width."""
+    match = _IS_ASCII.match(string)
+    if match:
+        return match.endpos
+
+    UNICODE_WIDE_CHAR_TYPE = 'WFA'
     width = 0
+    func = unicodedata.east_asian_width
     for char in string:
-        width += 2 if unicodedata.east_asian_width(char) in UNICODE_WIDE_CHAR_TYPE else 1
+        width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
     return width
