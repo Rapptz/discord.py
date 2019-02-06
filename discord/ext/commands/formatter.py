@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import itertools
 import inspect
+import discord.utils
 
 from .core import GroupMixin, Command
 from .errors import CommandError
@@ -172,7 +173,7 @@ class HelpFormatter:
         try:
             commands = self.command.all_commands if not self.is_cog() else self.context.bot.all_commands
             if commands:
-                return max(map(lambda c: len(c.name) if self.show_hidden or not c.hidden else 0, commands.values()))
+                return max(map(lambda c: discord.utils._string_width(c.name) if self.show_hidden or not c.hidden else 0, commands.values()))
             return 0
         except AttributeError:
             return len(self.command.name)
@@ -250,8 +251,8 @@ class HelpFormatter:
             if name in command.aliases:
                 # skip aliases
                 continue
-
-            entry = '  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width)
+            width_gap = discord.utils._string_width(name) - len(name)
+            entry = '  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width-width_gap)
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 

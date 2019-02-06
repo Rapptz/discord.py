@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import array
 import asyncio
+import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
 import datetime
@@ -39,6 +40,7 @@ import warnings
 from .errors import InvalidArgument
 
 DISCORD_EPOCH = 1420070400000
+UNICODE_WIDE_CHAR_TYPE = u"WFA"
 
 class cached_property:
     def __init__(self, function):
@@ -324,3 +326,10 @@ class SnowflakeList(array.array):
     def has(self, element):
         i = bisect_left(self, element)
         return i != len(self) and self[i] == element
+
+def _string_width(string):
+    """Returns string's width."""
+    width = 0
+    for char in string:
+        width += 2 if unicodedata.east_asian_width(char) in UNICODE_WIDE_CHAR_TYPE else 1
+    return width
