@@ -34,7 +34,7 @@ from email.utils import parsedate_to_datetime
 import functools
 from inspect import isawaitable as _isawaitable
 import json
-from re import split as re_split
+import re
 import warnings
 
 from .errors import InvalidArgument
@@ -79,7 +79,7 @@ def cached_slot_property(name):
 
 def parse_time(timestamp):
     if timestamp:
-        return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))
+        return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
 
 def deprecated(instead=None):
