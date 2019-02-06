@@ -4,7 +4,7 @@ from aiohttp.web import Request
 from .permissions import Permissions
 from .guild import Guild
 
-from typing import Any, Optional, Union, List, Iterable, TypeVar, Type, Callable, Coroutine, Generic, overload
+from typing import Any, Optional, Union, List, Iterable, TypeVar, Type, Callable, Coroutine, Generic, Pattern, overload
 
 T = TypeVar('T')
 U_co = TypeVar('U_co', covariant=True)
@@ -68,3 +68,5 @@ async def async_all(gen: Iterable[Union[Any, Coroutine[Any, Any, Any]]], *, chec
 async def sane_wait_for(futures: List[asyncio.Future], *, timeout: float, loop: asyncio.AbstractEventLoop) -> None: ...
 
 def valid_icon_size(size: int) -> bool: ...
+
+def _string_width(string: str, *, _IS_ASCII: Pattern[str] = ...) -> int: ...
