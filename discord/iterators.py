@@ -160,7 +160,7 @@ class ReactionIterator(_AsyncIterator[IT]):
 
             if data:
                 self.limit -= retrieve
-                self.after = Object(id=int(data[0]['id']))
+                self.after = Object(id=int(data[-1]['id']))
 
             if self.guild is None:
                 for element in reversed(data):

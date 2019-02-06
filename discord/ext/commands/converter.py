@@ -475,7 +475,7 @@ class clean_content(Converter):
         if self.escape_markdown:
             transformations = {
                 re.escape(c): '\\' + c
-                for c in ('*', '`', '_', '~', '\\')
+                for c in ('*', '`', '_', '~', '\\', '||')
             }
 
             def replace(obj):

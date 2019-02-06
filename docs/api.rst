@@ -80,7 +80,7 @@ overriding the specific events. For example: ::
 
     class MyClient(discord.Client):
         async def on_message(self, message):
-            if message.author != self.user:
+            if message.author == self.user:
                 return
 
             if message.content.startswith('$hello'):
@@ -216,7 +216,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_message_delete(message)
 
     Called when a message is deleted. If the message is not found in the
-    :attr:`Client.messages` cache, then these events will not be called. This
+    internal message cache, then these events will not be called. This
     happens if the message is too old or the client is participating in high
     traffic guilds. To fix this, increase the ``max_messages`` option of
     :class:`Client`.
@@ -242,7 +242,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_message_edit(before, after)
 
     Called when a :class:`Message` receives an update event. If the message is not found
-    in the :attr:`Client.messages` cache, then these events will not be called.
+    in the internal message cache, then these events will not be called.
     This happens if the message is too old or the client is participating in high
     traffic guilds. To fix this, increase the ``max_messages`` option of :class:`Client`.
 
@@ -278,7 +278,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_reaction_add(reaction, user)
 
     Called when a message has a reaction added to it. Similar to on_message_edit,
-    if the message is not found in the :attr:`Client.messages` cache, then this
+    if the message is not found in the internal message cache, then this
     event will not be called.
 
     .. note::
@@ -299,7 +299,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_reaction_remove(reaction, user)
 
     Called when a message has a reaction removed from it. Similar to on_message_edit,
-    if the message is not found in the :attr:`Client.messages` cache, then this event
+    if the message is not found in the internal message cache, then this event
     will not be called.
 
     .. note::
@@ -320,7 +320,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_reaction_clear(message, reactions)
 
     Called when a message has all its reactions removed from it. Similar to :func:`on_message_edit`,
-    if the message is not found in the :attr:`Client.messages` cache, then this event
+    if the message is not found in the internal message cache, then this event
     will not be called.
 
     :param message: The :class:`Message` that had its reactions cleared.

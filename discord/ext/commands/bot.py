@@ -439,9 +439,9 @@ class BotBase(GroupMixin[CT]):
         Parameters
         -----------
         func : :ref:`coroutine <coroutine>`
-            The extra event to listen to.
+            The function to call.
         name : Optional[str]
-            The name of the command to use. Defaults to ``func.__name__``.
+            The name of the event to listen for. Defaults to ``func.__name__``.
 
         Example
         --------
