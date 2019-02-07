@@ -29,7 +29,6 @@ import re
 
 from . import utils
 from .reaction import Reaction
-from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
@@ -679,7 +678,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        emoji = utils.emoji_reaction(emoji)
+        emoji = utils._emoji_reaction(emoji)
         await self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
     async def remove_reaction(self, emoji, member):
@@ -714,7 +713,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        emoji = utils.emoji_reaction(emoji)
+        emoji = utils._emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
             await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)

@@ -26,8 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 from .iterators import ReactionIterator
-from .emoji import Emoji, PartialEmoji
-from .errors import InvalidArgument
 
 class Reaction:
     """Represents a reaction to a message.

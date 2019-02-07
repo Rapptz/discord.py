@@ -36,6 +36,8 @@ from inspect import isawaitable as _isawaitable
 import json
 import re
 import warnings
+from emoji import Emoji, PartialEmoji
+from reaction import Reaction
 
 from .errors import InvalidArgument
 
@@ -341,7 +343,7 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
         width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
     return width
 
-def emoji_reaction(emoji):
+def _emoji_reaction(emoji):
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
     if isinstance(emoji, Emoji):
