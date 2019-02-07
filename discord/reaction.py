@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from . import utils
 from .iterators import ReactionIterator
 from .emoji import Emoji, PartialEmoji
 from .errors import InvalidArgument
@@ -79,19 +80,6 @@ class Reaction:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
-    @staticmethod
-    def _emoji_reaction(emoji):
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-        if isinstance(emoji, Emoji):
-            return '%s:%s' % (emoji.name, emoji.id)
-        if isinstance(emoji, PartialEmoji):
-            return emoji._as_reaction()
-        if isinstance(emoji, str):
-            return emoji # this is okay
-
-        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
-
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.emoji == self.emoji
 
@@ -127,7 +115,7 @@ class Reaction:
             #removes the reaction
             await r.remove()
         '''
-        await self.message._state.http.remove_reaction(self.message.id, self.message.channel.id, self._emoji_reaction(self.emoji), self.user_id)
+        await self.message._state.http.remove_reaction(self.message.id, self.message.channel.id, utils.emoji_reaction(self.emoji), self.user_id)
 
     def users(self, limit=None, after=None):
         """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.

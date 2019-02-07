@@ -340,3 +340,15 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
     for char in string:
         width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
     return width
+
+def emoji_reaction(emoji):
+    if isinstance(emoji, Reaction):
+        emoji = emoji.emoji
+    if isinstance(emoji, Emoji):
+        return '%s:%s' % (emoji.name, emoji.id)
+    if isinstance(emoji, PartialEmoji):
+        return emoji._as_reaction()
+    if isinstance(emoji, str):
+        return emoji # this is okay
+
+    raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
