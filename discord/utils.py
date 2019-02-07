@@ -36,8 +36,8 @@ from inspect import isawaitable as _isawaitable
 import json
 import re
 import warnings
-from reaction import Reaction
 
+from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .errors import InvalidArgument
 
