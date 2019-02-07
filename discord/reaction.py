@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .iterators import ReactionIterator
+from .emoji import Emoji, PartialEmoji
+from .errors import InvalidArgument
 
 class Reaction:
     """Represents a reaction to a message.
@@ -63,18 +65,32 @@ class Reaction:
     message: :class:`Message`
         Message this reaction is for.
     """
-    __slots__ = ('message', 'count', 'emoji', 'me')
+    __slots__ = ('message', 'count', 'emoji', 'me', 'user_id')
 
     def __init__(self, *, message, data, emoji=None):
         self.message = message
         self.emoji = emoji or message._state.get_reaction_emoji(data['emoji'])
         self.count = data.get('count', 1)
         self.me = data.get('me')
+        self.user_id = data.get('user_id')
 
     @property
     def custom_emoji(self):
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
+
+    @staticmethod
+    def _emoji_reaction(emoji):
+        if isinstance(emoji, Reaction):
+            emoji = emoji.emoji
+        if isinstance(emoji, Emoji):
+            return '%s:%s' % (emoji.name, emoji.id)
+        if isinstance(emoji, PartialEmoji):
+            return emoji._as_reaction()
+        if isinstance(emoji, str):
+            return emoji # this is okay
+
+        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.emoji == self.emoji
@@ -92,6 +108,26 @@ class Reaction:
 
     def __repr__(self):
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
+
+    async def remove(self):
+        '''Removes this reaction from the message.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to remove the reaction.
+        HTTPException
+            Removing the reaction failed.
+
+        Examples
+        ------
+        Usage ::
+            #waits for a reaction
+            r, u = await bot.wait_for('reaction_add', check=lambda r, u: u.id == ctx.author.id)
+            #removes the reaction
+            await r.remove()
+        '''
+        await self.message._state.http.remove_reaction(self.message.id, self.message.channel.id, self._emoji_reaction(self.emoji), self.user_id)
 
     def users(self, limit=None, after=None):
         """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
