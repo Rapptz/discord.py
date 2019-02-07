@@ -320,6 +320,10 @@ class Member(discord.abc.Messageable, _BaseUser):
         .. note::
 
             A user may have multiple activities, these can be accessed under :attr:`activities`.
+            
+        .. note::
+            If a User is listening to Spotify and the song's name is longer than 128 characters, this will return None.
+            This is a discord API limitation.
         """
         if self.activities:
             return self.activities[0]
