@@ -142,11 +142,31 @@ class HelpFormatter:
     width: :class:`int`
         The maximum number of characters that fit in a line.
         Defaults to 80.
+    ending_note 
+        The ending note modify strings that is at end of help page. Useful for i18n.
+        This property could either be a plain string or a callable that takes
+        :class:`.HelpFormatter` as its parameter and returns :class:`str`.
+        Defaults to a callable like
+
+        .. code-block:: python
+
+            async def _ending_note_default(formatter):
+                command_name = formatter.context.invoked_with
+                return "Type {0}{1} command for more info on a command.\\n" \\
+                    "You can also type {0}{1} category for more info on a category." \\
+                    .format(formatter.clean_prefix, command_name)
+
+    commands_heading: :class:`str`
+        The command list's heading string used when the help command is invoked with a categoly name.
+        Useful for i18n. Defaults to ``"Commands:"``
     """
-    def __init__(self, show_hidden=False, show_check_failure=False, width=80):
+    def __init__(self, show_hidden=False, show_check_failure=False, width=80,
+                 ending_note=None, commands_heading="Commands:"):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
+        self.ending_note = ending_note
+        self.commands_heading = commands_heading
 
     def has_subcommands(self):
         """:class:`bool`: Specifies if the command has subcommands."""
@@ -194,10 +214,26 @@ class HelpFormatter:
         cmd = self.command
         return prefix + cmd.signature
 
-    def get_ending_note(self):
-        command_name = self.context.invoked_with
-        return "Type {0}{1} command for more info on a command.\n" \
-               "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
+    async def get_ending_note(self):
+        async def _ending_note_default(formatter):
+            command_name = formatter.context.invoked_with
+            return "Type {0}{1} command for more info on a command.\n" \
+                "You can also type {0}{1} category for more info on a category." \
+                .format(formatter.clean_prefix, command_name)
+
+        ending_note = self.ending_note
+        if ending_note is None:
+            ending_note = _ending_note_default
+
+        if isinstance(ending_note, str):
+            return ending_note
+        if callable(ending_note):
+            ending_note_callable = await discord.utils.maybe_coroutine(ending_note, self)
+            return ending_note_callable
+
+        # ending_note is neither a str nor a callable
+        raise TypeError("ending_note must be plain string or a callable "
+                        "returning string, not {}".format(ending_note.__class__.__name__))
 
     async def filter_command_list(self):
         """Returns a filtered list of commands based on the two attributes
@@ -332,11 +368,11 @@ class HelpFormatter:
         else:
             filtered = sorted(filtered)
             if filtered:
-                self._paginator.add_line('Commands:')
+                self._paginator.add_line(self.commands_heading)
                 self._add_subcommands_to_page(max_width, filtered)
 
         # add the ending note
         self._paginator.add_line()
-        ending_note = self.get_ending_note()
+        ending_note = await self.get_ending_note()
         self._paginator.add_line(ending_note)
         return self._paginator.pages
