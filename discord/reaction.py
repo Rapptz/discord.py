@@ -93,6 +93,29 @@ class Reaction:
     def __repr__(self):
         return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
 
+    async def remove(self, member):
+        """|coro|
+
+        Remove the reaction by the provided :class:`discord.member.Member` from the message.
+
+        If the reaction is not your own (i.e. ``member`` parameter is not you) then
+        the :attr:`discord.permissions.Permissions.manage_messages` permission is needed.
+
+        The ``member`` parameter must represent a member and meet
+        the :class:`abc.Snowflake` abc.
+
+        Raises
+        -------
+        HTTPException
+            Removing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to remove the reaction.
+        NotFound
+            The member you specificed, or the reactions message was not found.
+        """
+
+        await self.message.remove_reaction(self.emoji, member)
+
     def users(self, limit=None, after=None):
         """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
 
