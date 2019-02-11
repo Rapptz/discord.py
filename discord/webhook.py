@@ -141,7 +141,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
     def __init__(self, session):
         self.session = session
-        self.loop = session.loop
+        self.loop = asyncio.get_event_loop()
 
     async def request(self, verb, url, payload=None, multipart=None):
         headers = {}
