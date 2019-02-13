@@ -37,18 +37,25 @@ class PartialInviteGuild(NamedTuple):
 
     def icon_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
 
+    @property
+    def splash_url(self) -> str: ...
+
+    def splash_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+
 
 class Invite(Hashable):
     max_age: int
     code: str
-    guild: Guild
+    guild: Union[Guild, PartialInviteGuild]
     revoked: bool
     created_at: datetime.datetime
     temporary: bool
     uses: int
     max_uses: int
     inviter: User
-    channel: Union[TextChannel, VoiceChannel]
+    approximate_member_count: Optional[int]
+    approximate_presence_count: Optional[int]
+    channel: Union[TextChannel, VoiceChannel, PartialInviteChannel]
 
     def __str__(self) -> str: ...
 
