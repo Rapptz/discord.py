@@ -4,8 +4,39 @@ from .mixins import Hashable
 from .guild import Guild
 from .user import User
 from .channel import TextChannel, VoiceChannel
+from .enums import ChannelType, VerificationLevel
 
-from typing import Optional, Union
+from typing import Optional, Union, NamedTuple, List
+
+
+class PartialInviteChannel(NamedTuple):
+    id: int
+    name: str
+    type: ChannelType
+
+    @property
+    def mention(self) -> str: ...
+
+    @property
+    def created_at(self) -> datetime.datetime: ...
+
+
+class PartialInviteGuild(NamedTuple):
+    features: List[str]
+    icon: Optional[str]
+    id: int
+    name: str
+    splash: Optional[str]
+    verification_level: VerificationLevel
+
+    @property
+    def created_at(self) -> datetime.datetime: ...
+
+    @property
+    def icon_url(self) -> str: ...
+
+    def icon_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+
 
 class Invite(Hashable):
     max_age: int
