@@ -1,7 +1,7 @@
 import discord.abc
 
 from .channel import DMChannel, GroupChannel
-from .enums import DefaultAvatar, HypeSquadHouse
+from .enums import DefaultAvatar, HypeSquadHouse, PremiumType
 from .colour import Colour
 from .guild import Guild
 from .permissions import Permissions
@@ -101,6 +101,7 @@ class ClientUser(BaseUser):
     email: Optional[str]
     mfa_enabled: bool
     premium: bool
+    premium_type: Optional[PremiumType]
 
     def __repr__(self) -> str: ...
 

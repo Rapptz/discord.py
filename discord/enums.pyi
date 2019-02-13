@@ -172,6 +172,11 @@ class HypeSquadHouse(Enum):
     brilliance: int
     balance: int
 
+class PremiumType(Enum):
+    nitro_classic: int
+    nitro: int
+
+
 _EnumType = TypeVar('_EnumType', bound=Enum)
 _IntEnumType = TypeVar('_IntEnumType', bound=IntEnum)
 

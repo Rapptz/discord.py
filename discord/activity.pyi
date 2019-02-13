@@ -11,7 +11,7 @@ class _ActivityTag:
     ...
 
 class Activity(_ActivityTag):
-    application_id: str
+    application_id: int
     name: str
     url: str
     type: ActivityType
@@ -27,7 +27,7 @@ class Activity(_ActivityTag):
     def __init__(self, *, state: Optional[str] = ..., details: Optional[str] = ...,
                  timestamps: RawTimestampsDict = ..., assets: RawActivityAssetsDict = ...,
                  party: RawActivityPartyDict = ...,
-                 application_id: Optional[str] = ..., name: Optional[str] = ...,
+                 application_id: Optional[Union[str, int]] = ..., name: Optional[str] = ...,
                  url: Optional[str] = ..., flags: int = ..., sync_id: Optional[str] = ...,
                  session_id: Optional[str] = ..., type: ActivityType = ...) -> None: ...
 
