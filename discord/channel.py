@@ -635,7 +635,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def voice_channels(self):
-        """List[:class:`VoiceChannel`]: Returns the text channels that are under this category."""
+        """List[:class:`VoiceChannel`]: Returns the voice channels that are under this category."""
         ret = [c for c in self.guild.channels
             if c.category_id == self.id
             and isinstance(c, VoiceChannel)]
