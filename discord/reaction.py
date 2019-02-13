@@ -96,7 +96,7 @@ class Reaction:
     async def remove(self, user):
         """|coro|
 
-        Remove the reaction by the provided user from the message.
+        Remove the reaction by the provided :class:`User` from the message.
 
         If the reaction is not your own (i.e. ``user`` parameter is not you) then
         the :attr:`discord.permissions.Permissions.manage_messages` permission is needed.
@@ -107,7 +107,7 @@ class Reaction:
         Parameters
         -----------
         user: :class:`abc.Snowflake`
-             The user or member for which to remove the reaction.
+             The user or member from which to remove the reaction.
 
         Raises
         -------
@@ -116,7 +116,7 @@ class Reaction:
         Forbidden
             You do not have the proper permissions to remove the reaction.
         NotFound
-            The user you specificed, or the reactions' message was not found.
+            The user you specified, or the reaction's message was not found.
         """
 
         await self.message.remove_reaction(self.emoji, user)
