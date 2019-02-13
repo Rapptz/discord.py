@@ -145,13 +145,17 @@ class HelpFormatter:
     commands_heading: :class:`str`
         The command list's heading string used when the help command is invoked with a categoly name.
         Useful for i18n. Defaults to ``"Commands:"``
+    no_categoly: :class:`str`
+        The string used when there is a command which does not belong to any categoly(cog).
+        Useful for i18n. Defaults to ``"No Categoly"``
     """
     def __init__(self, show_hidden=False, show_check_failure=False, width=80,
-                 commands_heading="Commands:"):
+                 commands_heading="Commands:", no_categoly="No Categoly"):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
         self.commands_heading = commands_heading
+        self.no_categoly = no_categoly
 
     def has_subcommands(self):
         """:class:`bool`: Specifies if the command has subcommands."""
@@ -322,7 +326,7 @@ class HelpFormatter:
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return cog + ':' if cog is not None else '\u200bNo Category:'
+            return cog + ':' if cog is not None else '\u200b' + self.no_categoly + ':'
 
         filtered = await self.filter_command_list()
         if self.is_bot():
