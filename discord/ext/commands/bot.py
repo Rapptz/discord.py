@@ -904,7 +904,7 @@ class BotBase(GroupMixin):
             exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
-    async def process_commands(self, message):
+    async def process_commands(self, message, ignore_bots=True):
         """|coro|
 
         This function processes the commands that have been registered
@@ -925,8 +925,10 @@ class BotBase(GroupMixin):
         -----------
         message: :class:`discord.Message`
             The message to process commands for.
+        ignore_bots: :class:`bool`
+            Whether bots are ignored while processing commands. Defaults to False.
         """
-        if message.author.bot:
+        if ignore_bots and message.author.bot:
             return
 
         ctx = await self.get_context(message)
