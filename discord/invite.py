@@ -24,9 +24,146 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time
+from .utils import parse_time, valid_icon_size
 from .mixins import Hashable
 from .object import Object
+from .enums import ChannelType, VerificationLevel, try_enum
+from collections import namedtuple
+
+VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
+
+class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
+    """Represents a "partial" invite channel.
+
+    This model will be given when the user is not part of the
+    guild the :class:`Invite` resolves to.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial channels are the same.
+
+        .. describe:: x != y
+
+            Checks if two partial channels are not the same.
+
+        .. describe:: hash(x)
+
+            Return the partial channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the partial channel's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The partial channel's name.
+    id: :class:`int`
+        The partial channel's ID.
+    type: :class:`ChannelType`
+        The partial channel's type.
+    """
+
+    __slots__ = ()
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def mention(self):
+        """:class:`str` : The string that allows you to mention the channel."""
+        return '<#%s>' % self.id
+
+    @property
+    def created_at(self):
+        """Returns the channel's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon id name splash verification_level')):
+    """Represents a "partial" invite guild.
+
+    This model will be given when the user is not part of the
+    guild the :class:`Invite` resolves to.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial guilds are the same.
+
+        .. describe:: x != y
+
+            Checks if two partial guilds are not the same.
+
+        .. describe:: hash(x)
+
+            Return the partial guild's hash.
+
+        .. describe:: str(x)
+
+            Returns the partial guild's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The partial guild's name.
+    id: :class:`int`
+        The partial guild's ID.
+    verification_level: :class:`VerificationLevel`
+        The partial guild's verification level.
+    features: List[:class:`str`]
+        A list of features the guild has. See :attr:`Guild.features` for more information.
+    icon: Optional[:class:`str`]
+        The partial guild's icon.
+    splash: Optional[:class:`str`]
+        The partial guild's invite splash.
+    """
+
+    __slots__ = ()
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def created_at(self):
+        """Returns the guild's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def icon_url(self):
+        """Returns the URL version of the guild's icon. Returns an empty string if it has no icon."""
+        return self.icon_url_as()
+
+    def icon_url_as(self, *, format='webp', size=1024):
+        """:class:`str`: The same operation as :meth:`Guild.icon_url_as`."""
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
+        if self.icon is None:
+            return ''
+
+        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
+
+    @property
+    def splash_url(self):
+        """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
+        return self.splash_url_as()
+
+    def splash_url_as(self, *, format='webp', size=2048):
+        """:class:`str`: The same operation as :meth:`Guild.splash_url_as`."""
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
+        if self.splash is None:
+            return ''
+
+        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.{1}?size={2}'.format(self, format, size)
 
 class Invite(Hashable):
     """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
@@ -58,7 +195,7 @@ class Invite(Hashable):
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
-    guild: :class:`Guild`
+    guild: Union[:class:`Guild`, :class:`PartialInviteGuild`]
         The guild the invite is for.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
@@ -73,13 +210,19 @@ class Invite(Hashable):
         How many times the invite can be used.
     inviter: :class:`User`
         The user who created the invite.
-    channel: :class:`abc.GuildChannel`
+    approximate_member_count: Optional[:class:`int`]
+        The approximate number of members in the guild.
+    approximate_presence_count: Optional[:class:`int`]
+        The approximate number of members currently active in the guild.
+        This includes idle, dnd, online, and invisible members. Offline members are excluded.
+    channel: Union[:class:`abc.GuildChannel`, :class:`PartialInviteChannel`]
         The channel the invite is for.
     """
 
 
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                 'temporary', 'max_uses', 'inviter', 'channel', '_state')
+                 'temporary', 'max_uses', 'inviter', 'channel', '_state',
+                 'approximate_member_count', 'approximate_presence_count' )
 
     def __init__(self, *, state, data):
         self._state = state
@@ -91,6 +234,8 @@ class Invite(Hashable):
         self.temporary = data.get('temporary')
         self.uses = data.get('uses')
         self.max_uses = data.get('max_uses')
+        self.approximate_presence_count = data.get('approximate_presence_count')
+        self.approximate_member_count = data.get('approximate_member_count')
 
         inviter_data = data.get('inviter')
         self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
@@ -104,17 +249,16 @@ class Invite(Hashable):
         if guild is not None:
             channel = guild.get_channel(channel_id)
         else:
-            guild = Object(id=guild_id)
-            channel = Object(id=channel_id)
-            guild.name = data['guild']['name']
-
-            guild.splash = data['guild']['splash']
-            guild.splash_url = ''
-            if guild.splash:
-                guild.splash_url = 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.jpg?size=2048'.format(guild)
-
-            channel.name = data['channel']['name']
-
+            channel_data = data['channel']
+            guild_data = data['guild']
+            channel_type = try_enum(ChannelType, channel_data['type'])
+            channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
+            guild = PartialInviteGuild(id=guild_id,
+                                       name=guild_data['name'],
+                                       features=guild_data.get('features', []),
+                                       icon=guild_data.get('icon'),
+                                       splash=guild_data.get('splash'),
+                                       verification_level=try_enum(VerificationLevel, guild_data.get('verification_level')))
         data['guild'] = guild
         data['channel'] = channel
         return cls(state=state, data=data)

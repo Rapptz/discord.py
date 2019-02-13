@@ -2035,6 +2035,17 @@ GroupChannel
     .. autocomethod:: typing
         :async-with:
 
+PartialInviteGuild
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PartialInviteGuild()
+    :members:
+
+PartialInviteChannel
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PartialInviteChannel()
+    :members:
 
 Invite
 ~~~~~~~

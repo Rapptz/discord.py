@@ -35,7 +35,7 @@ from .permissions import Permissions, PermissionOverwrite
 from .role import Role
 from .file import File
 from .colour import Color, Colour
-from .invite import Invite
+from .invite import Invite, PartialInviteChannel, PartialInviteGuild
 from .object import Object
 from .reaction import Reaction
 from . import utils, opus, abc
