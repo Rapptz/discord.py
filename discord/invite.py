@@ -24,11 +24,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time
+from .utils import parse_time, valid_icon_size
 from .mixins import Hashable
 from .object import Object
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
+
+VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
 class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
     """Represents a "partial" invite channel.
