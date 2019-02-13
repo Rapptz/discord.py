@@ -476,6 +476,12 @@ class Client:
 
         bot = kwargs.pop('bot', True)
         reconnect = kwargs.pop('reconnect', True)
+        try:
+            arg = list(kwargs.keys())[0]
+        except IndexError:
+            pass
+        else:
+            raise ValueError('Unexpected keyword argument \'{}\' passed to run.'.format(arg))
         await self.login(*args, bot=bot)
         await self.connect(reconnect=reconnect)
 
