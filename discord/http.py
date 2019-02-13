@@ -647,8 +647,11 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(self, invite_id):
-        return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id))
+    def get_invite(self, invite_id, *, with_counts=True):
+        params = {
+            'with_counts': int(with_counts)
+        }
+        return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id), params=params)
 
     def invites_from(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))

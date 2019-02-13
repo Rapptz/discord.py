@@ -83,7 +83,7 @@ class Guild(Hashable):
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
         The channel that denotes the AFK channel. None if it doesn't exist.
-    icon: :class:`str`
+    icon: Optional[:class:`str`]
         The guild's icon.
     id: :class:`int`
         The guild's ID.
@@ -114,7 +114,7 @@ class Guild(Hashable):
         - ``VERIFIED``: Guild is a "verified" server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
 
-    splash: :class:`str`
+    splash: Optional[:class:`str`]
         The guild's invite splash.
     """
 
@@ -601,7 +601,7 @@ class Guild(Hashable):
         channel upon creation. This parameter expects a :class:`dict` of
         overwrites with the target (either a :class:`Member` or a :class:`Role`)
         as the key and a :class:`PermissionOverwrite` as the value.
-        
+
         Note
         --------
         Creating a channel of a specified position will not update the position of
@@ -641,7 +641,7 @@ class Guild(Hashable):
             The permissions will be automatically synced to category if no
             overwrites are provided.
         position: :class:`int`
-            The position in the channel list. This is a number that starts 
+            The position in the channel list. This is a number that starts
             at 0. e.g. the top channel is position 0.
         topic: Optional[:class:`str`]
             The new channel's topic.
@@ -679,7 +679,7 @@ class Guild(Hashable):
 
         This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead, in addition
         to having the following new parameters.
-        
+
         Parameters
         -----------
         bitrate: :class:`int`
