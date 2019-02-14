@@ -143,19 +143,19 @@ class HelpFormatter:
         The maximum number of characters that fit in a line.
         Defaults to 80.
     commands_heading: :class:`str`
-        The command list's heading string used when the help command is invoked with a categoly name.
+        The command list's heading string used when the help command is invoked with a category name.
         Useful for i18n. Defaults to ``"Commands:"``
-    no_categoly: :class:`str`
-        The string used when there is a command which does not belong to any categoly(cog).
-        Useful for i18n. Defaults to ``"No Categoly"``
+    no_category: :class:`str`
+        The string used when there is a command which does not belong to any category(cog).
+        Useful for i18n. Defaults to ``"No Category"``
     """
     def __init__(self, show_hidden=False, show_check_failure=False, width=80,
-                 commands_heading="Commands:", no_categoly="No Categoly"):
+                 commands_heading="Commands:", no_category="No Category"):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
         self.commands_heading = commands_heading
-        self.no_categoly = no_categoly
+        self.no_category = no_category
 
     def has_subcommands(self):
         """:class:`bool`: Specifies if the command has subcommands."""
@@ -326,7 +326,7 @@ class HelpFormatter:
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return cog + ':' if cog is not None else '\u200b' + self.no_categoly + ':'
+            return cog + ':' if cog is not None else '\u200b' + self.no_category + ':'
 
         filtered = await self.filter_command_list()
         if self.is_bot():
