@@ -790,6 +790,13 @@ class ConnectionState:
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         self.process_listeners(ListenerType.chunk, guild, len(members))
 
+    def parse_guild_integrations_update(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            self.dispatch('guild_integrations_update', guild)
+        else:
+            log.warning('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+
     def parse_webhooks_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
         if channel:
