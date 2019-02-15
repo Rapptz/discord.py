@@ -52,9 +52,10 @@ class WebhookAdapter:
         self._webhook_id = webhook.id
         self._webhook_token = webhook.token
         self._request_url = '{0.BASE}/webhooks/{1}/{2}'.format(self, webhook.id, webhook.token)
+        self._auth_request_url = '{0.BASE}/webhooks/{1}'.format(self, webhook.id)
         self.webhook = webhook
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, auth_token=None):
         """Actually does the request.
 
         Subclasses must implement this.
@@ -73,6 +74,8 @@ class WebhookAdapter:
             denoting ``(filename, file, content_type)``.
         payload: Optional[dict]
             The JSON to send with the request, if any.
+        auth_token: Optional[str]
+            The token, if this request is being done through an authorized connection
         """
         raise NotImplementedError()
 
@@ -81,6 +84,9 @@ class WebhookAdapter:
 
     def edit_webhook(self, **payload):
         return self.request('PATCH', self._request_url, payload=payload)
+
+    def auth_edit_webhook(self, auth_token, **payload):
+        return self.request('PATCH', self._auth_request_url, payload=payload, auth_token=auth_token)
 
     def handle_execution_response(self, data, *, wait):
         """Transforms the webhook execution response into something
@@ -143,12 +149,14 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None):
+    async def request(self, verb, url, payload=None, multipart=None, auth_token=None):
         headers = {}
         data = None
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
+        if auth_token:
+            headers['Authorization'] = auth_token
 
         if multipart:
             data = aiohttp.FormData()
@@ -222,12 +230,14 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, auth_token=None):
         headers = {}
         data = None
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
+        if auth_token:
+            headers['Authorization'] = auth_token
 
         if multipart is not None:
             data = {'payload_json': multipart.pop('payload_json')}
@@ -566,7 +576,23 @@ class Webhook:
             else:
                 payload['avatar'] = None
 
-        return self._adapter.edit_webhook(**payload)
+        if self._state:
+            from .channel import TextChannel
+            try:
+                channel = kwargs['channel']
+            except KeyError:
+                pass
+            else:
+                if isinstance(channel, TextChannel):
+                    payload['channel_id'] = str(channel.id)
+                else:
+                    raise TypeError('Expected TextChannel, received {0.__class__.__name__} instead.'.format(channel))
+            auth_token = self._state.http.token
+            if self._state.is_bot:
+                auth_token = 'Bot ' + auth_token
+            return self._adapter.auth_edit_webhook(auth_token, **payload)
+        else:
+            return self._adapter.edit_webhook(**payload)
 
     def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
                                     file=None, files=None, embed=None, embeds=None):
