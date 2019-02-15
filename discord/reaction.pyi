@@ -5,6 +5,7 @@ from .iterators import ReactionIterator
 from .abc import Snowflake
 
 from typing import Any, Union, Optional
+from typing_extensions import Protocol
 from mypy_extensions import TypedDict
 
 class _RequiredReactionData(TypedDict):
@@ -12,6 +13,9 @@ class _RequiredReactionData(TypedDict):
 
 class _ReactionData(_RequiredReactionData, total=False):
     count: int
+
+class _UserProtocol(Protocol):
+    id: int
 
 class Reaction:
     emoji: Union[Emoji, str]
@@ -31,5 +35,7 @@ class Reaction:
     def __str__(self) -> str: ...
 
     def __repr__(self) -> str: ...
+
+    async def remove(self, user: _UserProtocol) -> None: ...
 
     def users(self, limit: Optional[int] = ..., after: Optional[Snowflake] = ...) -> ReactionIterator: ...

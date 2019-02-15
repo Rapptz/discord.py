@@ -25,10 +25,13 @@ class HelpFormatter:
     show_hidden: bool
     show_check_failure: bool
     width: int
+    commands_heading: str
+    no_category: str
     context: Context
     command: Union[Command, Bot]
 
-    def __init__(self, show_hidden: bool = ..., show_check_failure: bool = ..., width: int = ...) -> None: ...
+    def __init__(self, show_hidden: bool = ..., show_check_failure: bool = ..., width: int = ...,
+                 commands_heading: str = ..., no_category: str = ...) -> None: ...
 
     def has_subcommands(self) -> bool: ...
 

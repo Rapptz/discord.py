@@ -1,15 +1,9 @@
-import datetime
 import abc
 
 from .user import User
 from .member import Member
 from .message import Message
-from .emoji import Emoji
-from .abc import Messageable
-from .guild import Guild
 from .audit_logs import AuditLogEntry
-from .abc import Snowflake
-from .enums import AuditLogAction
 
 from typing import Any, Optional, Union, TypeVar, List, Generic, Coroutine, Callable
 
@@ -30,7 +24,7 @@ class _AsyncIterator(Generic[IT]):
 
     async def flatten(self) -> List[IT]: ...
 
-    def __aiter__(self) -> _AIT: ...
+    def __aiter__(self: _AIT) -> _AIT: ...
 
     async def __anext__(self) -> IT: ...
 
