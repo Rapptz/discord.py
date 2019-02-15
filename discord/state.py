@@ -532,7 +532,6 @@ class ConnectionState:
                 log.warning('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
                 return
 
-
     def parse_channel_pins_update(self, data):
         channel_id = int(data['channel_id'])
         channel = self.get_channel(channel_id)
@@ -799,8 +798,10 @@ class ConnectionState:
 
     def parse_webhooks_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
-        if channel:
+        if channel is not None:
             self.dispatch('webhooks_update', channel)
+        else:
+            log.warning('WEBHOOKS_UPDATE referencing an unknown channel ID: %s. Discarding.', data['channel_id'])
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
