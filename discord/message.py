@@ -486,7 +486,7 @@ class Message:
                 "A wild {0} appeared.",
                 "Swoooosh. {0} just landed.",
                 "Brace yourselves. {0} just joined the server.",
-                "{0} just joined. Hide your bananas.",
+                "{0} just joined... or did they?",
                 "{0} just arrived. Seems OP - please nerf.",
                 "{0} just slid into the server.",
                 "A {0} has spawned in the server.",
@@ -496,9 +496,9 @@ class Message:
                 "{0} just showed up. Hold my beer.",
                 "Challenger approaching - {0} has appeared!",
                 "It's a bird! It's a plane! Nevermind, it's just {0}.",
-                "It's {0}! Praise the sun! [T]/",
+                "It's {0}! Praise the sun! \\[T]/",
                 "Never gonna give {0} up. Never gonna let {0} down.",
-                "Ha! {0} has joined! You activated my trap card!",
+                "{0} has joined the battle bus.",
                 "Cheers, love! {0}'s here!",
                 "Hey! Listen! {0} has joined!",
                 "We've been expecting you {0}",
@@ -514,7 +514,9 @@ class Message:
                 "Roses are red, violets are blue, {0} joined this server with you",
             ]
 
-            index = int(self.created_at.timestamp()) % len(formats)
+            # we can't use snowflake_time here because we need the millisecond
+            # precision from snowflakes in order to calculate the correct format
+            index = ((self.id >> 22) + utils.DISCORD_EPOCH) % len(formats)
             return formats[index].format(self.author.name)
 
         if self.type is MessageType.call:
