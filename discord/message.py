@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import datetime
 import re
 
 from . import utils
@@ -514,10 +515,11 @@ class Message:
                 "Roses are red, violets are blue, {0} joined this server with you",
             ]
 
-            # we can't use snowflake_time here because we need the millisecond
-            # precision from snowflakes in order to calculate the correct format
-            index = ((self.id >> 22) + utils.DISCORD_EPOCH) % len(formats)
-            return formats[index].format(self.author.name)
+            # manually reconstruct the epoch with millisecond precision, because
+            # datetime.datetime.timestamp() doesn't return the exact posix
+            # timestamp with the precision that we need
+            created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+            return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.call:
             # we're at the call message type now, which is a bit more complicated.
