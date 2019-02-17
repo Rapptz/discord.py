@@ -380,6 +380,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param last_pin: A ``datetime.datetime`` object representing when the latest message
                      was pinned or ``None`` if there are no pins.
 
+.. function:: on_guild_integrations_update(guild)
+
+    Called whenever an integration is created, modified, or removed from a guild.
+
+    :param guild: The :class:`Guild` that had its integrations updated.
+
 .. function:: on_webhooks_update(channel)
 
     Called whenever a webhook is created, modified, or removed from a guild channel.
