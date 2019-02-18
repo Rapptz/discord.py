@@ -5,14 +5,15 @@
 #
 # Translators:
 # Episword <mistio100@gmail.com>, 2018
+# cod <cod.sushi@gmail.com>, 2019
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: discord.py 1.0.0a\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-18 03:50-0500\n"
-"PO-Revision-Date: 2018-08-01 17:08+0000\n"
-"Last-Translator: Episword <mistio100@gmail.com>, 2018\n"
+"PO-Revision-Date: 2019-02-18 15:00+0000\n"
+"Last-Translator: cod <cod.sushi@gmail.com>, 2019\n"
 "Language: ja_JP\n"
 "Language-Team: Japanese (Japan) (https://www.transifex.com/discord-"
 "py/teams/88924/ja_JP/)\n"
@@ -2013,6 +2014,7 @@ msgid ""
 "The default base implementation that handles formatting of the help "
 "command."
 msgstr ""
+"helpコマンドの出力フォーマットに関する実装のデフォルトで、ベースクラスです。"
 
 #: discord.ext.commands.HelpFormatter:4 of
 msgid ""
@@ -2020,24 +2022,33 @@ msgid ""
 ":meth:`~.HelpFormatter.format` should be overridden. A number of utility "
 "functions are provided for use inside that method."
 msgstr ""
+"このクラスのフォーマット動作を上書きするには、"
+":meth:`~.HelpFormatter.format` 関数をオーバーライドする必要があります。"
+"本クラスでは、この関数内で使うことが出来るユーティリティ関数が数多く提供されています。"
 
 #: discord.ext.commands.HelpFormatter:10 of
 msgid ""
 ":class:`bool` -- Dictates if hidden commands should be shown in the "
 "output. Defaults to ``False``."
 msgstr ""
+":class:`bool` -- 隠しコマンドを表示するかどうかを指定します。"
+"デフォルトでは ``False`` です。"
 
 #: discord.ext.commands.HelpFormatter:15 of
 msgid ""
 ":class:`bool` -- Dictates if commands that have their "
 ":attr:`.Command.checks` failed shown. Defaults to ``False``."
 msgstr ""
+":class:`bool` -- :attr:`.Command.checks` が失敗したコマンドを表示するかどうかを指定します。"
+"デフォルトでは ``False`` です。"
 
 #: discord.ext.commands.HelpFormatter:20 of
 msgid ""
 ":class:`int` -- The maximum number of characters that fit in a line. "
 "Defaults to 80."
 msgstr ""
+":class:`int` -- 1行に収める最大の文字数を指定します。"
+"デフォルトでは80です。"
 
 #: discord.ext.commands.HelpFormatter:25 of
 msgid ""
@@ -2045,6 +2056,10 @@ msgid ""
 "command is invoked with a category name. Useful for i18n. Defaults to "
 "``\"Commands:\"``"
 msgstr ""
+":class:`str` -- help コマンドがカテゴリ名を伴って起動された際に、"
+"コマンドの表題として表示される文字列を示します。"
+"Botを翻訳する際に使うことができます。"
+"デフォルトでは ``\"Commands:\"`` です。"
 
 #: discord.ext.commands.HelpFormatter:30 of
 msgid ""
@@ -2052,38 +2067,49 @@ msgid ""
 "belong to any category(cog). Useful for i18n. Defaults to ``\"No "
 "Category\"``"
 msgstr ""
+":class:`str` -- help コマンドが起動された際に、"
+"いずれのカテゴリ(cog)にも属さないコマンドの表題として表示される文字列を示します。"
+"Botを翻訳する際に使うことができます。"
+"デフォルトでは ``\"No Category\"`` です。"
 
 #: discord.ext.commands.HelpFormatter.has_subcommands:1 of
 msgid ":class:`bool`: Specifies if the command has subcommands."
 msgstr ""
+":class:`bool`: コマンドがサブコマンドを持つかを表します。"
 
 #: discord.ext.commands.HelpFormatter.is_bot:1 of
 msgid ":class:`bool`: Specifies if the command being formatted is the bot itself."
 msgstr ""
+":class:`bool`: フォーマット対象のコマンドが、bot自体であるかを表します。"
 
 #: discord.ext.commands.HelpFormatter.is_cog:1 of
 msgid ":class:`bool`: Specifies if the command being formatted is actually a cog."
 msgstr ""
+":class:`bool`: フォーマット対象のコマンドが、cogであるかを表します。"
 
 #: discord.ext.commands.HelpFormatter.shorten:1 of
 msgid "Shortens text to fit into the :attr:`width`."
 msgstr ""
+"渡された文字列を、 :attr:`width` に収まるよう省略します。"
 
 #: discord.ext.commands.HelpFormatter.max_name_size:1 of
 msgid ""
 ":class:`int` -- Returns the largest name length of a command or if it has"
 " subcommands the largest subcommand name."
 msgstr ""
+"コマンドまたはサブコマンドのうち、最も長い名前の文字数を返します。"
 
 #: discord.ext.commands.HelpFormatter.clean_prefix:1 of
 msgid ""
 "The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of "
 "``<@id>``."
 msgstr ""
+"「クリーンアップ」されたプレフィックスを返します。"
+"たとえば、メンションは ``<@id>`` のかわりに ``@name`` となります。"
 
 #: discord.ext.commands.HelpFormatter.get_command_signature:1 of
 msgid "Retrieves the signature portion of the help page."
-msgstr ""
+msgstr "ヘルプページに表示される、コマンドの使用方法を示す文字列を返します。"
 
 #: discord.ext.commands.HelpFormatter.filter_command_list:1 of
 msgid ""
@@ -2091,25 +2117,32 @@ msgid ""
 " :attr:`show_check_failure` and :attr:`show_hidden`. Also filters based "
 "on if :meth:`~.HelpFormatter.is_cog` is valid."
 msgstr ""
+":attr:`show_check_failure` と :attr:`show_hidden` に基づき、"
+"フィルタリングされたコマンドのリストを返します。"
+"また、 :meth:`~.HelpFormatter.is_cog` が有効かどうかにも基づいてフィルタリングします。"
 
 #: discord.ext.commands.HelpFormatter.filter_command_list:5 of
 msgid ""
 "An iterable with the filter being applied. The resulting value is a (key,"
 " value) :class:`tuple` of the command name and the command itself."
 msgstr ""
+"フィルタリングされたイテラブル。"
+"結果は、コマンド名とコマンド自身の、 (key, value) :class:`tuple` 形式で返されます。。"
 
 #: discord.ext.commands.HelpFormatter.format:1 of
 msgid "Handles the actual behaviour involved with formatting."
 msgstr ""
+"フォーマットに関わる実際の挙動を扱う関数です。"
 
 #: discord.ext.commands.HelpFormatter.format:3 of
 msgid "To change the behaviour, this method should be overridden."
 msgstr ""
+"フォーマットに関する挙動を変更したい場合、このメソッドをオーバーライドする必要があります。"
 
 #: discord.ext.commands.HelpFormatter.format:5
 #: discord.ext.commands.HelpFormatter.format_help_for:10 of
 msgid "A paginated output of the help command."
-msgstr ""
+msgstr "ページ区切りされたhelpコマンドの出力。"
 
 #: discord.ext.commands.HelpFormatter.format_help_for:1 of
 msgid ""
@@ -2117,14 +2150,18 @@ msgid ""
 "help command looks like. To change the behaviour, override the "
 ":meth:`~.HelpFormatter.format` method."
 msgstr ""
+"helpページをフォーマットし、helpコマンドがどう見えるかのもっとも重要な処理を行います。"
+"この挙動を変更したい場合、:meth:`~.HelpFormatter.format` をオーバーライドして下さい。"
 
 #: discord.ext.commands.HelpFormatter.format_help_for:5 of
 msgid "The context of the invoked help command."
 msgstr ""
+"helpコマンドを起動したコンテキスト。"
 
 #: discord.ext.commands.HelpFormatter.format_help_for:7 of
 msgid "The bot or command that we are getting the help of."
 msgstr ""
+"ヘルプを取得する対象のBot、またはcommand。"
 
 #: ../../ext/commands/api.rst:98
 msgid "Checks"
