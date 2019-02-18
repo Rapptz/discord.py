@@ -204,6 +204,7 @@ class HelpFormatter:
         return prefix + cmd.signature
 
     def get_ending_note(self):
+        """Returns help command's ending note. You can override this method for customization like i18n."""
         command_name = self.context.invoked_with
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
