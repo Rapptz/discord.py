@@ -220,6 +220,10 @@ class Client:
                                                           Optional[datetime]]]: ...
 
     @overload
+    def wait_for(self, event: Literal['guild_integrations_update'], *, check: Optional[Callable[[Guild], bool]],
+                 timeout: Optional[float] = ...) -> asyncio.Future[Guild]: ...
+
+    @overload
     def wait_for(self, event: Literal['webhooks_update'], *,
                  check: Optional[Callable[[Union[TextChannel, VoiceChannel, CategoryChannel]], bool]] = ...,
                  timeout: Optional[float] = ...) -> asyncio.Future[Union[TextChannel, VoiceChannel, CategoryChannel]]: ...
