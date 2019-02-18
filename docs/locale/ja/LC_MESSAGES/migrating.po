@@ -2,19 +2,27 @@
 # Copyright (C) 2015-2019, Rapptz
 # This file is distributed under the same license as the discord.py package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
-# 
+#
 # Translators:
 # Ogura Azuki <ogran.std@gmail.com>, 2018
 # 和泉田 済人 <sumito@izumita.com>, 2018
 # Episword <mistio100@gmail.com>, 2018
-# 
 #, fuzzy
 msgid ""
 msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2019-02-18 03:50-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Episword <mistio100@gmail.com>, 2018\n"
-"Language-Team: Japanese (Japan) (https://www.transifex.com/discord-py/teams/88924/ja_JP/)\n"
 "Language: ja_JP\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language-Team: Japanese (Japan) (https://www.transifex.com/discord-"
+"py/teams/88924/ja_JP/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
 
 #: ../../migrating.rst:6
 msgid "Migrating to v1.0"
@@ -22,8 +30,8 @@ msgstr "v1.0への移行"
 
 #: ../../migrating.rst:8
 msgid ""
-"v1.0 is one of the biggest breaking changes in the library due to a complete"
-" redesign."
+"v1.0 is one of the biggest breaking changes in the library due to a "
+"complete redesign."
 msgstr "v1.0 では完全な書き直しが行われたため，このライブラリにおけるもっとも大きな更新のひとつといえます。"
 
 #: ../../migrating.rst:11
@@ -34,12 +42,13 @@ msgstr "すべての意図と目的を達成するために変更点が長大に
 
 #: ../../migrating.rst:14
 msgid ""
-"Part of the redesign involves making things more easy to use and natural. "
-"Things are done on the :ref:`models <discord_api_models>` instead of "
+"Part of the redesign involves making things more easy to use and natural."
+" Things are done on the :ref:`models <discord_api_models>` instead of "
 "requiring a :class:`Client` instance to do any work."
 msgstr ""
 "一部の書き換えは，より使いやすく自然に物事を表現するために行われています。あらゆる仕事をするのに :class:`Client` "
-"インスタンスを要求するのではなく，代わりに :ref:`models <discord_api_models>` を用いることができるようになりました。"
+"インスタンスを要求するのではなく，代わりに :ref:`models <discord_api_models>` "
+"を用いることができるようになりました。"
 
 #: ../../migrating.rst:18
 msgid "Python Version Change"
@@ -47,10 +56,10 @@ msgstr "Pythonのバージョンの変更"
 
 #: ../../migrating.rst:20
 msgid ""
-"In order to make development easier and also to allow for our dependencies "
-"to upgrade to allow usage of 3.7 or higher, the library had to remove "
-"support for Python versions lower than 3.5.3, which essentially means that "
-"**support for Python 3.4 is dropped**."
+"In order to make development easier and also to allow for our "
+"dependencies to upgrade to allow usage of 3.7 or higher, the library had "
+"to remove support for Python versions lower than 3.5.3, which essentially"
+" means that **support for Python 3.4 is dropped**."
 msgstr ""
 "discord.py の開発をより簡単にし，またその依存関係にあるライブラリをアップグレードして Python 3.7 "
 "以上を使えるようにするために，discord.py は Python 3.5.3 "
@@ -71,8 +80,8 @@ msgstr "Snowflakeのint型への変更"
 
 #: ../../migrating.rst:32
 msgid ""
-"Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has "
-"been changed to :class:`int`."
+"Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has"
+" been changed to :class:`int`."
 msgstr ""
 "v1.0以前は、全てのsnowflake (``id`` 属性) が文字列として扱われていましたが、これは :class:`int` "
 "型に変更されました。"
@@ -83,10 +92,10 @@ msgstr "簡単な例:"
 
 #: ../../migrating.rst:46
 msgid ""
-"This change allows for fewer errors when using the Copy ID feature in the "
-"official client since you no longer have to wrap it in quotes and allows for"
-" optimisation opportunities by allowing ETF to be used instead of JSON "
-"internally."
+"This change allows for fewer errors when using the Copy ID feature in the"
+" official client since you no longer have to wrap it in quotes and allows"
+" for optimisation opportunities by allowing ETF to be used instead of "
+"JSON internally."
 msgstr ""
 "この変更により，公式クライアントの「 ID をコピー」機能を使用した際に間違いがより起こりにくくなりました。もはや取得した ID "
 "をクォーテーションマークで囲う必要はありませんし，内部で JSON の代わりに ETF を用いることで最適化の機会を得ることにもなります。"
@@ -99,8 +108,8 @@ msgstr "Server は Guild になりました"
 msgid ""
 "The official API documentation calls the \"Server\" concept a \"Guild\" "
 "instead. In order to be more consistent with the API documentation when "
-"necessary, the model has been renamed to :class:`Guild` and all instances "
-"referring to it has been changed as well."
+"necessary, the model has been renamed to :class:`Guild` and all instances"
+" referring to it has been changed as well."
 msgstr ""
 "公式のAPIドキュメントでは、「Server」は「Guild」と呼ばれています。APIドキュメントとの一貫性を保つため、モデルの名称が "
 ":class:`Guild` へ変更されました。同時にこのモデルを参照するすべてのインスタンスも変更されています。"
@@ -268,10 +277,8 @@ msgid "``Client.create_channel``"
 msgstr "``Client.create_channel``"
 
 #: ../../migrating.rst:107
-msgid ""
-":meth:`Guild.create_text_channel` and :meth:`Guild.create_voice_channel`"
-msgstr ""
-":meth:`Guild.create_text_channel` および :meth:`Guild.create_voice_channel`"
+msgid ":meth:`Guild.create_text_channel` and :meth:`Guild.create_voice_channel`"
+msgstr ":meth:`Guild.create_text_channel` および :meth:`Guild.create_voice_channel`"
 
 #: ../../migrating.rst:109
 msgid "``Client.create_custom_emoji``"
@@ -311,9 +318,11 @@ msgstr "``Client.delete_channel_permissions``"
 
 #: ../../migrating.rst:117
 msgid ""
-":meth:`abc.GuildChannel.set_permissions` with ``overwrite`` set to ``None``"
+":meth:`abc.GuildChannel.set_permissions` with ``overwrite`` set to "
+"``None``"
 msgstr ""
-":meth:`abc.GuildChannel.set_permissions` の ``overwrite`` を ``None`` に設定しました"
+":meth:`abc.GuildChannel.set_permissions` の ``overwrite`` を ``None`` "
+"に設定しました"
 
 #: ../../migrating.rst:119
 msgid "``Client.delete_custom_emoji``"
@@ -497,8 +506,7 @@ msgstr "``Client.logs_from``"
 
 #: ../../migrating.rst:163
 msgid ":meth:`abc.Messageable.history` (see :ref:`migrating_1_0_async_iter`)"
-msgstr ""
-":meth:`abc.Messageable.history` ( :ref:`migrating_1_0_async_iter` を参照)"
+msgstr ":meth:`abc.Messageable.history` ( :ref:`migrating_1_0_async_iter` を参照)"
 
 #: ../../migrating.rst:165
 msgid "``Client.move_channel``"
@@ -569,10 +577,8 @@ msgid "``Client.send_file``"
 msgstr "``Client.send_file``"
 
 #: ../../migrating.rst:185 ../../migrating.rst:187
-msgid ""
-":meth:`abc.Messageable.send` (see :ref:`migrating_1_0_sending_messages`)"
-msgstr ""
-":meth:`abc.Messageable.send` ( :ref:`migrating_1_0_sending_messages` を参照)"
+msgid ":meth:`abc.Messageable.send` (see :ref:`migrating_1_0_sending_messages`)"
+msgstr ":meth:`abc.Messageable.send` ( :ref:`migrating_1_0_sending_messages` を参照)"
 
 #: ../../migrating.rst:187
 msgid "``Client.send_message``"
@@ -584,7 +590,8 @@ msgstr "``Client.send_typing``"
 
 #: ../../migrating.rst:189
 msgid ""
-":meth:`abc.Messageable.trigger_typing` (use :meth:`abc.Messageable.typing`)"
+":meth:`abc.Messageable.trigger_typing` (use "
+":meth:`abc.Messageable.typing`)"
 msgstr ""
 ":meth:`abc.Messageable.trigger_typing` (:meth:`abc.Messageable.typing` "
 "を使用してください)"
@@ -655,13 +662,14 @@ msgstr "プロパティの変更"
 
 #: ../../migrating.rst:213
 msgid ""
-"In order to be a bit more consistent, certain things that were properties "
-"were changed to methods instead."
+"In order to be a bit more consistent, certain things that were properties"
+" were changed to methods instead."
 msgstr "一貫性を持たせるために、いくつかのプロパティがメソッドに変更されました。"
 
 #: ../../migrating.rst:215
 msgid ""
-"The following are now methods instead of properties (requires parentheses):"
+"The following are now methods instead of properties (requires "
+"parentheses):"
 msgstr "プロパティの代わりに追加されたメソッドは以下のとおりです。(使用の際にはカッコが必要です)"
 
 #: ../../migrating.rst:217
@@ -682,17 +690,16 @@ msgstr "辞書の値の変更"
 
 #: ../../migrating.rst:224
 msgid ""
-"Prior to v1.0 some aggregating properties that retrieved models would return"
-" \"dict view\" objects."
+"Prior to v1.0 some aggregating properties that retrieved models would "
+"return \"dict view\" objects."
 msgstr "v1.0以前では、複数のモデルを集約して取得するプロパティは「辞書ビュー」オブジェクトで結果を返していました。"
 
 #: ../../migrating.rst:226
 msgid ""
-"As a consequence, when the dict would change size while you would iterate "
-"over it, a RuntimeError would be raised and crash the task. To alleviate "
-"this, the \"dict view\" objects were changed into lists."
-msgstr ""
-"これは、オブジェクトを用いて繰り返し処理を行っている間に、辞書サイズが変更されたとき、RuntimeErrorを発生させてタスクをクラッシュさせていました。これを軽減させるため「辞書ビュー」オブジェクトはリストに変更されました。"
+"As a consequence, when the dict would change size while you would iterate"
+" over it, a RuntimeError would be raised and crash the task. To alleviate"
+" this, the \"dict view\" objects were changed into lists."
+msgstr "これは、オブジェクトを用いて繰り返し処理を行っている間に、辞書サイズが変更されたとき、RuntimeErrorを発生させてタスクをクラッシュさせていました。これを軽減させるため「辞書ビュー」オブジェクトはリストに変更されました。"
 
 #: ../../migrating.rst:229
 msgid "The following views were changed to a list:"
@@ -732,16 +739,16 @@ msgstr "ボイスステートの変更"
 
 #: ../../migrating.rst:243
 msgid ""
-"Earlier, in v0.11.0 a :class:`VoiceState` class was added to refer to voice "
-"states along with a :attr:`Member.voice` attribute to refer to it."
+"Earlier, in v0.11.0 a :class:`VoiceState` class was added to refer to "
+"voice states along with a :attr:`Member.voice` attribute to refer to it."
 msgstr ""
 "v0.11.0では、ボイスステートを参照するために :class:`VoiceState` が追加され、このクラスを参照するために "
 ":attr:`Member.voice` が使われていました。"
 
 #: ../../migrating.rst:246
 msgid ""
-"However, it was transparent to the user. In an effort to make the library "
-"save more memory, the voice state change is now more visible."
+"However, it was transparent to the user. In an effort to make the library"
+" save more memory, the voice state change is now more visible."
 msgstr "これはユーザーにとって透過的なものでしたが、ライブラリがメモリを節約できるようボイスステートの変化が可視的になりました。"
 
 #: ../../migrating.rst:249
@@ -760,10 +767,10 @@ msgstr "ユーザーとメンバーの分離"
 #: ../../migrating.rst:267
 msgid ""
 "In v1.0 to save memory, :class:`User` and :class:`Member` are no longer "
-"inherited. Instead, they are \"flattened\" by having equivalent properties "
-"that map out to the functional underlying :class:`User`. Thus, there is no "
-"functional change in how they are used. However this breaks ``isinstance`` "
-"checks and thus is something to keep in mind."
+"inherited. Instead, they are \"flattened\" by having equivalent "
+"properties that map out to the functional underlying :class:`User`. Thus,"
+" there is no functional change in how they are used. However this breaks "
+"``isinstance`` checks and thus is something to keep in mind."
 msgstr ""
 "v1.0では、メモリの節約のため、 :class:`Member` は :class:`User` のサブクラスではなくなりました。代わりに、 "
 ":class:`User` "
@@ -774,13 +781,14 @@ msgstr ""
 msgid ""
 "These memory savings were accomplished by having a global :class:`User` "
 "cache, and as a positive consequence you can now easily fetch a "
-":class:`User` by their ID by using the new :meth:`Client.get_user`. You can "
-"also get a list of all :class:`User` your client can see with "
+":class:`User` by their ID by using the new :meth:`Client.get_user`. You "
+"can also get a list of all :class:`User` your client can see with "
 ":attr:`Client.users`."
 msgstr ""
 "メモリの節約は、グローバルな :class:`User` のキャッシュを持つことで実現しました。これによって "
 ":meth:`Client.get_user` を使ってIDから簡単に :class:`User` "
-"を取得できます。また、あなたのクライアントが見ることができるユーザーを :attr:`Client.users` ですべて取得できるようにもなりました。"
+"を取得できます。また、あなたのクライアントが見ることができるユーザーを :attr:`Client.users` "
+"ですべて取得できるようにもなりました。"
 
 #: ../../migrating.rst:278
 msgid "Channel Type Split"
@@ -792,12 +800,13 @@ msgid ""
 "``PrivateChannel`` with a ``is_private`` property to help differentiate "
 "between them."
 msgstr ""
-"v1.0以前のバージョンでは、チャンネルは ``is_private`` で判別する ``Channel`` と ``PrivateChannel`` "
-"の二通りしかありませんでした。"
+"v1.0以前のバージョンでは、チャンネルは ``is_private`` で判別する ``Channel`` と "
+"``PrivateChannel`` の二通りしかありませんでした。"
 
 #: ../../migrating.rst:283
 msgid ""
-"In order to save memory the channels have been split into 4 different types:"
+"In order to save memory the channels have been split into 4 different "
+"types:"
 msgstr "メモリ使用量を削減するため、チャンネルを4つのタイプへ分割しました。"
 
 #: ../../migrating.rst:285
@@ -818,10 +827,9 @@ msgstr "メンバーが参加するグループDMチャンネル用である :cl
 
 #: ../../migrating.rst:290
 msgid ""
-"With this split came the removal of the ``is_private`` attribute. You should"
-" now use ``isinstance``."
-msgstr ""
-"これらに分割されたことにより、 ``is_private`` は削除されました。v1.0では ``isinstance`` を使うべきでしょう。"
+"With this split came the removal of the ``is_private`` attribute. You "
+"should now use ``isinstance``."
+msgstr "これらに分割されたことにより、 ``is_private`` は削除されました。v1.0では ``isinstance`` を使うべきでしょう。"
 
 #: ../../migrating.rst:292
 msgid "The types are split into two different :ref:`discord_api_abcs`:"
@@ -845,8 +853,8 @@ msgstr "チャンネルがプライベートチャンネルであるかをチェ
 
 #: ../../migrating.rst:305
 msgid ""
-"Of course, if you're looking for only a specific type you can pass that too,"
-" e.g. ::"
+"Of course, if you're looking for only a specific type you can pass that "
+"too, e.g. ::"
 msgstr "もちろん、特定のチャンネルタイプを探したい場合、そのチャンネルタイプを渡すことも可能です。"
 
 #: ../../migrating.rst:309
@@ -854,15 +862,15 @@ msgid ""
 "With this type split also came event changes, which are enumerated in "
 ":ref:`migrating_1_0_event_changes`."
 msgstr ""
-"この分割により、イベントにも変更がありました。これについては :ref:`migrating_1_0_event_changes` に詳細があります。"
+"この分割により、イベントにも変更がありました。これについては :ref:`migrating_1_0_event_changes` "
+"に詳細があります。"
 
 #: ../../migrating.rst:313
 msgid "Miscellaneous Model Changes"
 msgstr "その他のモデルの変更"
 
 #: ../../migrating.rst:315
-msgid ""
-"There were lots of other things added or removed in the models in general."
+msgid "There were lots of other things added or removed in the models in general."
 msgstr "一般的なモデルには追加、あるいは削除されたものが多くあります。"
 
 #: ../../migrating.rst:317
@@ -887,8 +895,7 @@ msgstr "代わりに :attr:`Client.emojis` を使用してください。"
 
 #: ../../migrating.rst:329
 msgid "``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone."
-msgstr ""
-"``Client.wait_for_message`` および ``Client.wait_for_reaction`` は削除されました。"
+msgstr "``Client.wait_for_message`` および ``Client.wait_for_reaction`` は削除されました。"
 
 #: ../../migrating.rst:331
 msgid "Use :meth:`Client.wait_for` instead."
@@ -908,7 +915,8 @@ msgstr "``Channel.is_private``"
 
 #: ../../migrating.rst:339
 msgid ""
-"Use ``isinstance`` instead with one of the :ref:`discord_api_abcs` instead."
+"Use ``isinstance`` instead with one of the :ref:`discord_api_abcs` "
+"instead."
 msgstr "代わりに ``isinstance`` と :ref:`discord_api_abcs` を使用してください。"
 
 #: ../../migrating.rst:340
@@ -925,8 +933,8 @@ msgstr "``Client.accept_invite``"
 
 #: ../../migrating.rst:344
 msgid ""
-"There is no replacement for this one. This functionality is deprecated API "
-"wise."
+"There is no replacement for this one. This functionality is deprecated "
+"API wise."
 msgstr "これに代わるものはありません。これは非推奨のAPIです。"
 
 #: ../../migrating.rst:346
@@ -942,8 +950,9 @@ msgid ""
 "The concept of a default channel was removed from Discord. See `#329 "
 "<https://github.com/hammerandchisel/discord-api-docs/pull/329>`_."
 msgstr ""
-"デフォルトチャンネルの概念は、Discordから削除されました。 `#329 <https://github.com/hammerandchisel"
-"/discord-api-docs/pull/329>`_ を参照してください。"
+"デフォルトチャンネルの概念は、Discordから削除されました。 `#329 "
+"<https://github.com/hammerandchisel/discord-api-docs/pull/329>`_ "
+"を参照してください。"
 
 #: ../../migrating.rst:351
 msgid "``Message.edited_timestamp``"
@@ -1003,33 +1012,31 @@ msgstr "**変更**"
 
 #: ../../migrating.rst:378
 msgid ""
-":attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default"
-" avatar if a custom one is not set."
+":attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the "
+"default avatar if a custom one is not set."
 msgstr ""
 ":attr:`Member.avatar_url` と :attr:`User.avatar_url` "
 "はアバターが設定されていなければ、デフォルトアバターが返るようになりました。"
 
 #: ../../migrating.rst:379
 msgid ""
-":attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` "
-"objects."
-msgstr ""
-":attr:`Message.embeds` は ``dict`` オブジェクトから :class:`Embed` のリストに変更されました。"
+":attr:`Message.embeds` is now a list of :class:`Embed` instead of "
+"``dict`` objects."
+msgstr ":attr:`Message.embeds` は ``dict`` オブジェクトから :class:`Embed` のリストに変更されました。"
 
 #: ../../migrating.rst:380
 msgid ""
-":attr:`Message.attachments` is now a list of :class:`Attachment` instead of "
-"``dict`` object."
+":attr:`Message.attachments` is now a list of :class:`Attachment` instead "
+"of ``dict`` object."
 msgstr ""
 ":attr:`Message.attachments` は ``dict`` オブジェクトから :class:`Attachment` "
 "のリストに変更されました。"
 
 #: ../../migrating.rst:381
 msgid ""
-":attr:`Guild.roles` is now sorted through hierarchy. The first element is "
-"always the ``@everyone`` role."
-msgstr ""
-":attr:`Guild.roles` はヒエラルキー順にソートされるようになりました。先頭には必ず ``@everyone`` が格納されます。"
+":attr:`Guild.roles` is now sorted through hierarchy. The first element is"
+" always the ``@everyone`` role."
+msgstr ":attr:`Guild.roles` はヒエラルキー順にソートされるようになりました。先頭には必ず ``@everyone`` が格納されます。"
 
 #: ../../migrating.rst:383
 msgid "**Added**"
@@ -1050,8 +1057,7 @@ msgid ""
 msgstr "ボイスチャンネルに接続しているメンバーを取得する :attr:`VoiceChannel.members` 。"
 
 #: ../../migrating.rst:388
-msgid ""
-":attr:`TextChannel.members` for fetching members that can see the channel."
+msgid ":attr:`TextChannel.members` for fetching members that can see the channel."
 msgstr "テキストチャンネルを閲覧可能なメンバーを取得する :attr:`TextChannel.members` 。"
 
 #: ../../migrating.rst:389
@@ -1072,8 +1078,8 @@ msgstr "チャンネルのカテゴリのみを取得する :attr:`Guild.categor
 
 #: ../../migrating.rst:393
 msgid ""
-":attr:`TextChannel.category` and :attr:`VoiceChannel.category` to get the "
-"category a channel belongs to."
+":attr:`TextChannel.category` and :attr:`VoiceChannel.category` to get the"
+" category a channel belongs to."
 msgstr ""
 "チャンネルが属するカテゴリを取得する :attr:`TextChannel.category` と "
 ":attr:`VoiceChannel.category` 。"
@@ -1103,8 +1109,7 @@ msgid ":meth:`Client.get_user` to get a :class:`User` by ID."
 msgstr "IDから :class:`User` を取得する :meth:`Client.get_user` 。"
 
 #: ../../migrating.rst:400
-msgid ""
-":meth:`User.avatar_url_as` to get an avatar in a specific size or format."
+msgid ":meth:`User.avatar_url_as` to get an avatar in a specific size or format."
 msgstr "特定のサイズ、あるいはフォーマットのアバターを取得する :meth:`User.avatar_url_as` 。"
 
 #: ../../migrating.rst:401
@@ -1121,11 +1126,11 @@ msgstr "メッセージのWebhook IDを取得する :attr:`Message.webhook_id` �
 
 #: ../../migrating.rst:404
 msgid ""
-":attr:`Message.activity` and :attr:`Message.application` for Rich Presence "
-"related information."
+":attr:`Message.activity` and :attr:`Message.application` for Rich "
+"Presence related information."
 msgstr ""
-"リッチプレゼンスに関する情報を取得する :attr:`Message.activity` および :attr:`Message.application`"
-" 。"
+"リッチプレゼンスに関する情報を取得する :attr:`Message.activity` および "
+":attr:`Message.application` 。"
 
 #: ../../migrating.rst:405
 msgid ":meth:`TextChannel.is_nsfw` to check if a text channel is NSFW."
@@ -1135,6 +1140,11 @@ msgstr "テキストチャンネルがNSFWであるかを確認する :meth:`Tex
 msgid ":meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple."
 msgstr "RGBのタプルから :class:`Colour` を作成する :meth:`Colour.from_rgb` 。"
 
+#: ../../migrating.rst:407
+#, fuzzy
+msgid ":meth:`Guild.get_role` to get a role by its ID."
+msgstr "IDから :class:`User` を取得する :meth:`Client.get_user` 。"
+
 #: ../../migrating.rst:412
 msgid "Sending Messages"
 msgstr "メッセージの送信"
@@ -1142,8 +1152,8 @@ msgstr "メッセージの送信"
 #: ../../migrating.rst:414
 msgid ""
 "One of the changes that were done was the merger of the previous "
-"``Client.send_message`` and ``Client.send_file`` functionality into a single"
-" method, :meth:`~abc.Messageable.send`."
+"``Client.send_message`` and ``Client.send_file`` functionality into a "
+"single method, :meth:`~abc.Messageable.send`."
 msgstr ""
 "変更点の一つは、以前の ``Client.send_message`` と ``Client.send_file`` の機能を単一のメソッド "
 ":meth:`~abc.Messageable.send` に統合したことです。"
@@ -1177,16 +1187,16 @@ msgstr "非同期のイテレータ"
 
 #: ../../migrating.rst:453
 msgid ""
-"Prior to v1.0, certain functions like ``Client.logs_from`` would return a "
-"different type if done in Python 3.4 or 3.5+."
+"Prior to v1.0, certain functions like ``Client.logs_from`` would return a"
+" different type if done in Python 3.4 or 3.5+."
 msgstr ""
 "v1.0以前のバージョンは、Python 3.4 または 3.5以上の環境において ``Client.logs_from`` "
 "のような特定の関数で、処理終了時に異なった型を返していました。"
 
 #: ../../migrating.rst:455
 msgid ""
-"In v1.0, this change has been reverted and will now return a singular type "
-"meeting an abstract concept called :class:`AsyncIterator`."
+"In v1.0, this change has been reverted and will now return a singular "
+"type meeting an abstract concept called :class:`AsyncIterator`."
 msgstr "これはv1.0で元に戻り、 :class:`AsyncIterator` という抽象概念を満たす特異な型を返します。"
 
 #: ../../migrating.rst:458
@@ -1199,15 +1209,16 @@ msgstr "またはリストにできます。"
 
 #: ../../migrating.rst:469
 msgid ""
-"A handy aspect of returning :class:`AsyncIterator` is that it allows you to "
-"chain functions together such as :meth:`AsyncIterator.map` or "
+"A handy aspect of returning :class:`AsyncIterator` is that it allows you "
+"to chain functions together such as :meth:`AsyncIterator.map` or "
 ":meth:`AsyncIterator.filter`: ::"
 msgstr ""
 
 #: ../../migrating.rst:475
 msgid ""
 "The functions passed to :meth:`AsyncIterator.map` or "
-":meth:`AsyncIterator.filter` can be either coroutines or regular functions."
+":meth:`AsyncIterator.filter` can be either coroutines or regular "
+"functions."
 msgstr ""
 
 #: ../../migrating.rst:478
@@ -1324,8 +1335,7 @@ msgid ":func:`on_guild_unavailable`"
 msgstr ":func:`on_guild_unavailable`"
 
 #: ../../migrating.rst:523
-msgid ""
-"The :func:`on_voice_state_update` event has received an argument change."
+msgid "The :func:`on_voice_state_update` event has received an argument change."
 msgstr ":func:`on_voice_state_update` イベントの引数が変更されました。"
 
 #: ../../migrating.rst:525 ../../migrating.rst:537 ../../migrating.rst:549
@@ -1347,19 +1357,17 @@ msgstr ""
 ":class:`VoiceState` を受け取るようになりました。"
 
 #: ../../migrating.rst:535
-msgid ""
-"The :func:`on_guild_emojis_update` event has received an argument change."
+msgid "The :func:`on_guild_emojis_update` event has received an argument change."
 msgstr ":func:`on_guild_emojis_update` イベントの引数が変更されました。"
 
 #: ../../migrating.rst:545
 msgid ""
-"The first argument is now the :class:`Guild` that the emojis were updated "
-"from."
+"The first argument is now the :class:`Guild` that the emojis were updated"
+" from."
 msgstr "最初の引数は絵文字の更新が行われた :class:`Guild` です。"
 
 #: ../../migrating.rst:547
-msgid ""
-"The :func:`on_member_ban` event has received an argument change as well:"
+msgid "The :func:`on_member_ban` event has received an argument change as well:"
 msgstr ":func:`on_member_ban` も引数が変更されました。"
 
 #: ../../migrating.rst:557
@@ -1418,9 +1426,10 @@ msgstr ":func:`on_private_channel_update`"
 #: ../../migrating.rst:577
 msgid ""
 "The ``on_guild_channel_`` events correspond to :class:`abc.GuildChannel` "
-"being updated (i.e. :class:`TextChannel` and :class:`VoiceChannel`) and the "
-"``on_private_channel_`` events correspond to :class:`abc.PrivateChannel` "
-"being updated (i.e. :class:`DMChannel` and :class:`GroupChannel`)."
+"being updated (i.e. :class:`TextChannel` and :class:`VoiceChannel`) and "
+"the ``on_private_channel_`` events correspond to "
+":class:`abc.PrivateChannel` being updated (i.e. :class:`DMChannel` and "
+":class:`GroupChannel`)."
 msgstr ""
 "``on_guild_channel_`` イベントは更新される :class:`abc.GuildChannel` "
 "(:class:`TextChannel` および :class:`VoiceChannel`)に対応しており、 "
@@ -1449,13 +1458,14 @@ msgstr ""
 
 #: ../../migrating.rst:591
 msgid ""
-"You no longer create players and operate on them (you no longer store them)."
+"You no longer create players and operate on them (you no longer store "
+"them)."
 msgstr "プレイヤーを作成せずに操作が可能になりました。(プレイヤーの保存の必要もありません)"
 
 #: ../../migrating.rst:592
 msgid ""
-"You instead request :class:`VoiceClient` to play an :class:`AudioSource` via"
-" :meth:`VoiceClient.play`."
+"You instead request :class:`VoiceClient` to play an :class:`AudioSource` "
+"via :meth:`VoiceClient.play`."
 msgstr ""
 
 #: ../../migrating.rst:593
@@ -1468,8 +1478,8 @@ msgstr ""
 
 #: ../../migrating.rst:597
 msgid ""
-"create_ffmpeg_player/create_stream_player/create_ytdl_player have all been "
-"removed."
+"create_ffmpeg_player/create_stream_player/create_ytdl_player have all "
+"been removed."
 msgstr ""
 
 #: ../../migrating.rst:599
@@ -1494,8 +1504,8 @@ msgstr "基本的には以下のとおりです。"
 
 #: ../../migrating.rst:631
 msgid ""
-"With the changed :class:`AudioSource` design, you can now change the source "
-"that the :class:`VoiceClient` is playing at runtime via "
+"With the changed :class:`AudioSource` design, you can now change the "
+"source that the :class:`VoiceClient` is playing at runtime via "
 ":attr:`VoiceClient.source`."
 msgstr ""
 ":class:`AudioSource` の再設計により、  :attr:`VoiceClient.source` を介して実行中の "
@@ -1503,8 +1513,8 @@ msgstr ""
 
 #: ../../migrating.rst:634
 msgid ""
-"For example, you can add a :class:`PCMVolumeTransformer` to allow changing "
-"the volume: ::"
+"For example, you can add a :class:`PCMVolumeTransformer` to allow "
+"changing the volume: ::"
 msgstr "例えば、 :class:`PCMVolumeTransformer` を追加すると、ボリュームの変更ができるようになります。"
 
 #: ../../migrating.rst:639
@@ -1521,8 +1531,8 @@ msgstr "音声ウェブソケットは、切断された際に自動的に再接
 
 #: ../../migrating.rst:642
 msgid ""
-"The initial connect handshake will now retry up to 5 times so you no longer "
-"get as many ``asyncio.TimeoutError``."
+"The initial connect handshake will now retry up to 5 times so you no "
+"longer get as many ``asyncio.TimeoutError``."
 msgstr ""
 "初期接続のハンドシェイクは、最大5回までの再試行となったので、大量の ``asyncio.TimeoutError`` "
 "に悩まされることはなくなりました。"
@@ -1541,11 +1551,11 @@ msgstr "イベントの待機"
 
 #: ../../migrating.rst:653
 msgid ""
-"Prior to v1.0, the machinery for waiting for an event outside of the event "
-"itself was done through two different functions, ``Client.wait_for_message``"
-" and ``Client.wait_for_reaction``. One problem with one such approach is "
-"that it did not allow you to wait for events outside of the ones provided by"
-" the library."
+"Prior to v1.0, the machinery for waiting for an event outside of the "
+"event itself was done through two different functions, "
+"``Client.wait_for_message`` and ``Client.wait_for_reaction``. One problem"
+" with one such approach is that it did not allow you to wait for events "
+"outside of the ones provided by the library."
 msgstr ""
 "v1.0以前のバージョンでは、イベントの発生を待つ方法として ``Client.wait_for_message`` と "
 "``Client.wait_for_reaction`` "
@@ -1565,8 +1575,7 @@ msgstr "例えば、メッセージを待つ処理は以下のようになりま
 msgid ""
 "To facilitate multiple returns, :meth:`Client.wait_for` returns either a "
 "single argument, no arguments, or a tuple of arguments."
-msgstr ""
-"複数の返り値に対応するため、 :meth:`Client.wait_for` は単一の引数、引数なし、あるいは引数のタプルを返すようになっています。"
+msgstr "複数の返り値に対応するため、 :meth:`Client.wait_for` は単一の引数、引数なし、あるいは引数のタプルを返すようになっています。"
 
 #: ../../migrating.rst:673
 msgid "For example, to wait for a reaction: ::"
@@ -1575,8 +1584,8 @@ msgstr "例えば、リアクションを待つ処理は以下のようになり
 #: ../../migrating.rst:679
 msgid ""
 "Since this function now can return multiple arguments, the ``timeout`` "
-"parameter will now raise a :exc:`asyncio.TimeoutError` when reached instead "
-"of setting the return to ``None``. For example:"
+"parameter will now raise a :exc:`asyncio.TimeoutError` when reached "
+"instead of setting the return to ``None``. For example:"
 msgstr ""
 "この関数は複数の引数を返すため、 ``timeout`` に設定した時間経過すると、 ``None`` を返すのではなく、 "
 ":exc:`asyncio.TimeoutError` を発生させるようになりました。以下はその例になります。"
@@ -1587,27 +1596,28 @@ msgstr "依存関係のアップグレード"
 
 #: ../../migrating.rst:698
 msgid ""
-"Following v1.0 of the library, we've updated our requirements to ``aiohttp``"
-" v2.0 or higher."
+"Following v1.0 of the library, we've updated our requirements to "
+"``aiohttp`` v2.0 or higher."
 msgstr "ライブラリのv1.0への更新に伴い、要件が ``aiohttp`` v2.0以上へと変更されました。"
 
 #: ../../migrating.rst:700
 msgid ""
-"Since this is a backwards incompatible change, it is recommended that you "
-"see the `changes "
-"<http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ and "
-"the `migrating <http://aiohttp.readthedocs.io/en/stable/migration.html>`_ "
-"pages for details on the breaking changes in ``aiohttp``."
+"Since this is a backwards incompatible change, it is recommended that you"
+" see the `changes "
+"<http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ "
+"and the `migrating "
+"<http://aiohttp.readthedocs.io/en/stable/migration.html>`_ pages for "
+"details on the breaking changes in ``aiohttp``."
 msgstr ""
 "これは後方互換性のない変更となるため、 ``aiohttp`` の変更点の詳細については `changes "
-"<http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ と "
-"`migrating <http://aiohttp.readthedocs.io/en/stable/migration.html>`_ "
+"<http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ と"
+" `migrating <http://aiohttp.readthedocs.io/en/stable/migration.html>`_ "
 "ページを参照してください。"
 
 #: ../../migrating.rst:705
 msgid ""
-"Of the most significant for common users is the removal of helper functions "
-"such as:"
+"Of the most significant for common users is the removal of helper "
+"functions such as:"
 msgstr "ユーザーにとって最も重要な変更点は、以下のヘルパー関数の削除です。"
 
 #: ../../migrating.rst:707
@@ -1645,8 +1655,8 @@ msgstr "代わりにセッションを作成することをお勧めします。
 #: ../../migrating.rst:721
 msgid ""
 "Since it is better to not create a session for every request, you should "
-"store it in a variable and then call ``session.close`` on it when it needs "
-"to be disposed."
+"store it in a variable and then call ``session.close`` on it when it "
+"needs to be disposed."
 msgstr ""
 "リクエストごとにセッションを作成するのは良いとは言えないため、変数に格納しておき、破棄しなければならない時に ``session.close`` "
 "を呼び出すのが良いでしょう。"
@@ -1657,14 +1667,14 @@ msgstr "シャーディング"
 
 #: ../../migrating.rst:727
 msgid ""
-"The library has received significant changes on how it handles sharding and "
-"now has sharding as a first-class citizen."
+"The library has received significant changes on how it handles sharding "
+"and now has sharding as a first-class citizen."
 msgstr "シャーディングの扱いに対して大きな変更があり、現在、シャーディングは第一級オブジェクトとして扱われています。"
 
 #: ../../migrating.rst:729
 msgid ""
-"If using a Bot account and you want to shard your bot in a single process "
-"then you can use the :class:`AutoShardedClient`."
+"If using a Bot account and you want to shard your bot in a single process"
+" then you can use the :class:`AutoShardedClient`."
 msgstr ""
 "Botアカウントを使用していて、かつ一つのプロセスでBotをシャーディングしたい場合は、 :class:`AutoShardedClient` "
 "を使用してください。"
@@ -1680,8 +1690,7 @@ msgid ""
 "It should be noted that **the sharded client does not support user "
 "accounts**. This is due to the changes in connection logic and state "
 "handling."
-msgstr ""
-"シャーディングしたクライアントはユーザーアカウントをサポートしないことを覚えておきましょう。これは、接続の形態と状態処理の変更によるものです。"
+msgstr "シャーディングしたクライアントはユーザーアカウントをサポートしないことを覚えておきましょう。これは、接続の形態と状態処理の変更によるものです。"
 
 #: ../../migrating.rst:736
 msgid "Usage is as simple as doing: ::"
@@ -1693,16 +1702,16 @@ msgstr ":class:`Client` の代わりに上記のようにしてください。"
 
 #: ../../migrating.rst:742
 msgid ""
-"This will launch as many shards as your bot needs using the ``/gateway/bot``"
-" endpoint, which allocates about 1000 guilds per shard."
+"This will launch as many shards as your bot needs using the "
+"``/gateway/bot`` endpoint, which allocates about 1000 guilds per shard."
 msgstr ""
 "これは ``/gateway/bot`` "
 "エンドポイントを使って、あなたのBotに必要な数のシャードを起動します。このエンドポイントはシャードごとに1000ギルドを割り当てます。"
 
 #: ../../migrating.rst:745
 msgid ""
-"If you want more control over the sharding you can specify ``shard_count`` "
-"and ``shard_ids``. ::"
+"If you want more control over the sharding you can specify "
+"``shard_count`` and ``shard_ids``. ::"
 msgstr "シャードをより詳細に制御したい場合は、 ``shard_count`` と ``shard_ids`` を利用してください。"
 
 #: ../../migrating.rst:753
@@ -1718,16 +1727,16 @@ msgid "Connection Improvements"
 msgstr "接続の改善"
 
 #: ../../migrating.rst:758
-msgid ""
-"In v1.0, the auto reconnection logic has been powered up significantly."
+msgid "In v1.0, the auto reconnection logic has been powered up significantly."
 msgstr "v1.0では、自動再接続機能が大幅に強化されました。"
 
 #: ../../migrating.rst:760
 msgid ""
-":meth:`Client.connect` has gained a new keyword argument, ``reconnect`` that"
-" defaults to ``True`` which controls the reconnect logic. When enabled, the "
-"client will automatically reconnect in all instances of your internet going "
-"offline or Discord going offline with exponential back-off."
+":meth:`Client.connect` has gained a new keyword argument, ``reconnect`` "
+"that defaults to ``True`` which controls the reconnect logic. When "
+"enabled, the client will automatically reconnect in all instances of your"
+" internet going offline or Discord going offline with exponential back-"
+"off."
 msgstr ""
 ":meth:`Client.connect` には新しいキーワード引数が追加されました。再接続機能の設定を行う ``reconnect`` "
 "はデフォルトで ``True`` "
@@ -1735,9 +1744,9 @@ msgstr ""
 
 #: ../../migrating.rst:764
 msgid ""
-":meth:`Client.run` and :meth:`Client.start` gains this keyword argument as "
-"well, but for most cases you will not need to specify it unless turning it "
-"off."
+":meth:`Client.run` and :meth:`Client.start` gains this keyword argument "
+"as well, but for most cases you will not need to specify it unless "
+"turning it off."
 msgstr ""
 ":meth:`Client.run` や :meth:`Client.start` "
 "にも同様のキーワード引数が追加されていますが、このさい接続機能をオフにする場合以外は指定する必要はありません。"
@@ -1748,8 +1757,8 @@ msgstr "コマンド拡張の変更"
 
 #: ../../migrating.rst:772
 msgid ""
-"Due to the :ref:`migrating_1_0_model_state` changes, some of the design of "
-"the extension module had to undergo some design changes as well."
+"Due to the :ref:`migrating_1_0_model_state` changes, some of the design "
+"of the extension module had to undergo some design changes as well."
 msgstr ":ref:`migrating_1_0_model_state` により、拡張モジュールの設計にもいくつかの変更があります。"
 
 #: ../../migrating.rst:776
@@ -1758,8 +1767,8 @@ msgstr "コンテキストの変更"
 
 #: ../../migrating.rst:778
 msgid ""
-"In v1.0, the :class:`.Context` has received a lot of changes with how it's "
-"retrieved and used."
+"In v1.0, the :class:`.Context` has received a lot of changes with how "
+"it's retrieved and used."
 msgstr "v1.0において、 :class:`.Context` は取得と利用の面において、多くの変更があります。"
 
 #: ../../migrating.rst:780
@@ -1772,25 +1781,26 @@ msgstr ""
 
 #: ../../migrating.rst:794
 msgid ""
-"The reason for this is because :class:`~ext.commands.Context` now meets the "
-"requirements of :class:`abc.Messageable`. This makes it have similar "
+"The reason for this is because :class:`~ext.commands.Context` now meets "
+"the requirements of :class:`abc.Messageable`. This makes it have similar "
 "functionality to :class:`TextChannel` or :class:`DMChannel`. Using "
 ":meth:`~.Context.send` will either DM the user in a DM context or send a "
 "message in the channel it was in, similar to the old ``bot.say`` "
 "functionality. The old helpers have been removed in favour of the new "
-":class:`abc.Messageable` interface. See :ref:`migrating_1_0_removed_helpers`"
-" for more information."
+":class:`abc.Messageable` interface. See "
+":ref:`migrating_1_0_removed_helpers` for more information."
 msgstr ""
 "その理由として、 :class:`~ext.commands.Context` が :class:`abc.Messageable` "
 "の要件を満たしていることが挙げられます。 これは :class:`TextChannel` や :class:`DMChannel` "
 "と同等の機能を持っており、 :meth:`~.Context.send` を用いることで、従来の ``bot.say`` "
-"のようにDMまたはテキストチャンネルにメッセージを送信することが出来ます。古いヘルパー関数は新しい :class:`abc.Messageable` "
-"インタフェースの実装に伴い削除されました。詳細は :ref:`migrating_1_0_removed_helpers` を参照してください。"
+"のようにDMまたはテキストチャンネルにメッセージを送信することが出来ます。古いヘルパー関数は新しい "
+":class:`abc.Messageable` インタフェースの実装に伴い削除されました。詳細は "
+":ref:`migrating_1_0_removed_helpers` を参照してください。"
 
 #: ../../migrating.rst:800
 msgid ""
-"Since the :class:`~ext.commands.Context` is now by default passed, several "
-"shortcuts have been added:"
+"Since the :class:`~ext.commands.Context` is now by default passed, "
+"several shortcuts have been added:"
 msgstr ":class:`~ext.commands.Context` が常に渡されるようになったため、いくつかのショートカットが追加されています。"
 
 #: ../../migrating.rst:802
@@ -1801,26 +1811,26 @@ msgstr "**新しいショートカット**"
 msgid ""
 ":attr:`~ext.commands.Context.author` is a shortcut for "
 "``ctx.message.author``."
-msgstr ""
-":attr:`~ext.commands.Context.author` は ``ctx.message.author`` のショートカットです。"
+msgstr ":attr:`~ext.commands.Context.author` は ``ctx.message.author`` のショートカットです。"
 
 #: ../../migrating.rst:805
 msgid ""
-":attr:`~ext.commands.Context.guild` is a shortcut for ``ctx.message.guild``."
-msgstr ""
-":attr:`~ext.commands.Context.guild` は ``ctx.message.guild`` のショートカットです。"
+":attr:`~ext.commands.Context.guild` is a shortcut for "
+"``ctx.message.guild``."
+msgstr ":attr:`~ext.commands.Context.guild` は ``ctx.message.guild`` のショートカットです。"
 
 #: ../../migrating.rst:806
 msgid ""
 ":attr:`~ext.commands.Context.channel` is a shortcut for "
 "``ctx.message.channel``."
 msgstr ""
-":attr:`~ext.commands.Context.channel` は ``ctx.message.channel`` のショートカットです。"
+":attr:`~ext.commands.Context.channel` は ``ctx.message.channel`` "
+"のショートカットです。"
 
 #: ../../migrating.rst:807
 msgid ""
-":attr:`~ext.commands.Context.me` is a shortcut for ``ctx.message.guild.me`` "
-"or ``ctx.bot.user``."
+":attr:`~ext.commands.Context.me` is a shortcut for "
+"``ctx.message.guild.me`` or ``ctx.bot.user``."
 msgstr ""
 ":attr:`~ext.commands.Context.me` は ``ctx.message.guild.me`` あるいは "
 "``ctx.bot.user`` のショートカットです。"
@@ -1851,8 +1861,9 @@ msgstr "コンテキストのサブクラス"
 
 #: ../../migrating.rst:819
 msgid ""
-"In v1.0, there is now the ability to subclass :class:`~ext.commands.Context`"
-" and use it instead of the default provided one."
+"In v1.0, there is now the ability to subclass "
+":class:`~ext.commands.Context` and use it instead of the default provided"
+" one."
 msgstr ""
 "v1.0では、 :class:`~ext.commands.Context` "
 "を継承したサブクラスを作成し、デフォルトで実装されているものの代わりに使うことが出来ます。"
@@ -1864,8 +1875,8 @@ msgstr "例えば、コンテキストに機能の追加を行いたい場合は
 #: ../../migrating.rst:831
 msgid ""
 "Then you can use :meth:`~ext.commands.Bot.get_context` inside "
-":func:`on_message` with combination with :meth:`~ext.commands.Bot.invoke` to"
-" use your custom context:"
+":func:`on_message` with combination with :meth:`~ext.commands.Bot.invoke`"
+" to use your custom context:"
 msgstr ""
 "また、 :func:`on_message` 内で :meth:`~ext.commands.Bot.get_context` と "
 ":meth:`~ext.commands.Bot.invoke` を組み合わせることであなたのカスタムコンテキストを使用できます。"
@@ -1930,8 +1941,9 @@ msgstr "コマンドの変更"
 
 #: ../../migrating.rst:875
 msgid ""
-"As mentioned earlier, the first command change is that ``pass_context=True``"
-" no longer exists, so there is no need to pass this as a parameter."
+"As mentioned earlier, the first command change is that "
+"``pass_context=True`` no longer exists, so there is no need to pass this "
+"as a parameter."
 msgstr "前述の通り、 ``pass_context=True`` は削除されたため、これをパラメータとして渡す必要はありません。"
 
 #: ../../migrating.rst:878
@@ -1945,9 +1957,9 @@ msgstr ""
 #: ../../migrating.rst:881
 msgid ""
 "The ``commands`` attribute of :class:`~ext.commands.Bot` and "
-":class:`~ext.commands.Group` have been changed from a dictionary to a set "
-"that does not have aliases. To retrieve the previous dictionary behaviour, "
-"use ``all_commands`` instead."
+":class:`~ext.commands.Group` have been changed from a dictionary to a set"
+" that does not have aliases. To retrieve the previous dictionary "
+"behaviour, use ``all_commands`` instead."
 msgstr ""
 ":class:`~ext.commands.Bot` と :class:`~ext.commands.Group` の ``commands`` "
 "属性は辞書からエイリアスを持たないsetに変更されました。以前のような辞書を取得するには ``all_commands`` を使用してください。"
@@ -1958,25 +1970,25 @@ msgstr "コマンドインスタンスには新たな属性とプロパティが
 
 #: ../../migrating.rst:886
 msgid ""
-":attr:`~ext.commands.Command.signature` to get the signature of the command."
+":attr:`~ext.commands.Command.signature` to get the signature of the "
+"command."
 msgstr "コマンドのシグネチャを取得する :attr:`~ext.commands.Command.signature` 。"
 
 #: ../../migrating.rst:887
-msgid ""
-":attr:`~.Command.usage`, an attribute to override the default signature."
+msgid ":attr:`~.Command.usage`, an attribute to override the default signature."
 msgstr "デフォルトのシグネチャをオーバーライドする属性 :attr:`~.Command.usage` 。"
 
 #: ../../migrating.rst:888
 msgid ""
-":attr:`~.Command.root_parent` to get the root parent group of a subcommand."
+":attr:`~.Command.root_parent` to get the root parent group of a "
+"subcommand."
 msgstr "サブコマンドのルートである親グループを取得する :attr:`~.Command.root_parent` 。"
 
 #: ../../migrating.rst:890
 msgid ""
 "For :class:`~ext.commands.Group` and :class:`~ext.commands.Bot` the "
 "following changed:"
-msgstr ""
-":class:`~ext.commands.Group` と :class:`~ext.commands.Bot` は次のように変更されました。"
+msgstr ":class:`~ext.commands.Group` と :class:`~ext.commands.Bot` は次のように変更されました。"
 
 #: ../../migrating.rst:892
 msgid "Changed :attr:`~.GroupMixin.commands` to be a ``set`` without aliases."
@@ -1986,8 +1998,7 @@ msgstr ":attr:`~.GroupMixin.commands` は エイリアスなしの ``set`` に�
 msgid ""
 "Use :attr:`~.GroupMixin.all_commands` to get the old ``dict`` with all "
 "commands."
-msgstr ""
-"すべてのコマンドを従来の ``dict`` で取得するには :attr:`~.GroupMixin.all_commands` を使用してください。"
+msgstr "すべてのコマンドを従来の ``dict`` で取得するには :attr:`~.GroupMixin.all_commands` を使用してください。"
 
 #: ../../migrating.rst:897
 msgid "Check Changes"
@@ -1995,10 +2006,11 @@ msgstr "チェックの変更"
 
 #: ../../migrating.rst:899
 msgid ""
-"Prior to v1.0, :func:`~ext.commands.check`\\s could only be synchronous. As "
-"of v1.0 checks can now be coroutines."
+"Prior to v1.0, :func:`~ext.commands.check`\\s could only be synchronous. "
+"As of v1.0 checks can now be coroutines."
 msgstr ""
-"v1.0以前のバージョンでは :func:`~ext.commands.check` は同期関数でしたが、 v1.0のチェックはコルーチンになりました。"
+"v1.0以前のバージョンでは :func:`~ext.commands.check` は同期関数でしたが、 "
+"v1.0のチェックはコルーチンになりました。"
 
 #: ../../migrating.rst:901
 msgid "Along with this change, a couple new checks were added."
@@ -2030,8 +2042,8 @@ msgstr ":attr:`.Bot.owner_id` に値を指定することで自分でオーナ�
 
 #: ../../migrating.rst:909
 msgid ""
-":func:`~ext.commands.is_nsfw` checks if the channel the command is in is a "
-"NSFW channel."
+":func:`~ext.commands.is_nsfw` checks if the channel the command is in is "
+"a NSFW channel."
 msgstr ":func:`~ext.commands.is_nsfw` はコマンドが実行されたチャンネルがNSFWチャンネルかどうかをチェックします。"
 
 #: ../../migrating.rst:911
@@ -2046,9 +2058,9 @@ msgstr "すべてのコマンド拡張のイベントが変更されました。
 msgid ""
 "The extraneous ``command`` parameter in :func:`.on_command` and "
 ":func:`.on_command_completion` have been removed. The "
-":class:`~ext.commands.Command` instance was not kept up-to date so it was "
-"incorrect. In order to get the up to date :class:`~ext.commands.Command` "
-"instance, use the :attr:`.Context.command` attribute."
+":class:`~ext.commands.Command` instance was not kept up-to date so it was"
+" incorrect. In order to get the up to date :class:`~ext.commands.Command`"
+" instance, use the :attr:`.Context.command` attribute."
 msgstr ""
 ":func:`.on_command` と :func:`.on_command_completion` の ``command`` "
 "パラメータが削除されました。 :class:`~ext.commands.Command` "
@@ -2059,8 +2071,8 @@ msgstr ""
 msgid ""
 "The error handlers, either :meth:`.Command.error` or "
 ":func:`.on_command_error`, have been re-ordered to use the "
-":class:`~ext.commands.Context` as its first parameter to be consistent with "
-"other events and commands."
+":class:`~ext.commands.Context` as its first parameter to be consistent "
+"with other events and commands."
 msgstr ""
 ":meth:`.Command.error` や :func:`.on_command_error` "
 "のようなエラーハンドラは他のイベント及びコマンドとの一貫性を保つため、最初のパラメータとして "
@@ -2085,25 +2097,25 @@ msgstr ""
 #: ../../migrating.rst:947
 msgid ""
 "To complement the new ``__global_check`` there is now a new "
-"``__local_check`` to facilitate a check that will run on every command in "
-"the cog. There is also a ``__global_check_once``, which is similar to a "
+"``__local_check`` to facilitate a check that will run on every command in"
+" the cog. There is also a ``__global_check_once``, which is similar to a "
 "global check instead it is only called once per :meth:`.Bot.invoke` call "
-"rather than every :meth:`.Command.invoke` call. Practically, the difference "
-"is only for black-listing users or channels without constantly opening a "
-"database connection."
+"rather than every :meth:`.Command.invoke` call. Practically, the "
+"difference is only for black-listing users or channels without constantly"
+" opening a database connection."
 msgstr ""
 
 #: ../../migrating.rst:952
 msgid ""
-"Cogs have also gained a ``__before_invoke`` and ``__after_invoke`` cog local"
-" before and after invocation hook, which can be seen in "
+"Cogs have also gained a ``__before_invoke`` and ``__after_invoke`` cog "
+"local before and after invocation hook, which can be seen in "
 ":ref:`migrating_1_0_before_after_hook`."
 msgstr ""
 
 #: ../../migrating.rst:955
 msgid ""
-"The final addition is cog-local error handler, ``__error``, that is run on "
-"every command in the cog."
+"The final addition is cog-local error handler, ``__error``, that is run "
+"on every command in the cog."
 msgstr ""
 
 #: ../../migrating.rst:957
@@ -2116,16 +2128,15 @@ msgstr "前後処理のフック"
 
 #: ../../migrating.rst:990
 msgid ""
-"Commands have gained new before and after invocation hooks that allow you to"
-" do an action before and after a command is run."
+"Commands have gained new before and after invocation hooks that allow you"
+" to do an action before and after a command is run."
 msgstr "コマンドに、コマンドの実行前および実行後に処理が行えるようにするフックが新たに追加されました。"
 
 #: ../../migrating.rst:993
 msgid ""
-"They take a single parameter, :class:`~ext.commands.Context` and they must "
-"be a coroutine."
-msgstr ""
-"これは単一のパラメータとして :class:`~ext.commands.Context` を受け取り、かつコルーチンである必要があります。"
+"They take a single parameter, :class:`~ext.commands.Context` and they "
+"must be a coroutine."
+msgstr "これは単一のパラメータとして :class:`~ext.commands.Context` を受け取り、かつコルーチンである必要があります。"
 
 #: ../../migrating.rst:995
 msgid "They are on a global, per-cog, or per-command basis."
@@ -2133,9 +2144,9 @@ msgstr "また、このフックは全体、コグごと、あるいはコマン
 
 #: ../../migrating.rst:1012
 msgid ""
-"The after invocation is hook always called, **regardless of an error in the "
-"command**. This makes it ideal for some error handling or clean up of "
-"certain resources such a database connection."
+"The after invocation is hook always called, **regardless of an error in "
+"the command**. This makes it ideal for some error handling or clean up of"
+" certain resources such a database connection."
 msgstr ""
 "後処理のフックは **コマンドのエラー発生に関わらず** "
 "必ず呼び出されます。そのため、データベース接続のようなリソースのクリーンアップやエラー処理に最適です。"
@@ -2148,8 +2159,7 @@ msgstr "コマンドごとに設定する方法は以下のとおりです。"
 msgid ""
 "The special cog method for these is ``__before_invoke`` and "
 "``__after_invoke``, e.g.: ::"
-msgstr ""
-"特定のコグへの実装は以下の例のように ``__before_invoke`` と ``__after_invoke`` メソッドを用いてください。"
+msgstr "特定のコグへの実装は以下の例のように ``__before_invoke`` と ``__after_invoke`` メソッドを用いてください。"
 
 #: ../../migrating.rst:1044
 msgid ""
@@ -2196,24 +2206,25 @@ msgstr "コンバーターの変更"
 #: ../../migrating.rst:1060
 msgid ""
 "Prior to v1.0, a converter was a type hint that could be a callable that "
-"could be invoked with a singular argument denoting the argument passed by "
-"the user as a string."
+"could be invoked with a singular argument denoting the argument passed by"
+" the user as a string."
 msgstr ""
 
 #: ../../migrating.rst:1063
 msgid ""
 "This system was eventually expanded to support a "
 ":class:`~ext.commands.Converter` system to allow plugging in the "
-":class:`~ext.commands.Context` and do more complicated conversions such as "
-"the built-in \"discord\" converters."
+":class:`~ext.commands.Context` and do more complicated conversions such "
+"as the built-in \"discord\" converters."
 msgstr ""
 
 #: ../../migrating.rst:1067
 msgid ""
 "In v1.0 this converter system was revamped to allow instances of "
 ":class:`~ext.commands.Converter` derived classes to be passed. For "
-"consistency, the :meth:`~ext.commands.Converter.convert` method was changed "
-"to always be a coroutine and will now take the two arguments as parameters."
+"consistency, the :meth:`~ext.commands.Converter.convert` method was "
+"changed to always be a coroutine and will now take the two arguments as "
+"parameters."
 msgstr ""
 
 #: ../../migrating.rst:1071
@@ -2245,7 +2256,6 @@ msgid ":class:`~ext.commands.TextChannelConverter` for :class:`TextChannel`."
 msgstr ":class:`TextChannel` 用の :class:`~ext.commands.TextChannelConverter` 。"
 
 #: ../../migrating.rst:1090
-msgid ""
-":class:`~ext.commands.VoiceChannelConverter` for :class:`VoiceChannel`."
-msgstr ""
-":class:`VoiceChannel` 用の :class:`~ext.commands.VoiceChannelConverter` 。"
+msgid ":class:`~ext.commands.VoiceChannelConverter` for :class:`VoiceChannel`."
+msgstr ":class:`VoiceChannel` 用の :class:`~ext.commands.VoiceChannelConverter` 。"
+
