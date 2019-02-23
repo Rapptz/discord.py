@@ -135,6 +135,10 @@ class Cog(metaclass=CogMeta):
 
         # Either update the command with the cog provided defaults or copy it.
         self.__cog_commands__ = tuple(c._update_copy(cmd_attrs) for c in cls.__cog_commands__)
+
+        # Update the Command instances dynamically as well
+        for command in self.__cog_commands__:
+            setattr(self, command.callback.__name__, command)
         return self
 
     def get_commands(self):
