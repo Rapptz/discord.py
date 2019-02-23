@@ -559,31 +559,6 @@ class BotBase(GroupMixin):
         """
         return self.cogs.get(name)
 
-    def get_cog_commands(self, name):
-        """Gets a unique set of the cog's registered commands
-        without aliases.
-
-        If the cog is not found, an empty set is returned.
-
-        Parameters
-        ------------
-        name: str
-            The name of the cog whose commands you are requesting.
-
-        Returns
-        ---------
-        Set[:class:`.Command`]
-            A unique set of commands without aliases that belong
-            to the cog.
-        """
-
-        try:
-            cog = self.cogs[name]
-        except KeyError:
-            return set()
-
-        return {c for c in self.all_commands.values() if c.cog is cog}
-
     def remove_cog(self, name):
         """Removes a cog from the bot.
 
