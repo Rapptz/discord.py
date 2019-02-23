@@ -249,7 +249,7 @@ def _get_as_snowflake(data, key):
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data.startswith(b'\xFF\xD8') and data.rstrip(b'\0').endswith(b'\xFF\xD9'):
+    elif data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
