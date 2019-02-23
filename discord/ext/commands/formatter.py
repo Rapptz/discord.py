@@ -225,7 +225,7 @@ class HelpFormatter:
             cmd = tup[1]
             if self.is_cog():
                 # filter commands that don't exist to this cog.
-                if cmd.instance is not self.command:
+                if cmd.cog is not self.command:
                     return False
 
             if cmd.hidden and not self.show_hidden:

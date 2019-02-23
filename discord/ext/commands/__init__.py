@@ -17,3 +17,4 @@ from .errors import *
 from .formatter import HelpFormatter, Paginator
 from .converter import *
 from .cooldowns import *
+from .cog import *
