@@ -268,6 +268,10 @@ class Command(_BaseCommand):
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         ret._before_invoke = self._before_invoke
         ret._after_invoke = self._after_invoke
+        if self.checks != ret.checks:
+            ret.checks = self.checks.copy()
+        if self._buckets != ret._buckets:
+            ret._buckets = self._buckets.copy()
         try:
             ret.on_error = self.on_error
         except AttributeError:
