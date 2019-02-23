@@ -324,6 +324,6 @@ class Cog(metaclass=CogMeta):
                 bot.remove_check(self.bot_check)
 
             if cls.bot_check_once is not Cog.bot_check_once:
-                bot.remove_check(self.bot_check_once)
+                bot.remove_check(self.bot_check_once, call_once=True)
         finally:
             self.cog_unload()
