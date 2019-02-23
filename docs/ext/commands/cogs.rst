@@ -142,7 +142,7 @@ Inspection
 Since cogs ultimately are classes, we have some tools to help us inspect certain properties of the cog.
 
 
-To get a :class:`tuple` of commands, we can use :meth:`.Cog.get_commands`. ::
+To get a :class:`list` of commands, we can use :meth:`.Cog.get_commands`. ::
 
     >>> cog = bot.get_cog('Greetings')
     >>> commands = cog.get_commands()

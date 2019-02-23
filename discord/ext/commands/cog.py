@@ -156,18 +156,23 @@ class Cog(metaclass=CogMeta):
         return self
 
     def get_commands(self):
-        r"""Returns a :class:`tuple` of :class:`.Command`\s and its subclasses that are
+        r"""Returns a :class:`list` of :class:`.Command`\s that are
         defined inside this cog.
+
+        .. note::
+
+            This does not include subcommands.
         """
-        return self.__cog_commands__
+        return [c for c in self.__cog_commands__ if c.parent is None]
 
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands."""
         from .core import GroupMixin
         for command in self.__cog_commands__:
-            yield command
-            if isinstance(command, GroupMixin):
-                yield from command.walk_commands()
+            if command.parent is None:
+                yield command
+                if isinstance(command, GroupMixin):
+                    yield from command.walk_commands()
 
     def get_listeners(self):
         """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog."""
