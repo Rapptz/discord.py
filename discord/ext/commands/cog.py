@@ -136,9 +136,23 @@ class Cog(metaclass=CogMeta):
         # Either update the command with the cog provided defaults or copy it.
         self.__cog_commands__ = tuple(c._update_copy(cmd_attrs) for c in cls.__cog_commands__)
 
+        lookup = {
+            cmd.qualified_name: cmd
+            for cmd in self.__cog_commands__
+        }
+
         # Update the Command instances dynamically as well
         for command in self.__cog_commands__:
             setattr(self, command.callback.__name__, command)
+            parent = command.parent
+            if parent is not None:
+                # Get the latest parent reference
+                parent = lookup[parent.qualified_name]
+
+                # Update our parent's reference to ourself
+                removed = parent.remove_command(command.name)
+                parent.add_command(command)
+
         return self
 
     def get_commands(self):
