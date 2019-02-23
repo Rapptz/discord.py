@@ -210,7 +210,6 @@ class Command(_BaseCommand):
         try:
             checks = func.__commands_checks__
             checks.reverse()
-            del func.__commands_checks__
         except AttributeError:
             checks = kwargs.get('checks', [])
         finally:
@@ -218,7 +217,6 @@ class Command(_BaseCommand):
 
         try:
             cooldown = func.__commands_cooldown__
-            del func.__commands_cooldown__
         except AttributeError:
             cooldown = kwargs.get('cooldown')
         finally:
