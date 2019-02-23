@@ -106,7 +106,7 @@ class CogMeta(type):
 
         attrs['__cog_commands__'] = commands # this will be copied in Cog.__new__
         attrs['__cog_listeners__'] = tuple(listeners)
-        return super().__new__(cls, name, bases, attrs)
+        return super().__new__(cls, name, bases, attrs, **kwargs)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args)
