@@ -956,6 +956,8 @@ Cogs are now required to have a base class, :class:`~.commands.Cog` for future p
 * :meth:`.Cog.cog_before_invoke` and :meth:`.Cog.cog_after_invoke`
     - A special method that registers a cog before and after invoke hook. More information can be found in :ref:`migrating_1_0_before_after_hook`.
 
+Those that were using listeners, such as ``on_message`` inside a cog will now have to explicitly mark them as such using the :meth:`.commands.Cog.listener` decorator.
+
 Along with that, cogs have gained the ability to have custom names through specifying it in the class definition line. More options can be found in the metaclass that facilitates all this, :class:`.commands.CogMeta`.
 
 An example cog with every special method registered and a custom name is as follows:
@@ -986,6 +988,10 @@ An example cog with every special method registered and a custom name is as foll
 
         async def cog_after_invoke(self, ctx):
             print('cog local after: {0.command.qualified_name}'.format(ctx))
+
+        @commands.Cog.listener()
+        async def on_message(self, message):
+            pass
 
 
 .. _migrating_1_0_before_after_hook:
