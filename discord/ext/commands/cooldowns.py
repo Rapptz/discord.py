@@ -98,6 +98,11 @@ class CooldownMapping:
         self._cache = {}
         self._cooldown = original
 
+    def copy(self):
+        ret = CooldownMapping(self._cooldown)
+        ret._cache = self._cache.copy()
+        return ret
+
     @property
     def valid(self):
         return self._cooldown is not None

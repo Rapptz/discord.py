@@ -939,47 +939,59 @@ and commands.
 Cog Changes
 ~~~~~~~~~~~~~
 
-Cog special methods have changed slightly.
+Cogs have completely been revamped. They are documented in :ref:`ext_commands_cogs` as well.
 
-The previous ``__check`` special method has been renamed to ``__global_check`` to make it more clear that it's a global
-check.
+Cogs are now required to have a base class, :class:`~.commands.Cog` for future proofing purposes. This comes with special methods to customise some behaviour.
 
-To complement the new ``__global_check`` there is now a new ``__local_check`` to facilitate a check that will run on
-every command in the cog. There is also a ``__global_check_once``, which is similar to a global check instead it is only
-called once per :meth:`.Bot.invoke` call rather than every :meth:`.Command.invoke` call. Practically, the difference is
-only for black-listing users or channels without constantly opening a database connection.
+* :meth:`.Cog.cog_unload`
+    - This is called when a cog needs to do some cleanup, such as cancelling a task.
+* :meth:`.Cog.bot_check_once`
+    - This registers a :meth:`.Bot.check_once` check.
+* :meth:`.Cog.bot_check`
+    - This registers a regular :meth:`.Bot.check` check.
+* :meth:`.Cog.cog_check`
+    - This registers a check that applies to every command in the cog.
+* :meth:`.Cog.cog_command_error`
+    - This is a special error handler that is called whenever an error happens inside the cog.
+* :meth:`.Cog.cog_before_invoke` and :meth:`.Cog.cog_after_invoke`
+    - A special method that registers a cog before and after invoke hook. More information can be found in :ref:`migrating_1_0_before_after_hook`.
 
-Cogs have also gained a ``__before_invoke`` and ``__after_invoke`` cog local before and after invocation hook, which
-can be seen in :ref:`migrating_1_0_before_after_hook`.
+Those that were using listeners, such as ``on_message`` inside a cog will now have to explicitly mark them as such using the :meth:`.commands.Cog.listener` decorator.
 
-The final addition is cog-local error handler, ``__error``, that is run on every command in the cog.
+Along with that, cogs have gained the ability to have custom names through specifying it in the class definition line. More options can be found in the metaclass that facilitates all this, :class:`.commands.CogMeta`.
 
-An example cog with every special method registered is as follows: ::
+An example cog with every special method registered and a custom name is as follows:
 
-    class Cog:
-        def __unload(self):
+.. code-block:: python3
+
+    class MyCog(commands.Cog, name='Example Cog'):
+        def cog_unload(self):
             print('cleanup goes here')
 
-        def __global_check(self, ctx):
-            print('cog global check')
+        def bot_check(self, ctx):
+            print('bot check')
             return True
 
-        def __global_check_once(self, ctx):
-            print('cog global check once')
+        def bot_check_once(self, ctx):
+            print('bot check once')
             return True
 
-        async def __local_check(self, ctx):
+        async def cog_check(self, ctx):
             print('cog local check')
             return await ctx.bot.is_owner(ctx.author)
 
-        async def __error(self, ctx, error):
+        async def cog_command_error(self, ctx, error):
             print('Error in {0.command.qualified_name}: {1}'.format(ctx, error))
 
-        async def __before_invoke(self, ctx):
+        async def cog_before_invoke(self, ctx):
             print('cog local before: {0.command.qualified_name}'.format(ctx))
 
-        async def __after_invoke(self, ctx):
+        async def cog_after_invoke(self, ctx):
             print('cog local after: {0.command.qualified_name}'.format(ctx))
+
+        @commands.Cog.listener()
+        async def on_message(self, message):
+            pass
 
 
 .. _migrating_1_0_before_after_hook:
@@ -1028,13 +1040,15 @@ The per-command registration is as follows: ::
         # do something after the foo command is called
         pass
 
-The special cog method for these is ``__before_invoke`` and ``__after_invoke``, e.g.: ::
+The special cog method for these is :meth:`.Cog.cog_before_invoke` and :meth:`.Cog.cog_after_invoke`, e.g.:
 
-    class Cog:
-        async def __before_invoke(self, ctx):
+.. code-block:: python3
+
+    class MyCog(commands.Cog):
+        async def cog_before_invoke(self, ctx):
             ctx.secret_cog_data = 'foo'
 
-        async def __after_invoke(self, ctx):
+        async def cog_after_invoke(self, ctx):
             print('{0.command} is done...'.format(ctx))
 
         @commands.command()
