@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-02-18 03:50-0500\n"
+"POT-Creation-Date: 2019-02-24 04:09-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Episword <mistio100@gmail.com>, 2018\n"
 "Language: ja_JP\n"
@@ -1158,7 +1158,7 @@ msgstr ""
 "変更点の一つは、以前の ``Client.send_message`` と ``Client.send_file`` の機能を単一のメソッド "
 ":meth:`~abc.Messageable.send` に統合したことです。"
 
-#: ../../migrating.rst:417 ../../migrating.rst:997
+#: ../../migrating.rst:417 ../../migrating.rst:1009
 msgid "Basically: ::"
 msgstr "基本形"
 
@@ -1344,7 +1344,7 @@ msgid "Before: ::"
 msgstr "更新前"
 
 #: ../../migrating.rst:529 ../../migrating.rst:541 ../../migrating.rst:553
-#: ../../migrating.rst:621 ../../migrating.rst:924 ../../migrating.rst:1077
+#: ../../migrating.rst:621 ../../migrating.rst:924 ../../migrating.rst:1091
 msgid "After: ::"
 msgstr "更新後"
 
@@ -2083,66 +2083,114 @@ msgid "Cog Changes"
 msgstr "コグの変更"
 
 #: ../../migrating.rst:942
-msgid "Cog special methods have changed slightly."
-msgstr "コグの特殊なメソッドに少し変更がありました。"
+msgid ""
+"Cogs have completely been revamped. They are documented in "
+":ref:`ext_commands_cogs` as well."
+msgstr ""
 
 #: ../../migrating.rst:944
 msgid ""
-"The previous ``__check`` special method has been renamed to "
-"``__global_check`` to make it more clear that it's a global check."
+"Cogs are now required to have a base class, :class:`~.commands.Cog` for "
+"future proofing purposes. This comes with special methods to customise "
+"some behaviour."
 msgstr ""
-"以前 ``__check`` として使用されていたメソッドはグローバルチェックであることをより明確にするため、名前が "
-"``__global_check`` に変更されました。"
+
+#: ../../migrating.rst:946
+msgid ":meth:`.Cog.cog_unload`"
+msgstr ""
 
 #: ../../migrating.rst:947
 msgid ""
-"To complement the new ``__global_check`` there is now a new "
-"``__local_check`` to facilitate a check that will run on every command in"
-" the cog. There is also a ``__global_check_once``, which is similar to a "
-"global check instead it is only called once per :meth:`.Bot.invoke` call "
-"rather than every :meth:`.Command.invoke` call. Practically, the "
-"difference is only for black-listing users or channels without constantly"
-" opening a database connection."
+"This is called when a cog needs to do some cleanup, such as cancelling a "
+"task."
+msgstr ""
+
+#: ../../migrating.rst:948
+msgid ":meth:`.Cog.bot_check_once`"
+msgstr ""
+
+#: ../../migrating.rst:949
+msgid "This registers a :meth:`.Bot.check_once` check."
+msgstr ""
+
+#: ../../migrating.rst:950
+msgid ":meth:`.Cog.bot_check`"
+msgstr ""
+
+#: ../../migrating.rst:951
+msgid "This registers a regular :meth:`.Bot.check` check."
 msgstr ""
 
 #: ../../migrating.rst:952
-msgid ""
-"Cogs have also gained a ``__before_invoke`` and ``__after_invoke`` cog "
-"local before and after invocation hook, which can be seen in "
-":ref:`migrating_1_0_before_after_hook`."
+msgid ":meth:`.Cog.cog_check`"
+msgstr ""
+
+#: ../../migrating.rst:953
+msgid "This registers a check that applies to every command in the cog."
+msgstr ""
+
+#: ../../migrating.rst:954
+msgid ":meth:`.Cog.cog_command_error`"
 msgstr ""
 
 #: ../../migrating.rst:955
 msgid ""
-"The final addition is cog-local error handler, ``__error``, that is run "
-"on every command in the cog."
+"This is a special error handler that is called whenever an error happens "
+"inside the cog."
 msgstr ""
 
 #: ../../migrating.rst:957
-msgid "An example cog with every special method registered is as follows: ::"
+msgid ":meth:`.Cog.cog_before_invoke` and :meth:`.Cog.cog_after_invoke`"
 msgstr ""
 
-#: ../../migrating.rst:988
+#: ../../migrating.rst:957
+msgid ""
+"A special method that registers a cog before and after invoke hook. More "
+"information can be found in :ref:`migrating_1_0_before_after_hook`."
+msgstr ""
+
+#: ../../migrating.rst:959
+msgid ""
+"Those that were using listeners, such as ``on_message`` inside a cog will"
+" now have to explicitly mark them as such using the "
+":meth:`.commands.Cog.listener` decorator."
+msgstr ""
+
+#: ../../migrating.rst:961
+msgid ""
+"Along with that, cogs have gained the ability to have custom names "
+"through specifying it in the class definition line. More options can be "
+"found in the metaclass that facilitates all this, "
+":class:`.commands.CogMeta`."
+msgstr ""
+
+#: ../../migrating.rst:963
+msgid ""
+"An example cog with every special method registered and a custom name is "
+"as follows:"
+msgstr ""
+
+#: ../../migrating.rst:1000
 msgid "Before and After Invocation Hooks"
 msgstr "前後処理のフック"
 
-#: ../../migrating.rst:990
+#: ../../migrating.rst:1002
 msgid ""
 "Commands have gained new before and after invocation hooks that allow you"
 " to do an action before and after a command is run."
 msgstr "コマンドに、コマンドの実行前および実行後に処理が行えるようにするフックが新たに追加されました。"
 
-#: ../../migrating.rst:993
+#: ../../migrating.rst:1005
 msgid ""
 "They take a single parameter, :class:`~ext.commands.Context` and they "
 "must be a coroutine."
 msgstr "これは単一のパラメータとして :class:`~ext.commands.Context` を受け取り、かつコルーチンである必要があります。"
 
-#: ../../migrating.rst:995
+#: ../../migrating.rst:1007
 msgid "They are on a global, per-cog, or per-command basis."
 msgstr "また、このフックは全体、コグごと、あるいはコマンドごとに設定することが可能です。"
 
-#: ../../migrating.rst:1012
+#: ../../migrating.rst:1024
 msgid ""
 "The after invocation is hook always called, **regardless of an error in "
 "the command**. This makes it ideal for some error handling or clean up of"
@@ -2151,66 +2199,67 @@ msgstr ""
 "後処理のフックは **コマンドのエラー発生に関わらず** "
 "必ず呼び出されます。そのため、データベース接続のようなリソースのクリーンアップやエラー処理に最適です。"
 
-#: ../../migrating.rst:1015
+#: ../../migrating.rst:1027
 msgid "The per-command registration is as follows: ::"
 msgstr "コマンドごとに設定する方法は以下のとおりです。"
 
-#: ../../migrating.rst:1031
+#: ../../migrating.rst:1043
+#, fuzzy
 msgid ""
-"The special cog method for these is ``__before_invoke`` and "
-"``__after_invoke``, e.g.: ::"
+"The special cog method for these is :meth:`.Cog.cog_before_invoke` and "
+":meth:`.Cog.cog_after_invoke`, e.g.:"
 msgstr "特定のコグへの実装は以下の例のように ``__before_invoke`` と ``__after_invoke`` メソッドを用いてください。"
 
-#: ../../migrating.rst:1044
+#: ../../migrating.rst:1058
 msgid ""
 "To check if a command failed in the after invocation hook, you can use "
 ":attr:`.Context.command_failed`."
 msgstr ":attr:`.Context.command_failed` を使うことで、後処理でコマンドがエラーになったかを確認する事ができます。"
 
-#: ../../migrating.rst:1047
+#: ../../migrating.rst:1061
 msgid "The invocation order is as follows:"
 msgstr "呼び出される順序は以下のとおりです。"
 
-#: ../../migrating.rst:1049
+#: ../../migrating.rst:1063
 msgid "Command local before invocation hook"
 msgstr "コマンドごとの前処理。"
 
-#: ../../migrating.rst:1050
+#: ../../migrating.rst:1064
 msgid "Cog local before invocation hook"
 msgstr "コグごとの前処理。"
 
-#: ../../migrating.rst:1051
+#: ../../migrating.rst:1065
 msgid "Global before invocation hook"
 msgstr "全体での前処理。"
 
-#: ../../migrating.rst:1052
+#: ../../migrating.rst:1066
 msgid "The actual command"
 msgstr "実行されたコマンド。"
 
-#: ../../migrating.rst:1053
+#: ../../migrating.rst:1067
 msgid "Command local after invocation hook"
 msgstr "コマンドごとの後処理。"
 
-#: ../../migrating.rst:1054
+#: ../../migrating.rst:1068
 msgid "Cog local after invocation hook"
 msgstr "コグごとの後処理。"
 
-#: ../../migrating.rst:1055
+#: ../../migrating.rst:1069
 msgid "Global after invocation hook"
 msgstr "全体での後処理。"
 
-#: ../../migrating.rst:1058
+#: ../../migrating.rst:1072
 msgid "Converter Changes"
 msgstr "コンバーターの変更"
 
-#: ../../migrating.rst:1060
+#: ../../migrating.rst:1074
 msgid ""
 "Prior to v1.0, a converter was a type hint that could be a callable that "
 "could be invoked with a singular argument denoting the argument passed by"
 " the user as a string."
 msgstr ""
 
-#: ../../migrating.rst:1063
+#: ../../migrating.rst:1077
 msgid ""
 "This system was eventually expanded to support a "
 ":class:`~ext.commands.Converter` system to allow plugging in the "
@@ -2218,7 +2267,7 @@ msgid ""
 "as the built-in \"discord\" converters."
 msgstr ""
 
-#: ../../migrating.rst:1067
+#: ../../migrating.rst:1081
 msgid ""
 "In v1.0 this converter system was revamped to allow instances of "
 ":class:`~ext.commands.Converter` derived classes to be passed. For "
@@ -2227,35 +2276,80 @@ msgid ""
 "parameters."
 msgstr ""
 
-#: ../../migrating.rst:1071
+#: ../../migrating.rst:1085
 msgid "Essentially, before: ::"
 msgstr ""
 
-#: ../../migrating.rst:1083
+#: ../../migrating.rst:1097
 msgid "The command framework also got a couple new converters:"
 msgstr "コマンドフレームワークにも二つのコンバーターが追加されました。"
 
-#: ../../migrating.rst:1085
+#: ../../migrating.rst:1099
 msgid ""
 ":class:`~ext.commands.clean_content` this is akin to "
 ":attr:`Message.clean_content` which scrubs mentions."
 msgstr ""
 
-#: ../../migrating.rst:1086
+#: ../../migrating.rst:1100
 msgid ""
 ":class:`~ext.commands.UserConverter` will now appropriately convert "
 ":class:`User` only."
 msgstr ""
 
-#: ../../migrating.rst:1087
+#: ../../migrating.rst:1101
 msgid "``ChannelConverter`` is now split into two different converters."
 msgstr "``ChannelConverter`` は二つのコンバーターに分離されました。"
 
-#: ../../migrating.rst:1089
+#: ../../migrating.rst:1103
 msgid ":class:`~ext.commands.TextChannelConverter` for :class:`TextChannel`."
 msgstr ":class:`TextChannel` 用の :class:`~ext.commands.TextChannelConverter` 。"
 
-#: ../../migrating.rst:1090
+#: ../../migrating.rst:1104
 msgid ":class:`~ext.commands.VoiceChannelConverter` for :class:`VoiceChannel`."
 msgstr ":class:`VoiceChannel` 用の :class:`~ext.commands.VoiceChannelConverter` 。"
+
+#~ msgid "Cog special methods have changed slightly."
+#~ msgstr "コグの特殊なメソッドに少し変更がありました。"
+
+#~ msgid ""
+#~ "The previous ``__check`` special method "
+#~ "has been renamed to ``__global_check`` "
+#~ "to make it more clear that it's"
+#~ " a global check."
+#~ msgstr ""
+#~ "以前 ``__check`` として使用されていたメソッドはグローバルチェックであることをより明確にするため、名前が"
+#~ " ``__global_check`` に変更されました。"
+
+#~ msgid ""
+#~ "To complement the new ``__global_check`` "
+#~ "there is now a new ``__local_check`` "
+#~ "to facilitate a check that will "
+#~ "run on every command in the cog."
+#~ " There is also a ``__global_check_once``,"
+#~ " which is similar to a global "
+#~ "check instead it is only called "
+#~ "once per :meth:`.Bot.invoke` call rather "
+#~ "than every :meth:`.Command.invoke` call. "
+#~ "Practically, the difference is only for"
+#~ " black-listing users or channels "
+#~ "without constantly opening a database "
+#~ "connection."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Cogs have also gained a "
+#~ "``__before_invoke`` and ``__after_invoke`` cog "
+#~ "local before and after invocation hook,"
+#~ " which can be seen in "
+#~ ":ref:`migrating_1_0_before_after_hook`."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "The final addition is cog-local "
+#~ "error handler, ``__error``, that is run"
+#~ " on every command in the cog."
+#~ msgstr ""
+
+#~ msgid "An example cog with every special method registered is as follows: ::"
+#~ msgstr ""
 

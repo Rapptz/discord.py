@@ -117,6 +117,10 @@ class CogMeta(type):
     def qualified_name(cls):
         return cls.__cog_name__
 
+def _cog_special_method(func):
+    func.__cog_special_method__ = None
+    return func
+
 CT = typing.TypeVar('CT', bound=Context)
 
 class Cog(typing.Generic[CT], metaclass=CogMeta):
@@ -185,9 +189,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
     @classmethod
     def _get_overridden_method(cls, method):
         """Return None if the method is not overridden. Otherwise returns the overridden method."""
-        if method.__func__ is getattr(cls, method.__name__):
-            return None
-        return method
+        return getattr(method.__func__, '__cog_special_method__', method)
 
     @classmethod
     def listener(cls, name=None):
@@ -215,6 +217,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
             return func
         return decorator
 
+    @_cog_special_method
     def cog_unload(self):
         """A special method that is called when the cog gets removed.
 
@@ -225,6 +228,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         """
         pass
 
+    @_cog_special_method
     def bot_check_once(self, ctx):
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
@@ -234,6 +238,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         """
         return True
 
+    @_cog_special_method
     def bot_check(self, ctx):
         """A special method that registers as a :meth:`.Bot.check`
         check.
@@ -243,6 +248,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         """
         return True
 
+    @_cog_special_method
     def cog_check(self, ctx):
         """A special method that registers as a :func:`commands.check`
         for every command and subcommand in this cog.
@@ -252,6 +258,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         """
         return True
 
+    @_cog_special_method
     def cog_command_error(self, ctx, error):
         """A special method that is called whenever an error
         is dispatched inside this cog.
@@ -270,6 +277,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         """
         pass
 
+    @_cog_special_method
     async def cog_before_invoke(self, ctx):
         """A special method that acts as a cog local pre-invoke hook.
 
@@ -284,6 +292,7 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         """
         pass
 
+    @_cog_special_method
     async def cog_after_invoke(self, ctx):
         """A special method that acts as a cog local post-invoke hook.
 
