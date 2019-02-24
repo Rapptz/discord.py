@@ -2,6 +2,7 @@ from inspect import Parameter
 
 from .context import Context
 from .cooldowns import CooldownMapping, BucketType
+from .cog import Cog
 
 from typing import Any, Optional, Union, Callable, Dict, Iterator, Coroutine, Type, ValuesView, List, TypeVar, Mapping, Generic, overload
 
@@ -29,6 +30,7 @@ class Command(Generic[CT]):
     ignore_extra: bool
     params: Mapping[str, Parameter]
     _buckets: CooldownMapping
+    cog: Optional[Cog[CT]]
 
     def __init__(self, func: _CoroType, *, name: str = ..., enabled: bool = ...,
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
