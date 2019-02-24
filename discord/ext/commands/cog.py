@@ -25,8 +25,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import inspect
+import typing
 import copy
 from ._types import _BaseCommand
+from .context import Context
 
 __all__ = ('CogMeta', 'Cog')
 
@@ -115,7 +117,9 @@ class CogMeta(type):
     def qualified_name(cls):
         return cls.__cog_name__
 
-class Cog(metaclass=CogMeta):
+CT = typing.TypeVar('CT', bound=Context)
+
+class Cog(typing.Generic[CT], metaclass=CogMeta):
     """The base class that all cogs must inherit from.
 
     A cog is a collection of commands, listeners, and optional state to

@@ -4,6 +4,7 @@ import discord
 
 from .core import Command
 from .bot import Bot
+from .cog import Cog
 
 _C = TypeVar('_C', bound=Context)
 
@@ -27,7 +28,7 @@ class Context(discord.abc.Messageable):
     def valid(self) -> bool: ...
 
     @property
-    def cog(self) -> Optional[Any]: ...
+    def cog(self: _C) -> Optional[Cog[_C]]: ...
 
     @property
     def guild(self) -> Optional[discord.Guild]: ...

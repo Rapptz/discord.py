@@ -30,14 +30,18 @@ class Command(Generic[CT]):
     params: Mapping[str, Parameter]
     _buckets: CooldownMapping
 
-    def __init__(self, name: str, callback: _CoroType, *, enabled: bool = ...,
+    def __init__(self, func: _CoroType, *, name: str = ..., enabled: bool = ...,
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
                  aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
                  rest_is_raw: bool = ..., ignore_extra: bool = ...) -> None: ...
 
-    async def dispatch_error(self, ctx: CT, error: Exception) -> None: ...
+    def update(self, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
+               usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
+               rest_is_raw: bool = ..., ignore_extra: bool = ...) -> None: ...
 
-    def __get__(self: _CMD, instance: Any, owner: Any) -> _CMD: ...
+    def copy(self: _CMD) -> _CMD: ...
+
+    async def dispatch_error(self, ctx: CT, error: Exception) -> None: ...
 
     async def do_conversion(self, ctx: CT, converter: Any, argument: str, param: Parameter) -> Any: ...
 
@@ -111,11 +115,16 @@ class GroupMixin(Generic[CT]):
     def group(self, *args: Any, **kwargs: Any) -> Callable[..., Group[CT]]: ...
 
 
+_G = TypeVar('_G', bound=Group)
+
+
 class Group(GroupMixin[CT], Command[CT], Generic[CT]):
     invoke_without_command: bool
 
     def __init__(self, *, invoke_without_command: bool = ...,
                  case_insensitive: bool = ...) -> None: ...
+
+    def copy(self: _G) -> _G: ...
 
 
 @overload

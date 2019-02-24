@@ -5,6 +5,7 @@ import aiohttp
 from .core import GroupMixin, Command
 from .context import Context
 from .formatter import HelpFormatter
+from .cog import Cog
 
 from typing import Any, Optional, Union, Callable, Coroutine, List, Tuple, Dict, Set, TypeVar, Type, overload
 
@@ -28,7 +29,7 @@ _C = TypeVar('_C', bound=_CoroType)
 
 class BotBase(GroupMixin[CT]):
     command_prefix: CommandPrefix
-    cogs: Dict[str, Any]
+    cogs: Dict[str, Cog[CT]]
     extra_events: Dict[str, List[Callable[..., Coroutine[Any, Any, None]]]]
     extensions: Dict[str, Any]
     case_insensitive: bool
@@ -71,11 +72,9 @@ class BotBase(GroupMixin[CT]):
 
     def listen(self, name: Optional[str] = ...) -> Callable[[_C], _C]: ...
 
-    def add_cog(self, cog: Any) -> None: ...
+    def add_cog(self, cog: Cog[CT]) -> None: ...
 
-    def get_cog(self, name: str) -> Any: ...
-
-    def get_cog_commands(self, name: str) -> Set[Command]: ...
+    def get_cog(self, name: str) -> Cog[CT]: ...
 
     def remove_cog(self, name: str) -> None: ...
 
