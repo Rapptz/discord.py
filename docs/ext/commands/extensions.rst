@@ -5,14 +5,14 @@
 Extensions
 =============
 
-There comes a time in the bot development when you want to extend the bot functionality at run-time and quickly unload and reload code (also called hot-reloading). The command framework comes with this ability built-in, with a concept called **extensions**.
+There may come a time in bot development when you want to extend the bot functionality at run-time and quickly load and unload code (also called hot-reloading). The command framework comes with this functionality built-in, through a concept called **extensions**.
 
 Primer
 --------
 
-An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
+An extension at its core is a Python file with an entry point called ``setup``. This setup must be a plain Python function (*not* a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
 
-An example extension looks like this:
+For example:
 
 .. code-block:: python3
     :caption: hello.py
@@ -27,7 +27,7 @@ An example extension looks like this:
     def setup(bot):
         bot.add_command(hello)
 
-In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.commands.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``.
+In this example we define a simple command, and when the extension is loaded, this command is added to the bot. Now the final step to this is loading the extension, which you do by calling :meth:`.commands.Bot.load_extension`. To load this specific extension we call ``bot.load_extension('hello')``.
 
 .. admonition:: Cogs
     :class: helpful
@@ -36,24 +36,24 @@ In this example we define a simple command, and when the extension is loaded thi
 
 .. note::
 
-    Extension paths are ultimately similar to the import mechanism. What this means is that if there is a folder, then it must be dot-qualified. For example to load an extension in ``plugins/hello.py`` then we use the string ``plugins.hello``.
+    Extension paths are ultimately similar to the import mechanism. This includes dot-qualifying files in subdirectories. For example, to load an extension in ``plugins/hello.py``, we use the string ``plugins.hello``.
 
 Reloading
 -----------
 
-The act of reloading an extension is actually quite simple -- it is as simple as unloading it and then reloading it.
+The act of reloading an extension is quite simple -- it is as simple as unloading and loading again:
 
 .. code-block:: python3
 
     >>> bot.unload_extension('hello')
     >>> bot.load_extension('hello')
 
-Once we remove and load the extension, any changes that we did will be applied upon load. This is useful if we want to add or remove functionality without restarting our bot.
+Once you remove and load the extension, any changes that made to the extension code will be applied. This is useful if you want to add or remove functionality without restarting our bot.
 
 Cleaning Up
 -------------
 
-Although rare, sometimes an extension needs to clean-up or know when it's being unloaded. For cases like these, there is another entry point named ``teardown`` which is similar to ``setup`` except called when the extension is unloaded.
+Although rare, sometimes an extension needs to run some clean-up code before unloading. For cases like these, there is another entry point named ``teardown`` which is similar to ``setup``, but called when the extension is *un*loaded.
 
 .. code-block:: python3
     :caption: basic_ext.py

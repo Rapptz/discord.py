@@ -5,9 +5,9 @@
 Cogs
 ======
 
-There comes a point in your bot's development when you want to organize a collection of commands, listeners, and some state into one class. Cogs allow you to do just that.
+There may come a time in bot development when you want to organize a collection of commands, listeners, and some state into one class. Cogs allow for this functionality.
 
-The gist:
+The gist of it:
 
 - Each cog is a Python class that subclasses :class:`.commands.Cog`.
 - Every command is marked with the :func:`.commands.command` decorator.
@@ -45,7 +45,7 @@ This example cog defines a ``Greetings`` category for your commands, with a sing
                 await ctx.send('Hello {0.name}... This feels familiar.'.format(member))
             self._last_member = member
 
-A couple of technical notes to take into consideration:
+A couple of technical points to take into consideration:
 
 - All listeners must be explicitly marked via decorator, :meth:`~.commands.Cog.listener`.
 - The name of the cog is automatically derived from the class name but can be overridden. See :ref:`ext_commands_cogs_meta_options`.
@@ -54,7 +54,7 @@ A couple of technical notes to take into consideration:
 Cog Registration
 -------------------
 
-Once you have defined your cogs, you need to tell the bot to register the cogs to be used. We do this via the :meth:`~.commands.Bot.add_cog` method.
+Once you have defined your cogs, you need to tell the bot to register the cogs for use. We do this via the :meth:`~.commands.Bot.add_cog` method.
 
 .. code-block:: python3
 
@@ -108,9 +108,9 @@ Just as we remove a cog by its name, we can also retrieve it by its name as well
 Special Methods
 -----------------
 
-As cogs get more complicated and have more commands, there comes a point where we want to customise the behaviour of the entire cog or bot.
+As cogs increase in size and complexity, there comes a point where you may want to customise the behaviour of the entire cog or bot.
 
-They are as follows:
+Availible methods are as follows (follow the link for greater detail).
 
 - :meth:`.Cog.cog_unload`
 - :meth:`.Cog.cog_check`
@@ -120,14 +120,12 @@ They are as follows:
 - :meth:`.Cog.bot_check`
 - :meth:`.Cog.bot_check_once`
 
-You can visit the reference to get more detail.
-
 .. _ext_commands_cogs_meta_options:
 
 Meta Options
 --------------
 
-At the heart of a cog resides a metaclass, :class:`.commands.CogMeta`, which can take various options to customise some of the behaviour. To do this, we pass keyword arguments to the class definition line. For example, to change the cog name we can pass the ``name`` keyword argument as follows:
+At the heart of a cog resides a metaclass, :class:`.commands.CogMeta`, which can take various options to customise aspects of cog behaviour. To do this, pass keyword arguments to the class definition. For example, to change the cog name you can pass the ``name`` keyword argument as follows:
 
 .. code-block:: python3
 
@@ -148,11 +146,11 @@ To get a :class:`list` of commands, we can use :meth:`.Cog.get_commands`. ::
     >>> commands = cog.get_commands()
     >>> print([c.name for c in commands])
 
-If we want to get the subcommands as well, we can use the :meth:`.Cog.walk_commands` generator. ::
+If you want to obtain subcommands as well, we can use the :meth:`.Cog.walk_commands` generator. ::
 
     >>> print([c.qualified_name for c in cog.walk_commands()])
 
-To do the same with listeners, we can query them with :meth:`.Cog.get_listeners`. This returns a list of tuples -- the first element being the listener name and the second one being the actual function itself. ::
+To do the same with listeners, query them with :meth:`.Cog.get_listeners`. This returns a list of tuples -- the first element being the listener name and the second one being the actual function itself. ::
 
     >>> for name, func in cog.get_listeners():
     ...     print(name, '->', func)
