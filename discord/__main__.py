@@ -217,7 +217,6 @@ def newbot(parser, args):
     print('successfully made bot at', new_directory)
 
 def newcog(parser, args):
-    print(args)
     if sys.version_info < (3, 5):
         parser.error('python version is older than 3.5, consider upgrading.')
 
