@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 from . import utils
-from .mixins import Hashable
 
 class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
     """Represents a "partial" emoji.
@@ -104,7 +103,7 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         _format = 'gif' if self.animated else 'png'
         return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
 
-class Emoji(Hashable):
+class Emoji:
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
@@ -183,6 +182,9 @@ class Emoji(Hashable):
 
     def __eq__(self, other):
         return isinstance(other, (PartialEmoji, Emoji)) and self.id == other.id
+
+    def __hash__(self):
+        return self.id >> 22
 
     @property
     def created_at(self):
