@@ -12,7 +12,7 @@ Primer
 
 An extension at its core is a Python file with an entry point called ``setup``. This setup must be a plain Python function (*not* a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
 
-For example:
+An example extension:
 
 .. code-block:: python3
     :caption: hello.py
@@ -27,7 +27,8 @@ For example:
     def setup(bot):
         bot.add_command(hello)
 
-In this example we define a simple command, and when the extension is loaded, this command is added to the bot. Now the final step to this is loading the extension, which you do by calling :meth:`.commands.Bot.load_extension`. To load this specific extension we call ``bot.load_extension('hello')``.
+In this example, a simple command is defined, and when the extension is loaded, this command is added to the bot. Now the final step is loading the extension, by calling 
+:meth:`.commands.Bot.load_extension`. To load this extension, call ``bot.load_extension('hello')``.
 
 .. admonition:: Cogs
     :class: helpful
@@ -36,19 +37,21 @@ In this example we define a simple command, and when the extension is loaded, th
 
 .. note::
 
-    Extension paths are ultimately similar to the import mechanism. This includes dot-qualifying files in subdirectories. For example, to load an extension in ``plugins/hello.py``, we use the string ``plugins.hello``.
+    Extension paths are ultimately similar to the import mechanism. This means dot-qualifying files in folders. For example, to load an extension in ``plugins/hello.py``, use 
+the string ``plugins.hello``.
 
 Reloading
 -----------
 
-The act of reloading an extension is quite simple -- it is as simple as unloading and loading again:
+The act of reloading an extension is quite simple -- it is as simple as unloading and reloading:
 
 .. code-block:: python3
 
     >>> bot.unload_extension('hello')
     >>> bot.load_extension('hello')
 
-Once you remove and load the extension, any changes that made to the extension code will be applied. This is useful if you want to add or remove functionality without restarting our bot.
+Once you remove and load the extension, any changes made to the extension's code will be applied. This is useful if you want to add or remove functionality without restarting your 
+bot.
 
 Cleaning Up
 -------------

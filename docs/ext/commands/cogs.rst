@@ -5,9 +5,9 @@
 Cogs
 ======
 
-There may come a time in bot development when you want to organize a collection of commands, listeners, and some state into one class. Cogs allow for this functionality.
+There comes a point in your bot's development when you want to organize a collection of commands, listeners, and some state into one class. Cogs allow you to do so.
 
-The gist of it:
+The gist:
 
 - Each cog is a Python class that subclasses :class:`.commands.Cog`.
 - Every command is marked with the :func:`.commands.command` decorator.
@@ -54,7 +54,7 @@ A couple of technical points to take into consideration:
 Cog Registration
 -------------------
 
-Once you have defined your cogs, you need to tell the bot to register the cogs for use. We do this via the :meth:`~.commands.Bot.add_cog` method.
+Once you have defined your cogs, you need to tell the bot to register the cogs to be used. We do this via the :meth:`~.commands.Bot.add_cog` method.
 
 .. code-block:: python3
 
@@ -110,7 +110,7 @@ Special Methods
 
 As cogs increase in size and complexity, there comes a point where you may want to customise the behaviour of the entire cog or bot.
 
-Availible methods are as follows (follow the link for greater detail).
+Availible methods are as follows:
 
 - :meth:`.Cog.cog_unload`
 - :meth:`.Cog.cog_check`
@@ -119,6 +119,8 @@ Availible methods are as follows (follow the link for greater detail).
 - :meth:`.Cog.cog_after_invoke`
 - :meth:`.Cog.bot_check`
 - :meth:`.Cog.bot_check_once`
+
+You can visit the reference for greater detail.
 
 .. _ext_commands_cogs_meta_options:
 
@@ -137,16 +139,16 @@ To see more options that you can set, see the documentation of :class:`.commands
 Inspection
 ------------
 
-Since cogs ultimately are classes, we have some tools to help us inspect certain properties of the cog.
+Since cogs ultimately are classes, you have some tools to help with inspecting certain properties of the cog.
 
 
-To get a :class:`list` of commands, we can use :meth:`.Cog.get_commands`. ::
+To get a :class:`list` of commands, you can use :meth:`.Cog.get_commands`. ::
 
     >>> cog = bot.get_cog('Greetings')
     >>> commands = cog.get_commands()
     >>> print([c.name for c in commands])
 
-If you want to obtain subcommands as well, we can use the :meth:`.Cog.walk_commands` generator. ::
+To obtain subcommands as well, use the :meth:`.Cog.walk_commands` generator. ::
 
     >>> print([c.qualified_name for c in cog.walk_commands()])
 
