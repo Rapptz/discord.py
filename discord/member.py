@@ -138,9 +138,9 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     Attributes
     ----------
-    joined_at: `datetime.datetime`
+    joined_at: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC that the member joined the guild for
-        the first time.
+        the first time. In certain cases, this can be ``None``.
     activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
@@ -178,6 +178,16 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def __hash__(self):
         return hash(self._user)
+
+    @classmethod
+    def _from_message(cls, *, message, data):
+        author = message.author
+        data['user'] = {
+            attr: getattr(author, attr)
+            for attr in author.__slots__
+            if attr[0] != '_'
+        }
+        return cls(data=data, guild=message.guild, state=message._state)
 
     @classmethod
     def _copy(cls, member):
