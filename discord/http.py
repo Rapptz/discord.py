@@ -89,7 +89,7 @@ class HTTPClient:
     def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
-        self._session = aiohttp.ClientSession(connector=connector, loop=self.loop)
+        self._session = None # filled in static_login
         self._locks = weakref.WeakValueDictionary()
         self._global_over = asyncio.Event(loop=self.loop)
         self._global_over.set()
@@ -240,6 +240,8 @@ class HTTPClient:
     # login management
 
     async def static_login(self, token, *, bot):
+        # Necessary to get aiohttp to stop complaining about session creation
+        self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
