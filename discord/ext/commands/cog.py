@@ -104,7 +104,8 @@ class CogMeta(type):
                 except AttributeError:
                     continue
                 else:
-                    listeners.append((value.__cog_listener_name__, value.__name__))
+                    for name in value.__cog_listener_names__:
+                        listeners.append((name, value.__name__))
 
         attrs['__cog_commands__'] = commands # this will be copied in Cog.__new__
         attrs['__cog_listeners__'] = tuple(listeners)
@@ -206,14 +207,22 @@ class Cog(typing.Generic[CT], metaclass=CogMeta):
         Raises
         --------
         TypeError
-            The function is not a coroutine function.
+            The function is not a coroutine function or a string was not passed as
+            the name.
         """
+
+        if name is not None and not isinstance(name, str):
+            raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
 
         def decorator(func):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('Listener function must be a coroutine function.')
             func.__cog_listener__ = True
-            func.__cog_listener_name__ = name or func.__name__
+            to_assign = name or func.__name__
+            try:
+                func.__cog_listener_names__.append(to_assign)
+            except AttributeError:
+                func.__cog_listener_names__ = [to_assign]
             return func
         return decorator
 
