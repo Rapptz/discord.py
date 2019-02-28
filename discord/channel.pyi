@@ -39,11 +39,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     async def delete_messages(self, messages: Iterable[Message]) -> None: ...
 
-    async def purge(self, *, limit: int = ..., check: Optional[Callable[[Message], bool]] = ...,
+    async def purge(self, *, limit: Optional[int] = ..., check: Optional[Callable[[Message], bool]] = ...,
                     before: Optional[Union[datetime.datetime, Message]] = ...,
                     after: Optional[Union[datetime.datetime, Message]] = ...,
                     around: Optional[Union[datetime.datetime, Message]] = ...,
-                    reverse: bool = ..., bulk: bool = ...) -> List[Message]: ...
+                    reverse: Optional[bool] = ..., bulk: bool = ...) -> List[Message]: ...
 
     async def webhooks(self) -> List[Webhook]: ...
 

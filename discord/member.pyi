@@ -28,7 +28,7 @@ class VoiceState:
 
 
 class Member(discord.abc.Messageable, discord.abc.User):
-    joined_at: datetime.datetime
+    joined_at: Optional[datetime.datetime]
     activities: Tuple[Union[Activity, Game, Streaming, Spotify], ...]
     nick: Optional[str]
     guild: Guild

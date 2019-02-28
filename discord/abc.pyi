@@ -102,7 +102,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
     async def pins(self) -> List[Message]: ...
 
-    def history(self, *, limit: int = ...,
+    def history(self, *, limit: Optional[int] = ...,
                 before: Optional[Union[Snowflake, datetime.datetime]] = ...,
                 after: Optional[Union[Snowflake, datetime.datetime]] = ...,
                 around: Optional[Union[Snowflake, datetime.datetime]] = ...,

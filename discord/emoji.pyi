@@ -1,5 +1,4 @@
 import datetime
-from .mixins import Hashable
 from .role import Role
 from .guild import Guild
 
@@ -22,7 +21,7 @@ class PartialEmoji(NamedTuple):
     def url(self) -> Optional[str]: ...
 
 
-class Emoji(Hashable):
+class Emoji:
     name: str
     id: int
     require_colons: bool
@@ -37,6 +36,8 @@ class Emoji(Hashable):
     def __repr__(self) -> str: ...
 
     def __eq__(self, other: Any) -> bool: ...
+
+    def __hash__(self) -> int: ...
 
     @property
     def created_at(self) -> datetime.datetime: ...
