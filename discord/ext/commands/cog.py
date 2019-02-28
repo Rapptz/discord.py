@@ -203,8 +203,12 @@ class Cog(metaclass=CogMeta):
         Raises
         --------
         TypeError
-            The function is not a coroutine function.
+            The function is not a coroutine function or a string was not passed as
+            the name.
         """
+
+        if name is not None and not isinstance(name, str):
+            raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
 
         def decorator(func):
             if not inspect.iscoroutinefunction(func):
