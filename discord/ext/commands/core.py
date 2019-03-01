@@ -795,11 +795,23 @@ class Command(_BaseCommand):
             return self.help.split('\n', 1)[0]
         return ''
 
+    def _is_typing_optional(self, annotation):
+        try:
+            origin = annotation.__origin__
+        except AttributeError:
+            return False
+
+        if origin is not typing.Union:
+            return False
+
+        return annotation.__args__[-1] is type(None)
+
     @property
     def signature(self):
         """Returns a POSIX-like signature useful for help command output."""
         result = []
         parent = self.full_parent_name
+
         if len(self.aliases) > 0:
             aliases = '|'.join(self.aliases)
             fmt = '[%s|%s]' % (self.name, aliases)
@@ -819,16 +831,25 @@ class Command(_BaseCommand):
             return ' '.join(result)
 
         for name, param in params.items():
+            greedy = isinstance(param.annotation, converters._Greedy)
+
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
                 if should_print:
-                    result.append('[%s=%s]' % (name, param.default))
+                    result.append('[%s=%s]' % (name, param.default) if not greedy else
+                                  '[%s=%s]...' % (name, param.default))
+                    continue
                 else:
                     result.append('[%s]' % name)
+
             elif param.kind == param.VAR_POSITIONAL:
                 result.append('[%s...]' % name)
+            elif greedy:
+                result.append('[%s]...' % name)
+            elif self._is_typing_optional(param.annotation):
+                result.append('[%s]' % name)
             else:
                 result.append('<%s>' % name)
 
