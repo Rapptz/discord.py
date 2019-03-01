@@ -102,8 +102,8 @@ class CogMeta(type):
                 except AttributeError:
                     continue
                 else:
-                    for name in value.__cog_listener_names__:
-                        listeners.append((name, value.__name__))
+                    for listener_name in value.__cog_listener_names__:
+                        listeners.append((listener_name, value.__name__))
 
         attrs['__cog_commands__'] = commands # this will be copied in Cog.__new__
         attrs['__cog_listeners__'] = tuple(listeners)
