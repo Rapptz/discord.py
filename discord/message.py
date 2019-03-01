@@ -353,6 +353,11 @@ class Message:
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
+    @property
+    def link(self):
+        """:class:`str` A property that returns the link to the message."""
+        return "https://discordapp.com/channels/{0}/{1}/{2}".format(self.guild.id, self.channel.id, self.id)
+
     @utils.cached_slot_property('_cs_guild')
     def guild(self):
         """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
