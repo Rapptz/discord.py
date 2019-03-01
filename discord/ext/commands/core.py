@@ -839,13 +839,15 @@ class Command(_BaseCommand):
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
                 if should_print:
                     result.append('[%s=%s]' % (name, param.default) if not greedy else
-                                  '[%s=%s...]' % (name, param.default))
+                                  '[%s=%s]...' % (name, param.default))
                     continue
                 else:
                     result.append('[%s]' % name)
 
-            elif param.kind == param.VAR_POSITIONAL or greedy:
+            elif param.kind == param.VAR_POSITIONAL:
                 result.append('[%s...]' % name)
+            elif greedy:
+                result.append('[%s]...' % name)
             elif self._is_typing_optional(param.annotation):
                 result.append('[%s]' % name)
             else:
