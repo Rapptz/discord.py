@@ -238,7 +238,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -----------
-        limit: int
+        limit: Optional[int]
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
         check: predicate

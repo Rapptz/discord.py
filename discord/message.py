@@ -35,6 +35,7 @@ from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
+from .member import Member
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -277,7 +278,7 @@ class Message:
         self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
         self._try_patch(data, 'nonce')
 
-        for handler in ('author', 'mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
             try:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
@@ -297,6 +298,20 @@ class Message:
             found = self.guild.get_member(self.author.id)
             if found is not None:
                 self.author = found
+
+    def _handle_member(self, member):
+        # The gateway now gives us full Member objects sometimes with the following keys
+        # deaf, mute, joined_at, roles
+        # For the sake of performance I'm going to assume that the only
+        # field that needs *updating* would be the joined_at field.
+        # If there is no Member object (for some strange reason), then we can upgrade
+        # ourselves to a more "partial" member object.
+        author = self.author
+        try:
+            if author.joined_at is None:
+                author.joined_at = utils.parse_time(member.get('joined_at'))
+        except AttributeError:
+            self.author = Member._from_message(message=self, data=member)
 
     def _handle_mentions(self, mentions):
         self.mentions = []
