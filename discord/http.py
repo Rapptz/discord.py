@@ -230,7 +230,8 @@ class HTTPClient:
     # state management
 
     async def close(self):
-        await self._session.close()
+        if self._session:
+            await self._session.close()
 
     def _token(self, token, *, bot=True):
         self.token = token
