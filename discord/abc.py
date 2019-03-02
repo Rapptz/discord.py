@@ -685,7 +685,7 @@ class Messageable(metaclass=abc.ABCMeta):
     async def _get_channel(self):
         raise NotImplementedError
 
-    async def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
+    async def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None, disable_mentions=False):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -721,6 +721,9 @@ class Messageable(metaclass=abc.ABCMeta):
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
+        disable_mentions: bool
+            Indicates if mentions should be prevented. If set to true, a whitespace character
+            will be added after every @, preventing mentions. 
 
         Raises
         --------
@@ -741,6 +744,8 @@ class Messageable(metaclass=abc.ABCMeta):
         channel = await self._get_channel()
         state = self._state
         content = str(content) if content is not None else None
+        if content is not None and disable_mentions:
+            content = content.replace("@","@\u200B")
         if embed is not None:
             embed = embed.to_dict()
 
