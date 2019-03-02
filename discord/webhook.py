@@ -100,10 +100,6 @@ class WebhookAdapter:
         """
         raise NotImplementedError()
 
-    def store_user(self, data):
-        # mocks a ConnectionState for appropriate use for Message
-        return BaseUser(state=self.webhook._state, data=data)
-
     async def _wrap_coroutine_and_cleanup(self, coro, cleanup):
         try:
             return await coro
@@ -301,6 +297,41 @@ class RequestsWebhookAdapter(WebhookAdapter):
         from .message import Message
         return Message(data=response, state=self.webhook._state, channel=self.webhook.channel)
 
+class _FriendlyHttpAttributeErrorHelper:
+    __slots__ = ()
+
+    def __getattr__(self, attr):
+        raise AttributeError('PartialWebhookState does not support http methods.')
+
+class _PartialWebhookState:
+    __slots__ = ('loop',)
+
+    def __init__(self, adapter):
+        # Fetch the loop from the adapter if it's there
+        try:
+            self.loop = adapter.loop
+        except AttributeError:
+            self.loop = None
+
+    def _get_guild(self, guild_id):
+        return None
+
+    def store_user(self, data):
+        return BaseUser(state=self, data=data)
+
+    @property
+    def is_bot(self):
+        return True
+
+    @property
+    def http(self):
+        # Some data classes assign state.http and that should be kosher
+        # however, using it should result in a late-binding error.
+        return _FriendlyHttpAttributeErrorHelper()
+
+    def __getattr__(self, attr):
+        raise AttributeError('PartialWebhookState does not support {0:!r}.'.format(attr))
+
 class Webhook:
     """Represents a Discord webhook.
 
@@ -371,7 +402,7 @@ class Webhook:
         self.name = data.get('name')
         self.avatar = data.get('avatar')
         self.token = data['token']
-        self._state = state
+        self._state = state or _PartialWebhookState(adapter)
         self._adapter = adapter
         self._adapter._prepare(self)
 
@@ -453,7 +484,7 @@ class Webhook:
 
         If this is a partial webhook, then this will always return ``None``.
         """
-        return self._state and self._state._get_guild(self.guild_id)
+        return self._state._get_guild(self.guild_id)
 
     @property
     def channel(self):
