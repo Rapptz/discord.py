@@ -104,26 +104,47 @@ class WebhookAdapter:
         # mocks a ConnectionState for appropriate use for Message
         return BaseUser(state=self.webhook._state, data=data)
 
+    async def _wrap_coroutine_and_cleanup(self, coro, cleanup):
+        try:
+            return await coro
+        finally:
+            cleanup()
+
     def execute_webhook(self, *, payload, wait=False, file=None, files=None):
+        cleanup = None
         if file is not None:
             multipart = {
-                'file': file,
+                'file': (file.filename, file.open_file(), 'application/octet-stream'),
                 'payload_json': utils.to_json(payload)
             }
             data = None
+            cleanup = file.close
         elif files is not None:
             multipart = {
                 'payload_json': utils.to_json(payload)
             }
             for i, file in enumerate(files, start=1):
-                multipart['file%i' % i] = file
+                multipart['file%i' % i] = (file.filename, file.open_file(), 'application/octet-stream')
             data = None
+
+            def _anon():
+                for f in files:
+                    f.close()
+
+            cleanup = _anon
         else:
             data = payload
             multipart = None
 
         url = '%s?wait=%d' % (self._request_url, wait)
-        maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
+        try:
+            maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
+        finally:
+            if cleanup is not None:
+                if not asyncio.iscoroutine(maybe_coro):
+                    cleanup()
+                else:
+                    maybe_coro = self._wrap_coroutine_and_cleanup(maybe_coro, cleanup)
         return self.handle_execution_response(maybe_coro, wait=wait)
 
 class AsyncWebhookAdapter(WebhookAdapter):
@@ -656,22 +677,7 @@ class Webhook:
         if username:
             payload['username'] = username
 
-        if file is not None:
-            try:
-                to_pass = (file.filename, file.open_file(), 'application/octet-stream')
-                return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
-            finally:
-                file.close()
-        elif files is not None:
-            try:
-                to_pass = [(file.filename, file.open_file(), 'application/octet-stream')
-                           for file in files]
-                return self._adapter.execute_webhook(wait=wait, files=to_pass, payload=payload)
-            finally:
-                for file in files:
-                    file.close()
-        else:
-            return self._adapter.execute_webhook(wait=wait, payload=payload)
+        return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 
     def execute(self, *args, **kwargs):
         """An alias for :meth:`~.Webhook.send`."""
