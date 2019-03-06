@@ -6,7 +6,7 @@ about: Suggest a feature for this library
 ### The Problem
 
 <!--
-What problem is your feature trying to solve? What becomes easier when this feature is implemented?
+What problem is your feature trying to solve? What becomes easier or possible when this feature is implemented?
 -->
 
 ### The Ideal Solution

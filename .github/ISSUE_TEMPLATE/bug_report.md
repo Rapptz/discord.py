@@ -13,7 +13,7 @@ about: Report broken or incorrect behaviour
 
 ### Actual Results
 
-<!-- What actually happened -->
+<!-- What actually happened. If there is a traceback, please show the entire thing. -->
 
 ### Reproduction Steps
 
