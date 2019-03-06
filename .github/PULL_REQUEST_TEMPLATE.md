@@ -4,8 +4,8 @@
 
 ### Checklist
 
-- [ ] These changes have been tested or there were no code changes.
-    - [ ] If changes were made, I have updated the documentation to reflect it.
+- [ ] These changes have been tested, if code code changes were made.
+    - [ ] I have updated the documentation to reflect it.
 - [ ] This PR fixes an issue.
 - [ ] This PR adds something new (e.g. new method or parameters).
 - [ ] This PR is a breaking change (e.g. methods or parameters removed/renamed)
