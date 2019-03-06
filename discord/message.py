@@ -91,6 +91,12 @@ class Attachment:
         seek_begin: bool
             Whether to seek to the beginning of the file after saving is
             successfully done.
+        use_cached: bool
+            Whether to use the proxy_url property, rather than the url
+            property, as the attachment source. This will allow attachments
+            to be saved after deletion more often than with the url, which
+            is deleted after the message is deleted. Note that use_cached will
+            still fail after an uncertain amount of time.
 
         Raises
         --------
