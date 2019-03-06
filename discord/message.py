@@ -77,7 +77,7 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
-    async def save(self, fp, *, seek_begin=True):
+    async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -104,8 +104,8 @@ class Attachment:
         int
             The number of bytes written.
         """
-
-        data = await self._http.get_attachment(self.url)
+        url = self.proxy_url if use_cached else self.url
+        data = await self._http.get_attachment(url)
         if isinstance(fp, str):
             with open(fp, 'wb') as f:
                 return f.write(data)
