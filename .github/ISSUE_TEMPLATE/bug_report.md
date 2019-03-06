@@ -19,6 +19,12 @@ about: Report broken or incorrect behaviour
 
 <!-- What you did to make it happen. -->
 
+### Checklist
+
+- [ ] I have searched the open issues for duplicates.
+- [ ] I have shown the entire traceback, if possible.
+- [ ] I have removed my token from display, if visible.
+
 ### System Information
 
 - discord.py version:
