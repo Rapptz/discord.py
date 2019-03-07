@@ -22,6 +22,8 @@ about: Report broken or incorrect behaviour
 
 ### Checklist
 
+<!-- Put an x inside [ ] to check it -->
+
 - [ ] I have searched the open issues for duplicates.
 - [ ] I have shown the entire traceback, if possible.
 - [ ] I have removed my token from display, if visible.

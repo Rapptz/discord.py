@@ -4,6 +4,8 @@
 
 ### Checklist
 
+<!-- Put an x inside [ ] to check it -->
+
 - [ ] If code changes were made then they have been tested.
     - [ ] I have updated the documentation to reflect the changes.
 - [ ] This PR fixes an issue.
