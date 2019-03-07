@@ -13,7 +13,7 @@ Generally speaking questions are better suited in our resources below.
 - [The FAQ in the documentation](https://discordpy.readthedocs.io/en/latest/faq.html)
 - [StackOverflow's `discord.py` tag](https://stackoverflow.com/questions/tagged/discord.py)
 
-Please try your best not to ask questions in our issue tracker. Most of them are better suited there unless they provide value to a larger audience.
+Please try your best not to ask questions in our issue tracker. Most of them don't belong there unless they provide value to a larger audience.
 
 ## Good Bug Reports
 
