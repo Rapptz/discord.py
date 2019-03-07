@@ -7,6 +7,10 @@ about: Report broken or incorrect behaviour
 
 <!-- A summary of your bug report -->
 
+### Reproduction Steps
+
+<!-- What you did to make it happen. Ideally there should be a short code snippet in this section to help reproduce the bug. -->
+
 ### Expected Results
 
 <!-- What you expected to happen -->
@@ -15,9 +19,6 @@ about: Report broken or incorrect behaviour
 
 <!-- What actually happened. If there is a traceback, please show the entire thing. -->
 
-### Reproduction Steps
-
-<!-- What you did to make it happen. -->
 
 ### Checklist
 
