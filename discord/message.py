@@ -77,7 +77,7 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
-    async def save(self, fp, *, seek_begin=True, use_cached=False):
+    async def save(self, fp, *, seek_begin=True, use_cached=True):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -88,15 +88,15 @@ class Attachment:
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
-        seek_begin: bool
+        seek_begin: :class:`bool`
             Whether to seek to the beginning of the file after saving is
             successfully done.
-        use_cached: bool
-            Whether to use the proxy_url property, rather than the url
-            property, as the attachment source. This will allow attachments
-            to be saved after deletion more often than with the url, which
-            is deleted after the message is deleted. Note that use_cached will
-            still fail after an uncertain amount of time.
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, which is generally deleted right after the message is deleted.
+            Note that this can still fail to download deleted attachments if too much time
+            has passed.
 
         Raises
         --------
