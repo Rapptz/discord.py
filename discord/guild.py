@@ -1151,7 +1151,7 @@ class Guild(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to change the role.
+            You do not have permissions to create the role.
         HTTPException
             Editing the role failed.
         InvalidArgument
