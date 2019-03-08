@@ -1337,7 +1337,7 @@ def has_any_role(*items):
     return check(predicate)
 
 def has_permissions(**perms):
-    """A :func:`.check` that is added that checks if the member has any of
+    """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
     The permissions passed in must be exactly like the properties shown under
