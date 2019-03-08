@@ -119,7 +119,7 @@ class Guild(Hashable):
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'name', 'region', '_state',
+                 'name', 'description', 'id', 'unavailable', 'name', 'region', '_state',
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
@@ -758,6 +758,8 @@ class Guild(Hashable):
         ----------
         name: str
             The new name of the guild.
+        description: str
+            The new description of the guild.
         icon: bytes
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
@@ -801,6 +803,10 @@ class Guild(Hashable):
         """
 
         http = self._state.http
+        try:
+            description = fields['description']
+        except KeyError:
+            pass
         try:
             icon_bytes = fields['icon']
         except KeyError:
