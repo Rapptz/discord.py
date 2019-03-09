@@ -81,7 +81,7 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
         """Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
-class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon id name splash verification_level')):
+class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner id name splash verification_level')):
     """Represents a "partial" invite guild.
 
     This model will be given when the user is not part of the
@@ -117,6 +117,8 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon id name
         A list of features the guild has. See :attr:`Guild.features` for more information.
     icon: Optional[:class:`str`]
         The partial guild's icon.
+    banner: Optional[:class:`str`]
+        The partial guild's banner.
     splash: Optional[:class:`str`]
         The partial guild's invite splash.
     """
@@ -139,7 +141,7 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon id name
     def icon_url_as(self, *, format='webp', size=1024):
         """:class:`str`: The same operation as :meth:`Guild.icon_url_as`."""
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -149,6 +151,23 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon id name
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
 
     @property
+    def banner_url(self):
+        """Returns the URL version of the guild's banner. Returns an empty string if it has no banner."""
+        return self.banner_url_as()
+
+    def banner_url_as(self, *, format='webp', size=2048):
+        """:class:`str`: The same operation as :meth:`Guild.banner_url_as`."""
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
+        if self.banner is None:
+            return ''
+
+        return 'https://cdn.discordapp.com/banners/{0.id}/{0.banner}.{1}?size={2}'.format(self, format, size)
+
+    @property
     def splash_url(self):
         """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
         return self.splash_url_as()
@@ -156,7 +175,7 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon id name
     def splash_url_as(self, *, format='webp', size=2048):
         """:class:`str`: The same operation as :meth:`Guild.splash_url_as`."""
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -257,6 +276,7 @@ class Invite(Hashable):
                                        name=guild_data['name'],
                                        features=guild_data.get('features', []),
                                        icon=guild_data.get('icon'),
+                                       banner=guild_data.get('banner'),
                                        splash=guild_data.get('splash'),
                                        verification_level=try_enum(VerificationLevel, guild_data.get('verification_level')))
         data['guild'] = guild
