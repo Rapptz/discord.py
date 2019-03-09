@@ -294,7 +294,7 @@ async def sane_wait_for(futures, *, timeout, loop):
         raise asyncio.TimeoutError()
 
 def valid_icon_size(size):
-    """Icons must be power of 2 within [16, 4086]."""
+    """Icons must be power of 2 within [16, 4096]."""
     return not size & (size - 1) and size in range(16, 4097)
 
 class SnowflakeList(array.array):
