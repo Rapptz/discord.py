@@ -117,6 +117,8 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
         A list of features the guild has. See :attr:`Guild.features` for more information.
     icon: Optional[:class:`str`]
         The partial guild's icon.
+    banner: Optional[:class:`str`]
+        The partial guild's banner.
     splash: Optional[:class:`str`]
         The partial guild's invite splash.
     """

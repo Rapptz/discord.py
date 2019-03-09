@@ -95,6 +95,8 @@ class Guild(Hashable):
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
+    banner: Optional[:class:`str`]
+        The guild's banner.
     mfa_level: :class:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
