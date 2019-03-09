@@ -85,11 +85,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                 'category_id', 'position', 'slowmode_delay', '_overwrites')
+                 'category_id', 'position', 'slowmode_delay', '_overwrites',
+                 '_type')
 
     def __init__(self, *, state, guild, data):
         self._state = state
         self.id = int(data['id'])
+        self._type = data['type']
         self._update(guild, data)
 
     def __repr__(self):
@@ -128,6 +130,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """Checks if the channel is NSFW."""
         n = self.name
         return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+
+    def is_news(self):
+        """Checks if the channel is a news channel."""
+        return self._type == ChannelType.news.value
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -460,7 +466,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                 if member is not None:
                     ret.append(member)
         return ret
-    
+
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -954,5 +960,7 @@ def _channel_factory(channel_type):
         return CategoryChannel, value
     elif value is ChannelType.group:
         return GroupChannel, value
+    elif value is ChannelType.news:
+        return TextChannel, value
     else:
         return None, value
