@@ -53,13 +53,13 @@ class Context(discord.abc.Messageable):
     prefix: :class:`str`
         The prefix that was used to invoke the command.
     command
-        The command (i.e. :class:`.Command` or its superclasses) that is being
+        The command (i.e. :class:`.Command` or its subclasses) that is being
         invoked currently.
     invoked_with: :class:`str`
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
     invoked_subcommand
-        The subcommand (i.e. :class:`.Command` or its superclasses) that was
+        The subcommand (i.e. :class:`.Command` or its subclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
         `None`.
     subcommand_passed: Optional[:class:`str`]
@@ -105,7 +105,7 @@ class Context(discord.abc.Messageable):
         Parameters
         -----------
         command: :class:`.Command`
-            A command or superclass of a command that is going to be called.
+            A command or subclass of a command that is going to be called.
         \*args
             The arguments to to use.
         \*\*kwargs
