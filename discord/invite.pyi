@@ -6,7 +6,11 @@ from .user import User
 from .channel import TextChannel, VoiceChannel
 from .enums import ChannelType, VerificationLevel
 
-from typing import Optional, Union, NamedTuple, List
+from typing import Optional, Union, NamedTuple, List, Set
+from typing_extensions import Literal
+
+VALID_ICON_FORMATS: Set[str] = ...
+_VALID_ICON_FORMATS = Literal['jpeg', 'jpg', 'webp', 'png']
 
 
 class PartialInviteChannel(NamedTuple):
@@ -24,6 +28,7 @@ class PartialInviteChannel(NamedTuple):
 class PartialInviteGuild(NamedTuple):
     features: List[str]
     icon: Optional[str]
+    banner: Optional[str]
     id: int
     name: str
     splash: Optional[str]
@@ -35,12 +40,17 @@ class PartialInviteGuild(NamedTuple):
     @property
     def icon_url(self) -> str: ...
 
-    def icon_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+    def icon_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
+
+    @property
+    def banner_url(self) -> str: ...
+
+    def banner_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
 
     @property
     def splash_url(self) -> str: ...
 
-    def splash_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+    def splash_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
 
 
 class Invite(Hashable):

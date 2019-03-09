@@ -17,8 +17,11 @@ from .colour import Colour
 from .permissions import Permissions
 
 from typing import List, Optional, Tuple, Dict, Union, NamedTuple, Set, Any
+from typing_extensions import Literal
 
 VALID_ICON_FORMATS: Set[str] = ...
+
+_VALID_ICON_FORMATS = Literal['jpeg', 'jpg', 'webp', 'png']
 
 class BanEntry(NamedTuple):
     user: User
@@ -34,6 +37,7 @@ class Guild(Hashable):
     id: int
     owner_id: int
     unavailable: bool
+    banner: Optional[str]
     mfa_level: int
     verification_level: VerificationLevel
     default_notifications: NotificationLevel
@@ -92,12 +96,17 @@ class Guild(Hashable):
     @property
     def icon_url(self) -> str: ...
 
-    def icon_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+    def icon_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
+
+    @property
+    def banner_url(self) -> str: ...
+
+    def banner_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
 
     @property
     def splash_url(self) -> str: ...
 
-    def splash_url_as(self, *, format: str = ..., size: int = ...) -> str: ...
+    def splash_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
 
     @property
     def member_count(self) -> int: ...
@@ -132,9 +141,9 @@ class Guild(Hashable):
 
     async def delete(self) -> None: ...
 
-    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., icon: Optional[bytes] = ...,
-                   splash: Optional[bytes] = ..., region: VoiceRegion = ...,
-                   afk_channel: Optional[VoiceChannel] = ..., afk_timeout: int = ...,
+    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., description: str = ...
+                   icon: Optional[bytes] = ..., splash: Optional[bytes] = ..., banner: Optional[bytes] = ...,
+                   region: VoiceRegion = ..., afk_channel: Optional[VoiceChannel] = ..., afk_timeout: int = ...,
                    owner: Member = ..., verification_level: VerificationLevel = ...,
                    default_notifications: NotificationLevel = ...,
                    explicit_content_filter: ContentFilter = ...,

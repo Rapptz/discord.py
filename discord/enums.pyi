@@ -8,6 +8,7 @@ class ChannelType(Enum):
     voice: int
     group: int
     category: int
+    news: int
 
     def __str__(self) -> str: ...
 
