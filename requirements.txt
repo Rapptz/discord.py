@@ -1,2 +1,2 @@
 aiohttp>=3.3.0,<3.6.0
-websockets>=6.0,<7.0
+websockets>=7.0,<8.0
