@@ -568,7 +568,7 @@ class HTTPClient:
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
                       'system_channel_id', 'default_message_notifications',
-                      'explicit_content_filter')
+                      'description', 'explicit_content_filter', 'banner')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys

@@ -675,6 +675,9 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: group
 
         A private group text channel.
+    .. attribute:: news
+
+        A guild news channel.
 
 .. class:: MessageType
 
