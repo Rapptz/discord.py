@@ -759,7 +759,7 @@ class Guild(Hashable):
         name: str
             The new name of the guild.
         description: str
-            The new description of the guild.
+            The new description of the guild. This is only available to guilds that contain `VERIFIED` in :attr:`Guild.features`.
         icon: bytes
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
@@ -803,10 +803,6 @@ class Guild(Hashable):
         """
 
         http = self._state.http
-        try:
-            description = fields['description']
-        except KeyError:
-            pass
         try:
             icon_bytes = fields['icon']
         except KeyError:
