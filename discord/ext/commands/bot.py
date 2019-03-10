@@ -517,6 +517,11 @@ class BotBase(GroupMixin):
             self.add_listener(func, name)
             return func
 
+        if callable(name):
+            func = name
+            name = None
+            return decorator(func)
+
         return decorator
 
     # cogs

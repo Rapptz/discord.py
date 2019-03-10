@@ -203,7 +203,7 @@ Converters
 
     .. code-block:: python3
 
-        @commands.command()
+        @commands.command
         async def test(ctx, numbers: Greedy[int], reason: str):
             await ctx.send("numbers: {}, reason: {}".format(numbers, reason))
 
