@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -85,11 +85,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                 'category_id', 'position', 'slowmode_delay', '_overwrites')
+                 'category_id', 'position', 'slowmode_delay', '_overwrites',
+                 '_type')
 
     def __init__(self, *, state, guild, data):
         self._state = state
         self.id = int(data['id'])
+        self._type = data['type']
         self._update(guild, data)
 
     def __repr__(self):
@@ -128,6 +130,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """Checks if the channel is NSFW."""
         n = self.name
         return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+
+    def is_news(self):
+        """Checks if the channel is a news channel."""
+        return self._type == ChannelType.news.value
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -238,7 +244,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -----------
-        limit: int
+        limit: Optional[int]
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
         check: predicate
@@ -460,7 +466,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                 if member is not None:
                     ret.append(member)
         return ret
-    
+
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -622,6 +628,24 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         ret = [c for c in self.guild.channels if c.category_id == self.id]
         ret.sort(key=comparator)
+        return ret
+
+    @property
+    def text_channels(self):
+        """List[:class:`TextChannel`]: Returns the text channels that are under this category."""
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, TextChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
+        return ret
+
+    @property
+    def voice_channels(self):
+        """List[:class:`VoiceChannel`]: Returns the voice channels that are under this category."""
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, VoiceChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
 class DMChannel(discord.abc.Messageable, Hashable):
@@ -936,5 +960,7 @@ def _channel_factory(channel_type):
         return CategoryChannel, value
     elif value is ChannelType.group:
         return GroupChannel, value
+    elif value is ChannelType.news:
+        return TextChannel, value
     else:
         return None, value

@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -89,7 +89,7 @@ class HTTPClient:
     def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
-        self._session = aiohttp.ClientSession(connector=connector, loop=self.loop)
+        self._session = None # filled in static_login
         self._locks = weakref.WeakValueDictionary()
         self._global_over = asyncio.Event(loop=self.loop)
         self._global_over.set()
@@ -148,7 +148,7 @@ class HTTPClient:
             # wait until the global lock is complete
             await self._global_over.wait()
 
-        await lock
+        await lock.acquire()
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
                 async with self._session.request(method, url, **kwargs) as r:
@@ -181,12 +181,12 @@ class HTTPClient:
 
                         # sleep a bit
                         retry_after = data['retry_after'] / 1000.0
-                        log.info(fmt, retry_after, bucket)
+                        log.warning(fmt, retry_after, bucket)
 
                         # check if it's a global rate limit
                         is_global = data.get('global', False)
                         if is_global:
-                            log.info('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
+                            log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self._global_over.clear()
 
                         await asyncio.sleep(retry_after, loop=self.loop)
@@ -230,7 +230,8 @@ class HTTPClient:
     # state management
 
     async def close(self):
-        await self._session.close()
+        if self._session:
+            await self._session.close()
 
     def _token(self, token, *, bot=True):
         self.token = token
@@ -240,6 +241,8 @@ class HTTPClient:
     # login management
 
     async def static_login(self, token, *, bot):
+        # Necessary to get aiohttp to stop complaining about session creation
+        self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
@@ -508,17 +511,16 @@ class HTTPClient:
         r = Route('PATCH', '/guilds/{guild_id}/channels', guild_id=guild_id)
         return self.request(r, json=data, reason=reason)
 
-    def create_channel(self, guild_id, name, channel_type, parent_id=None, permission_overwrites=None, *, reason=None):
+    def create_channel(self, guild_id, channel_type, *, reason=None, **options):
         payload = {
-            'name': name,
             'type': channel_type
         }
 
-        if permission_overwrites is not None:
-            payload['permission_overwrites'] = permission_overwrites
-
-        if parent_id is not None:
-            payload['parent_id'] = parent_id
+        valid_keys = ('name', 'parent_id', 'topic', 'bitrate', 'nsfw',
+                      'user_limit', 'position', 'permission_overwrites', 'rate_limit_per_user')
+        payload.update({
+            k: v for k, v in options.items() if k in valid_keys and v is not None
+        })
 
         return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload, reason=reason)
 
@@ -565,7 +567,8 @@ class HTTPClient:
     def edit_guild(self, guild_id, *, reason=None, **fields):
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
-                      'system_channel_id', 'default_message_notifications')
+                      'system_channel_id', 'default_message_notifications',
+                      'description', 'explicit_content_filter', 'banner')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys
@@ -647,8 +650,11 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(self, invite_id):
-        return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id))
+    def get_invite(self, invite_id, *, with_counts=True):
+        params = {
+            'with_counts': int(with_counts)
+        }
+        return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id), params=params)
 
     def invites_from(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
@@ -771,7 +777,7 @@ class HTTPClient:
 
     def get_mutual_friends(self, user_id):
         return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
-        
+
     def change_hypesquad_house(self, house_id):
         payload = {'house_id': house_id}
         return self.request(Route('POST', '/hypesquad/online'), json=payload)

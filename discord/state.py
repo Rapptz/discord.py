@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -532,7 +532,6 @@ class ConnectionState:
                 log.warning('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
                 return
 
-
     def parse_channel_pins_update(self, data):
         channel_id = int(data['channel_id'])
         channel = self.get_channel(channel_id)
@@ -790,10 +789,19 @@ class ConnectionState:
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         self.process_listeners(ListenerType.chunk, guild, len(members))
 
+    def parse_guild_integrations_update(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            self.dispatch('guild_integrations_update', guild)
+        else:
+            log.warning('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+
     def parse_webhooks_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
-        if channel:
+        if channel is not None:
             self.dispatch('webhooks_update', channel)
+        else:
+            log.warning('WEBHOOKS_UPDATE referencing an unknown channel ID: %s. Discarding.', data['channel_id'])
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))

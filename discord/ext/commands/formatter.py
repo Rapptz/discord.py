@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import itertools
 import inspect
+import discord.utils
 
 from .core import GroupMixin, Command
 from .errors import CommandError
@@ -141,11 +142,20 @@ class HelpFormatter:
     width: :class:`int`
         The maximum number of characters that fit in a line.
         Defaults to 80.
+    commands_heading: :class:`str`
+        The command list's heading string used when the help command is invoked with a category name.
+        Useful for i18n. Defaults to ``"Commands:"``
+    no_category: :class:`str`
+        The string used when there is a command which does not belong to any category(cog).
+        Useful for i18n. Defaults to ``"No Category"``
     """
-    def __init__(self, show_hidden=False, show_check_failure=False, width=80):
+    def __init__(self, show_hidden=False, show_check_failure=False, width=80,
+                 commands_heading="Commands:", no_category="No Category"):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
+        self.commands_heading = commands_heading
+        self.no_category = no_category
 
     def has_subcommands(self):
         """:class:`bool`: Specifies if the command has subcommands."""
@@ -172,7 +182,7 @@ class HelpFormatter:
         try:
             commands = self.command.all_commands if not self.is_cog() else self.context.bot.all_commands
             if commands:
-                return max(map(lambda c: len(c.name) if self.show_hidden or not c.hidden else 0, commands.values()))
+                return max(map(lambda c: discord.utils._string_width(c.name) if self.show_hidden or not c.hidden else 0, commands.values()))
             return 0
         except AttributeError:
             return len(self.command.name)
@@ -194,6 +204,7 @@ class HelpFormatter:
         return prefix + cmd.signature
 
     def get_ending_note(self):
+        """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.context.invoked_with
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
@@ -214,7 +225,7 @@ class HelpFormatter:
             cmd = tup[1]
             if self.is_cog():
                 # filter commands that don't exist to this cog.
-                if cmd.instance is not self.command:
+                if cmd.cog is not self.command:
                     return False
 
             if cmd.hidden and not self.show_hidden:
@@ -250,8 +261,8 @@ class HelpFormatter:
             if name in command.aliases:
                 # skip aliases
                 continue
-
-            entry = '  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width)
+            width_gap = discord.utils._string_width(name) - len(name)
+            entry = '  {0:<{width}} {1}'.format(name, command.short_doc, width=max_width-width_gap)
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 
@@ -316,7 +327,7 @@ class HelpFormatter:
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return cog + ':' if cog is not None else '\u200bNo Category:'
+            return cog + ':' if cog is not None else '\u200b' + self.no_category + ':'
 
         filtered = await self.filter_command_list()
         if self.is_bot():
@@ -331,7 +342,7 @@ class HelpFormatter:
         else:
             filtered = sorted(filtered)
             if filtered:
-                self._paginator.add_line('Commands:')
+                self._paginator.add_line(self.commands_heading)
                 self._add_subcommands_to_page(max_width, filtered)
 
         # add the ending note

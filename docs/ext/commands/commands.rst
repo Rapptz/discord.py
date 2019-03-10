@@ -422,7 +422,7 @@ By providing the converter it allows us to use them as building blocks for anoth
     class MemberRoles(commands.MemberConverter):
         async def convert(self, ctx, argument):
             member = await super().convert(ctx, argument)
-            return member.roles
+            return [role.name for role in member.roles[1:]] # Remove everyone role!
 
     @bot.command()
     async def roles(ctx, *, member: MemberRoles):

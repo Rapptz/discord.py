@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -97,6 +97,11 @@ class CooldownMapping:
     def __init__(self, original):
         self._cache = {}
         self._cooldown = original
+
+    def copy(self):
+        ret = CooldownMapping(self._cooldown)
+        ret._cache = self._cache.copy()
+        return ret
 
     @property
     def valid(self):

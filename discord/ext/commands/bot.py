@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -39,6 +39,7 @@ from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
 from .formatter import HelpFormatter
+from .cog import Cog
 
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
@@ -181,7 +182,8 @@ class BotBase(GroupMixin):
             self.formatter = HelpFormatter()
 
         # pay no mind to this ugliness.
-        self.command(**self.help_attrs)(_default_help_command)
+        help_cmd = Command(_default_help_command, **self.help_attrs)
+        self.add_command(help_cmd)
 
     # internal helpers
 
@@ -435,9 +437,9 @@ class BotBase(GroupMixin):
         Parameters
         -----------
         func : :ref:`coroutine <coroutine>`
-            The extra event to listen to.
+            The function to call.
         name : Optional[str]
-            The name of the command to use. Defaults to ``func.__name__``.
+            The name of the event to listen for. Defaults to ``func.__name__``.
 
         Example
         --------
@@ -524,49 +526,24 @@ class BotBase(GroupMixin):
 
         A cog is a class that has its own event listeners and commands.
 
-        They are meant as a way to organize multiple relevant commands
-        into a singular class that shares some state or no state at all.
-
-        The cog can also have a ``__global_check`` member function that allows
-        you to define a global check. See :meth:`.check` for more info. If
-        the name is ``__global_check_once`` then it's equivalent to the
-        :meth:`.check_once` decorator.
-
-        More information will be documented soon.
-
         Parameters
         -----------
         cog
             The cog to register to the bot.
+
+        Raises
+        -------
+        TypeError
+            The cog does not inherit from :class:`.Cog`.
+        CommandError
+            An error happened during loading.
         """
 
-        self.cogs[type(cog).__name__] = cog
+        if not isinstance(cog, Cog):
+            raise TypeError('cogs must derive from Cog')
 
-        try:
-            check = getattr(cog, '_{.__class__.__name__}__global_check'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.add_check(check)
-
-        try:
-            check = getattr(cog, '_{.__class__.__name__}__global_check_once'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.add_check(check, call_once=True)
-
-        members = inspect.getmembers(cog)
-        for name, member in members:
-            # register commands the cog has
-            if isinstance(member, Command):
-                if member.parent is None:
-                    self.add_command(member)
-                continue
-
-            # register event listeners the cog has
-            if name.startswith('on_'):
-                self.add_listener(member, name)
+        cog = cog._inject(self)
+        self.cogs[cog.__cog_name__] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -577,33 +554,10 @@ class BotBase(GroupMixin):
         -----------
         name : str
             The name of the cog you are requesting.
+            This is equivalent to the name passed via keyword
+            argument in class creation or the class name if unspecified.
         """
         return self.cogs.get(name)
-
-    def get_cog_commands(self, name):
-        """Gets a unique set of the cog's registered commands
-        without aliases.
-
-        If the cog is not found, an empty set is returned.
-
-        Parameters
-        ------------
-        name: str
-            The name of the cog whose commands you are requesting.
-
-        Returns
-        ---------
-        Set[:class:`.Command`]
-            A unique set of commands without aliases that belong
-            to the cog.
-        """
-
-        try:
-            cog = self.cogs[name]
-        except KeyError:
-            return set()
-
-        return {c for c in self.all_commands.values() if c.instance is cog}
 
     def remove_cog(self, name):
         """Removes a cog from the bot.
@@ -613,13 +567,9 @@ class BotBase(GroupMixin):
 
         If no cog is found then this method has no effect.
 
-        If the cog defines a special member function named ``__unload``
-        then it is called when removal has completed. This function
-        **cannot** be a coroutine. It must be a regular function.
-
         Parameters
         -----------
-        name : str
+        name: :class:`str`
             The name of the cog to remove.
         """
 
@@ -627,41 +577,7 @@ class BotBase(GroupMixin):
         if cog is None:
             return
 
-        members = inspect.getmembers(cog)
-        for name, member in members:
-            # remove commands the cog has
-            if isinstance(member, Command):
-                if member.parent is None:
-                    self.remove_command(member.name)
-                continue
-
-            # remove event listeners the cog has
-            if name.startswith('on_'):
-                self.remove_listener(member)
-
-        try:
-            check = getattr(cog, '_{0.__class__.__name__}__global_check'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.remove_check(check)
-
-        try:
-            check = getattr(cog, '_{0.__class__.__name__}__global_check_once'.format(cog))
-        except AttributeError:
-            pass
-        else:
-            self.remove_check(check, call_once=True)
-
-        unloader_name = '_{0.__class__.__name__}__unload'.format(cog)
-        try:
-            unloader = getattr(cog, unloader_name)
-        except AttributeError:
-            pass
-        else:
-            unloader()
-
-        del cog
+        cog._eject(self)
 
     # extensions
 

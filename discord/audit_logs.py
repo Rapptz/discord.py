@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -165,7 +165,8 @@ class AuditLogChanges:
             self.before.color = self.before.colour
 
     def _handle_role(self, first, second, entry, elem):
-        setattr(first, 'roles', [])
+        if not hasattr(first, 'roles'):
+            setattr(first, 'roles', [])
 
         data = []
         g = entry.guild

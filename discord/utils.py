@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import array
 import asyncio
+import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
 import datetime
@@ -33,7 +34,7 @@ from email.utils import parsedate_to_datetime
 import functools
 from inspect import isawaitable as _isawaitable
 import json
-from re import split as re_split
+import re
 import warnings
 
 from .errors import InvalidArgument
@@ -78,7 +79,7 @@ def cached_slot_property(name):
 
 def parse_time(timestamp):
     if timestamp:
-        return datetime.datetime(*map(int, re_split(r'[^\d]', timestamp.replace('+00:00', ''))))
+        return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
 
 def deprecated(instead=None):
@@ -248,9 +249,9 @@ def _get_as_snowflake(data, key):
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data.startswith(b'\xFF\xD8') and data.rstrip(b'\0').endswith(b'\xFF\xD9'):
+    elif data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
-    elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
+    elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
     elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
         return 'image/webp'
@@ -293,8 +294,8 @@ async def sane_wait_for(futures, *, timeout, loop):
         raise asyncio.TimeoutError()
 
 def valid_icon_size(size):
-    """Icons must be power of 2 within [16, 2048]."""
-    return not size & (size - 1) and size in range(16, 2049)
+    """Icons must be power of 2 within [16, 4096]."""
+    return not size & (size - 1) and size in range(16, 4097)
 
 class SnowflakeList(array.array):
     """Internal data storage class to efficiently store a list of snowflakes.
@@ -324,3 +325,18 @@ class SnowflakeList(array.array):
     def has(self, element):
         i = bisect_left(self, element)
         return i != len(self) and self[i] == element
+
+_IS_ASCII = re.compile(r'^[\x00-\x7f]+$')
+
+def _string_width(string, *, _IS_ASCII=_IS_ASCII):
+    """Returns string's width."""
+    match = _IS_ASCII.match(string)
+    if match:
+        return match.endpos
+
+    UNICODE_WIDE_CHAR_TYPE = 'WFA'
+    width = 0
+    func = unicodedata.east_asian_width
+    for char in string:
+        width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
+    return width

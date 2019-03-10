@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -440,6 +440,7 @@ class Client:
         if self.is_closed():
             return
 
+        await self.http.close()
         self._closed.set()
 
         for voice in self.voice_clients:
@@ -452,8 +453,6 @@ class Client:
         if self.ws is not None and self.ws.open:
             await self.ws.close()
 
-
-        await self.http.close()
         self._ready.clear()
 
     def clear(self):
@@ -882,7 +881,7 @@ class Client:
 
     # Invite management
 
-    async def get_invite(self, url):
+    async def get_invite(self, url, *, with_counts=True):
         """|coro|
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
@@ -890,13 +889,17 @@ class Client:
         Note
         ------
         If the invite is for a guild you have not joined, the guild and channel
-        attributes of the returned invite will be :class:`Object` with the names
-        patched in.
+        attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
+        :class:`PartialInviteChannel` respectively.
 
         Parameters
         -----------
-        url : str
+        url: :class:`str`
             The discord invite ID or URL (must be a discord.gg URL).
+        with_counts: :class:`bool`
+            Whether to include count information in the invite. This fills the
+            :attr:`Invite.approximate_member_count` and :attr:`Invite.approximate_presence_count`
+            fields.
 
         Raises
         -------
@@ -912,7 +915,7 @@ class Client:
         """
 
         invite_id = self._resolve_invite(url)
-        data = await self.http.get_invite(invite_id)
+        data = await self.http.get_invite(invite_id, with_counts=with_counts)
         return Invite.from_incomplete(state=self._connection, data=data)
 
     async def delete_invite(self, invite):

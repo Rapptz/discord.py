@@ -465,6 +465,11 @@ div#welcome-to-discord-py > h1 {
   border-left: 5px solid #dbdbdb;
 }
 
+div.code-block-caption {
+  font-size: medium;
+  font-weight: bold;
+}
+
 @media screen and (max-width: 870px) {
 
   div.document {

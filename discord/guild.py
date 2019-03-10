@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -83,7 +83,7 @@ class Guild(Hashable):
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
         The channel that denotes the AFK channel. None if it doesn't exist.
-    icon: :class:`str`
+    icon: Optional[:class:`str`]
         The guild's icon.
     id: :class:`int`
         The guild's ID.
@@ -95,6 +95,8 @@ class Guild(Hashable):
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
+    banner: Optional[:class:`str`]
+        The guild's banner.
     mfa_level: :class:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
@@ -114,12 +116,12 @@ class Guild(Hashable):
         - ``VERIFIED``: Guild is a "verified" server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
 
-    splash: :class:`str`
+    splash: Optional[:class:`str`]
         The guild's invite splash.
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'name', 'region', '_state',
+                 'name', 'id', 'unavailable', 'banner', 'region', '_state',
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
@@ -211,6 +213,7 @@ class Guild(Hashable):
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
+        self.banner = guild.get('banner')
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
         self._roles = {}
@@ -409,7 +412,7 @@ class Guild(Hashable):
         """Returns a friendly URL version of the guild's icon. Returns an empty string if it has no icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 2048.
+        size must be a power of 2 between 16 and 4096.
 
         Parameters
         -----------
@@ -429,7 +432,7 @@ class Guild(Hashable):
             Bad image format passed to ``format`` or invalid ``size``.
         """
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -437,6 +440,44 @@ class Guild(Hashable):
             return ''
 
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
+
+    @property
+    def banner_url(self):
+        """Returns the URL version of the guild's banner. Returns an empty string if it has no banner."""
+        return self.banner_url_as()
+
+    def banner_url_as(self, *, format='webp', size=2048):
+        """Returns a friendly URL version of the guild's banner. Returns an empty string if it has no banner.
+
+        The format must be one of 'webp', 'jpeg', or 'png'. The
+        size must be a power of 2 between 16 and 4096.
+
+        Parameters
+        -----------
+        format: str
+            The format to attempt to convert the banner to.
+        size: int
+            The size of the image to display.
+
+        Returns
+        --------
+        str
+            The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+        """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
+        if self.banner is None:
+            return ''
+
+        return 'https://cdn.discordapp.com/banners/{0.id}/{0.banner}.{1}?size={2}'.format(self, format, size)
 
     @property
     def splash_url(self):
@@ -447,7 +488,7 @@ class Guild(Hashable):
         """Returns a friendly URL version of the guild's invite splash. Returns an empty string if it has no splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 2048.
+        size must be a power of 2 between 16 and 4096.
 
         Parameters
         -----------
@@ -467,7 +508,7 @@ class Guild(Hashable):
             Bad image format passed to ``format`` or invalid ``size``.
         """
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -555,7 +596,7 @@ class Guild(Hashable):
 
         return utils.find(pred, members)
 
-    def _create_channel(self, name, overwrites, channel_type, category=None, reason=None):
+    def _create_channel(self, name, overwrites, channel_type, category=None, **options):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
@@ -580,11 +621,16 @@ class Guild(Hashable):
 
             perms.append(payload)
 
-        parent_id = category.id if category else None
-        return self._state.http.create_channel(self.id, name, channel_type.value, parent_id=parent_id,
-                                               permission_overwrites=perms, reason=reason)
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
 
-    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None):
+        parent_id = category.id if category else None
+        return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
+                                               permission_overwrites=perms, **options)
+
+    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         """|coro|
 
         Creates a :class:`TextChannel` for the guild.
@@ -596,6 +642,12 @@ class Guild(Hashable):
         channel upon creation. This parameter expects a :class:`dict` of
         overwrites with the target (either a :class:`Member` or a :class:`Role`)
         as the key and a :class:`PermissionOverwrite` as the value.
+
+        Note
+        --------
+        Creating a channel of a specified position will not update the position of
+        other channels to follow suit. A follow-up call to :meth:`~TextChannel.edit`
+        will be required to update the position of the channel in the channel list.
 
         Examples
         ----------
@@ -619,7 +671,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The channel's name.
         overwrites
             A :class:`dict` of target (either a role or a member) to
@@ -629,7 +681,17 @@ class Guild(Hashable):
             The category to place the newly created channel under.
             The permissions will be automatically synced to category if no
             overwrites are provided.
-        reason: Optional[str]
+        position: :class:`int`
+            The position in the channel list. This is a number that starts
+            at 0. e.g. the top channel is position 0.
+        topic: Optional[:class:`str`]
+            The new channel's topic.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel.
+            The maximum value possible is `120`.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+        reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
         Raises
@@ -646,19 +708,27 @@ class Guild(Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
         channel = TextChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
         return channel
 
-    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None):
+    async def create_voice_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         """|coro|
 
-        Same as :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
+        This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead, in addition
+        to having the following new parameters.
+
+        Parameters
+        -----------
+        bitrate: :class:`int`
+            The channel's preferred audio bitrate in bits per second.
+        user_limit: :class:`int`
+            The channel's limit for number of members that can be in a voice channel.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
@@ -729,9 +799,15 @@ class Guild(Hashable):
         ----------
         name: str
             The new name of the guild.
+        description: str
+            The new description of the guild. This is only available to guilds that
+            contain `VERIFIED` in :attr:`Guild.features`.
         icon: bytes
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
+        banner: bytes
+            A :term:`py:bytes-like object` representing the banner.
+            Could be ``None`` to denote removal of the banner.
         splash: bytes
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
@@ -750,6 +826,8 @@ class Guild(Hashable):
             The new verification level for the guild.
         default_notifications: :class:`NotificationLevel`
             The new default notification level for the guild.
+        explicit_content_filter: :class:`ContentFilter`
+            The new explicit content filter for the guild.
         vanity_code: str
             The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
@@ -781,6 +859,16 @@ class Guild(Hashable):
                 icon = None
 
         try:
+            banner_bytes = fields['banner']
+        except KeyError:
+            banner = self.banner
+        else:
+            if banner_bytes is not None:
+                banner = utils._bytes_to_base64_data(banner_bytes)
+            else:
+                banner = None
+
+        try:
             vanity_code = fields['vanity_code']
         except KeyError:
             pass
@@ -798,6 +886,7 @@ class Guild(Hashable):
                 splash = None
 
         fields['icon'] = icon
+        fields['banner'] = banner
         fields['splash'] = splash
 
         try:
@@ -838,10 +927,15 @@ class Guild(Hashable):
 
         level = fields.get('verification_level', self.verification_level)
         if not isinstance(level, VerificationLevel):
-            raise InvalidArgument('verification_level field must of type VerificationLevel')
+            raise InvalidArgument('verification_level field must be of type VerificationLevel')
 
         fields['verification_level'] = level.value
 
+        explicit_content_filter = fields.get('explicit_content_filter', self.explicit_content_filter)
+        if not isinstance(explicit_content_filter, ContentFilter):
+            raise InvalidArgument('explicit_content_filter field must be of type ContentFilter')
+
+        fields['explicit_content_filter'] = explicit_content_filter.value
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def get_ban(self, user):
@@ -1115,7 +1209,7 @@ class Guild(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to change the role.
+            You do not have permissions to create the role.
         HTTPException
             Editing the role failed.
         InvalidArgument

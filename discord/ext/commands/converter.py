@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -475,7 +475,7 @@ class clean_content(Converter):
         if self.escape_markdown:
             transformations = {
                 re.escape(c): '\\' + c
-                for c in ('*', '`', '_', '~', '\\')
+                for c in ('*', '`', '_', '~', '\\', '||')
             }
 
             def replace(obj):
@@ -500,8 +500,8 @@ class _Greedy:
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        if not inspect.isclass(converter):
-            raise TypeError('Greedy[...] expects a type.')
+        if not inspect.isclass(converter) and not isinstance(converter, Converter) and not hasattr(converter, '__origin__'):
+            raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
         if converter is str or converter is type(None) or converter is _Greedy:
             raise TypeError('Greedy[%s] is invalid.' % converter.__name__)

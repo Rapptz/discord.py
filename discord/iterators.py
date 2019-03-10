@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -153,7 +153,7 @@ class ReactionIterator(_AsyncIterator):
 
             if data:
                 self.limit -= retrieve
-                self.after = Object(id=int(data[0]['id']))
+                self.after = Object(id=int(data[-1]['id']))
 
             if self.guild is None:
                 for element in reversed(data):

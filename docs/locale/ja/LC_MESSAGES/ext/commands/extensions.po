@@ -1,0 +1,111 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2019, Rapptz
+# This file is distributed under the same license as the discord.py package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: discord.py 1.0.0a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-02-24 04:09-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: ../../ext/commands/extensions.rst:6
+msgid "Extensions"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:8
+msgid ""
+"There comes a time in the bot development when you want to extend the bot"
+" functionality at run-time and quickly unload and reload code (also "
+"called hot-reloading). The command framework comes with this ability "
+"built-in, with a concept called **extensions**."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:11
+msgid "Primer"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:13
+msgid ""
+"An extension at its core is a python file with an entry point called "
+"``setup``. This setup must be a plain Python function (not a coroutine). "
+"It takes a single parameter -- the :class:`~.commands.Bot` that loads the"
+" extension."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:15
+msgid "An example extension looks like this:"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:17
+msgid "hello.py"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:30
+msgid ""
+"In this example we define a simple command, and when the extension is "
+"loaded this command is added to the bot. Now the final step to this is "
+"loading the extension, which we do by calling "
+":meth:`.commands.Bot.load_extension`. To load this extension we call "
+"``bot.load_extension('hello')``."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:32
+msgid "Cogs"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:35
+msgid ""
+"Extensions are usually used in conjunction with cogs. To read more about "
+"them, check out the documentation, :ref:`ext_commands_cogs`."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:39
+msgid ""
+"Extension paths are ultimately similar to the import mechanism. What this"
+" means is that if there is a folder, then it must be dot-qualified. For "
+"example to load an extension in ``plugins/hello.py`` then we use the "
+"string ``plugins.hello``."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:42
+msgid "Reloading"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:44
+msgid ""
+"The act of reloading an extension is actually quite simple -- it is as "
+"simple as unloading it and then reloading it."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:51
+msgid ""
+"Once we remove and load the extension, any changes that we did will be "
+"applied upon load. This is useful if we want to add or remove "
+"functionality without restarting our bot."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:54
+msgid "Cleaning Up"
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:56
+msgid ""
+"Although rare, sometimes an extension needs to clean-up or know when it's"
+" being unloaded. For cases like these, there is another entry point named"
+" ``teardown`` which is similar to ``setup`` except called when the "
+"extension is unloaded."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:58
+msgid "basic_ext.py"
+msgstr ""
+

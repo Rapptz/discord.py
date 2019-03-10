@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -49,6 +49,8 @@ class VoiceState:
         Indicates if the user is currently muted by their own accord.
     self_deaf: :class:`bool`
         Indicates if the user is currently deafened by their own accord.
+    self_video: :class:`bool`
+        Indicates if the user is currently broadcasting video.
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
     channel: :class:`VoiceChannel`
@@ -57,7 +59,7 @@ class VoiceState:
     """
 
     __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_deaf', 'afk', 'channel')
+                 'self_video', 'self_deaf', 'afk', 'channel')
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -66,13 +68,14 @@ class VoiceState:
     def _update(self, data, channel):
         self.self_mute = data.get('self_mute', False)
         self.self_deaf = data.get('self_deaf', False)
+        self.self_video = data.get('self_video', False)
         self.afk = data.get('suppress', False)
         self.mute = data.get('mute', False)
         self.deaf = data.get('deaf', False)
         self.channel = channel
 
     def __repr__(self):
-        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} channel={0.channel!r}>'.format(self)
+        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_video={0.self_video} channel={0.channel!r}>'.format(self)
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
@@ -135,9 +138,9 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     Attributes
     ----------
-    joined_at: `datetime.datetime`
+    joined_at: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC that the member joined the guild for
-        the first time.
+        the first time. In certain cases, this can be ``None``.
     activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
@@ -175,6 +178,16 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def __hash__(self):
         return hash(self._user)
+
+    @classmethod
+    def _from_message(cls, *, message, data):
+        author = message.author
+        data['user'] = {
+            attr: getattr(author, attr)
+            for attr in author.__slots__
+            if attr[0] != '_'
+        }
+        return cls(data=data, guild=message.guild, state=message._state)
 
     @classmethod
     def _copy(cls, member):

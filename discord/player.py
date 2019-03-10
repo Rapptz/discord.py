@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import threading
 import subprocess
 import audioop
+import asyncio
 import logging
 import shlex
 import time
@@ -261,6 +262,7 @@ class AudioPlayer(threading.Thread):
 
         # getattr lookup speed ups
         play_audio = self.client.send_audio_packet
+        self._speak(True)
 
         while not self._end.is_set():
             # are we paused?
@@ -309,14 +311,19 @@ class AudioPlayer(threading.Thread):
     def stop(self):
         self._end.set()
         self._resumed.set()
+        self._speak(False)
 
-    def pause(self):
+    def pause(self, *, update_speaking=True):
         self._resumed.clear()
+        if update_speaking:
+            self._speak(False)
 
-    def resume(self):
+    def resume(self, *, update_speaking=True):
         self.loops = 0
         self._start = time.time()
         self._resumed.set()
+        if update_speaking:
+            self._speak(True)
 
     def is_playing(self):
         return self._resumed.is_set() and not self._end.is_set()
@@ -326,6 +333,12 @@ class AudioPlayer(threading.Thread):
 
     def _set_source(self, source):
         with self._lock:
-            self.pause()
+            self.pause(update_speaking=False)
             self.source = source
-            self.resume()
+            self.resume(update_speaking=False)
+
+    def _speak(self, speaking):
+        try:
+            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.loop)
+        except Exception as e:
+            log.info("Speaking call in player failed: %s", e)

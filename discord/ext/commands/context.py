@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -118,8 +118,8 @@ class Context(discord.abc.Messageable):
             raise TypeError('Missing command to invoke.') from None
 
         arguments = []
-        if command.instance is not None:
-            arguments.append(command.instance)
+        if command.cog is not None:
+            arguments.append(command.cog)
 
         arguments.append(self)
         arguments.extend(args[1:])
@@ -195,7 +195,7 @@ class Context(discord.abc.Messageable):
 
         if self.command is None:
             return None
-        return self.command.instance
+        return self.command.cog
 
     @discord.utils.cached_property
     def guild(self):

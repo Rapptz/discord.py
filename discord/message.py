@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import datetime
 import re
 
 from . import utils
@@ -34,6 +35,7 @@ from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
+from .member import Member
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -75,7 +77,7 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
-    async def save(self, fp, *, seek_begin=True):
+    async def save(self, fp, *, seek_begin=True, use_cached=True):
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -86,9 +88,15 @@ class Attachment:
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
-        seek_begin: bool
+        seek_begin: :class:`bool`
             Whether to seek to the beginning of the file after saving is
             successfully done.
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, which is generally deleted right after the message is deleted.
+            Note that this can still fail to download deleted attachments if too much time
+            has passed.
 
         Raises
         --------
@@ -102,8 +110,8 @@ class Attachment:
         int
             The number of bytes written.
         """
-
-        data = await self._http.get_attachment(self.url)
+        url = self.proxy_url if use_cached else self.url
+        data = await self._http.get_attachment(url)
         if isinstance(fp, str):
             with open(fp, 'wb') as f:
                 return f.write(data)
@@ -276,7 +284,7 @@ class Message:
         self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
         self._try_patch(data, 'nonce')
 
-        for handler in ('author', 'mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
             try:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
@@ -296,6 +304,20 @@ class Message:
             found = self.guild.get_member(self.author.id)
             if found is not None:
                 self.author = found
+
+    def _handle_member(self, member):
+        # The gateway now gives us full Member objects sometimes with the following keys
+        # deaf, mute, joined_at, roles
+        # For the sake of performance I'm going to assume that the only
+        # field that needs *updating* would be the joined_at field.
+        # If there is no Member object (for some strange reason), then we can upgrade
+        # ourselves to a more "partial" member object.
+        author = self.author
+        try:
+            if author.joined_at is None:
+                author.joined_at = utils.parse_time(member.get('joined_at'))
+        except AttributeError:
+            self.author = Member._from_message(message=self, data=member)
 
     def _handle_mentions(self, mentions):
         self.mentions = []
@@ -486,7 +508,7 @@ class Message:
                 "A wild {0} appeared.",
                 "Swoooosh. {0} just landed.",
                 "Brace yourselves. {0} just joined the server.",
-                "{0} just joined. Hide your bananas.",
+                "{0} just joined... or did they?",
                 "{0} just arrived. Seems OP - please nerf.",
                 "{0} just slid into the server.",
                 "A {0} has spawned in the server.",
@@ -496,9 +518,9 @@ class Message:
                 "{0} just showed up. Hold my beer.",
                 "Challenger approaching - {0} has appeared!",
                 "It's a bird! It's a plane! Nevermind, it's just {0}.",
-                "It's {0}! Praise the sun! [T]/",
+                "It's {0}! Praise the sun! \\[T]/",
                 "Never gonna give {0} up. Never gonna let {0} down.",
-                "Ha! {0} has joined! You activated my trap card!",
+                "{0} has joined the battle bus.",
                 "Cheers, love! {0}'s here!",
                 "Hey! Listen! {0} has joined!",
                 "We've been expecting you {0}",
@@ -514,8 +536,11 @@ class Message:
                 "Roses are red, violets are blue, {0} joined this server with you",
             ]
 
-            index = int(self.created_at.timestamp()) % len(formats)
-            return formats[index].format(self.author.name)
+            # manually reconstruct the epoch with millisecond precision, because
+            # datetime.datetime.timestamp() doesn't return the exact posix
+            # timestamp with the precision that we need
+            created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+            return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.call:
             # we're at the call message type now, which is a bit more complicated.
