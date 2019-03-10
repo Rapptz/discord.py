@@ -141,7 +141,7 @@ class Guild(Hashable):
 
     async def delete(self) -> None: ...
 
-    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., description: str = ...
+    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., description: str = ...,
                    icon: Optional[bytes] = ..., splash: Optional[bytes] = ..., banner: Optional[bytes] = ...,
                    region: VoiceRegion = ..., afk_channel: Optional[VoiceChannel] = ..., afk_timeout: int = ...,
                    owner: Member = ..., verification_level: VerificationLevel = ...,

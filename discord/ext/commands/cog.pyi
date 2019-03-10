@@ -2,7 +2,7 @@ from typing import Any, Optional, Union, List, Tuple, Iterator, Callable, TypeVa
 from .core import Command
 from .context import Context
 
-CT = TypeVar('CT', bound=Context)
+_CT = TypeVar('_CT', bound=Context)
 _L = TypeVar('_L', bound=Callable[..., Coroutine[Any, Any, Any]])
 
 class CogMeta(type):
@@ -10,7 +10,7 @@ class CogMeta(type):
     @classmethod
     def qualified_name(cls) -> str: ...
 
-class Cog(Generic[CT], metaclass=CogMeta):
+class Cog(Generic[_CT], metaclass=CogMeta):
     __cog_commands__: Any = ...
     def get_commands(self) -> List[Command]: ...
     def walk_commands(self) -> Iterator[Command]: ...
