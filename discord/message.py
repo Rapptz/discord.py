@@ -77,7 +77,7 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
-    async def save(self, fp, *, seek_begin=True, use_cached=True):
+    async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
         Saves this attachment into a file-like object.
