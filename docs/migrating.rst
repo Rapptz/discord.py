@@ -787,7 +787,7 @@ The biggest change is that ``pass_context=True`` no longer exists, :class:`.Cont
         await bot.say('Hello')
 
     # after
-    @bot.command
+    @bot.command()
     async def foo(ctx):
         await ctx.send('Hello')
 
@@ -842,7 +842,7 @@ Now inside your commands you will have access to your custom context:
 
 .. code-block:: python3
 
-    @bot.command
+    @bot.command()
     async def secret(ctx):
         await ctx.send(ctx.secret)
 
@@ -989,7 +989,7 @@ An example cog with every special method registered and a custom name is as foll
         async def cog_after_invoke(self, ctx):
             print('cog local after: {0.command.qualified_name}'.format(ctx))
 
-        @commands.Cog.listener
+        @commands.Cog.listener()
         async def on_message(self, message):
             pass
 
@@ -1026,7 +1026,7 @@ handling or clean up of certain resources such a database connection.
 
 The per-command registration is as follows: ::
 
-    @bot.command
+    @bot.command()
     async def foo(ctx):
         await ctx.send('foo')
 
@@ -1051,7 +1051,7 @@ The special cog method for these is :meth:`.Cog.cog_before_invoke` and :meth:`.C
         async def cog_after_invoke(self, ctx):
             print('{0.command} is done...'.format(ctx))
 
-        @commands.command
+        @commands.command()
         async def foo(self, ctx):
             await ctx.send(ctx.secret_cog_data)
 

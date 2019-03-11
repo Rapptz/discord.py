@@ -29,13 +29,13 @@ This example cog defines a ``Greetings`` category for your commands, with a sing
             self.bot = bot
             self._last_member = None
 
-        @commands.Cog.listener
+        @commands.Cog.listener()
         async def on_member_join(self, member):
             channel = member.guild.system_channel
             if channel is not None:
                 await channel.send('Welcome {0.mention}.'.format(member))
 
-        @commands.command
+        @commands.command()
         async def hello(self, ctx, *, member: discord.Member = None):
             """Says hello"""
             member = member or ctx.author
@@ -49,6 +49,7 @@ A couple of technical notes to take into consideration:
 
 - All listeners must be explicitly marked via decorator, :meth:`~.commands.Cog.listener`.
 - The name of the cog is automatically derived from the class name but can be overridden. See :ref:`ext_commands_cogs_meta_options`.
+- :meth:`~.commands.Cog.listener` can be used without ``()`` if you aren't passing it a name.
 - All commands must now take a ``self`` parameter to allow usage of instance attributes that can be used to maintain state.
 
 Cog Registration
@@ -94,7 +95,7 @@ Just as we remove a cog by its name, we can also retrieve it by its name as well
         def coinflip(self):
             return random.randint(0, 1)
 
-        @commands.command
+        @commands.command()
         async def gamble(self, ctx, money: int):
             """Gambles some money."""
             economy = self.bot.get_cog('Economy')

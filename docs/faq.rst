@@ -254,14 +254,14 @@ Why do my arguments require quotes?
 
 In a simple command defined as: ::
 
-    @bot.command
+    @bot.command()
     async def echo(ctx, message: str):
         await ctx.send(message)
 
 Calling it via ``?echo a b c`` will only fetch the first argument and disregard the rest. To fix this you should either call
 it via ``?echo "a b c"`` or change the signature to have "consume rest" behaviour. Example: ::
 
-    @bot.command
+    @bot.command()
     async def echo(ctx, *, message: str):
         await ctx.send(message)
 
@@ -275,7 +275,7 @@ message.
 
 Example: ::
 
-    @bot.command
+    @bot.command()
     async def length(ctx):
         await ctx.send('Your message is {} characters long.'.format(len(ctx.message.content)))
 
@@ -287,12 +287,12 @@ the group operating as "subcommands". These groups can be arbitrarily nested as 
 
 Example: ::
 
-    @bot.group
+    @bot.group()
     async def git(ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('Invalid git command passed...')
 
-    @git.command
+    @git.command()
     async def push(ctx, remote: str, branch: str):
         await ctx.send('Pushing to {} {}'.format(remote, branch))
 

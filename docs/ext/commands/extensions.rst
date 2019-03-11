@@ -20,7 +20,7 @@ An example extension looks like this:
 
     from discord.ext import commands
 
-    @commands.command
+    @commands.command()
     async def hello(ctx):
         await ctx.send('Hello {0.display_name}.'.format(ctx.author))
 
