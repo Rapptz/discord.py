@@ -226,6 +226,18 @@ Exceptions
 .. autoexception:: discord.ext.commands.MissingRequiredArgument
     :members:
 
+.. autoexception:: discord.ext.commands.ArgumentParsingError
+    :members:
+
+.. autoexception:: discord.ext.commands.UnexpectedQuoteError
+    :members:
+
+.. autoexception:: discord.ext.commands.InvalidEndOfQuotedStringError
+    :members:
+
+.. autoexception:: discord.ext.commands.ExpectedClosingQuoteError
+    :members:
+
 .. autoexception:: discord.ext.commands.BadArgument
     :members:
 
@@ -278,6 +290,10 @@ Exception Hierarchy
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
                 - :exc:`~.commands.BadUnionArgument`
+                - :exc:`~.commands.ArgumentParsingError`
+                    - :exc:`~.commands.UnexpectedQuoteError`
+                    - :exc:`~.commands.InvalidEndOfQuotedStringError`
+                    - :exc:`~.commands.ExpectedClosingQuoteError`
             - :exc:`~.commands.CommandNotFound`
             - :exc:`~.commands.CheckFailure`
                 - :exc:`~.commands.NoPrivateMessage`

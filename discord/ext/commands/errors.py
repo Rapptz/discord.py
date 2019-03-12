@@ -32,7 +32,9 @@ __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
            'UserInputError', 'CommandOnCooldown', 'NotOwner',
            'MissingPermissions', 'BotMissingPermissions', 'ConversionError',
-           'BadUnionArgument']
+           'BadUnionArgument', 'ArgumentParsingError',
+           'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
+           'ExpectedClosingQuoteError', ]
 
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.
@@ -229,3 +231,55 @@ class BadUnionArgument(UserInputError):
             fmt = ' or '.join(to_string)
 
         super().__init__('Could not convert "{0.name}" into {1}.'.format(param, fmt))
+
+class ArgumentParsingError(UserInputError):
+    """An exception raised when the parser fails to parse a user's input.
+
+    This derives from :exc:`UserInputError`. There are child classes
+    that implement more granular parsing errors for i18n purposes.
+    """
+    pass
+
+class UnexpectedQuoteError(ArgumentParsingError):
+    """An exception raised when the parser encounters a quote mark inside a non-quoted string.
+
+    This derives from :exc:`ArgumentParsingError`.
+
+    Attributes
+    ------------
+    quote: :class:`str`
+        The quote mark that was found inside the non-quoted string.
+    """
+    def __init__(self, quote):
+        self.quote = quote
+        super().__init__('Unexpected quote mark, {0!r}, in non-quoted string'.format(quote))
+
+class InvalidEndOfQuotedStringError(ArgumentParsingError):
+    """An exception raised when a space is expected after the closing quote in a string
+    but a different character is found.
+
+    This derives from :exc:`ArgumentParsingError`.
+
+    Attributes
+    -----------
+    char: :class:`str`
+        The character found instead of the expected string.
+    """
+    def __init__(self, char):
+        self.char = char
+        super().__init__('Expected space after closing quotation but received {0!r}'.format(char))
+
+class ExpectedClosingQuoteError(ArgumentParsingError):
+    """An exception raised when a quote character is expected but not found.
+
+    This derives from :exc:`ArgumentParsingError`.
+
+    Attributes
+    -----------
+    close_quote: :class:`str`
+        The quote character expected.
+    """
+
+    def __init__(self, close_quote):
+        self.close_quote = close_quote
+        super().__init__('Expected closing {}.'.format(close_quote))
