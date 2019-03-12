@@ -33,7 +33,6 @@ import discord
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
-from .view import quoted_word
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -421,7 +420,7 @@ class Command(_BaseCommand):
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
-            argument = quoted_word(view)
+            argument = view.get_quoted_word()
         view.previous = previous
 
         return await self.do_conversion(ctx, converter, argument, param)
@@ -434,7 +433,7 @@ class Command(_BaseCommand):
             previous = view.index
 
             view.skip_ws()
-            argument = quoted_word(view)
+            argument = view.get_quoted_word()
             try:
                 value = await self.do_conversion(ctx, converter, argument, param)
             except CommandError:
@@ -450,7 +449,7 @@ class Command(_BaseCommand):
     async def _transform_greedy_var_pos(self, ctx, param, converter):
         view = ctx.view
         previous = view.index
-        argument = quoted_word(view)
+        argument = view.get_quoted_word()
         try:
             value = await self.do_conversion(ctx, converter, argument, param)
         except CommandError:
