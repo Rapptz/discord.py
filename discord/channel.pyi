@@ -6,13 +6,14 @@ from .guild import Guild
 from .member import Member
 from .message import Message
 from .mixins import Hashable
-from .permissions import Permissions
+from .permissions import Permissions, PermissionOverwrite
+from .role import Role
 from .types import RawChannelDict
 from .user import BaseUser, User, ClientUser
 from .voice_client import VoiceClient
 from .webhook import Webhook
 
-from typing import Any, Optional, Union, List, Tuple, Iterable, Callable, Type
+from typing import Any, Optional, Union, List, Tuple, Dict, Iterable, Callable, Type
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     id: int
@@ -94,6 +95,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def voice_channels(self) -> List[VoiceChannel]: ...
+
+    async def create_text_channel(self, name: str, *, overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
+                                  reason: Optional[str] = ..., position: int = ..., topic: str = ..., slowmode_delay: int = ...,
+                                  nsfw: bool = ...) -> TextChannel: ...
+
+    async def create_voice_channel(self, name: str, *, overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
+                                   bitrate: int = ..., user_limit: int = ..., reason: Optional[str] = ...) -> VoiceChannel: ...
 
 
 class DMChannel(discord.abc.Messageable, Hashable):

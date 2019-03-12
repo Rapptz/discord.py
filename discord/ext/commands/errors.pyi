@@ -71,3 +71,21 @@ class BadUnionArgument(UserInputError):
     errors: List[CommandError]
 
     def __init__(self, param: Parameter, converters: Tuple[Any, ...], errors: List[CommandError]) -> None: ...
+
+class ArgumentParsingError(UserInputError):
+    ...
+
+class UnexpectedQuoteError(ArgumentParsingError):
+    quote: str
+
+    def __init__(self, quote: str) -> None: ...
+
+class InvalidEndOfQuotedStringError(ArgumentParsingError):
+    char: str
+
+    def __init__(self, char: str) -> None: ...
+
+class ExpectedClosingQuoteError(ArgumentParsingError):
+    close_quote: str
+
+    def __init__(self, close_quote: str) -> None: ...
