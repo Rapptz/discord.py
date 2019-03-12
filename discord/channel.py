@@ -648,6 +648,20 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
+    async def create_text_channel(self, name, *, overwrites=None, reason=None, **options):
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
+        """
+        return await self.guild.create_text_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+
+    async def create_voice_channel(self, name, *, overwrites=None, reason=None, **options):
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
+        """
+        return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
