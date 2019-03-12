@@ -94,7 +94,13 @@ class CogMeta(type):
         listeners = []
 
         for elem, value in attrs.items():
+            is_static_method = isinstance(value, staticmethod)
+            if is_static_method:
+                value = value.__func__
             if isinstance(value, _BaseCommand):
+                if is_static_method:
+                    raise TypeError('Command in method {0!r} must not be staticmethod.'.format(elem))
+
                 commands.append(value)
             elif inspect.iscoroutinefunction(value):
                 try:
@@ -211,14 +217,21 @@ class Cog(metaclass=CogMeta):
             raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
 
         def decorator(func):
-            if not inspect.iscoroutinefunction(func):
+            actual = func
+            if isinstance(actual, staticmethod):
+                actual = actual.__func__
+            if not inspect.iscoroutinefunction(actual):
                 raise TypeError('Listener function must be a coroutine function.')
-            func.__cog_listener__ = True
-            to_assign = name or func.__name__
+            actual.__cog_listener__ = True
+            to_assign = name or actual.__name__
             try:
-                func.__cog_listener_names__.append(to_assign)
+                actual.__cog_listener_names__.append(to_assign)
             except AttributeError:
-                func.__cog_listener_names__ = [to_assign]
+                actual.__cog_listener_names__ = [to_assign]
+            # we have to return `func` instead of `actual` because
+            # we need the type to be `staticmethod` for the metaclass
+            # to pick it up but the metaclass unfurls the function and
+            # thus the assignments need to be on the actual function
             return func
         return decorator
 
