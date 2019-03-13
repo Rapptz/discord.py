@@ -106,6 +106,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.nsfw = data.get('nsfw', False)
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
+        self._type = data.get('type', self._type)
         self._fill_overwrites(data)
 
     async def _get_channel(self):
