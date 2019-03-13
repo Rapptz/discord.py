@@ -169,6 +169,10 @@ class Embed:
 
         return self
 
+    def copy(self):
+        """Returns a shallow copy of the embed."""
+        return Embed.from_dict(self.to_dict())
+
     def __len__(self):
         total = len(self.title) + len(self.description)
         for field in getattr(self, '_fields', []):
