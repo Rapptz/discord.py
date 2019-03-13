@@ -281,7 +281,7 @@ class Message:
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
         self._try_patch(data, 'content')
         self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
+        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
         self._try_patch(data, 'nonce')
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):

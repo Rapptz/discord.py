@@ -112,7 +112,21 @@ class Embed:
             self.timestamp = timestamp
 
     @classmethod
-    def from_data(cls, data):
+    def from_dict(cls, data):
+        """Converts a :class:`dict` to a :class:`Embed` provided it is in the
+        format that Discord expects it to be in.
+
+        You can find out about this format in the `official Discord documentation`__.
+
+        .. _DiscordDocs: https://discordapp.com/developers/docs/resources/channel#embed-object
+
+        __ DiscordDocs_
+
+        Parameters
+        -----------
+        data: :class:`dict`
+            The dictionary to convert into an embed.
+        """
         # we are bypassing __init__ here since it doesn't apply here
         self = cls.__new__(cls)
 
