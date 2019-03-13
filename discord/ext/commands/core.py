@@ -413,6 +413,8 @@ class Command(_BaseCommand):
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError() # break the loop
             if required:
+                if self._is_typing_optional(param.annotation):
+                    return None
                 raise MissingRequiredArgument(param)
             return param.default
 
