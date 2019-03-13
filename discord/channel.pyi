@@ -58,7 +58,6 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     name: str
     guild: Guild
     category_id: Optional[int]
-    topic: Optional[str]
     position: int
     bitrate: int
     user_limit: int
@@ -70,7 +69,9 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     def permissions_for(self, member: Member) -> Permissions: ...
 
-    async def edit(self, *, reason: Optional[str] = ..., **options: Any) -> None: ...
+    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., bitrate: int = ...,
+                   user_limit: int = ..., position: int = ..., sync_permissions: bool = ...,
+                   category: Optional[CategoryChannel] = ...) -> None: ...
 
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
@@ -78,14 +79,14 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     guild: Guild
     name: str
     category_id: Optional[int]
-    nsfw: bool
     position: int
 
     def __repr__(self) -> str: ...
 
     def is_nsfw(self) -> bool: ...
 
-    async def edit(self, *, reason: Optional[str] = ..., **options: Any) -> None: ...
+    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., position: int = ...,
+                   nsfw: bool = ...) -> None: ...
 
     @property
     def channels(self) -> List[Union[TextChannel, VoiceChannel]]: ...
@@ -96,12 +97,15 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     @property
     def voice_channels(self) -> List[VoiceChannel]: ...
 
-    async def create_text_channel(self, name: str, *, overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
-                                  reason: Optional[str] = ..., position: int = ..., topic: str = ..., slowmode_delay: int = ...,
-                                  nsfw: bool = ...) -> TextChannel: ...
+    async def create_text_channel(self, name: str, *,
+                                  overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
+                                  position: int = ..., topic: str = ..., slowmode_delay: int = ..., nsfw: bool = ...,
+                                  reason: Optional[str] = ...) -> TextChannel: ...
 
-    async def create_voice_channel(self, name: str, *, overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
-                                   bitrate: int = ..., user_limit: int = ..., reason: Optional[str] = ...) -> VoiceChannel: ...
+    async def create_voice_channel(self, name: str, *,
+                                   overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
+                                   bitrate: int = ..., position: int = ..., user_limit: int = ...,
+                                   reason: Optional[str] = ...) -> VoiceChannel: ...
 
 
 class DMChannel(discord.abc.Messageable, Hashable):
@@ -139,7 +143,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     async def remove_recipients(self, *recipients: User) -> None: ...
 
-    async def edit(self, **fields: Any) -> None: ...
+    async def edit(self, name: Optional[str] = ..., icon: Optional[bytes] = ...) -> None: ...
 
     async def leave(self) -> None: ...
 
