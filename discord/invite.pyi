@@ -33,6 +33,7 @@ class PartialInviteGuild(NamedTuple):
     name: str
     splash: Optional[str]
     verification_level: VerificationLevel
+    description: Optional[str]
 
     @property
     def created_at(self) -> datetime.datetime: ...

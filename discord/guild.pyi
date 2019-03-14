@@ -38,6 +38,7 @@ class Guild(Hashable):
     owner_id: int
     unavailable: bool
     banner: Optional[str]
+    description: Optional[str]
     mfa_level: int
     verification_level: VerificationLevel
     default_notifications: NotificationLevel
