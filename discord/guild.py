@@ -97,6 +97,8 @@ class Guild(Hashable):
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
     banner: Optional[:class:`str`]
         The guild's banner.
+    description: Optional[:class:`str`]
+        The guild's description.
     mfa_level: :class:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
@@ -125,7 +127,8 @@ class Guild(Hashable):
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', 'default_notifications')
+                 '_voice_states', '_system_channel_id', 'default_notifications',
+                 'description')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -227,6 +230,7 @@ class Guild(Hashable):
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
+        self.description = guild.get('description')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
