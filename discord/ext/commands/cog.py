@@ -181,6 +181,15 @@ class Cog(metaclass=CogMeta):
         """:class:`str`: Returns the cog's specified name, not the class name."""
         return self.__cog_name__
 
+    @property
+    def description(self):
+        """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
+        try:
+            return self.__cog_cleaned_doc__
+        except AttributeError:
+            self.__cog_cleaned_doc__ = cleaned = inspect.getdoc(self)
+            return cleaned
+
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands."""
         from .core import GroupMixin
