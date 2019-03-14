@@ -176,6 +176,11 @@ class Cog(metaclass=CogMeta):
         """
         return [c for c in self.__cog_commands__ if c.parent is None]
 
+    @property
+    def qualified_name(self):
+        """:class:`str`: Returns the cog's specified name, not the class name."""
+        return self.__cog_name__
+
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands."""
         from .core import GroupMixin
