@@ -24,9 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time, valid_icon_size
+from .utils import parse_time, valid_icon_size, snowflake_time
 from .mixins import Hashable
-from .object import Object
+from .errors import InvalidArgument
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
 
@@ -79,9 +79,9 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
     @property
     def created_at(self):
         """Returns the channel's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return snowflake_time(self.id)
 
-class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner id name splash verification_level')):
+class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner id name splash verification_level description')):
     """Represents a "partial" invite guild.
 
     This model will be given when the user is not part of the
@@ -121,6 +121,8 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
         The partial guild's banner.
     splash: Optional[:class:`str`]
         The partial guild's invite splash.
+    description: Optional[:class:`str`]
+        The partial guild's description.
     """
 
     __slots__ = ()
@@ -131,7 +133,7 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
     @property
     def created_at(self):
         """Returns the guild's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return snowflake_time(self.id)
 
     @property
     def icon_url(self):
@@ -278,7 +280,8 @@ class Invite(Hashable):
                                        icon=guild_data.get('icon'),
                                        banner=guild_data.get('banner'),
                                        splash=guild_data.get('splash'),
-                                       verification_level=try_enum(VerificationLevel, guild_data.get('verification_level')))
+                                       verification_level=try_enum(VerificationLevel, guild_data.get('verification_level')),
+                                       description=guild_data.get('description'))
         data['guild'] = guild
         data['channel'] = channel
         return cls(state=state, data=data)
