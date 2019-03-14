@@ -816,7 +816,7 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         return Typing(self)
 
-    async def get_message(self, id):
+    async def fetch_message(self, id):
         """|coro|
 
         Retrieves a single :class:`.Message` from the destination.

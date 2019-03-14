@@ -336,11 +336,11 @@ class GameConverter(Converter):
 class InviteConverter(Converter):
     """Converts to a :class:`Invite`.
 
-    This is done via an HTTP request using :meth:`.Bot.get_invite`.
+    This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
     """
     async def convert(self, ctx, argument):
         try:
-            invite = await ctx.bot.get_invite(argument)
+            invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
             raise BadArgument('Invite is invalid or expired') from exc

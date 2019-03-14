@@ -39,6 +39,7 @@ from .user import User, Profile
 from .invite import Invite
 from .object import Object
 from .guild import Guild
+from .member import Member
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
@@ -49,6 +50,7 @@ from .state import ConnectionState
 from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
+from .iterators import GuildIterator
 
 log = logging.getLogger(__name__)
 
@@ -841,6 +843,77 @@ class Client:
 
     # Guild stuff
 
+    def fetch_guilds(self, *, limit=100, before=None, after=None):
+        """|coro|
+
+        Retreives an :class:`AsyncIterator` that enables receiving your guilds.
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of guilds to retrieve.
+            If ``None``, it retrieves every guild you have access to. Note, however,
+            that this would make it a slow operation.
+            Defaults to 100.
+        before: :class:`Snowflake` or `datetime`
+            Retrieves guilds before this date or object.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        after: :class:`Snowflake` or `datetime`
+            Retrieve guilds after this date or object.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+
+        Raises
+        ------
+        HTTPException
+            Getting the guilds failed.
+
+        Yields
+        --------
+        :class:`Guild`
+            The guild with the guild data parsed.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for guild in client.fetch_guilds(limit=150):
+                print(guild.name)
+
+        Flattening into a list ::
+
+            guilds = await client.fetch_guilds(limit=150).flatten()
+            # guilds is now a list of Guild...
+        """
+        return GuildIterator(self, limit=limit, before=before, after=after)
+
+    async def fetch_guild(self, guild_id):
+        """|coro|
+
+        Retreives a :class:`Guild` from an ID.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The guild's ID to fetch from.
+
+        Raises
+        ------
+        Forbidden
+            You do not have access to the guild.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`Guild`
+            The guild from the ID.
+        """
+        data = await self.http.get_guild(guild_id)
+        return Guild(data=data, state=self._connection)
+
     async def create_guild(self, name, region=None, icon=None):
         """|coro|
 
@@ -885,7 +958,7 @@ class Client:
 
     # Invite management
 
-    async def get_invite(self, url, *, with_counts=True):
+    async def fetch_invite(self, url, *, with_counts=True):
         """|coro|
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
@@ -974,7 +1047,7 @@ class Client:
                        bot_require_code_grant=data['bot_require_code_grant'],
                        owner=User(state=self._connection, data=data['owner']))
 
-    async def get_user_info(self, user_id):
+    async def fetch_user(self, user_id):
         """|coro|
 
         Retrieves a :class:`User` based on their ID. This can only
@@ -1002,7 +1075,7 @@ class Client:
         data = await self.http.get_user_info(user_id)
         return User(state=self._connection, data=data)
 
-    async def get_user_profile(self, user_id):
+    async def fetch_user_profile(self, user_id):
         """|coro|
 
         Gets an arbitrary user's profile. This can only be used by non-bot accounts.
@@ -1040,7 +1113,7 @@ class Client:
                        user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
 
-    async def get_webhook_info(self, webhook_id):
+    async def fetch_webhook(self, webhook_id):
         """|coro|
 
         Retrieves a :class:`Webhook` with the specified ID.

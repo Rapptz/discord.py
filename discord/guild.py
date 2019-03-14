@@ -944,7 +944,32 @@ class Guild(Hashable):
         fields['explicit_content_filter'] = explicit_content_filter.value
         await http.edit_guild(self.id, reason=reason, **fields)
 
-    async def get_ban(self, user):
+    async def fetch_member(self, member_id):
+        """|coro|
+
+        Retreives a :class:`Member` from a guild ID, and a member ID.
+
+        Parameters
+        -----------
+        member_id: :class:`int`
+            The member's ID to fetch from.
+
+        Raises
+        -------
+        Forbidden
+            You do not have access to the guild.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`Member`
+            The member from the member ID.
+        """
+        data = await self._state.http.get_member(self.id, member_id)
+        return Member(data=data, state=self._state, guild=self)
+
+    async def fetch_ban(self, user):
         """|coro|
 
         Retrieves the :class:`BanEntry` for a user, which is a namedtuple
