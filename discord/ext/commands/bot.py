@@ -38,7 +38,7 @@ from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
 from .errors import CommandNotFound, CommandError
-from .formatter import HelpFormatter
+from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
 def when_mentioned(bot, msg):
@@ -84,71 +84,17 @@ def when_mentioned_or(*prefixes):
 
     return inner
 
-_mentions_transforms = {
-    '@everyone': '@\u200beveryone',
-    '@here': '@\u200bhere'
-}
-
-_mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
-
 def _is_submodule(parent, child):
     return parent == child or child.startswith(parent + ".")
 
-async def _default_help_command(ctx, *commands : str):
-    """Shows this message."""
-    bot = ctx.bot
-    destination = ctx.message.author if bot.pm_help else ctx.message.channel
+class _DefaultRepr:
+    def __repr__(self):
+        return '<default-help-command>'
 
-    def repl(obj):
-        return _mentions_transforms.get(obj.group(0), '')
-
-    # help by itself just lists our own commands.
-    if len(commands) == 0:
-        pages = await bot.formatter.format_help_for(ctx, bot)
-    elif len(commands) == 1:
-        # try to see if it is a cog name
-        name = _mention_pattern.sub(repl, commands[0])
-        command = None
-        if name in bot.cogs:
-            command = bot.cogs[name]
-        else:
-            command = bot.all_commands.get(name)
-            if command is None:
-                await destination.send(bot.command_not_found.format(name))
-                return
-
-        pages = await bot.formatter.format_help_for(ctx, command)
-    else:
-        name = _mention_pattern.sub(repl, commands[0])
-        command = bot.all_commands.get(name)
-        if command is None:
-            await destination.send(bot.command_not_found.format(name))
-            return
-
-        for key in commands[1:]:
-            try:
-                key = _mention_pattern.sub(repl, key)
-                command = command.all_commands.get(key)
-                if command is None:
-                    await destination.send(bot.command_not_found.format(key))
-                    return
-            except AttributeError:
-                await destination.send(bot.command_has_no_subcommands.format(command, key))
-                return
-
-        pages = await bot.formatter.format_help_for(ctx, command)
-
-    if bot.pm_help is None:
-        characters = sum(map(len, pages))
-        # modify destination based on length of pages.
-        if characters > 1000:
-            destination = ctx.message.author
-
-    for page in pages:
-        await destination.send(page)
+_default = _DefaultRepr()
 
 class BotBase(GroupMixin):
-    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
+    def __init__(self, command_prefix, help_command=_default, description=None, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
@@ -158,32 +104,19 @@ class BotBase(GroupMixin):
         self._check_once = []
         self._before_invoke = None
         self._after_invoke = None
+        self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
-        self.pm_help = pm_help
         self.owner_id = options.get('owner_id')
-        self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
-        self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
         else:
             self._skip_check = lambda x, y: x == y
 
-        self.help_attrs = options.pop('help_attrs', {})
-
-        if 'name' not in self.help_attrs:
-            self.help_attrs['name'] = 'help'
-
-        if formatter is not None:
-            if not isinstance(formatter, HelpFormatter):
-                raise discord.ClientException('Formatter must be a subclass of HelpFormatter')
-            self.formatter = formatter
+        if help_command is _default:
+            self.help_command = DefaultHelpCommand()
         else:
-            self.formatter = HelpFormatter()
-
-        # pay no mind to this ugliness.
-        help_cmd = Command(_default_help_command, **self.help_attrs)
-        self.add_command(help_cmd)
+            self.help_command = help_command
 
     # internal helpers
 
@@ -577,6 +510,9 @@ class BotBase(GroupMixin):
         if cog is None:
             return
 
+        help_command = self._help_command
+        if help_command and help_command.cog is cog:
+            help_command.cog = None
         cog._eject(self)
 
     # extensions
@@ -684,6 +620,27 @@ class BotBase(GroupMixin):
             for module in list(sys.modules.keys()):
                 if _is_submodule(lib_name, module):
                     del sys.modules[module]
+
+    # help command stuff
+
+    @property
+    def help_command(self):
+        return self._help_command
+
+    @help_command.setter
+    def help_command(self, value):
+        if value is not None:
+            if not isinstance(value, HelpCommand):
+                raise discord.ClientException('help_command must be a subclass of HelpCommand')
+            if self._help_command is not None:
+                self._help_command._remove_from_bot(self)
+            self._help_command = value
+            value._add_to_bot(self)
+        elif self._help_command is not None:
+            self._help_command._remove_from_bot(self)
+            self._help_command = None
+        else:
+            self._help_command = None
 
     # command processing
 
@@ -899,40 +856,16 @@ class Bot(BotBase, discord.Client):
         Whether the commands should be case insensitive. Defaults to ``False``. This
         attribute does not carry over to groups. You must set it to every group if
         you require group commands to be case insensitive as well.
-    description : :class:`str`
+    description: :class:`str`
         The content prefixed into the default help message.
-    self_bot : :class:`bool`
+    self_bot: :class:`bool`
         If ``True``, the bot will only listen to commands invoked by itself rather
         than ignoring itself. If ``False`` (the default) then the bot will ignore
         itself. This cannot be changed once initialised.
-    formatter : :class:`.HelpFormatter`
-        The formatter used to format the help message. By default, it uses
-        the :class:`.HelpFormatter`. Check it for more info on how to override it.
-        If you want to change the help command completely (add aliases, etc) then
-        a call to :meth:`~.Bot.remove_command` with 'help' as the argument would do the
-        trick.
-    pm_help : Optional[:class:`bool`]
-        A tribool that indicates if the help command should PM the user instead of
-        sending it to the channel it received it from. If the boolean is set to
-        ``True``, then all help output is PM'd. If ``False``, none of the help
-        output is PM'd. If ``None``, then the bot will only PM when the help
-        message becomes too long (dictated by more than 1000 characters).
-        Defaults to ``False``.
-    help_attrs : :class:`dict`
-        A dictionary of options to pass in for the construction of the help command.
-        This allows you to change the command behaviour without actually changing
-        the implementation of the command. The attributes will be the same as the
-        ones passed in the :class:`.Command` constructor. Note that ``pass_context``
-        will always be set to ``True`` regardless of what you pass in.
-    command_not_found : :class:`str`
-        The format string used when the help command is invoked with a command that
-        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
-        The only format argument is the name of the command passed.
-    command_has_no_subcommands : :class:`str`
-        The format string used when the help command is invoked with requests for a
-        subcommand but the command does not have any subcommands. Defaults to
-        ``"Command {0.name} has no subcommands."``. The first format argument is the
-        :class:`.Command` attempted to get a subcommand and the second is the name.
+    help_command: Optional[:class:`.HelpCommand`]
+        The help command implementation to use. This can be dynamically
+        set at runtime. To remove the help command pass ``None``. For more
+        information on implementing a help command, see :ref:`ext_commands_help_command`.
     owner_id: Optional[:class:`int`]
         The ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using

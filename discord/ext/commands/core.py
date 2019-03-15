@@ -810,27 +810,15 @@ class Command(_BaseCommand):
     @property
     def signature(self):
         """Returns a POSIX-like signature useful for help command output."""
-        result = []
-        parent = self.full_parent_name
-
-        if len(self.aliases) > 0:
-            aliases = '|'.join(self.aliases)
-            fmt = '[%s|%s]' % (self.name, aliases)
-            if parent:
-                fmt = parent + ' ' + fmt
-            result.append(fmt)
-        else:
-            name = self.name if not parent else parent + ' ' + self.name
-            result.append(name)
-
         if self.usage is not None:
-            result.append(self.usage)
-            return ' '.join(result)
+            return self.usage
+
 
         params = self.clean_params
         if not params:
-            return ' '.join(result)
+            return ''
 
+        result = []
         for name, param in params.items():
             greedy = isinstance(param.annotation, converters._Greedy)
 
