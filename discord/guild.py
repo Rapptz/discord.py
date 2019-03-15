@@ -947,10 +947,6 @@ class Guild(Hashable):
 
         Retreives a :class:`Member` from a guild ID, and a member ID.
 
-        Note
-        ------
-        You must be in the guild for this to work.
-
         Parameters
         -----------
         member_id: :class:`int`
