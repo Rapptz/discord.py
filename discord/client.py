@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 from collections import namedtuple
 import logging
-import re
 import signal
 import sys
 import traceback
@@ -37,7 +36,7 @@ import websockets
 
 from .user import User, Profile
 from .invite import Invite
-from .object import Object
+from .widget import Widget
 from .guild import Guild
 from .member import Member
 from .errors import *
@@ -169,16 +168,6 @@ class Client:
 
     def _handle_ready(self):
         self._ready.set()
-
-    def _resolve_invite(self, invite):
-        if isinstance(invite, Invite) or isinstance(invite, Object):
-            return invite.id
-        else:
-            rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
-            m = re.match(rx, invite)
-            if m:
-                return m.group(1)
-        return invite
 
     @property
     def latency(self):
@@ -991,7 +980,7 @@ class Client:
             The invite from the URL/ID.
         """
 
-        invite_id = self._resolve_invite(url)
+        invite_id = utils.resolve_invite(url)
         data = await self.http.get_invite(invite_id, with_counts=with_counts)
         return Invite.from_incomplete(state=self._connection, data=data)
 
@@ -1018,10 +1007,40 @@ class Client:
             Revoking the invite failed.
         """
 
-        invite_id = self._resolve_invite(invite)
+        invite_id = utils.resolve_invite(invite)
         await self.http.delete_invite(invite_id)
 
     # Miscellaneous stuff
+
+    async def fetch_widget(self, guild_id):
+        """|coro|
+
+        Gets a :class:`Widget` from a guild ID.
+
+        .. note::
+
+            The guild must have the widget enabled to get this information.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The ID of the guild.
+
+        Raises
+        -------
+        Forbidden
+            The widget for this guild is disabled.
+        HTTPException
+            Retrieving the widget failed.
+
+        Returns
+        --------
+        :class:`Widget`
+            The guild's widget.
+        """
+        data = await self.http.get_widget(guild_id)
+
+        return Widget(state=self._connection, data=data)
 
     async def application_info(self):
         """|coro|

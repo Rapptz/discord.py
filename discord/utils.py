@@ -38,6 +38,7 @@ import re
 import warnings
 
 from .errors import InvalidArgument
+from .object import Object
 
 DISCORD_EPOCH = 1420070400000
 
@@ -340,3 +341,28 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
     for char in string:
         width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
     return width
+
+def resolve_invite(invite):
+    """
+    Resolves an invite from a :class:`Invite`, URL or ID
+
+    Parameters
+    -----------
+    invite: Union[:class:`Invite`, :class:`Object`, :class:`str`]
+        The invite.
+
+    Returns
+    --------
+    :class:`str`
+        The invite code.
+    """
+    from .invite import Invite  # circular import
+    if isinstance(invite, Invite) or isinstance(invite, Object):
+        return invite.id
+    else:
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
+        m = re.match(rx, invite)
+        if m:
+            return m.group(1)
+    return invite
+

@@ -659,6 +659,9 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
 
+    def get_widget(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
+
     # Invite management
 
     def create_invite(self, channel_id, *, reason=None, **options):
