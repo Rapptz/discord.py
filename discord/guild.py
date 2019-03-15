@@ -42,6 +42,7 @@ from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator
 from .webhook import Webhook
+from .widget import Widget
 
 VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
@@ -1448,3 +1449,34 @@ class Guild(Hashable):
 
         return AuditLogIterator(self, before=before, after=after, limit=limit,
                                 reverse=reverse, user_id=user, action_type=action)
+    
+    async def widget(self):
+        """|coro|
+
+        Returns the widget of the guild.
+
+        The guild must have the widget enabled to get this information.
+
+        Returns
+        --------
+        :class:`Widget`
+            The widget.
+
+        Raises
+        -------
+        Forbidden
+            The widget for this guild is disabled.
+        HTTPException
+            Retrieving the widget failed.
+        """
+        data = await self._state.http.get_widget(self.id)
+
+        invite = None
+        if data['instant_invite']:
+            inv = data['instant_invite']
+            inv = inv[inv.index('invite/')+7:]
+
+            inv_data = await self._state.http.get_invite(inv)
+            invite = Invite.from_incomplete(state=self._state, data=inv_data)
+
+        return Widget(state=self._state, data=data, invite=invite)
