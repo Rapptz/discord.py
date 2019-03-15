@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import datetime
 import re
+import io
 
 from . import utils
 from .reaction import Reaction
@@ -84,7 +85,7 @@ class Attachment:
 
         Parameters
         -----------
-        fp: Union[BinaryIO, str]
+        fp: Union[BinaryIO, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
@@ -112,14 +113,14 @@ class Attachment:
         """
         url = self.proxy_url if use_cached else self.url
         data = await self._http.get_attachment(url)
-        if isinstance(fp, str):
-            with open(fp, 'wb') as f:
-                return f.write(data)
-        else:
+        if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
                 fp.seek(0)
             return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)
 
 class Message:
     r"""Represents a message from Discord.

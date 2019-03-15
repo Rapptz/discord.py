@@ -936,6 +936,64 @@ The error handlers, either :meth:`.Command.error` or :func:`.on_command_error`,
 have been re-ordered to use the :class:`~ext.commands.Context` as its first parameter to be consistent with other events
 and commands.
 
+HelpFormatter and Help Command Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :class:`~.commands.HelpFormatter` class has been removed. It has been replaced with a :class:`~.commands.HelpCommand` class. This class now stores all the command handling and processing of the help command.
+
+The help command is now stored in the :attr:`.Bot.help_command` attribute. As an added extension, you can disable the help command completely by assigning the attribute to ``None`` or passing it at ``__init__`` as ``help_command=None``.
+
+The new interface allows the help command to be customised through special methods that can be overridden.
+
+- :meth:`.HelpCommand.send_bot_help`
+    - Called when the user requested for help with the entire bot.
+- :meth:`.HelpCommand.send_cog_help`
+    - Called when the user requested for help with a specific cog.
+- :meth:`.HelpCommand.send_group_help`
+    - Called when the user requested for help with a :class:`~.commands.Group`
+- :meth:`.HelpCommand.send_command_help`
+    - Called when the user requested for help with a :class:`~.commands.Command`
+- :meth:`.HelpCommand.get_destination`
+    - Called to know where to send the help messages. Useful for deciding whether to DM or not.
+- :meth:`.HelpCommand.command_not_found`
+    - A function (or coroutine) that returns a presentable no command found string.
+- :meth:`.HelpCommand.subcommand_not_found`
+    - A function (or coroutine) that returns a string when a subcommand is not found.
+- :meth:`.HelpCommand.send_error_message`
+    - A coroutine that gets passed the result of :meth:`.HelpCommand.command_not_found` and :meth:`.HelpCommand.subcommand_not_found`.
+    - By default it just sends the message. But you can, for example, override it to put it in an embed.
+- :meth:`.HelpCommand.on_help_command_error`
+    - The :ref:`error handler <ext_commands_error_handler>` for the help command if you want to add one.
+- :meth:`.HelpCommand.prepare_help_command`
+    - A coroutine that is called right before the help command processing is done.
+
+Certain subclasses can implement more customisable methods.
+
+The old ``HelpFormatter`` was replaced with :class:`~.commands.DefaultHelpCommand`\, which implements all of the logic of the old help command. The customisable methods can be found in the accompanying documentation.
+
+The library now provides a new more minimalistic :class:`~.commands.HelpCommand` implementation that doesn't take as much space, :class:`~.commands.MinimalHelpCommand`. The customisable methods can also be found in the accompanying documentation.
+
+A frequent request was if you could associate a help command with a cog. The new design allows for dynamically changing of cog through binding it to the :attr:`.HelpCommand.cog` attribute. After this assignment the help command will pretend to be part of the cog and everything should work as expected. When the cog is unloaded then the help command will be "unbound" from the cog.
+
+For example, to implement a :class:`~.commands.HelpCommand` in a cog, the following snippet can be used.
+
+.. code-block:: python3
+
+    class MyHelpCommand(commands.MinimalHelpCommand):
+        def get_command_signature(self, command):
+            return '{0.context.clean_prefix}{1.qualified_name} {1.signature}'.format(self, command)
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self._original_help_command = bot.help_command
+            bot.help_command = MyHelpCommand()
+            bot.help_command.cog = self
+
+        def cog_unload(self):
+            self.bot.help_command = self._original_help_command
+
+For more information, check out the relevant :ref:`documentation <ext_commands_help_command>`.
+
 Cog Changes
 ~~~~~~~~~~~~~
 
