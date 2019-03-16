@@ -1,74 +1,68 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2015-2019, Rapptz
-# This file is distributed under the same license as the discord.py package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: discord.py 1.0.0a\n"
+"Project-Id-Version: discordpy-japanese\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-31 14:21-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2019-03-16 10:14\n"
+"Last-Translator: mistio100 <mistio100@gmail.com>\n"
+"Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.5.3\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: whats_new.po\n"
+"Language: ja_JP\n"
 
 #: ../../whats_new.rst:6
 msgid "Changelog"
-msgstr ""
+msgstr "変更履歴"
 
 #: ../../whats_new.rst:8
-msgid ""
-"This page keeps a detailed human friendly rendering of what's new and "
-"changed in specific versions."
-msgstr ""
+msgid "This page keeps a detailed human friendly rendering of what's new and changed in specific versions."
+msgstr "このページでは、特定のバージョンの新機能や変更された機能を人にやさしい形でレンダリングしています。"
 
 #: ../../whats_new.rst:14
 msgid "v0.16.6"
-msgstr ""
+msgstr "v0.16.6"
 
 #: ../../whats_new.rst:17 ../../whats_new.rst:33 ../../whats_new.rst:53
 #: ../../whats_new.rst:101 ../../whats_new.rst:118 ../../whats_new.rst:155
 #: ../../whats_new.rst:191 ../../whats_new.rst:243 ../../whats_new.rst:287
 #: ../../whats_new.rst:353
 msgid "Bug Fixes"
-msgstr ""
+msgstr "バグ修正"
 
 #: ../../whats_new.rst:19
 msgid "Fix issue with :meth:`Client.create_server` that made it stop working."
-msgstr ""
+msgstr ":meth:`Client.create_server` によって動作が停止する問題を修正しました。"
 
 #: ../../whats_new.rst:20
 msgid "Fix main thread being blocked upon calling ``StreamPlayer.stop``."
-msgstr ""
+msgstr "``StreamPlayer.stop``の呼び出し時にメインスレッドがブロックされるのを修正しました。"
 
 #: ../../whats_new.rst:21
 msgid "Handle HEARTBEAT_ACK and resume gracefully when it occurs."
-msgstr ""
+msgstr "HEARTBEAT_ACKを処理し、正常に再開します。"
 
 #: ../../whats_new.rst:22
-msgid ""
-"Fix race condition when pre-emptively rate limiting that caused releasing"
-" an already released lock."
+msgid "Fix race condition when pre-emptively rate limiting that caused releasing an already released lock."
 msgstr ""
 
 #: ../../whats_new.rst:23
 msgid "Fix invalid state errors when immediately cancelling a coroutine."
-msgstr ""
+msgstr "コルーチンを直ちにキャンセルするときに無効な状態になるエラーを修正しました。"
 
 #: ../../whats_new.rst:28
 msgid "v0.16.1"
-msgstr ""
+msgstr "v0.16.1"
 
 #: ../../whats_new.rst:30
-msgid ""
-"This release is just a bug fix release with some better rate limit "
-"implementation."
-msgstr ""
+msgid "This release is just a bug fix release with some better rate limit implementation."
+msgstr "このリリースはバグ修正であり、いくつかのレート制限の実装が改善されています。"
 
 #: ../../whats_new.rst:35
 msgid "Servers are now properly chunked for user bots."
@@ -76,7 +70,7 @@ msgstr ""
 
 #: ../../whats_new.rst:36
 msgid "The CDN URL is now used instead of the API URL for assets."
-msgstr ""
+msgstr "アセットのAPI URLの代わりにCDN URLが使用されるようになりました。"
 
 #: ../../whats_new.rst:37
 msgid "Rate limit implementation now tries to use header information if possible."
@@ -87,25 +81,21 @@ msgid "Event loop is now properly propagated (:issue:`420`)"
 msgstr ""
 
 #: ../../whats_new.rst:39
-msgid ""
-"Allow falsey values in :meth:`Client.send_message` and "
-":meth:`Client.send_file`."
+msgid "Allow falsey values in :meth:`Client.send_message` and :meth:`Client.send_file`."
 msgstr ""
 
 #: ../../whats_new.rst:44
 msgid "v0.16.0"
-msgstr ""
+msgstr "v0.16.0"
 
 #: ../../whats_new.rst:47 ../../whats_new.rst:79 ../../whats_new.rst:112
 #: ../../whats_new.rst:141 ../../whats_new.rst:168 ../../whats_new.rst:204
 #: ../../whats_new.rst:264 ../../whats_new.rst:310
 msgid "New Features"
-msgstr ""
+msgstr "新機能"
 
 #: ../../whats_new.rst:49
-msgid ""
-"Add :attr:`Channel.overwrites` to get all the permission overwrites of a "
-"channel."
+msgid "Add :attr:`Channel.overwrites` to get all the permission overwrites of a channel."
 msgstr ""
 
 #: ../../whats_new.rst:50
@@ -113,16 +103,11 @@ msgid "Add :attr:`Server.features` to get information about partnered servers."
 msgstr ""
 
 #: ../../whats_new.rst:55
-msgid ""
-"Timeout when waiting for offline members while triggering "
-":func:`on_ready`."
+msgid "Timeout when waiting for offline members while triggering :func:`on_ready`."
 msgstr ""
 
 #: ../../whats_new.rst:57
-msgid ""
-"The fact that we did not timeout caused a gigantic memory leak in the "
-"library that caused thousands of duplicate :class:`Member` instances "
-"causing big memory spikes."
+msgid "The fact that we did not timeout caused a gigantic memory leak in the library that caused thousands of duplicate :class:`Member` instances causing big memory spikes."
 msgstr ""
 
 #: ../../whats_new.rst:60
@@ -130,16 +115,12 @@ msgid "Discard null sequences in the gateway."
 msgstr ""
 
 #: ../../whats_new.rst:62
-msgid ""
-"The fact these were not discarded meant that :func:`on_ready` kept being "
-"called instead of :func:`on_resumed`. Since this has been corrected, in "
-"most cases :func:`on_ready` will be called once or twice with "
-":func:`on_resumed` being called much more often."
+msgid "The fact these were not discarded meant that :func:`on_ready` kept being called instead of :func:`on_resumed`. Since this has been corrected, in most cases :func:`on_ready` will be called once or twice with :func:`on_resumed` being called much more often."
 msgstr ""
 
 #: ../../whats_new.rst:69
 msgid "v0.15.1"
-msgstr ""
+msgstr "v0.15.1"
 
 #: ../../whats_new.rst:71
 msgid "Fix crash on duplicate or out of order reactions."
@@ -147,17 +128,14 @@ msgstr ""
 
 #: ../../whats_new.rst:76
 msgid "v0.15.0"
-msgstr ""
+msgstr "v0.15.0"
 
 #: ../../whats_new.rst:81
 msgid "Rich Embeds for messages are now supported."
 msgstr ""
 
 #: ../../whats_new.rst:83
-msgid ""
-"To do so, create your own :class:`Embed` and pass the instance to the "
-"``embed`` keyword argument to :meth:`Client.send_message` or "
-":meth:`Client.edit_message`."
+msgid "To do so, create your own :class:`Embed` and pass the instance to the ``embed`` keyword argument to :meth:`Client.send_message` or :meth:`Client.edit_message`."
 msgstr ""
 
 #: ../../whats_new.rst:84
@@ -165,32 +143,24 @@ msgid "Add :meth:`Client.clear_reactions` to remove all reactions from a message
 msgstr ""
 
 #: ../../whats_new.rst:85
-msgid ""
-"Add support for MESSAGE_REACTION_REMOVE_ALL event, under "
-":func:`on_reaction_clear`."
+msgid "Add support for MESSAGE_REACTION_REMOVE_ALL event, under :func:`on_reaction_clear`."
 msgstr ""
 
 #: ../../whats_new.rst:86
-msgid ""
-"Add :meth:`Permissions.update` and :meth:`PermissionOverwrite.update` for"
-" bulk permission updates."
+msgid "Add :meth:`Permissions.update` and :meth:`PermissionOverwrite.update` for bulk permission updates."
 msgstr ""
 
 #: ../../whats_new.rst:88
-msgid ""
-"This allows you to use e.g. ``p.update(read_messages=True, "
-"send_messages=False)`` in a single line."
+msgid "This allows you to use e.g. ``p.update(read_messages=True, send_messages=False)`` in a single line."
 msgstr ""
 
 #: ../../whats_new.rst:89
-msgid ""
-"Add :meth:`PermissionOverwrite.is_empty` to check if the overwrite is "
-"empty (i.e. has no overwrites set explicitly as true or false)."
+msgid "Add :meth:`PermissionOverwrite.is_empty` to check if the overwrite is empty (i.e. has no overwrites set explicitly as true or false)."
 msgstr ""
 
 #: ../../whats_new.rst:91
 msgid "For the command extension, the following changed:"
-msgstr ""
+msgstr "コマンド拡張の場合、以下のことが変更されます。"
 
 #: ../../whats_new.rst:93
 msgid "``Context`` is no longer slotted to facilitate setting dynamic attributes."
@@ -198,11 +168,11 @@ msgstr ""
 
 #: ../../whats_new.rst:98
 msgid "v0.14.3"
-msgstr ""
+msgstr "v0.14.3"
 
 #: ../../whats_new.rst:103
 msgid "Fix crash when dealing with MESSAGE_REACTION_REMOVE"
-msgstr ""
+msgstr "MESSAGE_REACTION_REMOVEを扱う際のクラッシュを修正しました"
 
 #: ../../whats_new.rst:104
 msgid "Fix incorrect buckets for reactions."
@@ -210,33 +180,27 @@ msgstr ""
 
 #: ../../whats_new.rst:109
 msgid "v0.14.2"
+msgstr "v0.14.2"
+
+#: ../../whats_new.rst:115
+msgid ":meth:`Client.wait_for_reaction` now returns a namedtuple with ``reaction`` and ``user`` attributes."
 msgstr ""
 
 #: ../../whats_new.rst:115
-msgid ""
-":meth:`Client.wait_for_reaction` now returns a namedtuple with "
-"``reaction`` and ``user`` attributes."
-msgstr ""
-
-#: ../../whats_new.rst:115
-msgid ""
-"This is for better support in the case that ``None`` is returned since "
-"tuple unpacking can lead to issues."
+msgid "This is for better support in the case that ``None`` is returned since tuple unpacking can lead to issues."
 msgstr ""
 
 #: ../../whats_new.rst:120
-msgid ""
-"Fix bug that disallowed ``None`` to be passed for ``emoji`` parameter in "
-":meth:`Client.wait_for_reaction`."
+msgid "Fix bug that disallowed ``None`` to be passed for ``emoji`` parameter in :meth:`Client.wait_for_reaction`."
 msgstr ""
 
 #: ../../whats_new.rst:125
 msgid "v0.14.1"
-msgstr ""
+msgstr "v0.14.1"
 
 #: ../../whats_new.rst:128
 msgid "Bug fixes"
-msgstr ""
+msgstr "バグ修正"
 
 #: ../../whats_new.rst:131
 msgid "Fix bug with `Reaction` not being visible at import."
@@ -248,16 +212,14 @@ msgstr ""
 
 #: ../../whats_new.rst:136
 msgid "v0.14.0"
-msgstr ""
+msgstr "v0.14.0"
 
 #: ../../whats_new.rst:138
 msgid "This update adds new API features and a couple of bug fixes."
-msgstr ""
+msgstr "このアップデートには、新しいAPI機能といくつかのバグ修正が含まれています。"
 
 #: ../../whats_new.rst:143
-msgid ""
-"Add support for Manage Webhooks permission under "
-":attr:`Permissions.manage_webhooks`"
+msgid "Add support for Manage Webhooks permission under :attr:`Permissions.manage_webhooks`"
 msgstr ""
 
 #: ../../whats_new.rst:144
@@ -266,7 +228,7 @@ msgstr ""
 
 #: ../../whats_new.rst:152
 msgid "Add support for reactions."
-msgstr ""
+msgstr "リアクションのサポートを追加します。"
 
 #: ../../whats_new.rst:146
 msgid ":meth:`Client.add_reaction` to add a reactions"
@@ -277,9 +239,7 @@ msgid ":meth:`Client.remove_reaction` to remove a reaction."
 msgstr ""
 
 #: ../../whats_new.rst:148
-msgid ""
-":meth:`Client.get_reaction_users` to get the users that reacted to a "
-"message."
+msgid ":meth:`Client.get_reaction_users` to get the users that reacted to a message."
 msgstr ""
 
 #: ../../whats_new.rst:149
@@ -308,7 +268,7 @@ msgstr ""
 
 #: ../../whats_new.rst:163
 msgid "v0.13.0"
-msgstr ""
+msgstr "v0.13.0"
 
 #: ../../whats_new.rst:165
 msgid "This is a backwards compatible update with new features."
@@ -320,7 +280,7 @@ msgstr ""
 
 #: ../../whats_new.rst:172
 msgid ":meth:`Client.create_custom_emoji` to create new emoji."
-msgstr ""
+msgstr "新しい絵文字を作成する :meth:`Client.create_custom_emoji` 。"
 
 #: ../../whats_new.rst:173
 msgid ":meth:`Client.edit_custom_emoji` to edit an old emoji."
@@ -343,15 +303,11 @@ msgid "Add new statuses for :class:`Status`."
 msgstr ""
 
 #: ../../whats_new.rst:180
-msgid ""
-":attr:`Status.dnd` (aliased with :attr:`Status.do_not_disturb`\\) for Do "
-"Not Disturb."
+msgid ":attr:`Status.dnd` (aliased with :attr:`Status.do_not_disturb`\\) for Do Not Disturb."
 msgstr ""
 
 #: ../../whats_new.rst:181
-msgid ""
-":attr:`Status.invisible` for setting your status to invisible (please see"
-" the docs for a caveat)."
+msgid ":attr:`Status.invisible` for setting your status to invisible (please see the docs for a caveat)."
 msgstr ""
 
 #: ../../whats_new.rst:182
@@ -359,9 +315,7 @@ msgid "Deprecate :meth:`Client.change_status`"
 msgstr ""
 
 #: ../../whats_new.rst:184
-msgid ""
-"Use :meth:`Client.change_presence` instead for better more up to date "
-"functionality."
+msgid "Use :meth:`Client.change_presence` instead for better more up to date functionality."
 msgstr ""
 
 #: ../../whats_new.rst:185
@@ -369,15 +323,11 @@ msgid "This method is subject for removal in a future API version."
 msgstr ""
 
 #: ../../whats_new.rst:186
-msgid ""
-"Add :meth:`Client.change_presence` for changing your status with the new "
-"Discord API change."
+msgid "Add :meth:`Client.change_presence` for changing your status with the new Discord API change."
 msgstr ""
 
 #: ../../whats_new.rst:188
-msgid ""
-"This is the only method that allows changing your status to invisible or "
-"do not disturb."
+msgid "This is the only method that allows changing your status to invisible or do not disturb."
 msgstr ""
 
 #: ../../whats_new.rst:193
@@ -385,14 +335,12 @@ msgid "Paginator pages do not exceed their max_size anymore (:issue:`340`)"
 msgstr ""
 
 #: ../../whats_new.rst:194
-msgid ""
-"Do Not Disturb users no longer show up offline due to the new "
-":class:`Status` changes."
+msgid "Do Not Disturb users no longer show up offline due to the new :class:`Status` changes."
 msgstr ""
 
 #: ../../whats_new.rst:199
 msgid "v0.12.0"
-msgstr ""
+msgstr "v0.12.0"
 
 #: ../../whats_new.rst:201
 msgid "This is a bug fix update that also comes with new features."
@@ -427,21 +375,15 @@ msgid ":attr:`ServerRegion.eu_central` and :attr:`ServerRegion.eu_west`."
 msgstr ""
 
 #: ../../whats_new.rst:215
-msgid ""
-"Add support for new pinned system message under "
-":attr:`MessageType.pins_add`."
+msgid "Add support for new pinned system message under :attr:`MessageType.pins_add`."
 msgstr ""
 
 #: ../../whats_new.rst:216
-msgid ""
-"Add order comparisons for :class:`Role` to allow it to be compared with "
-"regards to hierarchy."
+msgid "Add order comparisons for :class:`Role` to allow it to be compared with regards to hierarchy."
 msgstr ""
 
 #: ../../whats_new.rst:218
-msgid ""
-"This means that you can now do ``role_a > role_b`` etc to check if "
-"``role_b`` is lower in the hierarchy."
+msgid "This means that you can now do ``role_a > role_b`` etc to check if ``role_b`` is lower in the hierarchy."
 msgstr ""
 
 #: ../../whats_new.rst:220
@@ -449,9 +391,7 @@ msgid "Add :attr:`Server.role_hierarchy` to get the server's role hierarchy."
 msgstr ""
 
 #: ../../whats_new.rst:221
-msgid ""
-"Add :attr:`Member.server_permissions` to get a member's server "
-"permissions without their channel specific overwrites."
+msgid "Add :attr:`Member.server_permissions` to get a member's server permissions without their channel specific overwrites."
 msgstr ""
 
 #: ../../whats_new.rst:222
@@ -459,15 +399,11 @@ msgid "Add :meth:`Client.get_user_info` to retrieve a user's info from their ID.
 msgstr ""
 
 #: ../../whats_new.rst:223
-msgid ""
-"Add a new ``Player`` property, ``Player.error`` to fetch the error that "
-"stopped the player."
+msgid "Add a new ``Player`` property, ``Player.error`` to fetch the error that stopped the player."
 msgstr ""
 
 #: ../../whats_new.rst:225
-msgid ""
-"To help with this change, a player's ``after`` function can now take a "
-"single parameter denoting the current player."
+msgid "To help with this change, a player's ``after`` function can now take a single parameter denoting the current player."
 msgstr ""
 
 #: ../../whats_new.rst:226
@@ -479,9 +415,7 @@ msgid "Adds a new enum called :class:`VerificationLevel`."
 msgstr ""
 
 #: ../../whats_new.rst:229
-msgid ""
-"This enum can be used in :meth:`Client.edit_server` under the "
-"``verification_level`` keyword argument."
+msgid "This enum can be used in :meth:`Client.edit_server` under the ``verification_level`` keyword argument."
 msgstr ""
 
 #: ../../whats_new.rst:230
@@ -489,15 +423,11 @@ msgid "Adds a new attribute in the server, :attr:`Server.verification_level`."
 msgstr ""
 
 #: ../../whats_new.rst:231
-msgid ""
-"Add :attr:`Server.voice_client` shortcut property for "
-":meth:`Client.voice_client_in`."
+msgid "Add :attr:`Server.voice_client` shortcut property for :meth:`Client.voice_client_in`."
 msgstr ""
 
 #: ../../whats_new.rst:233
-msgid ""
-"This is technically old (was added in v0.10.0) but was undocumented until"
-" v0.12.0."
+msgid "This is technically old (was added in v0.10.0) but was undocumented until v0.12.0."
 msgstr ""
 
 #: ../../whats_new.rst:235 ../../whats_new.rst:281
@@ -521,9 +451,7 @@ msgid "Add a method to reset command cooldown."
 msgstr ""
 
 #: ../../whats_new.rst:245
-msgid ""
-"Fix bug that caused the library to not work with the latest "
-"``websockets`` library."
+msgid "Fix bug that caused the library to not work with the latest ``websockets`` library."
 msgstr ""
 
 #: ../../whats_new.rst:246
@@ -531,41 +459,31 @@ msgid "Fix bug that leaked keep alive threads (:issue:`309`)"
 msgstr ""
 
 #: ../../whats_new.rst:247
-msgid ""
-"Fix bug that disallowed :class:`ServerRegion` from being used in "
-":meth:`Client.edit_server`."
+msgid "Fix bug that disallowed :class:`ServerRegion` from being used in :meth:`Client.edit_server`."
 msgstr ""
 
 #: ../../whats_new.rst:248
-msgid ""
-"Fix bug in :meth:`Channel.permissions_for` that caused permission "
-"resolution to happen out of order."
+msgid "Fix bug in :meth:`Channel.permissions_for` that caused permission resolution to happen out of order."
 msgstr ""
 
 #: ../../whats_new.rst:249
-msgid ""
-"Fix bug in :attr:`Member.top_role` that did not account for same-position"
-" roles."
+msgid "Fix bug in :attr:`Member.top_role` that did not account for same-position roles."
 msgstr ""
 
 #: ../../whats_new.rst:254
 msgid "v0.11.0"
-msgstr ""
+msgstr "v0.11.0"
 
 #: ../../whats_new.rst:256
-msgid ""
-"This is a minor bug fix update that comes with a gateway update (v5 -> "
-"v6)."
+msgid "This is a minor bug fix update that comes with a gateway update (v5 -> v6)."
 msgstr ""
 
 #: ../../whats_new.rst:259
 msgid "Breaking Changes"
-msgstr ""
+msgstr "破壊的変更"
 
 #: ../../whats_new.rst:261
-msgid ""
-"``Permissions.change_nicknames`` has been renamed to "
-":attr:`Permissions.change_nickname` to match the UI."
+msgid "``Permissions.change_nicknames`` has been renamed to :attr:`Permissions.change_nickname` to match the UI."
 msgstr ""
 
 #: ../../whats_new.rst:266
@@ -573,9 +491,7 @@ msgid "Add the ability to prune members via :meth:`Client.prune_members`."
 msgstr ""
 
 #: ../../whats_new.rst:267
-msgid ""
-"Switch the websocket gateway version to v6 from v5. This allows the "
-"library to work with group DMs and 1-on-1 calls."
+msgid "Switch the websocket gateway version to v6 from v5. This allows the library to work with group DMs and 1-on-1 calls."
 msgstr ""
 
 #: ../../whats_new.rst:268
@@ -595,21 +511,15 @@ msgid "Add :attr:`Message.system_content` to get the system message."
 msgstr ""
 
 #: ../../whats_new.rst:272
-msgid ""
-"Add the remaining VIP servers and the Brazil servers into "
-":class:`ServerRegion` enum."
+msgid "Add the remaining VIP servers and the Brazil servers into :class:`ServerRegion` enum."
 msgstr ""
 
 #: ../../whats_new.rst:273
-msgid ""
-"Add ``stderr`` argument to :meth:`VoiceClient.create_ffmpeg_player` to "
-"redirect stderr."
+msgid "Add ``stderr`` argument to :meth:`VoiceClient.create_ffmpeg_player` to redirect stderr."
 msgstr ""
 
 #: ../../whats_new.rst:274
-msgid ""
-"The library now handles implicit permission resolution in "
-":meth:`Channel.permissions_for`."
+msgid "The library now handles implicit permission resolution in :meth:`Channel.permissions_for`."
 msgstr ""
 
 #: ../../whats_new.rst:275
@@ -625,9 +535,7 @@ msgid "Add :attr:`Member.voice` attribute that refers to a :class:`VoiceState`."
 msgstr ""
 
 #: ../../whats_new.rst:279
-msgid ""
-"For backwards compatibility, the member object will have properties "
-"mirroring the old behaviour."
+msgid "For backwards compatibility, the member object will have properties mirroring the old behaviour."
 msgstr ""
 
 #: ../../whats_new.rst:283
@@ -635,9 +543,7 @@ msgid "Command cooldown system with the ``cooldown`` decorator."
 msgstr ""
 
 #: ../../whats_new.rst:284
-msgid ""
-"``UserInputError`` exception for the hierarchy for user input related "
-"errors."
+msgid "``UserInputError`` exception for the hierarchy for user input related errors."
 msgstr ""
 
 #: ../../whats_new.rst:289
@@ -653,9 +559,7 @@ msgid "Fix bug where discriminators would not update."
 msgstr ""
 
 #: ../../whats_new.rst:292
-msgid ""
-"Handle cases where ``HEARTBEAT`` opcode is received. This caused bots to "
-"disconnect seemingly randomly."
+msgid "Handle cases where ``HEARTBEAT`` opcode is received. This caused bots to disconnect seemingly randomly."
 msgstr ""
 
 #: ../../whats_new.rst:294
@@ -667,9 +571,7 @@ msgid "``Bot.check`` decorator is actually a decorator not requiring parentheses
 msgstr ""
 
 #: ../../whats_new.rst:297
-msgid ""
-"``Bot.remove_command`` and ``Group.remove_command`` no longer throw if "
-"the command doesn't exist."
+msgid "``Bot.remove_command`` and ``Group.remove_command`` no longer throw if the command doesn't exist."
 msgstr ""
 
 #: ../../whats_new.rst:298
@@ -677,32 +579,23 @@ msgid "Command names are no longer forced to be ``lower()``."
 msgstr ""
 
 #: ../../whats_new.rst:299
-msgid ""
-"Fix a bug where Member and User converters failed to work in private "
-"message contexts."
+msgid "Fix a bug where Member and User converters failed to work in private message contexts."
 msgstr ""
 
 #: ../../whats_new.rst:300
-msgid ""
-"``HelpFormatter`` now ignores hidden commands when deciding the maximum "
-"width."
+msgid "``HelpFormatter`` now ignores hidden commands when deciding the maximum width."
 msgstr ""
 
 #: ../../whats_new.rst:305
 msgid "v0.10.0"
-msgstr ""
+msgstr "v0.10.0"
 
 #: ../../whats_new.rst:307
-msgid ""
-"For breaking changes, see :ref:`migrating-to-async`. The breaking changes"
-" listed there will not be enumerated below. Since this version is rather "
-"a big departure from v0.9.2, this change log will be non-exhaustive."
+msgid "For breaking changes, see :ref:`migrating-to-async`. The breaking changes listed there will not be enumerated below. Since this version is rather a big departure from v0.9.2, this change log will be non-exhaustive."
 msgstr ""
 
 #: ../../whats_new.rst:312
-msgid ""
-"The library is now fully ``asyncio`` compatible, allowing you to write "
-"non-blocking code a lot more easily."
+msgid "The library is now fully ``asyncio`` compatible, allowing you to write non-blocking code a lot more easily."
 msgstr ""
 
 #: ../../whats_new.rst:313
@@ -710,15 +603,11 @@ msgid "The library now fully handles 429s and unconditionally retries on 502s."
 msgstr ""
 
 #: ../../whats_new.rst:314
-msgid ""
-"A new command extension module was added but is currently undocumented. "
-"Figuring it out is left as an exercise to the reader."
+msgid "A new command extension module was added but is currently undocumented. Figuring it out is left as an exercise to the reader."
 msgstr ""
 
 #: ../../whats_new.rst:315
-msgid ""
-"Two new exception types, :exc:`Forbidden` and :exc:`NotFound` to denote "
-"permission errors or 404 errors."
+msgid "Two new exception types, :exc:`Forbidden` and :exc:`NotFound` to denote permission errors or 404 errors."
 msgstr ""
 
 #: ../../whats_new.rst:316
@@ -726,40 +615,27 @@ msgid "Added :meth:`Client.delete_invite` to revoke invites."
 msgstr ""
 
 #: ../../whats_new.rst:317
-msgid ""
-"Added support for sending voice. Check :class:`VoiceClient` for more "
-"details."
+msgid "Added support for sending voice. Check :class:`VoiceClient` for more details."
 msgstr ""
 
 #: ../../whats_new.rst:318
-msgid ""
-"Added :meth:`Client.wait_for_message` coroutine to aid with follow up "
-"commands."
+msgid "Added :meth:`Client.wait_for_message` coroutine to aid with follow up commands."
 msgstr ""
 
 #: ../../whats_new.rst:319
-msgid ""
-"Added :data:`version_info` named tuple to check version info of the "
-"library."
+msgid "Added :data:`version_info` named tuple to check version info of the library."
 msgstr ""
 
 #: ../../whats_new.rst:320
-msgid ""
-"Login credentials are now cached to have a faster login experience. You "
-"can disable this by passing in ``cache_auth=False`` when constructing a "
-":class:`Client`."
+msgid "Login credentials are now cached to have a faster login experience. You can disable this by passing in ``cache_auth=False`` when constructing a :class:`Client`."
 msgstr ""
 
 #: ../../whats_new.rst:322
-msgid ""
-"New utility function, :func:`discord.utils.get` to simplify retrieval of "
-"items based on attributes."
+msgid "New utility function, :func:`discord.utils.get` to simplify retrieval of items based on attributes."
 msgstr ""
 
 #: ../../whats_new.rst:323
-msgid ""
-"All data classes now support ``!=``, ``==``, ``hash(obj)`` and "
-"``str(obj)``."
+msgid "All data classes now support ``!=``, ``==``, ``hash(obj)`` and ``str(obj)``."
 msgstr ""
 
 #: ../../whats_new.rst:324
@@ -767,51 +643,35 @@ msgid "Added :meth:`Client.get_bans` to get banned members from a server."
 msgstr ""
 
 #: ../../whats_new.rst:325
-msgid ""
-"Added :meth:`Client.invites_from` to get currently active invites in a "
-"server."
+msgid "Added :meth:`Client.invites_from` to get currently active invites in a server."
 msgstr ""
 
 #: ../../whats_new.rst:326
-msgid ""
-"Added :attr:`Server.me` attribute to get the :class:`Member` version of "
-":attr:`Client.user`."
+msgid "Added :attr:`Server.me` attribute to get the :class:`Member` version of :attr:`Client.user`."
 msgstr ""
 
 #: ../../whats_new.rst:327
-msgid ""
-"Most data classes now support a ``hash(obj)`` function to allow you to "
-"use them in ``set`` or ``dict`` classes or subclasses."
+msgid "Most data classes now support a ``hash(obj)`` function to allow you to use them in ``set`` or ``dict`` classes or subclasses."
 msgstr ""
 
 #: ../../whats_new.rst:328
-msgid ""
-"Add :meth:`Message.clean_content` to get a text version of the content "
-"with the user and channel mentioned changed into their names."
+msgid "Add :meth:`Message.clean_content` to get a text version of the content with the user and channel mentioned changed into their names."
 msgstr ""
 
 #: ../../whats_new.rst:329
-msgid ""
-"Added a way to remove the messages of the user that just got banned in "
-":meth:`Client.ban`."
+msgid "Added a way to remove the messages of the user that just got banned in :meth:`Client.ban`."
 msgstr ""
 
 #: ../../whats_new.rst:330
-msgid ""
-"Added :meth:`Client.wait_until_ready` to facilitate easy creation of "
-"tasks that require the client cache to be ready."
+msgid "Added :meth:`Client.wait_until_ready` to facilitate easy creation of tasks that require the client cache to be ready."
 msgstr ""
 
 #: ../../whats_new.rst:331
-msgid ""
-"Added :meth:`Client.wait_until_login` to facilitate easy creation of "
-"tasks that require the client to be logged in."
+msgid "Added :meth:`Client.wait_until_login` to facilitate easy creation of tasks that require the client to be logged in."
 msgstr ""
 
 #: ../../whats_new.rst:332
-msgid ""
-"Add :class:`discord.Game` to represent any game with custom text to send "
-"to :meth:`Client.change_status`."
+msgid "Add :class:`discord.Game` to represent any game with custom text to send to :meth:`Client.change_status`."
 msgstr ""
 
 #: ../../whats_new.rst:333
@@ -819,9 +679,7 @@ msgid "Add :attr:`Message.nonce` attribute."
 msgstr ""
 
 #: ../../whats_new.rst:334
-msgid ""
-"Add :meth:`Member.permissions_in` as another way of doing "
-":meth:`Channel.permissions_for`."
+msgid "Add :meth:`Member.permissions_in` as another way of doing :meth:`Channel.permissions_for`."
 msgstr ""
 
 #: ../../whats_new.rst:335
@@ -837,9 +695,7 @@ msgid "Added :meth:`Client.edit_server` to edit existing servers."
 msgstr ""
 
 #: ../../whats_new.rst:338
-msgid ""
-"Added :meth:`Client.server_voice_state` to server mute or server deafen a"
-" member."
+msgid "Added :meth:`Client.server_voice_state` to server mute or server deafen a member."
 msgstr ""
 
 #: ../../whats_new.rst:339
@@ -847,9 +703,7 @@ msgid "If you are being rate limited, the library will now handle it for you."
 msgstr ""
 
 #: ../../whats_new.rst:340
-msgid ""
-"Add :func:`on_member_ban` and :func:`on_member_unban` events that trigger"
-" when a member is banned/unbanned."
+msgid "Add :func:`on_member_ban` and :func:`on_member_unban` events that trigger when a member is banned/unbanned."
 msgstr ""
 
 #: ../../whats_new.rst:343
@@ -857,34 +711,23 @@ msgid "Performance Improvements"
 msgstr ""
 
 #: ../../whats_new.rst:345
-msgid ""
-"All data classes now use ``__slots__`` which greatly reduce the memory "
-"usage of things kept in cache."
+msgid "All data classes now use ``__slots__`` which greatly reduce the memory usage of things kept in cache."
 msgstr ""
 
 #: ../../whats_new.rst:346
-msgid ""
-"Due to the usage of ``asyncio``, the CPU usage of the library has gone "
-"down significantly."
+msgid "Due to the usage of ``asyncio``, the CPU usage of the library has gone down significantly."
 msgstr ""
 
 #: ../../whats_new.rst:347
-msgid ""
-"A lot of the internal cache lists were changed into dictionaries to "
-"change the ``O(n)`` lookup into ``O(1)``."
+msgid "A lot of the internal cache lists were changed into dictionaries to change the ``O(n)`` lookup into ``O(1)``."
 msgstr ""
 
 #: ../../whats_new.rst:348
-msgid ""
-"Compressed READY is now on by default. This means if you're on a lot of "
-"servers (or maybe even a few) you would receive performance improvements "
-"by having to download and process less data."
+msgid "Compressed READY is now on by default. This means if you're on a lot of servers (or maybe even a few) you would receive performance improvements by having to download and process less data."
 msgstr ""
 
 #: ../../whats_new.rst:350
-msgid ""
-"While minor, change regex from ``\\d+`` to ``[0-9]+`` to avoid "
-"unnecessary unicode character lookups."
+msgid "While minor, change regex from ``\\d+`` to ``[0-9]+`` to avoid unnecessary unicode character lookups."
 msgstr ""
 
 #: ../../whats_new.rst:355
@@ -892,21 +735,15 @@ msgid "Fix bug where guilds being updated did not edit the items in cache."
 msgstr ""
 
 #: ../../whats_new.rst:356
-msgid ""
-"Fix bug where ``member.roles`` were empty upon joining instead of having "
-"the ``@everyone`` role."
+msgid "Fix bug where ``member.roles`` were empty upon joining instead of having the ``@everyone`` role."
 msgstr ""
 
 #: ../../whats_new.rst:357
-msgid ""
-"Fix bug where :meth:`Role.is_everyone` was not being set properly when "
-"the role was being edited."
+msgid "Fix bug where :meth:`Role.is_everyone` was not being set properly when the role was being edited."
 msgstr ""
 
 #: ../../whats_new.rst:358
-msgid ""
-":meth:`Client.logs_from` now handles cases where limit > 100 to sidestep "
-"the discord API limitation."
+msgid ":meth:`Client.logs_from` now handles cases where limit > 100 to sidestep the discord API limitation."
 msgstr ""
 
 #: ../../whats_new.rst:359
@@ -914,26 +751,18 @@ msgid "Fix bug where a role being deleted would trigger a ``ValueError``."
 msgstr ""
 
 #: ../../whats_new.rst:360
-msgid ""
-"Fix bug where :meth:`Permissions.kick_members` and "
-":meth:`Permissions.ban_members` were flipped."
+msgid "Fix bug where :meth:`Permissions.kick_members` and :meth:`Permissions.ban_members` were flipped."
 msgstr ""
 
 #: ../../whats_new.rst:361
-msgid ""
-"Mentions are now triggered normally. This was changed due to the way "
-"discord handles it internally."
+msgid "Mentions are now triggered normally. This was changed due to the way discord handles it internally."
 msgstr ""
 
 #: ../../whats_new.rst:362
-msgid ""
-"Fix issue when a :class:`Message` would attempt to upgrade a "
-":attr:`Message.server` when the channel is a :class:`Object`."
+msgid "Fix issue when a :class:`Message` would attempt to upgrade a :attr:`Message.server` when the channel is a :class:`Object`."
 msgstr ""
 
 #: ../../whats_new.rst:364
-msgid ""
-"Unavailable servers were not being added into cache, this has been "
-"corrected."
+msgid "Unavailable servers were not being added into cache, this has been corrected."
 msgstr ""
 
