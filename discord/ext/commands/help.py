@@ -686,7 +686,12 @@ class HelpCommand:
         some state in your subclass before the command does its processing
         then this would be the place to do it.
 
-        The default implementation is empty.
+        The default implementation sets :attr:`context`.
+
+        .. warning::
+
+            If you override this method, be sure to call ``super()``
+            so the help command can be set up.
 
         .. note::
 
@@ -700,7 +705,7 @@ class HelpCommand:
         command: Optional[:class:`str`]
             The argument passed to the help command.
         """
-        return None
+        self.context = ctx
 
     async def command_callback(self, ctx, *, command=None):
         """|coro|
@@ -722,7 +727,6 @@ class HelpCommand:
         - :meth:`prepare_help_command`
 
         """
-        self.context = ctx
         await self.prepare_help_command(ctx, command)
         bot = ctx.bot
 
@@ -898,6 +902,7 @@ class DefaultHelpCommand(HelpCommand):
 
     async def prepare_help_command(self, ctx, command):
         self.paginator.clear()
+        await super().prepare_help_command(ctx, command)
 
     async def send_bot_help(self, mapping):
         ctx = self.context
@@ -1123,6 +1128,7 @@ class MinimalHelpCommand(HelpCommand):
 
     async def prepare_help_command(self, ctx, command):
         self.paginator.clear()
+        await super().prepare_help_command(ctx, command)
 
     async def send_bot_help(self, mapping):
         ctx = self.context
