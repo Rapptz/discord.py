@@ -889,7 +889,12 @@ class DefaultHelpCommand(HelpCommand):
         self.paginator.add_line(signature, empty=True)
 
         if command.help:
-            self.paginator.add_line(command.help, empty=True)
+            try:
+                self.paginator.add_line(command.help, empty=True)
+            except RuntimeError:
+                for line in command.help.splitlines():
+                    self.paginator.add_line(line)
+                self.paginator.add_line()
 
     def get_destination(self):
         ctx = self.context
@@ -1115,7 +1120,12 @@ class MinimalHelpCommand(HelpCommand):
             self.paginator.add_line(signature, empty=True)
 
         if command.help:
-            self.paginator.add_line(command.help, empty=True)
+            try:
+                self.paginator.add_line(command.help, empty=True)
+            except RuntimeError:
+                for line in command.help.splitlines():
+                    self.paginator.add_line(line)
+                self.paginator.add_line()
 
     def get_destination(self):
         ctx = self.context
