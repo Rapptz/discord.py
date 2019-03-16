@@ -898,7 +898,7 @@ class GroupMixin:
     Attributes
     -----------
     all_commands: :class:`dict`
-        A mapping of command name to :class:`.Command` or superclass
+        A mapping of command name to :class:`.Command` or subclass
         objects.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``.
@@ -921,7 +921,7 @@ class GroupMixin:
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`.Command` or its superclasses into the internal list
+        """Adds a :class:`.Command` or its subclasses into the internal list
         of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or

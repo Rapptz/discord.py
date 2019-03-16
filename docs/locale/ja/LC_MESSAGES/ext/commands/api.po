@@ -307,7 +307,7 @@ msgstr ""
 #: discord.ext.commands.Group.add_command:1
 #: discord.ext.commands.GroupMixin.add_command:1 of
 msgid ""
-"Adds a :class:`.Command` or its superclasses into the internal list of "
+"Adds a :class:`.Command` or its subclasses into the internal list of "
 "commands."
 msgstr ""
 
@@ -1934,7 +1934,7 @@ msgstr ""
 #: discord.ext.commands.GroupMixin:6 of
 msgid ""
 ":class:`dict` -- A mapping of command name to :class:`.Command` or "
-"superclass objects."
+"subclass objects."
 msgstr ""
 
 #: discord.ext.commands.GroupMixin:11 of
@@ -2585,7 +2585,7 @@ msgstr ""
 
 #: discord.ext.commands.Context:35 of
 msgid ""
-"The command (i.e. :class:`.Command` or its superclasses) that is being "
+"The command (i.e. :class:`.Command` or its subclasses) that is being "
 "invoked currently."
 msgstr ""
 
@@ -2597,7 +2597,7 @@ msgstr ""
 
 #: discord.ext.commands.Context:45 of
 msgid ""
-"The subcommand (i.e. :class:`.Command` or its superclasses) that was "
+"The subcommand (i.e. :class:`.Command` or its subclasses) that was "
 "invoked. If no valid subcommand was invoked then this is equal to `None`."
 msgstr ""
 
@@ -2775,7 +2775,7 @@ msgid "The first parameter passed **must** be the command being invoked."
 msgstr ""
 
 #: discord.ext.commands.Context.invoke:12 of
-msgid "A command or superclass of a command that is going to be called."
+msgid "A command or subclass of a command that is going to be called."
 msgstr ""
 
 #: discord.ext.commands.Context.invoke:14 of
