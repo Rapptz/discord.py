@@ -772,6 +772,16 @@ class DefaultHelpCommand(HelpCommand):
         Defaults to 80.
     sort_commands: :class:`bool`
         Whether to sort the commands in the output alphabetically. Defaults to ``True``.
+    dm_help: Optional[:class:`bool`]
+        A tribool that indicates if the help command should DM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is DM'd. If ``False``, none of the help
+        output is DM'd. If ``None``, then the bot will only DM when the help
+        message becomes too long (dictated by more than :attr:`dm_help_threshold` characters).
+        Defaults to ``False``.
+    dm_help_threshold: Optional[:class:`int`]
+        The number of characters the paginator must accumulate before getting DM'd to the
+        user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     indent: :class:`int`
         How much to intend the commands from a heading. Defaults to ``2``.
     commands_heading: :class:`str`
@@ -788,6 +798,8 @@ class DefaultHelpCommand(HelpCommand):
         self.width = options.pop('width', 80)
         self.indent = options.pop('indent', 2)
         self.sort_commands = options.pop('sort_commands', True)
+        self.dm_help = options.pop('dm_help', False)
+        self.dm_help_threshold = options.pop('dm_help_threshold', 1000)
         self.commands_heading = options.pop('commands_heading', "Commands:")
         self.no_category = options.pop('no_category', 'No Category')
         self.paginator = options.pop('paginator', None)
@@ -869,6 +881,15 @@ class DefaultHelpCommand(HelpCommand):
         if command.help:
             self.paginator.add_line(command.help, empty=True)
 
+    def get_destination(self):
+        ctx = self.context
+        if self.dm_help is True:
+            return ctx.author
+        elif self.dm_help is None and len(self.paginator) > self.dm_help_threshold:
+            return ctx.author
+        else:
+            return ctx.channel
+
     async def prepare_help_command(self, ctx, command):
         self.paginator.clear()
 
@@ -949,6 +970,16 @@ class MinimalHelpCommand(HelpCommand):
     aliases_heading: :class:`str`
         The alias list's heading string used to list the aliases of the command. Useful for i18n.
         Defaults to ``"Aliases:"``.
+    dm_help: Optional[:class:`bool`]
+        A tribool that indicates if the help command should DM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is DM'd. If ``False``, none of the help
+        output is DM'd. If ``None``, then the bot will only DM when the help
+        message becomes too long (dictated by more than :attr:`dm_help_threshold` characters).
+        Defaults to ``False``.
+    dm_help_threshold: Optional[:class:`int`]
+        The number of characters the paginator must accumulate before getting DM'd to the
+        user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     no_category: :class:`str`
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
@@ -959,6 +990,8 @@ class MinimalHelpCommand(HelpCommand):
     def __init__(self, **options):
         self.sort_commands = options.pop('sort_commands', True)
         self.commands_heading = options.pop('commands_heading', "Commands")
+        self.dm_help = options.pop('dm_help', False)
+        self.dm_help_threshold = options.pop('dm_help_threshold', 1000)
         self.aliases_heading = options.pop('aliases_heading', "Aliases:")
         self.no_category = options.pop('no_category', 'No Category')
         self.paginator = options.pop('paginator', None)
@@ -1072,6 +1105,15 @@ class MinimalHelpCommand(HelpCommand):
 
         if command.help:
             self.paginator.add_line(command.help, empty=True)
+
+    def get_destination(self):
+        ctx = self.context
+        if self.dm_help is True:
+            return ctx.author
+        elif self.dm_help is None and len(self.paginator) > self.dm_help_threshold:
+            return ctx.author
+        else:
+            return ctx.channel
 
     async def prepare_help_command(self, ctx, command):
         self.paginator.clear()
