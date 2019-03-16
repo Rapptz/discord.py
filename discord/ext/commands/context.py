@@ -222,3 +222,70 @@ class Context(discord.abc.Messageable):
         r"""Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
         g = self.guild
         return g.voice_client if g else None
+
+    async def show_help(self, *args):
+        """show_help(entity=<bot>)
+
+        |coro|
+
+        Shows the help command for the specified entity if given.
+        The entity can be a command or a cog.
+
+        If no entity is given, then it'll show help for the
+        entire bot.
+
+        If the entity is a string, then it looks up whether it's a
+        :class:`Cog` or a :class:`Command`.
+
+        .. note::
+
+            Due to the way this function works, instead of returning
+            something similar to :meth:`~.commands.HelpCommand.command_not_found`
+            this returns :obj:`None` on bad input or no help command.
+
+        Parameters
+        ------------
+        entity: Optional[Union[:class:`Command`, :class:`Cog`, :class:`str`]]
+            The entity to show help for.
+
+        Returns
+        --------
+        Any
+            The result of the help command, if any.
+        """
+        from .core import Group, Command
+
+        bot = self.bot
+        cmd = bot.help_command
+
+        if cmd is None:
+            return None
+
+        if len(args) == 0:
+            await cmd.prepare_help_command(self, None)
+            mapping = cmd.get_bot_mapping()
+            return await cmd.send_bot_help(mapping)
+
+        entity = args[0]
+        if entity is None:
+            return None
+
+        if isinstance(entity, str):
+            entity = bot.get_cog(entity) or bot.get_command(entity)
+
+        try:
+            qualified_name = entity.qualified_name
+        except AttributeError:
+            # if we're here then it's not a cog, group, or command.
+            return None
+
+        await cmd.prepare_help_command(self, entity.qualified_name)
+
+        if hasattr(entity, '__cog_commands__'):
+            return await cmd.send_cog_help(entity)
+        elif isinstance(entity, Group):
+            return await cmd.send_group_help(entity)
+        elif isinstance(entity, Command):
+            return await cmd.send_command_help(entity)
+        else:
+            return None
