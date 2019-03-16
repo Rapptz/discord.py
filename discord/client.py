@@ -848,7 +848,7 @@ class Client:
 
         Parameters
         -----------
-        limit: Optional[int]
+        limit: Optional[:class:`int`]
             The number of guilds to retrieve.
             If ``None``, it retrieves every guild you have access to. Note, however,
             that this would make it a slow operation.
