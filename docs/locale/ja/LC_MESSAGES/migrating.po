@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-02-24 04:09-0500\n"
+"POT-Creation-Date: 2019-03-16 05:18-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Episword <mistio100@gmail.com>, 2018\n"
 "Language: ja_JP\n"
@@ -1158,7 +1158,7 @@ msgstr ""
 "変更点の一つは、以前の ``Client.send_message`` と ``Client.send_file`` の機能を単一のメソッド "
 ":meth:`~abc.Messageable.send` に統合したことです。"
 
-#: ../../migrating.rst:417 ../../migrating.rst:1009
+#: ../../migrating.rst:417 ../../migrating.rst:1067
 msgid "Basically: ::"
 msgstr "基本形"
 
@@ -1344,7 +1344,7 @@ msgid "Before: ::"
 msgstr "更新前"
 
 #: ../../migrating.rst:529 ../../migrating.rst:541 ../../migrating.rst:553
-#: ../../migrating.rst:621 ../../migrating.rst:924 ../../migrating.rst:1091
+#: ../../migrating.rst:621 ../../migrating.rst:924 ../../migrating.rst:1149
 msgid "After: ::"
 msgstr "更新後"
 
@@ -2079,84 +2079,250 @@ msgstr ""
 ":class:`~ext.commands.Context` を使用するよう変更されました。"
 
 #: ../../migrating.rst:940
+msgid "HelpFormatter and Help Command Changes"
+msgstr ""
+
+#: ../../migrating.rst:942
+msgid ""
+"The :class:`~.commands.HelpFormatter` class has been removed. It has been"
+" replaced with a :class:`~.commands.HelpCommand` class. This class now "
+"stores all the command handling and processing of the help command."
+msgstr ""
+
+#: ../../migrating.rst:944
+msgid ""
+"The help command is now stored in the :attr:`.Bot.help_command` "
+"attribute. As an added extension, you can disable the help command "
+"completely by assigning the attribute to ``None`` or passing it at "
+"``__init__`` as ``help_command=None``."
+msgstr ""
+
+#: ../../migrating.rst:946
+msgid ""
+"The new interface allows the help command to be customised through "
+"special methods that can be overridden."
+msgstr ""
+
+#: ../../migrating.rst:948
+msgid ":meth:`.HelpCommand.send_bot_help`"
+msgstr ""
+
+#: ../../migrating.rst:949
+msgid "Called when the user requested for help with the entire bot."
+msgstr ""
+
+#: ../../migrating.rst:950
+msgid ":meth:`.HelpCommand.send_cog_help`"
+msgstr ""
+
+#: ../../migrating.rst:951
+msgid "Called when the user requested for help with a specific cog."
+msgstr ""
+
+#: ../../migrating.rst:952
+msgid ":meth:`.HelpCommand.send_group_help`"
+msgstr ""
+
+#: ../../migrating.rst:953
+msgid "Called when the user requested for help with a :class:`~.commands.Group`"
+msgstr ""
+
+#: ../../migrating.rst:954
+msgid ":meth:`.HelpCommand.send_command_help`"
+msgstr ""
+
+#: ../../migrating.rst:955
+msgid "Called when the user requested for help with a :class:`~.commands.Command`"
+msgstr ""
+
+#: ../../migrating.rst:956
+msgid ":meth:`.HelpCommand.get_destination`"
+msgstr ""
+
+#: ../../migrating.rst:957
+msgid ""
+"Called to know where to send the help messages. Useful for deciding "
+"whether to DM or not."
+msgstr ""
+
+#: ../../migrating.rst:958
+msgid ":meth:`.HelpCommand.command_not_found`"
+msgstr ""
+
+#: ../../migrating.rst:959
+msgid ""
+"A function (or coroutine) that returns a presentable no command found "
+"string."
+msgstr ""
+
+#: ../../migrating.rst:960
+msgid ":meth:`.HelpCommand.subcommand_not_found`"
+msgstr ""
+
+#: ../../migrating.rst:961
+msgid ""
+"A function (or coroutine) that returns a string when a subcommand is not "
+"found."
+msgstr ""
+
+#: ../../migrating.rst:963
+msgid ":meth:`.HelpCommand.send_error_message`"
+msgstr ""
+
+#: ../../migrating.rst:963
+msgid ""
+"A coroutine that gets passed the result of "
+":meth:`.HelpCommand.command_not_found` and "
+":meth:`.HelpCommand.subcommand_not_found`."
+msgstr ""
+
+#: ../../migrating.rst:964
+msgid ""
+"By default it just sends the message. But you can, for example, override "
+"it to put it in an embed."
+msgstr ""
+
+#: ../../migrating.rst:965
+msgid ":meth:`.HelpCommand.on_help_command_error`"
+msgstr ""
+
+#: ../../migrating.rst:966
+msgid ""
+"The :ref:`error handler <ext_commands_error_handler>` for the help "
+"command if you want to add one."
+msgstr ""
+
+#: ../../migrating.rst:968
+msgid ":meth:`.HelpCommand.prepare_help_command`"
+msgstr ""
+
+#: ../../migrating.rst:968
+msgid ""
+"A coroutine that is called right before the help command processing is "
+"done."
+msgstr ""
+
+#: ../../migrating.rst:970
+msgid "Certain subclasses can implement more customisable methods."
+msgstr ""
+
+#: ../../migrating.rst:972
+msgid ""
+"The old ``HelpFormatter`` was replaced with "
+":class:`~.commands.DefaultHelpCommand`\\, which implements all of the "
+"logic of the old help command. The customisable methods can be found in "
+"the accompanying documentation."
+msgstr ""
+
+#: ../../migrating.rst:974
+msgid ""
+"The library now provides a new more minimalistic "
+":class:`~.commands.HelpCommand` implementation that doesn't take as much "
+"space, :class:`~.commands.MinimalHelpCommand`. The customisable methods "
+"can also be found in the accompanying documentation."
+msgstr ""
+
+#: ../../migrating.rst:976
+msgid ""
+"A frequent request was if you could associate a help command with a cog. "
+"The new design allows for dynamically changing of cog through binding it "
+"to the :attr:`.HelpCommand.cog` attribute. After this assignment the help"
+" command will pretend to be part of the cog and everything should work as"
+" expected. When the cog is unloaded then the help command will be "
+"\"unbound\" from the cog."
+msgstr ""
+
+#: ../../migrating.rst:978
+msgid ""
+"For example, to implement a :class:`~.commands.HelpCommand` in a cog, the"
+" following snippet can be used."
+msgstr ""
+
+#: ../../migrating.rst:995
+msgid ""
+"For more information, check out the relevant :ref:`documentation "
+"<ext_commands_help_command>`."
+msgstr ""
+
+#: ../../migrating.rst:998
 msgid "Cog Changes"
 msgstr "コグの変更"
 
-#: ../../migrating.rst:942
+#: ../../migrating.rst:1000
 msgid ""
 "Cogs have completely been revamped. They are documented in "
 ":ref:`ext_commands_cogs` as well."
 msgstr ""
 
-#: ../../migrating.rst:944
+#: ../../migrating.rst:1002
 msgid ""
 "Cogs are now required to have a base class, :class:`~.commands.Cog` for "
 "future proofing purposes. This comes with special methods to customise "
 "some behaviour."
 msgstr ""
 
-#: ../../migrating.rst:946
+#: ../../migrating.rst:1004
 msgid ":meth:`.Cog.cog_unload`"
 msgstr ""
 
-#: ../../migrating.rst:947
+#: ../../migrating.rst:1005
 msgid ""
 "This is called when a cog needs to do some cleanup, such as cancelling a "
 "task."
 msgstr ""
 
-#: ../../migrating.rst:948
+#: ../../migrating.rst:1006
 msgid ":meth:`.Cog.bot_check_once`"
 msgstr ""
 
-#: ../../migrating.rst:949
+#: ../../migrating.rst:1007
 msgid "This registers a :meth:`.Bot.check_once` check."
 msgstr ""
 
-#: ../../migrating.rst:950
+#: ../../migrating.rst:1008
 msgid ":meth:`.Cog.bot_check`"
 msgstr ""
 
-#: ../../migrating.rst:951
+#: ../../migrating.rst:1009
 msgid "This registers a regular :meth:`.Bot.check` check."
 msgstr ""
 
-#: ../../migrating.rst:952
+#: ../../migrating.rst:1010
 msgid ":meth:`.Cog.cog_check`"
 msgstr ""
 
-#: ../../migrating.rst:953
+#: ../../migrating.rst:1011
 msgid "This registers a check that applies to every command in the cog."
 msgstr ""
 
-#: ../../migrating.rst:954
+#: ../../migrating.rst:1012
 msgid ":meth:`.Cog.cog_command_error`"
 msgstr ""
 
-#: ../../migrating.rst:955
+#: ../../migrating.rst:1013
 msgid ""
 "This is a special error handler that is called whenever an error happens "
 "inside the cog."
 msgstr ""
 
-#: ../../migrating.rst:957
+#: ../../migrating.rst:1015
 msgid ":meth:`.Cog.cog_before_invoke` and :meth:`.Cog.cog_after_invoke`"
 msgstr ""
 
-#: ../../migrating.rst:957
+#: ../../migrating.rst:1015
 msgid ""
 "A special method that registers a cog before and after invoke hook. More "
 "information can be found in :ref:`migrating_1_0_before_after_hook`."
 msgstr ""
 
-#: ../../migrating.rst:959
+#: ../../migrating.rst:1017
 msgid ""
 "Those that were using listeners, such as ``on_message`` inside a cog will"
 " now have to explicitly mark them as such using the "
 ":meth:`.commands.Cog.listener` decorator."
 msgstr ""
 
-#: ../../migrating.rst:961
+#: ../../migrating.rst:1019
 msgid ""
 "Along with that, cogs have gained the ability to have custom names "
 "through specifying it in the class definition line. More options can be "
@@ -2164,33 +2330,33 @@ msgid ""
 ":class:`.commands.CogMeta`."
 msgstr ""
 
-#: ../../migrating.rst:963
+#: ../../migrating.rst:1021
 msgid ""
 "An example cog with every special method registered and a custom name is "
 "as follows:"
 msgstr ""
 
-#: ../../migrating.rst:1000
+#: ../../migrating.rst:1058
 msgid "Before and After Invocation Hooks"
 msgstr "前後処理のフック"
 
-#: ../../migrating.rst:1002
+#: ../../migrating.rst:1060
 msgid ""
 "Commands have gained new before and after invocation hooks that allow you"
 " to do an action before and after a command is run."
 msgstr "コマンドに、コマンドの実行前および実行後に処理が行えるようにするフックが新たに追加されました。"
 
-#: ../../migrating.rst:1005
+#: ../../migrating.rst:1063
 msgid ""
 "They take a single parameter, :class:`~ext.commands.Context` and they "
 "must be a coroutine."
 msgstr "これは単一のパラメータとして :class:`~ext.commands.Context` を受け取り、かつコルーチンである必要があります。"
 
-#: ../../migrating.rst:1007
+#: ../../migrating.rst:1065
 msgid "They are on a global, per-cog, or per-command basis."
 msgstr "また、このフックは全体、コグごと、あるいはコマンドごとに設定することが可能です。"
 
-#: ../../migrating.rst:1024
+#: ../../migrating.rst:1082
 msgid ""
 "The after invocation is hook always called, **regardless of an error in "
 "the command**. This makes it ideal for some error handling or clean up of"
@@ -2199,67 +2365,67 @@ msgstr ""
 "後処理のフックは **コマンドのエラー発生に関わらず** "
 "必ず呼び出されます。そのため、データベース接続のようなリソースのクリーンアップやエラー処理に最適です。"
 
-#: ../../migrating.rst:1027
+#: ../../migrating.rst:1085
 msgid "The per-command registration is as follows: ::"
 msgstr "コマンドごとに設定する方法は以下のとおりです。"
 
-#: ../../migrating.rst:1043
+#: ../../migrating.rst:1101
 #, fuzzy
 msgid ""
 "The special cog method for these is :meth:`.Cog.cog_before_invoke` and "
 ":meth:`.Cog.cog_after_invoke`, e.g.:"
 msgstr "特定のコグへの実装は以下の例のように ``__before_invoke`` と ``__after_invoke`` メソッドを用いてください。"
 
-#: ../../migrating.rst:1058
+#: ../../migrating.rst:1116
 msgid ""
 "To check if a command failed in the after invocation hook, you can use "
 ":attr:`.Context.command_failed`."
 msgstr ":attr:`.Context.command_failed` を使うことで、後処理でコマンドがエラーになったかを確認する事ができます。"
 
-#: ../../migrating.rst:1061
+#: ../../migrating.rst:1119
 msgid "The invocation order is as follows:"
 msgstr "呼び出される順序は以下のとおりです。"
 
-#: ../../migrating.rst:1063
+#: ../../migrating.rst:1121
 msgid "Command local before invocation hook"
 msgstr "コマンドごとの前処理。"
 
-#: ../../migrating.rst:1064
+#: ../../migrating.rst:1122
 msgid "Cog local before invocation hook"
 msgstr "コグごとの前処理。"
 
-#: ../../migrating.rst:1065
+#: ../../migrating.rst:1123
 msgid "Global before invocation hook"
 msgstr "全体での前処理。"
 
-#: ../../migrating.rst:1066
+#: ../../migrating.rst:1124
 msgid "The actual command"
 msgstr "実行されたコマンド。"
 
-#: ../../migrating.rst:1067
+#: ../../migrating.rst:1125
 msgid "Command local after invocation hook"
 msgstr "コマンドごとの後処理。"
 
-#: ../../migrating.rst:1068
+#: ../../migrating.rst:1126
 msgid "Cog local after invocation hook"
 msgstr "コグごとの後処理。"
 
-#: ../../migrating.rst:1069
+#: ../../migrating.rst:1127
 msgid "Global after invocation hook"
 msgstr "全体での後処理。"
 
-#: ../../migrating.rst:1072
+#: ../../migrating.rst:1130
 msgid "Converter Changes"
 msgstr "コンバーターの変更"
 
-#: ../../migrating.rst:1074
+#: ../../migrating.rst:1132
 msgid ""
 "Prior to v1.0, a converter was a type hint that could be a callable that "
 "could be invoked with a singular argument denoting the argument passed by"
 " the user as a string."
 msgstr ""
 
-#: ../../migrating.rst:1077
+#: ../../migrating.rst:1135
 msgid ""
 "This system was eventually expanded to support a "
 ":class:`~ext.commands.Converter` system to allow plugging in the "
@@ -2267,7 +2433,7 @@ msgid ""
 "as the built-in \"discord\" converters."
 msgstr ""
 
-#: ../../migrating.rst:1081
+#: ../../migrating.rst:1139
 msgid ""
 "In v1.0 this converter system was revamped to allow instances of "
 ":class:`~ext.commands.Converter` derived classes to be passed. For "
@@ -2276,35 +2442,35 @@ msgid ""
 "parameters."
 msgstr ""
 
-#: ../../migrating.rst:1085
+#: ../../migrating.rst:1143
 msgid "Essentially, before: ::"
 msgstr ""
 
-#: ../../migrating.rst:1097
+#: ../../migrating.rst:1155
 msgid "The command framework also got a couple new converters:"
 msgstr "コマンドフレームワークにも二つのコンバーターが追加されました。"
 
-#: ../../migrating.rst:1099
+#: ../../migrating.rst:1157
 msgid ""
 ":class:`~ext.commands.clean_content` this is akin to "
 ":attr:`Message.clean_content` which scrubs mentions."
 msgstr ""
 
-#: ../../migrating.rst:1100
+#: ../../migrating.rst:1158
 msgid ""
 ":class:`~ext.commands.UserConverter` will now appropriately convert "
 ":class:`User` only."
 msgstr ""
 
-#: ../../migrating.rst:1101
+#: ../../migrating.rst:1159
 msgid "``ChannelConverter`` is now split into two different converters."
 msgstr "``ChannelConverter`` は二つのコンバーターに分離されました。"
 
-#: ../../migrating.rst:1103
+#: ../../migrating.rst:1161
 msgid ":class:`~ext.commands.TextChannelConverter` for :class:`TextChannel`."
 msgstr ":class:`TextChannel` 用の :class:`~ext.commands.TextChannelConverter` 。"
 
-#: ../../migrating.rst:1104
+#: ../../migrating.rst:1162
 msgid ":class:`~ext.commands.VoiceChannelConverter` for :class:`VoiceChannel`."
 msgstr ":class:`VoiceChannel` 用の :class:`~ext.commands.VoiceChannelConverter` 。"
 
