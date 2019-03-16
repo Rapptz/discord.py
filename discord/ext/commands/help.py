@@ -64,6 +64,12 @@ __all__ = [
 class Paginator:
     """A class that aids in paginating code blocks for Discord messages.
 
+    .. container:: operations
+
+        .. describe:: len(x)
+
+            Returns the total number of characters in the paginator.
+
     Attributes
     -----------
     prefix: Optional[:class:`str`]
@@ -137,6 +143,10 @@ class Paginator:
         else:
             self._current_page = []
             self._count = 0
+
+    def __len__(self):
+        total = sum(len(p) for p in self._pages)
+        return total + self._count
 
     @property
     def pages(self):
