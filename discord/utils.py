@@ -104,14 +104,14 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
 
     Parameters
     -----------
-    client_id : str
+    client_id: :class:`str`
         The client ID for your bot.
-    permissions : :class:`Permissions`
+    permissions: :class:`Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
-    guild : :class:`Guild`
+    guild: :class:`Guild`
         The guild to pre-select in the authorization screen, if available.
-    redirect_uri : str
+    redirect_uri: :class:`str`
         An optional valid redirect URI.
     """
     url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
@@ -139,7 +139,7 @@ def time_snowflake(datetime_obj, high=False):
     -----------
     datetime_obj
         A timezone-naive datetime object representing UTC time.
-    high
+    high: :class:`bool`
         Whether or not to set the lower 22 bit to high or low.
     """
     unix_seconds = (datetime_obj - type(datetime_obj)(1970, 1, 1)).total_seconds()
@@ -166,7 +166,7 @@ def find(predicate, seq):
     -----------
     predicate
         A function that returns a boolean-like result.
-    seq : iterable
+    seq: iterable
         The iterable to search through.
     """
 

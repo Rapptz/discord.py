@@ -300,7 +300,7 @@ class Client:
 
         Parameters
         -----------
-        \*guilds
+        \*guilds: List[:class:`Guild`]
             An argument list of guilds to request offline members for.
 
         Raises
@@ -331,10 +331,10 @@ class Client:
 
         Parameters
         -----------
-        token: str
+        token: :class:`str`
             The authentication token. Do not prefix this token with
             anything as the library will do it for you.
-        bot: bool
+        bot: :class:`bool`
             Keyword argument that specifies if the account logging on is a bot
             token or not.
 
@@ -381,7 +381,7 @@ class Client:
 
         Parameters
         -----------
-        reconnect: bool
+        reconnect: :class:`bool`
             If we should attempt reconnecting, either due to internet
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
@@ -537,8 +537,7 @@ class Client:
             finally:
                 loop.close()
 
-        Warning
-        --------
+        .. warning
         This function must be the last function to call due to the fact that it
         is blocking. That means that registration of events or anything being
         called after this function call will not execute until it returns.
@@ -625,8 +624,7 @@ class Client:
                 for channel in guild.channels:
                     yield channel
 
-        Note
-        -----
+        .. note
         Just because you receive a :class:`abc.GuildChannel` does not mean that
         you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
         be used for that.
@@ -718,13 +716,13 @@ class Client:
 
         Parameters
         ------------
-        event: str
+        event: :class:`str`
             The event name, similar to the :ref:`event reference <discord-api-events>`,
             but without the ``on_`` prefix, to wait for.
         check: Optional[predicate]
             A predicate to check what to wait for. The arguments must meet the
             parameters of the event being waited for.
-        timeout: Optional[float]
+        timeout: Optional[:class:`float`]
             The number of seconds to wait before timing out and raising
             :exc:`asyncio.TimeoutError`.
 
@@ -766,14 +764,10 @@ class Client:
 
         The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
 
-        Example
-        ---------
-
-		::
+        Example: ::
             @client.event
             async def on_ready():
                 print('Ready!')
-
         """
 
         if not asyncio.iscoroutinefunction(coro):
@@ -804,7 +798,7 @@ class Client:
         status: Optional[:class:`Status`]
             Indicates what status to change to. If None, then
             :attr:`Status.online` is used.
-        afk: bool
+        afk: :class:`bool`
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better
             for you in case you are actually idle and not lying.
@@ -846,12 +840,12 @@ class Client:
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The name of the guild.
         region: :class:`VoiceRegion`
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
-        icon: bytes
+        icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
@@ -886,8 +880,7 @@ class Client:
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
 
-        Note
-        ------
+        .. note
         If the invite is for a guild you have not joined, the guild and channel
         attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
         :class:`PartialInviteChannel` respectively.
@@ -928,7 +921,7 @@ class Client:
 
         Parameters
         ----------
-        invite
+        invite: Union[:class:`Invite`, :class:`str`, :class:`int`]
             The invite to revoke.
 
         Raises
@@ -951,15 +944,15 @@ class Client:
 
         Retrieve's the bot's application information.
 
-        Returns
-        --------
-        :class:`AppInfo`
-            A namedtuple representing the application info.
-
         Raises
         -------
         HTTPException
             Retrieving the information failed somehow.
+
+        Returns
+        --------
+        :class:`AppInfo`
+            A namedtuple representing the application info.
         """
         data = await self.http.application_info()
         if 'rpc_origins' not in data:
@@ -980,13 +973,8 @@ class Client:
 
         Parameters
         -----------
-        user_id: int
+        user_id: :class:`int`
             The user's ID to fetch from.
-
-        Returns
-        --------
-        :class:`User`
-            The user you requested.
 
         Raises
         -------
@@ -994,6 +982,11 @@ class Client:
             A user with this ID does not exist.
         HTTPException
             Fetching the user failed.
+
+        Returns
+        --------
+        :class:`User`
+            The user you requested.
         """
         data = await self.http.get_user_info(user_id)
         return User(state=self._connection, data=data)
@@ -1005,7 +998,7 @@ class Client:
 
         Parameters
         ------------
-        user_id: int
+        user_id: :class:`int`
             The ID of the user to fetch their profile for.
 
         Raises

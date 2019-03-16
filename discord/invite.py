@@ -314,7 +314,7 @@ class Invite(Hashable):
 
         Parameters
         -----------
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for deleting this invite. Shows up on the audit log.
 
         Raises

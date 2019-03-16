@@ -256,7 +256,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         Parameters
         -----------
-        event : str
+        event: :class:`str`
             The event name in all upper case to wait for.
         predicate
             A function that takes a data parameter to check for event

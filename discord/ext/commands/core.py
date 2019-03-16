@@ -863,7 +863,7 @@ class Command(_BaseCommand):
 
         Returns
         --------
-        bool
+        :class:`bool`
             A boolean indicating if the command can be invoked.
         """
 
@@ -1011,7 +1011,7 @@ class GroupMixin:
 
         Returns
         --------
-        Command or subclass
+        :class:`.Command` or subclass
             The command that was requested. If not found, returns ``None``.
         """
 
@@ -1221,11 +1221,6 @@ def check(predicate):
 
         These functions can either be regular functions or coroutines.
 
-    Parameters
-    -----------
-    predicate
-        The predicate to check if the command should be invoked.
-
     Examples
     ---------
 
@@ -1255,6 +1250,10 @@ def check(predicate):
         async def only_me(ctx):
             await ctx.send('Only you!')
 
+    Parameters
+    -----------
+    predicate
+        The predicate to check if the command should be invoked.
     """
 
     def decorator(func):

@@ -65,7 +65,7 @@ class AudioSource:
 
         Returns
         --------
-        bytes
+        :class:`bytes`
             A bytes like object that represents the PCM or Opus data.
         """
         raise NotImplementedError
@@ -117,21 +117,21 @@ class FFmpegPCMAudio(AudioSource):
 
     Parameters
     ------------
-    source: Union[str, BinaryIO]
+    source: Union[:class:`str`, BinaryIO]
         The input that ffmpeg will take and convert to PCM bytes.
         If ``pipe`` is True then this is a file-like object that is
         passed to the stdin of ffmpeg.
-    executable: str
+    executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
-    pipe: bool
+    pipe: :class:`bool`
         If true, denotes that ``source`` parameter will be passed
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[BinaryIO]
         A file-like object to pass to the Popen constructor.
         Could also be an instance of ``subprocess.PIPE``.
-    options: Optional[str]
+    options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
-    before_options: Optional[str]
+    before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
 
     Raises
