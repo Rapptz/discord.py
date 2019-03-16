@@ -603,13 +603,13 @@ class GuildChannel:
 
         Parameters
         ------------
-        max_age : int
+        max_age: :class:`int`
             How long the invite should last. If it's 0 then the invite
             doesn't expire. Defaults to 0.
-        max_uses : int
+        max_uses: :class:`int`
             How many uses the invite could be used for. If it's 0 then there
             are unlimited uses. Defaults to 0.
-        temporary : bool
+        temporary: :class:`bool`
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to False.
         unique: :class:`bool`
@@ -835,7 +835,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Returns
         --------
-        :class:`Message`
+        :class:`.Message`
             The message asked for.
         """
 

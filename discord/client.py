@@ -300,7 +300,7 @@ class Client:
 
         Parameters
         -----------
-        \*guilds: List[:class:`Guild`]
+        \*guilds
             An argument list of guilds to request offline members for.
 
         Raises
