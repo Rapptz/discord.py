@@ -839,7 +839,7 @@ class Client:
 
     # Guild stuff
 
-    def fetch_guilds(self, *, limit=100, before=None, after=None, reverse=None):
+    def fetch_guilds(self, *, limit=100, before=None, after=None):
         """|coro|
 
         Retreives an :class:`AsyncIterator` that enables receiving your guilds.
@@ -859,11 +859,6 @@ class Client:
         after: :class:`Snowflake` or `datetime`
             Retrieve guilds after this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        reverse: bool
-            If set to ``True``, return the guilds in oldest->newest order. If unspecified,
-            this defaults to ``False`` for most cases. However if passing in a
-            ``after`` parameter  then this is set to ``True``. This avoids getting guilds
-            out of order in the ``after`` case.
 
         Raises
         ------
@@ -888,7 +883,7 @@ class Client:
             guilds = await client.fetch_guilds(limit=150).flatten()
             # guilds is now a list of Guild...
         """
-        return GuildIterator(self, limit=limit, before=before, after=after, reverse=reverse)
+        return GuildIterator(self, limit=limit, before=before, after=after)
 
     async def fetch_guild(self, guild_id):
         """|coro|

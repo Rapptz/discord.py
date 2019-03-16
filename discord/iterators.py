@@ -488,12 +488,8 @@ class GuildIterator(_AsyncIterator):
         Object before which all guilds must be.
     after: :class:`Snowflake`
         Object after which all guilds must be.
-    reverse: bool
-        If set to true, return guilds oldest->newest order. Recommended
-        when using the "after" queries with limit over 100, otherwise guilds
-        will be out of order.
     """
-    def __init__(self, bot, limit, before=None, after=None, reverse=None):
+    def __init__(self, bot, limit, before=None, after=None):
 
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
@@ -505,11 +501,6 @@ class GuildIterator(_AsyncIterator):
         self.before = before
         self.after = after
 
-        if reverse is None:
-            self.reverse = after is None
-        else:
-            self.reverse = reverse
-
         self._filter = None
 
         self.state = self.bot._connection
@@ -517,12 +508,8 @@ class GuildIterator(_AsyncIterator):
         self.guilds = asyncio.Queue(loop=self.state.loop)
 
         if self.before and self.after:
-            if self.reverse:
-                self._retrieve_guilds = self._retrieve_guilds_after_strategy
-                self._filter = lambda m: int(m['id']) < self.before.id
-            else:
-                self._retrieve_guilds = self._retrieve_guilds_before_strategy
-                self._filter = lambda m: int(m['id']) > self.after.id
+            self._retrieve_guilds = self._retrieve_guilds_before_strategy
+            self._filter = lambda m: int(m['id']) > self.after.id
         elif self.after:
             self._retrieve_guilds = self._retrieve_guilds_after_strategy
         else:
@@ -560,8 +547,6 @@ class GuildIterator(_AsyncIterator):
             if len(data) < 100:
                 self.limit = 0
 
-            if self.reverse:
-                data = reversed(data)
             if self._filter:
                 data = filter(self._filter, data)
 
@@ -575,8 +560,6 @@ class GuildIterator(_AsyncIterator):
             if self.limit is None or len(data) < 100:
                 self.limit = 0
 
-            if self.reverse:
-                data = reversed(data)
             if self._filter:
                 data = filter(self._filter, data)
 
