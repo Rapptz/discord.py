@@ -223,8 +223,8 @@ class Context(discord.abc.Messageable):
         g = self.guild
         return g.voice_client if g else None
 
-    async def show_help(self, *args):
-        """show_help(entity=<bot>)
+    async def send_help(self, *args):
+        """send_help(entity=<bot>)
 
         |coro|
 
