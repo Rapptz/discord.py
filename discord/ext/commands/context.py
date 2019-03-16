@@ -38,7 +38,7 @@ class Context(discord.abc.Messageable):
 
     Attributes
     -----------
-    message: :class:`discord.Message`
+    message: :class:`.Message`
         The message that triggered the command being executed.
     bot: :class:`.Bot`
         The bot that contains the command being executed.
@@ -204,22 +204,22 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def channel(self):
-        """Returns the channel associated with this context's command. Shorthand for :attr:`Message.channel`."""
+        """Returns the channel associated with this context's command. Shorthand for :attr:`.Message.channel`."""
         return self.message.channel
 
     @discord.utils.cached_property
     def author(self):
-        """Returns the author associated with this context's command. Shorthand for :attr:`Message.author`"""
+        """Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`"""
         return self.message.author
 
     @discord.utils.cached_property
     def me(self):
-        """Similar to :attr:`Guild.me` except it may return the :class:`ClientUser` in private message contexts."""
+        """Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts."""
         return self.guild.me if self.guild is not None else self.bot.user
 
     @property
     def voice_client(self):
-        r"""Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
+        r"""Optional[:class:`.VoiceClient`]: A shortcut to :attr:`.Guild.voice_client`\, if applicable."""
         g = self.guild
         return g.voice_client if g else None
 
