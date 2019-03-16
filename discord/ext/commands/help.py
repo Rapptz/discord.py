@@ -294,6 +294,16 @@ class HelpCommand:
         self._command_impl._eject_cog()
         self._command_impl = None
 
+    def get_bot_mapping(self):
+        """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
+        bot = self.context.bot
+        mapping = {
+            cog: cog.get_commands()
+            for cog in bot.cogs.values()
+        }
+        mapping[None] = [c for c in bot.all_commands.values() if c.cog is None]
+        return mapping
+
     @property
     def clean_prefix(self):
         """The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
@@ -717,11 +727,7 @@ class HelpCommand:
         bot = ctx.bot
 
         if command is None:
-            mapping = {
-                cog: cog.get_commands()
-                for cog in bot.cogs.values()
-            }
-            mapping[None] = [c for c in bot.all_commands.values() if c.cog is None]
+            mapping = self.get_bot_mapping()
             return await self.send_bot_help(mapping)
 
         # Check if it's a cog
