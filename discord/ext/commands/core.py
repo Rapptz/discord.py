@@ -1015,6 +1015,10 @@ class GroupMixin:
             The command that was requested. If not found, returns ``None``.
         """
 
+        # fast path, no space in name.
+        if ' ' not in name:
+            return self.all_commands.get(name)
+
         names = name.split()
         obj = self.all_commands.get(names[0])
         if not isinstance(obj, GroupMixin):
