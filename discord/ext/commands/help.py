@@ -754,9 +754,9 @@ class HelpCommand:
                 cmd = found
 
         if isinstance(cmd, Group):
-            await self.send_group_help(cmd)
+            return await self.send_group_help(cmd)
         else:
-            await self.send_command_help(cmd)
+            return await self.send_command_help(cmd)
 
 class DefaultHelpCommand(HelpCommand):
     """The implementation of the default help command.
