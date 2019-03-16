@@ -186,17 +186,17 @@ class HistoryIterator(_AsyncIterator):
     Parameters
     -----------
     messageable: :class:`abc.Messageable`
-        Messageable class to retrieve message history fro.
-    limit : int
+        Messageable class to retrieve message history from.
+    limit: :class:`int`
         Maximum number of messages to retrieve
-    before : :class:`Message` or id-like
+    before: :class:`abc.Snowflake`
         Message before which all messages must be.
-    after : :class:`Message` or id-like
+    after: :class:`abc.Snowflake`
         Message after which all messages must be.
-    around : :class:`Message` or id-like
+    around: :class:`abc.Snowflake`
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
-    reverse: bool
+    reverse: :class:`bool`
         If set to true, return messages in oldest->newest order. Recommended
         when using with "after" queries with limit over 100, otherwise messages
         will be out of order.

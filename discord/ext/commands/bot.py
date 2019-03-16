@@ -208,7 +208,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function that was used as a global check.
-        call_once: bool
+        call_once: :class:`bool`
             If the function should only be called once per
             :meth:`.Command.invoke` call.
         """
@@ -228,7 +228,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function to remove from the global checks.
-        call_once: bool
+        call_once: :class:`bool`
             If the function was added with ``call_once=True`` in
             the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
@@ -370,9 +370,9 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        func : :ref:`coroutine <coroutine>`
+        func: :ref:`coroutine <coroutine>`
             The function to call.
-        name : Optional[str]
+        name: Optional[:class:`str`]
             The name of the event to listen for. Defaults to ``func.__name__``.
 
         Example
@@ -404,7 +404,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function that was used as a listener to remove.
-        name
+        name: :class:`str`
             The name of the event we want to remove. Defaults to
             ``func.__name__``.
         """
@@ -462,7 +462,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        cog
+        cog: :class:`.Cog`
             The cog to register to the bot.
 
         Raises
@@ -486,7 +486,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        name : str
+        name: :class:`str`
             The name of the cog you are requesting.
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
@@ -535,7 +535,7 @@ class BotBase(GroupMixin):
 
         Parameters
         ------------
-        name: str
+        name: :class:`str`
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
@@ -573,7 +573,7 @@ class BotBase(GroupMixin):
 
         Parameters
         ------------
-        name: str
+        name: :class:`str`
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
@@ -668,7 +668,7 @@ class BotBase(GroupMixin):
 
         Returns
         --------
-        Union[List[str], str]
+        Union[List[:class:`str`], :class:`str`]
             A list of prefixes or a single prefix that the bot is
             listening for.
         """
@@ -857,7 +857,7 @@ class Bot(BotBase, discord.Client):
         .. note::
 
             When passing multiple prefixes be careful to not pass a prefix
-            that matches a longer prefix occuring later in the sequence.  For
+            that matches a longer prefix occurring later in the sequence.  For
             example, if the command prefix is ``('!', '!?')``  the ``'!?'``
             prefix will never be matched to any message as the previous one
             matches messages starting with ``!?``. This is especially important

@@ -76,22 +76,22 @@ class Client:
 
     Parameters
     -----------
-    max_messages : Optional[:class:`int`]
+    max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
         This defaults to 5000. Passing in `None` or a value less than 100
         will use the default instead of the passed in value.
-    loop : Optional[event loop]
+    loop: Optional[event loop]
         The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
         in which case the default event loop is used via ``asyncio.get_event_loop()``.
-    connector : aiohttp.BaseConnector
+    connector: aiohttp.BaseConnector
         The `connector`_ to use for connection pooling.
-    proxy : Optional[:class:`str`]
+    proxy: Optional[:class:`str`]
         Proxy URL.
-    proxy_auth : Optional[aiohttp.BasicAuth]
+    proxy_auth: Optional[aiohttp.BasicAuth]
         An object that represents proxy HTTP Basic Authorization.
-    shard_id : Optional[:class:`int`]
+    shard_id: Optional[:class:`int`]
         Integer starting at 0 and less than shard_count.
-    shard_count : Optional[:class:`int`]
+    shard_count: Optional[:class:`int`]
         The total number of shards.
     fetch_offline_members: :class:`bool`
         Indicates if :func:`on_ready` should be delayed to fetch all offline
@@ -180,7 +180,7 @@ class Client:
 
     @property
     def latency(self):
-        """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord WebSocket protocol latency.
         """
@@ -219,7 +219,7 @@ class Client:
         return self._connection.voice_clients
 
     def is_ready(self):
-        """:obj:`bool`: Specifies if the client's internal cache is ready for use."""
+        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
     async def _run_event(self, coro, event_name, *args, **kwargs):
@@ -300,7 +300,7 @@ class Client:
 
         Parameters
         -----------
-        \*guilds
+        \*guilds: :class:`Guild`
             An argument list of guilds to request offline members for.
 
         Raises
@@ -331,10 +331,10 @@ class Client:
 
         Parameters
         -----------
-        token: str
+        token: :class:`str`
             The authentication token. Do not prefix this token with
             anything as the library will do it for you.
-        bot: bool
+        bot: :class:`bool`
             Keyword argument that specifies if the account logging on is a bot
             token or not.
 
@@ -381,7 +381,7 @@ class Client:
 
         Parameters
         -----------
-        reconnect: bool
+        reconnect: :class:`bool`
             If we should attempt reconnecting, either due to internet
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
@@ -538,11 +538,11 @@ class Client:
             finally:
                 loop.close()
 
-        Warning
-        --------
-        This function must be the last function to call due to the fact that it
-        is blocking. That means that registration of events or anything being
-        called after this function call will not execute until it returns.
+        .. warning::
+
+            This function must be the last function to call due to the fact that it
+            is blocking. That means that registration of events or anything being
+            called after this function call will not execute until it returns.
         """
         is_windows = sys.platform == 'win32'
         loop = self.loop
@@ -574,7 +574,7 @@ class Client:
     # properties
 
     def is_closed(self):
-        """:obj:`bool`: Indicates if the websocket connection is closed."""
+        """:class:`bool`: Indicates if the websocket connection is closed."""
         return self._closed.is_set()
 
     @property
@@ -595,7 +595,7 @@ class Client:
 
     @property
     def users(self):
-        """Returns a :obj:`list` of all the :class:`User` the bot can see."""
+        """Returns a :class:`list` of all the :class:`User` the bot can see."""
         return list(self._connection._users.values())
 
     def get_channel(self, id):
@@ -626,11 +626,11 @@ class Client:
                 for channel in guild.channels:
                     yield channel
 
-        Note
-        -----
-        Just because you receive a :class:`abc.GuildChannel` does not mean that
-        you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
-        be used for that.
+        .. note::
+
+            Just because you receive a :class:`abc.GuildChannel` does not mean that
+            you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
+            be used for that.
         """
 
         for guild in self.guilds:
@@ -674,7 +674,7 @@ class Client:
         :exc:`asyncio.TimeoutError` for you in case of timeout and is provided for
         ease of use.
 
-        In case the event returns multiple arguments, a :obj:`tuple` containing those
+        In case the event returns multiple arguments, a :class:`tuple` containing those
         arguments is returned instead. Please check the
         :ref:`documentation <discord-api-events>` for a list of events and their
         parameters.
@@ -719,13 +719,13 @@ class Client:
 
         Parameters
         ------------
-        event: str
+        event: :class:`str`
             The event name, similar to the :ref:`event reference <discord-api-events>`,
             but without the ``on_`` prefix, to wait for.
         check: Optional[predicate]
             A predicate to check what to wait for. The arguments must meet the
             parameters of the event being waited for.
-        timeout: Optional[float]
+        timeout: Optional[:class:`float`]
             The number of seconds to wait before timing out and raising
             :exc:`asyncio.TimeoutError`.
 
@@ -737,7 +737,7 @@ class Client:
         Returns
         --------
         Any
-            Returns no arguments, a single argument, or a :obj:`tuple` of multiple
+            Returns no arguments, a single argument, or a :class:`tuple` of multiple
             arguments that mirrors the parameters passed in the
             :ref:`event reference <discord-api-events>`.
         """
@@ -770,11 +770,11 @@ class Client:
         Example
         ---------
 
-		::
+        .. code-block:: python3
+
             @client.event
             async def on_ready():
                 print('Ready!')
-
         """
 
         if not asyncio.iscoroutinefunction(coro):
@@ -793,7 +793,10 @@ class Client:
         the activity being done currently. This could also be the slimmed down versions,
         :class:`Game` and :class:`Streaming`.
 
-        Example: ::
+        Example
+        ---------
+
+        .. code-block:: python3
 
             game = discord.Game("with the API")
             await client.change_presence(status=discord.Status.idle, activity=game)
@@ -805,7 +808,7 @@ class Client:
         status: Optional[:class:`Status`]
             Indicates what status to change to. If None, then
             :attr:`Status.online` is used.
-        afk: bool
+        afk: :class:`bool`
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better
             for you in case you are actually idle and not lying.
@@ -847,12 +850,12 @@ class Client:
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The name of the guild.
         region: :class:`VoiceRegion`
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
-        icon: bytes
+        icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
@@ -887,11 +890,11 @@ class Client:
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
 
-        Note
-        ------
-        If the invite is for a guild you have not joined, the guild and channel
-        attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
-        :class:`PartialInviteChannel` respectively.
+        .. note::
+
+            If the invite is for a guild you have not joined, the guild and channel
+            attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
+            :class:`PartialInviteChannel` respectively.
 
         Parameters
         -----------
@@ -929,7 +932,7 @@ class Client:
 
         Parameters
         ----------
-        invite
+        invite: Union[:class:`Invite`, :class:`str`]
             The invite to revoke.
 
         Raises
@@ -952,15 +955,15 @@ class Client:
 
         Retrieve's the bot's application information.
 
-        Returns
-        --------
-        :class:`AppInfo`
-            A namedtuple representing the application info.
-
         Raises
         -------
         HTTPException
             Retrieving the information failed somehow.
+
+        Returns
+        --------
+        :class:`AppInfo`
+            A namedtuple representing the application info.
         """
         data = await self.http.application_info()
         if 'rpc_origins' not in data:
@@ -981,13 +984,8 @@ class Client:
 
         Parameters
         -----------
-        user_id: int
+        user_id: :class:`int`
             The user's ID to fetch from.
-
-        Returns
-        --------
-        :class:`User`
-            The user you requested.
 
         Raises
         -------
@@ -995,6 +993,11 @@ class Client:
             A user with this ID does not exist.
         HTTPException
             Fetching the user failed.
+
+        Returns
+        --------
+        :class:`User`
+            The user you requested.
         """
         data = await self.http.get_user_info(user_id)
         return User(state=self._connection, data=data)
@@ -1006,7 +1009,7 @@ class Client:
 
         Parameters
         ------------
-        user_id: int
+        user_id: :class:`int`
             The ID of the user to fetch their profile for.
 
         Raises

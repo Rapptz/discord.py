@@ -255,9 +255,20 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         on the conditions met such as if a bulk delete is possible or if
         the account is a user bot or not.
 
+        Examples
+        ---------
+
+        Deleting bot's messages ::
+
+            def is_me(m):
+                return m.author == client.user
+
+            deleted = await channel.purge(limit=100, check=is_me)
+            await channel.send('Deleted {} message(s)'.format(len(deleted)))
+
         Parameters
         -----------
-        limit: Optional[int]
+        limit: Optional[:class:`int`]
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
         check: predicate
@@ -271,7 +282,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``around`` in :meth:`history`.
         reverse
             Same as ``reverse`` in :meth:`history`.
-        bulk: bool
+        bulk: class:`bool`
             If True, use bulk delete. bulk=False is useful for mass-deleting
             a bot's own messages without manage_messages. When True, will fall
             back to single delete if current account is a user bot, or if
@@ -284,20 +295,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Purging the messages failed.
 
-        Examples
-        ---------
-
-        Deleting bot's messages ::
-
-            def is_me(m):
-                return m.author == client.user
-
-            deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send('Deleted {} message(s)'.format(len(deleted)))
-
         Returns
         --------
-        list
+        List[:class:`.Message`]
             The list of messages that were deleted.
         """
 
@@ -378,9 +378,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -------------
-        name: str
+        name: :class:`str`
             The webhook's name.
-        avatar: Optional[bytes]
+        avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's default avatar.
             This operates similarly to :meth:`~ClientUser.edit`.
 
@@ -507,21 +507,21 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new channel's name.
-        bitrate: int
+        bitrate: :class:`int`
             The new channel's bitrate.
-        user_limit: int
+        user_limit: :class:`int`
             The new channel's user limit.
-        position: int
+        position: :class:`int`
             The new channel's position.
-        sync_permissions: bool
+        sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
 
         Raises
@@ -607,13 +607,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new category's name.
-        position: int
+        position: :class:`int`
             The new category's position.
-        nsfw: bool
+        nsfw: :class:`bool`
             To mark the category as NSFW or not.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this category. Shows up on the audit log.
 
         Raises
@@ -1053,10 +1053,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Parameters
         -----------
-        name: Optional[str]
+        name: Optional[:class:`str`]
             The new name to change the group to.
             Could be ``None`` to remove the name.
-        icon: Optional[bytes]
+        icon: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the new icon.
             Could be ``None`` to remove the icon.
 

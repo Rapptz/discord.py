@@ -20,7 +20,7 @@ Please try your best not to ask questions in our issue tracker. Most of them don
 Please be aware of the following things when filing bug reports.
 
 1. Don't open duplicate issues. Please search your issue to see if it has been asked already. Duplicate issues will be closed.
-2. When filing a bug about exceptions or tracebacks, please include the *complete* traceback. Without the complete traceback the issue might be **unsolveable** and you will be asked to provide more information.
+2. When filing a bug about exceptions or tracebacks, please include the *complete* traceback. Without the complete traceback the issue might be **unsolvable** and you will be asked to provide more information.
 3. Make sure to provide enough information to make the issue workable. The issue template will generally walk you through the process but they are enumerated here as well:
     - A **summary** of your bug report. This is generally a quick sentence or two to describe the issue in human terms.
     - Guidance on **how to reproduce the issue**. Ideally, this should have a small code sample that allows us to run and see the issue for ourselves to debug. **Please make sure that the token is not displayed**. If you cannot provide a code snippet, then let us know what the steps were, how often it happens, etc.

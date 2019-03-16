@@ -174,7 +174,7 @@ class Cog(metaclass=CogMeta):
                 # Get the latest parent reference
                 parent = lookup[parent.qualified_name]
 
-                # Update our parent's reference to ourself
+                # Update our parent's reference to our self
                 removed = parent.remove_command(command.name)
                 parent.add_command(command)
 

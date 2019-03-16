@@ -53,7 +53,7 @@ class CallMessage:
 
     @property
     def call_ended(self):
-        """:obj:`bool`: Indicates if the call has ended."""
+        """:class:`bool`: Indicates if the call has ended."""
         return self.ended_timestamp is not None
 
     @property
@@ -87,7 +87,7 @@ class GroupCall:
     -----------
     call: :class:`CallMessage`
         The call message associated with this group call.
-    unavailable: :obj:`bool`
+    unavailable: :class:`bool`
         Denotes if this group call is unavailable.
     ringing: List[:class:`User`]
         A list of users that are currently being rung to join the call.
@@ -122,7 +122,7 @@ class GroupCall:
 
     @property
     def connected(self):
-        """A property that returns the :obj:`list` of :class:`User` that are currently in this call."""
+        """A property that returns the :class:`list` of :class:`User` that are currently in this call."""
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:
