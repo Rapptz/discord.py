@@ -285,7 +285,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Returns
         --------
-        :class:`list`
+        List[:class:`.Message`]
             The list of messages that were deleted.
         """
 
@@ -880,7 +880,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Parameters
         -----------
-        \*recipients
+        \*recipients: :class:`User`
             An argument list of users to add to this group.
 
         Raises
@@ -902,7 +902,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Parameters
         -----------
-        \*recipients
+        \*recipients: :class:`User`
             An argument list of users to remove from this group.
 
         Raises

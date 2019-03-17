@@ -186,7 +186,7 @@ class HistoryIterator(_AsyncIterator):
     Parameters
     -----------
     messageable: :class:`abc.Messageable`
-        Messageable class to retrieve message history fro.
+        Messageable class to retrieve message history from.
     limit: :class:`int`
         Maximum number of messages to retrieve
     before: :class:`abc.Snowflake`

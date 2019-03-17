@@ -1011,7 +1011,7 @@ class GroupMixin:
 
         Returns
         --------
-        :class:`.Command` or subclass
+        :class:`Command` or subclass
             The command that was requested. If not found, returns ``None``.
         """
 
@@ -1252,7 +1252,7 @@ def check(predicate):
 
     Parameters
     -----------
-    predicate
+    predicate: Callable[:class:`Context`, :class:`bool`]
         The predicate to check if the command should be invoked.
     """
 

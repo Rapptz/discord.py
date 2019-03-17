@@ -846,7 +846,7 @@ class Bot(BotBase, discord.Client):
         .. note::
 
             When passing multiple prefixes be careful to not pass a prefix
-            that matches a longer prefix occuring later in the sequence.  For
+            that matches a longer prefix occurring later in the sequence.  For
             example, if the command prefix is ``('!', '!?')``  the ``'!?'``
             prefix will never be matched to any message as the previous one
             matches messages starting with ``!?``. This is especially important

@@ -898,7 +898,7 @@ class Messageable(metaclass=abc.ABCMeta):
             If a date is provided it must be a timezone-naive datetime representing UTC time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
             even number then this will return at most limit + 1 messages.
-        reverse: :class:`bool`
+        reverse: Optional[:class:`bool`]
             If set to true, return messages in oldest->newest order. If unspecified,
             this defaults to ``False`` for most cases. However if passing in a
             ``after`` parameter then this is set to ``True``. This avoids getting messages

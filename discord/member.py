@@ -457,15 +457,15 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        nick: :class:`str`
+        nick: Optional[:class:`str`]
             The member's new nickname. Use ``None`` to remove the nickname.
-        mute: :class:`bool`
+        mute: Optional[:class:`bool`]
             Indicates if the member should be guild muted or un-muted.
-        deafen: :class:`bool`
+        deafen: Optional[:class:`bool`]
             Indicates if the member should be guild deafened or un-deafened.
-        roles: List[:class:`Roles`]
+        roles: Optional[List[:class:`Roles`]]
             The member's new list of roles. This *replaces* the roles.
-        voice_channel: :class:`VoiceChannel`
+        voice_channel: Optional[:class:`VoiceChannel`]
             The voice channel to move the member to.
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
@@ -548,7 +548,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles
+        \*roles: :class:`Snowflake`
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to give to the member.
         reason: Optional[:class:`str`]
@@ -586,7 +586,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles
+        \*roles: :class:`Snowflake`
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to remove from the member.
         reason: Optional[:class:`str`]

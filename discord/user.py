@@ -218,7 +218,7 @@ class BaseUser(_BaseUser):
 
         Parameters
         -----------
-        channel: :class:`Channel`
+        channel: :class:`abc.GuildChannel`
             The channel to check your permissions for.
         """
         return channel.permissions_for(self)
@@ -459,7 +459,7 @@ class ClientUser(BaseUser):
 
         Parameters
         -----------
-        \*recipients
+        \*recipients: :class:`User`
             An argument :class:`list` of :class:`User` to have in
             your group.
 

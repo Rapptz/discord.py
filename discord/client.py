@@ -300,7 +300,7 @@ class Client:
 
         Parameters
         -----------
-        \*guilds
+        \*guilds: :class:`Guild`
             An argument list of guilds to request offline members for.
 
         Raises
@@ -537,10 +537,11 @@ class Client:
             finally:
                 loop.close()
 
-        .. warning
-        This function must be the last function to call due to the fact that it
-        is blocking. That means that registration of events or anything being
-        called after this function call will not execute until it returns.
+        .. warning::
+
+            This function must be the last function to call due to the fact that it
+            is blocking. That means that registration of events or anything being
+            called after this function call will not execute until it returns.
         """
         is_windows = sys.platform == 'win32'
         loop = self.loop
@@ -624,10 +625,11 @@ class Client:
                 for channel in guild.channels:
                     yield channel
 
-        .. note
-        Just because you receive a :class:`abc.GuildChannel` does not mean that
-        you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
-        be used for that.
+        .. note::
+
+            Just because you receive a :class:`abc.GuildChannel` does not mean that
+            you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
+            be used for that.
         """
 
         for guild in self.guilds:
@@ -786,7 +788,10 @@ class Client:
         the activity being done currently. This could also be the slimmed down versions,
         :class:`Game` and :class:`Streaming`.
 
-        Example: ::
+        Example
+        ---------
+
+        .. code-block:: python3
 
             game = discord.Game("with the API")
             await client.change_presence(status=discord.Status.idle, activity=game)
@@ -880,10 +885,11 @@ class Client:
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
 
-        .. note
-        If the invite is for a guild you have not joined, the guild and channel
-        attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
-        :class:`PartialInviteChannel` respectively.
+        .. note::
+
+            If the invite is for a guild you have not joined, the guild and channel
+            attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
+            :class:`PartialInviteChannel` respectively.
 
         Parameters
         -----------
@@ -921,7 +927,7 @@ class Client:
 
         Parameters
         ----------
-        invite: Union[:class:`Invite`, :class:`str`, :class:`int`]
+        invite: Union[:class:`Invite`, :class:`str`]
             The invite to revoke.
 
         Raises
