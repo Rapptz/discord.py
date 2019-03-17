@@ -974,7 +974,6 @@ class Client:
             The widget.
         """
         data = await self.http.get_widget(guild_id)
-        print(data)
         invite = None
         if data['instant_invite']:
             invite = await self.get_invite(data['instant_invite'])

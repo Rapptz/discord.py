@@ -37,7 +37,7 @@ class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
 
     Attributes
     -----------
-    id: :class:`id`
+    id: :class:`int`
         The channel's ID.
     name: :class:`str`
         The channel's name.
