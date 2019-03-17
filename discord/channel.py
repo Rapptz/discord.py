@@ -589,7 +589,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
-    def _sorting_bucker(self):
+    def _sorting_bucket(self):
         return ChannelType.category
 
     def is_nsfw(self):
