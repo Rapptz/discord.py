@@ -187,13 +187,17 @@ class GuildChannel:
     def __str__(self):
         return self.name
 
+    @property
+    def _sorting_bucket(self):
+        raise NotImplementedError
+
     async def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
         http = self._state.http
-        cls = type(self)
-        channels = [c for c in self.guild.channels if isinstance(c, cls)]
+        bucket = self._sorting_bucket
+        channels = [c for c in self.guild.channels if c._sorting_bucket == bucket]
 
         if position >= len(channels):
             raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
