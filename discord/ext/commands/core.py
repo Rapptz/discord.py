@@ -651,7 +651,7 @@ class Command(_BaseCommand):
 
         Returns
         --------
-        bool
+        :class:`bool`
             A boolean indicating if the command is on cooldown.
         """
         if not self._buckets.valid:
@@ -708,7 +708,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        coro : :ref:`coroutine <coroutine>`
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the local error handler.
 
         Raises
@@ -736,7 +736,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the pre-invoke hook.
 
         Raises
@@ -763,7 +763,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the post-invoke hook.
 
         Raises
@@ -963,7 +963,7 @@ class GroupMixin:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the command to remove.
 
         Returns
@@ -1006,7 +1006,7 @@ class GroupMixin:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the command to get.
 
         Returns
@@ -1170,7 +1170,7 @@ def command(name=None, cls=None, **attrs):
 
     Parameters
     -----------
-    name: str
+    name: :class:`str`
         The name to create the command with. By default this uses the
         function name unchanged.
     cls
@@ -1282,7 +1282,7 @@ def has_role(item):
 
     Parameters
     -----------
-    item: Union[int, str]
+    item: Union[:class:`int`, :class:`str`]
         The name or ID of the role to check.
     """
 
@@ -1307,7 +1307,7 @@ def has_any_role(*items):
 
     Parameters
     -----------
-    items
+    items: List[Union[:class:`str`, :class:`int`]]
         An argument list of names or IDs to check that the member has roles wise.
 
     Example
@@ -1481,9 +1481,9 @@ def cooldown(rate, per, type=BucketType.default):
 
     Parameters
     ------------
-    rate: int
+    rate: :class:`int`
         The number of times a command can be used before triggering a cooldown.
-    per: float
+    per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: ``BucketType``
         The type of cooldown to have.

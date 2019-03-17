@@ -69,7 +69,7 @@ class Converter:
         -----------
         ctx: :class:`.Context`
             The invocation context that the argument is being used in.
-        argument: str
+        argument: :class:`str`
             The argument that is being converted.
         """
         raise NotImplementedError('Derived classes need to implement this.')
@@ -304,7 +304,6 @@ class ColourConverter(Converter):
 class RoleConverter(IDConverter):
     """Converts to a :class:`Role`.
 
-
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
 
@@ -349,7 +348,6 @@ class InviteConverter(Converter):
 class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.
 
-
     All lookups are done for the local guild first, if available. If that lookup
     fails, then it checks the client's global cache.
 
@@ -389,7 +387,6 @@ class EmojiConverter(IDConverter):
 
 class PartialEmojiConverter(Converter):
     """Converts to a :class:`PartialEmoji`.
-
 
     This is done by extracting the animated flag, name and ID from the emoji.
     """

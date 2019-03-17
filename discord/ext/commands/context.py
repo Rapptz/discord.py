@@ -145,9 +145,9 @@ class Context(discord.abc.Messageable):
 
         Parameters
         ------------
-        call_hooks: bool
+        call_hooks: :class:`bool`
             Whether to call the before and after invoke hooks.
-        restart: bool
+        restart: :class:`bool`
             Whether to start the call chain from the very beginning
             or where we left off (i.e. the command that caused the error).
             The default is to start where we left off.

@@ -770,7 +770,7 @@ class Client:
         ---------
 
         .. code-block:: python3
-        
+
             @client.event
             async def on_ready():
                 print('Ready!')

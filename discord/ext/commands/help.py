@@ -107,9 +107,9 @@ class Paginator:
 
         Parameters
         -----------
-        line: str
+        line: :class:`str`
             The line to add.
-        empty: bool
+        empty: :class:`bool`
             Indicates if another empty line should be added.
 
         Raises
@@ -725,7 +725,6 @@ class HelpCommand:
         - :meth:`send_error_message`
         - :meth:`on_help_command_error`
         - :meth:`prepare_help_command`
-
         """
         await self.prepare_help_command(ctx, command)
         bot = ctx.bot
