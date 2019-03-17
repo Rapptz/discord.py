@@ -766,7 +766,11 @@ class Client:
 
         The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
 
-        Example: ::
+        Example
+        ---------
+
+        .. code-block:: python3
+        
             @client.event
             async def on_ready():
                 print('Ready!')
