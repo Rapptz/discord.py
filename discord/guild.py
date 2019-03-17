@@ -1189,17 +1189,17 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: Optional[:class:`str`]
+        name: :class:`str`
             The role name. Defaults to 'new role'.
-        permissions: Optional[:class:`Permissions`]
+        permissions: :class:`Permissions`
             The permissions to have. Defaults to no permissions.
-        colour: Optional[:class:`Colour`]
+        colour: :class:`Colour`
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
-        hoist: Optional[:class:`bool`]
+        hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to False.
-        mentionable: Optional[:class:`bool`]
+        mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
             Defaults to False.
         reason: Optional[:class:`str`]

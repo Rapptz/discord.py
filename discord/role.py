@@ -211,17 +211,17 @@ class Role(Hashable):
 
         Parameters
         -----------
-        name: Optional[:class:`str`]
+        name: :class:`str`
             The new role name to change to.
-        permissions: Optional[:class:`Permissions`]
+        permissions: :class:`Permissions`
             The new permissions to change to.
-        colour: Optional[:class:`Colour`]
+        colour: :class:`Colour`
             The new colour to change to. (aliased to color as well)
-        hoist: Optional[:class:`bool`]
+        hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
-        mentionable: Optional[:class:`bool`]
+        mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
-        position: Optional[:class:`int`]
+        position: :class:`int`
             The new role's position. This must be below your top role's
             position or it will fail.
         reason: Optional[:class:`str`]
