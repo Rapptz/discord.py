@@ -261,7 +261,7 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                if c['type'] == ChannelType.text.value:
+                if c['type'] == ChannelType.text.value or c['type'] == ChannelType.news.value:
                     self._add_channel(TextChannel(guild=self, data=c, state=self._state))
                 elif c['type'] == ChannelType.voice.value:
                     self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
