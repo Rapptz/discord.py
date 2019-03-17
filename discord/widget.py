@@ -160,8 +160,7 @@ class Widget:
     """
     __slots__ = ('_state', 'channels', 'invite', 'id', 'members', 'name')
 
-    def __init__(self, *, state, data, invite):
-        self._state = state
+    def __init__(self, *, data, invite):
         self.invite = invite
         self.name = data.get('name')
         self.id = int(data.get('id'))

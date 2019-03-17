@@ -1455,12 +1455,9 @@ class Guild(Hashable):
 
         Returns the widget of the guild.
 
-        The guild must have the widget enabled to get this information.
+        .. note::
 
-        Returns
-        --------
-        :class:`Widget`
-            The widget.
+            The guild must have the widget enabled to get this information.
 
         Raises
         -------
@@ -1468,6 +1465,11 @@ class Guild(Hashable):
             The widget for this guild is disabled.
         HTTPException
             Retrieving the widget failed.
+
+        Returns
+        --------
+        :class:`Widget`
+            The widget.
         """
         data = await self._state.http.get_widget(self.id)
 
@@ -1479,4 +1481,4 @@ class Guild(Hashable):
             inv_data = await self._state.http.get_invite(inv)
             invite = Invite.from_incomplete(state=self._state, data=inv_data)
 
-        return Widget(state=self._state, data=data, invite=invite)
+        return Widget(data=data, invite=invite)

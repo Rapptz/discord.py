@@ -37,6 +37,7 @@ import websockets
 
 from .user import User, Profile
 from .invite import Invite
+from .widget import Widget
 from .object import Object
 from .guild import Guild
 from .errors import *
@@ -945,6 +946,40 @@ class Client:
         await self.http.delete_invite(invite_id)
 
     # Miscellaneous stuff
+
+    async def get_widget(self, guild_id):
+        """|coro|
+
+        Gets a :class:`Widget` from a guild ID.
+
+        .. note::
+
+            The guild must have the widget enabled to get this information.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The ID of the guild.
+
+        Raises
+        -------
+        Forbidden
+            The widget for this guild is disabled.
+        HTTPException
+            Retrieving the widget failed.
+
+        Returns
+        --------
+        :class:`Widget`
+            The widget.
+        """
+        data = await self.http.get_widget(guild_id)
+        print(data)
+        invite = None
+        if data['instant_invite']:
+            invite = await self.get_invite(data['instant_invite'])
+
+        return Widget(data=data, invite=invite)
 
     async def application_info(self):
         """|coro|
