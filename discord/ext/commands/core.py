@@ -33,7 +33,6 @@ import discord
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
-from .view import quoted_word
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -414,6 +413,8 @@ class Command(_BaseCommand):
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError() # break the loop
             if required:
+                if self._is_typing_optional(param.annotation):
+                    return None
                 raise MissingRequiredArgument(param)
             return param.default
 
@@ -421,7 +422,7 @@ class Command(_BaseCommand):
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
-            argument = quoted_word(view)
+            argument = view.get_quoted_word()
         view.previous = previous
 
         return await self.do_conversion(ctx, converter, argument, param)
@@ -434,7 +435,7 @@ class Command(_BaseCommand):
             previous = view.index
 
             view.skip_ws()
-            argument = quoted_word(view)
+            argument = view.get_quoted_word()
             try:
                 value = await self.do_conversion(ctx, converter, argument, param)
             except CommandError:
@@ -450,7 +451,7 @@ class Command(_BaseCommand):
     async def _transform_greedy_var_pos(self, ctx, param, converter):
         view = ctx.view
         previous = view.index
-        argument = quoted_word(view)
+        argument = view.get_quoted_word()
         try:
             value = await self.do_conversion(ctx, converter, argument, param)
         except CommandError:
@@ -809,27 +810,15 @@ class Command(_BaseCommand):
     @property
     def signature(self):
         """Returns a POSIX-like signature useful for help command output."""
-        result = []
-        parent = self.full_parent_name
-
-        if len(self.aliases) > 0:
-            aliases = '|'.join(self.aliases)
-            fmt = '[%s|%s]' % (self.name, aliases)
-            if parent:
-                fmt = parent + ' ' + fmt
-            result.append(fmt)
-        else:
-            name = self.name if not parent else parent + ' ' + self.name
-            result.append(name)
-
         if self.usage is not None:
-            result.append(self.usage)
-            return ' '.join(result)
+            return self.usage
+
 
         params = self.clean_params
         if not params:
-            return ' '.join(result)
+            return ''
 
+        result = []
         for name, param in params.items():
             greedy = isinstance(param.annotation, converters._Greedy)
 
@@ -909,7 +898,7 @@ class GroupMixin:
     Attributes
     -----------
     all_commands: :class:`dict`
-        A mapping of command name to :class:`.Command` or superclass
+        A mapping of command name to :class:`.Command` or subclass
         objects.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``.
@@ -932,7 +921,7 @@ class GroupMixin:
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`.Command` or its superclasses into the internal list
+        """Adds a :class:`.Command` or its subclasses into the internal list
         of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
@@ -1025,6 +1014,10 @@ class GroupMixin:
         Command or subclass
             The command that was requested. If not found, returns ``None``.
         """
+
+        # fast path, no space in name.
+        if ' ' not in name:
+            return self.all_commands.get(name)
 
         names = name.split()
         obj = self.all_commands.get(names[0])
@@ -1337,7 +1330,7 @@ def has_any_role(*items):
     return check(predicate)
 
 def has_permissions(**perms):
-    """A :func:`.check` that is added that checks if the member has any of
+    """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
     The permissions passed in must be exactly like the properties shown under

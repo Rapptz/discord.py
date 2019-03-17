@@ -94,13 +94,21 @@ Cogs
 
 .. _ext_commands_api_formatters:
 
-Formatters
------------
+Help Commands
+-----------------
 
-.. autoclass:: discord.ext.commands.Paginator
+.. autoclass:: discord.ext.commands.HelpCommand
     :members:
 
-.. autoclass:: discord.ext.commands.HelpFormatter
+.. autoclass:: discord.ext.commands.DefaultHelpCommand
+    :members:
+    :exclude-members: send_bot_help, send_cog_help, send_group_help, send_command_help, prepare_help_command
+
+.. autoclass:: discord.ext.commands.MinimalHelpCommand
+    :members:
+    :exclude-members: send_bot_help, send_cog_help, send_group_help, send_command_help, prepare_help_command
+
+.. autoclass:: discord.ext.commands.Paginator
     :members:
 
 .. _ext_commands_api_checks:
@@ -214,8 +222,8 @@ Converters
 
 .. _ext_commands_api_errors:
 
-Errors
--------
+Exceptions
+-----------
 
 .. autoexception:: discord.ext.commands.CommandError
     :members:
@@ -224,6 +232,18 @@ Errors
     :members:
 
 .. autoexception:: discord.ext.commands.MissingRequiredArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.ArgumentParsingError
+    :members:
+
+.. autoexception:: discord.ext.commands.UnexpectedQuoteError
+    :members:
+
+.. autoexception:: discord.ext.commands.InvalidEndOfQuotedStringError
+    :members:
+
+.. autoexception:: discord.ext.commands.ExpectedClosingQuoteError
     :members:
 
 .. autoexception:: discord.ext.commands.BadArgument
@@ -265,3 +285,29 @@ Errors
 .. autoexception:: discord.ext.commands.BotMissingPermissions
     :members:
 
+Exception Hierarchy
++++++++++++++++++++++
+
+.. exception_hierarchy::
+
+    - :exc:`~.DiscordException`
+        - :exc:`~.commands.CommandError`
+            - :exc:`~.commands.ConversionError`
+            - :exc:`~.commands.UserInputError`
+                - :exc:`~.commands.MissingRequiredArgument`
+                - :exc:`~.commands.TooManyArguments`
+                - :exc:`~.commands.BadArgument`
+                - :exc:`~.commands.BadUnionArgument`
+                - :exc:`~.commands.ArgumentParsingError`
+                    - :exc:`~.commands.UnexpectedQuoteError`
+                    - :exc:`~.commands.InvalidEndOfQuotedStringError`
+                    - :exc:`~.commands.ExpectedClosingQuoteError`
+            - :exc:`~.commands.CommandNotFound`
+            - :exc:`~.commands.CheckFailure`
+                - :exc:`~.commands.NoPrivateMessage`
+                - :exc:`~.commands.NotOwner`
+                - :exc:`~.commands.MissingPermissions`
+                - :exc:`~.commands.BotMissingPermissions`
+            - :exc:`~.commands.DisabledCommand`
+            - :exc:`~.commands.CommandInvokeError`
+            - :exc:`~.commands.CommandOnCooldown`

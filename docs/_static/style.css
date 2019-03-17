@@ -322,6 +322,21 @@ div.helpful > p.admonition-title:after {
   content: unset;
 }
 
+/* exception hierarchy */
+
+.exception-hierarchy-content dd,
+.exception-hierarchy-content dl {
+  margin: 0px 2px;
+}
+
+.exception-hierarchy-content {
+  margin-left: 0.5em;
+}
+
+.exception-hierarchy-content ul {
+  list-style: '»' !important;
+}
+
 pre {
   background-color: #f5f5f5;
   border: 1px solid #C6C9CB;

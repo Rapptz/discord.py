@@ -232,7 +232,11 @@ class VoiceClient:
                 await self.ws.poll_event()
             except (ConnectionClosed, asyncio.TimeoutError) as exc:
                 if isinstance(exc, ConnectionClosed):
-                    if exc.code == 1000:
+                    # The following close codes are undocumented so I will document them here.
+                    # 1000 - normal closure (obviously)
+                    # 4014 - voice channel has been deleted.
+                    # 4015 - voice server has crashed
+                    if exc.code in (1000, 4014, 4015):
                         await self.disconnect()
                         break
 

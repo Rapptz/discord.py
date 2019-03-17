@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import datetime
 import re
+import io
 
 from . import utils
 from .reaction import Reaction
@@ -77,20 +78,26 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
-    async def save(self, fp, *, seek_begin=True):
+    async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
         Saves this attachment into a file-like object.
 
         Parameters
         -----------
-        fp: Union[BinaryIO, str]
+        fp: Union[BinaryIO, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
-        seek_begin: bool
+        seek_begin: :class:`bool`
             Whether to seek to the beginning of the file after saving is
             successfully done.
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, which is generally deleted right after the message is deleted.
+            Note that this can still fail to download deleted attachments if too much time
+            has passed.
 
         Raises
         --------
@@ -104,16 +111,16 @@ class Attachment:
         int
             The number of bytes written.
         """
-
-        data = await self._http.get_attachment(self.url)
-        if isinstance(fp, str):
-            with open(fp, 'wb') as f:
-                return f.write(data)
-        else:
+        url = self.proxy_url if use_cached else self.url
+        data = await self._http.get_attachment(url)
+        if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
                 fp.seek(0)
             return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)
 
 class Message:
     r"""Represents a message from Discord.
@@ -275,7 +282,7 @@ class Message:
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
         self._try_patch(data, 'content')
         self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
+        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
         self._try_patch(data, 'nonce')
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):

@@ -95,6 +95,10 @@ class Guild(Hashable):
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
+    banner: Optional[:class:`str`]
+        The guild's banner.
+    description: Optional[:class:`str`]
+        The guild's description.
     mfa_level: :class:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
@@ -119,11 +123,12 @@ class Guild(Hashable):
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'name', 'region', '_state',
+                 'name', 'id', 'unavailable', 'banner', 'region', '_state',
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', 'default_notifications')
+                 '_voice_states', '_system_channel_id', 'default_notifications',
+                 'description')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -211,6 +216,7 @@ class Guild(Hashable):
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
         self.icon = guild.get('icon')
+        self.banner = guild.get('banner')
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
         self._roles = {}
@@ -224,6 +230,7 @@ class Guild(Hashable):
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
+        self.description = guild.get('description')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -254,13 +261,15 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                if c['type'] == ChannelType.text.value:
+                c_type = c['type']
+                if c_type in (ChannelType.text.value, ChannelType.news.value):
                     self._add_channel(TextChannel(guild=self, data=c, state=self._state))
-                elif c['type'] == ChannelType.voice.value:
+                elif c_type == ChannelType.voice.value:
                     self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
-                elif c['type'] == ChannelType.category.value:
+                elif c_type == ChannelType.category.value:
                     self._add_channel(CategoryChannel(guild=self, data=c, state=self._state))
-
+                elif c_type == ChannelType.store.value:
+                    self._add_channel(StoreChannel(guild=self, data=c, state=self._state))
 
     @property
     def channels(self):
@@ -352,7 +361,7 @@ class Guild(Hashable):
         as_list = [(_get(k), v) for k, v in grouped.items()]
         as_list.sort(key=key)
         for _, channels in as_list:
-            channels.sort(key=lambda c: (not isinstance(c, TextChannel), c.position, c.id))
+            channels.sort(key=lambda c: (c._sorting_bucket, c.position, c.id))
         return as_list
 
     def get_channel(self, channel_id):
@@ -409,7 +418,7 @@ class Guild(Hashable):
         """Returns a friendly URL version of the guild's icon. Returns an empty string if it has no icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 2048.
+        size must be a power of 2 between 16 and 4096.
 
         Parameters
         -----------
@@ -429,7 +438,7 @@ class Guild(Hashable):
             Bad image format passed to ``format`` or invalid ``size``.
         """
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -437,6 +446,44 @@ class Guild(Hashable):
             return ''
 
         return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
+
+    @property
+    def banner_url(self):
+        """Returns the URL version of the guild's banner. Returns an empty string if it has no banner."""
+        return self.banner_url_as()
+
+    def banner_url_as(self, *, format='webp', size=2048):
+        """Returns a friendly URL version of the guild's banner. Returns an empty string if it has no banner.
+
+        The format must be one of 'webp', 'jpeg', or 'png'. The
+        size must be a power of 2 between 16 and 4096.
+
+        Parameters
+        -----------
+        format: str
+            The format to attempt to convert the banner to.
+        size: int
+            The size of the image to display.
+
+        Returns
+        --------
+        str
+            The resulting CDN URL.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+        """
+        if not valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format not in VALID_ICON_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
+
+        if self.banner is None:
+            return ''
+
+        return 'https://cdn.discordapp.com/banners/{0.id}/{0.banner}.{1}?size={2}'.format(self, format, size)
 
     @property
     def splash_url(self):
@@ -447,7 +494,7 @@ class Guild(Hashable):
         """Returns a friendly URL version of the guild's invite splash. Returns an empty string if it has no splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 2048.
+        size must be a power of 2 between 16 and 4096.
 
         Parameters
         -----------
@@ -467,7 +514,7 @@ class Guild(Hashable):
             Bad image format passed to ``format`` or invalid ``size``.
         """
         if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 2048")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_ICON_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
 
@@ -758,9 +805,15 @@ class Guild(Hashable):
         ----------
         name: str
             The new name of the guild.
+        description: str
+            The new description of the guild. This is only available to guilds that
+            contain `VERIFIED` in :attr:`Guild.features`.
         icon: bytes
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
+        banner: bytes
+            A :term:`py:bytes-like object` representing the banner.
+            Could be ``None`` to denote removal of the banner.
         splash: bytes
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
@@ -812,6 +865,16 @@ class Guild(Hashable):
                 icon = None
 
         try:
+            banner_bytes = fields['banner']
+        except KeyError:
+            banner = self.banner
+        else:
+            if banner_bytes is not None:
+                banner = utils._bytes_to_base64_data(banner_bytes)
+            else:
+                banner = None
+
+        try:
             vanity_code = fields['vanity_code']
         except KeyError:
             pass
@@ -829,6 +892,7 @@ class Guild(Hashable):
                 splash = None
 
         fields['icon'] = icon
+        fields['banner'] = banner
         fields['splash'] = splash
 
         try:
@@ -1151,7 +1215,7 @@ class Guild(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to change the role.
+            You do not have permissions to create the role.
         HTTPException
             Editing the role failed.
         InvalidArgument
