@@ -590,7 +590,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def _sorting_bucket(self):
-        return ChannelType.category
+        return ChannelType.category.value
 
     def is_nsfw(self):
         """Checks if the category is NSFW."""
