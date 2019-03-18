@@ -90,30 +90,44 @@ class CogMeta(type):
         attrs['__cog_name__'] = kwargs.pop('name', name)
         attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
 
-        commands = []
-        listeners = []
+        commands = {}
+        listeners = {}
 
-        for elem, value in attrs.items():
-            is_static_method = isinstance(value, staticmethod)
-            if is_static_method:
-                value = value.__func__
-            if isinstance(value, _BaseCommand):
+        new_cls = super().__new__(cls, name, bases, attrs, **kwargs)
+        for base in reversed(new_cls.__mro__):
+            for elem, value in base.__dict__.items():
+                if elem in commands:
+                    del commands[elem]
+                if elem in listeners:
+                    del listeners[elem]
+
+                is_static_method = isinstance(value, staticmethod)
                 if is_static_method:
-                    raise TypeError('Command in method {0!r} must not be staticmethod.'.format(elem))
+                    value = value.__func__
+                if isinstance(value, _BaseCommand):
+                    if is_static_method:
+                        raise TypeError('Command in method {0}.{1!r} must not be staticmethod.'.format(base, elem))
 
-                commands.append(value)
-            elif inspect.iscoroutinefunction(value):
-                try:
-                    is_listener = getattr(value, '__cog_listener__')
-                except AttributeError:
-                    continue
-                else:
-                    for listener_name in value.__cog_listener_names__:
-                        listeners.append((listener_name, value.__name__))
+                    commands[elem] = value
+                elif inspect.iscoroutinefunction(value):
+                    try:
+                        is_listener = getattr(value, '__cog_listener__')
+                    except AttributeError:
+                        continue
+                    else:
+                        listeners[elem] = value
 
-        attrs['__cog_commands__'] = commands # this will be copied in Cog.__new__
-        attrs['__cog_listeners__'] = tuple(listeners)
-        return super().__new__(cls, name, bases, attrs, **kwargs)
+        new_cls.__cog_commands__ = list(commands.values()) # this will be copied in Cog.__new__
+
+        listeners_as_list = []
+        for listener in listeners.values():
+            for listener_name in listener.__cog_listener_names__:
+                # I use __name__ instead of just storing the value so I can inject
+                # the self attribute when the time comes to add them to the bot
+                listeners_as_list.append((listener_name, listener.__name__))
+
+        new_cls.__cog_listeners__ = listeners_as_list
+        return new_cls
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args)
