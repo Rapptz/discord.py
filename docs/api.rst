@@ -103,6 +103,14 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The warnings on :func:`on_ready` also apply.
 
+.. function:: on_disconnect()
+
+    Called when the client has disconnected from Discord. This could happen either through
+    the internet being disconnected, explicit calls to logout, or Discord terminating the connection
+    one way or the other.
+
+    This function can be called many times.
+
 .. function:: on_ready()
 
     Called when the client is done preparing the data received from Discord. Usually after login is successful

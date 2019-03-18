@@ -409,6 +409,7 @@ class Client:
                     websockets.InvalidHandshake,
                     websockets.WebSocketProtocolError) as exc:
 
+                self.dispatch('disconnect')
                 if not reconnect:
                     await self.close()
                     if isinstance(exc, ConnectionClosed) and exc.code == 1000:

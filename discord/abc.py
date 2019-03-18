@@ -756,7 +756,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 raise InvalidArgument('file parameter must be File')
 
             try:
-                data = await state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
+                data = await state.http.send_files(channel.id, files=[file],
                                                    content=content, tts=tts, embed=embed, nonce=nonce)
             finally:
                 file.close()
