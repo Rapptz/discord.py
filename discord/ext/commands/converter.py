@@ -294,7 +294,7 @@ class ColourConverter(Converter):
             arg = arg[1:]
         try:
             value = int(arg, base=16)
-            if not 0 <= value <= 16777215:
+            if not (0 <= value <= 0xFFFFFF):
                 raise ValueError()
             return discord.Colour(value=value)
         except ValueError:
