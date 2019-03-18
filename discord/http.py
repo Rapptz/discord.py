@@ -105,7 +105,7 @@ class HTTPClient:
         if self._session.closed:
             self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
 
-    async def request(self, route, *, header_bypass_delay=None, **kwargs):
+    async def request(self, route, *, files=None, header_bypass_delay=None, **kwargs):
         bucket = route.bucket
         method = route.method
         url = route.url
@@ -151,6 +151,10 @@ class HTTPClient:
         await lock.acquire()
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
+                if files:
+                    for f in files:
+                        f.reset(seek=tries)
+
                 async with self._session.request(method, url, **kwargs) as r:
                     log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
 
@@ -334,13 +338,13 @@ class HTTPClient:
 
         form.add_field('payload_json', utils.to_json(payload))
         if len(files) == 1:
-            fp = files[0]
-            form.add_field('file', fp[0], filename=fp[1], content_type='application/octet-stream')
+            file = files[0]
+            form.add_field('file', file.fp, filename=file.filename, content_type='application/octet-stream')
         else:
-            for index, (buffer, filename) in enumerate(files):
-                form.add_field('file%s' % index, buffer, filename=filename, content_type='application/octet-stream')
+            for index, file in enumerate(files):
+                form.add_field('file%s' % index, file.fp, filename=file.filename, content_type='application/octet-stream')
 
-        return self.request(r, data=form)
+        return self.request(r, data=form, files=files)
 
     async def ack_message(self, channel_id, message_id):
         r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)

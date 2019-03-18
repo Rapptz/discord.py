@@ -110,17 +110,18 @@ class WebhookAdapter:
         cleanup = None
         if file is not None:
             multipart = {
-                'file': (file.filename, file.open_file(), 'application/octet-stream'),
+                'file': (file.filename, file.fp, 'application/octet-stream'),
                 'payload_json': utils.to_json(payload)
             }
             data = None
             cleanup = file.close
+            files_to_pass = [file]
         elif files is not None:
             multipart = {
                 'payload_json': utils.to_json(payload)
             }
             for i, file in enumerate(files, start=1):
-                multipart['file%i' % i] = (file.filename, file.open_file(), 'application/octet-stream')
+                multipart['file%i' % i] = (file.filename, file.fp, 'application/octet-stream')
             data = None
 
             def _anon():
@@ -128,13 +129,15 @@ class WebhookAdapter:
                     f.close()
 
             cleanup = _anon
+            files_to_pass = files
         else:
             data = payload
             multipart = None
+            files_to_pass = None
 
         url = '%s?wait=%d' % (self._request_url, wait)
         try:
-            maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
+            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
         finally:
             if cleanup is not None:
                 if not asyncio.iscoroutine(maybe_coro):
@@ -160,9 +163,10 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None):
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
         headers = {}
         data = None
+        files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
@@ -176,6 +180,9 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     data.add_field(key, value)
 
         for tries in range(5):
+            for file in files:
+                file.reset(seek=tries)
+
             async with self.session.request(verb, url, headers=headers, data=data) as r:
                 data = await r.text(encoding='utf-8')
                 if r.headers['Content-Type'] == 'application/json':
@@ -239,9 +246,10 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None):
         headers = {}
         data = None
+        files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
@@ -250,6 +258,9 @@ class RequestsWebhookAdapter(WebhookAdapter):
             data = {'payload_json': multipart.pop('payload_json')}
 
         for tries in range(5):
+            for file in files:
+                file.reset(seek=tries)
+
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
             data = r.text
