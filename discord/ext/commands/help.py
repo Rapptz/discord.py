@@ -30,6 +30,9 @@ import inspect
 import re
 import discord.utils
 
+from typing import TypeVar, Generic
+
+from .context import Context
 from .core import Group, Command
 from .errors import CommandError
 
@@ -245,7 +248,10 @@ class _HelpCommandImpl(Command):
             # overridden so let's swap it with our cog specific implementation
             self.on_error = self._on_error_cog_implementation
 
-class HelpCommand:
+
+_CT = TypeVar('_CT', bound=Context)
+
+class HelpCommand(Generic[_CT]):
     r"""The base implementation for help command formatting.
 
     Attributes

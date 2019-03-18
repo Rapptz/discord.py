@@ -9,6 +9,7 @@ class ChannelType(Enum):
     group: int
     category: int
     news: int
+    store: int
 
     def __str__(self) -> str: ...
 

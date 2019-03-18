@@ -4,10 +4,11 @@ import aiohttp
 
 from .core import GroupMixin, Command
 from .context import Context
-from .formatter import HelpFormatter
+from .help import HelpCommand
 from .cog import Cog
 
 from typing import Any, Optional, Union, Callable, Coroutine, List, Tuple, Dict, Set, TypeVar, Type, overload
+from types import MappingProxyType, ModuleType
 
 
 CommandPrefix = Union[
@@ -29,20 +30,14 @@ _C = TypeVar('_C', bound=_CoroType)
 
 class BotBase(GroupMixin[CT]):
     command_prefix: CommandPrefix
-    cogs: Dict[str, Cog[CT]]
     extra_events: Dict[str, List[Callable[..., Coroutine[Any, Any, None]]]]
-    extensions: Dict[str, Any]
     case_insensitive: bool
     description: str
-    formatter: HelpFormatter  # noqa
-    pm_help: bool
-    help_attrs: Dict[str, Any]
-    command_not_found: str
-    command_has_no_subcommands: str
     owner_id: Optional[int]
+    help_command: Optional[HelpCommand]
 
-    def __init__(self, command_prefix: CommandPrefix, formatter: Optional[HelpFormatter] = ...,
-                 description: Optional[str] = ..., pm_help: bool = ..., **options: Any) -> None: ...
+    def __init__(self, command_prefix: CommandPrefix, help_command: Optional[HelpCommand] = ...,
+                 description: Optional[str] = ..., **options: Any) -> None: ...
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None: ...
 
@@ -78,9 +73,15 @@ class BotBase(GroupMixin[CT]):
 
     def remove_cog(self, name: str) -> None: ...
 
+    @property
+    def cogs(self) -> MappingProxyType[str, Cog[CT]]: ...
+
     def load_extension(self, name: str) -> None: ...
 
     def unload_extension(self, name: str) -> None: ...
+
+    @property
+    def extensions(self) -> MappingProxyType[str, ModuleType]: ...
 
     async def get_prefix(self, message: discord.Message) -> Union[List[str], str]: ...
 
@@ -98,8 +99,8 @@ class BotBase(GroupMixin[CT]):
 
 
 class Bot(BotBase[CT], discord.Client):
-    def __init__(self, command_prefix: CommandPrefix, formatter: Optional[HelpFormatter] = ...,
-                 description: Optional[str] = ..., pm_help: bool = ..., *,
+    def __init__(self, command_prefix: CommandPrefix, description: Optional[str] = ...,
+                 help_command: Optional[HelpCommand] = ..., *,
                  case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
@@ -110,8 +111,8 @@ class Bot(BotBase[CT], discord.Client):
 
 
 class AutoShardedBot(BotBase[CT], discord.AutoShardedClient):
-    def __init__(self, command_prefix: CommandPrefix, formatter: Optional[HelpFormatter] = ...,
-                 description: Optional[str] = ..., pm_help: bool = ..., *,
+    def __init__(self, command_prefix: CommandPrefix, description: Optional[str] = ...,
+                 help_command: Optional[HelpCommand] = ..., *,
                  case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,

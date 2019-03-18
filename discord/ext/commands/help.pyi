@@ -1,0 +1,175 @@
+import discord
+from inspect import Parameter
+
+from .bot import Bot
+from .core import Command, Group
+from .errors import CommandError
+from .context import Context
+from .cog import Cog
+
+from typing import (
+    Any, Optional, Union, List, Tuple, Dict, Iterable, Mapping, ClassVar, Pattern, TypeVar, Generic, Awaitable,
+    Callable, Sequence
+)
+from mypy_extensions import TypedDict
+
+_T = TypeVar('_T')
+_MaybeAwaitable = Union[Awaitable[_T], _T]
+_CT = TypeVar('_CT', bound=Context)
+
+class _CommandAttrs(TypedDict, total=False):
+    name: str
+    enabled: bool
+    help: Optional[str]
+    brief: Optional[str]
+    usage: Optional[str]
+    aliases: List[str]
+    description: str
+    hidden: bool
+    rest_is_raw: bool
+    ignore_extra: bool
+
+class Paginator:
+    prefix: Optional[str]
+    suffix: Optional[str]
+    max_size: int
+
+    def __init__(self, prefix: Optional[str] = ..., suffix: Optional[str] = ..., max_size: int = ...) -> None: ...
+
+    def clear(self) -> None: ...
+
+    def add_line(self, line: str = ..., *, empty: bool = ...) -> None: ...
+
+    def close_page(self) -> None: ...
+
+    def __len__(self) -> int: ...
+
+    @property
+    def pages(self) -> List[str]: ...
+
+    def __repr__(self) -> str: ...
+
+
+class _HelpCommandImpl(Command[_CT]):
+    def __init__(self, inject: Any, *args: Any, **kwargs: Any) -> None: ...
+
+    @property
+    def clean_params(self) -> Mapping[str, Parameter]: ...
+
+class HelpCommand:
+    context: Optional[Context]
+    show_hidden: bool
+    verify_checks: bool
+    command_attrs: _CommandAttrs
+    cog: Optional[Cog[Context]]
+
+    MENTION_TRANSFORMS: ClassVar[Dict[str, str]]
+    MENTION_PATTHER: ClassVar[Pattern[str]]
+
+    def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...) -> None: ...
+
+    def get_bot_mapping(self) -> Dict[Optional[Cog[_CT]], List[Command[_CT]]]: ...
+
+    @property
+    def clean_prefix(self) -> str: ...
+
+    def get_command_signature(self) -> str: ...
+
+    def remove_mentions(self, string: str) -> str: ...
+
+    def command_not_found(self, string: str) -> _MaybeAwaitable[str]: ...
+
+    def subcommand_not_found(self, command: Command[_CT], string: str) -> _MaybeAwaitable[str]: ...
+
+    async def filter_commands(self, commands: Iterable[Command[_CT]], *, sort: bool = ...,
+                              key: Optional[Callable[[Command[_CT]], Any]] = ...) -> List[Command[_CT]]: ...
+
+    def get_max_size(self, commands: Sequence[Command[_CT]]) -> int: ...
+
+    def get_destination(self) -> Union[discord.TextChannel, discord.DMChannel, discord.GroupChannel]: ...
+
+    async def send_error_message(self, error: str) -> None: ...
+
+    async def on_help_command_error(self, ctx: _CT, error: CommandError) -> None: ...
+
+    async def send_bot_help(self, mapping: Mapping[Optional[Cog[_CT]], List[Command[_CT]]]) -> Any: ...
+
+    async def send_cog_help(self, cog: Cog[_CT]) -> Any: ...
+
+    async def send_group_help(self, group: Group[_CT]) -> Any: ...
+
+    async def send_command_help(self, command: Command[_CT]) -> Any: ...
+
+    async def prepare_help_command(self, ctx: _CT, command: Optional[str] = ...) -> None: ...
+
+    async def command_callback(self, ctx: _CT, *, command: Optional[str] = ...) -> Any: ...
+
+class DefaultHelpCommand(HelpCommand):
+    width: int
+    sort_commands: bool
+    indent: int
+    commands_heading: str
+    no_category: str
+    paginator: Paginator
+
+    def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...,
+                 width: int = ..., indent: int = ..., sort_commands: bool = ..., commands_heading: str = ...,
+                 no_category: str = ..., paginator: Optional[Paginator] = ...) -> None: ...
+
+    def shorten_text(self, text: str) -> str: ...
+
+    def get_ending_note(self) -> str: ...
+
+    def add_indented_commands(self, commands: Sequence[Command[_CT]], *, heading: str,
+                              max_size: Optional[int] = ...) -> None: ...
+
+    async def send_pages(self) -> None: ...
+
+    def add_command_formatting(self, command: Command[_CT]) -> None: ...
+
+    async def prepare_help_command(self, ctx: _CT, command: Optional[str] = ...) -> None: ...
+
+    async def send_bot_help(self, mapping: Mapping[Optional[Cog[_CT]], List[Command[_CT]]]) -> None: ...
+
+    async def send_command_help(self, command: Command[_CT]) -> None: ...
+
+    async def send_group_help(self, group: Group[_CT]) -> None: ...
+
+    async def send_cog_help(self, cog: Cog[_CT]) -> None: ...
+
+class MinimalHelpCommand(HelpCommand):
+    sort_commands: bool
+    commands_heading: str
+    aliases_heading: str
+    no_category: str
+    paginator: Paginator
+
+    def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...,
+                 sort_commands: bool = ..., commands_heading: str = ..., aliases_heading: str = ...,
+                 no_category: str = ..., paginator: Optional[Paginator] = ...) -> None: ...
+
+    async def send_pages(self) -> None: ...
+
+    def get_opening_note(self) -> str: ...
+
+    def get_command_signature(self) -> str: ...
+
+    def get_ending_note(self) -> Optional[str]: ...
+
+    def add_bot_commands_formatting(self, commands: Sequence[Command[_CT]], heading: str) -> None: ...
+
+    def add_subcommand_formatting(self, command: Command[_CT]) -> None: ...
+
+    def add_aliases_formatting(self, aliases: Sequence[str]) -> None: ...
+
+    def add_command_formatting(self, command: Command[_CT]) -> None: ...
+
+    async def prepare_help_command(self, ctx: _CT, command: Optional[str] = ...) -> None: ...
+
+    async def send_bot_help(self, mapping: Mapping[Optional[Cog[_CT]], List[Command[_CT]]]) -> None: ...
+
+    async def send_cog_help(self, cog: Cog[_CT]) -> None: ...
+
+    async def send_group_help(self, group: Group[_CT]) -> None: ...
+
+    async def send_command_help(self, command: Command[_CT]) -> None: ...

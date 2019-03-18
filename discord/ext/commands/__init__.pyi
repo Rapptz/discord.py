@@ -2,7 +2,7 @@ from .bot import Bot as Bot, AutoShardedBot as AutoShardedBot, when_mentioned as
 from .context import Context as Context
 from .core import *
 from .errors import *
-from .formatter import HelpFormatter as HelpFormatter, Paginator as Paginator
+from .help import *
 from .converter import *
 from .cooldowns import *
 from .cog import *

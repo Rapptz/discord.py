@@ -3,7 +3,7 @@ import datetime
 from .mixins import Hashable
 from .guild import Guild
 from .user import User
-from .channel import TextChannel, VoiceChannel
+from .channel import TextChannel, VoiceChannel, StoreChannel
 from .enums import ChannelType, VerificationLevel
 
 from typing import Optional, Union, NamedTuple, List, Set
@@ -66,7 +66,7 @@ class Invite(Hashable):
     inviter: User
     approximate_member_count: Optional[int]
     approximate_presence_count: Optional[int]
-    channel: Union[TextChannel, VoiceChannel, PartialInviteChannel]
+    channel: Union[TextChannel, VoiceChannel, StoreChannel, PartialInviteChannel]
 
     def __str__(self) -> str: ...
 

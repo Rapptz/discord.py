@@ -1,7 +1,7 @@
 import datetime
 
 from .guild import Guild
-from .channel import TextChannel, DMChannel, GroupChannel, CategoryChannel, VoiceChannel
+from .channel import TextChannel, DMChannel, GroupChannel
 from .abc import Snowflake, User as _BaseUser
 from .enums import MessageType
 from .member import Member
@@ -73,7 +73,7 @@ class Message:
     def raw_role_mentions(self) -> List[int]: ...
 
     @property
-    def channel_mentions(self) -> List[Union[TextChannel, VoiceChannel, CategoryChannel]]: ...
+    def channel_mentions(self) -> List[TextChannel]: ...
 
     @property
     def clean_content(self) -> str: ...

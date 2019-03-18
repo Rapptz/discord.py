@@ -89,7 +89,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
                    nsfw: bool = ...) -> None: ...
 
     @property
-    def channels(self) -> List[Union[TextChannel, VoiceChannel]]: ...
+    def channels(self) -> List[Union[TextChannel, VoiceChannel, StoreChannel]]: ...
 
     @property
     def text_channels(self) -> List[TextChannel]: ...
@@ -106,6 +106,23 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
                                    overwrites: Optional[Dict[Union[Role, Member], PermissionOverwrite]] = ...,
                                    bitrate: int = ..., position: int = ..., user_limit: int = ...,
                                    reason: Optional[str] = ...) -> VoiceChannel: ...
+
+
+class StoreChannel(discord.abc.Messageable, Hashable):
+    id: int
+    name: str
+    guild: Guild
+    category_id: Optional[int]
+    position: int
+    nsfw: bool
+
+    def permissions_for(self, member: Member) -> Permissions: ...
+
+    def is_nsfw(self) -> bool: ...
+
+    async def edit(self, *, reason: Optional[str] = ..., name: str = ..., position: int = ...,
+                   nsfw: bool = ..., sync_permissions: bool = ..., category: Optional[CategoryChannel] = ...) -> None: ...
+
 
 
 class DMChannel(discord.abc.Messageable, Hashable):
@@ -147,4 +164,6 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     async def leave(self) -> None: ...
 
-def _channel_factory(channel_type: Union[int, ChannelType]) -> Tuple[Optional[Type[Union[TextChannel, VoiceChannel, DMChannel, CategoryChannel, GroupChannel]]], ChannelType]: ...
+_ChannelTypes = Type[Union[TextChannel, VoiceChannel, StoreChannel, DMChannel, CategoryChannel, GroupChannel]]
+
+def _channel_factory(channel_type: Union[int, ChannelType]) -> Tuple[Optional[_ChannelTypes], ChannelType]: ...

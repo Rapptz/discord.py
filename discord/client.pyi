@@ -9,7 +9,7 @@ from .activity import Activity, Game, Streaming, Spotify
 from .voice_client import VoiceClient
 from .webhook import Webhook
 from .member import Member, VoiceState
-from .channel import TextChannel, VoiceChannel, CategoryChannel, DMChannel, GroupChannel
+from .channel import TextChannel, VoiceChannel, CategoryChannel, StoreChannel, DMChannel, GroupChannel
 from .message import Message
 from .raw_models import (
     RawMessageDeleteEvent, RawBulkMessageDeleteEvent, RawMessageUpdateEvent, RawReactionActionEvent,
@@ -29,6 +29,8 @@ from typing_extensions import Literal
 
 _FuncType = Callable[..., Coroutine[Any, Any, Any]]
 _F = TypeVar('_F', bound=_FuncType)
+
+_GuildChannels = Union[TextChannel, VoiceChannel, CategoryChannel, StoreChannel]
 
 class AppInfo(NamedTuple):
     id: int
@@ -102,7 +104,7 @@ class Client:
     @property
     def users(self) -> List[User]: ...
 
-    def get_channel(self, id: int) -> Optional[Union[TextChannel, VoiceChannel, CategoryChannel, DMChannel, GroupChannel]]: ...
+    def get_channel(self, id: int) -> Optional[Union[_GuildChannels, DMChannel, GroupChannel]]: ...
 
     def get_guild(self, id: int) -> Optional[Guild]: ...
 
@@ -110,7 +112,7 @@ class Client:
 
     def get_emoji(self, id: int) -> Optional[Emoji]: ...
 
-    def get_all_channels(self) -> Iterator[Union[TextChannel, VoiceChannel, CategoryChannel]]: ...
+    def get_all_channels(self) -> Iterator[Union[_GuildChannels]]: ...
 
     def get_all_members(self) -> Iterator[Member]: ...
 
