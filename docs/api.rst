@@ -679,6 +679,10 @@ All enumerations are subclasses of `enum`_.
 
         A guild news channel.
 
+    .. attribute:: store
+
+        A guild store channel.
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message

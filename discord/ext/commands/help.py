@@ -64,6 +64,12 @@ __all__ = [
 class Paginator:
     """A class that aids in paginating code blocks for Discord messages.
 
+    .. container:: operations
+
+        .. describe:: len(x)
+
+            Returns the total number of characters in the paginator.
+
     Attributes
     -----------
     prefix: Optional[:class:`str`]
@@ -137,6 +143,10 @@ class Paginator:
         else:
             self._current_page = []
             self._count = 0
+
+    def __len__(self):
+        total = sum(len(p) for p in self._pages)
+        return total + self._count
 
     @property
     def pages(self):
@@ -283,6 +293,16 @@ class HelpCommand:
         bot.remove_command(self._command_impl.name)
         self._command_impl._eject_cog()
         self._command_impl = None
+
+    def get_bot_mapping(self):
+        """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
+        bot = self.context.bot
+        mapping = {
+            cog: cog.get_commands()
+            for cog in bot.cogs.values()
+        }
+        mapping[None] = [c for c in bot.all_commands.values() if c.cog is None]
+        return mapping
 
     @property
     def clean_prefix(self):
@@ -666,7 +686,12 @@ class HelpCommand:
         some state in your subclass before the command does its processing
         then this would be the place to do it.
 
-        The default implementation is empty.
+        The default implementation sets :attr:`context`.
+
+        .. warning::
+
+            If you override this method, be sure to call ``super()``
+            so the help command can be set up.
 
         .. note::
 
@@ -680,7 +705,7 @@ class HelpCommand:
         command: Optional[:class:`str`]
             The argument passed to the help command.
         """
-        return None
+        self.context = ctx
 
     async def command_callback(self, ctx, *, command=None):
         """|coro|
@@ -702,16 +727,11 @@ class HelpCommand:
         - :meth:`prepare_help_command`
 
         """
-        self.context = ctx
         await self.prepare_help_command(ctx, command)
         bot = ctx.bot
 
         if command is None:
-            mapping = {
-                cog: cog.get_commands()
-                for cog in bot.cogs.values()
-            }
-            mapping[None] = [c for c in bot.all_commands.values() if c.cog is None]
+            mapping = self.get_bot_mapping()
             return await self.send_bot_help(mapping)
 
         # Check if it's a cog
@@ -744,9 +764,9 @@ class HelpCommand:
                 cmd = found
 
         if isinstance(cmd, Group):
-            await self.send_group_help(cmd)
+            return await self.send_group_help(cmd)
         else:
-            await self.send_command_help(cmd)
+            return await self.send_command_help(cmd)
 
 class DefaultHelpCommand(HelpCommand):
     """The implementation of the default help command.
@@ -762,6 +782,16 @@ class DefaultHelpCommand(HelpCommand):
         Defaults to 80.
     sort_commands: :class:`bool`
         Whether to sort the commands in the output alphabetically. Defaults to ``True``.
+    dm_help: Optional[:class:`bool`]
+        A tribool that indicates if the help command should DM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is DM'd. If ``False``, none of the help
+        output is DM'd. If ``None``, then the bot will only DM when the help
+        message becomes too long (dictated by more than :attr:`dm_help_threshold` characters).
+        Defaults to ``False``.
+    dm_help_threshold: Optional[:class:`int`]
+        The number of characters the paginator must accumulate before getting DM'd to the
+        user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     indent: :class:`int`
         How much to intend the commands from a heading. Defaults to ``2``.
     commands_heading: :class:`str`
@@ -778,6 +808,8 @@ class DefaultHelpCommand(HelpCommand):
         self.width = options.pop('width', 80)
         self.indent = options.pop('indent', 2)
         self.sort_commands = options.pop('sort_commands', True)
+        self.dm_help = options.pop('dm_help', False)
+        self.dm_help_threshold = options.pop('dm_help_threshold', 1000)
         self.commands_heading = options.pop('commands_heading', "Commands:")
         self.no_category = options.pop('no_category', 'No Category')
         self.paginator = options.pop('paginator', None)
@@ -857,10 +889,25 @@ class DefaultHelpCommand(HelpCommand):
         self.paginator.add_line(signature, empty=True)
 
         if command.help:
-            self.paginator.add_line(command.help, empty=True)
+            try:
+                self.paginator.add_line(command.help, empty=True)
+            except RuntimeError:
+                for line in command.help.splitlines():
+                    self.paginator.add_line(line)
+                self.paginator.add_line()
+
+    def get_destination(self):
+        ctx = self.context
+        if self.dm_help is True:
+            return ctx.author
+        elif self.dm_help is None and len(self.paginator) > self.dm_help_threshold:
+            return ctx.author
+        else:
+            return ctx.channel
 
     async def prepare_help_command(self, ctx, command):
         self.paginator.clear()
+        await super().prepare_help_command(ctx, command)
 
     async def send_bot_help(self, mapping):
         ctx = self.context
@@ -939,6 +986,16 @@ class MinimalHelpCommand(HelpCommand):
     aliases_heading: :class:`str`
         The alias list's heading string used to list the aliases of the command. Useful for i18n.
         Defaults to ``"Aliases:"``.
+    dm_help: Optional[:class:`bool`]
+        A tribool that indicates if the help command should DM the user instead of
+        sending it to the channel it received it from. If the boolean is set to
+        ``True``, then all help output is DM'd. If ``False``, none of the help
+        output is DM'd. If ``None``, then the bot will only DM when the help
+        message becomes too long (dictated by more than :attr:`dm_help_threshold` characters).
+        Defaults to ``False``.
+    dm_help_threshold: Optional[:class:`int`]
+        The number of characters the paginator must accumulate before getting DM'd to the
+        user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     no_category: :class:`str`
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
@@ -949,6 +1006,8 @@ class MinimalHelpCommand(HelpCommand):
     def __init__(self, **options):
         self.sort_commands = options.pop('sort_commands', True)
         self.commands_heading = options.pop('commands_heading', "Commands")
+        self.dm_help = options.pop('dm_help', False)
+        self.dm_help_threshold = options.pop('dm_help_threshold', 1000)
         self.aliases_heading = options.pop('aliases_heading', "Aliases:")
         self.no_category = options.pop('no_category', 'No Category')
         self.paginator = options.pop('paginator', None)
@@ -1061,10 +1120,25 @@ class MinimalHelpCommand(HelpCommand):
             self.paginator.add_line(signature, empty=True)
 
         if command.help:
-            self.paginator.add_line(command.help, empty=True)
+            try:
+                self.paginator.add_line(command.help, empty=True)
+            except RuntimeError:
+                for line in command.help.splitlines():
+                    self.paginator.add_line(line)
+                self.paginator.add_line()
+
+    def get_destination(self):
+        ctx = self.context
+        if self.dm_help is True:
+            return ctx.author
+        elif self.dm_help is None and len(self.paginator) > self.dm_help_threshold:
+            return ctx.author
+        else:
+            return ctx.channel
 
     async def prepare_help_command(self, ctx, command):
         self.paginator.clear()
+        await super().prepare_help_command(ctx, command)
 
     async def send_bot_help(self, mapping):
         ctx = self.context

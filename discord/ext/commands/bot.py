@@ -31,6 +31,7 @@ import importlib
 import sys
 import traceback
 import re
+import types
 
 import discord
 
@@ -102,8 +103,8 @@ class BotBase(GroupMixin[CT]):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
-        self.cogs = {}
-        self.extensions = {}
+        self._cogs = {}
+        self._extensions = {}
         self._checks = []
         self._check_once = []
         self._before_invoke = None
@@ -132,13 +133,13 @@ class BotBase(GroupMixin[CT]):
             asyncio.ensure_future(coro, loop=self.loop)
 
     async def close(self):
-        for extension in tuple(self.extensions):
+        for extension in tuple(self._extensions):
             try:
                 self.unload_extension(extension)
             except Exception:
                 pass
 
-        for cog in tuple(self.cogs):
+        for cog in tuple(self._cogs):
             try:
                 self.remove_cog(cog)
             except Exception:
@@ -480,7 +481,7 @@ class BotBase(GroupMixin[CT]):
             raise TypeError('cogs must derive from Cog')
 
         cog = cog._inject(self)
-        self.cogs[cog.__cog_name__] = cog
+        self._cogs[cog.__cog_name__] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -494,7 +495,7 @@ class BotBase(GroupMixin[CT]):
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
         """
-        return self.cogs.get(name)
+        return self._cogs.get(name)
 
     def remove_cog(self, name):
         """Removes a cog from the bot.
@@ -510,7 +511,7 @@ class BotBase(GroupMixin[CT]):
             The name of the cog to remove.
         """
 
-        cog = self.cogs.pop(name, None)
+        cog = self._cogs.pop(name, None)
         if cog is None:
             return
 
@@ -518,6 +519,11 @@ class BotBase(GroupMixin[CT]):
         if help_command and help_command.cog is cog:
             help_command.cog = None
         cog._eject(self)
+
+    @property
+    def cogs(self):
+        """Mapping[:class:`str`, :class:`Cog`]: A read-only mapping of cog name to cog."""
+        return types.MappingProxyType(self._cogs)
 
     # extensions
 
@@ -546,7 +552,7 @@ class BotBase(GroupMixin[CT]):
             The extension could not be imported.
         """
 
-        if name in self.extensions:
+        if name in self._extensions:
             return
 
         lib = importlib.import_module(name)
@@ -556,7 +562,7 @@ class BotBase(GroupMixin[CT]):
             raise discord.ClientException('extension does not have a setup function')
 
         lib.setup(self)
-        self.extensions[name] = lib
+        self._extensions[name] = lib
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -577,7 +583,7 @@ class BotBase(GroupMixin[CT]):
             ``foo.test`` if you want to import ``foo/test.py``.
         """
 
-        lib = self.extensions.get(name)
+        lib = self._extensions.get(name)
         if lib is None:
             return
 
@@ -586,7 +592,7 @@ class BotBase(GroupMixin[CT]):
         # find all references to the module
 
         # remove the cogs registered from the module
-        for cogname, cog in self.cogs.copy().items():
+        for cogname, cog in self._cogs.copy().items():
             if _is_submodule(lib_name, cog.__module__):
                 self.remove_cog(cogname)
 
@@ -619,11 +625,16 @@ class BotBase(GroupMixin[CT]):
         finally:
             # finally remove the import..
             del lib
-            del self.extensions[name]
+            del self._extensions[name]
             del sys.modules[name]
             for module in list(sys.modules.keys()):
                 if _is_submodule(lib_name, module):
                     del sys.modules[module]
+
+    @property
+    def extensions(self):
+        """Mapping[:class:`str`, :class:`py:types.ModuleType`]: A read-only mapping of extension name to extension."""
+        return types.MappingProxyType(self._extensions)
 
     # help command stuff
 

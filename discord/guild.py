@@ -261,13 +261,15 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                if c['type'] == ChannelType.text.value:
+                c_type = c['type']
+                if c_type in (ChannelType.text.value, ChannelType.news.value):
                     self._add_channel(TextChannel(guild=self, data=c, state=self._state))
-                elif c['type'] == ChannelType.voice.value:
+                elif c_type == ChannelType.voice.value:
                     self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
-                elif c['type'] == ChannelType.category.value:
+                elif c_type == ChannelType.category.value:
                     self._add_channel(CategoryChannel(guild=self, data=c, state=self._state))
-
+                elif c_type == ChannelType.store.value:
+                    self._add_channel(StoreChannel(guild=self, data=c, state=self._state))
 
     @property
     def channels(self):
@@ -359,7 +361,7 @@ class Guild(Hashable):
         as_list = [(_get(k), v) for k, v in grouped.items()]
         as_list.sort(key=key)
         for _, channels in as_list:
-            channels.sort(key=lambda c: (not isinstance(c, TextChannel), c.position, c.id))
+            channels.sort(key=lambda c: (c._sorting_bucket, c.position, c.id))
         return as_list
 
     def get_channel(self, channel_id):

@@ -35,7 +35,15 @@ from . import utils
 from .errors import ClientException, NoMoreItems
 from .webhook import Webhook
 
-__all__ = ['TextChannel', 'VoiceChannel', 'DMChannel', 'CategoryChannel', 'GroupChannel', '_channel_factory']
+__all__ = [
+    'TextChannel',
+    'VoiceChannel',
+    'DMChannel',
+    'CategoryChannel',
+    'StoreChannel',
+    'GroupChannel',
+    '_channel_factory',
+]
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -111,6 +119,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     async def _get_channel(self):
         return self
+
+    @property
+    def _sorting_bucket(self):
+        return ChannelType.text.value
 
     def permissions_for(self, member):
         base = super().permissions_for(member)
@@ -458,6 +470,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
+    def _sorting_bucket(self):
+        return ChannelType.voice.value
+
+    @property
     def members(self):
         """Returns a list of :class:`Member` that are currently inside this voice channel."""
         ret = []
@@ -572,6 +588,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self.position = data['position']
         self._fill_overwrites(data)
 
+    @property
+    def _sorting_bucket(self):
+        return ChannelType.category.value
+
     def is_nsfw(self):
         """Checks if the category is NSFW."""
         n = self.name
@@ -662,6 +682,115 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
         """
         return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+
+class StoreChannel(discord.abc.GuildChannel, Hashable):
+    """Represents a Discord guild store channel.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the channel's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    id: :class:`int`
+        The channel ID.
+    category_id: :class:`int`
+        The category channel ID this channel belongs to.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+    """
+    __slots__ = ('name', 'id', 'guild', '_state', 'nsfw',
+                 'category_id', 'position', '_overwrites',)
+
+    def __init__(self, *, state, guild, data):
+        self._state = state
+        self.id = int(data['id'])
+        self._update(guild, data)
+
+    def __repr__(self):
+        return '<StoreChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+
+    def _update(self, guild, data):
+        self.guild = guild
+        self.name = data['name']
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
+        self.position = data['position']
+        self.nsfw = data.get('nsfw', False)
+        self._fill_overwrites(data)
+
+    @property
+    def _sorting_bucket(self):
+        return ChannelType.text.value
+
+    def permissions_for(self, member):
+        base = super().permissions_for(member)
+
+        # store channels do not have voice related permissions
+        denied = Permissions.voice()
+        base.value &= ~denied.value
+        return base
+
+    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
+
+    def is_nsfw(self):
+        """Checks if the channel is NSFW."""
+        n = self.name
+        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+
+    async def edit(self, *, reason=None, **options):
+        """|coro|
+
+        Edits the channel.
+
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The new channel name.
+        position: :class:`int`
+            The new channel's position.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+        sync_permissions: :class:`bool`
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
+        reason: Optional[:class:`str`]
+            The reason for editing this channel. Shows up on the audit log.
+
+        Raises
+        ------
+        InvalidArgument
+            If position is less than 0 or greater than the number of channels.
+        Forbidden
+            You do not have permissions to edit the channel.
+        HTTPException
+            Editing the channel failed.
+        """
+        await self._edit(options, reason=reason)
 
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
@@ -977,5 +1106,7 @@ def _channel_factory(channel_type):
         return GroupChannel, value
     elif value is ChannelType.news:
         return TextChannel, value
+    elif value is ChannelType.store:
+        return StoreChannel, value
     else:
         return None, value

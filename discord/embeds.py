@@ -509,7 +509,10 @@ class Embed:
             pass
         else:
             if timestamp:
-                result['timestamp'] = timestamp.astimezone(tz=datetime.timezone.utc).isoformat()
+                if timestamp.tzinfo:
+                    result['timestamp'] = timestamp.astimezone(tz=datetime.timezone.utc).isoformat()
+                else:
+                    result['timestamp'] = timestamp.replace(tzinfo=datetime.timezone.utc).isoformat()
 
         # add in the non raw attribute ones
         if self.type:
