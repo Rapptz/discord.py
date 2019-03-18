@@ -295,7 +295,7 @@ class ColourConverter(Converter):
         try:
             value = int(arg, base=16)
             if not (0 <= value <= 0xFFFFFF):
-                raise ValueError()
+                raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return discord.Colour(value=value)
         except ValueError:
             method = getattr(discord.Colour, arg.replace(' ', '_'), None)
