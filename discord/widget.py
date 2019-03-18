@@ -24,16 +24,35 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import valid_icon_size, snowflake_time, get
-from .errors import InvalidArgument
-from .activity import Game
-from .enums import Status, DefaultAvatar, try_enum
+from .utils import snowflake_time, _get_as_snowflake, resolve_invite
+from .user import BaseUser
+from .activity import Activity
+from .invite import Invite
+from .enums import Status, try_enum
 from collections import namedtuple
 
 VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
 class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
     """Represents a "partial" widget channel.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial channels are the same.
+
+        .. describe:: x != y
+
+            Checks if two partial channels are not the same.
+
+        .. describe:: hash(x)
+
+            Return the partial channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the partial channel's name.
 
     Attributes
     -----------
@@ -51,7 +70,7 @@ class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
 
     @property
     def mention(self):
-        """:class:`str` : The string that allows you to mention the channel."""
+        """:class:`str`: The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
@@ -59,17 +78,32 @@ class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
         """Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
 
-class WidgetMember(namedtuple('WidgetMember', 'username status nick avatar discriminator id bot game deafened suppress '
-                                              'muted connected_channel')):
+class WidgetMember(BaseUser):
     """Represents a "partial" member of the widget's guild.
 
-    This model will always be given, as long as it is enabled.
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two widget members are the same.
+
+        .. describe:: x != y
+
+            Checks if two widget members are not the same.
+
+        .. describe:: hash(x)
+
+            Return the widget member's hash.
+
+        .. describe:: str(x)
+
+            Returns the widget member's `name#discriminator`.
 
     Attributes
     -----------
     id: :class:`int`
         The member's ID.
-    username: :class:`str`
+    name: :class:`str`
         The member's username.
     discriminator: :class:`str`
         The member's discriminator.
@@ -81,7 +115,7 @@ class WidgetMember(namedtuple('WidgetMember', 'username status nick avatar discr
         The member's nickname.
     avatar: Optional[:class:`str`]
         The member's avatar hash.
-    game: Optional[:class:`Game`]
+    activity: Optional[:class:`Activity`]
         The member's activity.
     deafened: Optional[:class:`bool`]
         Whether the member is currently deafened.
@@ -92,57 +126,45 @@ class WidgetMember(namedtuple('WidgetMember', 'username status nick avatar discr
     connected_channel: Optional[:class:`VoiceChannel`]
         Which channel the member is connected to.
     """
-    __slots__ = ()
+    __slots__ = ('name', 'status', 'nick', 'avatar', 'discriminator',
+                 'id', 'bot', 'activity', 'deafened', 'suppress', 'muted',
+                 'connected_channel')
 
-    def __str__(self):
-        return '{}#{}'.format(self.username, self.discriminator)
+    def __init__(self, *, state, data, connected_channel=None):
+        super().__init__(state=state, data=data)
+        self.nick = data.get('nick')
+        self.status = try_enum(Status, data.get('status'))
+        self.deafened = data.get('deaf', False) or data.get('self_deaf', False)
+        self.muted = data.get('mute', False) or data.get('self_mute', False)
+        self.suppress = data.get('suppress', False)
 
-    @property
-    def mention(self):
-        """:class:`str` : The string that allows you to mention the member."""
-        return '<@%s>' % self.id
+        game = data.get('game')
+        if game:
+            self.activity = Activity(**game)
 
-    @property
-    def created_at(self):
-        """Returns the member's creation time in UTC."""
-        return snowflake_time(self.id)
+        self.connected_channel = connected_channel
 
     @property
     def display_name(self):
-        """Returns the member's display name."""
-        return self.nick if self.nick else self.username
-
-    @property
-    def avatar_url(self):
-        """Returns the URL version of the member's avatar. Returns an empty string if it has no avatar."""
-        return self.avatar_url_as()
-
-    def avatar_url_as(self, *, format='webp', size=1024):
-        """:class:`str`: The same operation as :meth:`User.avatar_url_as`."""
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.avatar is None:
-            return self.default_avatar_url
-
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
-
-    @property
-    def default_avatar(self):
-        """:class:`DefaultAvatar`: The same operation as :meth:`User.default_avatar`."""
-        return DefaultAvatar(int(self.discriminator) % len(DefaultAvatar))
-
-    @property
-    def default_avatar_url(self):
-        """Returns a URL for a user's default avatar."""
-        return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
+        """:class:`str`: Returns the member's display name."""
+        return self.nick if self.nick else self.name
 
 class Widget:
     """Represents a :class:`Guild` widget.
 
-    This model is always given, as long as it is enabled.
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two widgets are the same.
+
+        .. describe:: x != y
+
+            Checks if two widgets are not the same.
+
+        .. describe:: str(x)
+
+            Returns the widget's JSON URL.
 
     Attributes
     -----------
@@ -150,58 +172,39 @@ class Widget:
         The guild's ID.
     name: :class:`str`
         The guild's name.
-    channels: List[:class:`VoiceChannel`]
+    channels: Optional[List[:class:`WidgetChannel`]]
         The accessible voice channels in the guild.
-    members: List[:class:`Member`]
-        The online members in the server. Note: offline
-        members do not appear in the widget.
-    invite: Optional[:class:`Invite`]
-        The invite set for the widget.
+    members: Optional[List[:class:`Member`]]
+        The online members in the server. Offline members
+        do not appear in the widget.
     """
-    __slots__ = ('_state', 'channels', 'invite', 'id', 'members', 'name')
+    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name')
 
-    def __init__(self, *, data, invite):
-        self.invite = invite
-        self.name = data.get('name')
-        self.id = int(data.get('id'))
+    def __init__(self, *, state, data):
+        self._state = state
+        self._invite = data['instant_invite']
+        self.name = data['name']
+        self.id = int(data['id'])
 
         self.channels = []
-        for channel in data.get('channels'):
+        for channel in data.get('channels', []):
             _id = int(channel['id'])
             self.channels.append(WidgetChannel(id=_id, name=channel['name'], position=channel['position']))
 
         self.members = []
-        for member in data.get('members'):
-            _id = int(member.get('id'))
-            bot = bool(member.get('bot'))
-            status = try_enum(Status, member.get('status'))
-            deafened = bool(member.get('deaf')) or bool(member.get('self_deaf'))
-            muted = bool(member.get('mute')) or bool(member.get('self_mute'))
-            suppress = bool(member.get('mute'))
+        channels = {channel.id: channel for channel in self.channels}
+        for member in data.get('members', []):
+            connected_channel = _get_as_snowflake(member, 'channel_id')
+            if connected_channel:
+                connected_channel = channels[connected_channel]
 
-            game = None
-            if member.get('game'):
-                game = Game(**member.get('game'))
-
-            connected_channel = None
-            if member.get('channel_id'):
-                connected_channel = get(self.channels, id=int(member.get('channel_id')))
-
-            self.members.append(WidgetMember(id=_id,
-                                             bot=bot,
-                                             username=member.get('username'),
-                                             discriminator=member.get('discriminator'),
-                                             status=status,
-                                             avatar=member.get('avatar'),
-                                             nick=member.get('nick'),
-                                             game=game,
-                                             deafened=deafened,
-                                             muted=muted,
-                                             suppress=suppress,
-                                             connected_channel=connected_channel))
+            self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
 
     def __str__(self):
         return self.json_url
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __repr__(self):
         return '<Widget id={0.id} name={0.name!r} invite={0.invite!r}>'.format(self)
@@ -215,3 +218,27 @@ class Widget:
     def json_url(self):
         """The JSON URL of the widget."""
         return "https://discordapp.com/api/guilds/{0.id}/widget.json".format(self)
+
+    async def get_invite(self, *, with_counts=True):
+        """|coro|
+
+        Retrieves an :class:`Invite` from a invite URL or ID.
+        This is the same as :meth:`Client.get_invite`; the invite
+        code is abstracted away.
+
+        Parameters
+        -----------
+        with_counts: :class:`bool`
+            Whether to include count information in the invite. This fills the
+            :attr:`Invite.approximate_member_count` and :attr:`Invite.approximate_presence_count`
+            fields.
+
+        Returns
+        --------
+        :class:`Invite`
+            The invite from the URL/ID.
+        """
+        if self._invite:
+            invite_id = resolve_invite(self._invite)
+            data = await self._state.http.get_invite(invite_id, with_counts=with_counts)
+            return Invite.from_incomplete(state=self._state, data=data)

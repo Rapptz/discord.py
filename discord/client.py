@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 from collections import namedtuple
 import logging
-import re
 import signal
 import sys
 import traceback
@@ -38,7 +37,6 @@ import websockets
 from .user import User, Profile
 from .invite import Invite
 from .widget import Widget
-from .object import Object
 from .guild import Guild
 from .errors import *
 from .enums import Status, VoiceRegion
@@ -168,16 +166,6 @@ class Client:
 
     def _handle_ready(self):
         self._ready.set()
-
-    def _resolve_invite(self, invite):
-        if isinstance(invite, Invite) or isinstance(invite, Object):
-            return invite.id
-        else:
-            rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
-            m = re.match(rx, invite)
-            if m:
-                return m.group(1)
-        return invite
 
     @property
     def latency(self):
@@ -915,7 +903,7 @@ class Client:
             The invite from the URL/ID.
         """
 
-        invite_id = self._resolve_invite(url)
+        invite_id = utils.resolve_invite(url)
         data = await self.http.get_invite(invite_id, with_counts=with_counts)
         return Invite.from_incomplete(state=self._connection, data=data)
 
@@ -942,12 +930,12 @@ class Client:
             Revoking the invite failed.
         """
 
-        invite_id = self._resolve_invite(invite)
+        invite_id = utils.resolve_invite(invite)
         await self.http.delete_invite(invite_id)
 
     # Miscellaneous stuff
 
-    async def get_widget(self, guild_id):
+    async def fetch_widget(self, guild_id):
         """|coro|
 
         Gets a :class:`Widget` from a guild ID.
@@ -971,14 +959,11 @@ class Client:
         Returns
         --------
         :class:`Widget`
-            The widget.
+            The guild's widget.
         """
         data = await self.http.get_widget(guild_id)
-        invite = None
-        if data['instant_invite']:
-            invite = await self.get_invite(data['instant_invite'])
 
-        return Widget(data=data, invite=invite)
+        return Widget(state=self._connection, data=data)
 
     async def application_info(self):
         """|coro|

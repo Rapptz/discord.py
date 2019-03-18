@@ -1469,16 +1469,8 @@ class Guild(Hashable):
         Returns
         --------
         :class:`Widget`
-            The widget.
+            The guild's widget.
         """
         data = await self._state.http.get_widget(self.id)
 
-        invite = None
-        if data['instant_invite']:
-            inv = data['instant_invite']
-            inv = inv[inv.index('invite/')+7:]
-
-            inv_data = await self._state.http.get_invite(inv)
-            invite = Invite.from_incomplete(state=self._state, data=inv_data)
-
-        return Widget(data=data, invite=invite)
+        return Widget(state=self._state, data=data)
