@@ -219,7 +219,7 @@ class Widget:
         """The JSON URL of the widget."""
         return "https://discordapp.com/api/guilds/{0.id}/widget.json".format(self)
 
-    async def get_invite(self, *, with_counts=True):
+    async def fetch_invite(self, *, with_counts=True):
         """|coro|
 
         Retrieves an :class:`Invite` from a invite URL or ID.
