@@ -41,14 +41,13 @@ In this example we define a simple command, and when the extension is loaded thi
 Reloading
 -----------
 
-The act of reloading an extension is actually quite simple -- it is as simple as unloading it and then reloading it.
+When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`Bot.reload_extension`.
 
 .. code-block:: python3
 
-    >>> bot.unload_extension('hello')
-    >>> bot.load_extension('hello')
+    >>> bot.reload_extension('hello')
 
-Once we remove and load the extension, any changes that we did will be applied upon load. This is useful if we want to add or remove functionality without restarting our bot.
+Once the extension reloads, any changes that we did will be applied. This is useful if we want to add or remove functionality without restarting our bot. If an error occurred during the reloading process, the bot will pretend as if the reload never happened.
 
 Cleaning Up
 -------------
