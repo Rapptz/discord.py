@@ -2,7 +2,11 @@ import asyncio
 import aiohttp
 
 from .file import File
-from .types import RawChannelDict, RawMessageDict, RawUserDict, RawApplicationInfoDict, RawGuildMemberDict, RawRoleDict, RawInviteDict, RawInviteMetaDict, RawWebhookDict, RawGuildDict, RawGuildBanDict, RawGuildPruneDict, RawEmojiDict, RawAuditLogDict
+from .types import (
+    RawChannelDict, RawMessageDict, RawUserDict, RawApplicationInfoDict, RawGuildMemberDict, RawRoleDict, RawInviteDict,
+    RawInviteMetaDict, RawWebhookDict, RawGuildDict, RawGuildBanDict, RawGuildPruneDict, RawEmojiDict, RawAuditLogDict,
+    RawCurrentUserGuildDict, RawWidgetDict
+)
 
 from typing import Any, Optional, Union, Coroutine, List, Dict, Tuple, ClassVar, BinaryIO, Iterable
 from mypy_extensions import TypedDict
@@ -147,7 +151,12 @@ class HTTPClient:
 
     def get_webhook(self, webhook_id: int) -> Coroutine[Any, Any, RawWebhookDict]: ...
 
+    def get_guilds(self, limit:int, before: Optional[int] = ...,
+                   after: Optional[int] = ...) -> Coroutine[Any, Any, List[RawCurrentUserGuildDict]]: ...
+
     def leave_guild(self, guild_id: int) -> Coroutine[Any, Any, None]: ...
+
+    def get_guild(self, guild_id: int) -> Coroutine[Any, Any, RawGuildDict]: ...
 
     def delete_guild(self, guild_id: int) -> Coroutine[Any, Any, None]: ...
 
@@ -165,6 +174,8 @@ class HTTPClient:
 
     def prune_members(self, guild_id: int, days: int, *, reason: Optional[str] = ...) -> Coroutine[Any, Any, RawGuildPruneDict]: ...
 
+    def get_member(self, guild_id: int, member_id: int) -> Coroutine[Any, Any, RawGuildMemberDict]: ...
+
     def estimate_pruned_members(self, guild_id: int, days: int) -> Coroutine[Any, Any, RawGuildPruneDict]: ...
 
     def create_custom_emoji(self, guild_id: int, name: str, image: str, *, reason: Optional[str] = ...) -> Coroutine[Any, Any, RawEmojiDict]: ...
@@ -174,6 +185,8 @@ class HTTPClient:
     def edit_custom_emoji(self, guild_id: int, emoji_id: int, *, name: str, reason: Optional[str] = ...) -> Coroutine[Any, Any, RawEmojiDict]: ...
 
     def get_audit_logs(self, guild_id: int, limit: int = ..., before: Optional[int] = ..., after: Optional[int] = ..., user_id: Optional[int] = ..., action_type: Optional[int] = ...) -> Coroutine[Any, Any, RawAuditLogDict]: ...
+
+    def get_widget(self, guild_id: int) -> Coroutine[Any, Any, RawWidgetDict]: ...
 
     def create_invite(self, channel_id: int, *, reason: Optional[str] = ..., max_age: int = ..., max_uses: int = ..., temporary: bool = ..., unique: bool = ...) -> Coroutine[Any, Any, RawInviteDict]: ...
 

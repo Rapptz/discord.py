@@ -4,6 +4,8 @@ from .user import User
 from .member import Member
 from .message import Message
 from .audit_logs import AuditLogEntry
+from .guild import Guild
+from .types import RawGuildDict
 
 from typing import Any, Optional, Union, TypeVar, List, Generic, Coroutine, Callable
 
@@ -57,3 +59,12 @@ class HistoryIterator(_AsyncIterator[Message]):
 
 class AuditLogIterator(_AsyncIterator[AuditLogEntry]):
     async def next(self) -> AuditLogEntry: ...
+
+class GuildIterator(_AsyncIterator[Guild]):
+    async def next(self) -> Guild: ...
+
+    def create_guild(self, data: RawGuildDict) -> Guild: ...
+
+    async def flatten(self) -> List[Guild]: ...
+
+    async def fill_guilds(self) -> None: ...

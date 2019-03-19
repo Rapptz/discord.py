@@ -15,6 +15,7 @@ from .invite import Invite
 from .iterators import AuditLogIterator
 from .colour import Colour
 from .permissions import Permissions
+from .widget import Widget
 
 from typing import List, Optional, Tuple, Dict, Union, NamedTuple, Set, Any
 from typing_extensions import Literal
@@ -150,7 +151,9 @@ class Guild(Hashable):
                    explicit_content_filter: ContentFilter = ...,
                    vanity_code: str = ..., system_channel: Optional[TextChannel] = ...) -> None: ...
 
-    async def get_ban(self, user: Snowflake) -> BanEntry: ...
+    async def fetch_member(self, member_id: int) -> Member: ...
+
+    async def fetch_ban(self, user: Snowflake) -> BanEntry: ...
 
     async def bans(self) -> List[BanEntry]: ...
 
@@ -182,3 +185,5 @@ class Guild(Hashable):
                    after: Optional[Union[Snowflake, datetime.datetime]] = ...,
                    reverse: Optional[bool] = ..., user: Optional[Snowflake] = ...,
                    action: Optional[AuditLogAction] = ...) -> AuditLogIterator: ...
+
+    async def widget(self) -> Widget: ...

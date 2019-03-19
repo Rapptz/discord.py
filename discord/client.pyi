@@ -1,6 +1,5 @@
 from .user import User, Profile, ClientUser
 from .invite import Invite
-from .object import Object
 from .guild import Guild
 from .enums import Status, VoiceRegion
 from .emoji import Emoji
@@ -8,6 +7,7 @@ from .gateway import *
 from .activity import Activity, Game, Streaming, Spotify
 from .voice_client import VoiceClient
 from .webhook import Webhook
+from .iterators import GuildIterator
 from .member import Member, VoiceState
 from .channel import TextChannel, VoiceChannel, CategoryChannel, StoreChannel, DMChannel, GroupChannel
 from .message import Message
@@ -18,6 +18,8 @@ from .raw_models import (
 from .reaction import Reaction
 from .role import Role
 from .relationship import Relationship
+from .abc import Snowflake
+from .widget import Widget
 
 import asyncio
 import aiohttp
@@ -324,16 +326,23 @@ class Client:
     async def change_presence(self, *, activity: Optional[Union[Activity, Game, Streaming, Spotify]] = ...,
                               status: Optional[Status] = ..., afk: bool = ...) -> None: ...
 
+    def fetch_guilds(self, *, limit: int = ..., before: Optional[Union[Snowflake, datetime]] = ...,
+                     after: Optional[Union[Snowflake, datetime]] = ...) -> GuildIterator: ...
+
+    async def fetch_guild(self, guild_id: int) -> Guild: ...
+
     async def create_guild(self, name: str, region: Optional[VoiceRegion] = ..., icon: Optional[bytes] = ...) -> Guild: ...
 
-    async def get_invite(self, url: str, *, with_counts: bool = ...) -> Invite: ...
+    async def fetch_invite(self, url: str, *, with_counts: bool = ...) -> Invite: ...
 
     async def delete_invite(self, invite: Union[Invite, str]) -> None: ...
 
+    async def fetch_widget(self, guild_id: int) -> Widget: ...
+
     async def application_info(self) -> AppInfo: ...
 
-    async def get_user_info(self, user_id: int) -> User: ...
+    async def fetch_user(self, user_id: int) -> User: ...
 
-    async def get_user_profile(self, user_id: int) -> Profile: ...
+    async def fetch_user_profile(self, user_id: int) -> Profile: ...
 
-    async def get_webhook_info(self, webhook_id: int) -> Webhook: ...
+    async def fetch_webhook(self, webhook_id: int) -> Webhook: ...

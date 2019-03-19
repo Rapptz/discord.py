@@ -471,6 +471,45 @@ class EmbedFieldData(TypedDict):
     value: Union[str, _EmptyEmbed]
     inline: Union[bool, _EmptyEmbed]
 
+class RawCurrentUserGuildDict(TypedDict):
+    id: int
+    name: str
+    icon: str
+    owner: bool
+    permissions: int
+
+class RawWidgetChannelDict(TypedDict):
+    id: int
+    name: str
+    position: int
+
+class BaseRawWidgetMemberDict(TypedDict):
+    id: int
+    username: str
+    discriminator: str
+    nick: str
+    status: str
+
+class RawWidgetMemberDict(BaseRawWidgetMemberDict, total=False):
+    channel_id: int
+    avatar: str
+    bot: bool
+    deaf: bool
+    self_deaf: bool
+    mute: bool
+    self_mute: bool
+    suppress: bool
+    activity: Union[RawActivityDict, RawSpotifyActivityDict]
+
+class BaseRawWidgetDict(TypedDict):
+    id: int
+    name: str
+
+class RawWidgetDict(BaseRawWidgetDict, total=False):
+    instant_invite: Optional[str]
+    channels: List[RawWidgetChannelDict]
+    members: List[RawWidgetMemberDict]
+
 __all__ = (
     'RawUserDict', 'RawAttachmentDict', 'RawEmbedFooterDict', 'RawEmbedMediaDict', 'RawEmbedImageDict',
     'RawEmbedProviderDict', 'RawEmbedAuthorDict', 'RawEmbedFieldDict', 'RawEmbedDict', 'RawRoleDict',
@@ -485,5 +524,6 @@ __all__ = (
     'RawAuditLogEntryDict', 'RawAuditLogChangeDict', 'RawAuditLogDict', 'RawSpotifyActivityDict',
     'RawGuildBanDict', 'RawGuildPruneDict', 'RawBulkMessageDeleteDict', 'RawReactionActionDict',
     'RawReactionClearDict', 'EmbedFooterData', 'EmbedImageData', 'EmbedVideoData', 'EmbedProviderData',
-    'EmbedAuthorData', 'EmbedFieldData'
+    'EmbedAuthorData', 'EmbedFieldData', 'RawCurrentUserGuildDict', 'RawWidgetChannelDict', 'RawWidgetMemberDict',
+    'RawWidgetDict'
 )

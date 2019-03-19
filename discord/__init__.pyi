@@ -20,6 +20,7 @@ from .role import Role as Role
 from .file import File as File
 from .colour import Color as Color, Colour as Colour
 from .invite import Invite as Invite
+from .widget import Widget as Widget, WidgetMember as WidgetMember, WidgetChannel as WidgetChannel
 from .object import Object as Object
 from .reaction import Reaction as Reaction
 from . import utils as utils, opus as opus, abc as abc

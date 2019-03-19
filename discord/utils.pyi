@@ -3,6 +3,8 @@ import asyncio
 from aiohttp.web import Request
 from .permissions import Permissions
 from .guild import Guild
+from .invite import Invite
+from .object import Object
 
 from typing import Any, Optional, Union, List, Iterable, TypeVar, Type, Callable, Coroutine, Generic, Pattern, overload
 
@@ -70,3 +72,5 @@ async def sane_wait_for(futures: List[asyncio.Future], *, timeout: float, loop: 
 def valid_icon_size(size: int) -> bool: ...
 
 def _string_width(string: str, *, _IS_ASCII: Pattern[str] = ...) -> int: ...
+
+def resolve_invite(invite: Union[Invite, Object, str]) -> str: ...

@@ -54,3 +54,31 @@ class ConnectionClosed(ClientException):
     shard_id: Optional[int]
 
     def __init__(self, original: websockets.exceptions.ConnectionClosed, *, shard_id: Optional[int]) -> None: ...
+
+
+class ExtensionError(DiscordException):
+    name: str
+
+
+class ExtensionAlreadyLoaded(ExtensionError):
+    def __init__(self, name: str) -> None: ...
+
+
+class ExtensionNotLoaded(ExtensionError):
+    def __init__(self, name: str) -> None: ...
+
+
+class NoEntryPointError(ExtensionError):
+    def __init__(self, name: str) -> None: ...
+
+
+class ExtensionFailed(ExtensionError):
+    original: Exception
+
+    def __init__(self, name: str, original: Exception) -> None: ...
+
+
+class ExtensionNotFound(ExtensionError):
+    original: ImportError
+
+    def __init__(self, name: str, original: ImportError) -> None: ...
