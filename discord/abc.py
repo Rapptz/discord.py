@@ -304,7 +304,7 @@ class GuildChannel:
 
     @property
     def mention(self):
-        """:class:`str` : The string that allows you to mention the channel."""
+        """:class:`str`: The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
@@ -389,7 +389,7 @@ class GuildChannel:
 
         Parameters
         ----------
-        member : :class:`Member`
+        member: :class:`Member`
             The member to resolve permissions for.
 
         Returns
@@ -488,7 +488,7 @@ class GuildChannel:
 
         Parameters
         -----------
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for deleting this channel.
             Shows up on the audit log.
 
@@ -551,7 +551,7 @@ class GuildChannel:
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
             Cannot be mixed with ``overwrite``.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
@@ -607,20 +607,20 @@ class GuildChannel:
 
         Parameters
         ------------
-        max_age : int
+        max_age: :class:`int`
             How long the invite should last. If it's 0 then the invite
             doesn't expire. Defaults to 0.
-        max_uses : int
+        max_uses: :class:`int`
             How many uses the invite could be used for. If it's 0 then there
             are unlimited uses. Defaults to 0.
-        temporary : bool
+        temporary: :class:`bool`
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to False.
-        unique: bool
+        unique: :class:`bool`
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to False then it will return a previously created
             invite.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for creating this invite. Shows up on the audit log.
 
         Raises
@@ -710,7 +710,7 @@ class Messageable(metaclass=abc.ABCMeta):
         ------------
         content
             The content of the message to send.
-        tts: bool
+        tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`.Embed`
             The rich embed for the content.
@@ -718,10 +718,10 @@ class Messageable(metaclass=abc.ABCMeta):
             The file to upload.
         files: List[:class:`.File`]
             A list of files to upload. Must be a maximum of 10.
-        nonce: int
+        nonce: :class:`int`
             The nonce to use for sending this message. If the message was successfully sent,
             then the message will have a nonce with this value.
-        delete_after: float
+        delete_after: :class:`float`
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
@@ -816,7 +816,7 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         return Typing(self)
 
-    async def get_message(self, id):
+    async def fetch_message(self, id):
         """|coro|
 
         Retrieves a single :class:`.Message` from the destination.
@@ -828,11 +828,6 @@ class Messageable(metaclass=abc.ABCMeta):
         id: :class:`int`
             The message ID to look for.
 
-        Returns
-        --------
-        :class:`.Message`
-            The message asked for.
-
         Raises
         --------
         :exc:`.NotFound`
@@ -841,6 +836,11 @@ class Messageable(metaclass=abc.ABCMeta):
             You do not have the permissions required to get a message.
         :exc:`.HTTPException`
             Retrieving the message failed.
+
+        Returns
+        --------
+        :class:`.Message`
+            The message asked for.
         """
 
         channel = await self._get_channel()
@@ -868,6 +868,21 @@ class Messageable(metaclass=abc.ABCMeta):
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
 
+        Examples
+        ---------
+
+        Usage ::
+
+            counter = 0
+            async for message in channel.history(limit=200):
+                if message.author == client.user:
+                    counter += 1
+
+        Flattening into a list: ::
+
+            messages = await channel.history(limit=123).flatten()
+            # messages is now a list of Message...
+
         All parameters are optional.
 
         Parameters
@@ -887,7 +902,7 @@ class Messageable(metaclass=abc.ABCMeta):
             If a date is provided it must be a timezone-naive datetime representing UTC time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
             even number then this will return at most limit + 1 messages.
-        reverse: bool
+        reverse: Optional[:class:`bool`]
             If set to true, return messages in oldest->newest order. If unspecified,
             this defaults to ``False`` for most cases. However if passing in a
             ``after`` parameter then this is set to ``True``. This avoids getting messages
@@ -904,21 +919,6 @@ class Messageable(metaclass=abc.ABCMeta):
         -------
         :class:`.Message`
             The message with the message data parsed.
-
-        Examples
-        ---------
-
-        Usage ::
-
-            counter = 0
-            async for message in channel.history(limit=200):
-                if message.author == client.user:
-                    counter += 1
-
-        Flattening into a list: ::
-
-            messages = await channel.history(limit=123).flatten()
-            # messages is now a list of Message...
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
@@ -949,9 +949,9 @@ class Connectable(metaclass=abc.ABCMeta):
 
         Parameters
         -----------
-        timeout: float
+        timeout: :class:`float`
             The timeout in seconds to wait for the voice endpoint.
-        reconnect: bool
+        reconnect: :class:`bool`
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.

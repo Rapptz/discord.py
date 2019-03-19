@@ -553,8 +553,23 @@ class HTTPClient:
 
     # Guild management
 
+    def get_guilds(self, limit, before=None, after=None):
+        params = {
+            'limit': limit
+        }
+
+        if before:
+            params['before'] = before
+        if after:
+            params['after'] = after
+
+        return self.request(Route('GET', '/users/@me/guilds'), params=params)
+
     def leave_guild(self, guild_id):
         return self.request(Route('DELETE', '/users/@me/guilds/{guild_id}', guild_id=guild_id))
+
+    def get_guild(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id))
 
     def delete_guild(self, guild_id):
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
@@ -592,6 +607,9 @@ class HTTPClient:
     def change_vanity_code(self, guild_id, code, *, reason=None):
         payload = {'code': code}
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
+
+    def get_member(self, guild_id, member_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
     def prune_members(self, guild_id, days, *, reason=None):
         params = {
@@ -640,6 +658,9 @@ class HTTPClient:
 
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
+
+    def get_widget(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
     # Invite management
 

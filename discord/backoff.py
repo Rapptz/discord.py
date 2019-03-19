@@ -41,10 +41,10 @@ class ExponentialBackoff:
 
     Parameters
     ----------
-    base: int
+    base: :class:`int`
         The base delay in seconds.  The first retry-delay will be up to
         this many seconds.
-    integral: bool
+    integral: :class:`bool`
         Set to True if whole periods of base is desirable, otherwise any
         number in between may be returned.
     """

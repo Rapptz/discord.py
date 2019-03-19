@@ -145,9 +145,9 @@ class Context(discord.abc.Messageable):
 
         Parameters
         ------------
-        call_hooks: bool
+        call_hooks: :class:`bool`
             Whether to call the before and after invoke hooks.
-        restart: bool
+        restart: :class:`bool`
             Whether to start the call chain from the very beginning
             or where we left off (i.e. the command that caused the error).
             The default is to start where we left off.
@@ -241,7 +241,7 @@ class Context(discord.abc.Messageable):
 
             Due to the way this function works, instead of returning
             something similar to :meth:`~.commands.HelpCommand.command_not_found`
-            this returns :obj:`None` on bad input or no help command.
+            this returns :class:`None` on bad input or no help command.
 
         Parameters
         ------------

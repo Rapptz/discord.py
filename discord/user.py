@@ -139,27 +139,27 @@ class BaseUser(_BaseUser):
 
         Parameters
         -----------
-        format: Optional[str]
+        format: Optional[:class:`str`]
             The format to attempt to convert the avatar to.
             If the format is ``None``, then it is automatically
             detected into either 'gif' or static_format depending on the
             avatar being animated or not.
-        static_format: 'str'
+        static_format: Optional[:class:`str`]
             Format to attempt to convert only non-animated avatars to.
             Defaults to 'webp'
-        size: int
+        size: :class:`int`
             The size of the image to display.
-
-        Returns
-        --------
-        str
-            The resulting CDN URL.
 
         Raises
         ------
         InvalidArgument
             Bad image format passed to ``format`` or ``static_format``, or
             invalid ``size``.
+
+        Returns
+        --------
+        :class:`str`
+            The resulting CDN URL.
         """
         if not valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
@@ -218,7 +218,7 @@ class BaseUser(_BaseUser):
 
         Parameters
         -----------
-        channel
+        channel: :class:`abc.GuildChannel`
             The channel to check your permissions for.
         """
         return channel.permissions_for(self)
@@ -245,7 +245,7 @@ class BaseUser(_BaseUser):
 
         Parameters
         -----------
-        message : :class:`Message`
+        message: :class:`Message`
             The message to check if you're mentioned in.
         """
 
@@ -323,7 +323,7 @@ class ClientUser(BaseUser):
 
         Parameters
         -----------
-        user_id: int
+        user_id: :class:`int`
             The user ID to check if we have a relationship with them.
 
         Returns
@@ -367,22 +367,22 @@ class ClientUser(BaseUser):
 
         Parameters
         -----------
-        password : str
+        password: :class:`str`
             The current password for the client's account.
             Only applicable to user accounts.
-        new_password: str
+        new_password: :class:`str`
             The new password you wish to change to.
             Only applicable to user accounts.
-        email: str
+        email: :class:`str`
             The new email you wish to change to.
             Only applicable to user accounts.
         house: Optional[:class:`HypeSquadHouse`]
             The hypesquad house you wish to change to.
             Could be ``None`` to leave the current house.
             Only applicable to user accounts.
-        username :str
+        username: :class:`str`
             The new username you wish to change to.
-        avatar: bytes
+        avatar: :class:`bytes`
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
 
@@ -459,14 +459,9 @@ class ClientUser(BaseUser):
 
         Parameters
         -----------
-        \*recipients
+        \*recipients: :class:`User`
             An argument :class:`list` of :class:`User` to have in
             your group.
-
-        Return
-        -------
-        :class:`GroupChannel`
-            The new group channel.
 
         Raises
         -------
@@ -475,6 +470,11 @@ class ClientUser(BaseUser):
         ClientException
             Attempted to create a group with only one recipient.
             This does not include yourself.
+
+        Returns
+        -------
+        :class:`GroupChannel`
+            The new group channel.
         """
 
         from .channel import GroupChannel
@@ -563,17 +563,17 @@ class User(BaseUser, discord.abc.Messageable):
 
         Gets all mutual friends of this user. This can only be used by non-bot accounts
 
-        Returns
-        -------
-        List[:class:`User`]
-            The users that are mutual friends.
-
         Raises
         -------
         Forbidden
             Not allowed to get mutual friends of this user.
         HTTPException
             Getting mutual friends failed.
+
+        Returns
+        -------
+        List[:class:`User`]
+            The users that are mutual friends.
         """
         state = self._state
         mutuals = await state.http.get_mutual_friends(self.id)

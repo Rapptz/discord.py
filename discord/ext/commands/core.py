@@ -138,7 +138,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
     checks
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
-        is necessary to be thrown to signal failure, then one derived from
+        is necessary to be thrown to signal failure, then one inherited from
         :exc:`.CommandError` should be used. Note that if the checks fail then
         :exc:`.CheckFailure` exception is raised to the :func:`.on_command_error`
         event.
@@ -654,7 +654,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
         Returns
         --------
-        bool
+        :class:`bool`
             A boolean indicating if the command is on cooldown.
         """
         if not self._buckets.valid:
@@ -711,7 +711,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
         Parameters
         -----------
-        coro : :ref:`coroutine <coroutine>`
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the local error handler.
 
         Raises
@@ -739,7 +739,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the pre-invoke hook.
 
         Raises
@@ -766,7 +766,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the post-invoke hook.
 
         Raises
@@ -866,7 +866,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
         Returns
         --------
-        bool
+        :class:`bool`
             A boolean indicating if the command can be invoked.
         """
 
@@ -966,7 +966,7 @@ class GroupMixin(typing.Generic[_CT]):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the command to remove.
 
         Returns
@@ -1009,12 +1009,12 @@ class GroupMixin(typing.Generic[_CT]):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the command to get.
 
         Returns
         --------
-        Command or subclass
+        :class:`Command` or subclass
             The command that was requested. If not found, returns ``None``.
         """
 
@@ -1173,7 +1173,7 @@ def command(name=None, cls=None, **attrs):
 
     Parameters
     -----------
-    name: str
+    name: :class:`str`
         The name to create the command with. By default this uses the
         function name unchanged.
     cls
@@ -1224,11 +1224,6 @@ def check(predicate):
 
         These functions can either be regular functions or coroutines.
 
-    Parameters
-    -----------
-    predicate
-        The predicate to check if the command should be invoked.
-
     Examples
     ---------
 
@@ -1258,6 +1253,10 @@ def check(predicate):
         async def only_me(ctx):
             await ctx.send('Only you!')
 
+    Parameters
+    -----------
+    predicate: Callable[:class:`Context`, :class:`bool`]
+        The predicate to check if the command should be invoked.
     """
 
     def decorator(func):
@@ -1286,7 +1285,7 @@ def has_role(item):
 
     Parameters
     -----------
-    item: Union[int, str]
+    item: Union[:class:`int`, :class:`str`]
         The name or ID of the role to check.
     """
 
@@ -1311,7 +1310,7 @@ def has_any_role(*items):
 
     Parameters
     -----------
-    items
+    items: List[Union[:class:`str`, :class:`int`]]
         An argument list of names or IDs to check that the member has roles wise.
 
     Example
@@ -1340,7 +1339,7 @@ def has_permissions(**perms):
     :class:`.discord.Permissions`.
 
     This check raises a special exception, :exc:`.MissingPermissions`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
 
     Parameters
     ------------
@@ -1406,7 +1405,7 @@ def bot_has_permissions(**perms):
     the permissions listed.
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1428,7 +1427,7 @@ def guild_only():
     using the command.
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
     """
 
     def predicate(ctx):
@@ -1485,9 +1484,9 @@ def cooldown(rate, per, type=BucketType.default):
 
     Parameters
     ------------
-    rate: int
+    rate: :class:`int`
         The number of times a command can be used before triggering a cooldown.
-    per: float
+    per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: ``BucketType``
         The type of cooldown to have.

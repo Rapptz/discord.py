@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 from collections import namedtuple
 import logging
-import re
 import signal
 import sys
 import traceback
@@ -37,8 +36,9 @@ import websockets
 
 from .user import User, Profile
 from .invite import Invite
-from .object import Object
+from .widget import Widget
 from .guild import Guild
+from .member import Member
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
@@ -49,6 +49,7 @@ from .state import ConnectionState
 from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
+from .iterators import GuildIterator
 
 log = logging.getLogger(__name__)
 
@@ -76,22 +77,22 @@ class Client:
 
     Parameters
     -----------
-    max_messages : Optional[:class:`int`]
+    max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
         This defaults to 5000. Passing in `None` or a value less than 100
         will use the default instead of the passed in value.
-    loop : Optional[event loop]
+    loop: Optional[event loop]
         The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
         in which case the default event loop is used via ``asyncio.get_event_loop()``.
-    connector : aiohttp.BaseConnector
+    connector: aiohttp.BaseConnector
         The `connector`_ to use for connection pooling.
-    proxy : Optional[:class:`str`]
+    proxy: Optional[:class:`str`]
         Proxy URL.
-    proxy_auth : Optional[aiohttp.BasicAuth]
+    proxy_auth: Optional[aiohttp.BasicAuth]
         An object that represents proxy HTTP Basic Authorization.
-    shard_id : Optional[:class:`int`]
+    shard_id: Optional[:class:`int`]
         Integer starting at 0 and less than shard_count.
-    shard_count : Optional[:class:`int`]
+    shard_count: Optional[:class:`int`]
         The total number of shards.
     fetch_offline_members: :class:`bool`
         Indicates if :func:`on_ready` should be delayed to fetch all offline
@@ -168,19 +169,9 @@ class Client:
     def _handle_ready(self):
         self._ready.set()
 
-    def _resolve_invite(self, invite):
-        if isinstance(invite, Invite) or isinstance(invite, Object):
-            return invite.id
-        else:
-            rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
-            m = re.match(rx, invite)
-            if m:
-                return m.group(1)
-        return invite
-
     @property
     def latency(self):
-        """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord WebSocket protocol latency.
         """
@@ -219,7 +210,7 @@ class Client:
         return self._connection.voice_clients
 
     def is_ready(self):
-        """:obj:`bool`: Specifies if the client's internal cache is ready for use."""
+        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
     async def _run_event(self, coro, event_name, *args, **kwargs):
@@ -300,7 +291,7 @@ class Client:
 
         Parameters
         -----------
-        \*guilds
+        \*guilds: :class:`Guild`
             An argument list of guilds to request offline members for.
 
         Raises
@@ -331,10 +322,10 @@ class Client:
 
         Parameters
         -----------
-        token: str
+        token: :class:`str`
             The authentication token. Do not prefix this token with
             anything as the library will do it for you.
-        bot: bool
+        bot: :class:`bool`
             Keyword argument that specifies if the account logging on is a bot
             token or not.
 
@@ -381,7 +372,7 @@ class Client:
 
         Parameters
         -----------
-        reconnect: bool
+        reconnect: :class:`bool`
             If we should attempt reconnecting, either due to internet
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
@@ -538,11 +529,11 @@ class Client:
             finally:
                 loop.close()
 
-        Warning
-        --------
-        This function must be the last function to call due to the fact that it
-        is blocking. That means that registration of events or anything being
-        called after this function call will not execute until it returns.
+        .. warning::
+
+            This function must be the last function to call due to the fact that it
+            is blocking. That means that registration of events or anything being
+            called after this function call will not execute until it returns.
         """
         is_windows = sys.platform == 'win32'
         loop = self.loop
@@ -574,7 +565,7 @@ class Client:
     # properties
 
     def is_closed(self):
-        """:obj:`bool`: Indicates if the websocket connection is closed."""
+        """:class:`bool`: Indicates if the websocket connection is closed."""
         return self._closed.is_set()
 
     @property
@@ -595,7 +586,7 @@ class Client:
 
     @property
     def users(self):
-        """Returns a :obj:`list` of all the :class:`User` the bot can see."""
+        """Returns a :class:`list` of all the :class:`User` the bot can see."""
         return list(self._connection._users.values())
 
     def get_channel(self, id):
@@ -626,11 +617,11 @@ class Client:
                 for channel in guild.channels:
                     yield channel
 
-        Note
-        -----
-        Just because you receive a :class:`abc.GuildChannel` does not mean that
-        you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
-        be used for that.
+        .. note::
+
+            Just because you receive a :class:`abc.GuildChannel` does not mean that
+            you can communicate in said channel. :meth:`abc.GuildChannel.permissions_for` should
+            be used for that.
         """
 
         for guild in self.guilds:
@@ -674,7 +665,7 @@ class Client:
         :exc:`asyncio.TimeoutError` for you in case of timeout and is provided for
         ease of use.
 
-        In case the event returns multiple arguments, a :obj:`tuple` containing those
+        In case the event returns multiple arguments, a :class:`tuple` containing those
         arguments is returned instead. Please check the
         :ref:`documentation <discord-api-events>` for a list of events and their
         parameters.
@@ -719,13 +710,13 @@ class Client:
 
         Parameters
         ------------
-        event: str
+        event: :class:`str`
             The event name, similar to the :ref:`event reference <discord-api-events>`,
             but without the ``on_`` prefix, to wait for.
         check: Optional[predicate]
             A predicate to check what to wait for. The arguments must meet the
             parameters of the event being waited for.
-        timeout: Optional[float]
+        timeout: Optional[:class:`float`]
             The number of seconds to wait before timing out and raising
             :exc:`asyncio.TimeoutError`.
 
@@ -737,7 +728,7 @@ class Client:
         Returns
         --------
         Any
-            Returns no arguments, a single argument, or a :obj:`tuple` of multiple
+            Returns no arguments, a single argument, or a :class:`tuple` of multiple
             arguments that mirrors the parameters passed in the
             :ref:`event reference <discord-api-events>`.
         """
@@ -770,11 +761,11 @@ class Client:
         Example
         ---------
 
-		::
+        .. code-block:: python3
+
             @client.event
             async def on_ready():
                 print('Ready!')
-
         """
 
         if not asyncio.iscoroutinefunction(coro):
@@ -793,7 +784,10 @@ class Client:
         the activity being done currently. This could also be the slimmed down versions,
         :class:`Game` and :class:`Streaming`.
 
-        Example: ::
+        Example
+        ---------
+
+        .. code-block:: python3
 
             game = discord.Game("with the API")
             await client.change_presence(status=discord.Status.idle, activity=game)
@@ -805,7 +799,7 @@ class Client:
         status: Optional[:class:`Status`]
             Indicates what status to change to. If None, then
             :attr:`Status.online` is used.
-        afk: bool
+        afk: :class:`bool`
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better
             for you in case you are actually idle and not lying.
@@ -838,6 +832,77 @@ class Client:
 
     # Guild stuff
 
+    def fetch_guilds(self, *, limit=100, before=None, after=None):
+        """|coro|
+
+        Retreives an :class:`AsyncIterator` that enables receiving your guilds.
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of guilds to retrieve.
+            If ``None``, it retrieves every guild you have access to. Note, however,
+            that this would make it a slow operation.
+            Defaults to 100.
+        before: :class:`Snowflake` or `datetime`
+            Retrieves guilds before this date or object.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        after: :class:`Snowflake` or `datetime`
+            Retrieve guilds after this date or object.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+
+        Raises
+        ------
+        HTTPException
+            Getting the guilds failed.
+
+        Yields
+        --------
+        :class:`Guild`
+            The guild with the guild data parsed.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for guild in client.fetch_guilds(limit=150):
+                print(guild.name)
+
+        Flattening into a list ::
+
+            guilds = await client.fetch_guilds(limit=150).flatten()
+            # guilds is now a list of Guild...
+        """
+        return GuildIterator(self, limit=limit, before=before, after=after)
+
+    async def fetch_guild(self, guild_id):
+        """|coro|
+
+        Retreives a :class:`Guild` from an ID.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The guild's ID to fetch from.
+
+        Raises
+        ------
+        Forbidden
+            You do not have access to the guild.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`Guild`
+            The guild from the ID.
+        """
+        data = await self.http.get_guild(guild_id)
+        return Guild(data=data, state=self._connection)
+
     async def create_guild(self, name, region=None, icon=None):
         """|coro|
 
@@ -847,12 +912,12 @@ class Client:
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The name of the guild.
         region: :class:`VoiceRegion`
             The region for the voice communication server.
             Defaults to :attr:`VoiceRegion.us_west`.
-        icon: bytes
+        icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
 
@@ -882,16 +947,16 @@ class Client:
 
     # Invite management
 
-    async def get_invite(self, url, *, with_counts=True):
+    async def fetch_invite(self, url, *, with_counts=True):
         """|coro|
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
 
-        Note
-        ------
-        If the invite is for a guild you have not joined, the guild and channel
-        attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
-        :class:`PartialInviteChannel` respectively.
+        .. note::
+
+            If the invite is for a guild you have not joined, the guild and channel
+            attributes of the returned :class:`Invite` will be :class:`PartialInviteGuild` and
+            :class:`PartialInviteChannel` respectively.
 
         Parameters
         -----------
@@ -915,7 +980,7 @@ class Client:
             The invite from the URL/ID.
         """
 
-        invite_id = self._resolve_invite(url)
+        invite_id = utils.resolve_invite(url)
         data = await self.http.get_invite(invite_id, with_counts=with_counts)
         return Invite.from_incomplete(state=self._connection, data=data)
 
@@ -929,7 +994,7 @@ class Client:
 
         Parameters
         ----------
-        invite
+        invite: Union[:class:`Invite`, :class:`str`]
             The invite to revoke.
 
         Raises
@@ -942,25 +1007,55 @@ class Client:
             Revoking the invite failed.
         """
 
-        invite_id = self._resolve_invite(invite)
+        invite_id = utils.resolve_invite(invite)
         await self.http.delete_invite(invite_id)
 
     # Miscellaneous stuff
+
+    async def fetch_widget(self, guild_id):
+        """|coro|
+
+        Gets a :class:`Widget` from a guild ID.
+
+        .. note::
+
+            The guild must have the widget enabled to get this information.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The ID of the guild.
+
+        Raises
+        -------
+        Forbidden
+            The widget for this guild is disabled.
+        HTTPException
+            Retrieving the widget failed.
+
+        Returns
+        --------
+        :class:`Widget`
+            The guild's widget.
+        """
+        data = await self.http.get_widget(guild_id)
+
+        return Widget(state=self._connection, data=data)
 
     async def application_info(self):
         """|coro|
 
         Retrieve's the bot's application information.
 
-        Returns
-        --------
-        :class:`AppInfo`
-            A namedtuple representing the application info.
-
         Raises
         -------
         HTTPException
             Retrieving the information failed somehow.
+
+        Returns
+        --------
+        :class:`AppInfo`
+            A namedtuple representing the application info.
         """
         data = await self.http.application_info()
         if 'rpc_origins' not in data:
@@ -971,7 +1066,7 @@ class Client:
                        bot_require_code_grant=data['bot_require_code_grant'],
                        owner=User(state=self._connection, data=data['owner']))
 
-    async def get_user_info(self, user_id):
+    async def fetch_user(self, user_id):
         """|coro|
 
         Retrieves a :class:`User` based on their ID. This can only
@@ -981,13 +1076,8 @@ class Client:
 
         Parameters
         -----------
-        user_id: int
+        user_id: :class:`int`
             The user's ID to fetch from.
-
-        Returns
-        --------
-        :class:`User`
-            The user you requested.
 
         Raises
         -------
@@ -995,18 +1085,23 @@ class Client:
             A user with this ID does not exist.
         HTTPException
             Fetching the user failed.
+
+        Returns
+        --------
+        :class:`User`
+            The user you requested.
         """
         data = await self.http.get_user_info(user_id)
         return User(state=self._connection, data=data)
 
-    async def get_user_profile(self, user_id):
+    async def fetch_user_profile(self, user_id):
         """|coro|
 
         Gets an arbitrary user's profile. This can only be used by non-bot accounts.
 
         Parameters
         ------------
-        user_id: int
+        user_id: :class:`int`
             The ID of the user to fetch their profile for.
 
         Raises
@@ -1037,7 +1132,7 @@ class Client:
                        user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
 
-    async def get_webhook_info(self, webhook_id):
+    async def fetch_webhook(self, webhook_id):
         """|coro|
 
         Retrieves a :class:`Webhook` with the specified ID.

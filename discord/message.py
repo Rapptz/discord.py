@@ -108,7 +108,7 @@ class Attachment:
 
         Returns
         --------
-        int
+        :class:`int`
             The number of bytes written.
         """
         url = self.proxy_url if use_cached else self.url
@@ -583,13 +583,13 @@ class Message:
 
         Parameters
         -----------
-        content: Optional[str]
+        content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
-        delete_after: Optional[float]
+        delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
@@ -690,7 +690,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to react with.
 
         Raises
@@ -723,7 +723,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.

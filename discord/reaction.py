@@ -127,20 +127,6 @@ class Reaction:
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.
 
-        Parameters
-        ------------
-        limit: int
-            The maximum number of results to return.
-            If not provided, returns all the users who
-            reacted to the message.
-        after: :class:`abc.Snowflake`
-            For pagination, reactions are sorted by member.
-
-        Raises
-        --------
-        HTTPException
-            Getting the users for the reaction failed.
-
         Examples
         ---------
 
@@ -156,6 +142,20 @@ class Reaction:
             # users is now a list...
             winner = random.choice(users)
             await channel.send('{} has won the raffle.'.format(winner))
+
+        Parameters
+        ------------
+        limit: :class:`int`
+            The maximum number of results to return.
+            If not provided, returns all the users who
+            reacted to the message.
+        after: :class:`abc.Snowflake`
+            For pagination, reactions are sorted by member.
+
+        Raises
+        --------
+        HTTPException
+            Getting the users for the reaction failed.
 
         Yields
         --------
