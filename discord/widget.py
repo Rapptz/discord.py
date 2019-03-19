@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
-from .activity import Activity
+from .activity import create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 from collections import namedtuple
@@ -115,7 +115,7 @@ class WidgetMember(BaseUser):
         The member's nickname.
     avatar: Optional[:class:`str`]
         The member's avatar hash.
-    activity: Optional[:class:`Activity`]
+    activity: Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`, :class:`Spotify`]]
         The member's activity.
     deafened: Optional[:class:`bool`]
         Whether the member is currently deafened.
@@ -138,9 +138,12 @@ class WidgetMember(BaseUser):
         self.muted = data.get('mute', False) or data.get('self_mute', False)
         self.suppress = data.get('suppress', False)
 
-        game = data.get('game')
-        if game:
-            self.activity = Activity(**game)
+        try:
+            game = data['game']
+        except KeyError:
+            self.activity = None
+        else:
+            self.activity = create_activity(game)
 
         self.connected_channel = connected_channel
 
@@ -211,13 +214,18 @@ class Widget:
 
     @property
     def created_at(self):
-        """Returns the member's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the member's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
     def json_url(self):
-        """The JSON URL of the widget."""
+        """:class:`str`: The JSON URL of the widget."""
         return "https://discordapp.com/api/guilds/{0.id}/widget.json".format(self)
+
+    @property
+    def invite_url(self):
+        """Optiona[:class:`str`]: The invite URL for the guild, if available."""
+        return self._invite
 
     async def fetch_invite(self, *, with_counts=True):
         """|coro|

@@ -2074,6 +2074,25 @@ Invite
 .. autoclass:: Invite()
     :members:
 
+WidgetChannel
+~~~~~~~~~~~~~~~
+
+.. autoclass:: WidgetChannel()
+    :members:
+
+WidgetMember
+~~~~~~~~~~~~~
+
+.. autoclass:: WidgetMember()
+    :members:
+    :inherited-members:
+
+Widget
+~~~~~~~
+
+.. autoclass:: Widget()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
