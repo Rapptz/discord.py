@@ -967,7 +967,7 @@ class Guild(Hashable):
         data = await self._state.http.get_member(self.id, member_id)
         return Member(data=data, state=self._state, guild=self)
 
-    async def get_ban(self, user):
+    async def fetch_ban(self, user):
         """|coro|
 
         Retrieves the :class:`BanEntry` for a user, which is a namedtuple

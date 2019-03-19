@@ -954,7 +954,7 @@ class Client:
 
     # Invite management
 
-    async def get_invite(self, url, *, with_counts=True):
+    async def fetch_invite(self, url, *, with_counts=True):
         """|coro|
 
         Gets an :class:`Invite` from a discord.gg URL or ID.
@@ -1071,7 +1071,7 @@ class Client:
         data = await self.http.get_user_info(user_id)
         return User(state=self._connection, data=data)
 
-    async def get_user_profile(self, user_id):
+    async def fetch_user_profile(self, user_id):
         """|coro|
 
         Gets an arbitrary user's profile. This can only be used by non-bot accounts.
@@ -1109,7 +1109,7 @@ class Client:
                        user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
 
-    async def get_webhook_info(self, webhook_id):
+    async def fetch_webhook(self, webhook_id):
         """|coro|
 
         Retrieves a :class:`Webhook` with the specified ID.
