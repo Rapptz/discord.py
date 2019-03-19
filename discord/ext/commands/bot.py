@@ -38,7 +38,7 @@ import discord
 from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
-from .errors import CommandNotFound, CommandError
+from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
@@ -571,14 +571,14 @@ class BotBase(GroupMixin):
             setup = getattr(lib, 'setup')
         except AttributeError:
             del sys.modules[key]
-            raise discord.ClientException('extension {!r} ({!r}) does not have a setup function.'.format(key, lib))
+            raise errors.NoEntryPointError(key)
 
         try:
             setup(self)
-        except Exception:
+        except Exception as e:
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, key)
-            raise
+            raise errors.ExtensionFailed(key, e) from e
         else:
             self._extensions[key] = lib
 
@@ -601,20 +601,25 @@ class BotBase(GroupMixin):
 
         Raises
         --------
-        ClientException
-            The extension does not have a setup function.
-        ImportError
+        ExtensionNotFound
             The extension could not be imported.
-        Exception
-            Any other exception raised by the extension will be raised back
-            to the caller.
+        ExtensionAlreadyLoaded
+            The extension is already loaded.
+        NoEntryPointError
+            The extension does not have a setup function.
+        ExtensionFailed
+            The extension setup function had an execution error.
         """
 
         if name in self._extensions:
-            return
+            raise errors.ExtensionAlreadyLoaded(name)
 
-        lib = importlib.import_module(name)
-        self._load_from_module_spec(lib, name)
+        try:
+            lib = importlib.import_module(name)
+        except ImportError as e:
+            raise errors.ExtensionNotFound(name, e) from e
+        else:
+            self._load_from_module_spec(lib, name)
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -633,11 +638,16 @@ class BotBase(GroupMixin):
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+
+        Raises
+        -------
+        ExtensionNotLoaded
+            The extension was not loaded.
         """
 
         lib = self._extensions.get(name)
         if lib is None:
-            return
+            raise errors.ExtensionNotLoaded(name)
 
         self._remove_module_references(lib.__name__)
         self._call_module_finalizers(lib, name)
@@ -659,14 +669,19 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        Exception
-            Any exception raised by the extension will be raised back
-            to the caller.
+        ExtensionNotLoaded
+            The extension was not loaded.
+        ExtensionNotFound
+            The extension could not be imported.
+        NoEntryPointError
+            The extension does not have a setup function.
+        ExtensionFailed
+            The extension setup function had an execution error.
         """
 
         lib = self._extensions.get(name)
         if lib is None:
-            return
+            raise errors.ExtensionNotLoaded(name)
 
         # get the previous module states from sys modules
         modules = {
@@ -843,12 +858,12 @@ class BotBase(GroupMixin):
             try:
                 if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
-            except CommandError as exc:
+            except errors.CommandError as exc:
                 await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
-            exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):

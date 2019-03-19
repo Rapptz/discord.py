@@ -285,6 +285,25 @@ Exceptions
 .. autoexception:: discord.ext.commands.BotMissingPermissions
     :members:
 
+.. autoexception:: discord.ext.commands.ExtensionError
+    :members:
+
+.. autoexception:: discord.ext.commands.ExtensionAlreadyLoaded
+    :members:
+
+.. autoexception:: discord.ext.commands.ExtensionNotLoaded
+    :members:
+
+.. autoexception:: discord.ext.commands.NoEntryPointError
+    :members:
+
+.. autoexception:: discord.ext.commands.ExtensionFailed
+    :members:
+
+.. autoexception:: discord.ext.commands.ExtensionNotFound
+    :members:
+
+
 Exception Hierarchy
 +++++++++++++++++++++
 
@@ -311,3 +330,9 @@ Exception Hierarchy
             - :exc:`~.commands.DisabledCommand`
             - :exc:`~.commands.CommandInvokeError`
             - :exc:`~.commands.CommandOnCooldown`
+        - :exc:`~.commands.ExtensionError`
+            - :exc:`~.commands.ExtensionAlreadyLoaded`
+            - :exc:`~.commands.ExtensionNotLoaded`
+            - :exc:`~.commands.NoEntryPointError`
+            - :exc:`~.commands.ExtensionFailed`
+            - :exc:`~.commands.ExtensionNotFound`
