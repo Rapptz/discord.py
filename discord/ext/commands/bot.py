@@ -96,9 +96,9 @@ class _DefaultRepr:
 
 _default = _DefaultRepr()
 
-CT = TypeVar('CT', bound=Context)
+_CT = TypeVar('_CT', bound=Context)
 
-class BotBase(GroupMixin[CT]):
+class BotBase(GroupMixin[_CT]):
     def __init__(self, command_prefix, help_command=_default, description=None, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
@@ -823,7 +823,7 @@ class BotBase(GroupMixin[CT]):
     async def on_message(self, message):
         await self.process_commands(message)
 
-class Bot(BotBase[CT], discord.Client):
+class Bot(BotBase[_CT], discord.Client):
     """Represents a discord bot.
 
     This class is a subclass of :class:`discord.Client` and as a result
@@ -888,7 +888,7 @@ class Bot(BotBase[CT], discord.Client):
     """
     pass
 
-class AutoShardedBot(BotBase[CT], discord.AutoShardedClient):
+class AutoShardedBot(BotBase[_CT], discord.AutoShardedClient):
     """This is similar to :class:`.Bot` except that it is derived from
     :class:`discord.AutoShardedClient` instead.
     """

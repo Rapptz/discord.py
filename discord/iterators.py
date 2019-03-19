@@ -37,9 +37,9 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 if TYPE_CHECKING:
     from .message import Message
 
-IT = TypeVar('IT')
+_IT = TypeVar('_IT')
 
-class _AsyncIterator(Generic[IT]):
+class _AsyncIterator(Generic[_IT]):
     __slots__ = ()
 
     def get(self, **attrs):
@@ -97,7 +97,7 @@ class _AsyncIterator(Generic[IT]):
 def _identity(x):
     return x
 
-class _MappedAsyncIterator(_AsyncIterator[IT]):
+class _MappedAsyncIterator(_AsyncIterator[_IT]):
     def __init__(self, iterator, func):
         self.iterator = iterator
         self.func = func
@@ -107,7 +107,7 @@ class _MappedAsyncIterator(_AsyncIterator[IT]):
         item = await self.iterator.next()
         return await maybe_coroutine(self.func, item)
 
-class _FilteredAsyncIterator(_AsyncIterator[IT]):
+class _FilteredAsyncIterator(_AsyncIterator[_IT]):
     def __init__(self, iterator, predicate):
         self.iterator = iterator
 
@@ -126,7 +126,7 @@ class _FilteredAsyncIterator(_AsyncIterator[IT]):
             if ret:
                 return item
 
-class ReactionIterator(_AsyncIterator[IT]):
+class ReactionIterator(_AsyncIterator[_IT]):
     def __init__(self, message, emoji, limit=100, after=None):
         self.message = message
         self.limit = limit

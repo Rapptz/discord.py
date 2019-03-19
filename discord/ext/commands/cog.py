@@ -142,9 +142,9 @@ def _cog_special_method(func):
     func.__cog_special_method__ = None
     return func
 
-CT = typing.TypeVar('CT', bound=Context)
+_CT = typing.TypeVar('_CT', bound=Context)
 
-class Cog(typing.Generic[CT], metaclass=CogMeta):
+class Cog(typing.Generic[_CT], metaclass=CogMeta):
     """The base class that all cogs must inherit from.
 
     A cog is a collection of commands, listeners, and optional state to

@@ -12,7 +12,7 @@ from .types import RawWebhookDict
 from .state import ConnectionState
 from .user import User
 
-from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar, BinaryIO, TypeVar, Type, overload
+from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar, BinaryIO, TypeVar, Type, Iterable, overload
 
 class WebhookAdapter:
     BASE: ClassVar[str]
@@ -20,7 +20,7 @@ class WebhookAdapter:
     webhook: Webhook
 
     def request(self, verb: str, url: str, payload: Optional[Dict[str, Any]] = ...,
-                multipart: Optional[Dict[str, Any]] = ...) -> Any: ...
+                multipart: Optional[Dict[str, Any]] = ..., *, files: Optional[Iterable[File]] = ...) -> Any: ...
 
     def delete_webhook(self) -> Any: ...
 
@@ -39,7 +39,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
     def __init__(self, session: aiohttp.ClientSession) -> None: ...
 
     async def request(self, verb: str, url: str, payload: Optional[Dict[str, Any]] = ...,
-                      multipart: Optional[Dict[str, Any]] = ...) -> Any: ...
+                      multipart: Optional[Dict[str, Any]] = ..., *, files: Optional[Iterable[File]] = ...) -> Any: ...
 
     async def handle_execution_response(self, data: Any, *, wait: bool) -> Message: ...
 
@@ -49,7 +49,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
     def __init__(self, session: Optional[Any] = ..., *, sleep: bool = ...) -> None: ...
 
-    def request(self, verb: str, url: str, payload: Optional[Dict[str, Any]] = ..., multipart: Optional[Dict[str, Any]] = ...) -> Any: ...
+    def request(self, verb: str, url: str, payload: Optional[Dict[str, Any]] = ...,
+                multipart: Optional[Dict[str, Any]] = ..., *, files: Optional[Iterable[File]] = ...) -> Any: ...
 
     def handle_execution_response(self, response: Any, *, wait: bool) -> Message: ...
 

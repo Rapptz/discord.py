@@ -41,12 +41,12 @@ from .errors import InvalidArgument
 
 from typing import TypeVar, Callable, Generic
 
-T = TypeVar('T')
-U_co = TypeVar('U_co', covariant=True)
+_T = TypeVar('_T')
+_U_co = TypeVar('_U_co', covariant=True)
 
 DISCORD_EPOCH = 1420070400000
 
-class cached_property(Generic[T, U_co]):
+class cached_property(Generic[_T, _U_co]):
     def __init__(self, function):
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
@@ -60,7 +60,7 @@ class cached_property(Generic[T, U_co]):
 
         return value
 
-class CachedSlotProperty(Generic[T, U_co]):
+class CachedSlotProperty(Generic[_T, _U_co]):
     def __init__(self, name, function):
         self.name = name
         self.function = function

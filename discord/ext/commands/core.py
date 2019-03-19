@@ -104,9 +104,9 @@ class _CaseInsensitiveDict(dict):
     def __setitem__(self, k, v):
         super().__setitem__(k.lower(), v)
 
-CT = typing.TypeVar('CT', bound=Context)
+_CT = typing.TypeVar('_CT', bound=Context)
 
-class Command(_BaseCommand, typing.Generic[CT]):
+class Command(_BaseCommand, typing.Generic[_CT]):
     r"""A class that implements the protocol for a bot text command.
 
     These are not created manually, instead they are created via the
@@ -894,7 +894,7 @@ class Command(_BaseCommand, typing.Generic[CT]):
         finally:
             ctx.command = original
 
-class GroupMixin(typing.Generic[CT]):
+class GroupMixin(typing.Generic[_CT]):
     """A mixin that implements common functionality for classes that behave
     similar to :class:`.Group` and are allowed to register commands.
 
@@ -1059,7 +1059,7 @@ class GroupMixin(typing.Generic[CT]):
 
         return decorator
 
-class Group(GroupMixin[CT], Command[CT], typing.Generic[CT]):
+class Group(GroupMixin[_CT], Command[_CT]):
     """A class that implements a grouping protocol for commands to be
     executed as subcommands.
 

@@ -1,9 +1,10 @@
 import asyncio
 import aiohttp
 
+from .file import File
 from .types import RawChannelDict, RawMessageDict, RawUserDict, RawApplicationInfoDict, RawGuildMemberDict, RawRoleDict, RawInviteDict, RawInviteMetaDict, RawWebhookDict, RawGuildDict, RawGuildBanDict, RawGuildPruneDict, RawEmojiDict, RawAuditLogDict
 
-from typing import Any, Optional, Union, Coroutine, List, Dict, Tuple, ClassVar, BinaryIO
+from typing import Any, Optional, Union, Coroutine, List, Dict, Tuple, ClassVar, BinaryIO, Iterable
 from mypy_extensions import TypedDict
 
 class PositionDict(TypedDict):
@@ -51,7 +52,8 @@ class HTTPClient:
 
     def recreate(self) -> None: ...
 
-    async def request(self, route: Route, *, header_bypass_delay: Optional[Union[int, float]] = ..., **kwargs: Any) -> Any: ...
+    async def request(self, route: Route, *, files: Optional[Iterable[File]] = ...,
+                      header_bypass_delay: Optional[Union[int, float]] = ..., **kwargs: Any) -> Any: ...
 
     async def get_attachment(self, url: str) -> bytes: ...
 
