@@ -166,7 +166,7 @@ class OpusError(DiscordException):
 
     Attributes
     ----------
-    code : :class:`int`
+    code: :class:`int`
         The error code returned.
     """
 

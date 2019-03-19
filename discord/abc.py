@@ -300,7 +300,7 @@ class GuildChannel:
 
     @property
     def mention(self):
-        """:class:`str` : The string that allows you to mention the channel."""
+        """:class:`str`: The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
@@ -385,7 +385,7 @@ class GuildChannel:
 
         Parameters
         ----------
-        member : :class:`Member`
+        member: :class:`Member`
             The member to resolve permissions for.
 
         Returns

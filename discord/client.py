@@ -76,22 +76,22 @@ class Client:
 
     Parameters
     -----------
-    max_messages : Optional[:class:`int`]
+    max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
         This defaults to 5000. Passing in `None` or a value less than 100
         will use the default instead of the passed in value.
-    loop : Optional[event loop]
+    loop: Optional[event loop]
         The `event loop`_ to use for asynchronous operations. Defaults to ``None``,
         in which case the default event loop is used via ``asyncio.get_event_loop()``.
-    connector : aiohttp.BaseConnector
+    connector: aiohttp.BaseConnector
         The `connector`_ to use for connection pooling.
-    proxy : Optional[:class:`str`]
+    proxy: Optional[:class:`str`]
         Proxy URL.
-    proxy_auth : Optional[aiohttp.BasicAuth]
+    proxy_auth: Optional[aiohttp.BasicAuth]
         An object that represents proxy HTTP Basic Authorization.
-    shard_id : Optional[:class:`int`]
+    shard_id: Optional[:class:`int`]
         Integer starting at 0 and less than shard_count.
-    shard_count : Optional[:class:`int`]
+    shard_count: Optional[:class:`int`]
         The total number of shards.
     fetch_offline_members: :class:`bool`
         Indicates if :func:`on_ready` should be delayed to fetch all offline
@@ -180,7 +180,7 @@ class Client:
 
     @property
     def latency(self):
-        """:obj:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord WebSocket protocol latency.
         """
@@ -219,7 +219,7 @@ class Client:
         return self._connection.voice_clients
 
     def is_ready(self):
-        """:obj:`bool`: Specifies if the client's internal cache is ready for use."""
+        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
     async def _run_event(self, coro, event_name, *args, **kwargs):
@@ -573,7 +573,7 @@ class Client:
     # properties
 
     def is_closed(self):
-        """:obj:`bool`: Indicates if the websocket connection is closed."""
+        """:class:`bool`: Indicates if the websocket connection is closed."""
         return self._closed.is_set()
 
     @property
@@ -594,7 +594,7 @@ class Client:
 
     @property
     def users(self):
-        """Returns a :obj:`list` of all the :class:`User` the bot can see."""
+        """Returns a :class:`list` of all the :class:`User` the bot can see."""
         return list(self._connection._users.values())
 
     def get_channel(self, id):
@@ -673,7 +673,7 @@ class Client:
         :exc:`asyncio.TimeoutError` for you in case of timeout and is provided for
         ease of use.
 
-        In case the event returns multiple arguments, a :obj:`tuple` containing those
+        In case the event returns multiple arguments, a :class:`tuple` containing those
         arguments is returned instead. Please check the
         :ref:`documentation <discord-api-events>` for a list of events and their
         parameters.
@@ -736,7 +736,7 @@ class Client:
         Returns
         --------
         Any
-            Returns no arguments, a single argument, or a :obj:`tuple` of multiple
+            Returns no arguments, a single argument, or a :class:`tuple` of multiple
             arguments that mirrors the parameters passed in the
             :ref:`event reference <discord-api-events>`.
         """

@@ -245,7 +245,7 @@ class BaseUser(_BaseUser):
 
         Parameters
         -----------
-        message : :class:`Message`
+        message: :class:`Message`
             The message to check if you're mentioned in.
         """
 
