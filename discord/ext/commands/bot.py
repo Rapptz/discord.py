@@ -182,7 +182,7 @@ class BotBase(GroupMixin):
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
-        of type :class:`.Context` and can only raise exceptions derived from
+        of type :class:`.Context` and can only raise exceptions inherited from
         :exc:`.CommandError`.
 
         Example
@@ -255,7 +255,7 @@ class BotBase(GroupMixin):
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
-        of type :class:`.Context` and can only raise exceptions derived from
+        of type :class:`.Context` and can only raise exceptions inherited from
         :exc:`.CommandError`.
 
         Example
@@ -963,7 +963,7 @@ class Bot(BotBase, discord.Client):
     pass
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`.Bot` except that it is derived from
+    """This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
     """
     pass

@@ -135,7 +135,7 @@ class Command(_BaseCommand):
     checks
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
-        is necessary to be thrown to signal failure, then one derived from
+        is necessary to be thrown to signal failure, then one inherited from
         :exc:`.CommandError` should be used. Note that if the checks fail then
         :exc:`.CheckFailure` exception is raised to the :func:`.on_command_error`
         event.
@@ -1336,7 +1336,7 @@ def has_permissions(**perms):
     :class:`.discord.Permissions`.
 
     This check raises a special exception, :exc:`.MissingPermissions`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
 
     Parameters
     ------------
@@ -1402,7 +1402,7 @@ def bot_has_permissions(**perms):
     the permissions listed.
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1424,7 +1424,7 @@ def guild_only():
     using the command.
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
     """
 
     def predicate(ctx):

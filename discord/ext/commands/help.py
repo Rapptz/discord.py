@@ -770,7 +770,7 @@ class HelpCommand:
 class DefaultHelpCommand(HelpCommand):
     """The implementation of the default help command.
 
-    This derives from :class:`HelpCommand`.
+    This inherits from :class:`HelpCommand`.
 
     It extends it with the following attributes.
 
@@ -973,7 +973,7 @@ class DefaultHelpCommand(HelpCommand):
 class MinimalHelpCommand(HelpCommand):
     """An implementation of a help command with minimal output.
 
-    This derives from :class:`HelpCommand`.
+    This inherits from :class:`HelpCommand`.
 
     Attributes
     ------------

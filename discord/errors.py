@@ -130,7 +130,7 @@ class InvalidArgument(ClientException):
     is invalid some way (e.g. wrong value or wrong type).
 
     This could be considered the analogous of ``ValueError`` and
-    ``TypeError`` except derived from :exc:`ClientException` and thus
+    ``TypeError`` except inherited from :exc:`ClientException` and thus
     :exc:`DiscordException`.
     """
     pass

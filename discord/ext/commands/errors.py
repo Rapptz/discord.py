@@ -43,7 +43,7 @@ class CommandError(DiscordException):
 
     This inherits from :exc:`discord.DiscordException`.
 
-    This exception and exceptions derived from it are handled
+    This exception and exceptions inherited from it are handled
     in a special way as they are caught and passed into a special event
     from :class:`.Bot`\, :func:`on_command_error`.
     """
@@ -237,7 +237,7 @@ class BadUnionArgument(UserInputError):
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
 
-    This derives from :exc:`UserInputError`. There are child classes
+    This inherits from :exc:`UserInputError`. There are child classes
     that implement more granular parsing errors for i18n purposes.
     """
     pass
@@ -245,7 +245,7 @@ class ArgumentParsingError(UserInputError):
 class UnexpectedQuoteError(ArgumentParsingError):
     """An exception raised when the parser encounters a quote mark inside a non-quoted string.
 
-    This derives from :exc:`ArgumentParsingError`.
+    This inherits from :exc:`ArgumentParsingError`.
 
     Attributes
     ------------
@@ -260,7 +260,7 @@ class InvalidEndOfQuotedStringError(ArgumentParsingError):
     """An exception raised when a space is expected after the closing quote in a string
     but a different character is found.
 
-    This derives from :exc:`ArgumentParsingError`.
+    This inherits from :exc:`ArgumentParsingError`.
 
     Attributes
     -----------
@@ -274,7 +274,7 @@ class InvalidEndOfQuotedStringError(ArgumentParsingError):
 class ExpectedClosingQuoteError(ArgumentParsingError):
     """An exception raised when a quote character is expected but not found.
 
-    This derives from :exc:`ArgumentParsingError`.
+    This inherits from :exc:`ArgumentParsingError`.
 
     Attributes
     -----------
