@@ -795,3 +795,11 @@ class Message:
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return state.http.ack_message(self.channel.id, self.id)
+
+    def __eq__(self, other):
+        # checks if the message id is the same as a other message.id
+        return self.id == other.id
+
+    def __ne__(self, other):
+        # checks if the message id is not the same as a other message.id
+        return self.id != other.id
