@@ -6,12 +6,14 @@ from .core import Command, Group
 from .errors import CommandError
 from .context import Context
 from .cog import Cog
+from .cooldowns import Cooldown
 
 from typing import (
     Any, Optional, Union, List, Tuple, Dict, Iterable, Mapping, ClassVar, Pattern, TypeVar, Generic, Awaitable,
     Callable, Sequence
 )
 from mypy_extensions import TypedDict
+from typing_extensions import Protocol
 
 _T = TypeVar('_T')
 _MaybeAwaitable = Union[Awaitable[_T], _T]
@@ -28,6 +30,24 @@ class _CommandAttrs(TypedDict, total=False):
     hidden: bool
     rest_is_raw: bool
     ignore_extra: bool
+    cooldown: Cooldown
+    parent: Command[Context]
+
+class _PaginatorProtocol(Protocol):
+    prefix: Optional[str]
+    suffix: Optional[str]
+    max_size: int
+
+    def clear(self) -> None: ...
+
+    def add_line(self, line: str = ..., *, empty: bool = ...) -> None: ...
+
+    def close_page(self) -> None: ...
+
+    def __len__(self) -> int: ...
+
+    @property
+    def pages(self) -> List[str]: ...
 
 class Paginator:
     prefix: Optional[str]
@@ -56,12 +76,12 @@ class _HelpCommandImpl(Command[_CT]):
     @property
     def clean_params(self) -> Mapping[str, Parameter]: ...
 
-class HelpCommand:
-    context: Optional[Context]
+class HelpCommand(Generic[_CT]):
+    context: Optional[_CT]
     show_hidden: bool
     verify_checks: bool
     command_attrs: _CommandAttrs
-    cog: Optional[Cog[Context]]
+    cog: Optional[Cog[_CT]]
 
     MENTION_TRANSFORMS: ClassVar[Dict[str, str]]
     MENTION_PATTHER: ClassVar[Pattern[str]]
@@ -73,7 +93,7 @@ class HelpCommand:
     @property
     def clean_prefix(self) -> str: ...
 
-    def get_command_signature(self) -> str: ...
+    def get_command_signature(self, command: Command[_CT]) -> str: ...
 
     def remove_mentions(self, string: str) -> str: ...
 
@@ -104,17 +124,17 @@ class HelpCommand:
 
     async def command_callback(self, ctx: _CT, *, command: Optional[str] = ...) -> Any: ...
 
-class DefaultHelpCommand(HelpCommand):
+class DefaultHelpCommand(HelpCommand[_CT]):
     width: int
     sort_commands: bool
     indent: int
     commands_heading: str
     no_category: str
-    paginator: Paginator
+    paginator: _PaginatorProtocol
 
     def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...,
                  width: int = ..., indent: int = ..., sort_commands: bool = ..., commands_heading: str = ...,
-                 no_category: str = ..., paginator: Optional[Paginator] = ...) -> None: ...
+                 no_category: str = ..., paginator: Optional[_PaginatorProtocol] = ...) -> None: ...
 
     def shorten_text(self, text: str) -> str: ...
 
@@ -137,22 +157,22 @@ class DefaultHelpCommand(HelpCommand):
 
     async def send_cog_help(self, cog: Cog[_CT]) -> None: ...
 
-class MinimalHelpCommand(HelpCommand):
+class MinimalHelpCommand(HelpCommand[_CT]):
     sort_commands: bool
     commands_heading: str
     aliases_heading: str
     no_category: str
-    paginator: Paginator
+    paginator: _PaginatorProtocol
 
     def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...,
                  sort_commands: bool = ..., commands_heading: str = ..., aliases_heading: str = ...,
-                 no_category: str = ..., paginator: Optional[Paginator] = ...) -> None: ...
+                 no_category: str = ..., paginator: Optional[_PaginatorProtocol] = ...) -> None: ...
 
     async def send_pages(self) -> None: ...
 
     def get_opening_note(self) -> str: ...
 
-    def get_command_signature(self) -> str: ...
+    def get_command_signature(self, command: Command[_CT]) -> str: ...
 
     def get_ending_note(self) -> Optional[str]: ...
 
