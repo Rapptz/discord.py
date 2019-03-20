@@ -63,7 +63,7 @@ If you want to invite your bot you must create an invite URL for your bot.
 
 1. Make sure you're logged on to the `Discord website <https://discordapp.com>`_.
 2. Navigate to the `application page <https://discordapp.com/developers/applications>`_
-3. Click your bot.
+3. Click on your bot's page.
 4. Go to "OAuth2" page.
 
     .. image:: /images/discord_oauth2.png
