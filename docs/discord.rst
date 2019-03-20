@@ -87,7 +87,9 @@ If you want to invite your bot you must create an invite URL for your bot.
 
     - You can't use normal invites of the server.
 
-    - You need Manage Server permission on the server to add a bot.
+.. note::
+
+    The person adding the bot needs "Manage Server" permissions to do so.
 
 If you want to generate this URL dynamically at run-time inside your bot and using the
 :class:`discord.Permissions` interface, you can use :func:`discord.utils.oauth_url`.
