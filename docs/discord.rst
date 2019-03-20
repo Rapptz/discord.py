@@ -47,7 +47,7 @@ Creating a Bot account is a pretty straightforward process.
         The possibilities are endless, so **do not share this token.**
 
         If you accidentally leaked your token, click the "Regenerate" button as soon
-        as possible.** This revokes your old token and re-generates a new one.
+        as possible. This revokes your old token and re-generates a new one.
         Now you need to use the new token to login.
 
 And that's it. You now have a bot account and you can login with that token.
