@@ -85,7 +85,6 @@ If you want to invite your bot you must create an invite URL for your bot.
 
 7. Now the resulting URL can be used to add your bot to a server. Copy and paste the URL into your browser, choose a server to invite the bot to, and click "Authorize".
 
-    - You can't use normal invites of the server.
 
 .. note::
 
