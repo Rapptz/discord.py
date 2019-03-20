@@ -78,7 +78,7 @@ If you want to invite your bot you must create an invite URL for your bot.
 
     - Please be aware of the consequences of requiring your bot to have the "Administrator" permission.
 
-    - The bot owners must have 2FA enabled to add your bot to a server with
+    - Bot owners must have 2FA enabled for certain actions and permissions when added in servers that have Server-Wide 2FA enabled. Check the `2FA support page <https://support.discordapp.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ for more information.
 
     .. image:: /images/discord_oauth2_perms.png
         :alt: The permission chooser with some permissions checked.
