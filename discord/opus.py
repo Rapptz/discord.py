@@ -125,23 +125,23 @@ def load_opus(name):
 
     This function propagates the exceptions thrown.
 
-    Warning
-    --------
-    The bitness of the library must match the bitness of your python
-    interpreter. If the library is 64-bit then your python interpreter
-    must be 64-bit as well. Usually if there's a mismatch in bitness then
-    the load will throw an exception.
+    .. warning::
 
-    Note
-    ----
-    On Windows, the .dll extension is not necessary. However, on Linux
-    the full extension is required to load the library, e.g. ``libopus.so.1``.
-    On Linux however, `find library`_ will usually find the library automatically
-    without you having to call this.
+        The bitness of the library must match the bitness of your python
+        interpreter. If the library is 64-bit then your python interpreter
+        must be 64-bit as well. Usually if there's a mismatch in bitness then
+        the load will throw an exception.
+
+    .. note::
+
+        On Windows, the .dll extension is not necessary. However, on Linux
+        the full extension is required to load the library, e.g. ``libopus.so.1``.
+        On Linux however, `find library`_ will usually find the library automatically
+        without you having to call this.
 
     Parameters
     ----------
-    name: str
+    name: :class:`str`
         The filename of the shared library.
     """
     global _lib
@@ -155,7 +155,7 @@ def is_loaded():
 
     Returns
     -------
-    bool
+    :class:`bool`
         Indicates if the opus library has been loaded.
     """
     global _lib
@@ -166,7 +166,7 @@ class OpusError(DiscordException):
 
     Attributes
     ----------
-    code : :class:`int`
+    code: :class:`int`
         The error code returned.
     """
 

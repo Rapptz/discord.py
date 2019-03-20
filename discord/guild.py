@@ -42,6 +42,7 @@ from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator
 from .webhook import Webhook
+from .widget import Widget
 
 VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
@@ -97,6 +98,8 @@ class Guild(Hashable):
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
     banner: Optional[:class:`str`]
         The guild's banner.
+    description: Optional[:class:`str`]
+        The guild's description.
     mfa_level: :class:`int`
         Indicates the guild's two factor authorisation level. If this value is 0 then
         the guild does not require 2FA for their administrative members. If the value is
@@ -125,7 +128,8 @@ class Guild(Hashable):
                  '_default_role', '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
-                 '_voice_states', '_system_channel_id', 'default_notifications')
+                 '_voice_states', '_system_channel_id', 'default_notifications',
+                 'description')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -227,6 +231,7 @@ class Guild(Hashable):
         self.features = guild.get('features', [])
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
+        self.description = guild.get('description')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -257,13 +262,15 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                if c['type'] == ChannelType.text.value:
+                c_type = c['type']
+                if c_type in (ChannelType.text.value, ChannelType.news.value):
                     self._add_channel(TextChannel(guild=self, data=c, state=self._state))
-                elif c['type'] == ChannelType.voice.value:
+                elif c_type == ChannelType.voice.value:
                     self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
-                elif c['type'] == ChannelType.category.value:
+                elif c_type == ChannelType.category.value:
                     self._add_channel(CategoryChannel(guild=self, data=c, state=self._state))
-
+                elif c_type == ChannelType.store.value:
+                    self._add_channel(StoreChannel(guild=self, data=c, state=self._state))
 
     @property
     def channels(self):
@@ -355,7 +362,7 @@ class Guild(Hashable):
         as_list = [(_get(k), v) for k, v in grouped.items()]
         as_list.sort(key=key)
         for _, channels in as_list:
-            channels.sort(key=lambda c: (not isinstance(c, TextChannel), c.position, c.id))
+            channels.sort(key=lambda c: (c._sorting_bucket, c.position, c.id))
         return as_list
 
     def get_channel(self, channel_id):
@@ -416,20 +423,20 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        format: str
+        format: :class:`str`
             The format to attempt to convert the icon to.
-        size: int
+        size: :class:`int`
             The size of the image to display.
-
-        Returns
-        --------
-        str
-            The resulting CDN URL.
 
         Raises
         ------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`str`
+            The resulting CDN URL.
         """
         if not valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
@@ -454,20 +461,20 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        format: str
+        format: :class:`str`
             The format to attempt to convert the banner to.
-        size: int
+        size: :class:`int`
             The size of the image to display.
-
-        Returns
-        --------
-        str
-            The resulting CDN URL.
 
         Raises
         ------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`str`
+            The resulting CDN URL.
         """
         if not valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
@@ -492,20 +499,20 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        format: str
+        format: :class:`str`
             The format to attempt to convert the splash to.
-        size: int
+        size: :class:`int`
             The size of the image to display.
-
-        Returns
-        --------
-        str
-            The resulting CDN URL.
 
         Raises
         ------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`str`
+            The resulting CDN URL.
         """
         if not valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
@@ -567,7 +574,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the member to lookup with an optional discriminator.
 
         Returns
@@ -643,11 +650,11 @@ class Guild(Hashable):
         overwrites with the target (either a :class:`Member` or a :class:`Role`)
         as the key and a :class:`PermissionOverwrite` as the value.
 
-        Note
-        --------
-        Creating a channel of a specified position will not update the position of
-        other channels to follow suit. A follow-up call to :meth:`~TextChannel.edit`
-        will be required to update the position of the channel in the channel list.
+        .. note::
+
+            Creating a channel of a specified position will not update the position of
+            other channels to follow suit. A follow-up call to :meth:`~TextChannel.edit`
+            will be required to update the position of the channel in the channel list.
 
         Examples
         ----------
@@ -759,10 +766,10 @@ class Guild(Hashable):
 
         Leaves the guild.
 
-        Note
-        --------
-        You cannot leave the guild that you own, you must delete it instead
-        via :meth:`delete`.
+        .. note::
+
+            You cannot leave the guild that you own, you must delete it instead
+            via :meth:`delete`.
 
         Raises
         --------
@@ -797,18 +804,18 @@ class Guild(Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new name of the guild.
-        description: str
+        description: :class:`str`
             The new description of the guild. This is only available to guilds that
             contain `VERIFIED` in :attr:`Guild.features`.
-        icon: bytes
+        icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
             Could be ``None`` to denote removal of the icon.
-        banner: bytes
+        banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
             Could be ``None`` to denote removal of the banner.
-        splash: bytes
+        splash: :class:`bytes`
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. Only available for partnered guilds with ``INVITE_SPLASH``
@@ -817,7 +824,7 @@ class Guild(Hashable):
             The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
-        afk_timeout: int
+        afk_timeout: :class:`int`
             The number of seconds until someone is moved to the AFK channel.
         owner: :class:`Member`
             The new owner of the guild to transfer ownership to. Note that you must
@@ -828,11 +835,11 @@ class Guild(Hashable):
             The new default notification level for the guild.
         explicit_content_filter: :class:`ContentFilter`
             The new explicit content filter for the guild.
-        vanity_code: str
+        vanity_code: :class:`str`
             The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
         Raises
@@ -938,7 +945,32 @@ class Guild(Hashable):
         fields['explicit_content_filter'] = explicit_content_filter.value
         await http.edit_guild(self.id, reason=reason, **fields)
 
-    async def get_ban(self, user):
+    async def fetch_member(self, member_id):
+        """|coro|
+
+        Retreives a :class:`Member` from a guild ID, and a member ID.
+
+        Parameters
+        -----------
+        member_id: :class:`int`
+            The member's ID to fetch from.
+
+        Raises
+        -------
+        Forbidden
+            You do not have access to the guild.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`Member`
+            The member from the member ID.
+        """
+        data = await self._state.http.get_member(self.id, member_id)
+        return Member(data=data, state=self._state, guild=self)
+
+    async def fetch_ban(self, user):
         """|coro|
 
         Retrieves the :class:`BanEntry` for a user, which is a namedtuple
@@ -1020,9 +1052,9 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        days: int
+        days: :class:`int`
             The number of days before counting as inactive.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
@@ -1036,7 +1068,7 @@ class Guild(Hashable):
 
         Returns
         ---------
-        int
+        :class:`int`
             The number of members pruned.
         """
 
@@ -1076,7 +1108,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        days: int
+        days: :class:`int`
             The number of days before counting as inactive.
 
         Raises
@@ -1090,7 +1122,7 @@ class Guild(Hashable):
 
         Returns
         ---------
-        int
+        :class:`int`
             The number of members estimated to be pruned.
         """
 
@@ -1144,20 +1176,15 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The emoji name. Must be at least 2 characters.
-        image: bytes
+        image: :class:`bytes`
             The :term:`py:bytes-like object` representing the image data to use.
             Only JPG, PNG and GIF images are supported.
-        roles: Optional[list[:class:`Role`]]
+        roles: Optional[List[:class:`Role`]]
             A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for creating this emoji. Shows up on the audit log.
-
-        Returns
-        --------
-        :class:`Emoji`
-            The created emoji.
 
         Raises
         -------
@@ -1165,6 +1192,11 @@ class Guild(Hashable):
             You are not allowed to create emojis.
         HTTPException
             An error occurred creating an emoji.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The created emoji.
         """
 
         img = utils._bytes_to_base64_data(image)
@@ -1185,26 +1217,21 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The role name. Defaults to 'new role'.
         permissions: :class:`Permissions`
             The permissions to have. Defaults to no permissions.
         colour: :class:`Colour`
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
-        hoist: bool
+        hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to False.
-        mentionable: bool
+        mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
             Defaults to False.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for creating this role. Shows up on the audit log.
-
-        Returns
-        --------
-        :class:`Role`
-            The newly created role.
 
         Raises
         -------
@@ -1214,6 +1241,11 @@ class Guild(Hashable):
             Editing the role failed.
         InvalidArgument
             An invalid keyword argument was given.
+
+        Returns
+        --------
+        :class:`Role`
+            The newly created role.
         """
 
         try:
@@ -1255,7 +1287,7 @@ class Guild(Hashable):
         -----------
         user: :class:`abc.Snowflake`
             The user to kick from their guild.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason the user got kicked.
 
         Raises
@@ -1281,10 +1313,10 @@ class Guild(Hashable):
         -----------
         user: :class:`abc.Snowflake`
             The user to ban from their guild.
-        delete_message_days: int
+        delete_message_days: :class:`int`
             The number of days worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 7.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason the user got banned.
 
         Raises
@@ -1310,7 +1342,7 @@ class Guild(Hashable):
         -----------
         user: :class:`abc.Snowflake`
             The user to unban.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
@@ -1333,17 +1365,17 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_guild` permission to use
         this as well.
 
-        Returns
-        --------
-        :class:`Invite`
-            The special vanity invite.
-
         Raises
         -------
         Forbidden
             You do not have the proper permissions to get this.
         HTTPException
             Retrieving the vanity invite failed.
+
+        Returns
+        --------
+        :class:`Invite`
+            The special vanity invite.
         """
 
         # we start with { code: abc }
@@ -1386,38 +1418,6 @@ class Guild(Hashable):
 
         You must have the :attr:`~Permissions.view_audit_log` permission to use this.
 
-        Parameters
-        -----------
-        limit: Optional[int]
-            The number of entries to retrieve. If ``None`` retrieve all entries.
-        before: Union[:class:`abc.Snowflake`, datetime]
-            Retrieve entries before this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
-        after: Union[:class:`abc.Snowflake`, datetime]
-            Retrieve entries after this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
-        reverse: bool
-            If set to true, return entries in oldest->newest order. If unspecified,
-            this defaults to ``False`` for most cases. However if passing in a
-            ``after`` parameter then this is set to ``True``. This avoids getting entries
-            out of order in the ``after`` case.
-        user: :class:`abc.Snowflake`
-            The moderator to filter entries from.
-        action: :class:`AuditLogAction`
-            The action to filter with.
-
-        Yields
-        --------
-        :class:`AuditLogEntry`
-            The audit log entry.
-
-        Raises
-        -------
-        Forbidden
-            You are not allowed to fetch audit logs
-        HTTPException
-            An error occurred while fetching the audit logs.
-
         Examples
         ----------
 
@@ -1435,6 +1435,38 @@ class Guild(Hashable):
 
             entries = await guild.audit_logs(limit=None, user=guild.me).flatten()
             await channel.send('I made {} moderation actions.'.format(len(entries)))
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of entries to retrieve. If ``None`` retrieve all entries.
+        before: Union[:class:`abc.Snowflake`, datetime]
+            Retrieve entries before this date or entry.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        after: Union[:class:`abc.Snowflake`, datetime]
+            Retrieve entries after this date or entry.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        reverse: :class:`bool`
+            If set to true, return entries in oldest->newest order. If unspecified,
+            this defaults to ``False`` for most cases. However if passing in a
+            ``after`` parameter then this is set to ``True``. This avoids getting entries
+            out of order in the ``after`` case.
+        user: :class:`abc.Snowflake`
+            The moderator to filter entries from.
+        action: :class:`AuditLogAction`
+            The action to filter with.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to fetch audit logs
+        HTTPException
+            An error occurred while fetching the audit logs.
+
+        Yields
+        --------
+        :class:`AuditLogEntry`
+            The audit log entry.
         """
         if user:
             user = user.id
@@ -1444,3 +1476,28 @@ class Guild(Hashable):
 
         return AuditLogIterator(self, before=before, after=after, limit=limit,
                                 reverse=reverse, user_id=user, action_type=action)
+    
+    async def widget(self):
+        """|coro|
+
+        Returns the widget of the guild.
+
+        .. note::
+
+            The guild must have the widget enabled to get this information.
+
+        Raises
+        -------
+        Forbidden
+            The widget for this guild is disabled.
+        HTTPException
+            Retrieving the widget failed.
+
+        Returns
+        --------
+        :class:`Widget`
+            The guild's widget.
+        """
+        data = await self._state.http.get_widget(self.id)
+
+        return Widget(state=self._state, data=data)

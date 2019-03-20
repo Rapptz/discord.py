@@ -38,7 +38,7 @@ class Context(discord.abc.Messageable):
 
     Attributes
     -----------
-    message: :class:`discord.Message`
+    message: :class:`.Message`
         The message that triggered the command being executed.
     bot: :class:`.Bot`
         The bot that contains the command being executed.
@@ -53,13 +53,13 @@ class Context(discord.abc.Messageable):
     prefix: :class:`str`
         The prefix that was used to invoke the command.
     command
-        The command (i.e. :class:`.Command` or its superclasses) that is being
+        The command (i.e. :class:`.Command` or its subclasses) that is being
         invoked currently.
     invoked_with: :class:`str`
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
     invoked_subcommand
-        The subcommand (i.e. :class:`.Command` or its superclasses) that was
+        The subcommand (i.e. :class:`.Command` or its subclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
         `None`.
     subcommand_passed: Optional[:class:`str`]
@@ -105,7 +105,7 @@ class Context(discord.abc.Messageable):
         Parameters
         -----------
         command: :class:`.Command`
-            A command or superclass of a command that is going to be called.
+            A command or subclass of a command that is going to be called.
         \*args
             The arguments to to use.
         \*\*kwargs
@@ -145,9 +145,9 @@ class Context(discord.abc.Messageable):
 
         Parameters
         ------------
-        call_hooks: bool
+        call_hooks: :class:`bool`
             Whether to call the before and after invoke hooks.
-        restart: bool
+        restart: :class:`bool`
             Whether to start the call chain from the very beginning
             or where we left off (i.e. the command that caused the error).
             The default is to start where we left off.
@@ -204,21 +204,88 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def channel(self):
-        """Returns the channel associated with this context's command. Shorthand for :attr:`Message.channel`."""
+        """Returns the channel associated with this context's command. Shorthand for :attr:`.Message.channel`."""
         return self.message.channel
 
     @discord.utils.cached_property
     def author(self):
-        """Returns the author associated with this context's command. Shorthand for :attr:`Message.author`"""
+        """Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`"""
         return self.message.author
 
     @discord.utils.cached_property
     def me(self):
-        """Similar to :attr:`Guild.me` except it may return the :class:`ClientUser` in private message contexts."""
+        """Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts."""
         return self.guild.me if self.guild is not None else self.bot.user
 
     @property
     def voice_client(self):
-        r"""Optional[:class:`VoiceClient`]: A shortcut to :attr:`Guild.voice_client`\, if applicable."""
+        r"""Optional[:class:`.VoiceClient`]: A shortcut to :attr:`.Guild.voice_client`\, if applicable."""
         g = self.guild
         return g.voice_client if g else None
+
+    async def send_help(self, *args):
+        """send_help(entity=<bot>)
+
+        |coro|
+
+        Shows the help command for the specified entity if given.
+        The entity can be a command or a cog.
+
+        If no entity is given, then it'll show help for the
+        entire bot.
+
+        If the entity is a string, then it looks up whether it's a
+        :class:`Cog` or a :class:`Command`.
+
+        .. note::
+
+            Due to the way this function works, instead of returning
+            something similar to :meth:`~.commands.HelpCommand.command_not_found`
+            this returns :class:`None` on bad input or no help command.
+
+        Parameters
+        ------------
+        entity: Optional[Union[:class:`Command`, :class:`Cog`, :class:`str`]]
+            The entity to show help for.
+
+        Returns
+        --------
+        Any
+            The result of the help command, if any.
+        """
+        from .core import Group, Command
+
+        bot = self.bot
+        cmd = bot.help_command
+
+        if cmd is None:
+            return None
+
+        if len(args) == 0:
+            await cmd.prepare_help_command(self, None)
+            mapping = cmd.get_bot_mapping()
+            return await cmd.send_bot_help(mapping)
+
+        entity = args[0]
+        if entity is None:
+            return None
+
+        if isinstance(entity, str):
+            entity = bot.get_cog(entity) or bot.get_command(entity)
+
+        try:
+            qualified_name = entity.qualified_name
+        except AttributeError:
+            # if we're here then it's not a cog, group, or command.
+            return None
+
+        await cmd.prepare_help_command(self, entity.qualified_name)
+
+        if hasattr(entity, '__cog_commands__'):
+            return await cmd.send_cog_help(entity)
+        elif isinstance(entity, Group):
+            return await cmd.send_group_help(entity)
+        elif isinstance(entity, Command):
+            return await cmd.send_command_help(entity)
+        else:
+            return None

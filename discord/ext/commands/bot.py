@@ -31,14 +31,15 @@ import importlib
 import sys
 import traceback
 import re
+import types
 
 import discord
 
 from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
-from .errors import CommandNotFound, CommandError
-from .formatter import HelpFormatter
+from . import errors
+from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
 def when_mentioned(bot, msg):
@@ -84,106 +85,39 @@ def when_mentioned_or(*prefixes):
 
     return inner
 
-_mentions_transforms = {
-    '@everyone': '@\u200beveryone',
-    '@here': '@\u200bhere'
-}
-
-_mention_pattern = re.compile('|'.join(_mentions_transforms.keys()))
-
 def _is_submodule(parent, child):
     return parent == child or child.startswith(parent + ".")
 
-async def _default_help_command(ctx, *commands : str):
-    """Shows this message."""
-    bot = ctx.bot
-    destination = ctx.message.author if bot.pm_help else ctx.message.channel
+class _DefaultRepr:
+    def __repr__(self):
+        return '<default-help-command>'
 
-    def repl(obj):
-        return _mentions_transforms.get(obj.group(0), '')
-
-    # help by itself just lists our own commands.
-    if len(commands) == 0:
-        pages = await bot.formatter.format_help_for(ctx, bot)
-    elif len(commands) == 1:
-        # try to see if it is a cog name
-        name = _mention_pattern.sub(repl, commands[0])
-        command = None
-        if name in bot.cogs:
-            command = bot.cogs[name]
-        else:
-            command = bot.all_commands.get(name)
-            if command is None:
-                await destination.send(bot.command_not_found.format(name))
-                return
-
-        pages = await bot.formatter.format_help_for(ctx, command)
-    else:
-        name = _mention_pattern.sub(repl, commands[0])
-        command = bot.all_commands.get(name)
-        if command is None:
-            await destination.send(bot.command_not_found.format(name))
-            return
-
-        for key in commands[1:]:
-            try:
-                key = _mention_pattern.sub(repl, key)
-                command = command.all_commands.get(key)
-                if command is None:
-                    await destination.send(bot.command_not_found.format(key))
-                    return
-            except AttributeError:
-                await destination.send(bot.command_has_no_subcommands.format(command, key))
-                return
-
-        pages = await bot.formatter.format_help_for(ctx, command)
-
-    if bot.pm_help is None:
-        characters = sum(map(len, pages))
-        # modify destination based on length of pages.
-        if characters > 1000:
-            destination = ctx.message.author
-
-    for page in pages:
-        await destination.send(page)
+_default = _DefaultRepr()
 
 class BotBase(GroupMixin):
-    def __init__(self, command_prefix, formatter=None, description=None, pm_help=False, **options):
+    def __init__(self, command_prefix, help_command=_default, description=None, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
-        self.cogs = {}
-        self.extensions = {}
+        self._cogs = {}
+        self._extensions = {}
         self._checks = []
         self._check_once = []
         self._before_invoke = None
         self._after_invoke = None
+        self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
-        self.pm_help = pm_help
         self.owner_id = options.get('owner_id')
-        self.command_not_found = options.pop('command_not_found', 'No command called "{}" found.')
-        self.command_has_no_subcommands = options.pop('command_has_no_subcommands', 'Command {0.name} has no subcommands.')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
         else:
             self._skip_check = lambda x, y: x == y
 
-        self.help_attrs = options.pop('help_attrs', {})
-
-        if 'name' not in self.help_attrs:
-            self.help_attrs['name'] = 'help'
-
-        if formatter is not None:
-            if not isinstance(formatter, HelpFormatter):
-                raise discord.ClientException('Formatter must be a subclass of HelpFormatter')
-            self.formatter = formatter
+        if help_command is _default:
+            self.help_command = DefaultHelpCommand()
         else:
-            self.formatter = HelpFormatter()
-
-        # pay no mind to this ugliness.
-        help_cmd = Command(_default_help_command, **self.help_attrs)
-        self.add_command(help_cmd)
+            self.help_command = help_command
 
     # internal helpers
 
@@ -195,13 +129,13 @@ class BotBase(GroupMixin):
             asyncio.ensure_future(coro, loop=self.loop)
 
     async def close(self):
-        for extension in tuple(self.extensions):
+        for extension in tuple(self._extensions):
             try:
                 self.unload_extension(extension)
             except Exception:
                 pass
 
-        for cog in tuple(self.cogs):
+        for cog in tuple(self._cogs):
             try:
                 self.remove_cog(cog)
             except Exception:
@@ -248,7 +182,7 @@ class BotBase(GroupMixin):
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
-        of type :class:`.Context` and can only raise exceptions derived from
+        of type :class:`.Context` and can only raise exceptions inherited from
         :exc:`.CommandError`.
 
         Example
@@ -274,7 +208,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function that was used as a global check.
-        call_once: bool
+        call_once: :class:`bool`
             If the function should only be called once per
             :meth:`.Command.invoke` call.
         """
@@ -294,7 +228,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function to remove from the global checks.
-        call_once: bool
+        call_once: :class:`bool`
             If the function was added with ``call_once=True`` in
             the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
@@ -321,7 +255,7 @@ class BotBase(GroupMixin):
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
-        of type :class:`.Context` and can only raise exceptions derived from
+        of type :class:`.Context` and can only raise exceptions inherited from
         :exc:`.CommandError`.
 
         Example
@@ -436,9 +370,9 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        func : :ref:`coroutine <coroutine>`
+        func: :ref:`coroutine <coroutine>`
             The function to call.
-        name : Optional[str]
+        name: Optional[:class:`str`]
             The name of the event to listen for. Defaults to ``func.__name__``.
 
         Example
@@ -470,7 +404,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function that was used as a listener to remove.
-        name
+        name: :class:`str`
             The name of the event we want to remove. Defaults to
             ``func.__name__``.
         """
@@ -528,7 +462,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        cog
+        cog: :class:`.Cog`
             The cog to register to the bot.
 
         Raises
@@ -543,7 +477,7 @@ class BotBase(GroupMixin):
             raise TypeError('cogs must derive from Cog')
 
         cog = cog._inject(self)
-        self.cogs[cog.__cog_name__] = cog
+        self._cogs[cog.__cog_name__] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -552,12 +486,12 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        name : str
+        name: :class:`str`
             The name of the cog you are requesting.
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
         """
-        return self.cogs.get(name)
+        return self._cogs.get(name)
 
     def remove_cog(self, name):
         """Removes a cog from the bot.
@@ -573,13 +507,80 @@ class BotBase(GroupMixin):
             The name of the cog to remove.
         """
 
-        cog = self.cogs.pop(name, None)
+        cog = self._cogs.pop(name, None)
         if cog is None:
             return
 
+        help_command = self._help_command
+        if help_command and help_command.cog is cog:
+            help_command.cog = None
         cog._eject(self)
 
+    @property
+    def cogs(self):
+        """Mapping[:class:`str`, :class:`Cog`]: A read-only mapping of cog name to cog."""
+        return types.MappingProxyType(self._cogs)
+
     # extensions
+
+    def _remove_module_references(self, name):
+        # find all references to the module
+        # remove the cogs registered from the module
+        for cogname, cog in self._cogs.copy().items():
+            if _is_submodule(name, cog.__module__):
+                self.remove_cog(cogname)
+
+        # remove all the commands from the module
+        for cmd in self.all_commands.copy().values():
+            if cmd.module is not None and _is_submodule(name, cmd.module):
+                if isinstance(cmd, GroupMixin):
+                    cmd.recursively_remove_all_commands()
+                self.remove_command(cmd.name)
+
+        # remove all the listeners from the module
+        for event_list in self.extra_events.copy().values():
+            remove = []
+            for index, event in enumerate(event_list):
+                if event.__module__ is not None and _is_submodule(name, event.__module__):
+                    remove.append(index)
+
+            for index in reversed(remove):
+                del event_list[index]
+
+    def _call_module_finalizers(self, lib, key):
+        try:
+            func = getattr(lib, 'teardown')
+        except AttributeError:
+            pass
+        else:
+            try:
+                func(self)
+            except Exception:
+                pass
+        finally:
+            self._extensions.pop(key, None)
+            sys.modules.pop(key, None)
+            name = lib.__name__
+            for module in list(sys.modules.keys()):
+                if _is_submodule(name, module):
+                    del sys.modules[module]
+
+    def _load_from_module_spec(self, lib, key):
+        # precondition: key not in self._extensions
+        try:
+            setup = getattr(lib, 'setup')
+        except AttributeError:
+            del sys.modules[key]
+            raise errors.NoEntryPointError(key)
+
+        try:
+            setup(self)
+        except Exception as e:
+            self._remove_module_references(lib.__name__)
+            self._call_module_finalizers(lib, key)
+            raise errors.ExtensionFailed(key, e) from e
+        else:
+            self._extensions[key] = lib
 
     def load_extension(self, name):
         """Loads an extension.
@@ -593,30 +594,32 @@ class BotBase(GroupMixin):
 
         Parameters
         ------------
-        name: str
+        name: :class:`str`
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
 
         Raises
         --------
-        ClientException
-            The extension does not have a setup function.
-        ImportError
+        ExtensionNotFound
             The extension could not be imported.
+        ExtensionAlreadyLoaded
+            The extension is already loaded.
+        NoEntryPointError
+            The extension does not have a setup function.
+        ExtensionFailed
+            The extension setup function had an execution error.
         """
 
-        if name in self.extensions:
-            return
+        if name in self._extensions:
+            raise errors.ExtensionAlreadyLoaded(name)
 
-        lib = importlib.import_module(name)
-        if not hasattr(lib, 'setup'):
-            del lib
-            del sys.modules[name]
-            raise discord.ClientException('extension does not have a setup function')
-
-        lib.setup(self)
-        self.extensions[name] = lib
+        try:
+            lib = importlib.import_module(name)
+        except ImportError as e:
+            raise errors.ExtensionNotFound(name, e) from e
+        else:
+            self._load_from_module_spec(lib, name)
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -631,59 +634,102 @@ class BotBase(GroupMixin):
 
         Parameters
         ------------
-        name: str
+        name: :class:`str`
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+
+        Raises
+        -------
+        ExtensionNotLoaded
+            The extension was not loaded.
         """
 
-        lib = self.extensions.get(name)
+        lib = self._extensions.get(name)
         if lib is None:
-            return
+            raise errors.ExtensionNotLoaded(name)
 
-        lib_name = lib.__name__
+        self._remove_module_references(lib.__name__)
+        self._call_module_finalizers(lib, name)
 
-        # find all references to the module
+    def reload_extension(self, name):
+        """Atomically reloads an extension.
 
-        # remove the cogs registered from the module
-        for cogname, cog in self.cogs.copy().items():
-            if _is_submodule(lib_name, cog.__module__):
-                self.remove_cog(cogname)
+        This replaces the extension with the same extension, only refreshed. This is
+        equivalent to a :meth:`unload_extension` followed by a :meth:`load_extension`
+        except done in an atomic way. That is, if an operation fails mid-reload then
+        the bot will roll-back to the prior working state.
 
-        # remove all the commands from the module
-        for cmd in self.all_commands.copy().values():
-            if cmd.module is not None and _is_submodule(lib_name, cmd.module):
-                if isinstance(cmd, GroupMixin):
-                    cmd.recursively_remove_all_commands()
-                self.remove_command(cmd.name)
+        Parameters
+        ------------
+        name: :class:`str`
+            The extension name to reload. It must be dot separated like
+            regular Python imports if accessing a sub-module. e.g.
+            ``foo.test`` if you want to import ``foo/test.py``.
 
-        # remove all the listeners from the module
-        for event_list in self.extra_events.copy().values():
-            remove = []
-            for index, event in enumerate(event_list):
-                if event.__module__ is not None and _is_submodule(lib_name, event.__module__):
-                    remove.append(index)
+        Raises
+        -------
+        ExtensionNotLoaded
+            The extension was not loaded.
+        ExtensionNotFound
+            The extension could not be imported.
+        NoEntryPointError
+            The extension does not have a setup function.
+        ExtensionFailed
+            The extension setup function had an execution error.
+        """
 
-            for index in reversed(remove):
-                del event_list[index]
+        lib = self._extensions.get(name)
+        if lib is None:
+            raise errors.ExtensionNotLoaded(name)
+
+        # get the previous module states from sys modules
+        modules = {
+            name: module
+            for name, module in sys.modules.items()
+            if _is_submodule(lib.__name__, name)
+        }
 
         try:
-            func = getattr(lib, 'teardown')
-        except AttributeError:
-            pass
+            # Unload and then load the module...
+            self._remove_module_references(lib.__name__)
+            self._call_module_finalizers(lib, name)
+            self.load_extension(name)
+        except Exception as e:
+            # if the load failed, the remnants should have been
+            # cleaned from the load_extension function call
+            # so let's load it from our old compiled library.
+            self._load_from_module_spec(lib, name)
+
+            # revert sys.modules back to normal and raise back to caller
+            sys.modules.update(modules)
+            raise
+
+    @property
+    def extensions(self):
+        """Mapping[:class:`str`, :class:`py:types.ModuleType`]: A read-only mapping of extension name to extension."""
+        return types.MappingProxyType(self._extensions)
+
+    # help command stuff
+
+    @property
+    def help_command(self):
+        return self._help_command
+
+    @help_command.setter
+    def help_command(self, value):
+        if value is not None:
+            if not isinstance(value, HelpCommand):
+                raise discord.ClientException('help_command must be a subclass of HelpCommand')
+            if self._help_command is not None:
+                self._help_command._remove_from_bot(self)
+            self._help_command = value
+            value._add_to_bot(self)
+        elif self._help_command is not None:
+            self._help_command._remove_from_bot(self)
+            self._help_command = None
         else:
-            try:
-                func(self)
-            except Exception:
-                pass
-        finally:
-            # finally remove the import..
-            del lib
-            del self.extensions[name]
-            del sys.modules[name]
-            for module in list(sys.modules.keys()):
-                if _is_submodule(lib_name, module):
-                    del sys.modules[module]
+            self._help_command = None
 
     # command processing
 
@@ -700,7 +746,7 @@ class BotBase(GroupMixin):
 
         Returns
         --------
-        Union[List[str], str]
+        Union[List[:class:`str`], :class:`str`]
             A list of prefixes or a single prefix that the bot is
             listening for.
         """
@@ -812,12 +858,12 @@ class BotBase(GroupMixin):
             try:
                 if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
-            except CommandError as exc:
+            except errors.CommandError as exc:
                 await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
-            exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):
@@ -889,7 +935,7 @@ class Bot(BotBase, discord.Client):
         .. note::
 
             When passing multiple prefixes be careful to not pass a prefix
-            that matches a longer prefix occuring later in the sequence.  For
+            that matches a longer prefix occurring later in the sequence.  For
             example, if the command prefix is ``('!', '!?')``  the ``'!?'``
             prefix will never be matched to any message as the previous one
             matches messages starting with ``!?``. This is especially important
@@ -899,40 +945,16 @@ class Bot(BotBase, discord.Client):
         Whether the commands should be case insensitive. Defaults to ``False``. This
         attribute does not carry over to groups. You must set it to every group if
         you require group commands to be case insensitive as well.
-    description : :class:`str`
+    description: :class:`str`
         The content prefixed into the default help message.
-    self_bot : :class:`bool`
+    self_bot: :class:`bool`
         If ``True``, the bot will only listen to commands invoked by itself rather
         than ignoring itself. If ``False`` (the default) then the bot will ignore
         itself. This cannot be changed once initialised.
-    formatter : :class:`.HelpFormatter`
-        The formatter used to format the help message. By default, it uses
-        the :class:`.HelpFormatter`. Check it for more info on how to override it.
-        If you want to change the help command completely (add aliases, etc) then
-        a call to :meth:`~.Bot.remove_command` with 'help' as the argument would do the
-        trick.
-    pm_help : Optional[:class:`bool`]
-        A tribool that indicates if the help command should PM the user instead of
-        sending it to the channel it received it from. If the boolean is set to
-        ``True``, then all help output is PM'd. If ``False``, none of the help
-        output is PM'd. If ``None``, then the bot will only PM when the help
-        message becomes too long (dictated by more than 1000 characters).
-        Defaults to ``False``.
-    help_attrs : :class:`dict`
-        A dictionary of options to pass in for the construction of the help command.
-        This allows you to change the command behaviour without actually changing
-        the implementation of the command. The attributes will be the same as the
-        ones passed in the :class:`.Command` constructor. Note that ``pass_context``
-        will always be set to ``True`` regardless of what you pass in.
-    command_not_found : :class:`str`
-        The format string used when the help command is invoked with a command that
-        is not found. Useful for i18n. Defaults to ``"No command called {} found."``.
-        The only format argument is the name of the command passed.
-    command_has_no_subcommands : :class:`str`
-        The format string used when the help command is invoked with requests for a
-        subcommand but the command does not have any subcommands. Defaults to
-        ``"Command {0.name} has no subcommands."``. The first format argument is the
-        :class:`.Command` attempted to get a subcommand and the second is the name.
+    help_command: Optional[:class:`.HelpCommand`]
+        The help command implementation to use. This can be dynamically
+        set at runtime. To remove the help command pass ``None``. For more
+        information on implementing a help command, see :ref:`ext_commands_help_command`.
     owner_id: Optional[:class:`int`]
         The ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using
@@ -941,7 +963,7 @@ class Bot(BotBase, discord.Client):
     pass
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`.Bot` except that it is derived from
+    """This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
     """
     pass

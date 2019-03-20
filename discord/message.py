@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import datetime
 import re
+import io
 
 from . import utils
 from .reaction import Reaction
@@ -77,14 +78,14 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
-    async def save(self, fp, *, seek_begin=True, use_cached=True):
+    async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
         Saves this attachment into a file-like object.
 
         Parameters
         -----------
-        fp: Union[BinaryIO, str]
+        fp: Union[BinaryIO, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
@@ -107,19 +108,19 @@ class Attachment:
 
         Returns
         --------
-        int
+        :class:`int`
             The number of bytes written.
         """
         url = self.proxy_url if use_cached else self.url
         data = await self._http.get_attachment(url)
-        if isinstance(fp, str):
-            with open(fp, 'wb') as f:
-                return f.write(data)
-        else:
+        if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
                 fp.seek(0)
             return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)
 
 class Message:
     r"""Represents a message from Discord.
@@ -281,7 +282,7 @@ class Message:
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
         self._try_patch(data, 'content')
         self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
+        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
         self._try_patch(data, 'nonce')
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
@@ -582,13 +583,13 @@ class Message:
 
         Parameters
         -----------
-        content: Optional[str]
+        content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
-        delete_after: Optional[float]
+        delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
@@ -689,7 +690,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to react with.
 
         Raises
@@ -722,7 +723,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.

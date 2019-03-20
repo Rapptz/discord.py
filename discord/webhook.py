@@ -61,17 +61,17 @@ class WebhookAdapter:
 
         Parameters
         -----------
-        verb: str
+        verb: :class:`str`
             The HTTP verb to use for the request.
-        url: str
+        url: :class:`str`
             The URL to send the request to. This will have
             the query parameters already added to it, if any.
-        multipart: Optional[dict]
+        multipart: Optional[:class:`dict`]
             A dict containing multipart form data to send with
             the request. If a filename is being uploaded, then it will
             be under a ``file`` key which will have a 3-element :class:`tuple`
             denoting ``(filename, file, content_type)``.
-        payload: Optional[dict]
+        payload: Optional[:class:`dict`]
             The JSON to send with the request, if any.
         """
         raise NotImplementedError()
@@ -95,7 +95,7 @@ class WebhookAdapter:
         ------------
         data
             The data that was returned from the request.
-        wait: bool
+        wait: :class:`bool`
             Whether the webhook execution was asked to wait or not.
         """
         raise NotImplementedError()
@@ -110,17 +110,18 @@ class WebhookAdapter:
         cleanup = None
         if file is not None:
             multipart = {
-                'file': (file.filename, file.open_file(), 'application/octet-stream'),
+                'file': (file.filename, file.fp, 'application/octet-stream'),
                 'payload_json': utils.to_json(payload)
             }
             data = None
             cleanup = file.close
+            files_to_pass = [file]
         elif files is not None:
             multipart = {
                 'payload_json': utils.to_json(payload)
             }
             for i, file in enumerate(files, start=1):
-                multipart['file%i' % i] = (file.filename, file.open_file(), 'application/octet-stream')
+                multipart['file%i' % i] = (file.filename, file.fp, 'application/octet-stream')
             data = None
 
             def _anon():
@@ -128,13 +129,15 @@ class WebhookAdapter:
                     f.close()
 
             cleanup = _anon
+            files_to_pass = files
         else:
             data = payload
             multipart = None
+            files_to_pass = None
 
         url = '%s?wait=%d' % (self._request_url, wait)
         try:
-            maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
+            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
         finally:
             if cleanup is not None:
                 if not asyncio.iscoroutine(maybe_coro):
@@ -160,9 +163,10 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None):
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
         headers = {}
         data = None
+        files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
@@ -176,6 +180,9 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     data.add_field(key, value)
 
         for tries in range(5):
+            for file in files:
+                file.reset(seek=tries)
+
             async with self.session.request(verb, url, headers=headers, data=data) as r:
                 data = await r.text(encoding='utf-8')
                 if r.headers['Content-Type'] == 'application/json':
@@ -228,7 +235,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
         each request will create a new session. Note if a session is given,
         the webhook adapter **will not** clean it up for you. You must close
         the session yourself.
-    sleep: bool
+    sleep: :class:`bool`
         Whether to sleep the thread when encountering a 429 or pre-emptive
         rate limit or a 5xx status code. Defaults to ``True``. If set to
         ``False`` then this will raise an :exc:`HTTPException` instead.
@@ -239,9 +246,10 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None):
         headers = {}
         data = None
+        files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
@@ -250,6 +258,9 @@ class RequestsWebhookAdapter(WebhookAdapter):
             data = {'payload_json': multipart.pop('payload_json')}
 
         for tries in range(5):
+            for file in files:
+                file.reset(seek=tries)
+
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
             data = r.text
@@ -430,9 +441,9 @@ class Webhook:
 
         Parameters
         -----------
-        id: int
+        id: :class:`int`
             The ID of the webhook.
-        token: str
+        token: :class:`str`
             The authentication token of the webhook.
         adapter: :class:`WebhookAdapter`
             The webhook adapter to use when sending requests. This is
@@ -456,7 +467,7 @@ class Webhook:
 
         Parameters
         ------------
-        url: str
+        url: :class:`str`
             The URL of the webhook.
         adapter: :class:`WebhookAdapter`
             The webhook adapter to use when sending requests. This is
@@ -523,21 +534,21 @@ class Webhook:
 
         Parameters
         -----------
-        format: Optional[str]
+        format: Optional[:class:`str`]
             The format to attempt to convert the avatar to.
             If the format is ``None``, then it is equivalent to png.
-        size: int
+        size: :class:`int`
             The size of the image to display.
-
-        Returns
-        --------
-        str
-            The resulting CDN URL.
 
         Raises
         ------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`str`
+            The resulting CDN URL.
         """
         if self.avatar is None:
             # Default is always blurple apparently
@@ -582,9 +593,9 @@ class Webhook:
 
         Parameters
         -------------
-        name: Optional[str]
+        name: Optional[:class:`str`]
             The webhook's new default name.
-        avatar: Optional[bytes]
+        avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's new default avatar.
 
         Raises
@@ -640,19 +651,19 @@ class Webhook:
 
         Parameters
         ------------
-        content
+        content: :class:`str`
             The content of the message to send.
-        wait: bool
+        wait: :class:`bool`
             Whether the server should wait before sending a response. This essentially
             means that the return type of this function changes from ``None`` to
             a :class:`Message` if set to ``True``.
-        username: str
+        username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
-        avatar_url: str
+        avatar_url: :class:`str`
             The avatar URL to send with this message. If no avatar URL is provided
             then the default avatar for the webhook is used.
-        tts: bool
+        tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         file: :class:`File`
             The file to upload. This cannot be mixed with ``files`` parameter.

@@ -32,14 +32,18 @@ __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
            'UserInputError', 'CommandOnCooldown', 'NotOwner',
            'MissingPermissions', 'BotMissingPermissions', 'ConversionError',
-           'BadUnionArgument']
+           'BadUnionArgument', 'ArgumentParsingError',
+           'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
+           'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
+           'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
+           'ExtensionNotFound' ]
 
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.
 
     This inherits from :exc:`discord.DiscordException`.
 
-    This exception and exceptions derived from it are handled
+    This exception and exceptions inherited from it are handled
     in a special way as they are caught and passed into a special event
     from :class:`.Bot`\, :func:`on_command_error`.
     """
@@ -229,3 +233,132 @@ class BadUnionArgument(UserInputError):
             fmt = ' or '.join(to_string)
 
         super().__init__('Could not convert "{0.name}" into {1}.'.format(param, fmt))
+
+class ArgumentParsingError(UserInputError):
+    """An exception raised when the parser fails to parse a user's input.
+
+    This inherits from :exc:`UserInputError`. There are child classes
+    that implement more granular parsing errors for i18n purposes.
+    """
+    pass
+
+class UnexpectedQuoteError(ArgumentParsingError):
+    """An exception raised when the parser encounters a quote mark inside a non-quoted string.
+
+    This inherits from :exc:`ArgumentParsingError`.
+
+    Attributes
+    ------------
+    quote: :class:`str`
+        The quote mark that was found inside the non-quoted string.
+    """
+    def __init__(self, quote):
+        self.quote = quote
+        super().__init__('Unexpected quote mark, {0!r}, in non-quoted string'.format(quote))
+
+class InvalidEndOfQuotedStringError(ArgumentParsingError):
+    """An exception raised when a space is expected after the closing quote in a string
+    but a different character is found.
+
+    This inherits from :exc:`ArgumentParsingError`.
+
+    Attributes
+    -----------
+    char: :class:`str`
+        The character found instead of the expected string.
+    """
+    def __init__(self, char):
+        self.char = char
+        super().__init__('Expected space after closing quotation but received {0!r}'.format(char))
+
+class ExpectedClosingQuoteError(ArgumentParsingError):
+    """An exception raised when a quote character is expected but not found.
+
+    This inherits from :exc:`ArgumentParsingError`.
+
+    Attributes
+    -----------
+    close_quote: :class:`str`
+        The quote character expected.
+    """
+
+    def __init__(self, close_quote):
+        self.close_quote = close_quote
+        super().__init__('Expected closing {}.'.format(close_quote))
+
+class ExtensionError(DiscordException):
+    """Base exception for extension related errors.
+
+    This inherits from :exc:`~discord.DiscordException`.
+
+    Parameter
+    -----------
+    name: :class:`str`
+        The extension that had an error.
+    """
+    def __init__(self, message=None, *args, name):
+        self.name = name
+        message = message or 'Extension {!r} had an error.'.format(name)
+        # clean-up @everyone and @here mentions
+        m = message.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
+        super().__init__(m, *args)
+
+class ExtensionAlreadyLoaded(ExtensionError):
+    """An exception raised when an extension has already been loaded.
+
+    This inherits from :exc:`ExtensionError`
+    """
+    def __init__(self, name):
+        super().__init__('Extension {!r} is already loaded.'.format(name), name=name)
+
+class ExtensionNotLoaded(ExtensionError):
+    """An exception raised when an extension was not loaded.
+
+    This inherits from :exc:`ExtensionError`
+    """
+    def __init__(self, name):
+        super().__init__('Extension {!r} has not been loaded.'.format(name), name=name)
+
+class NoEntryPointError(ExtensionError):
+    """An exception raised when an extension does not have a ``setup`` entry point function.
+
+    This inherits from :exc:`ExtensionError`
+    """
+    def __init__(self, name):
+        super().__init__("Extension {!r} has no 'setup' function.".format(name), name=name)
+
+class ExtensionFailed(ExtensionError):
+    """An exception raised when an extension failed to load during execution of the ``setup`` entry point.
+
+    This inherits from :exc:`ExtensionError`
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The extension that had the error.
+    original: :exc:`Exception`
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    """
+    def __init__(self, name, original):
+        self.original = original
+        fmt = 'Extension {0!r} raised an error: {1.__class__.__name__}: {1}'
+        super().__init__(fmt.format(name, original), name=name)
+
+class ExtensionNotFound(ExtensionError):
+    """An exception raised when an extension failed to be imported.
+
+    This inherits from :exc:`ExtensionError`
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The extension that had the error.
+    original: :exc:`ImportError`
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    """
+    def __init__(self, name, original):
+        self.original = original
+        fmt = 'Extension {0!r} could not be loaded.'
+        super().__init__(fmt.format(name), name=name)

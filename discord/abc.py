@@ -187,13 +187,17 @@ class GuildChannel:
     def __str__(self):
         return self.name
 
+    @property
+    def _sorting_bucket(self):
+        raise NotImplementedError
+
     async def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
         http = self._state.http
-        cls = type(self)
-        channels = [c for c in self.guild.channels if isinstance(c, cls)]
+        bucket = self._sorting_bucket
+        channels = [c for c in self.guild.channels if c._sorting_bucket == bucket]
 
         if position >= len(channels):
             raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
@@ -300,7 +304,7 @@ class GuildChannel:
 
     @property
     def mention(self):
-        """:class:`str` : The string that allows you to mention the channel."""
+        """:class:`str`: The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
@@ -385,7 +389,7 @@ class GuildChannel:
 
         Parameters
         ----------
-        member : :class:`Member`
+        member: :class:`Member`
             The member to resolve permissions for.
 
         Returns
@@ -484,7 +488,7 @@ class GuildChannel:
 
         Parameters
         -----------
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for deleting this channel.
             Shows up on the audit log.
 
@@ -547,7 +551,7 @@ class GuildChannel:
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
             Cannot be mixed with ``overwrite``.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
@@ -603,20 +607,20 @@ class GuildChannel:
 
         Parameters
         ------------
-        max_age : int
+        max_age: :class:`int`
             How long the invite should last. If it's 0 then the invite
             doesn't expire. Defaults to 0.
-        max_uses : int
+        max_uses: :class:`int`
             How many uses the invite could be used for. If it's 0 then there
             are unlimited uses. Defaults to 0.
-        temporary : bool
+        temporary: :class:`bool`
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to False.
-        unique: bool
+        unique: :class:`bool`
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to False then it will return a previously created
             invite.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for creating this invite. Shows up on the audit log.
 
         Raises
@@ -695,46 +699,46 @@ class Messageable(metaclass=abc.ABCMeta):
         be provided.
 
         To upload a single file, the ``file`` parameter should be used with a
-        single :class:`File` object. To upload multiple files, the ``files``
-        parameter should be used with a :class:`list` of :class:`File` objects.
+        single :class:`.File` object. To upload multiple files, the ``files``
+        parameter should be used with a :class:`list` of :class:`.File` objects.
         **Specifying both parameters will lead to an exception**.
 
-        If the ``embed`` parameter is provided, it must be of type :class:`Embed` and
+        If the ``embed`` parameter is provided, it must be of type :class:`.Embed` and
         it must be a rich embed type.
 
         Parameters
         ------------
         content
             The content of the message to send.
-        tts: bool
+        tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
-        embed: :class:`Embed`
+        embed: :class:`.Embed`
             The rich embed for the content.
-        file: :class:`File`
+        file: :class:`.File`
             The file to upload.
-        files: List[:class:`File`]
+        files: List[:class:`.File`]
             A list of files to upload. Must be a maximum of 10.
-        nonce: int
+        nonce: :class:`int`
             The nonce to use for sending this message. If the message was successfully sent,
             then the message will have a nonce with this value.
-        delete_after: float
+        delete_after: :class:`float`
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
 
         Raises
         --------
-        HTTPException
+        :exc:`.HTTPException`
             Sending the message failed.
-        Forbidden
+        :exc:`.Forbidden`
             You do not have the proper permissions to send the message.
-        InvalidArgument
+        :exc:`.InvalidArgument`
             The ``files`` list is not of the appropriate size or
             you specified both ``file`` and ``files``.
 
         Returns
         ---------
-        :class:`Message`
+        :class:`.Message`
             The message that was sent.
         """
 
@@ -752,7 +756,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 raise InvalidArgument('file parameter must be File')
 
             try:
-                data = await state.http.send_files(channel.id, files=[(file.open_file(), file.filename)],
+                data = await state.http.send_files(channel.id, files=[file],
                                                    content=content, tts=tts, embed=embed, nonce=nonce)
             finally:
                 file.close()
@@ -812,31 +816,31 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         return Typing(self)
 
-    async def get_message(self, id):
+    async def fetch_message(self, id):
         """|coro|
 
-        Retrieves a single :class:`Message` from the destination.
+        Retrieves a single :class:`.Message` from the destination.
 
         This can only be used by bot accounts.
 
         Parameters
         ------------
-        id: int
+        id: :class:`int`
             The message ID to look for.
-
-        Returns
-        --------
-        :class:`Message`
-            The message asked for.
 
         Raises
         --------
-        NotFound
+        :exc:`.NotFound`
             The specified message was not found.
-        Forbidden
+        :exc:`.Forbidden`
             You do not have the permissions required to get a message.
-        HTTPException
+        :exc:`.HTTPException`
             Retrieving the message failed.
+
+        Returns
+        --------
+        :class:`.Message`
+            The message asked for.
         """
 
         channel = await self._get_channel()
@@ -846,11 +850,11 @@ class Messageable(metaclass=abc.ABCMeta):
     async def pins(self):
         """|coro|
 
-        Returns a :class:`list` of :class:`Message` that are currently pinned.
+        Returns a :class:`list` of :class:`.Message` that are currently pinned.
 
         Raises
         -------
-        HTTPException
+        :exc:`.HTTPException`
             Retrieving the pinned messages failed.
         """
 
@@ -860,46 +864,9 @@ class Messageable(metaclass=abc.ABCMeta):
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
-        """Return an :class:`AsyncIterator` that enables receiving the destination's message history.
+        """Return an :class:`.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
-
-        All parameters are optional.
-
-        Parameters
-        -----------
-        limit: Optional[int]
-            The number of messages to retrieve.
-            If ``None``, retrieves every message in the channel. Note, however,
-            that this would make it a slow operation.
-        before: :class:`Message` or `datetime`
-            Retrieve messages before this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
-        after: :class:`Message` or `datetime`
-            Retrieve messages after this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
-        around: :class:`Message` or `datetime`
-            Retrieve messages around this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
-            When using this argument, the maximum limit is 101. Note that if the limit is an
-            even number then this will return at most limit + 1 messages.
-        reverse: bool
-            If set to true, return messages in oldest->newest order. If unspecified,
-            this defaults to ``False`` for most cases. However if passing in a
-            ``after`` parameter then this is set to ``True``. This avoids getting messages
-            out of order in the ``after`` case.
-
-        Raises
-        ------
-        Forbidden
-            You do not have permissions to get channel message history.
-        HTTPException
-            The request to get message history failed.
-
-        Yields
-        -------
-        :class:`Message`
-            The message with the message data parsed.
 
         Examples
         ---------
@@ -915,6 +882,43 @@ class Messageable(metaclass=abc.ABCMeta):
 
             messages = await channel.history(limit=123).flatten()
             # messages is now a list of Message...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of messages to retrieve.
+            If ``None``, retrieves every message in the channel. Note, however,
+            that this would make it a slow operation.
+        before: :class:`.Message` or :class:`datetime.datetime`
+            Retrieve messages before this date or message.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        after: :class:`.Message` or :class:`datetime.datetime`
+            Retrieve messages after this date or message.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+        around: :class:`.Message` or :class:`datetime.datetime`
+            Retrieve messages around this date or message.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            When using this argument, the maximum limit is 101. Note that if the limit is an
+            even number then this will return at most limit + 1 messages.
+        reverse: Optional[:class:`bool`]
+            If set to true, return messages in oldest->newest order. If unspecified,
+            this defaults to ``False`` for most cases. However if passing in a
+            ``after`` parameter then this is set to ``True``. This avoids getting messages
+            out of order in the ``after`` case.
+
+        Raises
+        ------
+        :exc:`.Forbidden`
+            You do not have permissions to get channel message history.
+        :exc:`.HTTPException`
+            The request to get message history failed.
+
+        Yields
+        -------
+        :class:`.Message`
+            The message with the message data parsed.
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
 
@@ -945,9 +949,9 @@ class Connectable(metaclass=abc.ABCMeta):
 
         Parameters
         -----------
-        timeout: float
+        timeout: :class:`float`
             The timeout in seconds to wait for the voice endpoint.
-        reconnect: bool
+        reconnect: :class:`bool`
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.

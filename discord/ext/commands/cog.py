@@ -90,24 +90,44 @@ class CogMeta(type):
         attrs['__cog_name__'] = kwargs.pop('name', name)
         attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
 
-        commands = []
-        listeners = []
+        commands = {}
+        listeners = {}
 
-        for elem, value in attrs.items():
-            if isinstance(value, _BaseCommand):
-                commands.append(value)
-            elif inspect.iscoroutinefunction(value):
-                try:
-                    is_listener = getattr(value, '__cog_listener__')
-                except AttributeError:
-                    continue
-                else:
-                    for listener_name in value.__cog_listener_names__:
-                        listeners.append((listener_name, value.__name__))
+        new_cls = super().__new__(cls, name, bases, attrs, **kwargs)
+        for base in reversed(new_cls.__mro__):
+            for elem, value in base.__dict__.items():
+                if elem in commands:
+                    del commands[elem]
+                if elem in listeners:
+                    del listeners[elem]
 
-        attrs['__cog_commands__'] = commands # this will be copied in Cog.__new__
-        attrs['__cog_listeners__'] = tuple(listeners)
-        return super().__new__(cls, name, bases, attrs, **kwargs)
+                is_static_method = isinstance(value, staticmethod)
+                if is_static_method:
+                    value = value.__func__
+                if isinstance(value, _BaseCommand):
+                    if is_static_method:
+                        raise TypeError('Command in method {0}.{1!r} must not be staticmethod.'.format(base, elem))
+
+                    commands[elem] = value
+                elif inspect.iscoroutinefunction(value):
+                    try:
+                        is_listener = getattr(value, '__cog_listener__')
+                    except AttributeError:
+                        continue
+                    else:
+                        listeners[elem] = value
+
+        new_cls.__cog_commands__ = list(commands.values()) # this will be copied in Cog.__new__
+
+        listeners_as_list = []
+        for listener in listeners.values():
+            for listener_name in listener.__cog_listener_names__:
+                # I use __name__ instead of just storing the value so I can inject
+                # the self attribute when the time comes to add them to the bot
+                listeners_as_list.append((listener_name, listener.__name__))
+
+        new_cls.__cog_listeners__ = listeners_as_list
+        return new_cls
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args)
@@ -154,7 +174,7 @@ class Cog(metaclass=CogMeta):
                 # Get the latest parent reference
                 parent = lookup[parent.qualified_name]
 
-                # Update our parent's reference to ourself
+                # Update our parent's reference to our self
                 removed = parent.remove_command(command.name)
                 parent.add_command(command)
 
@@ -169,6 +189,20 @@ class Cog(metaclass=CogMeta):
             This does not include subcommands.
         """
         return [c for c in self.__cog_commands__ if c.parent is None]
+
+    @property
+    def qualified_name(self):
+        """:class:`str`: Returns the cog's specified name, not the class name."""
+        return self.__cog_name__
+
+    @property
+    def description(self):
+        """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
+        try:
+            return self.__cog_cleaned_doc__
+        except AttributeError:
+            self.__cog_cleaned_doc__ = cleaned = inspect.getdoc(self)
+            return cleaned
 
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands."""
@@ -211,14 +245,21 @@ class Cog(metaclass=CogMeta):
             raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
 
         def decorator(func):
-            if not inspect.iscoroutinefunction(func):
+            actual = func
+            if isinstance(actual, staticmethod):
+                actual = actual.__func__
+            if not inspect.iscoroutinefunction(actual):
                 raise TypeError('Listener function must be a coroutine function.')
-            func.__cog_listener__ = True
-            to_assign = name or func.__name__
+            actual.__cog_listener__ = True
+            to_assign = name or actual.__name__
             try:
-                func.__cog_listener_names__.append(to_assign)
+                actual.__cog_listener_names__.append(to_assign)
             except AttributeError:
-                func.__cog_listener_names__ = [to_assign]
+                actual.__cog_listener_names__ = [to_assign]
+            # we have to return `func` instead of `actual` because
+            # we need the type to be `staticmethod` for the metaclass
+            # to pick it up but the metaclass unfurls the function and
+            # thus the assignments need to be on the actual function
             return func
         return decorator
 

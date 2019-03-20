@@ -36,6 +36,9 @@ class _EmptyEmbed:
     def __repr__(self):
         return 'Embed.Empty'
 
+    def __len__(self):
+        return 0
+
 EmptyEmbed = _EmptyEmbed()
 
 class EmbedProxy:
@@ -53,6 +56,13 @@ class EmbedProxy:
 
 class Embed:
     """Represents a Discord embed.
+
+    .. container:: operations
+
+        .. describe:: len(x)
+
+            Returns the total size of the embed.
+            Useful for checking if it's within the 6000 character limit.
 
     The following attributes can be set during creation
     of the object:
@@ -112,7 +122,21 @@ class Embed:
             self.timestamp = timestamp
 
     @classmethod
-    def from_data(cls, data):
+    def from_dict(cls, data):
+        """Converts a :class:`dict` to a :class:`Embed` provided it is in the
+        format that Discord expects it to be in.
+
+        You can find out about this format in the `official Discord documentation`__.
+
+        .. _DiscordDocs: https://discordapp.com/developers/docs/resources/channel#embed-object
+
+        __ DiscordDocs_
+
+        Parameters
+        -----------
+        data: :class:`dict`
+            The dictionary to convert into an embed.
+        """
         # we are bypassing __init__ here since it doesn't apply here
         self = cls.__new__(cls)
 
@@ -144,6 +168,31 @@ class Embed:
                 setattr(self, '_' + attr, value)
 
         return self
+
+    def copy(self):
+        """Returns a shallow copy of the embed."""
+        return Embed.from_dict(self.to_dict())
+
+    def __len__(self):
+        total = len(self.title) + len(self.description)
+        for field in getattr(self, '_fields', []):
+            total += len(field['name']) + len(field['value'])
+
+        try:
+            footer = self._footer
+        except AttributeError:
+            pass
+        else:
+            total += len(footer['text'])
+
+        try:
+            author = self._author
+        except AttributeError:
+            pass
+        else:
+            total += len(author['name'])
+
+        return total
 
     @property
     def colour(self):
@@ -189,9 +238,9 @@ class Embed:
 
         Parameters
         -----------
-        text: str
+        text: :class:`str`
             The footer text.
-        icon_url: str
+        icon_url: :class:`str`
             The URL of the footer icon. Only HTTP(S) is supported.
         """
 
@@ -227,7 +276,7 @@ class Embed:
 
         Parameters
         -----------
-        url: str
+        url: :class:`str`
             The source URL for the image. Only HTTP(S) is supported.
         """
 
@@ -260,7 +309,7 @@ class Embed:
 
         Parameters
         -----------
-        url: str
+        url: :class:`str`
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
@@ -312,11 +361,11 @@ class Embed:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the author.
-        url: str
+        url: :class:`str`
             The URL for the author.
-        icon_url: str
+        icon_url: :class:`str`
             The URL of the author icon. Only HTTP(S) is supported.
         """
 
@@ -350,11 +399,11 @@ class Embed:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the field.
-        value: str
+        value: :class:`str`
             The value of the field.
-        inline: bool
+        inline: :class:`bool`
             Whether the field should be displayed inline.
         """
 
@@ -391,7 +440,7 @@ class Embed:
 
         Parameters
         -----------
-        index: int
+        index: :class:`int`
             The index of the field to remove.
         """
         try:
@@ -409,13 +458,13 @@ class Embed:
 
         Parameters
         -----------
-        index: int
+        index: :class:`int`
             The index of the field to modify.
-        name: str
+        name: :class:`str`
             The name of the field.
-        value: str
+        value: :class:`str`
             The value of the field.
-        inline: bool
+        inline: :class:`bool`
             Whether the field should be displayed inline.
 
         Raises
@@ -460,7 +509,10 @@ class Embed:
             pass
         else:
             if timestamp:
-                result['timestamp'] = timestamp.isoformat()
+                if timestamp.tzinfo:
+                    result['timestamp'] = timestamp.astimezone(tz=datetime.timezone.utc).isoformat()
+                else:
+                    result['timestamp'] = timestamp.replace(tzinfo=datetime.timezone.utc).isoformat()
 
         # add in the non raw attribute ones
         if self.type:

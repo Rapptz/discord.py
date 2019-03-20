@@ -33,7 +33,6 @@ import discord
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping
-from .view import quoted_word
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -136,7 +135,7 @@ class Command(_BaseCommand):
     checks
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
-        is necessary to be thrown to signal failure, then one derived from
+        is necessary to be thrown to signal failure, then one inherited from
         :exc:`.CommandError` should be used. Note that if the checks fail then
         :exc:`.CheckFailure` exception is raised to the :func:`.on_command_error`
         event.
@@ -414,6 +413,8 @@ class Command(_BaseCommand):
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError() # break the loop
             if required:
+                if self._is_typing_optional(param.annotation):
+                    return None
                 raise MissingRequiredArgument(param)
             return param.default
 
@@ -421,7 +422,7 @@ class Command(_BaseCommand):
         if consume_rest_is_special:
             argument = view.read_rest().strip()
         else:
-            argument = quoted_word(view)
+            argument = view.get_quoted_word()
         view.previous = previous
 
         return await self.do_conversion(ctx, converter, argument, param)
@@ -434,7 +435,7 @@ class Command(_BaseCommand):
             previous = view.index
 
             view.skip_ws()
-            argument = quoted_word(view)
+            argument = view.get_quoted_word()
             try:
                 value = await self.do_conversion(ctx, converter, argument, param)
             except CommandError:
@@ -450,7 +451,7 @@ class Command(_BaseCommand):
     async def _transform_greedy_var_pos(self, ctx, param, converter):
         view = ctx.view
         previous = view.index
-        argument = quoted_word(view)
+        argument = view.get_quoted_word()
         try:
             value = await self.do_conversion(ctx, converter, argument, param)
         except CommandError:
@@ -650,7 +651,7 @@ class Command(_BaseCommand):
 
         Returns
         --------
-        bool
+        :class:`bool`
             A boolean indicating if the command is on cooldown.
         """
         if not self._buckets.valid:
@@ -707,7 +708,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        coro : :ref:`coroutine <coroutine>`
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the local error handler.
 
         Raises
@@ -735,7 +736,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the pre-invoke hook.
 
         Raises
@@ -762,7 +763,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the post-invoke hook.
 
         Raises
@@ -809,27 +810,15 @@ class Command(_BaseCommand):
     @property
     def signature(self):
         """Returns a POSIX-like signature useful for help command output."""
-        result = []
-        parent = self.full_parent_name
-
-        if len(self.aliases) > 0:
-            aliases = '|'.join(self.aliases)
-            fmt = '[%s|%s]' % (self.name, aliases)
-            if parent:
-                fmt = parent + ' ' + fmt
-            result.append(fmt)
-        else:
-            name = self.name if not parent else parent + ' ' + self.name
-            result.append(name)
-
         if self.usage is not None:
-            result.append(self.usage)
-            return ' '.join(result)
+            return self.usage
+
 
         params = self.clean_params
         if not params:
-            return ' '.join(result)
+            return ''
 
+        result = []
         for name, param in params.items():
             greedy = isinstance(param.annotation, converters._Greedy)
 
@@ -874,7 +863,7 @@ class Command(_BaseCommand):
 
         Returns
         --------
-        bool
+        :class:`bool`
             A boolean indicating if the command can be invoked.
         """
 
@@ -909,7 +898,7 @@ class GroupMixin:
     Attributes
     -----------
     all_commands: :class:`dict`
-        A mapping of command name to :class:`.Command` or superclass
+        A mapping of command name to :class:`.Command` or subclass
         objects.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``.
@@ -932,7 +921,7 @@ class GroupMixin:
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`.Command` or its superclasses into the internal list
+        """Adds a :class:`.Command` or its subclasses into the internal list
         of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
@@ -974,7 +963,7 @@ class GroupMixin:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the command to remove.
 
         Returns
@@ -1017,14 +1006,18 @@ class GroupMixin:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the command to get.
 
         Returns
         --------
-        Command or subclass
+        :class:`Command` or subclass
             The command that was requested. If not found, returns ``None``.
         """
+
+        # fast path, no space in name.
+        if ' ' not in name:
+            return self.all_commands.get(name)
 
         names = name.split()
         obj = self.all_commands.get(names[0])
@@ -1177,7 +1170,7 @@ def command(name=None, cls=None, **attrs):
 
     Parameters
     -----------
-    name: str
+    name: :class:`str`
         The name to create the command with. By default this uses the
         function name unchanged.
     cls
@@ -1228,11 +1221,6 @@ def check(predicate):
 
         These functions can either be regular functions or coroutines.
 
-    Parameters
-    -----------
-    predicate
-        The predicate to check if the command should be invoked.
-
     Examples
     ---------
 
@@ -1262,6 +1250,10 @@ def check(predicate):
         async def only_me(ctx):
             await ctx.send('Only you!')
 
+    Parameters
+    -----------
+    predicate: Callable[:class:`Context`, :class:`bool`]
+        The predicate to check if the command should be invoked.
     """
 
     def decorator(func):
@@ -1290,7 +1282,7 @@ def has_role(item):
 
     Parameters
     -----------
-    item: Union[int, str]
+    item: Union[:class:`int`, :class:`str`]
         The name or ID of the role to check.
     """
 
@@ -1315,7 +1307,7 @@ def has_any_role(*items):
 
     Parameters
     -----------
-    items
+    items: List[Union[:class:`str`, :class:`int`]]
         An argument list of names or IDs to check that the member has roles wise.
 
     Example
@@ -1344,7 +1336,7 @@ def has_permissions(**perms):
     :class:`.discord.Permissions`.
 
     This check raises a special exception, :exc:`.MissingPermissions`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
 
     Parameters
     ------------
@@ -1410,7 +1402,7 @@ def bot_has_permissions(**perms):
     the permissions listed.
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1432,7 +1424,7 @@ def guild_only():
     using the command.
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
-    that is derived from :exc:`.CheckFailure`.
+    that is inherited from :exc:`.CheckFailure`.
     """
 
     def predicate(ctx):
@@ -1489,9 +1481,9 @@ def cooldown(rate, per, type=BucketType.default):
 
     Parameters
     ------------
-    rate: int
+    rate: :class:`int`
         The number of times a command can be used before triggering a cooldown.
-    per: float
+    per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: ``BucketType``
         The type of cooldown to have.

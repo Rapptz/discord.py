@@ -36,7 +36,8 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinxcontrib.asyncio',
-    'details'
+    'details',
+    'exception_hierarchy'
 ]
 
 autodoc_member_order = 'bysource'

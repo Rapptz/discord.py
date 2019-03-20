@@ -391,7 +391,7 @@ class ConnectionState:
                 message._handle_call(data['call'])
             elif 'content' not in data:
                 # embed only edit
-                message.embeds = [Embed.from_data(d) for d in data['embeds']]
+                message.embeds = [Embed.from_dict(d) for d in data['embeds']]
             else:
                 message._update(channel=message.channel, data=data)
 

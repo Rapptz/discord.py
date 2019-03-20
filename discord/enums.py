@@ -39,6 +39,7 @@ class ChannelType(Enum):
     group    = 3
     category = 4
     news     = 5
+    store    = 6
 
     def __str__(self):
         return self.name
