@@ -766,8 +766,7 @@ class Messageable(metaclass=abc.ABCMeta):
                 raise InvalidArgument('files parameter must be a list of up to 10 elements')
 
             try:
-                param = [(f.open_file(), f.filename) for f in files]
-                data = await state.http.send_files(channel.id, files=param, content=content, tts=tts,
+                data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
                                                    embed=embed, nonce=nonce)
             finally:
                 for f in files:
