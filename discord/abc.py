@@ -764,6 +764,8 @@ class Messageable(metaclass=abc.ABCMeta):
         elif files is not None:
             if len(files) > 10:
                 raise InvalidArgument('files parameter must be a list of up to 10 elements')
+            elif not all(isinstance(file, File) for file in files):
+                raise InvalidArgument('files parameter must be a list of File')
 
             try:
                 data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
