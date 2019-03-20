@@ -79,7 +79,6 @@ If you want to invite your bot you must create an invite URL for your bot.
     - In case you leaked the bot's token or the bot has vulnerability, **You should NEVER choose Administrator permission.**
 
     - The bot owners must have 2FA enabled to add your bot to a server with
-      `Server-wide 2FA <https://support.discordapp.com/hc/en-us/articles/115000088971-Three-Steps-to-a-Safer-Server>`_ on if your bot needs administrative permissions such as Manage Messages.
 
     .. image:: /images/discord_oauth2_perms.png
         :alt: The permission chooser with some permissions checked.
