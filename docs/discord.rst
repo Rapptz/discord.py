@@ -76,7 +76,7 @@ If you want to invite your bot you must create an invite URL for your bot.
 
 6. Tick the permissions required for your bot to function under "Bot Permissions".
 
-    - In case you leaked the bot's token or the bot has vulnerability, **You should NEVER choose Administrator permission.**
+    - Please be aware of the consequences of requiring your bot to have the "Administrator" permission.
 
     - The bot owners must have 2FA enabled to add your bot to a server with
 
