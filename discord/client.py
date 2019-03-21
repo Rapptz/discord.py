@@ -1157,7 +1157,7 @@ class Client:
     async def edit_settings(self, **kwargs):
         """|coro|
 
-        Edits the client user's settings. (Only available to selfbots)
+        Edits the client user's settings. (Only applicable to user accounts.)
 
         Parameters
         -------
