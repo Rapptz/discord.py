@@ -40,7 +40,7 @@ from .widget import Widget
 from .guild import Guild
 from .member import Member
 from .errors import *
-from .enums import Status, VoiceRegion
+from .enums import Status, VoiceRegion, UserContentFilter, FriendFlags, Theme
 from .gateway import *
 from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
@@ -1153,3 +1153,133 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def edit_settings(self, **kwargs):
+        """|coro|
+
+        Edits the client user's settings. (Only available to selfbots)
+
+        Parameters
+        -------
+        afk_timeout: Optional[:class:`int`]
+            How long (in seconds) the user needs to be AFK until Discord
+            sends push notifications to your mobile device.
+        animate_emojis: Optional[:class:`bool`]
+            Whether or not to animate emojis in the chat.
+        convert_emoticons: Optional[:class:`bool`]
+            Whether or not to automatically convert emoticons into emojis.
+            e.g. :-) -> 😃
+        default_guilds_restricted: Optional[:class:`bool`]
+            Whether or not to automatically disable DMs between you and
+            members of new guilds you join.
+        detect_platform_accounts: Optional[:class:`bool`]
+            Whether or not to automatically detect accounts from services
+            like Steam and Blizzard when you open the Discord client.
+        developer_mode: Optional[:class:`bool`]
+            Whether or not to enable developer mode.
+        disable_games_tab: Optional[:class:`bool`]
+            Whether or not to disable the showing of the Games tab.
+        enable_tts_command: Optional[:class:`bool`]
+            Whether or not to allow tts messages to be played/sent.
+        explicit_content_filter: Optional[:class:`UserContentFilter`]
+            The filter for explicit content in all messages.
+        friend_source_flags: Optional[:class:`FriendFlags`]
+            Who can add you as a friend.
+        gif_auto_play: Optional[:class:`bool`]
+            Whether or not to automatically play gifs that are in the chat.
+        guild_positions: Optional[List[:class:`int`]]
+            A list of guild ids in order of the guild/guild icons that are on
+            the left hand side of the UI.
+        inline_attachment_media: Optional[:class:`bool`]
+            Whether or not to display attachments when they are uploaded in chat.
+        inline_embed_media: Optional[:class:`bool`]
+            Whether or not to display videos and images from links posted in chat.
+        locale: Optional[:class:`str`]
+            The RFC 3066 language identifier of the locale to use for the language
+            of the Discord client.
+        message_display_compact: Optional[:class:`bool`]
+            Whether or not to use the compact Discord display mode.
+        render_embeds: Optional[:class:`bool`]
+            Whether or not to render embeds that are sent in the chat.
+        render_reactions: Optional[:class:`bool`]
+            Whether or not to render reactions that are added to messages.
+        restricted_guilds: Optional[List[:class:`int`]]
+            A list of guild ids that you will not receive DMs from.
+        show_current_game: Optional[:class:`bool`]
+            Whether or not to display the game that you are currently playing.
+        status: Optional[:class:`Status`]
+            The clients status that is shown to others.
+        theme: Optional[:class:`Theme`]
+            The theme of the Discord UI.
+        timezone_offset: Optional[:class:`int`]
+            The timezone offset to use.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+        Forbidden
+            The client is a bot user and not a selfbot.
+
+        Returns
+        -------
+        :class:`dict`
+            The client user's updated settings.
+        """
+        payload = {}
+
+        content_filter = kwargs.pop('explicit_content_filter', None)
+        if content_filter:
+            if not isinstance(content_filter, UserContentFilter):
+                raise InvalidArgument('explicit_content_filter field must be of type UserContentFilter')
+            else:
+                payload.update({'explicit_content_filter':content_filter.value})
+
+        friend_flags = kwargs.pop('friend_source_flags', None)
+        if friend_flags:
+            if not isinstance(friend_flags, FriendFlags):
+                raise InvalidArgument('friend_source_flags field must be of type FriendFlags')
+            else:
+                dicts = {
+                    0: {},
+                    1: {'mutual_guilds': True},
+                    2: {'mutual_friends': True},
+                    3: {'mutual_guilds': True, 'mutual_friends': True},
+                    4: {'all': True}
+                }
+                payload.update({'friend_source_flags': dicts[friend_flags.value]})
+
+        guild_positions = kwargs.pop('guild_positions', None)
+        if guild_positions:
+            if not isinstance(guild_positions, list):
+                raise InvalidArgument('guild_positions field must be of type List')
+            else:
+                guild_positions = list(map(str, guild_positions))
+                payload.update({'guild_positions': guild_positions})
+        restricted_guilds = kwargs.pop('restricted_guilds', None)
+
+        if restricted_guilds:
+            if not isinstance(guild_positions, list):
+                raise InvalidArgument('restricted_guilds field must be of type List')
+            else:
+                restricted_guilds = list(map(str, restricted_guilds))
+                payload.update({'restricted_guilds': restricted_guilds})
+
+        status = kwargs.pop('status', None)
+        if status:
+            if not isinstance(status, Status):
+                raise InvalidArgument('status field must be of type Status')
+            else:
+                payload.update({'status': status.value})
+
+        theme = kwargs.pop('theme', None)
+        if theme:
+            if not isinstance(theme, Theme):
+                raise InvalidArgument('theme field must be of type Theme')
+            else:
+                payload.update({'theme': theme.value})
+
+        payload.update(kwargs)
+
+        data = await self.http.edit_settings(**payload)
+        return data

@@ -30,7 +30,7 @@ __all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'SpeakingState',
            'VerificationLevel', 'ContentFilter', 'Status', 'DefaultAvatar',
            'RelationshipType', 'AuditLogAction', 'AuditLogActionCategory',
            'UserFlags', 'ActivityType', 'HypeSquadHouse', 'NotificationLevel',
-           'PremiumType']
+           'PremiumType', 'UserContentFilter', 'FriendFlags', 'Theme']
 
 class ChannelType(Enum):
     text     = 0
@@ -106,6 +106,22 @@ class ContentFilter(IntEnum):
 
     def __str__(self):
         return self.name
+
+class UserContentFilter(IntEnum):
+    disabled    = 0
+    friends     = 1
+    all_messages = 2
+
+class FriendFlags(Enum):
+    noone = 0
+    mutual_guilds = 1
+    mutual_friends = 2
+    guild_and_friends = 3
+    everyone = 4
+
+class Theme(Enum):
+    light = 'light'
+    dark = 'dark'
 
 class Status(Enum):
     online = 'online'
