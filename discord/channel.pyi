@@ -112,7 +112,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
                                    reason: Optional[str] = ...) -> VoiceChannel: ...
 
 
-class StoreChannel(discord.abc.Messageable, Hashable):
+class StoreChannel(discord.abc.GuildChannel, Hashable):
     id: int
     name: str
     guild: Guild
