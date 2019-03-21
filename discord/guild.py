@@ -44,8 +44,6 @@ from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
 
-VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
-
 BanEntry = namedtuple('BanEntry', 'reason user')
 
 class Guild(Hashable):

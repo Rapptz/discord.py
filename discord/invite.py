@@ -30,8 +30,6 @@ from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
 
-VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
-
 class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
     """Represents a "partial" invite channel.
 
