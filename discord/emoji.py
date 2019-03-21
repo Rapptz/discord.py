@@ -24,17 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from collections import namedtuple
-
+from .abc import Asset
 from . import utils
 
-class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
+class PartialEmoji(Asset):
     """Represents a "partial" emoji.
 
     This model will be given in two scenarios:
 
     - "Raw" data events such as :func:`on_raw_reaction_add`
     - Custom emoji that the bot cannot see from e.g. :attr:`Message.reactions`
+
+    This inherits from :class:`abc.Asset`.
 
     .. container:: operations
 
@@ -65,7 +66,14 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         The ID of the custom emoji, if applicable.
     """
 
-    __slots__ = ()
+    __slots__ = ('animated', 'name', 'id')
+
+    def __init__(self, state, *, animated, name, id=None):
+        self.animated = animated
+        self.name = name
+        self.id = id
+
+        super().__init__(state, self.url)
 
     def __str__(self):
         if self.id is None:
@@ -103,11 +111,11 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         _format = 'gif' if self.animated else 'png'
         return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
 
-class Emoji:
+class Emoji(Asset):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
-    have a value of ``None``.
+    have a value of ``None``. This inherits from :class:`abc.Asset`.
 
     .. container:: operations
 
@@ -153,6 +161,8 @@ class Emoji:
         self.guild_id = guild.id
         self._state = state
         self._from_data(data)
+
+        super().__init__(self._state, self.url)
 
     def _from_data(self, emoji):
         self.require_colons = emoji['require_colons']

@@ -1855,6 +1855,8 @@ module, others which are not.
 
 .. autoclass:: discord.abc.Connectable
 
+.. autoclass:: discord.abc.Asset
+
 .. _discord_api_models:
 
 Discord Models

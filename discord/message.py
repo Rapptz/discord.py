@@ -112,7 +112,7 @@ class Attachment:
             The number of bytes written.
         """
         url = self.proxy_url if use_cached else self.url
-        data = await self._http.get_attachment(url)
+        data = await self._http.get_from_cdn(url)
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
