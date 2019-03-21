@@ -224,16 +224,16 @@ class HTTPClient:
             # We've run out of retries, raise.
             raise HTTPException(r, data)
 
-    async def get_attachment(self, url):
+    async def get_from_cdn(self, url):
         async with self.__session.get(url) as resp:
             if resp.status == 200:
                 return await resp.read()
             elif resp.status == 404:
-                raise NotFound(resp, 'attachment not found')
+                raise NotFound(resp, 'asset not found')
             elif resp.status == 403:
-                raise Forbidden(resp, 'cannot retrieve attachment')
+                raise Forbidden(resp, 'cannot retrieve asset')
             else:
-                raise HTTPException(resp, 'failed to get attachment')
+                raise HTTPException(resp, 'failed to get asset')
 
     # state management
 

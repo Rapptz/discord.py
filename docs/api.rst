@@ -40,6 +40,9 @@ Client
 .. autoclass:: AutoShardedClient
     :members:
 
+.. autoclass:: AppInfo
+    :members:
+
 Voice
 ------
 
@@ -1916,6 +1919,12 @@ Attachment
 ~~~~~~~~~~~
 
 .. autoclass:: Attachment()
+    :members:
+
+Asset
+~~~~~
+
+.. autoclass:: Asset()
     :members:
 
 Message

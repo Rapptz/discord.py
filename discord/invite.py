@@ -24,13 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time, valid_icon_size, snowflake_time
+from .asset import Asset
+from .utils import parse_time, snowflake_time
 from .mixins import Hashable
-from .errors import InvalidArgument
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
-
-VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
 class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
     """Represents a "partial" invite channel.
@@ -81,7 +79,7 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
         """Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
 
-class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner id name splash verification_level description')):
+class PartialInviteGuild:
     """Represents a "partial" invite guild.
 
     This model will be given when the user is not part of the
@@ -125,7 +123,19 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
         The partial guild's description.
     """
 
-    __slots__ = ()
+    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash',
+                 'verification_level', 'description')
+
+    def __init__(self, state, data, id):
+        self._state = state
+        self.id = id
+        self.name = data['name']
+        self.features = data.get('features', [])
+        self.icon = data.get('icon')
+        self.banner = data.get('banner')
+        self.splash = data.get('splash')
+        self.verification_level = try_enum(VerificationLevel, data.get('verification_level'))
+        self.description = data.get('description')
 
     def __str__(self):
         return self.name
@@ -141,16 +151,8 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """:class:`str`: The same operation as :meth:`Guild.icon_url_as`."""
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.icon is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
+        """:class:`Asset`: The same operation as :meth:`Guild.icon_url_as`."""
+        return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
 
     @property
     def banner_url(self):
@@ -158,16 +160,8 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """:class:`str`: The same operation as :meth:`Guild.banner_url_as`."""
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.banner is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/banners/{0.id}/{0.banner}.{1}?size={2}'.format(self, format, size)
+        """:class:`Asset`: The same operation as :meth:`Guild.banner_url_as`."""
+        return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
     def splash_url(self):
@@ -175,16 +169,8 @@ class PartialInviteGuild(namedtuple('PartialInviteGuild', 'features icon banner 
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """:class:`str`: The same operation as :meth:`Guild.splash_url_as`."""
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.splash is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.{1}?size={2}'.format(self, format, size)
+        """:class:`Asset`: The same operation as :meth:`Guild.splash_url_as`."""
+        return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
 class Invite(Hashable):
     """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
@@ -240,7 +226,6 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
-
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
                  'temporary', 'max_uses', 'inviter', 'channel', '_state',
                  'approximate_member_count', 'approximate_presence_count' )
@@ -274,14 +259,7 @@ class Invite(Hashable):
             guild_data = data['guild']
             channel_type = try_enum(ChannelType, channel_data['type'])
             channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
-            guild = PartialInviteGuild(id=guild_id,
-                                       name=guild_data['name'],
-                                       features=guild_data.get('features', []),
-                                       icon=guild_data.get('icon'),
-                                       banner=guild_data.get('banner'),
-                                       splash=guild_data.get('splash'),
-                                       verification_level=try_enum(VerificationLevel, guild_data.get('verification_level')),
-                                       description=guild_data.get('description'))
+            guild = PartialInviteGuild(state, guild_data, guild_id)
         data['guild'] = guild
         data['channel'] = channel
         return cls(state=state, data=data)

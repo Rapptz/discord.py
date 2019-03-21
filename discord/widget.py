@@ -31,8 +31,6 @@ from .invite import Invite
 from .enums import Status, try_enum
 from collections import namedtuple
 
-VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
-
 class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
     """Represents a "partial" widget channel.
 

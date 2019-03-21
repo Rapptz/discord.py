@@ -34,6 +34,7 @@ import aiohttp
 from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .user import BaseUser, User
+from .asset import Asset
 
 __all__ = ['WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook']
 
@@ -548,12 +549,12 @@ class Webhook:
 
         Returns
         --------
-        :class:`str`
-            The resulting CDN URL.
+        :class:`Asset`
+            The resulting CDN asset.
         """
         if self.avatar is None:
             # Default is always blurple apparently
-            return 'https://cdn.discordapp.com/embed/avatars/0.png'
+            return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/0.png')
 
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
@@ -563,7 +564,8 @@ class Webhook:
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        return Asset(self._state, url)
 
     def delete(self):
         """|maybecoro|
@@ -661,7 +663,7 @@ class Webhook:
         username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
-        avatar_url: :class:`str`
+        avatar_url: Union[:class:`str`, :class:`Asset`]
             The avatar URL to send with this message. If no avatar URL is provided
             then the default avatar for the webhook is used.
         tts: :class:`bool`
@@ -716,7 +718,7 @@ class Webhook:
 
         payload['tts'] = tts
         if avatar_url:
-            payload['avatar_url'] = avatar_url
+            payload['avatar_url'] = str(avatar_url)
         if username:
             payload['username'] = username
 

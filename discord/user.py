@@ -27,13 +27,11 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 import discord.abc
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
-from .errors import ClientException, InvalidArgument
+from .errors import ClientException
 from .colour import Colour
-
-VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
-VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+from .asset import Asset
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()
@@ -158,28 +156,10 @@ class BaseUser(_BaseUser):
 
         Returns
         --------
-        :class:`str`
-            The resulting CDN URL.
+        :class:`Asset`
+            The resulting CDN asset.
         """
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
-        if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
-        if format == "gif" and not self.is_avatar_animated():
-            raise InvalidArgument("non animated avatars do not support gif format")
-        if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
-
-        if self.avatar is None:
-            return self.default_avatar_url
-
-        if format is None:
-            if self.is_avatar_animated():
-                format = 'gif'
-            else:
-                format = static_format
-
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        return Asset._from_avatar(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def default_avatar(self):
@@ -189,7 +169,7 @@ class BaseUser(_BaseUser):
     @property
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
-        return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
+        return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):

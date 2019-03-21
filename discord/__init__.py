@@ -20,7 +20,8 @@ __version__ = '1.0.0a'
 from collections import namedtuple
 import logging
 
-from .client import Client, AppInfo
+from .client import Client
+from .appinfo import AppInfo
 from .user import User, ClientUser, Profile
 from .emoji import Emoji, PartialEmoji
 from .activity import *
@@ -29,6 +30,7 @@ from .guild import Guild
 from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message, Attachment
+from .asset import Asset
 from .errors import *
 from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite

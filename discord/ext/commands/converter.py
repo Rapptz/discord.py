@@ -400,7 +400,8 @@ class PartialEmojiConverter(Converter):
             emoji_name = match.group(2)
             emoji_id = int(match.group(3))
 
-            return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+            return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name,
+                                                   id=emoji_id)
 
         raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
 

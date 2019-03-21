@@ -37,14 +37,12 @@ from .errors import InvalidArgument, ClientException
 from .channel import *
 from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
-from .utils import valid_icon_size
 from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator
 from .webhook import Webhook
 from .widget import Widget
-
-VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
+from .asset import Asset
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 
@@ -441,18 +439,10 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`str`
-            The resulting CDN URL.
+        :class:`Asset`
+            The resulting CDN asset.
         """
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.icon is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(self, format, size)
+        return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
 
     @property
     def banner_url(self):
@@ -479,18 +469,10 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`str`
-            The resulting CDN URL.
+        :class:`Asset`
+            The resulting CDN asset.
         """
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.banner is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/banners/{0.id}/{0.banner}.{1}?size={2}'.format(self, format, size)
+        return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
     def splash_url(self):
@@ -517,18 +499,10 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`str`
-            The resulting CDN URL.
+        :class:`Asset`
+            The resulting CDN asset.
         """
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_ICON_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_ICON_FORMATS))
-
-        if self.splash is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/splashes/{0.id}/{0.splash}.{1}?size={2}'.format(self, format, size)
+        return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
     @property
     def member_count(self):

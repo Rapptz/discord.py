@@ -35,6 +35,7 @@ import aiohttp
 import websockets
 
 from .user import User, Profile
+from .asset import Asset
 from .invite import Invite
 from .widget import Widget
 from .guild import Guild
@@ -50,20 +51,9 @@ from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
+from .appinfo import AppInfo
 
 log = logging.getLogger(__name__)
-
-AppInfo = namedtuple('AppInfo',
-                     'id name description rpc_origins bot_public bot_require_code_grant icon owner')
-
-def app_info_icon_url(self):
-    """Retrieves the application's icon_url if it exists. Empty string otherwise."""
-    if not self.icon:
-        return ''
-
-    return 'https://cdn.discordapp.com/app-icons/{0.id}/{0.icon}.jpg'.format(self)
-
-AppInfo.icon_url = property(app_info_icon_url)
 
 class Client:
     r"""Represents a client connection that connects to Discord.
@@ -1060,11 +1050,7 @@ class Client:
         data = await self.http.application_info()
         if 'rpc_origins' not in data:
             data['rpc_origins'] = None
-        return AppInfo(id=int(data['id']), name=data['name'],
-                       description=data['description'], icon=data['icon'],
-                       rpc_origins=data['rpc_origins'], bot_public=data['bot_public'],
-                       bot_require_code_grant=data['bot_require_code_grant'],
-                       owner=User(state=self._connection, data=data['owner']))
+        return AppInfo(self._connection, data)
 
     async def fetch_user(self, user_id):
         """|coro|
