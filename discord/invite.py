@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from . import abc
+from .asset import Asset
 from .utils import parse_time, snowflake_time
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
@@ -153,8 +153,8 @@ class PartialInviteGuild:
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """:class:`abc.Asset`: The same operation as :meth:`Guild.icon_url_as`."""
-        return abc.Asset.from_guild_image(self, self._state, 'icon', format=format, size=size)
+        """:class:`Asset`: The same operation as :meth:`Guild.icon_url_as`."""
+        return Asset.from_guild_image(self, self._state, 'icon', format=format, size=size)
 
     @property
     def banner_url(self):
@@ -162,8 +162,8 @@ class PartialInviteGuild:
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """:class:`abc.Asset`: The same operation as :meth:`Guild.banner_url_as`."""
-        return abc.Asset.from_guild_image(self, self._state, 'banner', format=format, size=size)
+        """:class:`Asset`: The same operation as :meth:`Guild.banner_url_as`."""
+        return Asset.from_guild_image(self, self._state, 'banner', format=format, size=size)
 
     @property
     def splash_url(self):
@@ -171,8 +171,8 @@ class PartialInviteGuild:
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """:class:`abc.Asset`: The same operation as :meth:`Guild.splash_url_as`."""
-        return abc.Asset.from_guild_image(self, self._state, 'splash', format=format, size=size)
+        """:class:`Asset`: The same operation as :meth:`Guild.splash_url_as`."""
+        return Asset.from_guild_image(self, self._state, 'splash', format=format, size=size)
 
 class Invite(Hashable):
     """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.

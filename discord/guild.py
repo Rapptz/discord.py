@@ -42,7 +42,7 @@ from .invite import Invite
 from .iterators import AuditLogIterator
 from .webhook import Webhook
 from .widget import Widget
-from .abc import Asset
+from .asset import Asset
 
 VALID_ICON_FORMATS = {"jpeg", "jpg", "webp", "png"}
 
@@ -435,7 +435,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`abc.Asset`
+        :class:`Asset`
             The resulting CDN asset.
         """
         return Asset.from_guild_image(self, self._state, 'icon', format=format, size=size)
@@ -465,7 +465,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`abc.Asset`
+        :class:`Asset`
             The resulting CDN asset.
         """
         return Asset.from_guild_image(self, self._state, 'banner', format=format, size=size)
@@ -495,7 +495,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`abc.Asset`
+        :class:`Asset`
             The resulting CDN asset.
         """
         return Asset.from_guild_image(self, self._state, 'splash', format=format, size=size)

@@ -31,6 +31,7 @@ from .utils import snowflake_time, _bytes_to_base64_data, parse_time
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
 from .errors import ClientException
 from .colour import Colour
+from .asset import Asset
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()
@@ -71,7 +72,6 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
         return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
 
 _BaseUser = discord.abc.User
-_Asset = discord.abc.Asset
 
 class BaseUser(_BaseUser):
     __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
@@ -159,7 +159,7 @@ class BaseUser(_BaseUser):
         :class:`Asset`
             The resulting CDN asset.
         """
-        return _Asset.from_avatar(self, self._state, format=format, static_format=static_format, size=size)
+        return Asset.from_avatar(self, self._state, format=format, static_format=static_format, size=size)
 
     @property
     def default_avatar(self):
@@ -169,7 +169,7 @@ class BaseUser(_BaseUser):
     @property
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
-        return _Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value))
+        return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):

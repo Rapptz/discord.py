@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .abc import Asset
+from .asset import Asset
 from . import utils
 
 class PartialEmoji(Asset):
@@ -35,7 +35,7 @@ class PartialEmoji(Asset):
     - "Raw" data events such as :func:`on_raw_reaction_add`
     - Custom emoji that the bot cannot see from e.g. :attr:`Message.reactions`
 
-    This inherits from :class:`abc.Asset`.
+    This inherits from :class:`Asset`.
 
     .. container:: operations
 
@@ -115,7 +115,7 @@ class Emoji(Asset):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
-    have a value of ``None``. This inherits from :class:`abc.Asset`.
+    have a value of ``None``. This inherits from :class:`Asset`.
 
     .. container:: operations
 
