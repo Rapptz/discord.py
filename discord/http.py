@@ -809,3 +809,6 @@ class HTTPClient:
 
     def leave_hypesquad_house(self):
         return self.request(Route('DELETE', '/hypesquad/online'))
+
+    def edit_settings(self, **payload):
+        return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
