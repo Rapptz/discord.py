@@ -22,6 +22,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     category_id: Optional[int]
     topic: Optional[str]
     position: int
+    last_message_id: Optional[int]
     slowmode_delay: int
     nsfw: bool
 
@@ -35,6 +36,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def is_nsfw(self) -> bool: ...
 
     def is_news(self) -> bool: ...
+
+    @property
+    def last_message(self) -> Optional[Message]: ...
 
     async def edit(self, *, reason: Optional[str] = ..., name: str = ..., topic: str = ..., position: int = ...,
                    nsfw: bool = ..., sync_permissions: bool = ..., category: Optional[CategoryChannel] = ...,
