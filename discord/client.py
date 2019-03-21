@@ -1219,7 +1219,7 @@ class Client:
         HTTPException
             Editing the settings failed.
         Forbidden
-            The client is a bot user and not a selfbot.
+            The client is a bot user and not a user account.
 
         Returns
         -------
@@ -1230,54 +1230,36 @@ class Client:
 
         content_filter = kwargs.pop('explicit_content_filter', None)
         if content_filter:
-            if not isinstance(content_filter, UserContentFilter):
-                raise InvalidArgument('explicit_content_filter field must be of type UserContentFilter')
-            else:
-                payload.update({'explicit_content_filter':content_filter.value})
+            payload.update({'explicit_content_filter': content_filter.value})
 
         friend_flags = kwargs.pop('friend_source_flags', None)
         if friend_flags:
-            if not isinstance(friend_flags, FriendFlags):
-                raise InvalidArgument('friend_source_flags field must be of type FriendFlags')
-            else:
-                dicts = {
-                    0: {},
-                    1: {'mutual_guilds': True},
-                    2: {'mutual_friends': True},
-                    3: {'mutual_guilds': True, 'mutual_friends': True},
-                    4: {'all': True}
-                }
-                payload.update({'friend_source_flags': dicts[friend_flags.value]})
+            dicts = {
+                0: {},
+                1: {'mutual_guilds': True},
+                2: {'mutual_friends': True},
+                3: {'mutual_guilds': True, 'mutual_friends': True},
+                4: {'all': True}
+            }
+            payload.update({'friend_source_flags': dicts[friend_flags.value]})
 
         guild_positions = kwargs.pop('guild_positions', None)
         if guild_positions:
-            if not isinstance(guild_positions, list):
-                raise InvalidArgument('guild_positions field must be of type List')
-            else:
-                guild_positions = list(map(str, guild_positions))
-                payload.update({'guild_positions': guild_positions})
+            guild_positions = list(map(str, guild_positions))
+            payload.update({'guild_positions': guild_positions})
+        
         restricted_guilds = kwargs.pop('restricted_guilds', None)
-
         if restricted_guilds:
-            if not isinstance(guild_positions, list):
-                raise InvalidArgument('restricted_guilds field must be of type List')
-            else:
-                restricted_guilds = list(map(str, restricted_guilds))
-                payload.update({'restricted_guilds': restricted_guilds})
+            restricted_guilds = list(map(str, restricted_guilds))
+            payload.update({'restricted_guilds': restricted_guilds})
 
         status = kwargs.pop('status', None)
         if status:
-            if not isinstance(status, Status):
-                raise InvalidArgument('status field must be of type Status')
-            else:
-                payload.update({'status': status.value})
+            payload.update({'status': status.value})
 
         theme = kwargs.pop('theme', None)
         if theme:
-            if not isinstance(theme, Theme):
-                raise InvalidArgument('theme field must be of type Theme')
-            else:
-                payload.update({'theme': theme.value})
+            payload.update({'theme': theme.value})
 
         payload.update(kwargs)
 
