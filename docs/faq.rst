@@ -215,8 +215,8 @@ one of the following functions:
 
 The following use an HTTP request:
 
-- :meth:`abc.Messageable.get_message`
-- :meth:`Client.get_user_info`
+- :meth:`abc.Messageable.fetch_message`
+- :meth:`Client.fetch_user`
 
 
 If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding
@@ -297,4 +297,3 @@ Example: ::
         await ctx.send('Pushing to {} {}'.format(remote, branch))
 
 This could then be used as ``?git push origin master``.
-

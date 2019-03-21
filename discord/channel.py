@@ -85,6 +85,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of `0` denotes that it is disabled.
@@ -94,7 +97,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
                  'category_id', 'position', 'slowmode_delay', '_overwrites',
-                 '_type')
+                 '_type', 'last_message_id')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -115,6 +118,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._type = data.get('type', self._type)
+        self.last_message_id = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
     async def _get_channel(self):
@@ -147,6 +151,27 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def is_news(self):
         """Checks if the channel is a news channel."""
         return self._type == ChannelType.news.value
+
+    @property
+    def last_message(self):
+        """Fetches the last message from this channel in cache.
+
+        The message might not be valid or point to an existing channel.
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`last_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last message in this channel or ``None`` if not found.
+        """
+        return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -460,6 +485,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def _get_voice_state_pair(self):
         return self.guild.id, self.id
 
+    @property
+    def _type(self):
+        return ChannelType.voice.value
+
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
@@ -590,6 +619,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def _sorting_bucket(self):
+        return ChannelType.category.value
+
+    @property
+    def _type(self):
         return ChannelType.category.value
 
     def is_nsfw(self):
@@ -741,6 +774,10 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     def _sorting_bucket(self):
         return ChannelType.text.value
 
+    @property
+    def _type(self):
+        return ChannelType.store.value
+
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -839,6 +876,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     def __repr__(self):
         return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
+
+    @property
+    def _type(self):
+        return ChannelType.private.value
 
     @property
     def created_at(self):
@@ -948,6 +989,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     def __repr__(self):
         return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
+
+    @property
+    def _type(self):
+        return ChannelType.group.value
 
     @property
     def icon_url(self):
