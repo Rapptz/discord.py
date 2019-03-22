@@ -43,12 +43,11 @@ the string ``plugins.hello``.
 Reloading
 -----------
 
-The act of reloading an extension is quite simple -- it is as simple as unloading and reloading:
+When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`Bot.reload_extension`.
 
 .. code-block:: python3
 
-    >>> bot.unload_extension('hello')
-    >>> bot.load_extension('hello')
+    >>> bot.reload_extension('hello')
 
 Once you remove and load the extension, any changes made to the extension's code will be applied. This is useful if you want to add or remove functionality without restarting your 
 bot.

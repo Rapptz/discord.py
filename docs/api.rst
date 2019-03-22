@@ -103,6 +103,14 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The warnings on :func:`on_ready` also apply.
 
+.. function:: on_disconnect()
+
+    Called when the client has disconnected from Discord. This could happen either through
+    the internet being disconnected, explicit calls to logout, or Discord terminating the connection
+    one way or the other.
+
+    This function can be called many times.
+
 .. function:: on_ready()
 
     Called when the client is done preparing the data received from Discord. Usually after login is successful
@@ -132,12 +140,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     printed to stderr and the exception is ignored. If you want to
     change this behaviour and handle the exception for whatever reason
     yourself, this event can be overridden. Which, when done, will
-    supress the default action of printing the traceback.
+    suppress the default action of printing the traceback.
 
-    The information of the exception rasied and the exception itself can
-    be retreived with a standard call to ``sys.exc_info()``.
+    The information of the exception raised and the exception itself can
+    be retrieved with a standard call to ``sys.exc_info()``.
 
-    If you want exception to propogate out of the :class:`Client` class
+    If you want exception to propagate out of the :class:`Client` class
     you can define an ``on_error`` handler consisting of a single empty
     ``raise`` statement.  Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
@@ -146,7 +154,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param args: The positional arguments for the event that raised the
         exception.
     :param kwargs: The keyword arguments for the event that raised the
-        execption.
+        exception.
 
 .. function:: on_socket_raw_receive(msg)
 
@@ -2064,6 +2072,25 @@ Invite
 ~~~~~~~
 
 .. autoclass:: Invite()
+    :members:
+
+WidgetChannel
+~~~~~~~~~~~~~~~
+
+.. autoclass:: WidgetChannel()
+    :members:
+
+WidgetMember
+~~~~~~~~~~~~~
+
+.. autoclass:: WidgetMember()
+    :members:
+    :inherited-members:
+
+Widget
+~~~~~~~
+
+.. autoclass:: Widget()
     :members:
 
 RawMessageDeleteEvent

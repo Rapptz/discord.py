@@ -238,9 +238,9 @@ class Embed:
 
         Parameters
         -----------
-        text: str
+        text: :class:`str`
             The footer text.
-        icon_url: str
+        icon_url: :class:`str`
             The URL of the footer icon. Only HTTP(S) is supported.
         """
 
@@ -276,7 +276,7 @@ class Embed:
 
         Parameters
         -----------
-        url: str
+        url: :class:`str`
             The source URL for the image. Only HTTP(S) is supported.
         """
 
@@ -309,7 +309,7 @@ class Embed:
 
         Parameters
         -----------
-        url: str
+        url: :class:`str`
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
@@ -361,11 +361,11 @@ class Embed:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the author.
-        url: str
+        url: :class:`str`
             The URL for the author.
-        icon_url: str
+        icon_url: :class:`str`
             The URL of the author icon. Only HTTP(S) is supported.
         """
 
@@ -399,11 +399,11 @@ class Embed:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The name of the field.
-        value: str
+        value: :class:`str`
             The value of the field.
-        inline: bool
+        inline: :class:`bool`
             Whether the field should be displayed inline.
         """
 
@@ -440,7 +440,7 @@ class Embed:
 
         Parameters
         -----------
-        index: int
+        index: :class:`int`
             The index of the field to remove.
         """
         try:
@@ -458,13 +458,13 @@ class Embed:
 
         Parameters
         -----------
-        index: int
+        index: :class:`int`
             The index of the field to modify.
-        name: str
+        name: :class:`str`
             The name of the field.
-        value: str
+        value: :class:`str`
             The value of the field.
-        inline: bool
+        inline: :class:`bool`
             Whether the field should be displayed inline.
 
         Raises

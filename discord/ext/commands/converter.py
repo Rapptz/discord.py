@@ -69,7 +69,7 @@ class Converter:
         -----------
         ctx: :class:`.Context`
             The invocation context that the argument is being used in.
-        argument: str
+        argument: :class:`str`
             The argument that is being converted.
         """
         raise NotImplementedError('Derived classes need to implement this.')
@@ -294,6 +294,8 @@ class ColourConverter(Converter):
             arg = arg[1:]
         try:
             value = int(arg, base=16)
+            if not (0 <= value <= 0xFFFFFF):
+                raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return discord.Colour(value=value)
         except ValueError:
             method = getattr(discord.Colour, arg.replace(' ', '_'), None)
@@ -303,7 +305,6 @@ class ColourConverter(Converter):
 
 class RoleConverter(IDConverter):
     """Converts to a :class:`Role`.
-
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -337,18 +338,17 @@ class GameConverter(Converter):
 class InviteConverter(Converter):
     """Converts to a :class:`Invite`.
 
-    This is done via an HTTP request using :meth:`.Bot.get_invite`.
+    This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
     """
     async def convert(self, ctx, argument):
         try:
-            invite = await ctx.bot.get_invite(argument)
+            invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
             raise BadArgument('Invite is invalid or expired') from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`Emoji`.
-
 
     All lookups are done for the local guild first, if available. If that lookup
     fails, then it checks the client's global cache.
@@ -390,7 +390,6 @@ class EmojiConverter(IDConverter):
 class PartialEmojiConverter(Converter):
     """Converts to a :class:`PartialEmoji`.
 
-
     This is done by extracting the animated flag, name and ID from the emoji.
     """
     async def convert(self, ctx, argument):
@@ -413,11 +412,11 @@ class clean_content(Converter):
 
     Attributes
     ------------
-    fix_channel_mentions: :obj:`bool`
+    fix_channel_mentions: :class:`bool`
         Whether to clean channel mentions.
-    use_nicknames: :obj:`bool`
+    use_nicknames: :class:`bool`
         Whether to use nicknames when transforming mentions.
-    escape_markdown: :obj:`bool`
+    escape_markdown: :class:`bool`
         Whether to also escape special markdown characters.
     """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False):

@@ -85,6 +85,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of `0` denotes that it is disabled.
@@ -94,7 +97,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
                  'category_id', 'position', 'slowmode_delay', '_overwrites',
-                 '_type')
+                 '_type', 'last_message_id')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -115,6 +118,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._type = data.get('type', self._type)
+        self.last_message_id = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
     async def _get_channel(self):
@@ -147,6 +151,27 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def is_news(self):
         """Checks if the channel is a news channel."""
         return self._type == ChannelType.news.value
+
+    @property
+    def last_message(self):
+        """Fetches the last message from this channel in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`last_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last message in this channel or ``None`` if not found.
+        """
+        return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -255,9 +280,20 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         on the conditions met such as if a bulk delete is possible or if
         the account is a user bot or not.
 
+        Examples
+        ---------
+
+        Deleting bot's messages ::
+
+            def is_me(m):
+                return m.author == client.user
+
+            deleted = await channel.purge(limit=100, check=is_me)
+            await channel.send('Deleted {} message(s)'.format(len(deleted)))
+
         Parameters
         -----------
-        limit: Optional[int]
+        limit: Optional[:class:`int`]
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
         check: predicate
@@ -271,7 +307,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``around`` in :meth:`history`.
         reverse
             Same as ``reverse`` in :meth:`history`.
-        bulk: bool
+        bulk: class:`bool`
             If True, use bulk delete. bulk=False is useful for mass-deleting
             a bot's own messages without manage_messages. When True, will fall
             back to single delete if current account is a user bot, or if
@@ -284,20 +320,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             Purging the messages failed.
 
-        Examples
-        ---------
-
-        Deleting bot's messages ::
-
-            def is_me(m):
-                return m.author == client.user
-
-            deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send('Deleted {} message(s)'.format(len(deleted)))
-
         Returns
         --------
-        list
+        List[:class:`.Message`]
             The list of messages that were deleted.
         """
 
@@ -378,9 +403,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -------------
-        name: str
+        name: :class:`str`
             The webhook's name.
-        avatar: Optional[bytes]
+        avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's default avatar.
             This operates similarly to :meth:`~ClientUser.edit`.
 
@@ -460,6 +485,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def _get_voice_state_pair(self):
         return self.guild.id, self.id
 
+    @property
+    def _type(self):
+        return ChannelType.voice.value
+
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
@@ -507,21 +536,21 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new channel's name.
-        bitrate: int
+        bitrate: :class:`int`
             The new channel's bitrate.
-        user_limit: int
+        user_limit: :class:`int`
             The new channel's user limit.
-        position: int
+        position: :class:`int`
             The new channel's position.
-        sync_permissions: bool
+        sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
 
         Raises
@@ -592,6 +621,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     def _sorting_bucket(self):
         return ChannelType.category.value
 
+    @property
+    def _type(self):
+        return ChannelType.category.value
+
     def is_nsfw(self):
         """Checks if the category is NSFW."""
         n = self.name
@@ -607,13 +640,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         Parameters
         ----------
-        name: str
+        name: :class:`str`
             The new category's name.
-        position: int
+        position: :class:`int`
             The new category's position.
-        nsfw: bool
+        nsfw: :class:`bool`
             To mark the category as NSFW or not.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this category. Shows up on the audit log.
 
         Raises
@@ -741,6 +774,10 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     def _sorting_bucket(self):
         return ChannelType.text.value
 
+    @property
+    def _type(self):
+        return ChannelType.store.value
+
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -839,6 +876,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     def __repr__(self):
         return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
+
+    @property
+    def _type(self):
+        return ChannelType.private.value
 
     @property
     def created_at(self):
@@ -950,6 +991,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
 
     @property
+    def _type(self):
+        return ChannelType.group.value
+
+    @property
     def icon_url(self):
         """Returns the channel's icon URL if available or an empty string otherwise."""
         if self.icon is None:
@@ -1053,10 +1098,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Parameters
         -----------
-        name: Optional[str]
+        name: Optional[:class:`str`]
             The new name to change the group to.
             Could be ``None`` to remove the name.
-        icon: Optional[bytes]
+        icon: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the new icon.
             Could be ``None`` to remove the icon.
 

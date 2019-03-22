@@ -81,6 +81,9 @@ class PartialEmoji(namedtuple('PartialEmoji', 'animated name id')):
         if isinstance(other, (PartialEmoji, Emoji)):
             return self.id == other.id
 
+    def __hash__(self):
+        return hash((self.id, self.name))
+
     def is_custom_emoji(self):
         """Checks if this is a custom non-Unicode emoji."""
         return self.id is not None
@@ -224,7 +227,7 @@ class Emoji:
 
         Parameters
         -----------
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for deleting this emoji. Shows up on the audit log.
 
         Raises
@@ -247,11 +250,11 @@ class Emoji:
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The new emoji name.
         roles: Optional[list[:class:`Role`]]
             A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this emoji. Shows up on the audit log.
 
         Raises

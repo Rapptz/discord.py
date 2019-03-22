@@ -366,7 +366,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        channel
+        channel: :class:`Channel`
             The channel to check your permissions for.
         """
         return channel.permissions_for(self)
@@ -457,17 +457,17 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        nick: str
+        nick: Optional[:class:`str`]
             The member's new nickname. Use ``None`` to remove the nickname.
-        mute: bool
+        mute: Optional[:class:`bool`]
             Indicates if the member should be guild muted or un-muted.
-        deafen: bool
+        deafen: Optional[:class:`bool`]
             Indicates if the member should be guild deafened or un-deafened.
-        roles: List[:class:`Roles`]
+        roles: Optional[List[:class:`Roles`]]
             The member's new list of roles. This *replaces* the roles.
-        voice_channel: :class:`VoiceChannel`
+        voice_channel: Optional[:class:`VoiceChannel`]
             The voice channel to move the member to.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
         Raises
@@ -533,7 +533,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         -----------
         channel: :class:`VoiceChannel`
             The new voice channel to move the member to.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
         """
         await self.edit(voice_channel=channel, reason=reason)
@@ -548,10 +548,10 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles
+        \*roles: :class:`Snowflake`
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to give to the member.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for adding these roles. Shows up on the audit log.
         atomic: bool
             Whether to atomically add roles. This will ensure that multiple
@@ -586,12 +586,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles
+        \*roles: :class:`Snowflake`
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to remove from the member.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for removing these roles. Shows up on the audit log.
-        atomic: bool
+        atomic: :class:`bool`
             Whether to atomically remove roles. This will ensure that multiple
             operations will always be applied regardless of the current
             state of the cache.

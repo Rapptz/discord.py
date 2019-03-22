@@ -186,17 +186,17 @@ class HistoryIterator(_AsyncIterator):
     Parameters
     -----------
     messageable: :class:`abc.Messageable`
-        Messageable class to retrieve message history fro.
-    limit : int
+        Messageable class to retrieve message history from.
+    limit: :class:`int`
         Maximum number of messages to retrieve
-    before : :class:`Message` or id-like
+    before: :class:`abc.Snowflake`
         Message before which all messages must be.
-    after : :class:`Message` or id-like
+    after: :class:`abc.Snowflake`
         Message after which all messages must be.
-    around : :class:`Message` or id-like
+    around: :class:`abc.Snowflake`
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
-    reverse: bool
+    reverse: :class:`bool`
         If set to true, return messages in oldest->newest order. Recommended
         when using with "after" queries with limit over 100, otherwise messages
         will be out of order.
@@ -237,7 +237,7 @@ class HistoryIterator(_AsyncIterator):
             elif self.limit == 101:
                 self.limit = 100  # Thanks discord
             elif self.limit == 1:
-                raise ValueError("Use get_message.")
+                raise ValueError("Use fetch_message.")
 
             self._retrieve_messages = self._retrieve_messages_around_strategy
             if self.before and self.after:
@@ -459,3 +459,133 @@ class AuditLogIterator(_AsyncIterator):
                     continue
 
                 await self.entries.put(AuditLogEntry(data=element, users=self._users, guild=self.guild))
+
+
+class GuildIterator(_AsyncIterator):
+    """Iterator for receiving the client's guilds.
+
+    The guilds endpoint has the same two behaviours as described
+    in :class:`HistoryIterator`:
+    If `before` is specified, the guilds endpoint returns the `limit`
+    newest guilds before `before`, sorted with newest first. For filling over
+    100 guilds, update the `before` parameter to the oldest guild received.
+    Guilds will be returned in order by time.
+    If `after` is specified, it returns the `limit` oldest guilds after `after`,
+    sorted with newest first. For filling over 100 guilds, update the `after`
+    parameter to the newest guild received, If guilds are not reversed, they
+    will be out of order (99-0, 199-100, so on)
+
+    Not that if both before and after are specified, before is ignored by the
+    guilds endpoint.
+
+    Parameters
+    -----------
+    bot: :class:`discord.Client`
+        The client to retrieve the guilds from.
+    limit: :class:`int`
+        Maximum number of guilds to retrieve.
+    before: :class:`Snowflake`
+        Object before which all guilds must be.
+    after: :class:`Snowflake`
+        Object after which all guilds must be.
+    """
+    def __init__(self, bot, limit, before=None, after=None):
+
+        if isinstance(before, datetime.datetime):
+            before = Object(id=time_snowflake(before, high=False))
+        if isinstance(after, datetime.datetime):
+            after = Object(id=time_snowflake(after, high=True))
+
+        self.bot = bot
+        self.limit = limit
+        self.before = before
+        self.after = after
+
+        self._filter = None
+
+        self.state = self.bot._connection
+        self.get_guilds = self.bot.http.get_guilds
+        self.guilds = asyncio.Queue(loop=self.state.loop)
+
+        if self.before and self.after:
+            self._retrieve_guilds = self._retrieve_guilds_before_strategy
+            self._filter = lambda m: int(m['id']) > self.after.id
+        elif self.after:
+            self._retrieve_guilds = self._retrieve_guilds_after_strategy
+        else:
+            self._retrieve_guilds = self._retrieve_guilds_before_strategy
+
+    async def next(self):
+        if self.guilds.empty():
+            await self.fill_guilds()
+
+        try:
+            return self.guilds.get_nowait()
+        except asyncio.QueueEmpty:
+            raise NoMoreItems()
+
+    def _get_retrieve(self):
+        l = self.limit
+        if l is None:
+            r = 100
+        elif l <= 100:
+            r = l
+        else:
+            r = 100
+
+        self.retrieve = r
+        return r > 0
+
+    def create_guild(self, data):
+        from .guild import Guild
+        return Guild(state=self.state, data=data)
+
+    async def flatten(self):
+        result = []
+        while self._get_retrieve():
+            data = await self._retrieve_guilds(self.retrieve)
+            if len(data) < 100:
+                self.limit = 0
+
+            if self._filter:
+                data = filter(self._filter, data)
+
+            for element in data:
+                result.append(self.create_guild(element))
+        return result
+
+    async def fill_guilds(self):
+        if self._get_retrieve():
+            data = await self._retrieve_guilds(self.retrieve)
+            if self.limit is None or len(data) < 100:
+                self.limit = 0
+
+            if self._filter:
+                data = filter(self._filter, data)
+
+            for element in data:
+                await self.guilds.put(self.create_guild(element))
+
+    async def _retrieve_guilds(self, retrieve):
+        """Retrieve guilds and update next parameters."""
+        pass
+
+    async def _retrieve_guilds_before_strategy(self, retrieve):
+        """Retrieve guilds using before parameter."""
+        before = self.before.id if self.before else None
+        data = await self.get_guilds(retrieve, before=before)
+        if len(data):
+            if self.limit is not None:
+                self.limit -= retrieve
+            self.before = Object(id=int(data[-1]['id']))
+        return data
+
+    async def _retrieve_guilds_after_strategy(self, retrieve):
+        """Retrieve guilds using after parameter."""
+        after = self.after.id if self.after else None
+        data = await self.get_guilds(retrieve, after=after)
+        if len(data):
+            if self.limit is not None:
+                self.limit -= retrieve
+            self.after = Object(id=int(data[0]['id']))
+        return data

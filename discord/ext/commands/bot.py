@@ -38,7 +38,7 @@ import discord
 from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
-from .errors import CommandNotFound, CommandError
+from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
@@ -182,7 +182,7 @@ class BotBase(GroupMixin):
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
-        of type :class:`.Context` and can only raise exceptions derived from
+        of type :class:`.Context` and can only raise exceptions inherited from
         :exc:`.CommandError`.
 
         Example
@@ -208,7 +208,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function that was used as a global check.
-        call_once: bool
+        call_once: :class:`bool`
             If the function should only be called once per
             :meth:`.Command.invoke` call.
         """
@@ -228,7 +228,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function to remove from the global checks.
-        call_once: bool
+        call_once: :class:`bool`
             If the function was added with ``call_once=True`` in
             the :meth:`.Bot.add_check` call or using :meth:`.check_once`.
         """
@@ -255,7 +255,7 @@ class BotBase(GroupMixin):
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
-        of type :class:`.Context` and can only raise exceptions derived from
+        of type :class:`.Context` and can only raise exceptions inherited from
         :exc:`.CommandError`.
 
         Example
@@ -370,9 +370,9 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        func : :ref:`coroutine <coroutine>`
+        func: :ref:`coroutine <coroutine>`
             The function to call.
-        name : Optional[str]
+        name: Optional[:class:`str`]
             The name of the event to listen for. Defaults to ``func.__name__``.
 
         Example
@@ -404,7 +404,7 @@ class BotBase(GroupMixin):
         -----------
         func
             The function that was used as a listener to remove.
-        name
+        name: :class:`str`
             The name of the event we want to remove. Defaults to
             ``func.__name__``.
         """
@@ -462,7 +462,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        cog
+        cog: :class:`.Cog`
             The cog to register to the bot.
 
         Raises
@@ -486,7 +486,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        name : str
+        name: :class:`str`
             The name of the cog you are requesting.
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
@@ -523,6 +523,65 @@ class BotBase(GroupMixin):
 
     # extensions
 
+    def _remove_module_references(self, name):
+        # find all references to the module
+        # remove the cogs registered from the module
+        for cogname, cog in self._cogs.copy().items():
+            if _is_submodule(name, cog.__module__):
+                self.remove_cog(cogname)
+
+        # remove all the commands from the module
+        for cmd in self.all_commands.copy().values():
+            if cmd.module is not None and _is_submodule(name, cmd.module):
+                if isinstance(cmd, GroupMixin):
+                    cmd.recursively_remove_all_commands()
+                self.remove_command(cmd.name)
+
+        # remove all the listeners from the module
+        for event_list in self.extra_events.copy().values():
+            remove = []
+            for index, event in enumerate(event_list):
+                if event.__module__ is not None and _is_submodule(name, event.__module__):
+                    remove.append(index)
+
+            for index in reversed(remove):
+                del event_list[index]
+
+    def _call_module_finalizers(self, lib, key):
+        try:
+            func = getattr(lib, 'teardown')
+        except AttributeError:
+            pass
+        else:
+            try:
+                func(self)
+            except Exception:
+                pass
+        finally:
+            self._extensions.pop(key, None)
+            sys.modules.pop(key, None)
+            name = lib.__name__
+            for module in list(sys.modules.keys()):
+                if _is_submodule(name, module):
+                    del sys.modules[module]
+
+    def _load_from_module_spec(self, lib, key):
+        # precondition: key not in self._extensions
+        try:
+            setup = getattr(lib, 'setup')
+        except AttributeError:
+            del sys.modules[key]
+            raise errors.NoEntryPointError(key)
+
+        try:
+            setup(self)
+        except Exception as e:
+            self._remove_module_references(lib.__name__)
+            self._call_module_finalizers(lib, key)
+            raise errors.ExtensionFailed(key, e) from e
+        else:
+            self._extensions[key] = lib
+
     def load_extension(self, name):
         """Loads an extension.
 
@@ -535,30 +594,32 @@ class BotBase(GroupMixin):
 
         Parameters
         ------------
-        name: str
+        name: :class:`str`
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
 
         Raises
         --------
-        ClientException
-            The extension does not have a setup function.
-        ImportError
+        ExtensionNotFound
             The extension could not be imported.
+        ExtensionAlreadyLoaded
+            The extension is already loaded.
+        NoEntryPointError
+            The extension does not have a setup function.
+        ExtensionFailed
+            The extension setup function had an execution error.
         """
 
         if name in self._extensions:
-            return
+            raise errors.ExtensionAlreadyLoaded(name)
 
-        lib = importlib.import_module(name)
-        if not hasattr(lib, 'setup'):
-            del lib
-            del sys.modules[name]
-            raise discord.ClientException('extension does not have a setup function')
-
-        lib.setup(self)
-        self._extensions[name] = lib
+        try:
+            lib = importlib.import_module(name)
+        except ImportError as e:
+            raise errors.ExtensionNotFound(name, e) from e
+        else:
+            self._load_from_module_spec(lib, name)
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -573,59 +634,76 @@ class BotBase(GroupMixin):
 
         Parameters
         ------------
-        name: str
+        name: :class:`str`
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+
+        Raises
+        -------
+        ExtensionNotLoaded
+            The extension was not loaded.
         """
 
         lib = self._extensions.get(name)
         if lib is None:
-            return
+            raise errors.ExtensionNotLoaded(name)
 
-        lib_name = lib.__name__
+        self._remove_module_references(lib.__name__)
+        self._call_module_finalizers(lib, name)
 
-        # find all references to the module
+    def reload_extension(self, name):
+        """Atomically reloads an extension.
 
-        # remove the cogs registered from the module
-        for cogname, cog in self._cogs.copy().items():
-            if _is_submodule(lib_name, cog.__module__):
-                self.remove_cog(cogname)
+        This replaces the extension with the same extension, only refreshed. This is
+        equivalent to a :meth:`unload_extension` followed by a :meth:`load_extension`
+        except done in an atomic way. That is, if an operation fails mid-reload then
+        the bot will roll-back to the prior working state.
 
-        # remove all the commands from the module
-        for cmd in self.all_commands.copy().values():
-            if cmd.module is not None and _is_submodule(lib_name, cmd.module):
-                if isinstance(cmd, GroupMixin):
-                    cmd.recursively_remove_all_commands()
-                self.remove_command(cmd.name)
+        Parameters
+        ------------
+        name: :class:`str`
+            The extension name to reload. It must be dot separated like
+            regular Python imports if accessing a sub-module. e.g.
+            ``foo.test`` if you want to import ``foo/test.py``.
 
-        # remove all the listeners from the module
-        for event_list in self.extra_events.copy().values():
-            remove = []
-            for index, event in enumerate(event_list):
-                if event.__module__ is not None and _is_submodule(lib_name, event.__module__):
-                    remove.append(index)
+        Raises
+        -------
+        ExtensionNotLoaded
+            The extension was not loaded.
+        ExtensionNotFound
+            The extension could not be imported.
+        NoEntryPointError
+            The extension does not have a setup function.
+        ExtensionFailed
+            The extension setup function had an execution error.
+        """
 
-            for index in reversed(remove):
-                del event_list[index]
+        lib = self._extensions.get(name)
+        if lib is None:
+            raise errors.ExtensionNotLoaded(name)
+
+        # get the previous module states from sys modules
+        modules = {
+            name: module
+            for name, module in sys.modules.items()
+            if _is_submodule(lib.__name__, name)
+        }
 
         try:
-            func = getattr(lib, 'teardown')
-        except AttributeError:
-            pass
-        else:
-            try:
-                func(self)
-            except Exception:
-                pass
-        finally:
-            # finally remove the import..
-            del lib
-            del self._extensions[name]
-            del sys.modules[name]
-            for module in list(sys.modules.keys()):
-                if _is_submodule(lib_name, module):
-                    del sys.modules[module]
+            # Unload and then load the module...
+            self._remove_module_references(lib.__name__)
+            self._call_module_finalizers(lib, name)
+            self.load_extension(name)
+        except Exception as e:
+            # if the load failed, the remnants should have been
+            # cleaned from the load_extension function call
+            # so let's load it from our old compiled library.
+            self._load_from_module_spec(lib, name)
+
+            # revert sys.modules back to normal and raise back to caller
+            sys.modules.update(modules)
+            raise
 
     @property
     def extensions(self):
@@ -668,7 +746,7 @@ class BotBase(GroupMixin):
 
         Returns
         --------
-        Union[List[str], str]
+        Union[List[:class:`str`], :class:`str`]
             A list of prefixes or a single prefix that the bot is
             listening for.
         """
@@ -780,12 +858,12 @@ class BotBase(GroupMixin):
             try:
                 if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
-            except CommandError as exc:
+            except errors.CommandError as exc:
                 await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
-            exc = CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):
@@ -857,7 +935,7 @@ class Bot(BotBase, discord.Client):
         .. note::
 
             When passing multiple prefixes be careful to not pass a prefix
-            that matches a longer prefix occuring later in the sequence.  For
+            that matches a longer prefix occurring later in the sequence.  For
             example, if the command prefix is ``('!', '!?')``  the ``'!?'``
             prefix will never be matched to any message as the previous one
             matches messages starting with ``!?``. This is especially important
@@ -885,7 +963,7 @@ class Bot(BotBase, discord.Client):
     pass
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`.Bot` except that it is derived from
+    """This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
     """
     pass

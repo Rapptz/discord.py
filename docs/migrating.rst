@@ -148,9 +148,13 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.get_bans``                   | :meth:`Guild.bans`                                                           |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.get_message``                | :meth:`abc.Messageable.get_message`                                          |
+| ``Client.get_invite``                 | :meth:`Client.fetch_invite`                                                  |
++---------------------------------------+------------------------------------------------------------------------------+
+| ``Client.get_message``                | :meth:`abc.Messageable.fetch_message`                                        |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.get_reaction_users``         | :meth:`Reaction.users`                                                       |
++---------------------------------------+------------------------------------------------------------------------------+
+| ``Client.get_user_info``              | :meth:`Client.fetch_user`                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.invites_from``               | :meth:`abc.GuildChannel.invites` or :meth:`Guild.invites`                    |
 +---------------------------------------+------------------------------------------------------------------------------+
@@ -981,7 +985,7 @@ For example, to implement a :class:`~.commands.HelpCommand` in a cog, the follow
 
     class MyHelpCommand(commands.MinimalHelpCommand):
         def get_command_signature(self, command):
-            return '{0.context.clean_prefix}{1.qualified_name} {1.signature}'.format(self, command)
+            return '{0.clean_prefix}{1.qualified_name} {1.signature}'.format(self, command)
 
     class MyCog(commands.Cog):
         def __init__(self, bot):

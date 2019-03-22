@@ -38,6 +38,7 @@ import re
 import warnings
 
 from .errors import InvalidArgument
+from .object import Object
 
 DISCORD_EPOCH = 1420070400000
 
@@ -104,14 +105,14 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
 
     Parameters
     -----------
-    client_id : str
+    client_id: :class:`str`
         The client ID for your bot.
-    permissions : :class:`Permissions`
+    permissions: :class:`Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
-    guild : :class:`Guild`
+    guild: :class:`Guild`
         The guild to pre-select in the authorization screen, if available.
-    redirect_uri : str
+    redirect_uri: :class:`str`
         An optional valid redirect URI.
     """
     url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
@@ -139,7 +140,7 @@ def time_snowflake(datetime_obj, high=False):
     -----------
     datetime_obj
         A timezone-naive datetime object representing UTC time.
-    high
+    high: :class:`bool`
         Whether or not to set the lower 22 bit to high or low.
     """
     unix_seconds = (datetime_obj - type(datetime_obj)(1970, 1, 1)).total_seconds()
@@ -166,7 +167,7 @@ def find(predicate, seq):
     -----------
     predicate
         A function that returns a boolean-like result.
-    seq : iterable
+    seq: iterable
         The iterable to search through.
     """
 
@@ -340,3 +341,28 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
     for char in string:
         width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
     return width
+
+def resolve_invite(invite):
+    """
+    Resolves an invite from a :class:`Invite`, URL or ID
+
+    Parameters
+    -----------
+    invite: Union[:class:`Invite`, :class:`Object`, :class:`str`]
+        The invite.
+
+    Returns
+    --------
+    :class:`str`
+        The invite code.
+    """
+    from .invite import Invite  # circular import
+    if isinstance(invite, Invite) or isinstance(invite, Object):
+        return invite.id
+    else:
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
+        m = re.match(rx, invite)
+        if m:
+            return m.group(1)
+    return invite
+
