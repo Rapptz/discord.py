@@ -156,7 +156,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def last_message(self):
         """Fetches the last message from this channel in cache.
 
-        The message might not be valid or point to an existing channel.
+        The message might not be valid or point to an existing message.
 
         .. admonition:: Reliable Fetching
             :class: helpful
