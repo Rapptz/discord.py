@@ -133,7 +133,8 @@ class DefaultHelpCommand(HelpCommand[_CT]):
     paginator: _PaginatorProtocol
 
     def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...,
-                 width: int = ..., indent: int = ..., sort_commands: bool = ..., commands_heading: str = ...,
+                 width: int = ..., indent: int = ..., sort_commands: bool = ..., dm_help: Optional[bool] = ...,
+                 dm_help_threshold: Optional[int] = ..., commands_heading: str = ...,
                  no_category: str = ..., paginator: Optional[_PaginatorProtocol] = ...) -> None: ...
 
     def shorten_text(self, text: str) -> str: ...
@@ -165,7 +166,8 @@ class MinimalHelpCommand(HelpCommand[_CT]):
     paginator: _PaginatorProtocol
 
     def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ..., command_attrs: _CommandAttrs = ...,
-                 sort_commands: bool = ..., commands_heading: str = ..., aliases_heading: str = ...,
+                 sort_commands: bool = ..., commands_heading: str = ..., dm_help: Optional[bool] = ...,
+                 dm_help_threshold: Optional[int] = ..., aliases_heading: str = ...,
                  no_category: str = ..., paginator: Optional[_PaginatorProtocol] = ...) -> None: ...
 
     async def send_pages(self) -> None: ...
