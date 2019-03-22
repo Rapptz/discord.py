@@ -96,9 +96,9 @@ class Guild(Hashable):
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
-    max_presences: :class:`int`
+    max_presences: Optional[:class:`int`]
         The maximum amount of presences for the guild.
-    max_members: :class:`int`
+    max_members: Optional[:class:`int`]
         The maximum amount of members for the guild.
     banner: Optional[:class:`str`]
         The guild's banner.
