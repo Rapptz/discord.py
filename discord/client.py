@@ -40,7 +40,7 @@ from .widget import Widget
 from .guild import Guild
 from .member import Member
 from .errors import *
-from .enums import Status, VoiceRegion, UserContentFilter, FriendFlags, Theme
+from .enums import Status, VoiceRegion
 from .gateway import *
 from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
