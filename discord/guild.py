@@ -96,6 +96,10 @@ class Guild(Hashable):
         all be None. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
+    max_presences: Optional[:class:`int`]
+        The maximum amount of presences for the guild.
+    max_members: Optional[:class:`int`]
+        The maximum amount of members for the guild.
     banner: Optional[:class:`str`]
         The guild's banner.
     description: Optional[:class:`str`]
@@ -129,7 +133,7 @@ class Guild(Hashable):
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
-                 'description')
+                 'description', 'max_presences', 'max_members')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -232,6 +236,8 @@ class Guild(Hashable):
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description = guild.get('description')
+        self.max_presences = guild.get('max_presences')
+        self.max_members = guild.get('max_members')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
