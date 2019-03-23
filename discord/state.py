@@ -243,7 +243,7 @@ class ConnectionState:
             self._private_channels_by_user.pop(channel.recipient.id, None)
 
     def _get_message(self, msg_id):
-        return utils.find(lambda m: m.id == msg_id, self._messages)
+        return utils.find(lambda m: m.id == msg_id, reversed(self._messages))
 
     def _add_guild_from_data(self, guild):
         guild = Guild(data=guild, state=self)
