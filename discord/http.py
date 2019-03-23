@@ -225,11 +225,11 @@ class HTTPClient:
             if resp.status == 200:
                 return await resp.read()
             elif resp.status == 404:
-                raise NotFound(resp, 'media not found')
+                raise NotFound(resp, 'asset not found')
             elif resp.status == 403:
-                raise Forbidden(resp, 'cannot retrieve media')
+                raise Forbidden(resp, 'cannot retrieve asset')
             else:
-                raise HTTPException(resp, 'failed to get media')
+                raise HTTPException(resp, 'failed to get asset')
 
     # state management
 

@@ -25,10 +25,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import io
+from .errors import DiscordException
 from .errors import InvalidArgument
 from . import utils
 
-VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
+VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
 class Asset:
@@ -39,6 +40,14 @@ class Asset:
         .. describe:: str(x)
 
             Returns the URL of the CDN asset.
+
+        .. describe:: len(x)
+
+            Returns the length of the CDN asset's URL.
+
+        .. describe:: bool(x)
+
+            Checks if the Asset has a URL.
     """
     __slots__ = ('_state', '_url')
 
@@ -62,33 +71,31 @@ class Asset:
             return user.default_avatar_url
 
         if format is None:
-            if user.is_avatar_animated():
-                format = 'gif'
-            else:
-                format = static_format
+            format = 'gif' if user.is_avatar_animated() else static_format
 
         return cls(state, 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(user, format, size))
 
     @classmethod
-    def from_guild_image(cls, guild, state, image_type, *, format='webp', size=1024):
+    def from_guild_image(cls, state, id, hash, endpoint, *, format='webp', size=1024):
         """Creates a :class:`.Asset` from the requested guild image."""
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_STATIC_FORMATS:
             raise InvalidArgument("format must be one of {}".format(VALID_STATIC_FORMATS))
 
-        if getattr(guild, image_type) is None:
-            return ''
+        if hash is None:
+            return Asset(state)
 
-        if image_type == 'splash':
-            suffix = "es"
-        else:
-            suffix = "s"
-
-        return cls(state, 'https://cdn.discordapp.com/{0}/{1.id}/{1.icon}.{2}?size={3}'.format(image_type+suffix, guild, format, size))
+        return cls(state, endpoint.format(id, hash, format, size))
 
     def __str__(self):
         return self._url
+
+    def __len__(self):
+        return len(self._url)
+
+    def __bool__(self):
+        return self._url is not None
 
     def __repr__(self):
         return '<Asset url={0._url!r}>'.format(self)
@@ -117,6 +124,9 @@ class Asset:
         :class:`int`
             The number of bytes written.
         """
+        if not self._url:
+            raise DiscordException('a URL was not provided')
+
         data = await self._state.http.get_from_cdn(self._url)
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)

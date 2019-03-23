@@ -115,7 +115,9 @@ class Emoji(Asset):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
-    have a value of ``None``. This inherits from :class:`Asset`.
+    have a value of ``None``.
+
+    This inherits from :class:`Asset`.
 
     .. container:: operations
 

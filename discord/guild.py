@@ -436,7 +436,8 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
-        return Asset.from_guild_image(self, self._state, 'icon', format=format, size=size)
+        url = 'https://cdn.discordapp.com/icons/{0}/{1}.{2}?size={3}'
+        return Asset.from_guild_image(self._state, self.id, self.icon, url, format=format, size=size)
 
     @property
     def banner_url(self):
@@ -466,7 +467,8 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
-        return Asset.from_guild_image(self, self._state, 'banner', format=format, size=size)
+        url = 'https://cdn.discordapp.com/banners/{0}/{1}.{2}?size={3}'
+        return Asset.from_guild_image(self._state, self.id, self.banner, url, format=format, size=size)
 
     @property
     def splash_url(self):
@@ -496,7 +498,8 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
-        return Asset.from_guild_image(self, self._state, 'splash', format=format, size=size)
+        url = 'https://cdn.discordapp.com/splashes/{0}/{1}.{2}?size={3}'
+        return Asset.from_guild_image(self._state, self.id, self.splash, url, format=format, size=size)
 
     @property
     def member_count(self):

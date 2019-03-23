@@ -152,7 +152,8 @@ class PartialInviteGuild:
 
     def icon_url_as(self, *, format='webp', size=1024):
         """:class:`Asset`: The same operation as :meth:`Guild.icon_url_as`."""
-        return Asset.from_guild_image(self, self._state, 'icon', format=format, size=size)
+        url = 'https://cdn.discordapp.com/icons/{0}/{1}.{2}?size={3}'
+        return Asset.from_guild_image(self._state, self.id, self.icon, url, format=format, size=size)
 
     @property
     def banner_url(self):
@@ -161,7 +162,8 @@ class PartialInviteGuild:
 
     def banner_url_as(self, *, format='webp', size=2048):
         """:class:`Asset`: The same operation as :meth:`Guild.banner_url_as`."""
-        return Asset.from_guild_image(self, self._state, 'banner', format=format, size=size)
+        url = 'https://cdn.discordapp.com/banners/{0}/{1}.{2}?size={3}'
+        return Asset.from_guild_image(self._state, self.id, self.banner, url, format=format, size=size)
 
     @property
     def splash_url(self):
@@ -170,7 +172,8 @@ class PartialInviteGuild:
 
     def splash_url_as(self, *, format='webp', size=2048):
         """:class:`Asset`: The same operation as :meth:`Guild.splash_url_as`."""
-        return Asset.from_guild_image(self, self._state, 'splash', format=format, size=size)
+        url = 'https://cdn.discordapp.com/splashes/{0}/{1}.{2}?size={3}'
+        return Asset.from_guild_image(self._state, self.id, self.splash, url, format=format, size=size)
 
 class Invite(Hashable):
     """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
