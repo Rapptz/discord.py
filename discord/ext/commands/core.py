@@ -156,6 +156,10 @@ class Command(_BaseCommand):
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
         are called with :exc:`.TooManyArguments`. Defaults to ``True``.
+    cooldown_after_parsing: :class:`bool`
+        If ``True``\, cooldown processing is done after argument parsing,
+        which calls converters. If ``False`` then cooldown processing is done
+        first and then the converters are called second. Defaults to ``False``.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -222,6 +226,7 @@ class Command(_BaseCommand):
             self._buckets = CooldownMapping(cooldown)
 
         self.ignore_extra = kwargs.get('ignore_extra', True)
+        self.cooldown_after_parsing = kwargs.get('cooldown_after_parsing', False)
         self.cog = None
 
         # bandaid for the fact that sometimes parent can be the bot instance
@@ -631,17 +636,24 @@ class Command(_BaseCommand):
         if hook is not None:
             await hook(ctx)
 
-    async def prepare(self, ctx):
-        ctx.command = self
-        await self._verify_checks(ctx)
-
+    def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
             retry_after = bucket.update_rate_limit()
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
-        await self._parse_arguments(ctx)
+    async def prepare(self, ctx):
+        ctx.command = self
+        await self._verify_checks(ctx)
+
+        if self.cooldown_after_parsing:
+            await self._parse_arguments(ctx)
+            self._prepare_cooldowns(ctx)
+        else:
+            self._prepare_cooldowns(ctx)
+            await self._parse_arguments(ctx)
+
         await self.call_before_hooks(ctx)
 
     def is_on_cooldown(self, ctx):
