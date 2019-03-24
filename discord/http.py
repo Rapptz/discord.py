@@ -89,7 +89,7 @@ class HTTPClient:
     def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
-        self._session = None # filled in static_login
+        self.__session = None # filled in static_login
         self._locks = weakref.WeakValueDictionary()
         self._global_over = asyncio.Event(loop=self.loop)
         self._global_over.set()
@@ -102,8 +102,8 @@ class HTTPClient:
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
     def recreate(self):
-        if self._session.closed:
-            self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
+        if self.__session.closed:
+            self.__session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
 
     async def request(self, route, *, files=None, header_bypass_delay=None, **kwargs):
         bucket = route.bucket
@@ -155,7 +155,7 @@ class HTTPClient:
                     for f in files:
                         f.reset(seek=tries)
 
-                async with self._session.request(method, url, **kwargs) as r:
+                async with self.__session.request(method, url, **kwargs) as r:
                     log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
 
                     # even errors have text involved in them so this is safe to call
@@ -221,7 +221,7 @@ class HTTPClient:
             raise HTTPException(r, data)
 
     async def get_attachment(self, url):
-        async with self._session.get(url) as resp:
+        async with self.__session.get(url) as resp:
             if resp.status == 200:
                 return await resp.read()
             elif resp.status == 404:
@@ -234,8 +234,8 @@ class HTTPClient:
     # state management
 
     async def close(self):
-        if self._session:
-            await self._session.close()
+        if self.__session:
+            await self.__session.close()
 
     def _token(self, token, *, bot=True):
         self.token = token
@@ -246,7 +246,7 @@ class HTTPClient:
 
     async def static_login(self, token, *, bot):
         # Necessary to get aiohttp to stop complaining about session creation
-        self._session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
+        self.__session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
