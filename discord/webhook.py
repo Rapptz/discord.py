@@ -487,7 +487,8 @@ class Webhook:
 
     @classmethod
     def from_state(cls, data, state):
-        return cls(data, adapter=AsyncWebhookAdapter(session=state.http._session), state=state)
+        session = state.http._HTTPClient__session
+        return cls(data, adapter=AsyncWebhookAdapter(session=session), state=state)
 
     @property
     def guild(self):
