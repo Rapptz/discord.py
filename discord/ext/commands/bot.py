@@ -99,8 +99,8 @@ class BotBase(GroupMixin):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
-        self._cogs = {}
-        self._extensions = {}
+        self.__cogs = {}
+        self.__extensions = {}
         self._checks = []
         self._check_once = []
         self._before_invoke = None
@@ -129,13 +129,13 @@ class BotBase(GroupMixin):
             asyncio.ensure_future(coro, loop=self.loop)
 
     async def close(self):
-        for extension in tuple(self._extensions):
+        for extension in tuple(self.__extensions):
             try:
                 self.unload_extension(extension)
             except Exception:
                 pass
 
-        for cog in tuple(self._cogs):
+        for cog in tuple(self.__cogs):
             try:
                 self.remove_cog(cog)
             except Exception:
@@ -477,7 +477,7 @@ class BotBase(GroupMixin):
             raise TypeError('cogs must derive from Cog')
 
         cog = cog._inject(self)
-        self._cogs[cog.__cog_name__] = cog
+        self.__cogs[cog.__cog_name__] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -491,7 +491,7 @@ class BotBase(GroupMixin):
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
         """
-        return self._cogs.get(name)
+        return self.__cogs.get(name)
 
     def remove_cog(self, name):
         """Removes a cog from the bot.
@@ -507,7 +507,7 @@ class BotBase(GroupMixin):
             The name of the cog to remove.
         """
 
-        cog = self._cogs.pop(name, None)
+        cog = self.__cogs.pop(name, None)
         if cog is None:
             return
 
@@ -519,14 +519,14 @@ class BotBase(GroupMixin):
     @property
     def cogs(self):
         """Mapping[:class:`str`, :class:`Cog`]: A read-only mapping of cog name to cog."""
-        return types.MappingProxyType(self._cogs)
+        return types.MappingProxyType(self.__cogs)
 
     # extensions
 
     def _remove_module_references(self, name):
         # find all references to the module
         # remove the cogs registered from the module
-        for cogname, cog in self._cogs.copy().items():
+        for cogname, cog in self.__cogs.copy().items():
             if _is_submodule(name, cog.__module__):
                 self.remove_cog(cogname)
 
@@ -558,7 +558,7 @@ class BotBase(GroupMixin):
             except Exception:
                 pass
         finally:
-            self._extensions.pop(key, None)
+            self.__extensions.pop(key, None)
             sys.modules.pop(key, None)
             name = lib.__name__
             for module in list(sys.modules.keys()):
@@ -566,7 +566,7 @@ class BotBase(GroupMixin):
                     del sys.modules[module]
 
     def _load_from_module_spec(self, lib, key):
-        # precondition: key not in self._extensions
+        # precondition: key not in self.__extensions
         try:
             setup = getattr(lib, 'setup')
         except AttributeError:
@@ -580,7 +580,7 @@ class BotBase(GroupMixin):
             self._call_module_finalizers(lib, key)
             raise errors.ExtensionFailed(key, e) from e
         else:
-            self._extensions[key] = lib
+            self.__extensions[key] = lib
 
     def load_extension(self, name):
         """Loads an extension.
@@ -611,7 +611,7 @@ class BotBase(GroupMixin):
             The extension setup function had an execution error.
         """
 
-        if name in self._extensions:
+        if name in self.__extensions:
             raise errors.ExtensionAlreadyLoaded(name)
 
         try:
@@ -645,7 +645,7 @@ class BotBase(GroupMixin):
             The extension was not loaded.
         """
 
-        lib = self._extensions.get(name)
+        lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
 
@@ -679,7 +679,7 @@ class BotBase(GroupMixin):
             The extension setup function had an execution error.
         """
 
-        lib = self._extensions.get(name)
+        lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
 
@@ -708,7 +708,7 @@ class BotBase(GroupMixin):
     @property
     def extensions(self):
         """Mapping[:class:`str`, :class:`py:types.ModuleType`]: A read-only mapping of extension name to extension."""
-        return types.MappingProxyType(self._extensions)
+        return types.MappingProxyType(self.__extensions)
 
     # help command stuff
 
