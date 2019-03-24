@@ -76,6 +76,17 @@ class Asset:
         return cls(state, 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(user, format, size))
 
     @classmethod
+    def from_icon(cls, state, object, path):
+        """Creates a :class:`.Asset` from the requested icon.
+
+        Only applies for :class:`GroupChannel` and :class:`AppInfo`."""
+        if object.icon is None:
+            return Asset(state)
+
+        url = 'https://cdn.discordapp.com/{0}-icons/{1.id}/{1.icon}.jpg'.format(path, object)
+        return Asset(state, url)
+
+    @classmethod
     def from_guild_image(cls, state, id, hash, endpoint, *, format='webp', size=1024):
         """Creates a :class:`.Asset` from the requested guild image."""
         if not utils.valid_icon_size(size):
