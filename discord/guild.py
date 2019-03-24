@@ -1244,7 +1244,7 @@ class Guild(Hashable):
         Forbidden
             You do not have permissions to create the role.
         HTTPException
-            Editing the role failed.
+            Creating the role failed.
         InvalidArgument
             An invalid keyword argument was given.
 
