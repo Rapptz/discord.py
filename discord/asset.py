@@ -81,10 +81,10 @@ class Asset:
 
         Only applies for :class:`GroupChannel` and :class:`AppInfo`."""
         if object.icon is None:
-            return Asset(state)
+            return cls(state)
 
         url = 'https://cdn.discordapp.com/{0}-icons/{1.id}/{1.icon}.jpg'.format(path, object)
-        return Asset(state, url)
+        return cls(state, url)
 
     @classmethod
     def from_guild_image(cls, state, id, hash, endpoint, *, format='webp', size=1024):
