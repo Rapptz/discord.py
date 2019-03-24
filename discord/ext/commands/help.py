@@ -1047,13 +1047,13 @@ class MinimalHelpCommand(HelpCommand):
 
         The default implementation returns ::
 
-            Use `{prefix}{command_name} <command>` for more info on a command.
-            You can also use `{prefix}{command_name} <category>` for more info on a category.
+            Use `{prefix}{command_name} [command]` for more info on a command.
+            You can also use `{prefix}{command_name} [category]` for more info on a category.
 
         """
         command_name = self.invoked_with
-        return "Use `{0}{1} <command>` for more info on a command.\n" \
-               "You can also use `{0}{1} <category>` for more info on a category.".format(self.clean_prefix, command_name)
+        return "Use `{0}{1} [command]` for more info on a command.\n" \
+               "You can also use `{0}{1} [category]` for more info on a category.".format(self.clean_prefix, command_name)
 
     def get_command_signature(self, command):
         return '%s%s %s' % (self.clean_prefix, command.qualified_name, command.signature)
