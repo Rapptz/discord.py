@@ -6,7 +6,6 @@ _CT = TypeVar('_CT', bound=Context)
 _L = TypeVar('_L', bound=Callable[..., Coroutine[Any, Any, Any]])
 
 class CogMeta(type):
-    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
     @classmethod
     def qualified_name(cls) -> str: ...
 

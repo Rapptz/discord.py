@@ -126,7 +126,20 @@ class PermissionOverwrite:
     manage_webhooks: Optional[bool]
     manage_emojis: Optional[bool]
 
-    def __init__(self, **kwargs: Any) -> None: ...
+    def __init__(self, *, create_instant_invite: Optional[bool] = ..., kick_members: Optional[bool] = ...,
+                 ban_members: Optional[bool] = ..., administrator: Optional[bool] = ...,
+                 manage_channels: Optional[bool] = ..., manage_guild: Optional[bool] = ...,
+                 add_reactions: Optional[bool] = ..., view_audit_log: Optional[bool] = ...,
+                 priority_speaker: Optional[bool] = ..., read_messages: Optional[bool] = ...,
+                 send_messages: Optional[bool] = ..., send_tts_messages: Optional[bool] = ...,
+                 manage_messages: Optional[bool] = ..., embed_links: Optional[bool] = ...,
+                 attach_files: Optional[bool] = ..., read_message_history: Optional[bool] = ...,
+                 mention_everyone: Optional[bool] = ..., external_emojis: Optional[bool] = ...,
+                 connect: Optional[bool] = ..., speak: Optional[bool] = ..., mute_members: Optional[bool] = ...,
+                 deafen_members: Optional[bool] = ..., move_members: Optional[bool] = ...,
+                 use_voice_activation: Optional[bool] = ..., change_nickname: Optional[bool] = ...,
+                 manage_nicknames: Optional[bool] = ..., manage_roles: Optional[bool] = ...,
+                 manage_webhooks: Optional[bool] = ..., manage_emojis: Optional[bool] = ...) -> None: ...
 
     def __eq__(self, other: Any) -> bool: ...
 

@@ -71,8 +71,6 @@ class Paginator:
 
 
 class _HelpCommandImpl(Command[_CT]):
-    def __init__(self, inject: Any, *args: Any, **kwargs: Any) -> None: ...
-
     @property
     def clean_params(self) -> Mapping[str, Parameter]: ...
 

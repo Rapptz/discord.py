@@ -38,6 +38,8 @@ class Guild(Hashable):
     id: int
     owner_id: int
     unavailable: bool
+    max_presences: Optional[int]
+    max_members: Optional[int]
     banner: Optional[str]
     description: Optional[str]
     mfa_level: int

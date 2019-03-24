@@ -28,6 +28,7 @@ class Command(Generic[_CT]):
     hidden: bool
     rest_is_raw: bool
     ignore_extra: bool
+    cooldown_after_parsing: bool
     params: Mapping[str, Parameter]
     _buckets: CooldownMapping
     cog: Optional[Cog[_CT]]
@@ -35,11 +36,11 @@ class Command(Generic[_CT]):
     def __init__(self, func: _CoroType, *, name: str = ..., enabled: bool = ...,
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
                  aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-                 rest_is_raw: bool = ..., ignore_extra: bool = ...) -> None: ...
+                 rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
 
     def update(self, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
                usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-               rest_is_raw: bool = ..., ignore_extra: bool = ...) -> None: ...
+               rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
 
     def copy(self: _CMD) -> _CMD: ...
 
@@ -112,9 +113,15 @@ class GroupMixin(Generic[_CT]):
 
     def get_command(self, name: str) -> Optional[Command[_CT]]: ...
 
-    def command(self, *args: Any, **kwargs: Any) -> Callable[[_CoroType], Command[_CT]]: ...
+    def command(self, name: Optional[str] = ..., *, enabled: bool = ..., help: Optional[str] = ...,
+                brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
+                description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+                cooldown_after_parsing: bool = ...) -> Callable[[_CoroType], Command[_CT]]: ...
 
-    def group(self, *args: Any, **kwargs: Any) -> Callable[..., Group[_CT]]: ...
+    def group(self, name: str = ..., *, enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
+              usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
+              rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+              invoke_without_command: bool = ..., case_insensitive: bool = ...) -> Callable[[_CoroType], Group[_CT]]: ...
 
 
 _G = TypeVar('_G', bound=Group)
@@ -123,35 +130,29 @@ _G = TypeVar('_G', bound=Group)
 class Group(GroupMixin[_CT], Command[_CT]):
     invoke_without_command: bool
 
-    def __init__(self, *, invoke_without_command: bool = ...,
-                 case_insensitive: bool = ...) -> None: ...
+    def __init__(self, *, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
+                 usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
+                 rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+                 invoke_without_command: bool = ..., case_insensitive: bool = ...) -> None: ...
 
     def copy(self: _G) -> _G: ...
 
 
 @overload
 def command(name: Optional[str] = ..., *, enabled: bool = ...,
-            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
-            rest_is_raw: bool = ..., aliases: List[str] = ..., description: str = ...,
-            hidden: bool = ...) -> Callable[[_CoroType], Command[Any]]: ...
+            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
+            description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+            cooldown_after_parsing: bool = ...) -> Callable[[_CoroType], Command[Any]]: ...
 @overload
 def command(name: Optional[str] = ..., cls: Optional[Type[Command[_CT]]] = ..., *, enabled: bool = ...,
-            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
-            rest_is_raw: bool = ..., aliases: List[str] = ..., description: str = ...,
-            hidden: bool = ...) -> Callable[[_CoroType], Command[_CT]]: ...
+            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
+            description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+            cooldown_after_parsing: bool = ...) -> Callable[[_CoroType], Command[_CT]]: ...
 
-@overload
-def group(name: Optional[str] = ..., invoke_without_command: bool = ...,
-          case_insensitive: bool = ..., enabled: bool = ...,
-          help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
-          rest_is_raw: bool = ..., aliases: List[str] = ..., description: str = ...,
-          hidden: bool = ...) -> Callable[[_CoroType], Group[Any]]: ...
-@overload
-def group(name: Optional[str] = ..., cls: Optional[Type[Group[_CT]]] = ..., invoke_without_command: bool = ...,
-          case_insensitive: bool = ..., enabled: bool = ...,
-          help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
-          rest_is_raw: bool = ..., aliases: List[str] = ..., description: str = ...,
-          hidden: bool = ...) -> Callable[[_CoroType], Group[_CT]]: ...
+def group(name: str = ..., *, enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
+          usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
+          rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+          invoke_without_command: bool = ..., case_insensitive: bool = ...) -> Callable[[_CoroType], Group[Any]]: ...
 
 def check(predicate: _CheckType) -> Callable[[_F], _F]: ...
 
