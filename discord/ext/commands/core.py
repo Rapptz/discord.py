@@ -156,6 +156,10 @@ class Command(_BaseCommand):
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
         are called with :exc:`.TooManyArguments`. Defaults to ``True``.
+    cooldown_after_parsing: :class:`bool`
+        If ``True``\, cooldown processing is done after argument parsing,
+        which calls converters. If ``False`` then cooldown processing is done
+        first and then the converters are called second. Defaults to ``False``.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -222,6 +226,7 @@ class Command(_BaseCommand):
             self._buckets = CooldownMapping(cooldown)
 
         self.ignore_extra = kwargs.get('ignore_extra', True)
+        self.cooldown_after_parsing = kwargs.get('cooldown_after_parsing', False)
         self.cog = None
 
         # bandaid for the fact that sometimes parent can be the bot instance
@@ -262,26 +267,29 @@ class Command(_BaseCommand):
         """
         self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
 
+    def _ensure_assignment_on_copy(self, other):
+        other._before_invoke = self._before_invoke
+        other._after_invoke = self._after_invoke
+        if self.checks != other.checks:
+            other.checks = self.checks.copy()
+        if self._buckets != other._buckets:
+            other._buckets = self._buckets.copy()
+        try:
+            other.on_error = self.on_error
+        except AttributeError:
+            pass
+        return other
+
     def copy(self):
         """Creates a copy of this :class:`Command`."""
         ret = self.__class__(self.callback, **self.__original_kwargs__)
-        ret._before_invoke = self._before_invoke
-        ret._after_invoke = self._after_invoke
-        if self.checks != ret.checks:
-            ret.checks = self.checks.copy()
-        if self._buckets != ret._buckets:
-            ret._buckets = self._buckets.copy()
-        try:
-            ret.on_error = self.on_error
-        except AttributeError:
-            pass
-        return ret
+        return self._ensure_assignment_on_copy(ret)
 
     def _update_copy(self, kwargs):
         if kwargs:
             copy = self.__class__(self.callback, **kwargs)
             copy.update(**self.__original_kwargs__)
-            return copy
+            return self._ensure_assignment_on_copy(copy)
         else:
             return self.copy()
 
@@ -628,17 +636,24 @@ class Command(_BaseCommand):
         if hook is not None:
             await hook(ctx)
 
-    async def prepare(self, ctx):
-        ctx.command = self
-        await self._verify_checks(ctx)
-
+    def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
             retry_after = bucket.update_rate_limit()
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
-        await self._parse_arguments(ctx)
+    async def prepare(self, ctx):
+        ctx.command = self
+        await self._verify_checks(ctx)
+
+        if self.cooldown_after_parsing:
+            await self._parse_arguments(ctx)
+            self._prepare_cooldowns(ctx)
+        else:
+            self._prepare_cooldowns(ctx)
+            await self._parse_arguments(ctx)
+
         await self.call_before_hooks(ctx)
 
     def is_on_cooldown(self, ctx):
