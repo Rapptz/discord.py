@@ -793,7 +793,7 @@ class HelpCommand(Generic[_CT]):
         else:
             return await self.send_command_help(cmd)
 
-class DefaultHelpCommand(HelpCommand):
+class DefaultHelpCommand(HelpCommand[_CT]):
     """The implementation of the default help command.
 
     This inherits from :class:`HelpCommand`.
@@ -996,7 +996,7 @@ class DefaultHelpCommand(HelpCommand):
 
         await self.send_pages()
 
-class MinimalHelpCommand(HelpCommand):
+class MinimalHelpCommand(HelpCommand[_CT]):
     """An implementation of a help command with minimal output.
 
     This inherits from :class:`HelpCommand`.
