@@ -58,8 +58,8 @@ __all__ = [
 # No Category:
 #   <command> <shortdoc>
 
-# Type <prefix>help command for more info on a command.
-# You can also type <prefix>help category for more info on a category.
+# Type <prefix>help [command] for more info on a command.
+# You can also type <prefix>help [category] for more info on a category.
 
 class Paginator:
     """A class that aids in paginating code blocks for Discord messages.
@@ -847,8 +847,8 @@ class DefaultHelpCommand(HelpCommand):
     def get_ending_note(self):
         """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
-        return "Type {0}{1} command for more info on a command.\n" \
-               "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
+        return "Type {0}{1} [command] for more info on a command.\n" \
+               "You can also type {0}{1} [category] for more info on a category.".format(self.clean_prefix, command_name)
 
     def add_indented_commands(self, commands, *, heading, max_size=None):
         """Indents a list of commands after the specified heading.
@@ -1047,13 +1047,13 @@ class MinimalHelpCommand(HelpCommand):
 
         The default implementation returns ::
 
-            Use `{prefix}{command_name} <command>` for more info on a command.
-            You can also use `{prefix}{command_name} <category>` for more info on a category.
+            Use `{prefix}{command_name} [command]` for more info on a command.
+            You can also use `{prefix}{command_name} [category]` for more info on a category.
 
         """
         command_name = self.invoked_with
-        return "Use `{0}{1} <command>` for more info on a command.\n" \
-               "You can also use `{0}{1} <category>` for more info on a category.".format(self.clean_prefix, command_name)
+        return "Use `{0}{1} [command]` for more info on a command.\n" \
+               "You can also use `{0}{1} [category]` for more info on a category.".format(self.clean_prefix, command_name)
 
     def get_command_signature(self, command):
         return '%s%s %s' % (self.clean_prefix, command.qualified_name, command.signature)
