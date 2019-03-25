@@ -627,6 +627,12 @@ class HTTPClient:
         }
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
+    def get_all_custom_emojis(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))
+
+    def get_custom_emoji(self, guild_id, emoji_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id))
+
     def create_custom_emoji(self, guild_id, name, image, *, roles=None, reason=None):
         payload = {
             'name': name,

@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .asset import Asset
 from . import utils
+from .user import User
 
 class PartialEmoji:
     """Represents a "partial" emoji.
@@ -164,8 +165,11 @@ class Emoji:
         If this emoji is managed by a Twitch integration.
     guild_id: :class:`int`
         The guild ID the emoji belongs to.
+    user: Optional[:class:`User`]
+        The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji`.
     """
-    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id', '_state')
+    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
+                 '_state', 'user')
 
     def __init__(self, *, guild, state, data):
         self.guild_id = guild.id
@@ -179,6 +183,8 @@ class Emoji:
         self.name = emoji['name']
         self.animated = emoji.get('animated', False)
         self._roles = utils.SnowflakeList(map(int, emoji.get('roles', [])))
+        user = emoji.get('user')
+        self.user = User(state=self._state, data=user) if user else None
 
     def _iterator(self):
         for attr in self.__slots__:
