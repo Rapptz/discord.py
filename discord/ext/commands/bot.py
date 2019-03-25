@@ -905,7 +905,7 @@ class Bot(BotBase, discord.Client):
     this bot.
 
     .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
-    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
+    .. _event loop: https://docs.python.org/3/library/asyncio-eventloop.html
 
     This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.
