@@ -314,6 +314,26 @@ class HelpCommand:
         # odd one.
         return self.context.prefix.replace(user.mention, '@' + user.display_name)
 
+    @property
+    def invoked_with(self):
+        """Similar to :attr:`Context.invoked_with` except properly handles
+        the case where :meth:`Context.send_help` is used.
+
+        If the help command was used regularly then this returns
+        the :attr:`Context.invoked_with` attribute. Otherwise, if
+        it the help command was called using :meth:`Context.send_help`
+        then it returns the internal command name of the help command.
+
+        Returns
+        ---------
+        :class:`str`
+            The command name that triggered this invocation.
+        """
+        command_name = self._command_impl.name
+        if self.context is None or self.context.command.qualified_name != command_name:
+            return command_name
+        return self.context.invoked_with
+
     def get_command_signature(self, command):
         """Retrieves the signature portion of the help page.
 
@@ -826,7 +846,7 @@ class DefaultHelpCommand(HelpCommand):
 
     def get_ending_note(self):
         """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
-        command_name = self.context.invoked_with
+        command_name = self.invoked_with
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
 
@@ -1027,13 +1047,13 @@ class MinimalHelpCommand(HelpCommand):
 
         The default implementation returns ::
 
-            Use `{prefix}{command_name} <command>` for more info on a command.
-            You can also use `{prefix}{command_name} <category>` for more info on a category.
+            Use `{prefix}{command_name} [command]` for more info on a command.
+            You can also use `{prefix}{command_name} [category]` for more info on a category.
 
         """
-        command_name = self.context.invoked_with
-        return "Use `{0}{1} <command>` for more info on a command.\n" \
-               "You can also use `{0}{1} <category>` for more info on a category.".format(self.clean_prefix, command_name)
+        command_name = self.invoked_with
+        return "Use `{0}{1} [command]` for more info on a command.\n" \
+               "You can also use `{0}{1} [category]` for more info on a category.".format(self.clean_prefix, command_name)
 
     def get_command_signature(self, command):
         return '%s%s %s' % (self.clean_prefix, command.qualified_name, command.signature)
