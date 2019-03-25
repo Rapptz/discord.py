@@ -86,10 +86,10 @@ class Attachment:
 
         Parameters
         -----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
+        fp: Union[BinaryIO, :class:`os.PathLike` :class:`pathlib.Path`]
             The file-like object to save this attachment to or the filename
-            to use. If a filename is passed then a file is created with that
-            filename and used instead.
+            to use. If a filename or a pathlib.Path object is passed then a
+            file is created with that filename and used instead.
         seek_begin: :class:`bool`
             Whether to seek to the beginning of the file after saving is
             successfully done.
