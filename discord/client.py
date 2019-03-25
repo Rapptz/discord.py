@@ -71,7 +71,7 @@ class Client:
 
     A number of options can be passed to the :class:`Client`.
 
-    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
+    .. _event loop: https://docs.python.org/3/library/asyncio-eventloop.html
     .. _connector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#connectors
     .. _ProxyConnector: http://aiohttp.readthedocs.org/en/stable/client_reference.html#proxyconnector
 
