@@ -156,7 +156,7 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.get_user_info``              | :meth:`Client.fetch_user`                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.invites_from``               | :meth:`abc.GuildChannel.invites` or :meth:`Guild.invites`                    |
+| ``Client.invites_from``               | :meth:`abc.GuildChannel.fetch_invites` or :meth:`Guild.fetch_invites`                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.join_voice_channel``         | :meth:`VoiceChannel.connect` (see :ref:`migrating_1_0_voice`)                |
 +---------------------------------------+------------------------------------------------------------------------------+

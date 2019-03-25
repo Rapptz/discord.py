@@ -1138,7 +1138,7 @@ class Guild(Hashable):
         data = await self._state.http.estimate_pruned_members(self.id, days)
         return data['pruned']
 
-    async def invites(self):
+    async def fetch_invites(self):
         """|coro|
 
         Returns a list of all active instant invites from the guild.

@@ -637,7 +637,7 @@ class GuildChannel:
         data = await self._state.http.create_invite(self.id, reason=reason, **fields)
         return Invite.from_incomplete(data=data, state=self._state)
 
-    async def invites(self):
+    async def fetch_invites(self):
         """|coro|
 
         Returns a list of all active instant invites from this channel.
