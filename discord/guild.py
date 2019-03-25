@@ -37,7 +37,7 @@ from .errors import InvalidArgument, ClientException
 from .channel import *
 from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
-from .utils import valid_icon_size
+from .utils import valid_icon_size, resolve_permission_overwrites
 from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator
@@ -610,34 +610,7 @@ class Guild(Hashable):
         return utils.find(pred, members)
 
     def _create_channel(self, name, overwrites, channel_type, category=None, **options):
-        if overwrites is None:
-            overwrites = {}
-        elif not isinstance(overwrites, dict):
-            raise InvalidArgument('overwrites parameter expects a dict.')
-
-        perms = []
-        for target, perm in overwrites.items():
-            if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
-
-            allow, deny = perm.pair()
-            payload = {
-                'allow': allow.value,
-                'deny': deny.value,
-                'id': target.id
-            }
-
-            if isinstance(target, Role):
-                payload['type'] = 'role'
-            else:
-                payload['type'] = 'member'
-
-            perms.append(payload)
-
-        try:
-            options['rate_limit_per_user'] = options.pop('slowmode_delay')
-        except KeyError:
-            pass
+        perms = resolve_permission_overwrites(overwrites)
 
         parent_id = category.id if category else None
         return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,

@@ -574,11 +574,13 @@ class HTTPClient:
     def delete_guild(self, guild_id):
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
 
-    def create_guild(self, name, region, icon):
+    def create_guild(self, **fields):
+        valid_keys = ('name', 'region', 'icon', 'roles', 'channels',
+                      'verification_level', 'default_message_notifications',
+                      'explicit_content_filter')
+
         payload = {
-            'name': name,
-            'icon': icon,
-            'region': region
+            k: v for k, v in fields.items() if k in valid_keys
         }
 
         return self.request(Route('POST', '/guilds'), json=payload)

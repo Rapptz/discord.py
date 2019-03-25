@@ -366,3 +366,31 @@ def resolve_invite(invite):
             return m.group(1)
     return invite
 
+def resolve_permission_overwrites(overwrites):
+    if overwrites is None:
+        overwrites = {}
+    elif not isinstance(overwrites, dict):
+        raise InvalidArgument('overwrites parameter expects a dict.')
+
+    from .permissions import PermissionOverwrite
+    from .role import PartialRole, Role
+
+    perms = []
+    for target, perm in overwrites.items():
+        if not isinstance(perm, PermissionOverwrite):
+            raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+
+        allow, deny = perm.pair()
+        payload = {
+            'allow': allow.value,
+            'deny': deny.value,
+            'id': target.id
+        }
+
+        if isinstance(target, (Role, PartialRole)):
+            payload['type'] = 'role'
+        else:
+            payload['type'] = 'member'
+
+        perms.append(payload)
+    return perms

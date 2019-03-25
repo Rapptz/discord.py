@@ -40,7 +40,7 @@ from .widget import Widget
 from .guild import Guild
 from .member import Member
 from .errors import *
-from .enums import Status, VoiceRegion
+from .enums import Status, VoiceRegion, ContentFilter, VerificationLevel, NotificationLevel
 from .gateway import *
 from .activity import _ActivityTag, create_activity
 from .voice_client import VoiceClient
@@ -50,6 +50,8 @@ from . import utils
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
+from .role import PartialRole
+from .channel import PartialTextChannel, PartialVoiceChannel
 
 log = logging.getLogger(__name__)
 
@@ -903,7 +905,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None):
+    async def create_guild(self, name, **fields):
         """|coro|
 
         Creates a :class:`Guild`.
@@ -920,13 +922,24 @@ class Client:
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`~ClientUser.edit`
             for more details on what is expected.
+        verification_level: :class:`VerificationLevel`
+            The guild's verification level.
+        explicit_content_filter: :class:`ContentFilter`
+            The guild's explicit content filter.
+        default_notifications: :class:`NotificationLevel`
+            The guild's notification settings.
+        roles: Optional[List[:class:`.PartialRole`]]
+            A list of roles to create along with the guild.
+        channels: Optional[List[Union[:class:`.PartialTextChannel`, :class:`.PartialVoiceChannel`]]]
+            A list of channels to create along with the guild.
 
         Raises
         ------
         HTTPException
             Guild creation failed.
         InvalidArgument
-            Invalid icon image format given. Must be PNG or JPG.
+            Invalid icon image format given. Must be PNG or JPG. This is also raised if at least one of
+            verification_level, explicit_content_filter, or default_notifications are an invalid corresponding type.
 
         Returns
         -------
@@ -934,15 +947,46 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
+
+        fields['name'] = name
+
+        icon = fields.pop('icon', None)
         if icon is not None:
-            icon = utils._bytes_to_base64_data(icon)
+            fields['icon'] = utils._bytes_to_base64_data(icon)
 
+        region = fields.pop('region', None)
         if region is None:
-            region = VoiceRegion.us_west.value
+            fields['region'] = VoiceRegion.us_west.value
         else:
-            region = region.value
+            fields['region'] = region.value
 
-        data = await self.http.create_guild(name, region, icon)
+        level = fields.get('verification_level', VerificationLevel.none)
+        if not isinstance(level, VerificationLevel):
+            raise InvalidArgument('verification_level field must be of type VerificationLevel')
+
+        fields['verification_level'] = level.value
+
+        explicit_content_filter = fields.get('explicit_content_filter', ContentFilter.all_members)
+        if not isinstance(explicit_content_filter, ContentFilter):
+            raise InvalidArgument('explicit_content_filter field must be of type ContentFilter')
+        fields['explicit_content_filter'] = explicit_content_filter.value
+
+        try:
+            default_message_notifications = int(fields.pop('default_notifications'))
+        except (TypeError, KeyError):
+            pass
+        else:
+            fields['default_message_notifications'] = default_message_notifications
+
+        roles = fields.pop('roles', None)
+        if roles:
+            fields['roles'] = [role.to_dict() for role in roles]
+
+        channels = fields.pop('channels', None)
+        if channels:
+            fields['channels'] = [channel.to_dict() for channel in channels]
+
+        data = await self.http.create_guild(**fields)
         return Guild(data=data, state=self._connection)
 
     # Invite management

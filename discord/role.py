@@ -27,8 +27,129 @@ DEALINGS IN THE SOFTWARE.
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
-from .mixins import Hashable
+from .mixins import Hashable, EqualityComparable
 from .utils import snowflake_time
+
+class PartialRole(EqualityComparable):
+    """Represents a "partial" role to create a :class:`Guild` with.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial roles are equal.
+
+        .. describe:: x != y
+
+            Checks if two partial roles are not equal.
+
+        .. describe:: x > y
+
+            Checks if a partial role is higher than another in the hierarchy.
+
+        .. describe:: x < y
+
+            Checks if a partial role is lower than another in the hierarchy.
+
+        .. describe:: x >= y
+
+            Checks if a partial role is higher or equal to another in the hierarchy.
+
+        .. describe:: x <= y
+
+            Checks if a partial role is lower or equal to another in the hierarchy.
+
+        .. describe:: hash(x)
+
+            Return the partial role's hash.
+
+        .. describe:: str(x)
+
+            Returns the partial role's name.
+
+    Parameters
+    ----------
+    id: :class:`int`
+        The ID for the partial role.
+    name: :class:`str`
+        The name of the partial role.
+    permissions: Optional[:class:`Permissions`]
+        The permissions to have. Defaults to no permissions.
+    colour: Optional[:class:`Colour`]
+        The colour for the role. Defaults to :meth:`Colour.default`.
+        This is aliased to ``color`` as well.
+    hoist: Optional[:class:`bool`]
+        Indicates if the role should be shown separately in the member list.
+        Defaults to False.
+    mentionable: Optional[:class:`bool`]
+        Indicates if the role should be mentionable by others.
+        Defaults to False.
+    """
+    __slots__ = ('id', 'name', 'color', 'hoist', 'permissions', 'mentionable')
+
+    def __init__(self, **fields):
+        self.id = int(fields['id'])
+
+        try:
+            perms = fields.pop('permissions')
+        except KeyError:
+            self.permissions = 0
+        else:
+            self.permissions = perms.value
+
+        if self.id == 0:
+            self.name = '@everyone'
+            return # cut it short, @everyone can't be modified further
+
+        self.name = fields['name']
+
+        try:
+            colour = fields.pop('colour')
+        except KeyError:
+            colour = fields.get('color', Colour.default())
+        finally:
+            self.color = colour.value
+
+        self.hoist = fields.get('hoist', False)
+        self.mentionable = fields.get('mentionable', False)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<PartialRole id={0.id} name={0.name!r}>'.format(self)
+
+    def __hash__(self):
+        return hash((self.id, self.name))
+
+    def __lt__(self, other):
+        if not isinstance(other, PartialRole) or not isinstance(self, PartialRole):
+            return NotImplemented
+
+        return int(self.id) < int(other.id)
+
+    def __le__(self, other):
+        r = PartialRole.__lt__(other, self)
+        if r is NotImplemented:
+            return NotImplemented
+        return not r
+
+    def __gt__(self, other):
+        return PartialRole.__lt__(other, self)
+
+    def __ge__(self, other):
+        r = PartialRole.__lt__(self, other)
+        if r is NotImplemented:
+            return NotImplemented
+        return not r
+
+    def to_dict(self):
+        results = {}
+        for key in self.__slots__:
+            value = getattr(self, key, None)
+            if value is not None:
+                results[key] = value
+        return results
 
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.

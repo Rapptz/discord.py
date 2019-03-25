@@ -34,6 +34,7 @@ from .mixins import Hashable
 from . import utils
 from .errors import ClientException, NoMoreItems
 from .webhook import Webhook
+from .role import PartialRole
 
 __all__ = [
     'TextChannel',
@@ -42,12 +43,77 @@ __all__ = [
     'CategoryChannel',
     'StoreChannel',
     'GroupChannel',
+    'PartialTextChannel',
+    'PartialVoiceChannel',
     '_channel_factory',
 ]
 
 async def _single_delete_strategy(messages):
     for m in messages:
         await m.delete()
+
+class _PartialChannel:
+    __slots__ = ('name', 'type', 'overwrites', 'topic')
+
+    def __init__(self, **fields):
+        self.name = fields['name']
+        self.topic = fields.get('topic', None)
+        self.overwrites = utils.resolve_permission_overwrites(fields.get('overwrites', {}))
+
+    def to_dict(self):
+        results = {
+            'name': self.name,
+            'type': self.type,
+        }
+
+        if self.topic:
+            results['topic'] = self.topic
+
+        if self.overwrites:
+            results['permission_overwrites'] = self.overwrites
+
+        return results
+
+class PartialTextChannel(_PartialChannel):
+    """Represents a "partial" TextChannel, used to create a :class:`Guild`.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The new channel's name.
+    topic: Optional[:class:`str`]
+        The new channel's topic.
+    overwrites
+        A :class:`dict` of target (strictly :class:`PartialRole`) to
+        :class:`PermissionOverwrite` to apply upon creation of a channel.
+        Useful for creating secret channels.
+    """
+    def __init__(self, *, name, topic=None, overwrites=None):
+        self.type = ChannelType.text.value
+        super().__init__(name=name, topic=topic, overwrites=overwrites)
+
+    def __repr__(self):
+        return '<PartialTextChannel name={0.name!r}>'.format(self)
+
+
+class PartialVoiceChannel(_PartialChannel):
+    """Represents a "partial" VoiceChannel, used to create a :class:`Guild`.
+
+    Parameters
+    ----------
+    name: :class:`str`
+        The new channel's name.
+    overwrites
+        A :class:`dict` of target (strictly :class:`PartialRole`) to
+        :class:`PermissionOverwrite` to apply upon creation of a channel.
+        Useful for creating secret channels.
+    """
+    def __init__(self, *, name, overwrites=None):
+        self.type = ChannelType.voice.value
+        super().__init__(name=name, overwrites=overwrites)
+
+    def __repr__(self):
+        return '<PartialVoiceChannel name={0.name!r}>'.format(self)
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
