@@ -28,6 +28,7 @@ import asyncio
 import datetime
 import re
 import io
+from pathlib import Path
 
 from . import utils
 from .reaction import Reaction
@@ -118,6 +119,8 @@ class Attachment:
             if seek_begin:
                 fp.seek(0)
             return written
+        elif isinstance(fp, Path):
+            fp.write_bytes(data)
         else:
             with open(fp, 'wb') as f:
                 return f.write(data)
