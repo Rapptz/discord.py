@@ -56,8 +56,7 @@ class Asset:
         self._url = url
 
     @classmethod
-    def from_avatar(cls, user, state, *, format=None, static_format='webp', size=1024):
-        """Creates a :class:`.Asset` from an avatar."""
+    def _from_avatar(cls, state, user, *, format=None, static_format='webp', size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
         if format is not None and format not in VALID_AVATAR_FORMATS:
@@ -76,10 +75,7 @@ class Asset:
         return cls(state, 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(user, format, size))
 
     @classmethod
-    def from_icon(cls, state, object, path):
-        """Creates a :class:`.Asset` from the requested icon.
-
-        Only applies for :class:`GroupChannel` and :class:`AppInfo`."""
+    def _from_icon(cls, state, object, path):
         if object.icon is None:
             return cls(state)
 
@@ -87,8 +83,7 @@ class Asset:
         return cls(state, url)
 
     @classmethod
-    def from_guild_image(cls, state, id, hash, endpoint, *, format='webp', size=1024):
-        """Creates a :class:`.Asset` from the requested guild image."""
+    def _from_guild_image(cls, state, id, hash, endpoint, *, format='webp', size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_STATIC_FORMATS:

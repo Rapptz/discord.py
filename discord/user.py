@@ -159,7 +159,7 @@ class BaseUser(_BaseUser):
         :class:`Asset`
             The resulting CDN asset.
         """
-        return Asset.from_avatar(self, self._state, format=format, static_format=static_format, size=size)
+        return Asset._from_avatar(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def default_avatar(self):

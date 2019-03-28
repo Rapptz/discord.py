@@ -998,7 +998,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     @property
     def icon_url(self):
         """:class:`Asset`: Returns the channel's icon asset if available."""
-        return Asset.from_icon(self._state, self, 'channel')
+        return Asset._from_icon(self._state, self, 'channel')
 
     @property
     def created_at(self):

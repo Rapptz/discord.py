@@ -70,4 +70,4 @@ class AppInfo:
     @property
     def icon_url(self):
         """:class:`Asset`: Retrieves the application's icon asset."""
-        return Asset.from_icon(self._state, self, 'app')
+        return Asset._from_icon(self._state, self, 'app')
