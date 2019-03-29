@@ -235,13 +235,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when messages are bulk deleted. If none of the messages deleted
     are found in the internal message cache, then this event will not be called.
-    If some individual messages are not found in the internal message cache,
-    the event will still be called, but the messages will not be included in
-    the messages list. Messages will not be in cache if the message is too old
+    If individual messages were not found in the internal message cache,
+    this event will still be called, but the messages not found will not be included in
+    the messages list. Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
     To fix this, increase the ``max_messages`` option of :class:`Client`.
 
-    :param messages: A List[:class:`Message`] of the deleted messages.
+    :param messages: A :class:`list` of :class:`Message` that have been deleted.
 
 .. function:: on_raw_message_delete(payload)
 

@@ -61,7 +61,7 @@ class RawBulkMessageDeleteEvent:
         The channel ID where the message got deleted.
     guild_id: Optional[:class:`int`]
         The guild ID where the message got deleted, if applicable.
-    cached_messages: :class:`list`
+    cached_messages: List[:class:`Message`]
         The cached messages, if found in the internal message cache.
     """
 
