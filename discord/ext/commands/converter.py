@@ -473,16 +473,11 @@ class clean_content(Converter):
         result = pattern.sub(repl, argument)
 
         if self.escape_markdown:
-            transformations = {
-                re.escape(c): '\\' + c
-                for c in ('*', '`', '_', '~', '\\', '||')
-            }
-
-            def replace(obj):
-                return transformations.get(re.escape(obj.group(0)), '')
-
-            pattern = re.compile('|'.join(transformations.keys()))
-            result = pattern.sub(replace, result)
+            result = re.sub(r'\\', r'\\\\', result)
+            for c in ('*', '`', '_', '~', '|'):
+                regex = r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
+                replace = '\{0}'.format(c)
+                result = re.sub(regex, replace, result)
 
         # Completely ensure no mentions escape:
         return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
