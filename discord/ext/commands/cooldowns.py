@@ -120,7 +120,7 @@ class CooldownMapping:
         elif bucket_type is BucketType.channel:
             return msg.channel.id
         elif bucket_type is BucketType.member:
-            return ((msg.guild and msg.guild.id), msg.author.id)
+            return (msg.guild and msg.guild.id), msg.author.id
         elif bucket_type is BucketType.category:
             return (msg.channel.category or msg.channel).id
 

@@ -360,7 +360,7 @@ class EmojiConverter(IDConverter):
     3. Lookup by name
     """
     async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild
@@ -376,11 +376,7 @@ class EmojiConverter(IDConverter):
             emoji_id = int(match.group(1))
 
             # Try to look up emoji by id.
-            if guild:
-                result = discord.utils.get(guild.emojis, id=emoji_id)
-
-            if result is None:
-                result = discord.utils.get(bot.emojis, id=emoji_id)
+            result = bot.get_emoji(emoji_id)
 
         if result is None:
             raise BadArgument('Emoji "{}" not found.'.format(argument))
@@ -393,7 +389,7 @@ class PartialEmojiConverter(Converter):
     This is done by extracting the animated flag, name and ID from the emoji.
     """
     async def convert(self, ctx, argument):
-        match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
+        match = re.match(r'<(a?):([a-zA-Z0-9_]+):([0-9]+)>$', argument)
 
         if match:
             emoji_animated = bool(match.group(1))

@@ -38,7 +38,6 @@ from .user import User, Profile
 from .invite import Invite
 from .widget import Widget
 from .guild import Guild
-from .member import Member
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *

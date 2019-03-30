@@ -30,12 +30,11 @@ from collections import namedtuple, defaultdict
 from . import utils
 from .role import Role
 from .member import Member, VoiceState
-from .activity import create_activity
 from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
+from .enums import VoiceRegion, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
 from .utils import valid_icon_size
 from .user import User
@@ -362,7 +361,7 @@ class Guild(Hashable):
 
         def key(t):
             k, v = t
-            return ((k.position, k.id) if k else (-1, -1), v)
+            return (k.position, k.id) if k else (-1, -1), v
 
         _get = self._channels.get
         as_list = [(_get(k), v) for k, v in grouped.items()]

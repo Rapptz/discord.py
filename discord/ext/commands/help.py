@@ -26,7 +26,6 @@ DEALINGS IN THE SOFTWARE.
 
 import itertools
 import functools
-import inspect
 import re
 import discord.utils
 
@@ -119,7 +118,7 @@ class Paginator:
         """
         max_page_size = self.max_size - self._prefix_len - 2
         if len(line) > max_page_size:
-            raise RuntimeError('Line exceeds maximum page size %s' % (max_page_size))
+            raise RuntimeError('Line exceeds maximum page size %s' % max_page_size)
 
         if self._count + len(line) + 1 > self.max_size:
             self.close_page()
@@ -924,7 +923,7 @@ class DefaultHelpCommand(HelpCommand):
         else:
             return ctx.channel
 
-    async def prepare_help_command(self, ctx, command):
+    async def prepare_help_command(self, ctx, command=None):
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 
@@ -1155,7 +1154,7 @@ class MinimalHelpCommand(HelpCommand):
         else:
             return ctx.channel
 
-    async def prepare_help_command(self, ctx, command):
+    async def prepare_help_command(self, ctx, command=None):
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 

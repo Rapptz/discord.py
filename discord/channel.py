@@ -678,7 +678,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         These are sorted by the official Discord UI, which places voice channels below the text channels.
         """
         def comparator(channel):
-            return (not isinstance(channel, TextChannel), channel.position)
+            return not isinstance(channel, TextChannel), channel.position
 
         ret = [c for c in self.guild.channels if c.category_id == self.id]
         ret.sort(key=comparator)

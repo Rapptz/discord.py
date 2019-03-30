@@ -99,7 +99,7 @@ class Colour:
 
     def to_rgb(self):
         """Returns an (r, g, b) tuple representing the colour."""
-        return (self.r, self.g, self.b)
+        return self.r, self.g, self.b
 
     @classmethod
     def from_rgb(cls, r, g, b):

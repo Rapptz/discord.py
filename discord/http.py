@@ -165,10 +165,7 @@ class HTTPClient:
                     remaining = r.headers.get('X-Ratelimit-Remaining')
                     if remaining == '0' and r.status != 429:
                         # we've depleted our current bucket
-                        if header_bypass_delay is None:
-                            delta = utils._parse_ratelimit_header(r)
-                        else:
-                            delta = header_bypass_delay
+                        delta = utils._parse_ratelimit_header(r) if header_bypass_delay is None else header_bypass_delay
 
                         log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                         maybe_lock.defer()

@@ -54,7 +54,7 @@ class WebhookAdapter:
         self._request_url = '{0.BASE}/webhooks/{1}/{2}'.format(self, webhook.id, webhook.token)
         self.webhook = webhook
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None):
         """Actually does the request.
 
         Subclasses must implement this.
@@ -73,6 +73,8 @@ class WebhookAdapter:
             denoting ``(filename, file, content_type)``.
         payload: Optional[:class:`dict`]
             The JSON to send with the request, if any.
+        files: Optional[List[:class:`File`]]
+            The files to send with the request, if any.
         """
         raise NotImplementedError()
 
@@ -480,7 +482,7 @@ class Webhook:
             The URL is invalid.
         """
 
-        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
+        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9.\-_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         return cls(m.groupdict(), adapter=adapter)
