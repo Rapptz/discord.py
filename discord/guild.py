@@ -1170,7 +1170,7 @@ class Guild(Hashable):
 
         return result
 
-    async def fetch_all_custom_emojis(self):
+    async def fetch_emojis(self):
         """|coro|
 
         Retrieves all custom :class:`Emoji`s from the guild.
@@ -1187,11 +1187,9 @@ class Guild(Hashable):
         """
         data = await self._state.http.get_all_custom_emojis(self.id)
 
-        emojis = [Emoji(guild=self, state=self._state, data=d) for d in data]
+        return [Emoji(guild=self, state=self._state, data=d) for d in data]
 
-        return emojis
-
-    async def fetch_custom_emoji(self, emoji_id):
+    async def fetch_emoji(self, emoji_id):
         """|coro|
 
         Retrieves a custom :class:`Emoji` from the guild.
@@ -1203,6 +1201,8 @@ class Guild(Hashable):
 
         Raises
         ---------
+        NotFound
+            The emoji requested could not be found.
         HTTPException
             An error occurred fetching the emoji.
 
