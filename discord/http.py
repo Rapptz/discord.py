@@ -181,6 +181,10 @@ class HTTPClient:
 
                     # we are being rate limited
                     if r.status == 429:
+                        if not isinstance(data, dict):
+                            # Banned by Cloudflare more than likely.
+                            raise HTTPException(r, data)
+
                         fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
 
                         # sleep a bit
