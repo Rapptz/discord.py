@@ -1643,7 +1643,6 @@ of :class:`enum.Enum`.
 
         The action is the update of something.
 
-
 .. class:: RelationshipType
 
     Specifies the type of :class:`Relationship`.
@@ -1782,6 +1781,66 @@ of :class:`enum.Enum`.
     .. attribute:: channel_follower
 
         Represents a webhook that is internally managed by Discord, used for following channels.
+
+.. class:: ExpireBehaviour
+
+    Represents the behaviour the :class:`Integration` should perform
+    when a user's subscription has finished.
+
+    .. attribute:: remove_role
+
+        This will remove the :attr:`Integration.role` from the user
+        when their subscription is finished.
+
+    .. attribute:: kick
+
+        This will kick the user when their subscription is finished.
+
+
+.. class:: ExpireGracePeriod
+
+    Represents the grace period before the :attr:`Integration.expire_behaviour`
+    will take in effect.
+
+    .. attribute:: one_day
+
+        Represents a day for the grace period.
+
+    .. attribute:: day
+
+        An alias for :attr:`one_day`.
+
+    .. attribute:: three_days
+
+        Represents three days for the grace period.
+
+    .. attribute:: three
+
+        An alias for :attr:`three`.
+
+    .. attribute:: seven_days
+
+        Represents seven days for the grace period.
+
+    .. attribute:: week
+
+        An alias for :attr:`week`.
+
+    .. attribute:: fourteen_days
+
+        Represents fourteen days for the grace period.
+
+    .. attribute:: fortnight
+
+        An alias for :attr:`fourteen_days`.
+
+    .. attribute:: thirty_days
+
+        Represents thirty days for the grace period.
+
+    .. attribute:: month
+
+        An alias for :attr:`thirty_days`.
 
 Async Iterator
 ----------------
@@ -2371,6 +2430,15 @@ Guild
 
     .. automethod:: audit_logs
         :async-for:
+
+Integration
+~~~~~~~~~~~~
+
+.. autoclass:: Integration()
+    :members:
+
+.. autoclass:: IntegrationAccount()
+    :members:
 
 Member
 ~~~~~~
