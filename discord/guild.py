@@ -1186,7 +1186,6 @@ class Guild(Hashable):
             The retrieved emojis.
         """
         data = await self._state.http.get_all_custom_emojis(self.id)
-
         return [Emoji(guild=self, state=self._state, data=d) for d in data]
 
     async def fetch_emoji(self, emoji_id):
@@ -1212,7 +1211,6 @@ class Guild(Hashable):
             The retrieved emoji.
         """
         data = await self._state.http.get_custom_emoji(self.id, emoji_id)
-
         return Emoji(guild=self, state=self._state, data=data)
 
     async def create_custom_emoji(self, *, name, image, roles=None, reason=None):

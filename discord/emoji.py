@@ -150,8 +150,8 @@ class Emoji:
         If this emoji is managed by a Twitch integration.
     guild_id: :class:`int`
         The guild ID the emoji belongs to.
-    user: :class:`User`
-        The user that created the emoji.
+    user: Optional[:class:`User`]
+        The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji`.
     """
     __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
                  '_state', 'user')
