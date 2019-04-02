@@ -224,10 +224,11 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_message_delete(message)
 
     Called when a message is deleted. If the message is not found in the
-    internal message cache, then this event will not be called. This
-    happens if the message is too old or the client is participating in high
-    traffic guilds. To fix this, increase the ``max_messages`` option of
-    :class:`Client`.
+    internal message cache, then this event will not be called.
+    Messages might not be in cache if the message is too old
+    or the client is participating in high traffic guilds.
+
+    If this occurs increase the :attr:`Client.max_messages` attribute.
 
     :param message: A :class:`Message` of the deleted message.
 
@@ -239,7 +240,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     this event will still be called, but the messages not found will not be included in
     the messages list. Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
-    To fix this, increase the ``max_messages`` option of :class:`Client`.
+
+    If this occurs increase the :attr:`Client.max_messages` attribute.
 
     :param messages: A :class:`list` of :class:`Message` that have been deleted.
 
@@ -248,13 +250,19 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message is deleted. Unlike :func:`on_message_delete`, this is
     called regardless of the message being in the internal message cache or not.
 
+    If the message is found in the message cache,
+    it can be accessed via:attr:`RawMessageDeleteEvent.cached_message`
+
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageDeleteEvent`
 
 .. function:: on_raw_bulk_message_delete(payload)
 
-    Called when a bulk delete is triggered. This event is called regardless
-    of the message IDs being in the internal message cache or not.
+    Called when a bulk delete is triggered. Unlike :func:`on_bulk_message_delete`, this is
+    called regardless of the messages being in the internal message cache or not.
+
+    If the messages are found in the message cache,
+    they can be accessed via :attr:`RawBulkMessageDeleteEvent.cached_messages`
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawBulkMessageDeleteEvent`
@@ -263,8 +271,10 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Message` receives an update event. If the message is not found
     in the internal message cache, then these events will not be called.
-    This happens if the message is too old or the client is participating in high
-    traffic guilds. To fix this, increase the ``max_messages`` option of :class:`Client`.
+    Messages might not be in cache if the message is too old
+    or the client is participating in high traffic guilds.
+
+    If this occurs increase the :attr:`Client.max_messages` attribute.
 
     The following non-exhaustive cases trigger this event:
 
@@ -297,7 +307,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_reaction_add(reaction, user)
 
-    Called when a message has a reaction added to it. Similar to on_message_edit,
+    Called when a message has a reaction added to it. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this
     event will not be called.
 
