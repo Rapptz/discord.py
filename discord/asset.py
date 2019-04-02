@@ -83,7 +83,7 @@ class Asset:
         return cls(state, url)
 
     @classmethod
-    def _from_guild_image(cls, state, id, hash, endpoint, *, format='webp', size=1024):
+    def _from_guild_image(cls, state, id, hash, key, *, format='webp', size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_STATIC_FORMATS:
@@ -92,7 +92,9 @@ class Asset:
         if hash is None:
             return Asset(state)
 
-        return cls(state, endpoint.format(id, hash, format, size))
+        url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
+
+        return cls(state, url.format(id, hash, format, size, key=key))
 
     def __str__(self):
         return self._url
@@ -120,6 +122,15 @@ class Asset:
 
         Raises
         --------
+        DiscordException
+            The URL or :class:`ConnectionState` was not provided.
+
+            .. note::
+
+                :class:`PartialEmoji` will not have a state if you make
+                your own instance via ``PartialEmoji(animated=False, name='x', id=2345678)``.
+
+                The URL will not be provided if there is no custom image.
         HTTPException
             Saving the asset failed.
         NotFound
@@ -131,7 +142,10 @@ class Asset:
             The number of bytes written.
         """
         if not self._url:
-            raise DiscordException('a URL was not provided')
+            raise DiscordException('Invalid asset (no URL provided)')
+
+        if self._state is None:
+            raise DiscordException('Invalid state (no ConnectionState provided)')
 
         data = await self._state.http.get_from_cdn(self._url)
         if isinstance(fp, io.IOBase) and fp.writable():

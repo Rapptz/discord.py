@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from .asset import Asset
 from . import utils
 
-class PartialEmoji(Asset):
+class PartialEmoji:
     """Represents a "partial" emoji.
 
     This model will be given in two scenarios:
@@ -35,17 +35,11 @@ class PartialEmoji(Asset):
     - "Raw" data events such as :func:`on_raw_reaction_add`
     - Custom emoji that the bot cannot see from e.g. :attr:`Message.reactions`
 
-    This inherits from :class:`Asset`.
-
     .. container:: operations
 
         .. describe:: x == y
 
             Checks if two emoji are the same.
-
-        .. describe:: x != y
-
-            Checks if two emoji are not the same.
 
         .. describe:: hash(x)
 
@@ -66,14 +60,20 @@ class PartialEmoji(Asset):
         The ID of the custom emoji, if applicable.
     """
 
-    __slots__ = ('animated', 'name', 'id')
+    __slots__ = ('animated', 'name', 'id', '_state')
 
-    def __init__(self, state, *, animated, name, id=None):
+    def __init__(self, *, animated, name, id=None):
         self.animated = animated
         self.name = name
         self.id = id
+        self._state = None
 
-        super().__init__(state, self.url)
+    @classmethod
+    def with_state(cls, state, *, animated, name, id=None):
+        self = cls(animated=animated, name=name, id=id)
+        self._state = state
+
+        return self
 
     def __str__(self):
         if self.id is None:
@@ -107,30 +107,26 @@ class PartialEmoji(Asset):
 
     @property
     def url(self):
-        """Returns a URL version of the emoji, if it is custom."""
+        """:class:`Asset`:Returns an asset of the emoji, if it is custom."""
         if self.is_unicode_emoji():
-            return None
+            return Asset(self._state)
 
         _format = 'gif' if self.animated else 'png'
-        return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
 
-class Emoji(Asset):
+        return Asset(self._state, url)
+
+class Emoji:
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
-
-    This inherits from :class:`Asset`.
 
     .. container:: operations
 
         .. describe:: x == y
 
             Checks if two emoji are the same.
-
-        .. describe:: x != y
-
-            Checks if two emoji are not the same.
 
         .. describe:: hash(x)
 
@@ -166,8 +162,6 @@ class Emoji(Asset):
         self.guild_id = guild.id
         self._state = state
         self._from_data(data)
-
-        super().__init__(self._state, self.url)
 
     def _from_data(self, emoji):
         self.require_colons = emoji['require_colons']
@@ -210,7 +204,9 @@ class Emoji(Asset):
     def url(self):
         """Returns a URL version of the emoji."""
         _format = 'gif' if self.animated else 'png'
-        return "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+
+        return Asset(self._state, url)
 
     @property
     def roles(self):

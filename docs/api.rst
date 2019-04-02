@@ -40,6 +40,9 @@ Client
 .. autoclass:: AutoShardedClient
     :members:
 
+.. autoclass:: discord.appinfo.AppInfo
+    :members:
+
 Voice
 ------
 

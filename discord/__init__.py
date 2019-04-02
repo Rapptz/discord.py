@@ -20,7 +20,7 @@ __version__ = '1.0.0a'
 from collections import namedtuple
 import logging
 
-from .client import Client, AppInfo
+from .client import Client
 from .user import User, ClientUser, Profile
 from .emoji import Emoji, PartialEmoji
 from .activity import *

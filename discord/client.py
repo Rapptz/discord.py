@@ -1044,7 +1044,7 @@ class Client:
 
         Returns
         --------
-        :class:`AppInfo`
+        :class:`appinfo.AppInfo`
             A namedtuple representing the application info.
         """
         data = await self.http.application_info()
