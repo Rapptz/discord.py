@@ -59,7 +59,7 @@ class ConnectionState:
     def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
-        self.max_messages = max(options.get('max_messages', 5000), 100)
+        self.max_messages = options.get('max_messages', 5000)
         self.dispatch = dispatch
         self.chunker = chunker
         self.syncer = syncer
