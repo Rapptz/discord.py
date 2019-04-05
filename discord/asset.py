@@ -93,7 +93,6 @@ class Asset:
             return Asset(state)
 
         url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
-
         return cls(state, url.format(id, hash, format, size, key=key))
 
     def __str__(self):
@@ -123,7 +122,7 @@ class Asset:
         Raises
         --------
         DiscordException
-            The URL or :class:`ConnectionState` was not provided.
+            There was no valid URL or internal connection state.
 
             .. note::
 

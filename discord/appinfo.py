@@ -49,7 +49,7 @@ class AppInfo:
     bot_require_code_grant: :class:`bool`
         Whether the bot requires the completion of the full oauth2 code
         grant flow to join.
-    rpc_origins: List[:class:`str`]
+    rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
     """
     __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',

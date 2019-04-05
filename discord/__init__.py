@@ -21,6 +21,7 @@ from collections import namedtuple
 import logging
 
 from .client import Client
+from .appinfo import AppInfo
 from .user import User, ClientUser, Profile
 from .emoji import Emoji, PartialEmoji
 from .activity import *

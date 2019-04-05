@@ -41,6 +41,10 @@ class PartialEmoji:
 
             Checks if two emoji are the same.
 
+        .. describe:: x != y
+
+            Checks if two emoji are not the same.
+
         .. describe:: hash(x)
 
             Return the emoji's hash.
@@ -72,7 +76,6 @@ class PartialEmoji:
     def with_state(cls, state, *, animated, name, id=None):
         self = cls(animated=animated, name=name, id=id)
         self._state = state
-
         return self
 
     def __str__(self):
@@ -88,6 +91,9 @@ class PartialEmoji:
 
         if isinstance(other, (PartialEmoji, Emoji)):
             return self.id == other.id
+
+    def __ne__(self, other):
+        return not self == other
 
     def __hash__(self):
         return hash((self.id, self.name))
@@ -113,7 +119,6 @@ class PartialEmoji:
 
         _format = 'gif' if self.animated else 'png'
         url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
-
         return Asset(self._state, url)
 
 class Emoji:
@@ -127,6 +132,10 @@ class Emoji:
         .. describe:: x == y
 
             Checks if two emoji are the same.
+
+        .. describe:: x != y
+
+            Checks if two emoji are not the same.
 
         .. describe:: hash(x)
 
@@ -192,6 +201,9 @@ class Emoji:
     def __eq__(self, other):
         return isinstance(other, (PartialEmoji, Emoji)) and self.id == other.id
 
+    def __ne__(self, other):
+        return not self == other
+
     def __hash__(self):
         return self.id >> 22
 
@@ -205,7 +217,6 @@ class Emoji:
         """Returns a URL version of the emoji."""
         _format = 'gif' if self.animated else 'png'
         url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
-
         return Asset(self._state, url)
 
     @property
