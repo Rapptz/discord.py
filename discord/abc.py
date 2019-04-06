@@ -346,16 +346,16 @@ class GuildChannel:
     def overwrites(self):
         """Returns all of the channel's overwrites.
 
-        This is returned as a list of two-element tuples containing the target,
-        which can be either a :class:`Role` or a :class:`Member` and the overwrite
-        as the second element as a :class:`PermissionOverwrite`.
+        This is returned as a dictionary where the key contains the target which
+        can be either a :class:`Role` or a :class:`Member` and the key is the
+        overwrite as a :class:`PermissionOverwrite`.
 
         Returns
         --------
-        List[Tuple[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]]:
+        Mapping[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]:
             The channel's permission overwrites.
         """
-        ret = []
+        ret = {}
         for ow in self._overwrites:
             allow = Permissions(ow.allow)
             deny = Permissions(ow.deny)
@@ -365,8 +365,7 @@ class GuildChannel:
                 target = self.guild.get_role(ow.id)
             elif ow.type == 'member':
                 target = self.guild.get_member(ow.id)
-
-            ret.append((target, overwrite))
+            ret[target] = overwrite
         return ret
 
     @property
