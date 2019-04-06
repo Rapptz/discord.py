@@ -301,7 +301,10 @@ class ColourConverter(Converter):
             method = getattr(discord.Colour, arg.replace(' ', '_'), None)
             if method is None or not inspect.ismethod(method):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
-            return method()
+            try:
+                return method()
+            except ValueError:
+                raise BadArgument('Colour "{}" is invalid.'.format(arg))
 
 class RoleConverter(IDConverter):
     """Converts to a :class:`Role`.
