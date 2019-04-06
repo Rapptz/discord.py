@@ -92,6 +92,7 @@ class CogMeta(type):
 
         commands = {}
         listeners = {}
+        no_bot_cog = 'Commands or listeners must not start with cog_ or bot_ (in method {0.__name__}.{1})'
 
         new_cls = super().__new__(cls, name, bases, attrs, **kwargs)
         for base in reversed(new_cls.__mro__):
@@ -107,7 +108,8 @@ class CogMeta(type):
                 if isinstance(value, _BaseCommand):
                     if is_static_method:
                         raise TypeError('Command in method {0}.{1!r} must not be staticmethod.'.format(base, elem))
-
+                    if elem.startswith(('cog_', 'bot_')):
+                        raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
@@ -115,6 +117,8 @@ class CogMeta(type):
                     except AttributeError:
                         continue
                     else:
+                        if elem.startswith(('cog_', 'bot_')):
+                            raise TypeError(no_bot_cog.format(base, elem))
                         listeners[elem] = value
 
         new_cls.__cog_commands__ = list(commands.values()) # this will be copied in Cog.__new__
