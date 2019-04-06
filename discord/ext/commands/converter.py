@@ -303,7 +303,7 @@ class ColourConverter(Converter):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             try:
                 return method()
-            except ValueError:
+            except TypeError:
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
 
 class RoleConverter(IDConverter):
