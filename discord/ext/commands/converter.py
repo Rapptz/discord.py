@@ -298,8 +298,9 @@ class ColourConverter(Converter):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return discord.Colour(value=value)
         except ValueError:
-            method = getattr(discord.Colour, arg.replace(' ', '_'), None)
-            if method is None or not inspect.ismethod(method):
+            arg = arg.replace(' ', '_')
+            method = getattr(discord.Colour, arg, None)
+            if arg.startswith('from_') or method is None or not inspect.ismethod(method):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return method()
 
