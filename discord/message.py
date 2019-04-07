@@ -406,6 +406,12 @@ class Message:
 
         This will also transform @everyone and @here mentions into
         non-mentions.
+
+        .. note::
+
+            This *does not* escape markdown. If you want to escape
+            markdown then use :func:`utils.escape_markdown` along
+            with this function.
         """
 
         transformations = {
