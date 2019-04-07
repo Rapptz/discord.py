@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import asyncio
 import enum
 import time
 
@@ -38,12 +39,13 @@ class BucketType(enum.Enum):
     category = 5
 
 class Cooldown:
-    __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
+    __slots__ = ('rate', 'per', 'type', 'predicate', '_window', '_tokens', '_last')
 
-    def __init__(self, rate, per, type):
+    def __init__(self, rate, per, type, predicate):
         self.rate = int(rate)
         self.per = float(per)
         self.type = type
+        self.predicate = predicate
         self._window = 0.0
         self._tokens = self.rate
         self._last = 0.0
@@ -88,7 +90,7 @@ class Cooldown:
         self._last = 0.0
 
     def copy(self):
-        return Cooldown(self.rate, self.per, self.type)
+        return Cooldown(self.rate, self.per, self.type, self.predicate)
 
     def __repr__(self):
         return '<Cooldown rate: {0.rate} per: {0.per} window: {0._window} tokens: {0._tokens}>'.format(self)
@@ -133,7 +135,16 @@ class CooldownMapping:
         for k in dead_keys:
             del self._cache[k]
 
-    def get_bucket(self, message):
+    async def get_bucket(self, message):
+        predicate = self._cooldown.predicate
+
+        if asyncio.iscoroutinefunction(predicate):
+            if await predicate(message):
+                return None
+        elif predicate:
+            if predicate(message):
+                return None
+
         if self._cooldown.type is BucketType.default:
             return self._cooldown
 
