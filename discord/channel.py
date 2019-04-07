@@ -32,6 +32,7 @@ from .permissions import Permissions
 from .enums import ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
+from .asset import Asset
 from .errors import ClientException, NoMoreItems
 from .webhook import Webhook
 
@@ -996,11 +997,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def icon_url(self):
-        """Returns the channel's icon URL if available or an empty string otherwise."""
-        if self.icon is None:
-            return ''
-
-        return 'https://cdn.discordapp.com/channel-icons/{0.id}/{0.icon}.jpg'.format(self)
+        """:class:`Asset`: Returns the channel's icon asset if available."""
+        return Asset._from_icon(self._state, self, 'channel')
 
     @property
     def created_at(self):

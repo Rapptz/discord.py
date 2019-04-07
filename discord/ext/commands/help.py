@@ -336,9 +336,10 @@ class HelpCommand(Generic[_CT]):
             The command name that triggered this invocation.
         """
         command_name = self._command_impl.name
-        if self.context is None or self.context.command.qualified_name != command_name:
+        ctx = self.context
+        if ctx is None or ctx.command is None or ctx.command.qualified_name != command_name:
             return command_name
-        return self.context.invoked_with
+        return ctx.invoked_with
 
     def get_command_signature(self, command):
         """Retrieves the signature portion of the help page.

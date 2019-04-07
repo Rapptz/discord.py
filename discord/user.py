@@ -27,13 +27,11 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 import discord.abc
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time, valid_icon_size
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
-from .errors import ClientException, InvalidArgument
+from .errors import ClientException
 from .colour import Colour
-
-VALID_STATIC_FORMATS = {"jpeg", "jpg", "webp", "png"}
-VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+from .asset import Asset
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()
@@ -158,28 +156,10 @@ class BaseUser(_BaseUser):
 
         Returns
         --------
-        :class:`str`
-            The resulting CDN URL.
+        :class:`Asset`
+            The resulting CDN asset.
         """
-        if not valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
-        if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
-        if format == "gif" and not self.is_avatar_animated():
-            raise InvalidArgument("non animated avatars do not support gif format")
-        if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
-
-        if self.avatar is None:
-            return self.default_avatar_url
-
-        if format is None:
-            if self.is_avatar_animated():
-                format = 'gif'
-            else:
-                format = static_format
-
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        return Asset._from_avatar(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def default_avatar(self):
@@ -189,7 +169,7 @@ class BaseUser(_BaseUser):
     @property
     def default_avatar_url(self):
         """Returns a URL for a user's default avatar."""
-        return 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value)
+        return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):
@@ -485,6 +465,113 @@ class ClientUser(BaseUser):
         users = [str(u.id) for u in recipients]
         data = await self._state.http.start_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
+
+    async def edit_settings(self, **kwargs):
+        """|coro|
+
+        Edits the client user's settings. Only applicable to user accounts.
+
+        Parameters
+        -------
+        afk_timeout: :class:`int`
+            How long (in seconds) the user needs to be AFK until Discord
+            sends push notifications to your mobile device.
+        animate_emojis: :class:`bool`
+            Whether or not to animate emojis in the chat.
+        convert_emoticons: :class:`bool`
+            Whether or not to automatically convert emoticons into emojis.
+            e.g. :-) -> 😃
+        default_guilds_restricted: :class:`bool`
+            Whether or not to automatically disable DMs between you and
+            members of new guilds you join.
+        detect_platform_accounts: :class:`bool`
+            Whether or not to automatically detect accounts from services
+            like Steam and Blizzard when you open the Discord client.
+        developer_mode: :class:`bool`
+            Whether or not to enable developer mode.
+        disable_games_tab: :class:`bool`
+            Whether or not to disable the showing of the Games tab.
+        enable_tts_command: :class:`bool`
+            Whether or not to allow tts messages to be played/sent.
+        explicit_content_filter: :class:`UserContentFilter`
+            The filter for explicit content in all messages.
+        friend_source_flags: :class:`FriendFlags`
+            Who can add you as a friend.
+        gif_auto_play: :class:`bool`
+            Whether or not to automatically play gifs that are in the chat.
+        guild_positions: List[:class:`abc.Snowflake`]
+            A list of guilds in order of the guild/guild icons that are on
+            the left hand side of the UI.
+        inline_attachment_media: :class:`bool`
+            Whether or not to display attachments when they are uploaded in chat.
+        inline_embed_media: :class:`bool`
+            Whether or not to display videos and images from links posted in chat.
+        locale: :class:`str`
+            The RFC 3066 language identifier of the locale to use for the language
+            of the Discord client.
+        message_display_compact: :class:`bool`
+            Whether or not to use the compact Discord display mode.
+        render_embeds: :class:`bool`
+            Whether or not to render embeds that are sent in the chat.
+        render_reactions: :class:`bool`
+            Whether or not to render reactions that are added to messages.
+        restricted_guilds: List[:class:`abc.Snowflake`]
+            A list of guilds that you will not receive DMs from.
+        show_current_game: :class:`bool`
+            Whether or not to display the game that you are currently playing.
+        status: :class:`Status`
+            The clients status that is shown to others.
+        theme: :class:`Theme`
+            The theme of the Discord UI.
+        timezone_offset: :class:`int`
+            The timezone offset to use.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+        Forbidden
+            The client is a bot user and not a user account.
+
+        Returns
+        -------
+        :class:`dict`
+            The client user's updated settings.
+        """
+        payload = {}
+
+        content_filter = kwargs.pop('explicit_content_filter', None)
+        if content_filter:
+            payload.update({'explicit_content_filter': content_filter.value})
+
+        friend_flags = kwargs.pop('friend_source_flags', None)
+        if friend_flags:
+            dicts = [{}, {'mutual_guilds': True}, {'mutual_friends': True},
+            {'mutual_guilds': True, 'mutual_friends': True}, {'all': True}]
+            payload.update({'friend_source_flags': dicts[friend_flags.value]})
+
+        guild_positions = kwargs.pop('guild_positions', None)
+        if guild_positions:
+            guild_positions = [str(x.id) for x in guild_positions]
+            payload.update({'guild_positions': guild_positions})
+
+        restricted_guilds = kwargs.pop('restricted_guilds', None)
+        if restricted_guilds:
+            restricted_guilds = [str(x.id) for x in restricted_guilds]
+            payload.update({'restricted_guilds': restricted_guilds})
+
+        status = kwargs.pop('status', None)
+        if status:
+            payload.update({'status': status.value})
+
+        theme = kwargs.pop('theme', None)
+        if theme:
+            payload.update({'theme': theme.value})
+
+        payload.update(kwargs)
+
+        data = await self._state.http.edit_settings(**payload)
+        return data
 
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.

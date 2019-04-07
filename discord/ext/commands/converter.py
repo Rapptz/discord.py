@@ -298,8 +298,9 @@ class ColourConverter(Converter):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return discord.Colour(value=value)
         except ValueError:
-            method = getattr(discord.Colour, arg.replace(' ', '_'), None)
-            if method is None or not inspect.ismethod(method):
+            arg = arg.replace(' ', '_')
+            method = getattr(discord.Colour, arg, None)
+            if arg.startswith('from_') or method is None or not inspect.ismethod(method):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return method()
 
@@ -400,7 +401,8 @@ class PartialEmojiConverter(Converter):
             emoji_name = match.group(2)
             emoji_id = int(match.group(3))
 
-            return discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+            return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name,
+                                                   id=emoji_id)
 
         raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
 
@@ -472,19 +474,10 @@ class clean_content(Converter):
         result = pattern.sub(repl, argument)
 
         if self.escape_markdown:
-            transformations = {
-                re.escape(c): '\\' + c
-                for c in ('*', '`', '_', '~', '\\', '||')
-            }
-
-            def replace(obj):
-                return transformations.get(re.escape(obj.group(0)), '')
-
-            pattern = re.compile('|'.join(transformations.keys()))
-            result = pattern.sub(replace, result)
+            result = discord.utils.escape_markdown(result)
 
         # Completely ensure no mentions escape:
-        return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
+        return discord.utils.escape_mentions(result)
 
 class _Greedy:
     __slots__ = ('converter',)
