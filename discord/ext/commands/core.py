@@ -235,6 +235,8 @@ class Command(_BaseCommand):
         self._before_invoke = None
         self._after_invoke = None
 
+        self._cooldown_bypass = None
+
     @property
     def callback(self):
         return self._callback
@@ -270,6 +272,7 @@ class Command(_BaseCommand):
     def _ensure_assignment_on_copy(self, other):
         other._before_invoke = self._before_invoke
         other._after_invoke = self._after_invoke
+        other._cooldown_bypass = self._cooldown_bypass
         if self.checks != other.checks:
             other.checks = self.checks.copy()
         if self._buckets != other._buckets:
@@ -636,12 +639,30 @@ class Command(_BaseCommand):
         if hook is not None:
             await hook(ctx)
 
+    async def call_cooldown_bypass(self, ctx):
+        cog = self.cog
+        if self._cooldown_bypass is not None:
+            if cog is None:
+                return await self._cooldown_bypass(ctx)
+            else:
+                return await self._cooldown_bypass(cog, ctx)
+
+        if cog is not None:
+            bypass = Cog._get_overridden_method(cog.cog_cooldown_bypass)
+            if bypass is not None:
+                return await bypass(ctx)
+
+        bypass = ctx.bot._cooldown_bypass
+        if bypass is not None:
+            return await bypass(ctx)
+
     async def _prepare_cooldowns(self, ctx):
+        if await self.call_cooldown_bypass(ctx):
+            return
+
         if self._buckets.valid:
-            bucket = await self._buckets.get_bucket(ctx.message)
-            if bucket is None:
-                return
-            
+            bucket = self._buckets.get_bucket(ctx.message)
+
             retry_after = bucket.update_rate_limit()
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
@@ -716,6 +737,32 @@ class Command(_BaseCommand):
         finally:
             if call_hooks:
                 await self.call_after_hooks(ctx)
+
+    def cooldown_bypass(self, coro):
+        """A decorator the registers a coroutine as a local cooldown bypass check.
+
+        A cooldown bypass is a check that determines whether a command cooldown should
+        be bypassed or not. If the check returns True, the cooldown will be bypassed.
+        Elsewise if False, the cooldown will run as normal and ratelimits will apply.
+
+        This coodlown_bypass takes a sole parameter, a :class:`.Context`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as a cooldown bypass check.
+
+        Raises
+        -------
+        discord.ClientException
+            The coroutine is not actually a coroutine.
+        """
+
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The cooldown bypass check must be a coroutine.')
+
+        self._cooldown_bypass = coro
+        return coro
 
     def error(self, coro):
         """A decorator that registers a coroutine as a local error handler.
@@ -1475,7 +1522,7 @@ def is_nsfw():
         return isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw()
     return check(pred)
 
-def cooldown(rate, per, type=BucketType.default, check=None):
+def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`.Command`
     or its subclasses.
 
@@ -1505,10 +1552,6 @@ def cooldown(rate, per, type=BucketType.default, check=None):
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: ``BucketType``
         The type of cooldown to have.
-    check: Optional[predicate]
-        An optional check to determine whether the cooldown should be bypassed.
-        If the check returns True the cooldown will be bypassed and no ratelimits will apply.
-        This takes in a sole parameter :class:`Message`.
 
     Example
     ---------
@@ -1519,28 +1562,12 @@ def cooldown(rate, per, type=BucketType.default, check=None):
         @commands.cooldown(1, 30, type=commands.BucketType.guild)
         async def test(ctx):
             await ctx.send('This message can only be sent once per 30 seconds across the guild.')
-
-    Or with a check:
-
-    .. code-block:: python3
-
-        def my_cooldown_check(message):
-            if message.author == message.guild.owner:
-                return True
-
-            return False
-
-        @bot.command()
-        @commands.cooldown(1, 30, type=commands.BucketType.guild, check=my_cooldown_check)
-        async def test(ctx):
-            await ctx.send('The guild owner bypasses the cooldown, and can use it unlimitedly.')
-
     """
-    
+
     def decorator(func):
         if isinstance(func, Command):
-            func._buckets = CooldownMapping(Cooldown(rate, per, type, check))
+            func._buckets = CooldownMapping(Cooldown(rate, per, type))
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per, type, check)
+            func.__commands_cooldown__ = Cooldown(rate, per, type)
         return func
     return decorator
