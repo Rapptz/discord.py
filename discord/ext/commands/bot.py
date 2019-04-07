@@ -105,6 +105,7 @@ class BotBase(GroupMixin):
         self._check_once = []
         self._before_invoke = None
         self._after_invoke = None
+        self._cooldown_bypass = None
         self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
@@ -361,6 +362,48 @@ class BotBase(GroupMixin):
             raise discord.ClientException('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
+        return coro
+    
+    def cooldown_bypass(self, coro):
+        """A decorator the registers a coroutine as a cooldown bypass check.
+
+        A cooldown bypass is a check that determines whether command cooldowns should
+        be bypassed or not. If the check returns True, cooldowns will be bypassed.
+        Elsewise if False, cooldowns will run as normal and ratelimits will apply.
+
+        This applies to all commands and their cooldowns.
+        The cooldown_bypass takes a sole parameter, a :class:`.Context`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as a cooldown bypass check.
+
+        Example
+        ---------
+
+        .. code-block:: python3
+
+            @bot.cooldown_bypass
+            async def my_bot_cooldown_bypass(ctx):
+                if ctx.author == ctx.guild.owner:
+                    return True
+                return False
+
+            @bot.command()
+            @commands.cooldown(1, 30, type=commands.BucketType.guild)
+            async def my_command(ctx):
+                await ctx.send('This message can be sent unlimitedly by the guild owner, due to my cooldown bypass.)
+
+        Raises
+        -------
+        discord.ClientException
+            The coroutine is not actually a coroutine.
+        """
+        if not asyncio.iscoroutinefunction(coro):
+            raise discord.ClientException('The cooldown bypass must be a coroutine.')
+
+        self._cooldown_bypass = coro
         return coro
 
     # listener registration
