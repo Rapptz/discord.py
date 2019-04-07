@@ -357,6 +357,21 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
+    @_cog_special_method
+    async def cog_cooldown_bypass(self, ctx):
+        """A special method that acts as a cog local cooldown bypass check.
+        
+        This is similar to :meth:`.Command.cooldown_bypass`.
+        
+        This **must** be a coroutine.
+        
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context.
+        """
+        pass
+
     def _inject(self, bot):
         cls = self.__class__
 
