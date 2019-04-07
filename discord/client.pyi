@@ -20,29 +20,20 @@ from .role import Role
 from .relationship import Relationship
 from .abc import Snowflake
 from .widget import Widget
+from .appinfo import AppInfo
 
 import asyncio
 import aiohttp
 
 from datetime import datetime
 
-from typing import Any, Union, Optional, List, Tuple, Callable, Iterator, Coroutine, TypeVar, NamedTuple, overload
+from typing import Any, Union, Optional, List, Tuple, Callable, Iterator, Coroutine, TypeVar, overload
 from typing_extensions import Literal
 
 _FuncType = Callable[..., Coroutine[Any, Any, Any]]
 _F = TypeVar('_F', bound=_FuncType)
 
 _GuildChannels = Union[TextChannel, VoiceChannel, CategoryChannel, StoreChannel]
-
-class AppInfo(NamedTuple):
-    id: int
-    name: str
-    description: str
-    icon: str
-    owner: User
-
-    @property
-    def icon_url(self) -> str: ...
 
 class Client:
     ws: Optional[DiscordWebSocket]

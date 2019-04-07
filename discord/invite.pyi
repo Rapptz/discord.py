@@ -5,13 +5,12 @@ from .guild import Guild
 from .user import User
 from .channel import TextChannel, VoiceChannel, StoreChannel
 from .enums import ChannelType, VerificationLevel
+from .asset import Asset
 
 from typing import Optional, Union, NamedTuple, List, Set
 from typing_extensions import Literal
 
-VALID_ICON_FORMATS: Set[str] = ...
 _VALID_ICON_FORMATS = Literal['jpeg', 'jpg', 'webp', 'png']
-
 
 class PartialInviteChannel(NamedTuple):
     id: int
@@ -25,7 +24,7 @@ class PartialInviteChannel(NamedTuple):
     def created_at(self) -> datetime.datetime: ...
 
 
-class PartialInviteGuild(NamedTuple):
+class PartialInviteGuild:
     features: List[str]
     icon: Optional[str]
     banner: Optional[str]
@@ -39,19 +38,19 @@ class PartialInviteGuild(NamedTuple):
     def created_at(self) -> datetime.datetime: ...
 
     @property
-    def icon_url(self) -> str: ...
+    def icon_url(self) -> Asset: ...
 
-    def icon_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
-
-    @property
-    def banner_url(self) -> str: ...
-
-    def banner_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
+    def icon_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
 
     @property
-    def splash_url(self) -> str: ...
+    def banner_url(self) -> Asset: ...
 
-    def splash_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> str: ...
+    def banner_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
+
+    @property
+    def splash_url(self) -> Asset: ...
+
+    def splash_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
 
 
 class Invite(Hashable):

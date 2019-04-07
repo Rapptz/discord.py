@@ -14,6 +14,7 @@ from .role import Role
 
 from typing import Any, Optional, List, Union, BinaryIO
 from mypy_extensions import TypedDict
+from os import PathLike
 
 class Attachment:
     id: int
@@ -26,7 +27,8 @@ class Attachment:
 
     def is_spoiler(self) -> bool: ...
 
-    async def save(self, fp: Union[BinaryIO, str], *, seek_begin: bool = ..., use_cached: bool = ...) -> int: ...
+    async def save(self, fp: Union[BinaryIO, PathLike[str], str], *, seek_begin: bool = ...,
+                   use_cached: bool = ...) -> int: ...
 
 class MessageActivity(TypedDict, total=False):
     type: int

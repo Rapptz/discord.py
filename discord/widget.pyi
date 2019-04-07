@@ -8,8 +8,6 @@ from .invite import Invite
 from datetime import datetime
 from typing import Any, Optional, Union, List, Set, NamedTuple
 
-VALID_ICON_FORMATS: Set[str]
-
 class WidgetChannel(NamedTuple):
     id: int
     name: str

@@ -510,6 +510,31 @@ class RawWidgetDict(BaseRawWidgetDict, total=False):
     channels: List[RawWidgetChannelDict]
     members: List[RawWidgetMemberDict]
 
+class RawClientUserDict(TypedDict):
+    afk_timeout: int
+    animate_emojis: bool
+    convert_emoticons: bool
+    default_guilds_restricted: bool
+    detect_platform_accounts: bool
+    developer_mode: bool
+    disable_games_tab: bool
+    enable_tts_command: bool
+    explicit_content_filter: int
+    friend_source_flags: int
+    gif_auto_play: bool
+    guild_positions: List[int]
+    inline_attachment_media: bool
+    inline_embed_media: bool
+    locale: str
+    message_display_compact: bool
+    render_embeds: bool
+    render_reactions: bool
+    restricted_guilds: List[int]
+    show_current_game: bool
+    status: str
+    theme: str
+    timezone_offset: int
+
 __all__ = (
     'RawUserDict', 'RawAttachmentDict', 'RawEmbedFooterDict', 'RawEmbedMediaDict', 'RawEmbedImageDict',
     'RawEmbedProviderDict', 'RawEmbedAuthorDict', 'RawEmbedFieldDict', 'RawEmbedDict', 'RawRoleDict',
@@ -525,5 +550,5 @@ __all__ = (
     'RawGuildBanDict', 'RawGuildPruneDict', 'RawBulkMessageDeleteDict', 'RawReactionActionDict',
     'RawReactionClearDict', 'EmbedFooterData', 'EmbedImageData', 'EmbedVideoData', 'EmbedProviderData',
     'EmbedAuthorData', 'EmbedFieldData', 'RawCurrentUserGuildDict', 'RawWidgetChannelDict', 'RawWidgetMemberDict',
-    'RawWidgetDict'
+    'RawWidgetDict', 'RawClientUserDict'
 )

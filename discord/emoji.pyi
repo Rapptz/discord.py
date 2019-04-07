@@ -1,17 +1,26 @@
 import datetime
 from .role import Role
 from .guild import Guild
+from .asset import Asset
+from .user import User
 
-from typing import Any, Optional, List, Iterator, Tuple, NamedTuple
+from typing import Any, Optional, List, Iterator, Tuple, TypeVar, Type
 
-class PartialEmoji(NamedTuple):
+_PE = TypeVar('_PE', bound=PartialEmoji)
+
+class PartialEmoji:
     animated: bool
     name: str
     id: Optional[int]
 
+    @classmethod
+    def with_state(cls: Type[_PE], state: Any, *, animated: bool, name: str, id: Optional[int] = ...) -> _PE: ...
+
     def __str__(self) -> str: ...
 
     def __eq__(self, other: Any) -> bool: ...
+
+    def __ne__(self, other: Any) -> bool: ...
 
     def __hash__(self) -> int: ...
 
@@ -20,7 +29,7 @@ class PartialEmoji(NamedTuple):
     def is_unicode_emoji(self) -> bool: ...
 
     @property
-    def url(self) -> Optional[str]: ...
+    def url(self) -> Asset: ...
 
 
 class Emoji:
@@ -30,6 +39,7 @@ class Emoji:
     animated: bool
     managed: bool
     guild_id: int
+    user: Optional[User]
 
     def __iter__(self) -> Iterator[Tuple[str, Any]]: ...
 
@@ -39,13 +49,15 @@ class Emoji:
 
     def __eq__(self, other: Any) -> bool: ...
 
+    def __ne__(self, other: Any) -> bool: ...
+
     def __hash__(self) -> int: ...
 
     @property
     def created_at(self) -> datetime.datetime: ...
 
     @property
-    def url(self) -> str: ...
+    def url(self) -> Asset: ...
 
     @property
     def roles(self) -> List[Role]: ...

@@ -11,8 +11,10 @@ from .message import Message
 from .types import RawWebhookDict
 from .state import ConnectionState
 from .user import User
+from .asset import Asset
 
 from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar, BinaryIO, TypeVar, Type, Iterable, overload
+from typing_extensions import Literal
 
 class WebhookAdapter:
     BASE: ClassVar[str]
@@ -89,9 +91,9 @@ class Webhook:
     def created_at(self) -> datetime.datetime: ...
 
     @property
-    def avatar_url(self) -> str: ...
+    def avatar_url(self) -> Asset: ...
 
-    def avatar_url_as(self, *, format: Optional[str] = ..., size: int = ...) -> str: ...
+    def avatar_url_as(self, *, format: Optional[Literal['png', 'jpg', 'jpeg']] = ..., size: int = ...) -> Asset: ...
 
     def delete(self) -> Coroutine[Any, Any, None]: ...
 
@@ -99,22 +101,22 @@ class Webhook:
 
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
-             avatar_url: Optional[str] = ..., tts: bool = ..., file: Optional[File] = ...,
+             avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., file: Optional[File] = ...,
              embed: Optional[Embed] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
 
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
-             avatar_url: Optional[str] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
+             avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
              embed: Optional[Embed] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
 
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
-             avatar_url: Optional[str] = ..., tts: bool = ..., file: Optional[File] = ...,
+             avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., file: Optional[File] = ...,
              embeds: Optional[List[Embed]] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
 
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
-             avatar_url: Optional[str] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
+             avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
              embeds: Optional[List[Embed]] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
 
     def execute(self, *args: Any, **kwargs: Any) -> Any: ...

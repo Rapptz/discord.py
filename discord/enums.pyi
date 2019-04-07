@@ -76,6 +76,25 @@ class ContentFilter(IntEnum):
     def __str__(self) -> str: ...
 
 
+class UserContentFilter(IntEnum):
+    disabled: int
+    friends: int
+    all_messages: int
+
+
+class FriendFlags(Enum):
+    noone: int
+    mutual_guilds: int
+    mutual_friends: int
+    guild_and_friends: int
+    everyone: int
+
+
+class Theme(Enum):
+    light: str
+    dark: str
+
+
 class Status(Enum):
     online: str
     offline: str

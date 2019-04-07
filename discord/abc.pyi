@@ -15,7 +15,7 @@ from .role import Role
 from .user import ClientUser
 from .voice_client import VoiceClient
 
-from typing import Any, Optional, Union, List, Tuple, NamedTuple
+from typing import Any, Optional, Union, List, Dict
 from typing_extensions import Protocol, runtime
 
 @runtime
@@ -45,12 +45,6 @@ class User(Protocol):
 class PrivateChannel(Protocol):
     me: ClientUser
 
-class _Overwrites(NamedTuple):
-    id: int
-    allow: int
-    deny: int
-    type: str
-
 class GuildChannel:
     name: str
     guild: Guild
@@ -71,7 +65,7 @@ class GuildChannel:
     def overwrites_for(self, obj: Union[Role, User]) -> PermissionOverwrite: ...
 
     @property
-    def overwrites(self) -> List[Tuple[Union[Role, Member], PermissionOverwrite]]: ...
+    def overwrites(self) -> Dict[Union[Role, Member], PermissionOverwrite]: ...
 
     @property
     def category(self) -> Optional[CategoryChannel]: ...

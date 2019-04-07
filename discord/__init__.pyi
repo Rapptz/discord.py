@@ -4,7 +4,8 @@ __license__: str
 __copyright__: str
 __version__: str
 
-from .client import Client as Client, AppInfo as AppInfo
+from .client import Client as Client
+from .appinfo import AppInfo as AppInfo
 from .user import User as User, ClientUser as ClientUser, Profile as Profile
 from .emoji import Emoji as Emoji, PartialEmoji as PartialEmoji
 from .activity import *
@@ -13,6 +14,7 @@ from .guild import Guild as Guild
 from .relationship import Relationship as Relationship
 from .member import Member as Member, VoiceState as VoiceState
 from .message import Message as Message, Attachment as Attachment
+from .asset import Asset as Asset
 from .errors import *
 from .calls import CallMessage as CallMessage, GroupCall as GroupCall
 from .permissions import Permissions as Permissions, PermissionOverwrite as PermissionOverwrite

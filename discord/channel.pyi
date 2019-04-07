@@ -1,6 +1,7 @@
 import discord.abc
 import datetime
 
+from .asset import Asset
 from .enums import ChannelType
 from .guild import Guild
 from .member import Member
@@ -153,7 +154,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     def __repr__(self) -> str: ...
 
     @property
-    def icon_url(self) -> str: ...
+    def icon_url(self) -> Asset: ...
 
     @property
     def created_at(self) -> datetime.datetime: ...
