@@ -133,7 +133,7 @@ class CooldownMapping:
         for k in dead_keys:
             del self._cache[k]
 
-    async def get_bucket(self, message):
+    def get_bucket(self, message):
         if self._cooldown.type is BucketType.default:
             return self._cooldown
 
