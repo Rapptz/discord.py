@@ -55,12 +55,6 @@ from .appinfo import AppInfo
 
 log = logging.getLogger(__name__)
 
-class _ProperCleanup(Exception):
-    pass
-
-def _raise_proper_cleanup():
-    raise _ProperCleanup
-
 def _cancel_tasks(loop, tasks):
     if not tasks:
         return
@@ -503,6 +497,8 @@ class Client:
     def _do_cleanup(self):
         log.info('Cleaning up event loop.')
         loop = self.loop
+        if loop.is_closed():
+            return # we're already cleaning up
 
         task = asyncio.ensure_future(self.close(), loop=loop)
 
@@ -553,15 +549,16 @@ class Client:
         is_windows = sys.platform == 'win32'
         loop = self.loop
         if not is_windows:
-            loop.add_signal_handler(signal.SIGINT, _raise_proper_cleanup)
-            loop.add_signal_handler(signal.SIGTERM, _raise_proper_cleanup)
+            loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
+            loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
         try:
             loop.run_until_complete(self.start(*args, **kwargs))
-        except (_ProperCleanup, KeyboardInterrupt):
+        except KeyboardInterrupt:
             log.info('Received signal to terminate bot and event loop.')
         finally:
-            self._do_cleanup()
+            if is_windows:
+                self._do_cleanup()
 
     # properties
 
