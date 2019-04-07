@@ -405,4 +405,4 @@ def escape_mentions(text):
     :class:`str`
         The text with the mentions removed.
     """
-    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', r'@\u200b\1', text)
+    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', text)
