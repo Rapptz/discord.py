@@ -366,3 +366,43 @@ def resolve_invite(invite):
             return m.group(1)
     return invite
 
+_MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
+                                     for c in ('*', '`', '_', '~', '|'))
+
+_MARKDOWN_ESCAPE_REGEX = re.compile('(%s)' % _MARKDOWN_ESCAPE_SUBREGEX)
+
+def escape_markdown(text):
+    """A helper function that escapes Discord's markdown.
+
+    Parameters
+    -----------
+    text: :class:`str`
+        The text to escape markdown from.
+
+    Returns
+    --------
+    :class:`str`
+        The text with the markdown special characters escaped with a slash.
+    """
+
+    text = re.sub(r'\\', r'\\\\', text)
+    return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
+
+def escape_mentions(text):
+    """A helper function that escapes everyone, here, role, and user mentions.
+
+    .. note::
+
+        This does not include channel mentions.
+
+    Parameters
+    -----------
+    text: :class:`str`
+        The text to escape mentions from.
+
+    Returns
+    --------
+    :class:`str`
+        The text with the mentions removed.
+    """
+    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', r'@\u200b\1', text)

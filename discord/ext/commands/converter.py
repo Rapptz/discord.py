@@ -474,14 +474,10 @@ class clean_content(Converter):
         result = pattern.sub(repl, argument)
 
         if self.escape_markdown:
-            result = re.sub(r'\\', r'\\\\', result)
-            for c in ('*', '`', '_', '~', '|'):
-                regex = r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
-                replace = '\{0}'.format(c)
-                result = re.sub(regex, replace, result)
+            result = discord.utils.escape_markdown(result)
 
         # Completely ensure no mentions escape:
-        return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', result)
+        return discord.utils.escape_mentions(result)
 
 class _Greedy:
     __slots__ = ('converter',)

@@ -583,6 +583,11 @@ Utility Functions
 
 .. autofunction:: discord.utils.oauth_url
 
+.. autofunction:: discord.utils.escape_markdown
+
+.. autofunction:: discord.utils.escape_mentions
+
+
 Application Info
 ------------------
 
