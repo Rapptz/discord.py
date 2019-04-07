@@ -554,10 +554,10 @@ class ClientUser(BaseUser):
         if guild_positions:
             guild_positions = [str(x.id) for x in guild_positions]
             payload.update({'guild_positions': guild_positions})
-        
+
         restricted_guilds = kwargs.pop('restricted_guilds', None)
         if restricted_guilds:
-            restricted_guilds = [str(x.id) for x in guild_positions]
+            restricted_guilds = [str(x.id) for x in restricted_guilds]
             payload.update({'restricted_guilds': restricted_guilds})
 
         status = kwargs.pop('status', None)
