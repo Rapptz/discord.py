@@ -22,7 +22,7 @@ There are two main ways to query version information about the library. For guar
 
     A named tuple that is similar to :obj:`py:sys.version_info`.
 
-    Just like :obj:`py:sys.version_info`_ the valid values for ``releaselevel`` are
+    Just like :obj:`py:sys.version_info` the valid values for ``releaselevel`` are
     'alpha', 'beta', 'candidate' and 'final'.
 
 .. data:: __version__
