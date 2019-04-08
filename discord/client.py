@@ -754,7 +754,7 @@ class Client:
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
 
-        The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
+        The events must be a |corourl|_, if not, :exc:`TypeError` is raised.
 
         Example
         ---------
@@ -764,10 +764,15 @@ class Client:
             @client.event
             async def on_ready():
                 print('Ready!')
+
+        Raises
+        --------
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
 
         if not asyncio.iscoroutinefunction(coro):
-            raise ClientException('event registered must be a coroutine function')
+            raise TypeError('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
         log.debug('%s has successfully been registered as an event', coro.__name__)
