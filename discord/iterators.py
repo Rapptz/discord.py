@@ -28,9 +28,11 @@ import asyncio
 import datetime
 
 from .errors import NoMoreItems
-from .utils import time_snowflake, maybe_coroutine
+from .utils import DISCORD_EPOCH, time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
+
+OLDEST_MESSAGE = Object(id=0)
 
 class _AsyncIterator:
     __slots__ = ()
@@ -196,14 +198,13 @@ class HistoryIterator(_AsyncIterator):
     around: :class:`abc.Snowflake`
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
-    reverse: :class:`bool`
-        If set to true, return messages in oldest->newest order. Recommended
-        when using with "after" queries with limit over 100, otherwise messages
-        will be out of order.
+    oldest_first: :class:`bool`
+        If set to true, return messages in oldest->newest order. Defaults to 
+        True if ``after`` is specified, otherwise False.
     """
 
     def __init__(self, messageable, limit,
-                 before=None, after=None, around=None, reverse=None):
+                 before=None, after=None, around=None, oldest_first=None):
 
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
@@ -212,16 +213,16 @@ class HistoryIterator(_AsyncIterator):
         if isinstance(around, datetime.datetime):
             around = Object(id=time_snowflake(around))
 
+        if oldest_first is None:
+            self.reverse = after is not None
+        else:
+            self.reverse = oldest_first
+
         self.messageable = messageable
         self.limit = limit
         self.before = before
-        self.after = after
+        self.after = after or OLDEST_MESSAGE
         self.around = around
-
-        if reverse is None:
-            self.reverse = after is not None
-        else:
-            self.reverse = reverse
 
         self._filter = None  # message dict -> bool
 
@@ -246,17 +247,15 @@ class HistoryIterator(_AsyncIterator):
                 self._filter = lambda m: int(m['id']) < self.before.id
             elif self.after:
                 self._filter = lambda m: self.after.id < int(m['id'])
-        elif self.before and self.after:
+        else:
             if self.reverse:
                 self._retrieve_messages = self._retrieve_messages_after_strategy
-                self._filter = lambda m: int(m['id']) < self.before.id
+                if (self.before):
+                    self._filter = lambda m: int(m['id']) < self.before.id
             else:
                 self._retrieve_messages = self._retrieve_messages_before_strategy
-                self._filter = lambda m: int(m['id']) > self.after.id
-        elif self.after:
-            self._retrieve_messages = self._retrieve_messages_after_strategy
-        else:
-            self._retrieve_messages = self._retrieve_messages_before_strategy
+                if (self.after and self.after != OLDEST_MESSAGE):
+                    self._filter = lambda m: int(m['id']) > self.after.id
 
     async def next(self):
         if self.messages.empty():

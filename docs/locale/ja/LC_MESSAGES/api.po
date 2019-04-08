@@ -7361,8 +7361,8 @@ msgid "Same as ``around`` in :meth:`history`."
 msgstr ":meth:`history` での ``around`` と同じです。"
 
 #: discord.TextChannel.purge:25 of
-msgid "Same as ``reverse`` in :meth:`history`."
-msgstr ":meth:`history` での ``reverse`` と同じです。"
+msgid "Same as ``oldest_first`` in :meth:`history`."
+msgstr ":meth:`history` での ``oldest_first`` と同じです。"
 
 #: discord.TextChannel.purge:26 of
 msgid "If True, use bulk delete. bulk=False is useful for mass-deleting a bot's own messages without manage_messages. When True, will fall back to single delete if current account is a user bot, or if messages are older than two weeks."
