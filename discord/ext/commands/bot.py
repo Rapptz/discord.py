@@ -321,11 +321,11 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        :exc:`.ClientException`
-            The coroutine is not actually a coroutine.
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
+            raise TypeError('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
@@ -354,11 +354,11 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        :exc:`.ClientException`
-            The coroutine is not actually a coroutine.
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The post-invoke hook must be a coroutine.')
+            raise TypeError('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
@@ -390,7 +390,7 @@ class BotBase(GroupMixin):
         name = func.__name__ if name is None else name
 
         if not asyncio.iscoroutinefunction(func):
-            raise discord.ClientException('Listeners must be coroutines')
+            raise TypeError('Listeners must be coroutines')
 
         if name in self.extra_events:
             self.extra_events[name].append(func)
@@ -443,7 +443,7 @@ class BotBase(GroupMixin):
 
         Raises
         -------
-        :exc:`.ClientException`
+        TypeError
             The function being listened to is not a coroutine.
         """
 
@@ -720,7 +720,7 @@ class BotBase(GroupMixin):
     def help_command(self, value):
         if value is not None:
             if not isinstance(value, HelpCommand):
-                raise discord.ClientException('help_command must be a subclass of HelpCommand')
+                raise TypeError('help_command must be a subclass of HelpCommand')
             if self._help_command is not None:
                 self._help_command._remove_from_bot(self)
             self._help_command = value

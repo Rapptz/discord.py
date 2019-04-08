@@ -728,12 +728,12 @@ class Command(_BaseCommand):
 
         Raises
         -------
-        discord.ClientException
-            The coroutine is not actually a coroutine.
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
 
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The error handler must be a coroutine.')
+            raise TypeError('The error handler must be a coroutine.')
 
         self.on_error = coro
         return coro
@@ -756,11 +756,11 @@ class Command(_BaseCommand):
 
         Raises
         -------
-        :exc:`.ClientException`
-            The coroutine is not actually a coroutine.
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The pre-invoke hook must be a coroutine.')
+            raise TypeError('The pre-invoke hook must be a coroutine.')
 
         self._before_invoke = coro
         return coro
@@ -783,11 +783,11 @@ class Command(_BaseCommand):
 
         Raises
         -------
-        :exc:`.ClientException`
-            The coroutine is not actually a coroutine.
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
         if not asyncio.iscoroutinefunction(coro):
-            raise discord.ClientException('The post-invoke hook must be a coroutine.')
+            raise TypeError('The post-invoke hook must be a coroutine.')
 
         self._after_invoke = coro
         return coro
