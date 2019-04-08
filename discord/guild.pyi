@@ -189,7 +189,7 @@ class Guild(Hashable):
 
     def audit_logs(self, *, limit: int = ..., before: Optional[Union[Snowflake, datetime.datetime]] = ...,
                    after: Optional[Union[Snowflake, datetime.datetime]] = ...,
-                   reverse: Optional[bool] = ..., user: Optional[Snowflake] = ...,
+                   oldest_first: Optional[bool] = ..., user: Optional[Snowflake] = ...,
                    action: Optional[AuditLogAction] = ...) -> AuditLogIterator: ...
 
     async def widget(self) -> Widget: ...

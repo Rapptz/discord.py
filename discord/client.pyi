@@ -236,6 +236,10 @@ class Client:
                  timeout: Optional[float] = ...) -> asyncio.Future[Tuple[Member, Member]]: ...
 
     @overload
+    def wait_for(self, event: Literal['user_update'], *, check: Optional[Callable[[User, User], bool]] = ...,
+                 timeout: Optional[float] = ...) -> asyncio.Future[Tuple[User, User]]: ...
+
+    @overload
     def wait_for(self, event: Literal['guild_join'], *, check: Optional[Callable[[Guild], bool]] = ...,
                  timeout: Optional[float] = ...) -> asyncio.Future[Guild]: ...
 

@@ -11,7 +11,7 @@ from typing import Any, Optional, Union, Callable, Coroutine, List, Tuple, Dict,
 from types import MappingProxyType, ModuleType
 
 
-CommandPrefix = Union[
+_CommandPrefix = Union[
     str,
     Callable[[Bot, discord.Message], Union[str, Coroutine[Any, Any, str]]]]
 
@@ -29,14 +29,14 @@ _C = TypeVar('_C', bound=_CoroType)
 
 
 class BotBase(GroupMixin[_CT]):
-    command_prefix: CommandPrefix
+    command_prefix: _CommandPrefix
     extra_events: Dict[str, List[Callable[..., Coroutine[Any, Any, None]]]]
     case_insensitive: bool
     description: str
     owner_id: Optional[int]
     help_command: Optional[HelpCommand[_CT]]
 
-    def __init__(self, command_prefix: CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,
+    def __init__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,
                  description: Optional[str] = ..., **options: Any) -> None: ...
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None: ...
@@ -101,7 +101,7 @@ class BotBase(GroupMixin[_CT]):
 
 
 class Bot(BotBase[_CT], discord.Client):
-    def __init__(self, command_prefix: CommandPrefix, description: Optional[str] = ...,
+    def __init__(self, command_prefix: _CommandPrefix, description: Optional[str] = ...,
                  help_command: Optional[HelpCommand[_CT]] = ..., *,
                  case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
@@ -113,7 +113,7 @@ class Bot(BotBase[_CT], discord.Client):
 
 
 class AutoShardedBot(BotBase[_CT], discord.AutoShardedClient):
-    def __init__(self, command_prefix: CommandPrefix, description: Optional[str] = ...,
+    def __init__(self, command_prefix: _CommandPrefix, description: Optional[str] = ...,
                  help_command: Optional[HelpCommand[_CT]] = ..., *,
                  case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,

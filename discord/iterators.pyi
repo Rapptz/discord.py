@@ -6,8 +6,12 @@ from .message import Message
 from .audit_logs import AuditLogEntry
 from .guild import Guild
 from .types import RawGuildDict
+from .object import Object
 
 from typing import Any, Optional, Union, TypeVar, List, Generic, Coroutine, Callable
+from typing_extensions import Final
+
+OLDEST_OBJECT: Final[Object]
 
 _IT = TypeVar('_IT')
 _AIT = TypeVar('_AIT', bound=_AsyncIterator)

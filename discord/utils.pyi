@@ -7,6 +7,7 @@ from .invite import Invite
 from .object import Object
 
 from typing import Any, Optional, Union, List, Iterable, TypeVar, Type, Callable, Coroutine, Generic, Pattern, overload
+from typing_extensions import Final
 
 _T = TypeVar('_T')
 _U_co = TypeVar('_U_co', covariant=True)
@@ -14,7 +15,7 @@ _U_co = TypeVar('_U_co', covariant=True)
 _FuncType = Callable[..., Any]
 _F = TypeVar('_F', bound=_FuncType)
 
-DISCORD_EPOCH: int
+DISCORD_EPOCH: Final[int]
 
 class cached_property(Generic[_T, _U_co]):
     def __init__(self, function: Callable[[_T], _U_co]) -> None: ...

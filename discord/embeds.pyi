@@ -5,6 +5,7 @@ from .types import RawEmbedDict, EmbedFooterData, EmbedImageData, EmbedVideoData
 
 from typing import Any, Union, Dict, List, ClassVar, TypeVar, Type
 from mypy_extensions import TypedDict
+from typing_extensions import Final
 
 class _EmptyEmbed:
     def __bool__(self) -> bool: ...
@@ -13,7 +14,7 @@ class _EmptyEmbed:
 
     def __len__(self) -> int: ...
 
-EmptyEmbed: _EmptyEmbed = ...
+EmptyEmbed: Final[_EmptyEmbed] = ...
 
 class EmbedProxy:
     def __init__(self, layer: Dict[str, Any]) -> None: ...

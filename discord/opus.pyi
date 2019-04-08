@@ -2,6 +2,7 @@ from .errors import DiscordException
 
 from typing import ClassVar, Union
 from mypy_extensions import TypedDict
+from typing_extensions import Final
 
 def load_opus(name: str) -> None: ...
 
@@ -17,15 +18,15 @@ class OpusNotLoaded(DiscordException):
     ...
 
 
-OK: int
-APPLICATION_AUDIO: int
-APPLICATION_VOIP: int
-APPLICATION_LOWDELAY: int
-CTL_SET_BITRATE: int
-CTL_SET_BANDWIDTH: int
-CTL_SET_FEC: int
-CTL_SET_PLP: int
-CTL_SET_SIGNAL: int
+OK: Final[int]
+APPLICATION_AUDIO: Final[int]
+APPLICATION_VOIP: Final[int]
+APPLICATION_LOWDELAY: Final[int]
+CTL_SET_BITRATE: Final[int]
+CTL_SET_BANDWIDTH: Final[int]
+CTL_SET_FEC: Final[int]
+CTL_SET_PLP: Final[int]
+CTL_SET_SIGNAL: Final[int]
 
 
 class _BandCtl(TypedDict):
@@ -42,8 +43,8 @@ class _SignalCtl(TypedDict):
     music: int
 
 
-band_ctl: _BandCtl
-signal_ctl: _SignalCtl
+band_ctl: Final[_BandCtl]
+signal_ctl: Final[_SignalCtl]
 
 
 class Encoder:

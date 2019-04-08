@@ -1,8 +1,11 @@
-__title__: str
-__author__: str
-__license__: str
-__copyright__: str
-__version__: str
+from typing import NamedTuple
+from typing_extensions import Final
+
+__title__: Final[str]
+__author__: Final[str]
+__license__: Final[str]
+__copyright__: Final[str]
+__version__: Final[str]
 
 from .client import Client as Client
 from .appinfo import AppInfo as AppInfo
@@ -35,8 +38,6 @@ from .voice_client import VoiceClient as VoiceClient
 from .audit_logs import AuditLogChanges as AuditLogChanges, AuditLogEntry as AuditLogEntry, AuditLogDiff as AuditLogDiff
 from .raw_models import *
 
-from typing import NamedTuple
-
 class VersionInfo(NamedTuple):
     major: int
     minor: int
@@ -44,4 +45,4 @@ class VersionInfo(NamedTuple):
     releaselevel: str
     serial: int
 
-version_info: VersionInfo
+version_info: Final[VersionInfo]

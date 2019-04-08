@@ -2,7 +2,10 @@ import discord
 
 from .context import Context
 
-from typing import Any, List
+from typing import Any, List, TypeVar, Generic
+from typing_extensions import Final
+
+_T = TypeVar('_T')
 
 
 class Converter:
@@ -62,4 +65,7 @@ class clean_content(Converter):
 
     async def convert(self, ctx: Context, argument: str) -> str: ...
 
-Greedy = List
+
+class _Greedy(Generic[_T]): ...
+
+Greedy: Final[_Greedy]
