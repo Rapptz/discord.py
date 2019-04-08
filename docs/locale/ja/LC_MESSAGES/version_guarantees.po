@@ -1,0 +1,90 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2015-2019, Rapptz
+# This file is distributed under the same license as the discord.py package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: discord.py 1.0.0a\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-08 17:55-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: ../../version_guarantees.rst:4
+msgid "Version Guarantees"
+msgstr ""
+
+#: ../../version_guarantees.rst:6
+msgid ""
+"The library follows a `semantic versioning principle "
+"<https://semver.org/>`_ which means that the major version is updated "
+"every time there is an incompatible API change. However due to the lack "
+"of guarantees on the Discord side when it comes to breaking changes along"
+" with the fairly dynamic nature of Python it can be hard to discern what "
+"can be considered a breaking change and what isn't."
+msgstr ""
+
+#: ../../version_guarantees.rst:8
+msgid ""
+"The first thing to keep in mind is that breaking changes only apply to "
+"**publicly documented functions and classes**. If it's not listed in the "
+"documentation here then it is not part of the public API and is thus "
+"bound to change. This includes attributes that start with an underscore "
+"or functions without an underscore that are not documented."
+msgstr ""
+
+#: ../../version_guarantees.rst:12
+msgid "The examples below are non-exhaustive."
+msgstr ""
+
+#: ../../version_guarantees.rst:15
+msgid "Examples of Breaking Changes"
+msgstr ""
+
+#: ../../version_guarantees.rst:17
+msgid "Changing the default parameter value to something else."
+msgstr ""
+
+#: ../../version_guarantees.rst:18
+msgid "Renaming a function without an alias to an old function."
+msgstr ""
+
+#: ../../version_guarantees.rst:19
+msgid "Adding or removing parameters to an event."
+msgstr ""
+
+#: ../../version_guarantees.rst:22
+msgid "Examples of Non-Breaking Changes"
+msgstr ""
+
+#: ../../version_guarantees.rst:24
+msgid "Adding or removing private underscored attributes."
+msgstr ""
+
+#: ../../version_guarantees.rst:25
+msgid "Adding an element into the ``__slots__`` of a data class."
+msgstr ""
+
+#: ../../version_guarantees.rst:26
+msgid "Changing the behaviour of a function to fix a bug."
+msgstr ""
+
+#: ../../version_guarantees.rst:27
+msgid "Changes in the documentation."
+msgstr ""
+
+#: ../../version_guarantees.rst:28
+msgid "Modifying the internal HTTP handling."
+msgstr ""
+
+#: ../../version_guarantees.rst:29
+msgid "Upgrading the dependencies to a new version, major or otherwise."
+msgstr ""
+
