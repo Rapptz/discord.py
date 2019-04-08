@@ -32,7 +32,7 @@ from .utils import DISCORD_EPOCH, time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
 
-OLDEST_MESSAGE = Object(id=0)
+OLDEST_OBJECT = Object(id=0)
 
 class _AsyncIterator:
     __slots__ = ()
@@ -221,7 +221,7 @@ class HistoryIterator(_AsyncIterator):
         self.messageable = messageable
         self.limit = limit
         self.before = before
-        self.after = after or OLDEST_MESSAGE
+        self.after = after or OLDEST_OBJECT
         self.around = around
 
         self._filter = None  # message dict -> bool
@@ -254,7 +254,7 @@ class HistoryIterator(_AsyncIterator):
                     self._filter = lambda m: int(m['id']) < self.before.id
             else:
                 self._retrieve_messages = self._retrieve_messages_before_strategy
-                if (self.after and self.after != OLDEST_MESSAGE):
+                if (self.after and self.after != OLDEST_OBJECT):
                     self._filter = lambda m: int(m['id']) > self.after.id
 
     async def next(self):
@@ -352,12 +352,17 @@ class HistoryIterator(_AsyncIterator):
         return []
 
 class AuditLogIterator(_AsyncIterator):
-    def __init__(self, guild, limit=None, before=None, after=None, reverse=None, user_id=None, action_type=None):
+    def __init__(self, guild, limit=None, before=None, after=None, oldest_first=None, user_id=None, action_type=None):
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
 
+
+        if oldest_first is None:
+            self.reverse = after is not None
+        else:
+            self.reverse = oldest_first
 
         self.guild = guild
         self.loop = guild._state.loop
@@ -366,30 +371,24 @@ class AuditLogIterator(_AsyncIterator):
         self.before = before
         self.user_id = user_id
         self.action_type = action_type
-        self.after = after
+        self.after = OLDEST_OBJECT
         self._users = {}
         self._state = guild._state
 
-        if reverse is None:
-            self.reverse = after is not None
-        else:
-            self.reverse = reverse
 
         self._filter = None  # entry dict -> bool
 
         self.entries = asyncio.Queue(loop=self.loop)
 
-        if self.before and self.after:
-            if self.reverse:
-                self._strategy = self._after_strategy
-                self._filter = lambda m: int(m['id']) < self.before.id
-            else:
-                self._strategy = self._before_strategy
-                self._filter = lambda m: int(m['id']) > self.after.id
-        elif self.after:
+        
+        if self.reverse:
             self._strategy = self._after_strategy
+            if self.before:
+                self._filter = lambda m: int(m['id']) < self.before.id
         else:
             self._strategy = self._before_strategy
+            if self.after and self.after != OLDEST_OBJECT:
+                self._filter = lambda m: int(m['id']) > self.after.id
 
     async def _before_strategy(self, retrieve):
         before = self.before.id if self.before else None

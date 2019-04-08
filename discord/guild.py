@@ -1437,7 +1437,7 @@ class Guild(Hashable):
             raise ClientException('Must not be a bot account to ack messages.')
         return state.http.ack_guild(self.id)
 
-    def audit_logs(self, *, limit=100, before=None, after=None, reverse=None, user=None, action=None):
+    def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
         """Return an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
         You must have the :attr:`~Permissions.view_audit_log` permission to use this.
@@ -1470,11 +1470,9 @@ class Guild(Hashable):
         after: Union[:class:`abc.Snowflake`, datetime]
             Retrieve entries after this date or entry.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        reverse: :class:`bool`
-            If set to true, return entries in oldest->newest order. If unspecified,
-            this defaults to ``False`` for most cases. However if passing in a
-            ``after`` parameter then this is set to ``True``. This avoids getting entries
-            out of order in the ``after`` case.
+        oldest_first: :class:`bool`
+            If set to true, return entries in oldest->newest order. Defaults to True if
+            ``after`` is specified, otherwise False.
         user: :class:`abc.Snowflake`
             The moderator to filter entries from.
         action: :class:`AuditLogAction`
@@ -1499,7 +1497,7 @@ class Guild(Hashable):
             action = action.value
 
         return AuditLogIterator(self, before=before, after=after, limit=limit,
-                                reverse=reverse, user_id=user, action_type=action)
+                                oldest_first=oldest_first, user_id=user, action_type=action)
     
     async def widget(self):
         """|coro|
