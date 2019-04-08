@@ -210,13 +210,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     def _update_roles(self, data):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
 
-    def _update(self, data, user=None):
-        if user:
-            self._user.name = user['username']
-            self._user.discriminator = user['discriminator']
-            self._user.avatar = user['avatar']
-            self._user.bot = user.get('bot', False)
-
+    def _update(self, data):
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
         try:
