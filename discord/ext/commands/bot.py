@@ -369,7 +369,7 @@ class BotBase(GroupMixin):
 
         A cooldown bypass is a check that determines whether command cooldowns should
         be bypassed or not. If the check returns True, cooldowns will be bypassed.
-        Elsewise if False, cooldowns will run as normal and ratelimits will apply.
+        Otherwise if False, cooldowns will run as normal and ratelimits will apply.
 
         This applies to all commands and their cooldowns.
         The cooldown_bypass takes a sole parameter, a :class:`.Context`.
