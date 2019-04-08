@@ -599,53 +599,6 @@ Utility Functions
 .. autofunction:: discord.utils.escape_mentions
 
 
-Application Info
-------------------
-
-.. class:: AppInfo
-
-    A namedtuple representing the bot's application info.
-
-    .. attribute:: id
-
-        The application's ``client_id``.
-    .. attribute:: name
-
-        The application's name.
-    .. attribute:: description
-
-        The application's description
-    .. attribute:: icon
-
-        The application's icon hash if it exists, ``None`` otherwise.
-    .. attribute:: icon_url
-
-        A property that retrieves the application's icon URL if it exists.
-
-        If it doesn't exist an empty string is returned.
-    .. attribute:: owner
-
-        The owner of the application. This is a :class:`User` instance
-        with the owner's information at the time of the call.
-
-    .. attribute:: bot_public
-
-        ``True`` if the bot is considered as public, else ``False``.
-        Determines if the bot can be invited by anyone or if it is locked
-        to the token owner. Correspond to the "Public bot" box in the
-        token settings.
-
-    .. attribute:: bot_require_code_grant
-
-        ``True`` if the bot requires code grant, else ``False``.
-        Correspond to the "Bot requires code grant" box in the token
-        settings.
-
-    .. attribute:: rpc_origins
-
-        Returns an array of RPC origin URL strings, if RPC is enabled.
-        If RPC isn't enabled, returns ``None``.
-
 Profile
 ---------
 

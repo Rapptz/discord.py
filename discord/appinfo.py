@@ -39,13 +39,14 @@ class AppInfo:
     name: :class:`str`
         The application name.
     owner: :class:`User`
-        The application's owner.
+        The application owner.
     icon: Optional[:class:`str`]
-        The icon hash.
+        The icon hash, if it exists.
     description: Optional[:class:`str`]
         The application description.
     bot_public: :class:`bool`
-        Whether the bot is public.
+        Whether the bot can be invited by anyone or if it is locked
+        to the application owner.
     bot_require_code_grant: :class:`bool`
         Whether the bot requires the completion of the full oauth2 code
         grant flow to join.
