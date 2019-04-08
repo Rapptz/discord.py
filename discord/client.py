@@ -382,6 +382,7 @@ class Client:
                 await self.ws.poll_event()
             except ResumeWebSocket:
                 log.info('Got a request to RESUME the websocket.')
+                self.dispatch('disconnect')
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
                                                     sequence=self.ws.sequence, resume=True)
                 self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
