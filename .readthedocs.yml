@@ -1,5 +1,4 @@
-formats:
-  - pdf
+formats: []
 
 build:
   image: latest

@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -30,7 +30,7 @@ def _typing_done_callback(fut):
     # just retrieve any exception and call it a day
     try:
         fut.exception()
-    except:
+    except Exception:
         pass
 
 class Typing:

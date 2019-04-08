@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -23,8 +23,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-
-import asyncio
 
 from .permissions import Permissions
 from .errors import InvalidArgument
@@ -94,7 +92,7 @@ class Role(Hashable):
     """
 
     __slots__ = ('id', 'name', 'permissions', 'color', 'colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', '_state' )
+                 'managed', 'mentionable', 'hoist', 'guild', '_state')
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
@@ -114,6 +112,12 @@ class Role(Hashable):
 
         if self.guild != other.guild:
             raise RuntimeError('cannot compare roles from two different guilds.')
+
+        # the @everyone role is always the lowest role in hierarchy
+        guild_id = self.guild.id
+        if self.id == guild_id:
+            # everyone_role < everyone_role -> False
+            return other.id != guild_id
 
         if self.position < other.position:
             return True
@@ -169,7 +173,8 @@ class Role(Hashable):
         if self.is_default():
             return all_members
 
-        return [member for member in all_members if self in member.roles]
+        role_id = self.id
+        return [member for member in all_members if member._roles.has(role_id)]
 
     async def _move(self, position, reason):
         if position <= 0:
@@ -184,10 +189,7 @@ class Role(Hashable):
         http = self._state.http
 
         change_range = range(min(self.position, position), max(self.position, position) + 1)
-        sorted_roles = sorted((x for x in self.guild.roles if x.position in change_range and x.id != self.id),
-                              key=lambda x: x.position)
-
-        roles = [r.id for r in sorted_roles]
+        roles = [r.id for r in self.guild.roles[1:] if r.position in change_range and r.id != self.id]
 
         if self.position > position:
             roles.insert(0, self.id)
@@ -209,20 +211,20 @@ class Role(Hashable):
 
         Parameters
         -----------
-        name: str
+        name: :class:`str`
             The new role name to change to.
         permissions: :class:`Permissions`
             The new permissions to change to.
         colour: :class:`Colour`
             The new colour to change to. (aliased to color as well)
-        hoist: bool
+        hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
-        mentionable: bool
+        mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
-        position: int
+        position: :class:`int`
             The new role's position. This must be below your top role's
             position or it will fail.
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for editing this role. Shows up on the audit log.
 
         Raises
@@ -267,7 +269,7 @@ class Role(Hashable):
 
         Parameters
         -----------
-        reason: Optional[str]
+        reason: Optional[:class:`str`]
             The reason for deleting this role. Shows up on the audit log.
 
         Raises

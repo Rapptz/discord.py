@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,17 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import aiohttp
 import asyncio
 import json
 import time
 import re
 
+import aiohttp
+
 from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .user import BaseUser, User
+from .asset import Asset
 
-__all__ = ('WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook')
+__all__ = ['WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook']
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -60,17 +62,17 @@ class WebhookAdapter:
 
         Parameters
         -----------
-        verb: str
+        verb: :class:`str`
             The HTTP verb to use for the request.
-        url: str
+        url: :class:`str`
             The URL to send the request to. This will have
             the query parameters already added to it, if any.
-        multipart: Optional[dict]
+        multipart: Optional[:class:`dict`]
             A dict containing multipart form data to send with
             the request. If a filename is being uploaded, then it will
             be under a ``file`` key which will have a 3-element :class:`tuple`
             denoting ``(filename, file, content_type)``.
-        payload: Optional[dict]
+        payload: Optional[:class:`dict`]
             The JSON to send with the request, if any.
         """
         raise NotImplementedError()
@@ -94,28 +96,55 @@ class WebhookAdapter:
         ------------
         data
             The data that was returned from the request.
-        wait: bool
+        wait: :class:`bool`
             Whether the webhook execution was asked to wait or not.
         """
         raise NotImplementedError()
 
-    def _store_user(self, data):
-        # mocks a ConnectionState for appropriate use for Message
-        return BaseUser(state=self, data=data)
+    async def _wrap_coroutine_and_cleanup(self, coro, cleanup):
+        try:
+            return await coro
+        finally:
+            cleanup()
 
-    def execute_webhook(self, *, payload, wait=False, file=None):
+    def execute_webhook(self, *, payload, wait=False, file=None, files=None):
+        cleanup = None
         if file is not None:
             multipart = {
-                'file': file,
+                'file': (file.filename, file.fp, 'application/octet-stream'),
                 'payload_json': utils.to_json(payload)
             }
             data = None
+            cleanup = file.close
+            files_to_pass = [file]
+        elif files is not None:
+            multipart = {
+                'payload_json': utils.to_json(payload)
+            }
+            for i, file in enumerate(files, start=1):
+                multipart['file%i' % i] = (file.filename, file.fp, 'application/octet-stream')
+            data = None
+
+            def _anon():
+                for f in files:
+                    f.close()
+
+            cleanup = _anon
+            files_to_pass = files
         else:
             data = payload
             multipart = None
+            files_to_pass = None
 
         url = '%s?wait=%d' % (self._request_url, wait)
-        maybe_coro = self.request('POST', url, multipart=multipart, payload=data)
+        try:
+            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
+        finally:
+            if cleanup is not None:
+                if not asyncio.iscoroutine(maybe_coro):
+                    cleanup()
+                else:
+                    maybe_coro = self._wrap_coroutine_and_cleanup(maybe_coro, cleanup)
         return self.handle_execution_response(maybe_coro, wait=wait)
 
 class AsyncWebhookAdapter(WebhookAdapter):
@@ -133,24 +162,28 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
     def __init__(self, session):
         self.session = session
-        self.loop = session.loop
+        self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None):
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
         headers = {}
         data = None
+        files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
 
         if multipart:
-            file = multipart.pop('file', None)
             data = aiohttp.FormData()
-            if file:
-                data.add_field('file', file[1], filename=file[0], content_type=file[2])
             for key, value in multipart.items():
-                data.add_field(key, value)
+                if key.startswith('file'):
+                    data.add_field(key, value[1], filename=value[0], content_type=value[2])
+                else:
+                    data.add_field(key, value)
 
         for tries in range(5):
+            for file in files:
+                file.reset(seek=tries)
+
             async with self.session.request(verb, url, headers=headers, data=data) as r:
                 data = await r.text(encoding='utf-8')
                 if r.headers['Content-Type'] == 'application/json':
@@ -189,7 +222,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
         # transform into Message object
         from .message import Message
-        return Message(data=data, state=self, channel=self.webhook.channel)
+        return Message(data=data, state=self.webhook._state, channel=self.webhook.channel)
 
 class RequestsWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with ``requests``.
@@ -203,7 +236,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
         each request will create a new session. Note if a session is given,
         the webhook adapter **will not** clean it up for you. You must close
         the session yourself.
-    sleep: bool
+    sleep: :class:`bool`
         Whether to sleep the thread when encountering a 429 or pre-emptive
         rate limit or a 5xx status code. Defaults to ``True``. If set to
         ``False`` then this will raise an :exc:`HTTPException` instead.
@@ -214,17 +247,21 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None):
         headers = {}
         data = None
+        files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
 
         if multipart is not None:
-            data = { 'payload_json': multipart.pop('payload_json') }
+            data = {'payload_json': multipart.pop('payload_json')}
 
         for tries in range(5):
+            for file in files:
+                file.reset(seek=tries)
+
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
             data = r.text
@@ -270,7 +307,42 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
         # transform into Message object
         from .message import Message
-        return Message(data=response, state=self, channel=self.webhook.channel)
+        return Message(data=response, state=self.webhook._state, channel=self.webhook.channel)
+
+class _FriendlyHttpAttributeErrorHelper:
+    __slots__ = ()
+
+    def __getattr__(self, attr):
+        raise AttributeError('PartialWebhookState does not support http methods.')
+
+class _PartialWebhookState:
+    __slots__ = ('loop',)
+
+    def __init__(self, adapter):
+        # Fetch the loop from the adapter if it's there
+        try:
+            self.loop = adapter.loop
+        except AttributeError:
+            self.loop = None
+
+    def _get_guild(self, guild_id):
+        return None
+
+    def store_user(self, data):
+        return BaseUser(state=self, data=data)
+
+    @property
+    def is_bot(self):
+        return True
+
+    @property
+    def http(self):
+        # Some data classes assign state.http and that should be kosher
+        # however, using it should result in a late-binding error.
+        return _FriendlyHttpAttributeErrorHelper()
+
+    def __getattr__(self, attr):
+        raise AttributeError('PartialWebhookState does not support {0:!r}.'.format(attr))
 
 class Webhook:
     """Represents a Discord webhook.
@@ -342,7 +414,7 @@ class Webhook:
         self.name = data.get('name')
         self.avatar = data.get('avatar')
         self.token = data['token']
-        self._state = state
+        self._state = state or _PartialWebhookState(adapter)
         self._adapter = adapter
         self._adapter._prepare(self)
 
@@ -370,9 +442,9 @@ class Webhook:
 
         Parameters
         -----------
-        id: int
+        id: :class:`int`
             The ID of the webhook.
-        token: str
+        token: :class:`str`
             The authentication token of the webhook.
         adapter: :class:`WebhookAdapter`
             The webhook adapter to use when sending requests. This is
@@ -396,7 +468,7 @@ class Webhook:
 
         Parameters
         ------------
-        url: str
+        url: :class:`str`
             The URL of the webhook.
         adapter: :class:`WebhookAdapter`
             The webhook adapter to use when sending requests. This is
@@ -416,7 +488,8 @@ class Webhook:
 
     @classmethod
     def from_state(cls, data, state):
-        return cls(data, adapter=AsyncWebhookAdapter(session=state.http._session), state=state)
+        session = state.http._HTTPClient__session
+        return cls(data, adapter=AsyncWebhookAdapter(session=session), state=state)
 
     @property
     def guild(self):
@@ -424,7 +497,7 @@ class Webhook:
 
         If this is a partial webhook, then this will always return ``None``.
         """
-        return self._state and self._state._get_guild(self.guild_id)
+        return self._state._get_guild(self.guild_id)
 
     @property
     def channel(self):
@@ -463,25 +536,25 @@ class Webhook:
 
         Parameters
         -----------
-        format: Optional[str]
+        format: Optional[:class:`str`]
             The format to attempt to convert the avatar to.
             If the format is ``None``, then it is equivalent to png.
-        size: int
+        size: :class:`int`
             The size of the image to display.
-
-        Returns
-        --------
-        str
-            The resulting CDN URL.
 
         Raises
         ------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
         """
         if self.avatar is None:
             # Default is always blurple apparently
-            return 'https://cdn.discordapp.com/embed/avatars/0.png'
+            return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/0.png')
 
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
@@ -491,7 +564,8 @@ class Webhook:
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        return 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        return Asset(self._state, url)
 
     def delete(self):
         """|maybecoro|
@@ -522,10 +596,10 @@ class Webhook:
 
         Parameters
         -------------
-        name: Optional[str]
+        name: Optional[:class:`str`]
             The webhook's new default name.
-        avatar: Optional[bytes]
-            A *bytes-like* object representing the webhook's new default avatar.
+        avatar: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the webhook's new default avatar.
 
         Raises
         -------
@@ -560,8 +634,8 @@ class Webhook:
 
         return self._adapter.edit_webhook(**payload)
 
-    def send(self, content=None, *, wait=False, username=None, avatar_url=None,
-                                    tts=False, file=None, embed=None, embeds=None):
+    def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
+                                    file=None, files=None, embed=None, embeds=None):
         """|maybecoro|
 
         Sends a message using the webhook.
@@ -580,22 +654,25 @@ class Webhook:
 
         Parameters
         ------------
-        content
+        content: :class:`str`
             The content of the message to send.
-        wait: bool
+        wait: :class:`bool`
             Whether the server should wait before sending a response. This essentially
             means that the return type of this function changes from ``None`` to
             a :class:`Message` if set to ``True``.
-        username: str
+        username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
-        avatar_url: str
+        avatar_url: Union[:class:`str`, :class:`Asset`]
             The avatar URL to send with this message. If no avatar URL is provided
             then the default avatar for the webhook is used.
-        tts: bool
+        tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         file: :class:`File`
-            The file to upload.
+            The file to upload. This cannot be mixed with ``files`` parameter.
+        files: List[:class:`File`]
+            A list of files to send with the content. This cannot be mixed with the
+            ``file`` parameter.
         embed: :class:`Embed`
             The rich embed for the content to send. This cannot be mixed with
             ``embeds`` parameter.
@@ -623,6 +700,8 @@ class Webhook:
 
         payload = {}
 
+        if files is not None and file is not None:
+            raise InvalidArgument('Cannot mix file and files keyword arguments.')
         if embeds is not None and embed is not None:
             raise InvalidArgument('Cannot mix embed and embeds keyword arguments.')
 
@@ -639,18 +718,11 @@ class Webhook:
 
         payload['tts'] = tts
         if avatar_url:
-            payload['avatar_url'] = avatar_url
+            payload['avatar_url'] = str(avatar_url)
         if username:
             payload['username'] = username
 
-        if file is not None:
-            try:
-                to_pass = (file.filename, file.open_file(), 'application/octet-stream')
-                return self._adapter.execute_webhook(wait=wait, file=to_pass, payload=payload)
-            finally:
-                file.close()
-        else:
-            return self._adapter.execute_webhook(wait=wait, payload=payload)
+        return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 
     def execute(self, *args, **kwargs):
         """An alias for :meth:`~.Webhook.send`."""

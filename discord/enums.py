@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
 
 from enum import Enum, IntEnum
 
-__all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'VerificationLevel',
-           'ContentFilter', 'Status', 'DefaultAvatar', 'RelationshipType',
-           'AuditLogAction', 'AuditLogActionCategory', 'UserFlags',
-           'ActivityType', ]
+__all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'SpeakingState',
+           'VerificationLevel', 'ContentFilter', 'Status', 'DefaultAvatar',
+           'RelationshipType', 'AuditLogAction', 'AuditLogActionCategory',
+           'UserFlags', 'ActivityType', 'HypeSquadHouse', 'NotificationLevel',
+           'PremiumType', 'UserContentFilter', 'FriendFlags', 'Theme']
 
 class ChannelType(Enum):
     text     = 0
@@ -37,6 +38,8 @@ class ChannelType(Enum):
     voice    = 2
     group    = 3
     category = 4
+    news     = 5
+    store    = 6
 
     def __str__(self):
         return self.name
@@ -66,12 +69,23 @@ class VoiceRegion(Enum):
     brazil        = 'brazil'
     hongkong      = 'hongkong'
     russia        = 'russia'
+    japan         = 'japan'
+    southafrica   = 'southafrica'
     vip_us_east   = 'vip-us-east'
     vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
 
     def __str__(self):
         return self.value
+
+class SpeakingState(IntEnum):
+    none       = 0
+    voice      = 1
+    soundshare = 2
+    priority   = 4
+
+    def __str__(self):
+        return self.name
 
 class VerificationLevel(IntEnum):
     none              = 0
@@ -92,6 +106,22 @@ class ContentFilter(IntEnum):
 
     def __str__(self):
         return self.name
+
+class UserContentFilter(IntEnum):
+    disabled    = 0
+    friends     = 1
+    all_messages = 2
+
+class FriendFlags(Enum):
+    noone = 0
+    mutual_guilds = 1
+    mutual_friends = 2
+    guild_and_friends = 3
+    everyone = 4
+
+class Theme(Enum):
+    light = 'light'
+    dark = 'dark'
 
 class Status(Enum):
     online = 'online'
@@ -120,6 +150,10 @@ class RelationshipType(Enum):
     blocked          = 2
     incoming_request = 3
     outgoing_request = 4
+
+class NotificationLevel(IntEnum):
+    all_messages  = 0
+    only_mentions = 1
 
 class AuditLogActionCategory(Enum):
     create = 1
@@ -212,6 +246,11 @@ class UserFlags(Enum):
     staff = 1
     partner = 2
     hypesquad = 4
+    bug_hunter = 8
+    hypesquad_bravery = 64
+    hypesquad_brilliance = 128
+    hypesquad_balance = 256
+    early_supporter = 512
 
 class ActivityType(IntEnum):
     unknown = -1
@@ -220,6 +259,14 @@ class ActivityType(IntEnum):
     listening = 2
     watching = 3
 
+class HypeSquadHouse(Enum):
+    bravery = 1
+    brilliance = 2
+    balance = 3
+
+class PremiumType(Enum):
+    nitro_classic = 1
+    nitro = 2
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

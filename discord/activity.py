@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,11 +24,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .enums import ActivityType, try_enum
-from .colour import Colour
 import datetime
 
-__all__ = ('Activity', 'Streaming', 'Game', 'Spotify')
+from .enums import ActivityType, try_enum
+from .colour import Colour
+from .utils import _get_as_snowflake
+
+__all__ = ['Activity', 'Streaming', 'Game', 'Spotify']
 
 """If curious, this is the current schema for an activity.
 
@@ -92,7 +94,7 @@ class Activity(_ActivityTag):
 
     Attributes
     ------------
-    application_id: :class:`str`
+    application_id: :class:`int`
         The application ID of the game.
     name: :class:`str`
         The name of the activity.
@@ -137,7 +139,7 @@ class Activity(_ActivityTag):
         self.timestamps = kwargs.pop('timestamps', {})
         self.assets = kwargs.pop('assets', {})
         self.party = kwargs.pop('party', {})
-        self.application_id = kwargs.pop('application_id', None)
+        self.application_id = _get_as_snowflake(kwargs, 'application_id')
         self.name = kwargs.pop('name', None)
         self.url = kwargs.pop('url', None)
         self.flags = kwargs.pop('flags', 0)
@@ -512,7 +514,7 @@ class Spotify:
     @property
     def artists(self):
         """List[:class:`str`]: The artists of the song being played."""
-        return self._state.split(';')
+        return self._state.split('; ')
 
     @property
     def artist(self):

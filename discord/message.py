@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,15 +25,18 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+import datetime
 import re
+import io
 
 from . import utils
 from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException, NotFound
+from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
+from .member import Member
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -71,20 +74,31 @@ class Attachment:
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
 
-    async def save(self, fp, *, seek_begin=True):
+    def is_spoiler(self):
+        """:class:`bool`: Whether this attachment contains a spoiler."""
+        return self.filename.startswith('SPOILER_')
+
+    async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
         Saves this attachment into a file-like object.
 
         Parameters
         -----------
-        fp: Union[BinaryIO, str]
+        fp: Union[BinaryIO, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
-        seek_begin: bool
+        seek_begin: :class:`bool`
             Whether to seek to the beginning of the file after saving is
             successfully done.
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, compared to the regular URL is generally deleted right after
+            the message is deleted. Note that this can still fail to download
+            deleted attachments if too much time has passed and it does not work
+            on some type of attachments.
 
         Raises
         --------
@@ -95,22 +109,22 @@ class Attachment:
 
         Returns
         --------
-        int
+        :class:`int`
             The number of bytes written.
         """
-
-        data = await self._http.get_attachment(self.url)
-        if isinstance(fp, str):
-            with open(fp, 'wb') as f:
-                return f.write(data)
-        else:
+        url = self.proxy_url if use_cached else self.url
+        data = await self._http.get_from_cdn(url)
+        if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
                 fp.seek(0)
             return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)
 
 class Message:
-    """Represents a message from Discord.
+    r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
 
@@ -123,7 +137,7 @@ class Message:
         in cases where it might be a system message for :attr:`system_content`.
     author
         A :class:`Member` that sent the message. If :attr:`channel` is a
-        private channel, then it is a :class:`User` instead.
+        private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
         The actual contents of the message.
     nonce
@@ -142,9 +156,9 @@ class Message:
 
         .. note::
 
-            This does not check if the ``@everyone`` text is in the message itself.
-            Rather this boolean indicates if the ``@everyone`` text is in the message
-            **and** it did end up mentioning everyone.
+            This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
+            Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
+            **and** it did end up mentioning.
 
     mentions: :class:`list`
         A list of :class:`Member` that were mentioned. If the message is in a private message
@@ -194,13 +208,13 @@ class Message:
         - ``cover_image``: A string representing the embed's image asset ID.
     """
 
-    __slots__ = ( '_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
-                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
-                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
-                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
-                  'application', 'activity' )
+    __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
+                 'mention_everyone', 'embeds', 'id', 'mentions', 'author',
+                 '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
+                 '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions',
+                 'application', 'activity')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -269,10 +283,10 @@ class Message:
         self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
         self._try_patch(data, 'content')
         self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_data, x)))
+        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
         self._try_patch(data, 'nonce')
 
-        for handler in ('author', 'mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
             try:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
@@ -293,6 +307,20 @@ class Message:
             if found is not None:
                 self.author = found
 
+    def _handle_member(self, member):
+        # The gateway now gives us full Member objects sometimes with the following keys
+        # deaf, mute, joined_at, roles
+        # For the sake of performance I'm going to assume that the only
+        # field that needs *updating* would be the joined_at field.
+        # If there is no Member object (for some strange reason), then we can upgrade
+        # ourselves to a more "partial" member object.
+        author = self.author
+        try:
+            if author.joined_at is None:
+                author.joined_at = utils.parse_time(member.get('joined_at'))
+        except AttributeError:
+            self.author = Member._from_message(message=self, data=member)
+
     def _handle_mentions(self, mentions):
         self.mentions = []
         if self.guild is None:
@@ -309,7 +337,7 @@ class Message:
         self.role_mentions = []
         if self.guild is not None:
             for role_id in map(int, role_mentions):
-                role = utils.get(self.guild.roles, id=role_id)
+                role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
 
@@ -366,7 +394,7 @@ class Message:
     def channel_mentions(self):
         if self.guild is None:
             return []
-        it = filter(None, map(lambda m: self.guild.get_channel(m), self.raw_channel_mentions))
+        it = filter(None, map(self.guild.get_channel, self.raw_channel_mentions))
         return utils._unique(it)
 
     @utils.cached_slot_property('_cs_clean_content')
@@ -378,6 +406,12 @@ class Message:
 
         This will also transform @everyone and @here mentions into
         non-mentions.
+
+        .. note::
+
+            This *does not* escape markdown. If you want to escape
+            markdown then use :func:`utils.escape_markdown` along
+            with this function.
         """
 
         transformations = {
@@ -434,14 +468,14 @@ class Message:
         return self._edited_timestamp
 
     @property
-    def jump_to_url(self):
+    def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discordapp.com/channels/{0}/{1.channel.id}?jump={1.id}'.format(guild_id, self)
+        return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
-        """A property that returns the content that is rendered
+        r"""A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
         In the case of :attr:`MessageType.default`\, this just returns the
@@ -482,7 +516,7 @@ class Message:
                 "A wild {0} appeared.",
                 "Swoooosh. {0} just landed.",
                 "Brace yourselves. {0} just joined the server.",
-                "{0} just joined. Hide your bananas.",
+                "{0} just joined... or did they?",
                 "{0} just arrived. Seems OP - please nerf.",
                 "{0} just slid into the server.",
                 "A {0} has spawned in the server.",
@@ -492,9 +526,9 @@ class Message:
                 "{0} just showed up. Hold my beer.",
                 "Challenger approaching - {0} has appeared!",
                 "It's a bird! It's a plane! Nevermind, it's just {0}.",
-                "It's {0}! Praise the sun! [T]/",
+                "It's {0}! Praise the sun! \\[T]/",
                 "Never gonna give {0} up. Never gonna let {0} down.",
-                "Ha! {0} has joined! You activated my trap card!",
+                "{0} has joined the battle bus.",
                 "Cheers, love! {0}'s here!",
                 "Hey! Listen! {0} has joined!",
                 "We've been expecting you {0}",
@@ -510,8 +544,11 @@ class Message:
                 "Roses are red, violets are blue, {0} joined this server with you",
             ]
 
-            index = int(self.created_at.timestamp()) % len(formats)
-            return formats[index].format(self.author.name)
+            # manually reconstruct the epoch with millisecond precision, because
+            # datetime.datetime.timestamp() doesn't return the exact posix
+            # timestamp with the precision that we need
+            created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+            return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.call:
             # we're at the call message type now, which is a bit more complicated.
@@ -553,13 +590,13 @@ class Message:
 
         Parameters
         -----------
-        content: Optional[str]
+        content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
-        delete_after: Optional[float]
+        delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
@@ -599,7 +636,7 @@ class Message:
                     await asyncio.sleep(delete_after, loop=self._state.loop)
                     try:
                         await self._state.http.delete_message(self.channel.id, self.id)
-                    except:
+                    except HTTPException:
                         pass
 
                 asyncio.ensure_future(delete(), loop=self._state.loop)
@@ -660,7 +697,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to react with.
 
         Raises
@@ -675,18 +712,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialEmoji):
-            emoji = emoji._as_reaction()
-        elif isinstance(emoji, str):
-            pass # this is okay
-        else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
-
+        emoji = self._emoji_reaction(emoji)
         await self._state.http.add_reaction(self.id, self.channel.id, emoji)
 
     async def remove_reaction(self, emoji, member):
@@ -704,7 +730,7 @@ class Message:
 
         Parameters
         ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, str]
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.
@@ -721,22 +747,26 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            emoji = '%s:%s' % (emoji.name, emoji.id)
-        elif isinstance(emoji, PartialEmoji):
-            emoji = emoji._as_reaction()
-        elif isinstance(emoji, str):
-            pass # this is okay
-        else:
-            raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+        emoji = self._emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
             await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
         else:
             await self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+
+    @staticmethod
+    def _emoji_reaction(emoji):
+        if isinstance(emoji, Reaction):
+            emoji = emoji.emoji
+
+        if isinstance(emoji, Emoji):
+            return '%s:%s' % (emoji.name, emoji.id)
+        if isinstance(emoji, PartialEmoji):
+            return emoji._as_reaction()
+        if isinstance(emoji, str):
+            return emoji # this is okay
+
+        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     async def clear_reactions(self):
         """|coro|

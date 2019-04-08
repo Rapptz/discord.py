@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2018 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -35,14 +35,16 @@ class RawMessageDeleteEvent:
         The guild ID where the deletion took place, if applicable.
     message_id: :class:`int`
         The message ID that got deleted.
+    cached_message: Optional[:class:`Message`]
+        The cached message, if found in the internal message cache.
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
         self.channel_id = int(data['channel_id'])
-
+        self.cached_message = None
         try:
             self.guild_id = int(data['guild_id'])
         except KeyError:
@@ -59,13 +61,16 @@ class RawBulkMessageDeleteEvent:
         The channel ID where the message got deleted.
     guild_id: Optional[:class:`int`]
         The guild ID where the message got deleted, if applicable.
+    cached_messages: List[:class:`Message`]
+        The cached messages, if found in the internal message cache.
     """
 
-    __slots__ = ('message_ids', 'channel_id', 'guild_id')
+    __slots__ = ('message_ids', 'channel_id', 'guild_id', 'cached_messages')
 
     def __init__(self, data):
-        self.message_ids = { int(x) for x in data.get('ids', []) }
+        self.message_ids = {int(x) for x in data.get('ids', [])}
         self.channel_id = int(data['channel_id'])
+        self.cached_messages = []
 
         try:
             self.guild_id = int(data['guild_id'])
@@ -99,7 +104,7 @@ class RawReactionActionEvent:
     message_id: :class:`int`
         The message ID that got or lost a reaction.
     user_id: :class:`int`
-        The user ID who added or removed the reaction.
+        The user ID who added the reaction or whose reaction was removed.
     channel_id: :class:`int`
         The channel ID where the reaction got added or removed.
     guild_id: Optional[:class:`int`]

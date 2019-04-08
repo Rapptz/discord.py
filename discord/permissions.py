@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -101,14 +101,14 @@ class Permissions:
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
 
     def is_superset(self, other):
         """Returns True if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
 
     def is_strict_subset(self, other):
         """Returns True if the permissions on other are a strict subset of those on self."""
@@ -133,7 +133,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110011111111)
+        return cls(0b01111111111101111111110111111111)
 
     @classmethod
     def all_channel(cls):
@@ -145,7 +145,7 @@ class Permissions:
         - kick_members
         - ban_members
         - administrator
-        - change_nicknames
+        - change_nickname
         - manage_nicknames
         """
         return cls(0b00110011111101111111110001010001)
@@ -166,10 +166,10 @@ class Permissions:
     def voice(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to True."""
-        return cls(0b00000011111100000000000000000000)
+        return cls(0b00000011111100000000000100000000)
 
     def update(self, **kwargs):
-        """Bulk updates this permission object.
+        r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
         arguments. The names must be equivalent to the properties
@@ -193,9 +193,9 @@ class Permissions:
         return bool((self.value >> index) & 1)
 
     def _set(self, index, value):
-        if value == True:
+        if value is True:
             self.value |= (1 << index)
-        elif value == False:
+        elif value is False:
             self.value &= ~(1 << index)
         else:
             raise TypeError('Value to set for Permissions must be a bool.')
@@ -292,7 +292,16 @@ class Permissions:
     def view_audit_log(self, value):
         self._set(7, value)
 
-    # 2 unused
+    @property
+    def priority_speaker(self):
+        """Returns True if a user can be more easily heard while talking."""
+        return self._bit(8)
+
+    @priority_speaker.setter
+    def priority_speaker(self, value):
+        self._set(8, value)
+
+    # 1 unused
 
     @property
     def read_messages(self):
@@ -359,7 +368,7 @@ class Permissions:
 
     @property
     def mention_everyone(self):
-        """Returns True if a user's @everyone will mention everyone in the text channel."""
+        """Returns True if a user's @everyone or @here will mention everyone in the text channel."""
         return self._bit(17)
 
     @mention_everyone.setter
@@ -484,7 +493,7 @@ class Permissions:
     # after these 32 bits, there's 21 more unused ones technically
 
 def augment_from_permissions(cls):
-    cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+    cls.VALID_NAMES = {name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property)}
 
     # make descriptors for all the valid names
     for name in cls.VALID_NAMES:
@@ -501,7 +510,7 @@ def augment_from_permissions(cls):
 
 @augment_from_permissions
 class PermissionOverwrite:
-    """A type that is used to represent a channel specific permission.
+    r"""A type that is used to represent a channel specific permission.
 
     Unlike a regular :class:`Permissions`\, the default value of a
     permission is equivalent to ``None`` and not ``False``. Setting
@@ -517,6 +526,10 @@ class PermissionOverwrite:
     +-----------+------------------------------------------+
     | Operation |               Description                |
     +===========+==========================================+
+    | x == y    | Checks if two overwrites are equal.      |
+    +-----------+------------------------------------------+
+    | x != y    | Checks if two overwrites are not equal.  |
+    +-----------+------------------------------------------+
     | iter(x)   | Returns an iterator of (perm, value)     |
     |           | pairs. This allows this class to be used |
     |           | as an iterable in e.g. set/list/dict     |
@@ -540,6 +553,9 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
+    def __eq__(self, other):
+        return self._values == other._values
+
     def _set(self, key, value):
         if value not in (True, None, False):
             raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
@@ -553,7 +569,7 @@ class PermissionOverwrite:
         """
 
         allow = Permissions.none()
-        deny  = Permissions.none()
+        deny = Permissions.none()
 
         for key, value in self._values.items():
             if value is True:
@@ -586,7 +602,7 @@ class PermissionOverwrite:
         return all(x is None for x in self._values.values())
 
     def update(self, **kwargs):
-        """Bulk updates this permission overwrite object.
+        r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword
         arguments. The names must be equivalent to the properties

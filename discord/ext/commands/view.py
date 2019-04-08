@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -23,7 +24,29 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .errors import BadArgument
+from .errors import UnexpectedQuoteError, InvalidEndOfQuotedStringError, ExpectedClosingQuoteError
+
+# map from opening quotes to closing quotes
+_quotes = {
+    '"': '"',
+    "‘": "’",
+    "‚": "‛",
+    "“": "”",
+    "„": "‟",
+    "⹂": "⹂",
+    "「": "」",
+    "『": "』",
+    "〝": "〞",
+    "﹁": "﹂",
+    "﹃": "﹄",
+    "＂": "＂",
+    "｢": "｣",
+    "«": "»",
+    "‹": "›",
+    "《": "》",
+    "〈": "〉",
+}
+_all_quotes = set(_quotes.keys()) | set(_quotes.values())
 
 class StringView:
     def __init__(self, buffer):
@@ -103,95 +126,69 @@ class StringView:
         self.index += pos
         return result
 
-    def __repr__(self):
-        return '<StringView pos: {0.index} prev: {0.previous} end: {0.end} eof: {0.eof}>'.format(self)
+    def get_quoted_word(self):
+        current = self.current
+        if current is None:
+            return None
 
-# Parser
+        close_quote = _quotes.get(current)
+        is_quoted = bool(close_quote)
+        if is_quoted:
+            result = []
+            _escaped_quotes = (current, close_quote)
+        else:
+            result = [current]
+            _escaped_quotes = _all_quotes
 
-# map from opening quotes to closing quotes
-_quotes = {
-    '"': '"',
-    "«": "»",
-    "‘": "’",
-    "‚": "‛",
-    "“": "”",
-    "„": "‟",
-    "‹": "›",
-    "⹂": "⹂",
-    "「": "」",
-    "『": "』",
-    "〝": "〞",
-    "﹁": "﹂",
-    "﹃": "﹄",
-    "＂": "＂",
-    "｢": "｣",
-    "«": "»",
-    "‹": "›",
-    "《": "》",
-    "〈": "〉",
-}
-_all_quotes = set(_quotes.keys()) | set(_quotes.values())
-
-def quoted_word(view):
-    current = view.current
-
-    if current is None:
-        return None
-
-    close_quote = _quotes.get(current)
-    is_quoted = bool(close_quote)
-    if is_quoted:
-        result = []
-        _escaped_quotes = (current, close_quote)
-    else:
-        result = [current]
-        _escaped_quotes = _all_quotes
-
-    while not view.eof:
-        current = view.get()
-        if not current:
-            if is_quoted:
-                # unexpected EOF
-                raise BadArgument('Expected closing {}.'.format(close_quote))
-            return ''.join(result)
-
-        # currently we accept strings in the format of "hello world"
-        # to embed a quote inside the string you must escape it: "a \"world\""
-        if current == '\\':
-            next_char = view.get()
-            if not next_char:
-                # string ends with \ and no character after it
+        while not self.eof:
+            current = self.get()
+            if not current:
                 if is_quoted:
-                    # if we're quoted then we're expecting a closing quote
-                    raise BadArgument('Expected closing {}.'.format(close_quote))
-                # if we aren't then we just let it through
+                    # unexpected EOF
+                    raise ExpectedClosingQuoteError(close_quote)
                 return ''.join(result)
 
-            if next_char in _escaped_quotes:
-                # escaped quote
-                result.append(next_char)
-            else:
-                # different escape character, ignore it
-                view.undo()
-                result.append(current)
-            continue
+            # currently we accept strings in the format of "hello world"
+            # to embed a quote inside the string you must escape it: "a \"world\""
+            if current == '\\':
+                next_char = self.get()
+                if not next_char:
+                    # string ends with \ and no character after it
+                    if is_quoted:
+                        # if we're quoted then we're expecting a closing quote
+                        raise ExpectedClosingQuoteError(close_quote)
+                    # if we aren't then we just let it through
+                    return ''.join(result)
 
-        if not is_quoted and current in _all_quotes:
-            # we aren't quoted
-            raise BadArgument('Unexpected quote mark in non-quoted string')
+                if next_char in _escaped_quotes:
+                    # escaped quote
+                    result.append(next_char)
+                else:
+                    # different escape character, ignore it
+                    self.undo()
+                    result.append(current)
+                continue
 
-        # closing quote
-        if is_quoted and current == close_quote:
-            next_char = view.get()
-            valid_eof = not next_char or next_char.isspace()
-            if not valid_eof:
-                raise BadArgument('Expected space after closing quotation')
+            if not is_quoted and current in _all_quotes:
+                # we aren't quoted
+                raise UnexpectedQuoteError(current)
 
-            # we're quoted so it's okay
-            return ''.join(result)
+            # closing quote
+            if is_quoted and current == close_quote:
+                next_char = self.get()
+                valid_eof = not next_char or next_char.isspace()
+                if not valid_eof:
+                    raise InvalidEndOfQuotedStringError(next_char)
 
-        if current.isspace() and not is_quoted:
-            # end of word found
-            return ''.join(result)
+                # we're quoted so it's okay
+                return ''.join(result)
 
-        result.append(current)
+            if current.isspace() and not is_quoted:
+                # end of word found
+                return ''.join(result)
+
+            result.append(current)
+
+
+    def __repr__(self):
+        return '<StringView pos: {0.index} prev: {0.previous} end: {0.end} eof: {0.eof}>'.format(self)

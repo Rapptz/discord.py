@@ -8,6 +8,15 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p0p0:
+
+v1.0.0
+--------
+
+The changeset for this version are too big to be listed here, for more information please
+see :ref:`the migrating page <migrating_1_0>`.
+
+
 .. _vp0p16p6:
 
 v0.16.6

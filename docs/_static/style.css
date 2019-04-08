@@ -11,7 +11,7 @@ In particular thanks to:
 @import url('basic.css');
 
 body {
-  font-family: 'Georgia', serif;
+  font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
   font-size: 16px;
   margin: 0;
   padding: 0;
@@ -322,6 +322,21 @@ div.helpful > p.admonition-title:after {
   content: unset;
 }
 
+/* exception hierarchy */
+
+.exception-hierarchy-content dd,
+.exception-hierarchy-content dl {
+  margin: 0px 2px;
+}
+
+.exception-hierarchy-content {
+  margin-left: 0.5em;
+}
+
+.exception-hierarchy-content ul {
+  list-style: '»' !important;
+}
+
 pre {
   background-color: #f5f5f5;
   border: 1px solid #C6C9CB;
@@ -463,6 +478,11 @@ div#welcome-to-discord-py > h1 {
 .active {
   background-color: #dbdbdb;
   border-left: 5px solid #dbdbdb;
+}
+
+div.code-block-caption {
+  font-size: medium;
+  font-weight: bold;
 }
 
 @media screen and (max-width: 870px) {

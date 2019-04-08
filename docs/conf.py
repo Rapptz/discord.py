@@ -16,8 +16,6 @@ import sys
 import os
 import re
 
-on_rtd = os.getenv('READTHEDOCS') == 'True'
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -36,14 +34,11 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
     'sphinxcontrib.asyncio',
-    'details'
+    'details',
+    'exception_hierarchy'
 ]
-
-if on_rtd:
-  extensions.append('sphinxcontrib.napoleon')
-else:
-  extensions.append('sphinx.ext.napoleon')
 
 autodoc_member_order = 'bysource'
 
@@ -52,7 +47,7 @@ extlinks = {
 }
 
 # Links used for cross-referencing stuff in other documentation
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {'py': ('https://docs.python.org/3', None)}
 
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.
@@ -75,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'discord.py'
-copyright = u'2015-2017, Rapptz'
+copyright = u'2015-2019, Rapptz'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -96,6 +91,9 @@ release = version
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
 language = None
+
+locale_dirs = ['locale/']
+gettext_compact = False
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -316,3 +314,5 @@ texinfo_documents = [
 
 def setup(app):
   app.add_javascript('custom.js')
+  if app.config.language == 'ja':
+    app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)

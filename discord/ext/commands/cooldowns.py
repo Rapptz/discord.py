@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -29,10 +30,12 @@ import time
 __all__ = ['BucketType', 'Cooldown', 'CooldownMapping']
 
 class BucketType(enum.Enum):
-    default = 0
-    user    = 1
-    guild  = 2
-    channel = 3
+    default  = 0
+    user     = 1
+    guild    = 2
+    channel  = 3
+    member   = 4
+    category = 5
 
 class Cooldown:
     __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
@@ -95,6 +98,11 @@ class CooldownMapping:
         self._cache = {}
         self._cooldown = original
 
+    def copy(self):
+        ret = CooldownMapping(self._cooldown)
+        ret._cache = self._cache.copy()
+        return ret
+
     @property
     def valid(self):
         return self._cooldown is not None
@@ -111,6 +119,10 @@ class CooldownMapping:
             return (msg.guild or msg.author).id
         elif bucket_type is BucketType.channel:
             return msg.channel.id
+        elif bucket_type is BucketType.member:
+            return ((msg.guild and msg.guild.id), msg.author.id)
+        elif bucket_type is BucketType.category:
+            return (msg.channel.category or msg.channel).id
 
     def _verify_cache_integrity(self):
         # we want to delete all cache objects that haven't been used

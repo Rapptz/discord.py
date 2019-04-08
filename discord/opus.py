@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,13 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import array
 import ctypes
 import ctypes.util
-import array
-from .errors import DiscordException
 import logging
-import sys
 import os.path
+import sys
+
+from .errors import DiscordException
 
 log = logging.getLogger(__name__)
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
@@ -44,14 +45,14 @@ EncoderStructPtr = ctypes.POINTER(EncoderStruct)
 
 def _err_lt(result, func, args):
     if result < 0:
-        log.info('error has happened in {0.__name__}'.format(func))
+        log.info('error has happened in %s', func.__name__)
         raise OpusError(result)
     return result
 
 def _err_ne(result, func, args):
     ret = args[-1]._obj
     if ret.value != 0:
-        log.info('error has happened in {0.__name__}'.format(func))
+        log.info('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
 
@@ -81,10 +82,7 @@ def libopus_loader(name):
 
     # register the functions...
     for item in exported_functions:
-        try:
-            func = getattr(lib, item[0])
-        except Exception as e:
-            raise e
+        func = getattr(lib, item[0])
 
         try:
             if item[1]:
@@ -110,7 +108,7 @@ try:
         _lib = libopus_loader(_filename)
     else:
         _lib = libopus_loader(ctypes.util.find_library('opus'))
-except Exception as e:
+except Exception:
     _lib = None
 
 def load_opus(name):
@@ -127,23 +125,28 @@ def load_opus(name):
 
     This function propagates the exceptions thrown.
 
-    Warning
-    --------
-    The bitness of the library must match the bitness of your python
-    interpreter. If the library is 64-bit then your python interpreter
-    must be 64-bit as well. Usually if there's a mismatch in bitness then
-    the load will throw an exception.
+    .. note::
 
-    Note
-    ----
-    On Windows, the .dll extension is not necessary. However, on Linux
-    the full extension is required to load the library, e.g. ``libopus.so.1``.
-    On Linux however, `find library`_ will usually find the library automatically
-    without you having to call this.
+        On Windows, this library should not need to be called as the binaries
+        are automatically loaded.
+
+    .. warning::
+
+        The bitness of the library must match the bitness of your python
+        interpreter. If the library is 64-bit then your python interpreter
+        must be 64-bit as well. Usually if there's a mismatch in bitness then
+        the load will throw an exception.
+
+    .. note::
+
+        On Windows, the .dll extension is not necessary. However, on Linux
+        the full extension is required to load the library, e.g. ``libopus.so.1``.
+        On Linux however, `find library`_ will usually find the library automatically
+        without you having to call this.
 
     Parameters
     ----------
-    name: str
+    name: :class:`str`
         The filename of the shared library.
     """
     global _lib
@@ -157,7 +160,7 @@ def is_loaded():
 
     Returns
     -------
-    bool
+    :class:`bool`
         Indicates if the opus library has been loaded.
     """
     global _lib
@@ -168,7 +171,7 @@ class OpusError(DiscordException):
 
     Attributes
     ----------
-    code : :class:`int`
+    code: :class:`int`
         The error code returned.
     """
 

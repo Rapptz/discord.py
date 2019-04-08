@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -45,7 +45,11 @@ import logging
 import struct
 import threading
 
-log = logging.getLogger(__name__)
+from . import opus
+from .backoff import ExponentialBackoff
+from .gateway import *
+from .errors import ClientException, ConnectionClosed
+from .player import AudioPlayer, AudioSource
 
 try:
     import nacl.secret
@@ -53,11 +57,8 @@ try:
 except ImportError:
     has_nacl = False
 
-from . import opus
-from .backoff import ExponentialBackoff
-from .gateway import *
-from .errors import ClientException, ConnectionClosed
-from .player import AudioPlayer, AudioSource
+
+log = logging.getLogger(__name__)
 
 class VoiceClient:
     """Represents a Discord voice connection.
@@ -101,6 +102,7 @@ class VoiceClient:
         self._connected = threading.Event()
         self._handshake_complete = asyncio.Event(loop=self.loop)
 
+        self.mode = None
         self._connections = 0
         self.sequence = 0
         self.timestamp = 0
@@ -109,6 +111,10 @@ class VoiceClient:
         self.encoder = opus.Encoder()
 
     warn_nacl = not has_nacl
+    supported_modes = (
+        'xsalsa20_poly1305_suffix',
+        'xsalsa20_poly1305',
+    )
 
     @property
     def guild(self):
@@ -132,7 +138,6 @@ class VoiceClient:
     async def start_handshake(self):
         log.info('Starting voice handshake...')
 
-        key_id, key_name = self.channel._get_voice_client_key()
         guild_id, channel_id = self.channel._get_voice_state_pair()
         state = self._state
         self.main_ws = ws = state._get_websocket(guild_id)
@@ -143,9 +148,9 @@ class VoiceClient:
 
         try:
             await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout, loop=self.loop)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             await self.terminate_handshake(remove=True)
-            raise e
+            raise
 
         log.info('Voice handshake complete. Endpoint found %s (IP: %s)', self.endpoint, self.endpoint_ip)
 
@@ -178,7 +183,7 @@ class VoiceClient:
         if self.socket:
             try:
                 self.socket.close()
-            except:
+            except Exception:
                 pass
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -225,15 +230,19 @@ class VoiceClient:
         while True:
             try:
                 await self.ws.poll_event()
-            except (ConnectionClosed, asyncio.TimeoutError) as e:
-                if isinstance(e, ConnectionClosed):
-                    if e.code == 1000:
+            except (ConnectionClosed, asyncio.TimeoutError) as exc:
+                if isinstance(exc, ConnectionClosed):
+                    # The following close codes are undocumented so I will document them here.
+                    # 1000 - normal closure (obviously)
+                    # 4014 - voice channel has been deleted.
+                    # 4015 - voice server has crashed
+                    if exc.code in (1000, 4014, 4015):
                         await self.disconnect()
                         break
 
                 if not reconnect:
                     await self.disconnect()
-                    raise e
+                    raise
 
                 retry = backoff.delay()
                 log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
@@ -288,21 +297,29 @@ class VoiceClient:
 
     def _get_voice_packet(self, data):
         header = bytearray(12)
-        nonce = bytearray(24)
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
 
-        # Formulate header
+        # Formulate rtp header
         header[0] = 0x80
         header[1] = 0x78
         struct.pack_into('>H', header, 2, self.sequence)
         struct.pack_into('>I', header, 4, self.timestamp)
         struct.pack_into('>I', header, 8, self.ssrc)
 
-        # Copy header to nonce's first 12 bytes
+        encrypt_packet = getattr(self, '_encrypt_' + self.mode)
+        return encrypt_packet(header, data)
+
+    def _encrypt_xsalsa20_poly1305(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+        nonce = bytearray(24)
         nonce[:12] = header
 
-        # Encrypt and return the data
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
+
+    def _encrypt_xsalsa20_poly1305_suffix(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+        nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
+
+        return header + box.encrypt(bytes(data), nonce).ciphertext + nonce
 
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
@@ -393,7 +410,7 @@ class VoiceClient:
         Parameters
         ----------
         data: bytes
-            The *bytes-like object* denoting PCM or Opus voice data.
+            The :term:`py:bytes-like object` denoting PCM or Opus voice data.
         encode: bool
             Indicates if ``data`` should be encoded into Opus.
 

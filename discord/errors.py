@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -58,7 +58,7 @@ def flatten_error_dict(d, key=''):
         if isinstance(v, dict):
             try:
                 _errors = v['_errors']
-            except Exception:
+            except KeyError:
                 items.extend(flatten_error_dict(v, new_key).items())
             else:
                 items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
@@ -130,7 +130,7 @@ class InvalidArgument(ClientException):
     is invalid some way (e.g. wrong value or wrong type).
 
     This could be considered the analogous of ``ValueError`` and
-    ``TypeError`` except derived from :exc:`ClientException` and thus
+    ``TypeError`` except inherited from :exc:`ClientException` and thus
     :exc:`DiscordException`.
     """
     pass
