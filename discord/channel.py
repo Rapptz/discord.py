@@ -265,7 +265,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         message_ids = [m.id for m in messages]
         await self._state.http.delete_messages(self.id, message_ids)
 
-    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, reverse=False, bulk=True):
+    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -306,8 +306,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``after`` in :meth:`history`.
         around
             Same as ``around`` in :meth:`history`.
-        reverse
-            Same as ``reverse`` in :meth:`history`.
+        oldest_first
+            Same as ``oldest_first`` in :meth:`history`.
         bulk: class:`bool`
             If True, use bulk delete. bulk=False is useful for mass-deleting
             a bot's own messages without manage_messages. When True, will fall
@@ -330,7 +330,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if check is None:
             check = lambda m: True
 
-        iterator = self.history(limit=limit, before=before, after=after, reverse=reverse, around=around)
+        iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
         ret = []
         count = 0
 

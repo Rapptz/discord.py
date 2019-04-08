@@ -382,6 +382,7 @@ class Client:
                 await self.ws.poll_event()
             except ResumeWebSocket:
                 log.info('Got a request to RESUME the websocket.')
+                self.dispatch('disconnect')
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
                                                     sequence=self.ws.sequence, resume=True)
                 self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
@@ -754,7 +755,7 @@ class Client:
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
 
-        The events must be a |corourl|_, if not, :exc:`ClientException` is raised.
+        The events must be a |corourl|_, if not, :exc:`TypeError` is raised.
 
         Example
         ---------
@@ -764,10 +765,15 @@ class Client:
             @client.event
             async def on_ready():
                 print('Ready!')
+
+        Raises
+        --------
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
 
         if not asyncio.iscoroutinefunction(coro):
-            raise ClientException('event registered must be a coroutine function')
+            raise TypeError('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
         log.debug('%s has successfully been registered as an event', coro.__name__)

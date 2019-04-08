@@ -863,7 +863,7 @@ class Messageable(metaclass=abc.ABCMeta):
         data = await state.http.pins_from(channel.id)
         return [state.create_message(channel=channel, data=m) for m in data]
 
-    def history(self, *, limit=100, before=None, after=None, around=None, reverse=None):
+    def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
         """Return an :class:`.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
@@ -902,11 +902,9 @@ class Messageable(metaclass=abc.ABCMeta):
             If a date is provided it must be a timezone-naive datetime representing UTC time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
             even number then this will return at most limit + 1 messages.
-        reverse: Optional[:class:`bool`]
-            If set to true, return messages in oldest->newest order. If unspecified,
-            this defaults to ``False`` for most cases. However if passing in a
-            ``after`` parameter then this is set to ``True``. This avoids getting messages
-            out of order in the ``after`` case.
+        oldest_first: Optional[:class:`bool`]
+            If set to true, return messages in oldest->newest order. Defaults to True if
+            ``after`` is specified, otherwise False.
 
         Raises
         ------
@@ -920,7 +918,7 @@ class Messageable(metaclass=abc.ABCMeta):
         :class:`.Message`
             The message with the message data parsed.
         """
-        return HistoryIterator(self, limit=limit, before=before, after=after, around=around, reverse=reverse)
+        return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
 
 
 class Connectable(metaclass=abc.ABCMeta):

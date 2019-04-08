@@ -158,7 +158,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self._client_status = {
-            None: Status.offline
+            None: 'offline'
         }
         self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
@@ -190,6 +190,17 @@ class Member(discord.abc.Messageable, _BaseUser):
         return cls(data=data, guild=message.guild, state=message._state)
 
     @classmethod
+    def _from_presence_update(cls, *, data, guild, state):
+        clone = cls(data=data, guild=guild, state=state)
+        to_return = cls(data=data, guild=guild, state=state)
+        to_return._client_status = {
+            key: value
+            for key, value in data.get('client_status', {}).items()
+        }
+        to_return._client_status[None] = data['status']
+        return to_return, clone
+
+    @classmethod
     def _copy(cls, member):
         self = cls.__new__(cls) # to bypass __init__
 
@@ -200,7 +211,10 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.nick = member.nick
         self.activities = member.activities
         self._state = member._state
-        self._user = User._copy(member._user)
+
+        # Reference will not be copied unless necessary by PRESENCE_UPDATE
+        # See below
+        self._user = member._user
         return self
 
     async def _get_channel(self):
@@ -210,13 +224,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     def _update_roles(self, data):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
 
-    def _update(self, data, user=None):
-        if user:
-            self._user.name = user['username']
-            self._user.discriminator = user['discriminator']
-            self._user.avatar = user['avatar']
-            self._user.bot = user.get('bot', False)
-
+    def _update(self, data):
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
         try:
@@ -236,9 +244,15 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         if len(user) > 1:
             u = self._user
-            u.name = user.get('username', u.name)
-            u.avatar = user.get('avatar', u.avatar)
-            u.discriminator = user.get('discriminator', u.discriminator)
+            original = (u.name, u.avatar, u.discriminator)
+            # These keys seem to always be available
+            modified = (user['username'], user['avatar'], user['discriminator'])
+            if original != modified:
+                to_return = User._copy(self._user)
+                u.name, u.avatar, u.discriminator = modified
+                # Signal to dispatch on_user_update
+                return to_return, u
+        return False
 
     @property
     def status(self):

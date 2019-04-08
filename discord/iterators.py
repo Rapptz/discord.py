@@ -28,7 +28,7 @@ import asyncio
 import datetime
 
 from .errors import NoMoreItems
-from .utils import time_snowflake, maybe_coroutine
+from .utils import DISCORD_EPOCH, time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
 
@@ -36,6 +36,8 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
     from .message import Message
+
+OLDEST_OBJECT = Object(id=0)
 
 _IT = TypeVar('_IT')
 
@@ -203,14 +205,13 @@ class HistoryIterator(_AsyncIterator['Message']):
     around: :class:`abc.Snowflake`
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
-    reverse: :class:`bool`
-        If set to true, return messages in oldest->newest order. Recommended
-        when using with "after" queries with limit over 100, otherwise messages
-        will be out of order.
+    oldest_first: :class:`bool`
+        If set to true, return messages in oldest->newest order. Defaults to 
+        True if ``after`` is specified, otherwise False.
     """
 
     def __init__(self, messageable, limit,
-                 before=None, after=None, around=None, reverse=None):
+                 before=None, after=None, around=None, oldest_first=None):
 
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
@@ -219,16 +220,16 @@ class HistoryIterator(_AsyncIterator['Message']):
         if isinstance(around, datetime.datetime):
             around = Object(id=time_snowflake(around))
 
+        if oldest_first is None:
+            self.reverse = after is not None
+        else:
+            self.reverse = oldest_first
+
         self.messageable = messageable
         self.limit = limit
         self.before = before
-        self.after = after
+        self.after = after or OLDEST_OBJECT
         self.around = around
-
-        if reverse is None:
-            self.reverse = after is not None
-        else:
-            self.reverse = reverse
 
         self._filter = None  # message dict -> bool
 
@@ -253,17 +254,15 @@ class HistoryIterator(_AsyncIterator['Message']):
                 self._filter = lambda m: int(m['id']) < self.before.id
             elif self.after:
                 self._filter = lambda m: self.after.id < int(m['id'])
-        elif self.before and self.after:
+        else:
             if self.reverse:
                 self._retrieve_messages = self._retrieve_messages_after_strategy
-                self._filter = lambda m: int(m['id']) < self.before.id
+                if (self.before):
+                    self._filter = lambda m: int(m['id']) < self.before.id
             else:
                 self._retrieve_messages = self._retrieve_messages_before_strategy
-                self._filter = lambda m: int(m['id']) > self.after.id
-        elif self.after:
-            self._retrieve_messages = self._retrieve_messages_after_strategy
-        else:
-            self._retrieve_messages = self._retrieve_messages_before_strategy
+                if (self.after and self.after != OLDEST_OBJECT):
+                    self._filter = lambda m: int(m['id']) > self.after.id
 
     async def next(self):
         if self.messages.empty():
@@ -314,7 +313,7 @@ class HistoryIterator(_AsyncIterator['Message']):
 
         if self._get_retrieve():
             data = await self._retrieve_messages(self.retrieve)
-            if self.limit is None and len(data) < 100:
+            if len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
             if self.reverse:
@@ -360,12 +359,17 @@ class HistoryIterator(_AsyncIterator['Message']):
         return []
 
 class AuditLogIterator(_AsyncIterator[AuditLogEntry]):
-    def __init__(self, guild, limit=None, before=None, after=None, reverse=None, user_id=None, action_type=None):
+    def __init__(self, guild, limit=None, before=None, after=None, oldest_first=None, user_id=None, action_type=None):
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
 
+
+        if oldest_first is None:
+            self.reverse = after is not None
+        else:
+            self.reverse = oldest_first
 
         self.guild = guild
         self.loop = guild._state.loop
@@ -374,30 +378,24 @@ class AuditLogIterator(_AsyncIterator[AuditLogEntry]):
         self.before = before
         self.user_id = user_id
         self.action_type = action_type
-        self.after = after
+        self.after = OLDEST_OBJECT
         self._users = {}
         self._state = guild._state
 
-        if reverse is None:
-            self.reverse = after is not None
-        else:
-            self.reverse = reverse
 
         self._filter = None  # entry dict -> bool
 
         self.entries = asyncio.Queue(loop=self.loop)
 
-        if self.before and self.after:
-            if self.reverse:
-                self._strategy = self._after_strategy
-                self._filter = lambda m: int(m['id']) < self.before.id
-            else:
-                self._strategy = self._before_strategy
-                self._filter = lambda m: int(m['id']) > self.after.id
-        elif self.after:
+        
+        if self.reverse:
             self._strategy = self._after_strategy
+            if self.before:
+                self._filter = lambda m: int(m['id']) < self.before.id
         else:
             self._strategy = self._before_strategy
+            if self.after and self.after != OLDEST_OBJECT:
+                self._filter = lambda m: int(m['id']) > self.after.id
 
     async def _before_strategy(self, retrieve):
         before = self.before.id if self.before else None
@@ -448,7 +446,7 @@ class AuditLogIterator(_AsyncIterator[AuditLogEntry]):
 
         if self._get_retrieve():
             users, data = await self._strategy(self.retrieve)
-            if self.limit is None and len(data) < 100:
+            if len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
             if self.reverse:

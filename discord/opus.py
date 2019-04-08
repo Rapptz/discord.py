@@ -125,6 +125,11 @@ def load_opus(name):
 
     This function propagates the exceptions thrown.
 
+    .. note::
+
+        On Windows, this library should not need to be called as the binaries
+        are automatically loaded.
+
     .. warning::
 
         The bitness of the library must match the bitness of your python

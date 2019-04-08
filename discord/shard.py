@@ -43,6 +43,7 @@ class Shard:
     def __init__(self, ws, client):
         self.ws = ws
         self._client = client
+        self._dispatch = client.dispatch
         self.loop = self._client.loop
         self._current = self.loop.create_future()
         self._current.set_result(None) # we just need an already done future
@@ -79,6 +80,7 @@ class Shard:
             log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
             coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
                                                 session=self.ws.session_id, sequence=self.ws.sequence)
+            self._dispatch('disconnect')
             self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
 
     def get_future(self):
