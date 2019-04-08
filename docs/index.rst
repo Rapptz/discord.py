@@ -50,6 +50,7 @@ Additional Information
     discord
     faq
     whats_new
+    version_guarantees
 
 If you still can't find what you're looking for, try in one of the following pages:
 

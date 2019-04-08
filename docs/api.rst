@@ -16,20 +16,19 @@ The following section outlines the API of discord.py.
 Version Related Info
 ---------------------
 
-There are two main ways to query version information about the library.
+There are two main ways to query version information about the library. For guarantees, check :ref:`version_guarantees`.
 
 .. data:: version_info
 
-    A named tuple that is similar to `sys.version_info`_.
+    A named tuple that is similar to :obj:`py:sys.version_info`.
 
-    Just like `sys.version_info`_ the valid values for ``releaselevel`` are
+    Just like :obj:`py:sys.version_info`_ the valid values for ``releaselevel`` are
     'alpha', 'beta', 'candidate' and 'final'.
-
-    .. _sys.version_info: https://docs.python.org/3.5/library/sys.html#sys.version_info
 
 .. data:: __version__
 
-    A string representation of the version. e.g. ``'0.10.0-alpha0'``.
+    A string representation of the version. e.g. ``'1.0.0rc1'``. This is based
+    off of `PEP-440 <https://www.python.org/dev/peps/pep-0440/>`_.
 
 Client
 -------
