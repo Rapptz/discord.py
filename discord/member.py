@@ -158,7 +158,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self._update_roles(data)
         self._client_status = {
-            None: Status.offline
+            None: 'offline'
         }
         self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
