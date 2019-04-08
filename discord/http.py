@@ -413,11 +413,11 @@ class HTTPClient:
             'limit': limit
         }
 
-        if before:
+        if before is not None:
             params['before'] = before
-        if after:
+        if after is not None:
             params['after'] = after
-        if around:
+        if around is not None:
             params['around'] = around
 
         return self.request(Route('GET', '/channels/{channel_id}/messages', channel_id=channel_id), params=params)
