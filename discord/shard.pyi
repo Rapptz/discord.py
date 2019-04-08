@@ -6,7 +6,7 @@ from .guild import Guild
 from .activity import Activity, Game, Streaming, Spotify
 from .enums import Status
 
-from typing import Any, List, Tuple, Optional, Union
+from typing import Any, List, Tuple, Optional, Union, overload
 
 class Shard:
     @property
@@ -21,8 +21,16 @@ class Shard:
 class AutoShardedClient(Client):
     shard_ids: Optional[Union[List[int], Tuple[int]]]
 
+    @overload
     def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = ...,
-                 shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
+                 shard_ids: Union[List[int], Tuple[int]] = ..., shard_count: int = ...,
+                 connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
+                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                 fetch_offline_members: bool = ..., status: Optional[Status] = ...,
+                 activity: Optional[Union[Activity, Game, Streaming]] = ...,
+                 heartbeat_timeout: float = ..., **kwargs: Any) -> None: ...
+    @overload
+    def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
                  fetch_offline_members: bool = ..., status: Optional[Status] = ...,

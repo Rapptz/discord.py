@@ -37,6 +37,8 @@ _GuildChannels = Union[TextChannel, VoiceChannel, CategoryChannel, StoreChannel]
 class Client:
     ws: Optional[DiscordWebSocket]
     loop: asyncio.AbstractEventLoop
+    shard_id: Optional[int]
+    shard_count: Optional[int]
     activity: Union[Activity, Game, Streaming, Spotify]
 
     def __init__(self, *, loop: Optional[asyncio.AbstractEventLoop] = ...,
