@@ -439,12 +439,24 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     - status
     - game playing
-    - avatar
     - nickname
     - roles
 
     :param before: The :class:`Member` that updated their profile with the old info.
     :param after: The :class:`Member` that updated their profile with the updated info.
+
+.. function:: on_user_update(before, after)
+
+    Called when a :class:`User` updates their profile.
+
+    This is called when one or more of the following things change:
+
+    - avatar
+    - username
+    - discriminator
+
+    :param before: The :class:`User` that updated their profile with the old info.
+    :param after: The :class:`User` that updated their profile with the updated info.
 
 .. function:: on_guild_join(guild)
 
