@@ -490,7 +490,6 @@ class Embed:
 
         This function returns the class instance to allow for fluent-style
         chaining.
-        If not fields, add a field to fields.
 
         Parameters
         -----------
@@ -502,6 +501,11 @@ class Embed:
             The value of the field.
         inline: :class:`bool`
             Whether the field should be displayed inline.
+
+        Raises
+        -------
+        IndexError
+            An invalid index was provided.
         """
 
         field = {
@@ -510,11 +514,11 @@ class Embed:
             'value': str(value)
         }
 
-        if not self._fields:
-            self._fields = [field]
-            return self
+        try:
+            self._fields.insert(index, field)
+        except (TypeError, IndexError, AttributeError):
+            raise IndexError('field index out of range')
 
-        self._fields.insert(index, field)
         return self
 
     def to_dict(self):
