@@ -306,7 +306,7 @@ class HistoryIterator(_AsyncIterator):
 
         if self._get_retrieve():
             data = await self._retrieve_messages(self.retrieve)
-            if self.limit is None and len(data) < 100:
+            if len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
             if self.reverse:
@@ -439,7 +439,7 @@ class AuditLogIterator(_AsyncIterator):
 
         if self._get_retrieve():
             users, data = await self._strategy(self.retrieve)
-            if self.limit is None and len(data) < 100:
+            if len(data) < 100:
                 self.limit = 0 # terminate the infinite loop
 
             if self.reverse:
