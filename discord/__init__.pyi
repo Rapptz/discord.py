@@ -1,12 +1,5 @@
 from typing import NamedTuple
 from typing_extensions import Final
-
-__title__: Final[str]
-__author__: Final[str]
-__license__: Final[str]
-__copyright__: Final[str]
-__version__: Final[str]
-
 from .client import Client as Client
 from .appinfo import AppInfo as AppInfo
 from .user import User as User, ClientUser as ClientUser, Profile as Profile
@@ -45,4 +38,9 @@ class VersionInfo(NamedTuple):
     releaselevel: str
     serial: int
 
-version_info: Final[VersionInfo]
+__title__: Final[str] = ...
+__author__: Final[str] = ...
+__license__: Final[str] = ...
+__copyright__: Final[str] = ...
+__version__: Final[str] = ...
+version_info: Final[VersionInfo] = ...

@@ -1,7 +1,6 @@
 from enum import Enum, IntEnum
 from typing import Union, TypeVar, Type, overload
 
-
 class ChannelType(Enum):
     text: int
     private: int
@@ -13,7 +12,6 @@ class ChannelType(Enum):
 
     def __str__(self) -> str: ...
 
-
 class MessageType(Enum):
     default: int
     recipient_add: int
@@ -23,7 +21,6 @@ class MessageType(Enum):
     channel_icon_change: int
     pins_add: int
     new_member: int
-
 
 class VoiceRegion(Enum):
     us_west: str
@@ -46,7 +43,6 @@ class VoiceRegion(Enum):
 
     def __str__(self) -> str: ...
 
-
 class SpeakingState(Enum):
     none: int
     voice: int
@@ -54,7 +50,6 @@ class SpeakingState(Enum):
     priority: int
 
     def __str__(self) -> str: ...
-
 
 class VerificationLevel(IntEnum):
     none: int
@@ -67,7 +62,6 @@ class VerificationLevel(IntEnum):
 
     def __str__(self) -> str: ...
 
-
 class ContentFilter(IntEnum):
     disabled: int
     no_role: int
@@ -75,12 +69,10 @@ class ContentFilter(IntEnum):
 
     def __str__(self) -> str: ...
 
-
 class UserContentFilter(IntEnum):
     disabled: int
     friends: int
     all_messages: int
-
 
 class FriendFlags(Enum):
     noone: int
@@ -89,11 +81,9 @@ class FriendFlags(Enum):
     guild_and_friends: int
     everyone: int
 
-
 class Theme(Enum):
     light: str
     dark: str
-
 
 class Status(Enum):
     online: str
@@ -105,7 +95,6 @@ class Status(Enum):
 
     def __str__(self) -> str: ...
 
-
 class DefaultAvatar(Enum):
     blurple: int
     grey: int
@@ -116,24 +105,20 @@ class DefaultAvatar(Enum):
 
     def __str__(self) -> str: ...
 
-
 class RelationshipType(Enum):
     friend: int
     blocked: int
     incoming_request: int
     outgoing_request: int
 
-
 class NotificationLevel(Enum):
     all_messages: int
     only_mentions: int
-
 
 class AuditLogActionCategory(IntEnum):
     create: int
     delete: int
     update: int
-
 
 class AuditLogAction(Enum):
     guild_update: int
@@ -169,7 +154,6 @@ class AuditLogAction(Enum):
     @property
     def target_type(self) -> str: ...
 
-
 class UserFlags(Enum):
     staff: int
     partner: int
@@ -179,7 +163,6 @@ class UserFlags(Enum):
     hypesquad_brilliance: int
     hypesquad_balance: int
     early_supporter: int
-
 
 class ActivityType(Enum):
     unknown: int
@@ -196,7 +179,6 @@ class HypeSquadHouse(Enum):
 class PremiumType(Enum):
     nitro_classic: int
     nitro: int
-
 
 _EnumType = TypeVar('_EnumType', bound=Enum)
 _IntEnumType = TypeVar('_IntEnumType', bound=IntEnum)

@@ -8,19 +8,14 @@ from .guild import Guild
 from .member import Member
 from .user import User
 
-
 class AuditLogDiff:
     def __len__(self) -> int: ...
-
     def __iter__(self) -> Iterator[Tuple[str, Any]]: ...
-
     def __repr__(self) -> str: ...
-
 
 class AuditLogChanges:
     before: AuditLogDiff
     after: AuditLogDiff
-
 
 class AuditLogEntry:
     id: int

@@ -19,10 +19,8 @@ class PartialInviteChannel(NamedTuple):
 
     @property
     def mention(self) -> str: ...
-
     @property
     def created_at(self) -> datetime.datetime: ...
-
 
 class PartialInviteGuild:
     features: List[str]
@@ -36,22 +34,15 @@ class PartialInviteGuild:
 
     @property
     def created_at(self) -> datetime.datetime: ...
-
     @property
     def icon_url(self) -> Asset: ...
-
     def icon_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
-
     @property
     def banner_url(self) -> Asset: ...
-
     def banner_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
-
     @property
     def splash_url(self) -> Asset: ...
-
     def splash_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
-
 
 class Invite(Hashable):
     max_age: int
@@ -68,15 +59,10 @@ class Invite(Hashable):
     channel: Union[TextChannel, VoiceChannel, StoreChannel, PartialInviteChannel]
 
     def __str__(self) -> str: ...
-
     def __repr__(self) -> str: ...
-
     def __hash__(self) -> int: ...
-
     @property
     def id(self) -> str: ...
-
     @property
     def url(self) -> str: ...
-
     async def delete(self, *, reason: Optional[str] = ...) -> None: ...
