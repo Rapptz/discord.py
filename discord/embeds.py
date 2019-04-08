@@ -483,6 +483,40 @@ class Embed:
         field['inline'] = inline
         return self
 
+    def insert_field(self, index, *, name, value, inline=True):
+        """Insert a field to the embed object before index.
+
+        The index must point to a valid pre-existing field.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        If not fields, add a field to fields.
+
+        Parameters
+        -----------
+        index: :class:`int`
+            The position of the field to insert.
+        name: :class:`str`
+            The name of the field.
+        value: :class:`str`
+            The value of the field.
+        inline: :class:`bool`
+            Whether the field should be displayed inline.
+        """
+
+        field = {
+            'inline': inline,
+            'name': str(name),
+            'value': str(value)
+        }
+
+        if not self._fields:
+            self._fields = [field]
+            return self
+
+        self._fields.insert(index, field)
+        return self
+
     def to_dict(self):
         """Converts this embed object into a dict."""
 
