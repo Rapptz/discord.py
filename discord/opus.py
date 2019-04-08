@@ -127,7 +127,7 @@ def load_opus(name):
 
     .. note::
 
-        On Windows, this library should not need to be called as the binaries
+        On Windows, this function should not need to be called as the binaries
         are automatically loaded.
 
     .. warning::
