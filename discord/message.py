@@ -95,8 +95,8 @@ class Attachment:
         use_cached: :class:`bool`
             Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
             the attachment. This will allow attachments to be saved after deletion
-            more often, compared to the regular URL is generally deleted right after
-            the message is deleted. Note that this can still fail to download
+            more often, compared to the regular URL which is generally deleted right
+            after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
             on some type of attachments.
 

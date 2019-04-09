@@ -839,7 +839,12 @@ class Client:
     def fetch_guilds(self, *, limit=100, before=None, after=None):
         """|coro|
 
-        Retreives an :class:`AsyncIterator` that enables receiving your guilds.
+        Retrieves an :class:`AsyncIterator` that enables receiving your guilds.
+
+        .. note::
+
+            Using this, you will only receive :attr:`Guild.owner`, :attr:`Guild.icon`,
+            :attr:`Guild.id`, and :attr:`Guild.name` per :class:`Guild`.
 
         All parameters are optional.
 
@@ -885,7 +890,12 @@ class Client:
     async def fetch_guild(self, guild_id):
         """|coro|
 
-        Retreives a :class:`Guild` from an ID.
+        Retrieves a :class:`Guild` from an ID.
+
+        .. note::
+
+            Using this, you will not receive :attr:`Guild.channels`, :class:`Guild.members`,
+            :attr:`Member.activity` and :attr:`Member.voice` per :class:`Member`.
 
         Parameters
         -----------

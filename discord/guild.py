@@ -1169,9 +1169,9 @@ class Guild(Hashable):
         return result
 
     async def fetch_emojis(self):
-        """|coro|
+        r"""|coro|
 
-        Retrieves all custom :class:`Emoji`s from the guild.
+        Retrieves all custom :class:`Emoji`\s from the guild.
 
         Raises
         ---------
