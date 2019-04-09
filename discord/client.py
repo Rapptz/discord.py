@@ -861,6 +861,10 @@ class Client:
             Using this, you will only receive :attr:`Guild.owner`, :attr:`Guild.icon`,
             :attr:`Guild.id`, and :attr:`Guild.name` per :class:`Guild`.
 
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`guilds` instead.
+
         All parameters are optional.
 
         Parameters
@@ -911,6 +915,10 @@ class Client:
 
             Using this, you will not receive :attr:`Guild.channels`, :class:`Guild.members`,
             :attr:`Member.activity` and :attr:`Member.voice` per :class:`Member`.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_guild` instead.
 
         Parameters
         -----------
@@ -1098,6 +1106,10 @@ class Client:
         be used by bot accounts. You do not have to share any guilds
         with the user to get this information, however many operations
         do require that you do.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_user` instead.
 
         Parameters
         -----------
