@@ -931,6 +931,10 @@ class Guild(Hashable):
 
         Retreives a :class:`Member` from a guild ID, and a member ID.
 
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_member` instead.
+
         Parameters
         -----------
         member_id: :class:`int`
@@ -1149,6 +1153,10 @@ class Guild(Hashable):
 
         Retrieves all custom :class:`Emoji`\s from the guild.
 
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`emojis` instead.
+
         Raises
         ---------
         HTTPException
@@ -1166,6 +1174,11 @@ class Guild(Hashable):
         """|coro|
 
         Retrieves a custom :class:`Emoji` from the guild.
+
+        .. note::
+
+            This method is an API call.
+            For general usage, consider iterating over :attr:`emojis` instead.
 
         Parameters
         -------------
