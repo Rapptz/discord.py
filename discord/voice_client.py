@@ -261,7 +261,7 @@ class VoiceClient:
 
         Disconnects this voice client from voice.
         """
-        if not force and not self._connected.is_set():
+        if not force and not self.is_connected():
             return
 
         self.stop()
@@ -348,7 +348,7 @@ class VoiceClient:
             source is not a :class:`AudioSource` or after is not a callable.
         """
 
-        if not self._connected:
+        if not self.is_connected():
             raise ClientException('Not connected to voice.')
 
         if self.is_playing():
