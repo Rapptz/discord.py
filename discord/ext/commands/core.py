@@ -1435,7 +1435,7 @@ def bot_has_permissions(**perms):
 
 def dm_only():
     """A :func:`.check` that indicates this command must only be used in a
-    DM context only. Basically, private messages ONLY are allowed when
+    DM context only. Only private messages are allowed when
     using the command.
 
     This check raises a special exception, :exc:`.PrivateMessageOnly`
