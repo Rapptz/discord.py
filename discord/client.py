@@ -501,6 +501,10 @@ class Client:
         if loop.is_closed():
             return # we're already cleaning up
 
+        # Stop the event loop if it's running
+        if loop.is_running():
+            loop.stop()
+
         task = asyncio.ensure_future(self.close(), loop=loop)
 
         def stop_loop(fut):
@@ -553,8 +557,11 @@ class Client:
             loop.add_signal_handler(signal.SIGINT, self._do_cleanup)
             loop.add_signal_handler(signal.SIGTERM, self._do_cleanup)
 
+        future = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
+        future.add_done_callback(lambda f: loop.stop())
+
         try:
-            loop.run_until_complete(self.start(*args, **kwargs))
+            loop.run_forever()
         except KeyboardInterrupt:
             log.info('Received signal to terminate bot and event loop.')
         finally:
