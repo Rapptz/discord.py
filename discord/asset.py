@@ -96,10 +96,12 @@ class Asset:
         return cls(state, url.format(id, hash, format, size, key=key))
 
     def __str__(self):
-        return self._url
+        return self._url if self._url is not None else ''
 
     def __len__(self):
-        return len(self._url)
+        if self._url:
+            return len(self._url)
+        return 0
 
     def __bool__(self):
         return self._url is not None
