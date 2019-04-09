@@ -1525,6 +1525,49 @@ class Guild(Hashable):
         data = await self._state.http.get_all_integrations(self.id)
         return [Integration(self, d) for d in data]
 
+    async def fetch_emojis(self):
+        """|coro|
+
+        Retrieves all custom :class:`Emoji`s from the guild.
+
+        Raises
+        ---------
+        HTTPException
+            An error occurred fetching the emojis.
+
+        Returns
+        --------
+        List[:class:`Emoji`]
+            The retrieved emojis.
+        """
+        data = await self._state.http.get_all_custom_emojis(self.id)
+        return [Emoji(guild=self, state=self._state, data=d) for d in data]
+
+    async def fetch_emoji(self, emoji_id):
+        """|coro|
+
+        Retrieves a custom :class:`Emoji` from the guild.
+
+        Parameters
+        -------------
+        emoji_id: :class:`int`
+            The emoji's ID.
+
+        Raises
+        ---------
+        NotFound
+            The emoji requested could not be found.
+        HTTPException
+            An error occurred fetching the emoji.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The retrieved emoji.
+        """
+        data = await self._state.http.get_custom_emoji(self.id, emoji_id)
+        return Emoji(guild=self, state=self._state, data=data)
+
     async def create_custom_emoji(self, *, name, image, roles=None, reason=None):
         r"""|coro|
 
