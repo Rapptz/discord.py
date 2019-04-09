@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum
 from typing import Union, TypeVar, Type, overload
 
 class ChannelType(Enum):
@@ -50,8 +50,9 @@ class SpeakingState(Enum):
     priority: int
 
     def __str__(self) -> str: ...
+    def __int__(self) -> int: ...
 
-class VerificationLevel(IntEnum):
+class VerificationLevel(Enum):
     none: int
     low: int
     medium: int
@@ -62,14 +63,14 @@ class VerificationLevel(IntEnum):
 
     def __str__(self) -> str: ...
 
-class ContentFilter(IntEnum):
+class ContentFilter(Enum):
     disabled: int
     no_role: int
     all_members: int
 
     def __str__(self) -> str: ...
 
-class UserContentFilter(IntEnum):
+class UserContentFilter(Enum):
     disabled: int
     friends: int
     all_messages: int
@@ -115,7 +116,7 @@ class NotificationLevel(Enum):
     all_messages: int
     only_mentions: int
 
-class AuditLogActionCategory(IntEnum):
+class AuditLogActionCategory(Enum):
     create: int
     delete: int
     update: int
@@ -181,12 +182,7 @@ class PremiumType(Enum):
     nitro: int
 
 _EnumType = TypeVar('_EnumType', bound=Enum)
-_IntEnumType = TypeVar('_IntEnumType', bound=IntEnum)
 
-@overload
-def try_enum(cls: Type[_IntEnumType], val: _IntEnumType) -> _IntEnumType: ...
-@overload
-def try_enum(cls: Type[_IntEnumType], val: int) -> Union[_IntEnumType, int]: ...
 @overload
 def try_enum(cls: Type[_EnumType], val: _EnumType) -> _EnumType: ...
 @overload
