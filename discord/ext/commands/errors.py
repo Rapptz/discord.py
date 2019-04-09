@@ -28,15 +28,15 @@ from discord.errors import DiscordException
 
 
 __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
-           'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
-           'UserInputError', 'CommandOnCooldown', 'NotOwner',
-           'MissingPermissions', 'BotMissingPermissions', 'ConversionError',
-           'BadUnionArgument', 'ArgumentParsingError',
+           'PrivateMessageOnly', 'NoPrivateMessage', 'CheckFailure',
+           'CommandNotFound' ,'DisabledCommand', 'CommandInvokeError',
+           'TooManyArguments', 'UserInputError', 'CommandOnCooldown',
+           'NotOwner', 'MissingPermissions', 'BotMissingPermissions',
+           'ConversionError', 'BadUnionArgument', 'ArgumentParsingError',
            'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
            'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
            'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
-           'ExtensionNotFound' ]
+           'ExtensionNotFound']
 
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.
