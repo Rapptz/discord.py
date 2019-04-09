@@ -1433,6 +1433,22 @@ def bot_has_permissions(**perms):
 
     return check(predicate)
 
+def dm_only():
+    """A :func:`.check` that indicates this command must only be used in a
+    DM context only. Basically, private messages ONLY are allowed when
+    using the command.
+
+    This check raises a special exception, :exc:`.PrivateMessageOnly`
+    that is inherited from :exc:`.CheckFailure`.
+    """
+
+    def predicate(ctx):
+        if ctx.guild is not None:
+            raise PrivateMessageOnly('This command cannot be used in private messages.')
+        return True
+
+    return check(predicate)
+
 def guild_only():
     """A :func:`.check` that indicates this command must only be used in a
     guild context only. Basically, no private messages are allowed when

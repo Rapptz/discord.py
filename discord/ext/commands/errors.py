@@ -118,6 +118,12 @@ class CheckFailure(CommandError):
     """Exception raised when the predicates in :attr:`.Command.checks` have failed."""
     pass
 
+class PrivateMessageOnly(CheckFailure):
+    """Exception raised when an operation does not work outside of private
+    message contexts.
+    """
+    pass
+
 class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
     contexts.
