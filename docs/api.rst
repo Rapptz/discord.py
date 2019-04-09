@@ -296,6 +296,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message is edited. Unlike :func:`on_message_edit`, this is called
     regardless of the state of the internal message cache.
 
+    If the message is found in the message cache,
+    it can be accessed via :attr:`RawMessageUpdateEvent.cached_message`
+
     Due to the inherently raw nature of this event, the data parameter coincides with
     the raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
 
