@@ -87,6 +87,9 @@ class SpeakingState(Enum):
     def __str__(self):
         return self.name
 
+    def __int__(self):
+        return self.value
+
 class VerificationLevel(Enum):
     none              = 0
     low               = 1
