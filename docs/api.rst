@@ -253,7 +253,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     called regardless of the message being in the internal message cache or not.
 
     If the message is found in the message cache,
-    it can be accessed via:attr:`RawMessageDeleteEvent.cached_message`
+    it can be accessed via :attr:`RawMessageDeleteEvent.cached_message`
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageDeleteEvent`
