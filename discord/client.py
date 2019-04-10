@@ -982,7 +982,7 @@ class Client:
     async def fetch_url_message(self, url: str):
         """|coro|
 
-        Retrieves a :class:`Message` from a URL.
+        Retrieves a :class:`.Message` from a jump URL.
         If channel or message is not found, returns ``None``.
 
         Parameters
