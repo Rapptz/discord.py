@@ -994,8 +994,6 @@ class Client:
         -------
         ValueError
             The URL does not match any recognized format.
-        :exc:`.NotFound`
-            The specified message was not found.
         :exc:`.Forbidden`
             You do not have the permissions required to get a message.
         :exc:`.HTTPException`
@@ -1010,7 +1008,10 @@ class Client:
         message_channel = self.get_channel(int(channel_id))
         if message_channel is None:
             return None
-        return await message_channel.fetch_message(int(message_id))
+        try:
+            return await message_channel.fetch_message(int(message_id))
+        except NotFound:
+            return None
 
     # Invite management
 
