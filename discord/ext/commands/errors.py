@@ -29,11 +29,12 @@ from discord.errors import DiscordException
 
 __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'PrivateMessageOnly', 'NoPrivateMessage', 'CheckFailure',
-           'CommandNotFound' ,'DisabledCommand', 'CommandInvokeError',
-           'TooManyArguments', 'UserInputError', 'CommandOnCooldown',
-           'NotOwner', 'MissingPermissions', 'BotMissingPermissions',
-           'ConversionError', 'BadUnionArgument', 'ArgumentParsingError',
-           'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
+           'CommandNotFound', 'DisabledCommand', 'CommandInvokeError',
+           'TooManyArguments','UserInputError', 'CommandOnCooldown',
+           'NotOwner', 'MissingRole', 'BotMissingRole', 'MissingAnyRole',
+           'BotMissingAnyRole','MissingPermissions', 'BotMissingPermissions',
+           'NSFWChannelRequired', 'ConversionError', 'BadUnionArgument',
+           'ArgumentParsingError', 'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
            'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
            'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
            'ExtensionNotFound']
@@ -128,7 +129,9 @@ class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
     contexts.
     """
-    pass
+
+    def __init__(self):
+        super().__init__('This command cannot be used in private messages.')
 
 class NotOwner(CheckFailure):
     """Exception raised when the message author is not the owner of the bot."""
@@ -167,8 +170,116 @@ class CommandOnCooldown(CommandError):
         self.retry_after = retry_after
         super().__init__('You are on cooldown. Try again in {:.2f}s'.format(retry_after))
 
+class MissingRole(CheckFailure):
+    """Exception raised when the command invoker lacks a role to run a command.
+
+    This inherits from :exc:`.CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~.commands.has_role`.
+    """
+    def __init__(self, missing_role):
+        self.missing_role = missing_role
+        message = 'Role {0!r} is required to run this command.'.format(missing_role)
+        super().__init__(message)
+
+class BotMissingRole(CheckFailure):
+    """Exception raised when the bot's member lacks a role to run a command.
+
+    This inherits from :exc:`.CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~.commands.has_role`.
+    """
+    def __init__(self, missing_role):
+        self.missing_role = missing_role
+        message = 'Bot requires the role {0!r} to run this command'.format(missing_role)
+        super().__init__(message)
+
+class MissingAnyRole(CheckFailure):
+    """Exception raised when the command invoker lacks any of
+    the roles specified to run a command.
+
+    This inherits from :exc:`.CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the invoker is missing.
+        These are the parameters passed to :func:`~.commands.has_any_role`.
+    """
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
+
+        missing = ["'{}'".format(role) for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "You are missing at least one of the required roles: {}".format(fmt)
+        super().__init__(message)
+
+
+class BotMissingAnyRole(CheckFailure):
+    """Exception raised when the bot's member lacks any of
+    the roles specified to run a command.
+
+    This inherits from :exc:`.CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the bot's member is missing.
+        These are the parameters passed to :func:`~.commands.has_any_role`.
+
+    """
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
+
+        missing = ["'{}'".format(role) for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "Bot is missing at least one of the required roles: {}".format(fmt)
+        super().__init__(message)
+
+class NSFWChannelRequired(CheckFailure):
+    """Exception raised when a channel does not have the required NSFW setting.
+
+    This inherits from :exc:`.CheckFailure`.
+
+    .. versionadded:: 1.1.0
+
+    Parameters
+    -----------
+    channel: :class:`discord.abc.GuildChannel`
+        The channel that does not have NSFW enabled.
+    """
+    def __init__(self, channel):
+        self.channel = channel
+        super().__init__("Channel '{}' needs to be NSFW for this command to work.".format(channel))
+
 class MissingPermissions(CheckFailure):
-    """Exception raised when the command invoker lacks permissions to run
+    """Exception raised when the command invoker lacks permissions to run a
     command.
 
     Attributes
@@ -185,11 +296,12 @@ class MissingPermissions(CheckFailure):
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = 'You are missing {} permission(s) to run command.'.format(fmt)
+        message = 'You are missing {} permission(s) to run this command.'.format(fmt)
         super().__init__(message, *args)
 
 class BotMissingPermissions(CheckFailure):
-    """Exception raised when the bot lacks permissions to run command.
+    """Exception raised when the bot's member lacks permissions to run a
+    command.
 
     Attributes
     -----------
@@ -205,7 +317,7 @@ class BotMissingPermissions(CheckFailure):
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = 'Bot requires {} permission(s) to run command.'.format(fmt)
+        message = 'Bot requires {} permission(s) to run this command.'.format(fmt)
         super().__init__(message, *args)
 
 class BadUnionArgument(UserInputError):
