@@ -983,7 +983,7 @@ class Client:
         """|coro|
 
         Retrieves a :class:`Message` from a URL.
-        If channel is not found, returns None.
+        If channel or message is not found, returns None.
 
         Parameters
         -----------
