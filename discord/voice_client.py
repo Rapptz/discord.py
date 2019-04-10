@@ -100,6 +100,9 @@ class VoiceClient:
         self._state = state
         # this will be used in the AudioPlayer thread
         self._connected = threading.Event()
+
+        self._handshaking = False
+        self._handshake_check = asyncio.Lock(loop=self.loop)
         self._handshake_complete = asyncio.Event(loop=self.loop)
 
         self.mode = None
@@ -166,6 +169,12 @@ class VoiceClient:
             self._state._remove_voice_client(key_id)
 
     async def _create_socket(self, server_id, data):
+        async with self._handshake_check:
+            if self._handshaking:
+                log.info("Ignoring voice server update while handshake is in progress")
+                return
+            self._handshaking = True
+
         self._connected.clear()
         self.session_id = self.main_ws.session_id
         self.server_id = server_id
@@ -209,6 +218,7 @@ class VoiceClient:
 
         try:
             self.ws = await DiscordVoiceWebSocket.from_client(self)
+            self._handshaking = False
             self._connected.clear()
             while not hasattr(self, 'secret_key'):
                 await self.ws.poll_event()
