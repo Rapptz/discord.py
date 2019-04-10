@@ -38,6 +38,10 @@ despair however, because not all forms of blocking are bad! Using blocking calls
 sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has
 not stopped the function's execution at that point to do other things.
 
+If logging is enabled, this library will attempt to warn you that blocking is occurring with the message:
+``Heartbeat blocked for more than N seconds.``
+See :ref:`logging_setup` for details on enabling logging.
+
 A common source of blocking for too long is something like :func:`time.sleep`. Don't do that. Use :func:`asyncio.sleep`
 instead. Similar to this example: ::
 
@@ -54,14 +58,14 @@ block the event loop too long. Instead, use the ``aiohttp`` library which is ins
 Consider the following example: ::
 
     # bad
-    r = requests.get('http://random.cat/meow')
+    r = requests.get('http://aws.random.cat/meow')
     if r.status_code == 200:
         js = r.json()
         await channel.send(js['file'])
 
     # good
     async with aiohttp.ClientSession() as session:
-        async with session.get('http://random.cat/meow') as r:
+        async with session.get('http://aws.random.cat/meow') as r:
             if r.status == 200:
                 js = await r.json()
                 await channel.send(js['file'])
@@ -86,6 +90,10 @@ For memory optimisation purposes, some activities are offered in slimmed down ve
 Putting both of these pieces of info together, you get the following: ::
 
     await client.change_presence(activity=discord.Game(name='my game'))
+
+    # or, for watching:
+    activity = discord.Activity(name='my activity', type=discord.ActivityType.watching)
+    await client.change_presence(activity=activity)
 
 How do I send a message to a specific channel?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,7 +157,9 @@ If you want to use unicode emoji, you must pass a valid unicode code point in a 
 
 Quick example: ::
 
-    await message.add_reaction('\N{THUMBS UP SIGN}')
+    emoji = '\N{THUMBS UP SIGN}'
+    # or '\U0001f44d' or '👍'
+    await message.add_reaction(emoji)
 
 In case you want to use emoji that come from a message, you already get their code points in the content without needing
 to do anything special. You **cannot** send ``':thumbsup:'`` style shorthands.
@@ -158,7 +168,11 @@ For custom emoji, you should pass an instance of :class:`Emoji`. You can also pa
 can use said emoji, you should be able to use :meth:`Client.get_emoji` to get an emoji via ID or use :func:`utils.find`/
 :func:`utils.get` on :attr:`Client.emojis` or :attr:`Guild.emojis` collections.
 
+The name and ID of a custom emoji can be found with the client by prefixing ``:custom_emoji:`` with a backslash.
+For example, sending the message ``\:python3:`` with the client will result in ``<:python3:232720527448342530>``.
+
 Quick example: ::
+
 
     # if you have the ID already
     emoji = client.get_emoji(310177266011340803)
@@ -168,6 +182,10 @@ Quick example: ::
     emoji = discord.utils.get(guild.emojis, name='LUL')
     if emoji:
         await message.add_reaction(emoji)
+
+    # if you have the name and ID of a custom emoji:
+    emoji = 'python3:232720527448342530'
+    await message.add_reaction(emoji)
 
 How do I pass a coroutine to the player's "after" function?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,7 +216,7 @@ this together we can do the following: ::
 How do I run something in the background?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/rewrite/examples/background_task.py>`_
+`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_
 
 How do I get a specific model?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,6 +235,11 @@ The following use an HTTP request:
 
 - :meth:`abc.Messageable.fetch_message`
 - :meth:`Client.fetch_user`
+- :meth:`Client.fetch_guilds`
+- :meth:`Client.fetch_guild`
+- :meth:`Guild.fetch_emoji`
+- :meth:`Guild.fetch_emojis`
+- :meth:`Guild.fetch_member`
 
 
 If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding
@@ -231,6 +254,49 @@ Quick example: ::
     if guild is not None:
         # find a channel by name
         channel = discord.utils.get(guild.text_channels, name='cool-channel')
+
+How do I make a web request?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To make a request, you should use a non-blocking library.
+This library already uses and requires a 3rd party library for making requests, ``aiohttp``.
+
+Quick example: ::
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://aws.random.cat/meow') as r:
+            if r.status == 200:
+                js = await r.json()
+
+See `aiohttp's full documentation <http://aiohttp.readthedocs.io/en/stable/>`_ for more information.
+
+How do I use a local image file for an embed image?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Discord special-cases uploading an image attachment and using it within an embed so that it will not
+display separately, but instead in the embed's thumbnail, image, footer or author icon.
+
+To do so, upload the image normally with :meth:`abc.Messageable.send`,
+and set the embed's image URL to ``attachment://image.png``,
+where ``image.png`` is the filename of the image you will send.
+
+
+Quick example: ::
+
+    file = discord.File("path/to/my/image.png", filename="image.png")
+    embed = discord.Embed()
+    embed.set_image(url="attachment://image.png")
+    await channel.send(file=file, embed=embed)
+
+.. note ::
+
+    Due to a Discord limitation, filenames may not include underscores.
+
+Is there an event for invites or audit log entries being created?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since Discord does not dispatch this information in the gateway, the library cannot provide this information.
+This is currently a Discord limitation.
 
 Commands Extension
 -------------------
