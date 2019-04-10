@@ -280,7 +280,7 @@ class BotBase(GroupMixin):
         return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
-        """Checks if a :class:`.User` or :class:`.Member` is the owner of
+        """Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
 
         If an :attr:`owner_id` is not set, it is fetched automatically
@@ -630,7 +630,7 @@ class BotBase(GroupMixin):
         The extension can provide an optional global function, ``teardown``,
         to do miscellaneous clean-up if necessary. This function takes a single
         parameter, the ``bot``, similar to ``setup`` from
-        :func:`~.Bot.load_extension`.
+        :meth:`~.Bot.load_extension`.
 
         Parameters
         ------------
@@ -903,9 +903,6 @@ class Bot(BotBase, discord.Client):
     This class is a subclass of :class:`discord.Client` and as a result
     anything that you can do with a :class:`discord.Client` you can do with
     this bot.
-
-    .. _deque: https://docs.python.org/3.4/library/collections.html#collections.deque
-    .. _event loop: https://docs.python.org/3/library/asyncio-eventloops.html
 
     This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.

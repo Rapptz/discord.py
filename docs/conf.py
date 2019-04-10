@@ -47,7 +47,10 @@ extlinks = {
 }
 
 # Links used for cross-referencing stuff in other documentation
-intersphinx_mapping = {'py': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {
+  'py': ('https://docs.python.org/3', None),
+  'aio': ('https://aiohttp.readthedocs.io/en/stable/', None)
+}
 
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.
