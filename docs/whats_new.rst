@@ -8,6 +8,18 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p0p1:
+
+v1.0.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix issue with speaking state being cast to ``int`` when it was invalid.
+- Fix some issues with loop cleanup that some users experienced on Linux machines.
+- Fix voice handshake race condition (:issue:`2056`, :issue:`2063`)
+
 .. _vp1p0p0:
 
 v1.0.0

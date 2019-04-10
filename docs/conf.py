@@ -43,7 +43,7 @@ extensions = [
 autodoc_member_order = 'bysource'
 
 extlinks = {
-    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
+    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
 }
 
 # Links used for cross-referencing stuff in other documentation
