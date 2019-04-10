@@ -1002,7 +1002,7 @@ class Client:
         Returns
         -------
         :class:`.Message`
-            The message referenced by the URL.
+            The message referenced by the jump URL.
         """
         channel_id, message_id = url.split(r"/")[-2:]
         message_channel = self.get_channel(int(channel_id))
