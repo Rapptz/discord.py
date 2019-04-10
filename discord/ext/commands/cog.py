@@ -183,6 +183,9 @@ class Cog(metaclass=CogMeta):
                 parent.add_command(command)
 
         return self
+    
+    def __str__(self):
+        return self.qualified_name
 
     def get_commands(self):
         r"""Returns a :class:`list` of :class:`.Command`\s that are
