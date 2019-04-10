@@ -979,6 +979,39 @@ class Client:
         data = await self.http.create_guild(name, region, icon)
         return Guild(data=data, state=self._connection)
 
+    async def fetch_url_message(self, url: str):
+        """|coro|
+
+        Retrieves a :class:`Message` from a URL.
+        If channel is not found, returns None.
+
+        Parameters
+        -----------
+        url: :class:`str`
+            The message URL (message link).
+
+        Raises
+        -------
+        ValueError
+            The URL does not match any recognized format.
+        :exc:`.NotFound`
+            The specified message was not found.
+        :exc:`.Forbidden`
+            You do not have the permissions required to get a message.
+        :exc:`.HTTPException`
+            Retrieving the message failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The message referenced by the URL.
+        """
+        channel_id, message_id = url.split(r"/")[-2:]
+        message_channel = self.get_channel(int(channel_id))
+        if message_channel is None:
+            return None
+        return await message_channel.fetch_message(int(message_id))
+
     # Invite management
 
     async def fetch_invite(self, url, *, with_counts=True):
