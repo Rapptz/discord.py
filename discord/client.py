@@ -979,7 +979,7 @@ class Client:
         data = await self.http.create_guild(name, region, icon)
         return Guild(data=data, state=self._connection)
 
-    async def fetch_url_message(self, url: str):
+    async def fetch_message_from_url(self, url: str):
         """|coro|
 
         Retrieves a :class:`.Message` from a jump URL.
