@@ -30,13 +30,14 @@ from discord.errors import DiscordException
 __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'NoPrivateMessage', 'CheckFailure', 'CommandNotFound',
            'DisabledCommand', 'CommandInvokeError', 'TooManyArguments',
-           'UserInputError', 'CommandOnCooldown', 'NotOwner',
-           'MissingPermissions', 'BotMissingPermissions', 'ConversionError',
-           'BadUnionArgument', 'ArgumentParsingError',
+           'UserInputError', 'CommandOnCooldown', 'NotOwner', 'MissingRole',
+           'BotMissingRole', 'MissingAnyRole', 'BotMissingAnyRole',
+           'IsSFW', 'MissingPermissions', 'BotMissingPermissions',
+           'ConversionError', 'BadUnionArgument', 'ArgumentParsingError',
            'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
            'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
            'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
-           'ExtensionNotFound' ]
+           'ExtensionNotFound']
 
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.
@@ -161,8 +162,86 @@ class CommandOnCooldown(CommandError):
         self.retry_after = retry_after
         super().__init__('You are on cooldown. Try again in {:.2f}s'.format(retry_after))
 
+
+class MissingRole(CommandError):
+    """Exception raised when the command invoker lacks a role to run a command.
+
+    Attributes
+    -----------
+    missing_role: :class:`Role`
+        The required role that is missing.
+    """
+    def __init__(self, missing_role, *args):
+        self.missing_role = missing_role
+        message = 'You are missing the required {} role to run this command.'.format(missing_role.name)
+        super().__init__(message, *args)
+
+class BotMissingRole(CommandError):
+    """Exception raised when the bot's member lacks a role to run a command.
+
+    Attributes
+    -----------
+    missing_role: :class:`Role`
+        The required role that is missing.
+    """
+    def __init__(self, missing_role, *args):
+        self.missing_role = missing_role
+        message = 'Bot requires the {} role to run this command'.format(missing_role.name)
+        super().__init__(message, *args)
+
+class MissingAnyRole(CommandError):
+    """Exception raised when the command invoker lacks any of
+     the roles specified to run a command.
+
+    Attributes
+    -----------
+    missing_roles: List[:class:`Role`]
+        The roles that the invoker lacks
+    """
+    def __init__(self, missing_roles, *args):
+        self.missing_roles = missing_roles
+
+        missing = [role.name for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "You are missing at least one of the required roles: {}"
+        message.format(fmt)
+        super().__init__(message, *args)
+
+
+class BotMissingAnyRole(CommandError):
+    """Exception raised when the bot's member lacks any of
+     the roles specified to run a command.
+
+    Attributes
+    -----------
+    missing_roles: List[:class:`Role`]
+        The roles that the bot's member lacks
+    """
+    def __init__(self, missing_roles, *args):
+        self.missing_roles = missing_roles
+
+        missing = [role.name for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "Bot is missing at least one of the required roles: {}"
+        message.format(fmt)
+        super().__init__(message, *args)
+
+class IsSFW(CommandError):
+    """Exception raised when the message channel is not-NSFW (SFW)."""
+    pass
+
 class MissingPermissions(CheckFailure):
-    """Exception raised when the command invoker lacks permissions to run
+    """Exception raised when the command invoker lacks permissions to run a
     command.
 
     Attributes
@@ -179,11 +258,12 @@ class MissingPermissions(CheckFailure):
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = 'You are missing {} permission(s) to run command.'.format(fmt)
+        message = 'You are missing {} permission(s) to run this command.'.format(fmt)
         super().__init__(message, *args)
 
 class BotMissingPermissions(CheckFailure):
-    """Exception raised when the bot lacks permissions to run command.
+    """Exception raised when the bot's member lacks permissions to run a
+    command.
 
     Attributes
     -----------
@@ -199,7 +279,7 @@ class BotMissingPermissions(CheckFailure):
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = 'Bot requires {} permission(s) to run command.'.format(fmt)
+        message = 'Bot requires {} permission(s) to run this command.'.format(fmt)
         super().__init__(message, *args)
 
 class BadUnionArgument(UserInputError):
