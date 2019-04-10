@@ -291,8 +291,8 @@ class ExtensionError(DiscordException):
 
     This inherits from :exc:`~discord.DiscordException`.
 
-    Parameter
-    -----------
+    Attributes
+    ------------
     name: :class:`str`
         The extension that had an error.
     """
