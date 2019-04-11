@@ -41,7 +41,7 @@ from .context import Context
 __all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
            'has_role', 'has_permissions', 'has_any_role', 'check',
            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-           'cooldown', 'guild_only', 'is_owner', 'is_nsfw']
+           'cooldown', 'dm_only', 'guild_only', 'is_owner', 'is_nsfw']
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -1433,6 +1433,22 @@ def bot_has_permissions(**perms):
             return True
 
         raise BotMissingPermissions(missing)
+
+    return check(predicate)
+
+def dm_only():
+    """A :func:`.check` that indicates this command must only be used in a
+    DM context only. Only private messages are allowed when
+    using the command.
+
+    This check raises a special exception, :exc:`.PrivateMessageOnly`
+    that is inherited from :exc:`.CheckFailure`.
+    """
+
+    def predicate(ctx):
+        if ctx.guild is not None:
+            raise PrivateMessageOnly('This command can only be used in private messages.')
+        return True
 
     return check(predicate)
 

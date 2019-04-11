@@ -39,6 +39,7 @@ Extensions
   :maxdepth: 3
 
   ext/commands/index.rst
+  ext/tasks/index.rst
 
 
 Additional Information
