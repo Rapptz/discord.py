@@ -40,7 +40,11 @@ class Loop:
 
         self._sleep = sleep = self.seconds + (self.minutes * 60.0) + (self.hours * 3600.0)
         if sleep >= MAX_ASYNCIO_SECONDS:
-            raise ValueError('Total time exceeds asyncio imposed limit of {0} seconds.'.format(MAX_ASYNCIO_SECONDS))
+            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
+            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
+
+        if sleep < 0:
+            raise ValueError('Total number of seconds cannot be less than zero.')
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0!r}.'.format(type(self.coro)))
@@ -73,7 +77,6 @@ class Loop:
     def current_loop(self):
         """:class:`int`: The current iteration of the loop."""
         return self._current_loop
-
 
     def start(self, *args, **kwargs):
         r"""Starts the internal task in the event loop.
@@ -205,5 +208,5 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
     """
     def decorator(func):
         return Loop(func, seconds=seconds, minutes=minutes, hours=hours,
-                                count=count, reconnect=reconnect, loop=loop)
+                          count=count, reconnect=reconnect, loop=loop)
     return decorator
