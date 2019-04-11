@@ -252,7 +252,7 @@ Quick example: ::
         channel = discord.utils.get(guild.text_channels, name='cool-channel')
 
 How do I make a web request?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To make a request, you should use a non-blocking library.
 This library already uses and requires a 3rd party library for making requests, ``aiohttp``.
@@ -267,10 +267,10 @@ Quick example: ::
 See `aiohttp's full documentation <http://aiohttp.readthedocs.io/en/stable/>`_ for more information.
 
 How do I use a local image file for an embed image?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Discord special-cases uploading an image attachment and using it in an embed such that it will not
-display separately, but in the embed's thumbnail, image, footer or author icon.
+Discord special-cases uploading an image attachment and using it within an embed so that it will not
+display separately, but instead in the embed's thumbnail, image, footer or author icon.
 
 To do so, upload the image normally with :meth:`abc.Messageable.send`,
 and set the embed's image URL to ``attachment://image.png``,
@@ -285,6 +285,7 @@ Quick example: ::
     await channel.send(file=file, embed=embed)
 
 .. note ::
+
     Due to a Discord limitation, filenames may not include underscores.
 
 Is there an event for invites or audit log entries being created?
