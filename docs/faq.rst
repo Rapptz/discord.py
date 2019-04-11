@@ -38,6 +38,10 @@ despair however, because not all forms of blocking are bad! Using blocking calls
 sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has
 not stopped the function's execution at that point to do other things.
 
+If logging is enabled, this library will attempt to warn you that blocking is occurring with the message:
+``Heartbeat blocked for more than N seconds.``
+See :ref:`logging_setup` for details on enabling logging.
+
 A common source of blocking for too long is something like :func:`time.sleep`. Don't do that. Use :func:`asyncio.sleep`
 instead. Similar to this example: ::
 
