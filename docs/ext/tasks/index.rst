@@ -1,6 +1,8 @@
 ``discord.ext.tasks`` -- asyncio.Task helpers
 ====================================================
 
+.. versionadded:: 1.1.0
+
 One of the most common operations when making a bot is having a loop run in the background at a specified interval. This pattern is very common but has a lot of things you need to look out for:
 
 - How do I handle :exc:`asyncio.CancelledError`?
