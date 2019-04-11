@@ -21,7 +21,7 @@ A simple background task in a :class:`~discord.ext.commands.Cog`:
     class MyCog(commands.Cog):
         def __init__(self):
             self.index = 0
-            self.printer.run()
+            self.printer.start()
 
         def cog_unload(self):
             self.printer.cancel()
@@ -43,7 +43,7 @@ Adding an exception to handle during reconnect:
             self.bot = bot
             self.data = []
             self.batch_update.add_exception_type(asyncpg.PostgresConnectionError)
-            self.batch_update.run()
+            self.batch_update.start()
 
         def cog_unload(self):
             self.batch_update.cancel()
@@ -64,7 +64,7 @@ Looping a certain amount of times before exiting:
     async def slow_count():
         print(slow_count.current_loop)
 
-    slow_count.run()
+    slow_count.start()
 
 Doing something after a task finishes is as simple as using :meth:`asyncio.Task.add_done_callback`:
 

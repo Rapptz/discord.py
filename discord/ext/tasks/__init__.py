@@ -75,8 +75,8 @@ class Loop:
         return self._current_loop
 
 
-    def run(self, *args, **kwargs):
-        r"""Runs the internal task in the event loop.
+    def start(self, *args, **kwargs):
+        r"""Starts the internal task in the event loop.
 
         Parameters
         ------------
@@ -93,7 +93,7 @@ class Loop:
         Returns
         ---------
         :class:`asyncio.Task`
-            The task that has been registered.
+            The task that has been created.
         """
 
         if self._task is not None:
