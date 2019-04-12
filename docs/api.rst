@@ -1390,8 +1390,7 @@ Certain utilities make working with async iterators easier, detailed below.
 
         .. describe:: async for x in y
 
-            Iterates over the contents of the async iterator. Note
-            that this is only available in Python 3.5 or higher.
+            Iterates over the contents of the async iterator.
 
 
     .. comethod:: next()
