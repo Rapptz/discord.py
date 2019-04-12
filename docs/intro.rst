@@ -40,7 +40,7 @@ On Linux environments, installing voice requires getting the following dependenc
 - libnacl
 - python3-dev
 
-For a debian-based system, the following command will help get those dependencies:
+For a Debian-based system, the following command will get these dependencies:
 
 .. code-block:: shell
 
@@ -51,10 +51,10 @@ Remember to check your permissions!
 Virtual Environments
 ~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes we don't want to pollute our system installs with a library or we want to maintain
-different versions of a library than the currently system installed one. Or we don't have permissions to
-install a library along side with the system installed ones. For this purpose, the standard library as
-of 3.3 comes with a concept called "Virtual Environment" to help maintain these separate versions.
+Sometimes you want to keep libraries from polluting system installs or use a different version of
+libraries than the ones installed on the system. You might also not have permissions to install libaries system-wide.
+For this purpose, the standard library as of Python 3.3 comes with a concept called "Virtual Environment"s to
+help maintain these separate versions.
 
 A more in-depth tutorial is found on `the official documentation. <https://docs.python.org/3/tutorial/venv.html>`_
 
@@ -85,14 +85,14 @@ However, for the quick and dirty:
 
         $ pip install -U discord.py
 
-Congratulations. You now have a virtual environment all set up without messing with your system installation.
+Congratulations. You now have a virtual environment all set up.
 
 Basic Concepts
 ---------------
 
 discord.py revolves around the concept of :ref:`events <discord-api-events>`.
 An event is something you listen to and then respond to. For example, when a message
-happens, you will receive an event about it and you can then respond to it.
+happens, you will receive an event about it that you can respond to.
 
 A quick example to showcase how events work:
 
