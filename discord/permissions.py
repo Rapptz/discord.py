@@ -301,7 +301,14 @@ class Permissions:
     def priority_speaker(self, value):
         self._set(8, value)
 
-    # 1 unused
+    @property
+    def stream(self):
+        """Returns ``True`` if a user can stream in a voice channel."""
+        return self._bit(9)
+
+    @stream.setter
+    def stream(self, value):
+        self._set(9, value)
 
     @property
     def read_messages(self):
