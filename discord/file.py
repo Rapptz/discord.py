@@ -87,6 +87,26 @@ class File:
         if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
             self.filename = 'SPOILER_' + self.filename
 
+    @classmethod
+    async def from_response(cls, resp, *args, **kwargs):
+        """|coro|
+
+        Alternate constructor for a :class:`discord.File` object.
+
+        Basically equivalent to:
+
+        .. code-block:: python3
+
+            discord.File(io.BytesIO(await resp.content.read()), filename, spoiler=spoiler)
+
+        Parameters
+        -----------
+        resp: :class:`aiohttp.ClientResponse`
+            The response to read the content from.
+
+        """
+        return cls(io.BytesIO(await resp.content.read()), *args, **kwargs)
+
     def reset(self, *, seek=True):
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times
