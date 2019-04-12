@@ -132,6 +132,7 @@ class Loop:
         """Cancels the internal task, if any are running."""
         if self._task:
             self._task.cancel()
+            self._task = None
 
     def add_exception_type(self, exc):
         r"""Adds an exception type to be handled during the reconnect logic.
