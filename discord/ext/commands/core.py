@@ -1440,6 +1440,8 @@ def dm_only():
 
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. versionadded:: 1.1.0
     """
 
     def predicate(ctx):
