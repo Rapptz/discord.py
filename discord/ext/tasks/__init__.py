@@ -35,6 +35,9 @@ class Loop:
             websockets.WebSocketProtocolError,
         )
 
+        self._before_loop = None
+        self._after_loop = None
+
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
 
@@ -47,25 +50,42 @@ class Loop:
             raise ValueError('Total number of seconds cannot be less than zero.')
 
         if not inspect.iscoroutinefunction(self.coro):
-            raise TypeError('Expected coroutine function, not {0!r}.'.format(type(self.coro)))
+            raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
+
+    async def _call_loop_function(self, name):
+        coro = getattr(self, '_' + name)
+        if coro is None:
+            return
+
+        if inspect.iscoroutinefunction(coro):
+            if self._injected is not None:
+                await coro(self._injected)
+            else:
+                await coro()
+        else:
+            await coro
 
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
-        while True:
-            try:
-                await self.coro(*args, **kwargs)
-            except asyncio.CancelledError:
-                return
-            except self._valid_exception as exc:
-                if not self.reconnect:
-                    raise
-                await asyncio.sleep(backoff.delay())
-            else:
-                self._current_loop += 1
-                if self._current_loop == self.count:
-                    return
+        await self._call_loop_function('before_loop')
+        try:
+            while True:
+                try:
+                    await self.coro(*args, **kwargs)
+                except asyncio.CancelledError:
+                    break
+                except self._valid_exception as exc:
+                    if not self.reconnect:
+                        raise
+                    await asyncio.sleep(backoff.delay())
+                else:
+                    self._current_loop += 1
+                    if self._current_loop == self.count:
+                        break
 
-                await asyncio.sleep(self._sleep)
+                    await asyncio.sleep(self._sleep)
+        finally:
+            await self._call_loop_function('after_loop')
 
     def __get__(self, obj, objtype):
         if obj is None:
@@ -170,6 +190,49 @@ class Loop:
     def get_task(self):
         """Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running."""
         return self._task
+
+    def before_loop(self, coro):
+        """A function that also acts as a decorator to register a coroutine to be
+        called before the loop starts running. This is useful if you want to wait
+        for some bot state before the loop starts,
+        such as :meth:`discord.Client.wait_until_ready`.
+
+        Parameters
+        ------------
+        coro: :term:`py:awaitable`
+            The coroutine to register before the loop runs.
+
+        Raises
+        -------
+        TypeError
+            The function was not a coroutine.
+        """
+
+        if not (inspect.iscoroutinefunction(coro) or inspect.isawaitable(coro)):
+            raise TypeError('Expected coroutine or awaitable, received {0.__name__!r}.'.format(type(coro)))
+
+        self._before_loop = coro
+
+
+    def after_loop(self, coro):
+        """A function that also acts as a decorator to register a coroutine to be
+        called after the loop finished running.
+
+        Parameters
+        ------------
+        coro: :term:`py:awaitable`
+            The coroutine to register after the loop finishes.
+
+        Raises
+        -------
+        TypeError
+            The function was not a coroutine.
+        """
+
+        if not (inspect.iscoroutinefunction(coro) or inspect.isawaitable(coro)):
+            raise TypeError('Expected coroutine or awaitable, received {0.__name__!r}.'.format(type(coro)))
+
+        self._after_loop = coro
 
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
