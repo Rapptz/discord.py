@@ -66,14 +66,56 @@ Looping a certain amount of times before exiting:
     async def slow_count():
         print(slow_count.current_loop)
 
+    @slow_count.after_loop
+    async def after_slow_count():
+        print('done!')
+
     slow_count.start()
 
-Doing something after a task finishes is as simple as using :meth:`asyncio.Task.add_done_callback`:
+Waiting until the bot is ready before the loop starts:
 
 .. code-block:: python3
 
-    afterwards = lambda f: print('done!')
-    slow_count.get_task().add_done_callback(afterwards)
+    from discord.ext import tasks, commands
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.index = 0
+            self.printer.before_loop(bot.wait_until_ready())
+            self.printer.start()
+
+        def cog_unload(self):
+            self.printer.cancel()
+
+        @tasks.loop(seconds=5.0)
+        async def printer(self):
+            print(self.index)
+            self.index += 1
+
+:meth:`~.tasks.Loop.before_loop` can be used as a decorator as well:
+
+.. code-block:: python3
+
+    from discord.ext import tasks, commands
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.index = 0
+            self.bot = bot
+            self.printer.start()
+
+        def cog_unload(self):
+            self.printer.cancel()
+
+        @tasks.loop(seconds=5.0)
+        async def printer(self):
+            print(self.index)
+            self.index += 1
+
+        @printer.before_loop
+        async def before_printer(self):
+            print('waiting...')
+            await self.bot.wait_until_ready()
 
 API Reference
 ---------------
