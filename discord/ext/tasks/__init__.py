@@ -146,7 +146,7 @@ class Loop:
             Loop.start(*args, **kwargs)
         """
         self.cancel()
-        self.start(*args, **kwargs)
+        return self.start(*args, **kwargs)
 
     def add_exception_type(self, exc):
         r"""Adds an exception type to be handled during the reconnect logic.
