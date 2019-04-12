@@ -133,6 +133,21 @@ class Loop:
         if self._task:
             self._task.cancel()
 
+    def restart(self, *args, **kwargs):
+        """A convenience method to cancel, and then start another internal task.
+
+        This is also technically an alias to :meth:`.Loop.start`.
+
+        This is equivalent to:
+
+        .. code-block:: python3
+
+            Loop.cancel()
+            Loop.start(*args, **kwargs)
+        """
+        self.cancel()
+        self.start(*args, **kwargs)
+
     def add_exception_type(self, exc):
         r"""Adds an exception type to be handled during the reconnect logic.
 
