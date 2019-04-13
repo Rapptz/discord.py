@@ -308,7 +308,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``around`` in :meth:`history`.
         oldest_first
             Same as ``oldest_first`` in :meth:`history`.
-        bulk: class:`bool`
+        bulk: :class:`bool`
             If True, use bulk delete. bulk=False is useful for mass-deleting
             a bot's own messages without manage_messages. When True, will fall
             back to single delete if current account is a user bot, or if
