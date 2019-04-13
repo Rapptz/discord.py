@@ -159,6 +159,65 @@ class UserConverter(IDConverter):
 
         return result
 
+class MessageConverter(discord.ext.commands.converter.IDConverter):
+    """Converts to a :class:`discord.Message`.
+
+    The lookup strategu is as follows (in order):
+
+    1. Lookup by "{channel ID}-{message ID}" (got by shift-clicking on "Copy ID")
+    2. Lookup by message URI
+    3. Lookup by message ID (the message **must** be in the context channel)
+    """
+
+    async def convert(self, ctx, argument: str) -> discord.Message:
+        if len(argument.split()) > 1:
+            raise BadArgument("The message must be an ID or an URI.")
+        exception = BadArgument('Message "{msg}" not found.'.format(msg=argument))
+        if "-" in argument:
+            channel_id, message_id = [self._get_id_match(x) for x in argument.split("-")]
+            if not channel_id or not message_id:
+                raise exception
+            channel_id = int(channel_id.group(1))
+            message_id = int(message_id.group(1))
+            channel = ctx.bot.get_channel(channel_id)
+            if not channel:
+                raise exception
+            try:
+                message = await channel.get_message(message_id)
+            except discord.errors.NotFound:
+                raise exception
+            except discord.errors.Forbidden:
+                raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+        elif "://discordapp.com/channels/" in argument:
+            try:
+                guild_id, channel_id, message_id = [
+                    self._get_id_match(x)
+                    for x in argument.split("://discordapp.com/channels/")[1].split("/")
+                ]
+            except (KeyError):
+                raise exception
+            guild = ctx.bot.get_guild(int(guild_id.group(1)))
+            if not guild:
+                raise exception
+            channel = guild.get_channel(int(channel_id.group(1)))
+            if not channel:
+                raise exception
+            try:
+                message = await channel.get_message(int(message_id.group(1)))
+            except discord.errors.NotFound:
+                raise exception
+            except discord.errors.Forbidden:
+                raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+        else:
+            channel = ctx.channel
+            try:
+                message = await channel.get_message(int(argument))
+            except KeyError:
+                raise exception
+            except discord.errors.NotFound:
+                raise exception
+        return message
+
 class TextChannelConverter(IDConverter):
     """Converts to a :class:`TextChannel`.
 
