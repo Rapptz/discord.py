@@ -159,7 +159,7 @@ class UserConverter(IDConverter):
 
         return result
 
-class MessageConverter(discord.ext.commands.converter.IDConverter):
+class MessageConverter(IDConverter):
     """Converts to a :class:`discord.Message`.
 
     The lookup strategu is as follows (in order):
