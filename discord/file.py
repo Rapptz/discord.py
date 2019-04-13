@@ -38,7 +38,8 @@ class File:
     fp: Union[:class:`str`, BinaryIO, :class:`aiohttp.StreamReader`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
-        open.
+        open. A :class:`aiohttp.StreamReader` instance can also
+        be accepted, so long as no exception was set.
 
         .. note::
 
