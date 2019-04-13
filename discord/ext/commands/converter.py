@@ -183,7 +183,7 @@ class MessageConverter(IDConverter):
             if not channel:
                 raise exception
             try:
-                message = await channel.get_message(message_id)
+                message = await channel.fetch_message(message_id)
             except discord.errors.NotFound:
                 raise exception
             except discord.errors.Forbidden:
@@ -203,7 +203,7 @@ class MessageConverter(IDConverter):
             if not channel:
                 raise exception
             try:
-                message = await channel.get_message(int(message_id.group(1)))
+                message = await channel.fetch_message(int(message_id.group(1)))
             except discord.errors.NotFound:
                 raise exception
             except discord.errors.Forbidden:
@@ -211,7 +211,7 @@ class MessageConverter(IDConverter):
         else:
             channel = ctx.channel
             try:
-                message = await channel.get_message(int(argument))
+                message = await channel.fetch_message(int(argument))
             except KeyError:
                 raise exception
             except discord.errors.NotFound:
