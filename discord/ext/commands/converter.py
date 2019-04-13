@@ -31,7 +31,7 @@ import discord
 
 from .errors import BadArgument, NoPrivateMessage
 
-__all__ = ['Converter', 'MemberConverter', 'UserConverter', 'MessageConverter'
+__all__ = ['Converter', 'MemberConverter', 'UserConverter', 'MessageConverter',
            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
@@ -170,6 +170,21 @@ class MessageConverter(IDConverter):
     """
 
     async def convert(self, ctx, argument: str) -> discord.Message:
+        """|coro|
+
+        The method to override to do conversion logic.
+
+        If an error is found while converting, it is recommended to
+        raise a :exc:`.CommandError` derived exception as it will
+        properly propagate to the error handlers.
+
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context that the argument is being used in.
+        argument: :class:`str`
+            The argument that is being converted.
+        """
         if len(argument.split()) > 1:
             raise BadArgument("The message must be an ID or an URI.")
         exception = BadArgument('Message "{msg}" not found.'.format(msg=argument))
