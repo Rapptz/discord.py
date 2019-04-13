@@ -27,13 +27,15 @@ DEALINGS IN THE SOFTWARE.
 import os.path
 import io
 
+import aiohttp
+
 class File:
     """A parameter object used for :meth:`abc.Messageable.send`
     for sending file objects.
 
     Attributes
     -----------
-    fp: Union[:class:`str`, BinaryIO]
+    fp: Union[:class:`str`, BinaryIO, :class:`aiohttp.StreamReader`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
         open.
@@ -64,6 +66,16 @@ class File:
             self.fp = fp
             self._original_pos = fp.tell()
             self._owner = False
+
+        elif isinstance(fp, aiohttp.StreamReader):
+            err = fp._exception
+            if err is not None:
+                raise ValueError('aiohttp.StreamReader cannot be read due to an exception') from err
+
+            self.fp.close = self.fp.seek = lambda *_: None
+            self._original_pos = fp._cursor
+            self._owner = False
+
         else:
             self.fp = open(fp, 'rb')
             self._original_pos = 0
