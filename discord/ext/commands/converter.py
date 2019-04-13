@@ -31,7 +31,7 @@ import discord
 
 from .errors import BadArgument, NoPrivateMessage
 
-__all__ = ['Converter', 'MemberConverter', 'UserConverter',
+__all__ = ['Converter', 'MemberConverter', 'UserConverter', 'MessageConverter'
            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
