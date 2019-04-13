@@ -133,7 +133,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110111111111)
+        return cls(0b01111111111101111111111111111111)
 
     @classmethod
     def all_channel(cls):
@@ -166,7 +166,7 @@ class Permissions:
     def voice(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to True."""
-        return cls(0b00000011111100000000000100000000)
+        return cls(0b00000011111100000000001100000000)
 
     def update(self, **kwargs):
         r"""Bulk updates this permission object.
