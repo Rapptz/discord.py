@@ -208,7 +208,7 @@ class Widget:
         return self.id == other.id
 
     def __repr__(self):
-        return '<Widget id={0.id} name={0.name!r} invite={0.invite!r}>'.format(self)
+        return '<Widget id={0.id} name={0.name!r} invite_url={0.invite_url!r}>'.format(self)
 
     @property
     def created_at(self):
