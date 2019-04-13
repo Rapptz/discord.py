@@ -200,7 +200,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             category.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this channel. A value of
-            `0` disables slowmode. The maximum value possible is `120`.
+            `0` disables slowmode. The maximum value possible is `21600`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
 
