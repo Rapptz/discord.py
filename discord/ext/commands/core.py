@@ -325,7 +325,7 @@ class Command(_BaseCommand):
         except AttributeError:
             pass
         else:
-            if module.startswith('discord.') and not module.endswith('converter'):
+            if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
                 converter = getattr(converters, converter.__name__ + 'Converter')
 
         try:
