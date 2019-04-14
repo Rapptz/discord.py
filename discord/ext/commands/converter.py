@@ -169,7 +169,7 @@ class MessageConverter(IDConverter):
     3. Lookup by message ID (the message **must** be in the context channel)
     """
 
-    async def convert(self, ctx, argument: str) -> discord.Message:
+    async def convert(self, ctx, argument):
         """|coro|
 
         The method to override to do conversion logic.
