@@ -343,7 +343,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_raw_reaction_remove(payload)
 
-    Called when a reaction has a reaction removed. Unlike :func:`on_reaction_remove`, this is
+    Called when a message has a reaction removed. Unlike :func:`on_reaction_remove`, this is
     called regardless of the state of the internal message cache.
 
     :param payload: The raw event payload data.
