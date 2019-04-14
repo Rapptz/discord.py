@@ -365,7 +365,14 @@ class GuildChannel:
                 target = self.guild.get_role(ow.id)
             elif ow.type == 'member':
                 target = self.guild.get_member(ow.id)
-            ret[target] = overwrite
+
+            # TODO: There is potential data loss here in the non-chunked
+            # case, i.e. target is None because get_member returned nothing.
+            # This can be fixed with a slight breaking change to the return type,
+            # i.e. adding discord.Object to the list of it
+            # However, for now this is an acceptable compromise.
+            if target is not None:
+                ret[target] = overwrite
         return ret
 
     @property
