@@ -492,7 +492,7 @@ class _Greedy:
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        if not inspect.isclass(converter) and not isinstance(converter, Converter) and not hasattr(converter, '__origin__'):
+        if not (callable(converter) or isinstance(converter, Converter) or hasattr(converter, '__origin__')):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
         if converter is str or converter is type(None) or converter is _Greedy:
