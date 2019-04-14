@@ -13,6 +13,7 @@ class Permissions:
     add_reactions: bool
     view_audit_log: bool
     priority_speaker: bool
+    stream: bool
     read_messages: bool
     send_messages: bool
     send_tts_messages: bool
@@ -63,7 +64,7 @@ class Permissions:
     def update(self, *, create_instant_invite: bool = ..., kick_members: bool = ..., ban_members: bool = ...,
                administrator: bool = ..., manage_channels: bool = ..., manage_guild: bool = ...,
                add_reactions: bool = ..., view_audit_log: bool = ..., priority_speaker: bool = ...,
-               read_messages: bool = ..., send_messages: bool = ..., send_tts_messages: bool = ...,
+               stream: bool = ..., read_messages: bool = ..., send_messages: bool = ..., send_tts_messages: bool = ...,
                manage_messages: bool = ..., embed_links: bool = ..., attach_files: bool = ...,
                read_message_history: bool = ..., mention_everyone: bool = ..., external_emojis: bool = ...,
                connect: bool = ..., speak: bool = ..., mute_members: bool = ..., deafen_members: bool = ...,
@@ -86,6 +87,7 @@ class PermissionOverwrite:
     add_reactions: Optional[bool]
     view_audit_log: Optional[bool]
     priority_speaker: Optional[bool]
+    stream: Optional[bool]
     read_messages: Optional[bool]
     send_messages: Optional[bool]
     send_tts_messages: Optional[bool]
@@ -111,16 +113,17 @@ class PermissionOverwrite:
                  ban_members: Optional[bool] = ..., administrator: Optional[bool] = ...,
                  manage_channels: Optional[bool] = ..., manage_guild: Optional[bool] = ...,
                  add_reactions: Optional[bool] = ..., view_audit_log: Optional[bool] = ...,
-                 priority_speaker: Optional[bool] = ..., read_messages: Optional[bool] = ...,
-                 send_messages: Optional[bool] = ..., send_tts_messages: Optional[bool] = ...,
-                 manage_messages: Optional[bool] = ..., embed_links: Optional[bool] = ...,
-                 attach_files: Optional[bool] = ..., read_message_history: Optional[bool] = ...,
-                 mention_everyone: Optional[bool] = ..., external_emojis: Optional[bool] = ...,
-                 connect: Optional[bool] = ..., speak: Optional[bool] = ..., mute_members: Optional[bool] = ...,
-                 deafen_members: Optional[bool] = ..., move_members: Optional[bool] = ...,
-                 use_voice_activation: Optional[bool] = ..., change_nickname: Optional[bool] = ...,
-                 manage_nicknames: Optional[bool] = ..., manage_roles: Optional[bool] = ...,
-                 manage_webhooks: Optional[bool] = ..., manage_emojis: Optional[bool] = ...) -> None: ...
+                 priority_speaker: Optional[bool] = ..., stream: Optional[bool] = ...,
+                 read_messages: Optional[bool] = ..., send_messages: Optional[bool] = ...,
+                 send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
+                 embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
+                 read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
+                 external_emojis: Optional[bool] = ..., connect: Optional[bool] = ..., speak: Optional[bool] = ...,
+                 mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
+                 move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
+                 change_nickname: Optional[bool] = ..., manage_nicknames: Optional[bool] = ...,
+                 manage_roles: Optional[bool] = ..., manage_webhooks: Optional[bool] = ...,
+                 manage_emojis: Optional[bool] = ...) -> None: ...
     def __eq__(self, other: Any) -> bool: ...
     def pair(self) -> Tuple[Permissions, Permissions]: ...
     @classmethod
@@ -130,14 +133,15 @@ class PermissionOverwrite:
                ban_members: Optional[bool] = ..., administrator: Optional[bool] = ...,
                manage_channels: Optional[bool] = ..., manage_guild: Optional[bool] = ...,
                add_reactions: Optional[bool] = ..., view_audit_log: Optional[bool] = ...,
-               priority_speaker: Optional[bool] = ..., read_messages: Optional[bool] = ...,
-               send_messages: Optional[bool] = ..., send_tts_messages: Optional[bool] = ...,
-               manage_messages: Optional[bool] = ..., embed_links: Optional[bool] = ...,
-               attach_files: Optional[bool] = ..., read_message_history: Optional[bool] = ...,
-               mention_everyone: Optional[bool] = ..., external_emojis: Optional[bool] = ...,
-               connect: Optional[bool] = ..., speak: Optional[bool] = ..., mute_members: Optional[bool] = ...,
-               deafen_members: Optional[bool] = ..., move_members: Optional[bool] = ...,
-               use_voice_activation: Optional[bool] = ..., change_nickname: Optional[bool] = ...,
-               manage_nicknames: Optional[bool] = ..., manage_roles: Optional[bool] = ...,
-               manage_webhooks: Optional[bool] = ..., manage_emojis: Optional[bool] = ...) -> None: ...
+               priority_speaker: Optional[bool] = ..., stream: Optional[bool] = ...,
+               read_messages: Optional[bool] = ..., send_messages: Optional[bool] = ...,
+               send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
+               embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
+               read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
+               external_emojis: Optional[bool] = ..., connect: Optional[bool] = ..., speak: Optional[bool] = ...,
+               mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
+               move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
+               change_nickname: Optional[bool] = ..., manage_nicknames: Optional[bool] = ...,
+               manage_roles: Optional[bool] = ..., manage_webhooks: Optional[bool] = ...,
+               manage_emojis: Optional[bool] = ...) -> None: ...
     def __iter__(self) -> Iterator[Tuple[str, Optional[bool]]]: ...
