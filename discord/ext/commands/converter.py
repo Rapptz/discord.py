@@ -170,52 +170,52 @@ class MessageConverter(IDConverter):
     """
 
     async def convert(self, ctx, argument):
-        if len(argument.split()) > 1:
-            raise BadArgument("The message must be an ID or an URI.")
-        exception = BadArgument('Message "{msg}" not found.'.format(msg=argument))
-        if "-" in argument:
-            channel_id, message_id = [self._get_id_match(x) for x in argument.split("-")]
-            if not channel_id or not message_id:
-                raise exception
-            channel_id = int(channel_id.group(1))
-            message_id = int(message_id.group(1))
-            channel = ctx.bot.get_channel(channel_id)
+        prog = re.compile(r'^(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        match = prog.match(argument)
+        if match:
+            message_id = int(match.group("message_id"))
+            message = ctx.bot._connection._get_message(message_id)
+            if message:
+                return message
+            channel_id = match.group("channel_id")
+            if channel_id:
+                channel = ctx.bot.get_channel(int(channel_id))
+                if not channel:
+                    raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
+                try:
+                    message = await channel.fetch_message(message_id)
+                except discord.errors.NotFound:
+                    raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+                except discord.errors.Forbidden:
+                    raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+            else:
+                channel = ctx.channel
+                try:
+                    message = await channel.fetch_message(message_id)
+                except discord.errors.NotFound:
+                    raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+        else:
+            prog = re.compile(
+                r'^https?://(?:(ptb|canary)\.)?discordapp\.com/channels/'
+                r'(?P<guild_id>[0-9]{15,21})/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})$'
+            )
+            match = prog.match(argument)
+            if not match:
+                raise BadArgument('Message "{msg}" not found'.format(msg=argument))
+            channel_id = int(match.group("channel_id"))
+            message_id = int(match.group("message_id"))
+            message = ctx.bot._connection._get_message(message_id)
+            if message:
+                return message
+            channel = ctx.bot.get_channel(int(match.group("channel_id")))
             if not channel:
-                raise exception
+                BadArgument('Message "{msg}" not found'.format(msg=argument))
             try:
                 message = await channel.fetch_message(message_id)
             except discord.errors.NotFound:
-                raise exception
+                BadArgument('Message "{msg}" not found'.format(msg=argument))
             except discord.errors.Forbidden:
                 raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
-        elif "://discordapp.com/channels/" in argument:
-            try:
-                guild_id, channel_id, message_id = [
-                    self._get_id_match(x)
-                    for x in argument.split("://discordapp.com/channels/")[1].split("/")
-                ]
-            except (KeyError):
-                raise exception
-            guild = ctx.bot.get_guild(int(guild_id.group(1)))
-            if not guild:
-                raise exception
-            channel = guild.get_channel(int(channel_id.group(1)))
-            if not channel:
-                raise exception
-            try:
-                message = await channel.fetch_message(int(message_id.group(1)))
-            except discord.errors.NotFound:
-                raise exception
-            except discord.errors.Forbidden:
-                raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
-        else:
-            channel = ctx.channel
-            try:
-                message = await channel.fetch_message(int(argument))
-            except KeyError:
-                raise exception
-            except discord.errors.NotFound:
-                raise exception
         return message
 
 class TextChannelConverter(IDConverter):
