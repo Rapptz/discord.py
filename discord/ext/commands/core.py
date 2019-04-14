@@ -28,6 +28,7 @@ import asyncio
 import functools
 import inspect
 import typing
+import datetime
 
 import discord
 
@@ -639,7 +640,8 @@ class Command(_BaseCommand):
     def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
-            retry_after = bucket.update_rate_limit()
+            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            retry_after = bucket.update_rate_limit(current)
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
