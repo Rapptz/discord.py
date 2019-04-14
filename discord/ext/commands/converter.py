@@ -162,29 +162,14 @@ class UserConverter(IDConverter):
 class MessageConverter(IDConverter):
     """Converts to a :class:`discord.Message`.
 
-    The lookup strategu is as follows (in order):
+    The lookup strategy is as follows (in order):
 
     1. Lookup by "{channel ID}-{message ID}" (got by shift-clicking on "Copy ID")
-    2. Lookup by message URI
-    3. Lookup by message ID (the message **must** be in the context channel)
+    2. Lookup by message ID (the message **must** be in the context channel)
+    3. Lookup by message URL
     """
 
     async def convert(self, ctx, argument):
-        """|coro|
-
-        The method to override to do conversion logic.
-
-        If an error is found while converting, it is recommended to
-        raise a :exc:`.CommandError` derived exception as it will
-        properly propagate to the error handlers.
-
-        Parameters
-        -----------
-        ctx: :class:`.Context`
-            The invocation context that the argument is being used in.
-        argument: :class:`str`
-            The argument that is being converted.
-        """
         if len(argument.split()) > 1:
             raise BadArgument("The message must be an ID or an URI.")
         exception = BadArgument('Message "{msg}" not found.'.format(msg=argument))
