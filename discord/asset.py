@@ -31,6 +31,7 @@ from . import utils
 
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+VALID_WIDGET_IMAGE_STYLES = frozenset({"shield", "banner1", "banner2", "banner3", "banner4"})
 
 class Asset:
     """Represents a CDN asset on Discord.
@@ -106,6 +107,14 @@ class Asset:
 
         url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
         return cls(state, url.format(id, hash, format, size, key=key))
+    
+    @classmethod
+    def _from_widget_image(cls, state, id, *, style='shield'):
+        if format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("style must be one of {}".format(VALID_WIDGET_IMAGE_STYLES))
+
+        url = 'https://discordapp.com/api/v6/guilds/{0}/widget.png?style={style}'
+        return cls(state, url.format(id, style=style))
 
     def __str__(self):
         return self._url if self._url is not None else ''
