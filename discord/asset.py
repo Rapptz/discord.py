@@ -95,6 +95,20 @@ class Asset:
         return cls(state, url)
 
     @classmethod
+    def _from_activity(cls, state, application_id, size, available_assets):
+        if application_id is None:
+            return cls(state)
+
+        url = 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'
+
+        try:
+            image = available_assets['{0}_image'.format(size)]
+        except KeyError:
+            return cls(state)
+
+        return cls(state, url.format(application_id, image))
+
+    @classmethod
     def _from_guild_image(cls, state, id, hash, key, *, format='webp', size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")

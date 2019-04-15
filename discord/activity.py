@@ -29,6 +29,7 @@ import datetime
 from .enums import ActivityType, try_enum
 from .colour import Colour
 from .utils import _get_as_snowflake
+from .asset import Asset
 
 __all__ = ['Activity', 'Streaming', 'Game', 'Spotify']
 
@@ -130,10 +131,12 @@ class Activity(_ActivityTag):
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
     """
 
-    __slots__ = ('state', 'details', 'timestamps', 'assets', 'party',
-                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
+    __slots__ = ('state', 'details', 'timestamps', 'assets', 'party', 'flags',
+                 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id',
+                 '_connection')
 
     def __init__(self, **kwargs):
+        self._connection = kwargs.pop('connection', None)
         self.state = kwargs.pop('state', None)
         self.details = kwargs.pop('details', None)
         self.timestamps = kwargs.pop('timestamps', {})
@@ -179,29 +182,14 @@ class Activity(_ActivityTag):
 
     @property
     def large_image_url(self):
-        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
-        try:
-            large_image = self.assets['large_image']
-        except KeyError:
-            return None
-        else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, large_image)
+        """:class:`Asset`: Returns an asset pointing to the large image asset of this activity if applicable."""
+        return Asset._from_activity(self._connection, self.application_id, 'large', self.assets)
 
     @property
     def small_image_url(self):
-        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
+        """:class:`Asset`: Returns a URL pointing to the small image asset of this activity if applicable."""
+        return Asset._from_activity(self._connection, self.application_id, 'small', self.assets)
 
-        try:
-            small_image = self.assets['small_image']
-        except KeyError:
-            return None
-        else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
     @property
     def large_image_text(self):
         """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
@@ -440,9 +428,11 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id')
+    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id',
+                 '_connection')
 
     def __init__(self, **data):
+        self._connection = data.pop('connection', None)
         self._state = data.pop('state', None)
         self._details = data.pop('details', None)
         self._timestamps = data.pop('timestamps', {})
@@ -532,12 +522,12 @@ class Spotify:
 
     @property
     def album_cover_url(self):
-        """:class:`str`: The album cover image URL from Spotify's CDN."""
+        """:class:`Asset`: The album cover image asset from Spotify's CDN."""
         large_image = self._assets.get('large_image', '')
         if large_image[:8] != 'spotify:':
-            return ''
+            return Asset(self._connection)
         album_image_id = large_image[8:]
-        return 'https://i.scdn.co/image/' + album_image_id
+        return Asset(self._connection, 'https://i.scdn.co/image/' + album_image_id)
 
     @property
     def track_id(self):
@@ -564,19 +554,19 @@ class Spotify:
         """:class:`str`: The party ID of the listening party."""
         return self._party.get('id', '')
 
-def create_activity(data):
+def create_activity(data, state=None):
     if not data:
         return None
 
     game_type = try_enum(ActivityType, data.get('type', -1))
     if game_type is ActivityType.playing:
         if 'application_id' in data or 'session_id' in data:
-            return Activity(**data)
+            return Activity(**data, connection=state)
         return Game(**data)
     elif game_type is ActivityType.streaming:
         if 'url' in data:
             return Streaming(**data)
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
-        return Spotify(**data)
+        return Spotify(**data, connection=state)
     return Activity(**data)

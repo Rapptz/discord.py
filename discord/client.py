@@ -582,7 +582,7 @@ class Client:
     @property
     def activity(self):
         """Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]]: The activity being used upon logging in."""
-        return create_activity(self._connection._activity)
+        return create_activity(self._connection._activity, self._connection)
 
     @activity.setter
     def activity(self, value):

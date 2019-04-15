@@ -160,7 +160,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._client_status = {
             None: 'offline'
         }
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = tuple(map(lambda a: create_activity(a, self._state), data.get('activities', [])))
         self.nick = data.get('nick', None)
 
     def __str__(self):
@@ -235,7 +235,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._update_roles(data)
 
     def _presence_update(self, data, user):
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = tuple(map(lambda a: create_activity(a, self._state), data.get('activities', [])))
         self._client_status = {
             key: value
             for key, value in data.get('client_status', {}).items()
