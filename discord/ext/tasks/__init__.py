@@ -160,7 +160,7 @@ class Loop:
         if not issubclass(exc, BaseException):
             raise TypeError('{0!r} must inherit from BaseException.'.format(exc))
 
-        self._valid_exception = tuple(*self._valid_exception, exc)
+        self._valid_exception = (*self._valid_exception, exc)
 
     def clear_exception_types(self):
         """Removes all exception types that are handled.
