@@ -301,6 +301,10 @@ class ClientUser(BaseUser):
     def get_relationship(self, user_id):
         """Retrieves the :class:`Relationship` if applicable.
 
+        .. note::
+
+            This only applies to non-bot accounts.
+
         Parameters
         -----------
         user_id: :class:`int`
@@ -315,17 +319,32 @@ class ClientUser(BaseUser):
 
     @property
     def relationships(self):
-        """Returns a :class:`list` of :class:`Relationship` that the user has."""
+        """Returns a :class:`list` of :class:`Relationship` that the user has.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+        """
         return list(self._relationships.values())
 
     @property
     def friends(self):
-        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+        """
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked."""
+        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+        """
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
     async def edit(self, **fields):
@@ -435,7 +454,9 @@ class ClientUser(BaseUser):
         provided. These recipients must be have a relationship
         of type :attr:`RelationshipType.friend`.
 
-        Bot accounts cannot create a group.
+        .. note::
+
+            This only applies to non-bot accounts.
 
         Parameters
         -----------
@@ -469,7 +490,11 @@ class ClientUser(BaseUser):
     async def edit_settings(self, **kwargs):
         """|coro|
 
-        Edits the client user's settings. Only applicable to user accounts.
+        Edits the client user's settings.
+
+        .. note::
+
+            This only applies to non-bot accounts.
 
         Parameters
         -------
@@ -642,13 +667,22 @@ class User(BaseUser, discord.abc.Messageable):
 
     @property
     def relationship(self):
-        """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
+        """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+        """
         return self._state.user.get_relationship(self.id)
 
     async def mutual_friends(self):
         """|coro|
 
-        Gets all mutual friends of this user. This can only be used by non-bot accounts
+        Gets all mutual friends of this user.
+
+        .. note::
+
+            This only applies to non-bot accounts.
 
         Raises
         -------
@@ -667,14 +701,24 @@ class User(BaseUser, discord.abc.Messageable):
         return [User(state=state, data=friend) for friend in mutuals]
 
     def is_friend(self):
-        """:class:`bool`: Checks if the user is your friend."""
+        """:class:`bool`: Checks if the user is your friend.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+        """
         r = self.relationship
         if r is None:
             return False
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """:class:`bool`: Checks if the user is blocked."""
+        """:class:`bool`: Checks if the user is blocked.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+        """
         r = self.relationship
         if r is None:
             return False
@@ -684,6 +728,10 @@ class User(BaseUser, discord.abc.Messageable):
         """|coro|
 
         Blocks the user.
+
+        .. note::
+
+            This only applies to non-bot accounts.
 
         Raises
         -------
@@ -700,6 +748,10 @@ class User(BaseUser, discord.abc.Messageable):
 
         Unblocks the user.
 
+        .. note::
+
+            This only applies to non-bot accounts.
+
         Raises
         -------
         Forbidden
@@ -713,6 +765,10 @@ class User(BaseUser, discord.abc.Messageable):
         """|coro|
 
         Removes the user as a friend.
+
+        .. note::
+
+            This only applies to non-bot accounts.
 
         Raises
         -------
@@ -728,6 +784,10 @@ class User(BaseUser, discord.abc.Messageable):
 
         Sends the user a friend request.
 
+        .. note::
+
+            This only applies to non-bot accounts.
+
         Raises
         -------
         Forbidden
@@ -740,7 +800,11 @@ class User(BaseUser, discord.abc.Messageable):
     async def profile(self):
         """|coro|
 
-        Gets the user's profile. This can only be used by non-bot accounts.
+        Gets the user's profile.
+
+        .. note::
+
+            This only applies to non-bot accounts.
 
         Raises
         -------
