@@ -137,14 +137,17 @@ class WebhookAdapter:
             files_to_pass = None
 
         url = '%s?wait=%d' % (self._request_url, wait)
+        maybe_coro = None
         try:
             maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
         finally:
-            if cleanup is not None:
+            if maybe_coro is not None and cleanup is not None:
                 if not asyncio.iscoroutine(maybe_coro):
                     cleanup()
                 else:
                     maybe_coro = self._wrap_coroutine_and_cleanup(maybe_coro, cleanup)
+
+        # if request raises up there then this should never be `None`
         return self.handle_execution_response(maybe_coro, wait=wait)
 
 class AsyncWebhookAdapter(WebhookAdapter):
