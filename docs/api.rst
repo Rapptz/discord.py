@@ -1366,6 +1366,75 @@ All enumerations are subclasses of `enum`_.
         The action is the update of something.
 
 
+.. class:: UserContentFilter
+
+    Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``
+    in the Discord client.
+
+    .. attribute:: all_messages
+
+        Scan all direct messages from everyone.
+
+    .. attribute:: friends
+
+        Scan all direct messages that aren't from friends.
+
+    .. attribute:: disabled
+
+        Don't scan any direct messages.
+
+
+.. class:: FriendFlags
+
+    Represents the options found in ``Settings > Privacy & Safety > Who Can Add You As A Friend``
+    in the Discord client.
+
+    .. attribute:: noone
+
+        This allows no-one to add you as a friend.
+
+    .. attribute:: mutual_guilds
+
+        This allows guild members to add you as a friend.
+
+    .. attribute:: mutual_friends
+
+        This allows friends of friends to add you as a friend.
+
+    .. attribute:: guild_and_friends
+
+        This is a superset of :attr:`mutual_guilds` and :attr:`mutual_friends`.
+
+    .. attribute:: everyone
+
+        This allows everyone to add you as a friend.
+
+
+.. class:: PremiumType
+
+    Represents the user's Discord Nitro subscription type.
+
+    .. attribute:: nitro
+
+        Represents the Discord Nitro with Nitro-exclusive games.
+
+    .. attribute:: nitro_classic
+
+        Represents the Discord Nitro with no Nitro-exclusive games.
+
+
+.. class:: Theme
+
+    Represents the theme synced across all Discord clients.
+
+    .. attribute:: light
+
+        Represents the Light theme on Discord.
+
+    .. attribute:: dark
+
+        Represents the Dark theme on Discord.
+
 
 Async Iterator
 ----------------
