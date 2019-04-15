@@ -228,6 +228,14 @@ class Client:
         return self._connection.emojis
 
     @property
+    def cached_messages(self):
+        """Sequence[:class:`~discord.Message`]: Read-only list of messages the connected client has cached.
+
+        .. versionadded:: 1.1.0
+        """
+        return utils.SequenceProxy(self._connection._messages)
+
+    @property
     def private_channels(self):
         """List[:class:`abc.PrivateChannel`]: The private channels that the connected client is participating on.
 

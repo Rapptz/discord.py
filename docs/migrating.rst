@@ -206,8 +206,6 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.wait_until_login``           | Removed                                                                      |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.messages``                   | Removed                                                                      |
-+---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.wait_until_ready``           | No change                                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 
@@ -329,6 +327,10 @@ They will be enumerated here.
 - ``Client.get_all_emojis``
 
     - Use :attr:`Client.emojis` instead.
+
+` ``Client.messages``
+
+    - Use read-only :attr:`Client.cached_messages` instead.
 
 - ``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone.
 
