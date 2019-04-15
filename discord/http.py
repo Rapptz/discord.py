@@ -370,26 +370,26 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_message(self, message_id, channel_id, **fields):
+    def edit_message(self, channel_id, message_id, **fields):
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
-    def add_reaction(self, message_id, channel_id, emoji):
+    def add_reaction(self, channel_id, message_id, emoji):
         r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
         return self.request(r, header_bypass_delay=0.25)
 
-    def remove_reaction(self, message_id, channel_id, emoji, member_id):
+    def remove_reaction(self, channel_id, message_id, emoji, member_id):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
                   channel_id=channel_id, message_id=message_id, member_id=member_id, emoji=emoji)
         return self.request(r, header_bypass_delay=0.25)
 
-    def remove_own_reaction(self, message_id, channel_id, emoji):
+    def remove_own_reaction(self, channel_id, message_id, emoji):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
         return self.request(r, header_bypass_delay=0.25)
 
-    def get_reaction_users(self, message_id, channel_id, emoji, limit, after=None):
+    def get_reaction_users(self, channel_id, message_id, emoji, limit, after=None):
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
 
@@ -398,7 +398,7 @@ class HTTPClient:
             params['after'] = after
         return self.request(r, params=params)
 
-    def clear_reactions(self, message_id, channel_id):
+    def clear_reactions(self, channel_id, message_id):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions',
                   channel_id=channel_id, message_id=message_id)
 
@@ -805,7 +805,7 @@ class HTTPClient:
             value = '{0}?encoding={1}&v={2}'
         return data['shards'], value.format(data['url'], encoding, v)
 
-    def get_user_info(self, user_id):
+    def get_user(self, user_id):
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
 
     def get_user_profile(self, user_id):
