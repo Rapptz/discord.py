@@ -1125,7 +1125,7 @@ class Client:
         :class:`~discord.User`
             The user you requested.
         """
-        data = await self.http.get_user_info(user_id)
+        data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
     async def fetch_user_profile(self, user_id):
