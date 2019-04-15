@@ -32,7 +32,6 @@ from collections import namedtuple
 from .iterators import HistoryIterator
 from .context_managers import Typing
 from .errors import InvalidArgument, ClientException, HTTPException
-from .message import PartialMessage
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -869,7 +868,8 @@ class Messageable(metaclass=abc.ABCMeta):
         :class:`PartialMessage`
             The PartialMessage created.
         """
-
+        # Avoid circular import
+        from .message import PartialMessage
         channel = await self._get_channel()
         return PartialMessage(state=self._state, channel_id=channel.id, message_id=id)
 
