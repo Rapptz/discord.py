@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import array
 import asyncio
+import collections.abc
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
@@ -77,6 +78,32 @@ def cached_slot_property(name):
     def decorator(func):
         return CachedSlotProperty(name, func)
     return decorator
+
+class SequenceProxy(collections.abc.Sequence):
+    """Read-only proxy of a Sequence."""
+    def __init__(self, proxied):
+        self.__proxied = proxied
+
+    def __getitem__(self, idx):
+        return self.__proxied[idx]
+
+    def __len__(self):
+        return len(self.__proxied)
+
+    def __contains__(self, item):
+        return item in self.__proxied
+
+    def __iter__(self):
+        return iter(self.__proxied)
+
+    def __reversed__(self):
+        return reversed(self.__proxied)
+
+    def index(self, value, *args, **kwargs):
+        return self.__proxied.index(value, *args, **kwargs)
+
+    def count(self, value):
+        return self.__proxied.count(value)
 
 def parse_time(timestamp):
     if timestamp:
