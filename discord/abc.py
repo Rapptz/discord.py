@@ -32,6 +32,7 @@ from collections import namedtuple
 from .iterators import HistoryIterator
 from .context_managers import Typing
 from .errors import InvalidArgument, ClientException, HTTPException
+from .message import PartialMessage
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -853,6 +854,24 @@ class Messageable(metaclass=abc.ABCMeta):
         channel = await self._get_channel()
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
+
+    async def create_partial_message(self, id):
+        """|coro|
+        Creates a single :class:`PartialMessage` from the destination.
+
+        Parameters
+        ------------
+        id: :class:`int`
+            The message ID to create a partial message for.
+
+        Returns
+        --------
+        :class:`PartialMessage`
+            The PartialMessage created.
+        """
+
+        channel = await self._get_channel()
+        return PartialMessage(state=self._state, channel_id=channel.id, message_id=id)
 
     async def pins(self):
         """|coro|

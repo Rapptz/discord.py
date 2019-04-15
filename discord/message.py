@@ -36,6 +36,7 @@ from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
+from .object import Object
 from .member import Member
 
 class Attachment:
@@ -123,7 +124,268 @@ class Attachment:
             with open(fp, 'wb') as f:
                 return f.write(data)
 
-class Message:
+
+class PartialMessage:
+    """Represents a contentless message from Discord.
+    For use when you have a message and channel ID, but do not have a readily available
+    :class:`Message` object.
+
+    These should be created with :meth:`abc.Messageable.create_partial_message`
+    """
+
+    def __init__(self, *, state, channel_id, message_id):
+        self._state = state
+        self.channel = Object(id=channel_id)
+        self.id = message_id
+
+
+    async def delete(self):
+        """|coro|
+
+        Deletes the message.
+
+        Your own messages could be deleted without any proper permissions. However to
+        delete other people's messages, you need the :attr:`~Permissions.manage_messages`
+        permission.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to delete the message.
+        HTTPException
+            Deleting the message failed.
+        """
+        await self._state.http.delete_message(self.channel.id, self.id)
+
+    def _parse_edit_fields(self, fields):
+        try:
+            content = fields['content']
+        except KeyError:
+            pass
+        else:
+            if content is not None:
+                fields['content'] = str(content)
+
+        try:
+            embed = fields['embed']
+        except KeyError:
+            pass
+        else:
+            if embed is not None:
+                fields['embed'] = embed.to_dict()
+        return fields
+
+    async def _delete_after(self, time):
+        async def delete():
+            await asyncio.sleep(time, loop=self._state.loop)
+            try:
+                await self._state.http.delete_message(self.channel.id, self.id)
+            except HTTPException:
+                pass
+
+        asyncio.ensure_future(delete(), loop=self._state.loop)
+
+
+    async def edit(self, **fields):
+        """|coro|
+
+        Edits the message.
+
+        The content must be able to be transformed into a string via ``str(content)``.
+
+        Parameters
+        -----------
+        content: Optional[:class:`str`]
+            The new content to replace the message with.
+            Could be ``None`` to remove the content.
+        embed: Optional[:class:`Embed`]
+            The new embed to replace the original with.
+            Could be ``None`` to remove the embed.
+        delete_after: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just edited. If the deletion fails,
+            then it is silently ignored.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        """
+
+        fields = self._parse_edit_fields(fields)
+
+        await self._state.http.edit_message(self.channel.id, self.id, **fields)
+
+        try:
+            delete_after = fields['delete_after']
+        except KeyError:
+            pass
+        else:
+            if delete_after is not None:
+                await self._delete_after(delete_after)
+
+    async def pin(self):
+        """|coro|
+
+        Pins the message.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to do
+        this in a non-private channel context.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to pin the message.
+        NotFound
+            The message or channel was not found or deleted.
+        HTTPException
+            Pinning the message failed, probably due to the channel
+            having more than 50 pinned messages.
+        """
+
+        await self._state.http.pin_message(self.channel.id, self.id)
+
+    async def unpin(self):
+        """|coro|
+
+        Unpins the message.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to do
+        this in a non-private channel context.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to unpin the message.
+        NotFound
+            The message or channel was not found or deleted.
+        HTTPException
+            Unpinning the message failed.
+        """
+
+        await self._state.http.unpin_message(self.channel.id, self.id)
+
+    async def add_reaction(self, emoji):
+        """|coro|
+
+        Add a reaction to the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        You must have the :attr:`~Permissions.read_message_history` permission
+        to use this. If nobody else has reacted to the message using this
+        emoji, the :attr:`~Permissions.add_reactions` permission is required.
+
+        Parameters
+        ------------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to react with.
+
+        Raises
+        --------
+        HTTPException
+            Adding the reaction failed.
+        Forbidden
+            You do not have the proper permissions to react to the message.
+        NotFound
+            The emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        emoji = self._emoji_reaction(emoji)
+        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
+
+    async def remove_reaction(self, emoji, member):
+        """|coro|
+
+        Remove a reaction by the member from the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        If the reaction is not your own (i.e. ``member`` parameter is not you) then
+        the :attr:`~Permissions.manage_messages` permission is needed.
+
+        The ``member`` parameter must represent a member and meet
+        the :class:`abc.Snowflake` abc.
+
+        Parameters
+        ------------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to remove.
+        member: :class:`abc.Snowflake`
+            The member for which to remove the reaction.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to remove the reaction.
+        NotFound
+            The member or emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        emoji = self._emoji_reaction(emoji)
+
+        if member.id == self._state.self_id:
+            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
+        else:
+            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
+
+    @staticmethod
+    def _emoji_reaction(emoji):
+        if isinstance(emoji, Reaction):
+            emoji = emoji.emoji
+
+        if isinstance(emoji, Emoji):
+            return '%s:%s' % (emoji.name, emoji.id)
+        if isinstance(emoji, PartialEmoji):
+            return emoji._as_reaction()
+        if isinstance(emoji, str):
+            return emoji # this is okay
+
+        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+
+    async def clear_reactions(self):
+        """|coro|
+
+        Removes all the reactions from the message.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reactions failed.
+        Forbidden
+            You do not have the proper permissions to remove all the reactions.
+        """
+        await self._state.http.clear_reactions(self.channel.id, self.id)
+
+    def ack(self):
+        """|coro|
+
+        Marks this message as read.
+
+        The user must not be a bot user.
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        ClientException
+            You must not be a bot user.
+        """
+
+        state = self._state
+        if state.is_bot:
+            raise ClientException('Must not be a bot account to ack messages.')
+        return state.http.ack_message(self.channel.id, self.id)
+
+class Message(PartialMessage):
     r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
@@ -563,23 +825,6 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
-    async def delete(self):
-        """|coro|
-
-        Deletes the message.
-
-        Your own messages could be deleted without any proper permissions. However to
-        delete other people's messages, you need the :attr:`~Permissions.manage_messages`
-        permission.
-
-        Raises
-        ------
-        Forbidden
-            You do not have proper permissions to delete the message.
-        HTTPException
-            Deleting the message failed.
-        """
-        await self._state.http.delete_message(self.channel.id, self.id)
 
     async def edit(self, **fields):
         """|coro|
@@ -607,21 +852,7 @@ class Message:
             Editing the message failed.
         """
 
-        try:
-            content = fields['content']
-        except KeyError:
-            pass
-        else:
-            if content is not None:
-                fields['content'] = str(content)
-
-        try:
-            embed = fields['embed']
-        except KeyError:
-            pass
-        else:
-            if embed is not None:
-                fields['embed'] = embed.to_dict()
+        fields = self._parse_edit_fields(fields)
 
         data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
         self._update(channel=self.channel, data=data)
@@ -632,14 +863,8 @@ class Message:
             pass
         else:
             if delete_after is not None:
-                async def delete():
-                    await asyncio.sleep(delete_after, loop=self._state.loop)
-                    try:
-                        await self._state.http.delete_message(self.channel.id, self.id)
-                    except HTTPException:
-                        pass
+                await self._delete_after(delete_after)
 
-                asyncio.ensure_future(delete(), loop=self._state.loop)
 
     async def pin(self):
         """|coro|
@@ -660,7 +885,7 @@ class Message:
             having more than 50 pinned messages.
         """
 
-        await self._state.http.pin_message(self.channel.id, self.id)
+        await super().pin()
         self.pinned = True
 
     async def unpin(self):
@@ -681,125 +906,8 @@ class Message:
             Unpinning the message failed.
         """
 
-        await self._state.http.unpin_message(self.channel.id, self.id)
+        await super().unpin()
         self.pinned = False
 
-    async def add_reaction(self, emoji):
-        """|coro|
 
-        Add a reaction to the message.
 
-        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
-
-        You must have the :attr:`~Permissions.read_message_history` permission
-        to use this. If nobody else has reacted to the message using this
-        emoji, the :attr:`~Permissions.add_reactions` permission is required.
-
-        Parameters
-        ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
-            The emoji to react with.
-
-        Raises
-        --------
-        HTTPException
-            Adding the reaction failed.
-        Forbidden
-            You do not have the proper permissions to react to the message.
-        NotFound
-            The emoji you specified was not found.
-        InvalidArgument
-            The emoji parameter is invalid.
-        """
-
-        emoji = self._emoji_reaction(emoji)
-        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
-
-    async def remove_reaction(self, emoji, member):
-        """|coro|
-
-        Remove a reaction by the member from the message.
-
-        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
-
-        If the reaction is not your own (i.e. ``member`` parameter is not you) then
-        the :attr:`~Permissions.manage_messages` permission is needed.
-
-        The ``member`` parameter must represent a member and meet
-        the :class:`abc.Snowflake` abc.
-
-        Parameters
-        ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
-            The emoji to remove.
-        member: :class:`abc.Snowflake`
-            The member for which to remove the reaction.
-
-        Raises
-        --------
-        HTTPException
-            Removing the reaction failed.
-        Forbidden
-            You do not have the proper permissions to remove the reaction.
-        NotFound
-            The member or emoji you specified was not found.
-        InvalidArgument
-            The emoji parameter is invalid.
-        """
-
-        emoji = self._emoji_reaction(emoji)
-
-        if member.id == self._state.self_id:
-            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
-        else:
-            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
-
-    @staticmethod
-    def _emoji_reaction(emoji):
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            return '%s:%s' % (emoji.name, emoji.id)
-        if isinstance(emoji, PartialEmoji):
-            return emoji._as_reaction()
-        if isinstance(emoji, str):
-            return emoji # this is okay
-
-        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
-
-    async def clear_reactions(self):
-        """|coro|
-
-        Removes all the reactions from the message.
-
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
-
-        Raises
-        --------
-        HTTPException
-            Removing the reactions failed.
-        Forbidden
-            You do not have the proper permissions to remove all the reactions.
-        """
-        await self._state.http.clear_reactions(self.channel.id, self.id)
-
-    def ack(self):
-        """|coro|
-
-        Marks this message as read.
-
-        The user must not be a bot user.
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        return state.http.ack_message(self.channel.id, self.id)
