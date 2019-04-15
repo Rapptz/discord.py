@@ -506,6 +506,33 @@ class Guild(Hashable):
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
     @property
+    def widget_image_url(self):
+        """Returns a URL to the guild's widget image."""
+        return self.widget_image_url_as()
+    
+    def widget_image_url_as(self, *, style='shield'):
+        """Returns a URL to the guild's widget image.
+
+        The format must be one of 'shield', 'banner1', 'banner2', 'banner3', or 'banner4'.
+
+        Parameters
+        -----------
+        style: :class:`str`
+            The style of the widget.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad widget image style passed to ``style``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting widget image from the Discord API.
+        """
+        return Asset._from_widget_image(self._state, self.id, style=style)
+    
+    @property
     def member_count(self):
         """Returns the true member count regardless of it being loaded fully or not."""
         return self._member_count
