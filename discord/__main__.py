@@ -152,7 +152,7 @@ _base_table = {
     '*': '-',
 }
 
-#
+# NUL (0) and 1-31 are disallowed
 _base_table.update((chr(i), None) for i in range(32))
 
 translation_table = str.maketrans(_base_table)
@@ -173,9 +173,6 @@ def to_path(parser, name, *, replace_spaces=False):
     return Path(name)
 
 def newbot(parser, args):
-    if sys.version_info < (3, 5):
-        parser.error('python version is older than 3.5, consider upgrading.')
-
     new_directory = to_path(parser, args.directory) / to_path(parser, args.name)
 
     # as a note exist_ok for Path is a 3.5+ only feature
@@ -217,9 +214,6 @@ def newbot(parser, args):
     print('successfully made bot at', new_directory)
 
 def newcog(parser, args):
-    if sys.version_info < (3, 5):
-        parser.error('python version is older than 3.5, consider upgrading.')
-
     cog_dir = to_path(parser, args.directory)
     try:
         cog_dir.mkdir(exist_ok=True)
