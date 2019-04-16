@@ -110,7 +110,7 @@ class Asset:
     
     @classmethod
     def _from_widget_image(cls, state, id, *, style='shield'):
-        if style not in VALID_STATIC_FORMATS:
+        if style not in VALID_WIDGET_IMAGE_STYLES:
             raise InvalidArgument("style must be one of {}".format(VALID_WIDGET_IMAGE_STYLES))
 
         url = 'https://discordapp.com/api/v6/guilds/{0}/widget.png?style={style}'
