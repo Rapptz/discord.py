@@ -37,7 +37,6 @@ from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
-from .object import Object
 from .member import Member
 
 class Attachment:
