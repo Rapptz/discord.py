@@ -29,7 +29,6 @@ from collections import namedtuple
 import logging
 import signal
 import sys
-import re
 import traceback
 
 import aiohttp
