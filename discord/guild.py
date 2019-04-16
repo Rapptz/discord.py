@@ -513,7 +513,7 @@ class Guild(Hashable):
     def widget_image_url_as(self, *, style='shield'):
         """Returns an asset of the guild's widget image.
 
-        The format must be one of 'shield', 'banner1', 'banner2', 'banner3', or 'banner4'.
+        The style must be one of 'shield', 'banner1', 'banner2', 'banner3', or 'banner4'.
 
         Parameters
         -----------
