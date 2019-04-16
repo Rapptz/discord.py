@@ -36,6 +36,7 @@ from inspect import isawaitable as _isawaitable
 import json
 import re
 import warnings
+from urllib.parse import urlparse
 
 from .errors import InvalidArgument
 from .object import Object
@@ -431,3 +432,38 @@ def escape_mentions(text):
         The text with the mentions removed.
     """
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', text)
+
+def parse_jump_url(url: str):
+    """A helper function that parses a jump URL (message link).
+    returns
+
+    Retrieves a tuple of (guild_id, channel_id, message_id) from a jump URL.
+
+    Note that there may exist some special cases in which one or more of
+    the IDs are not treated as literal IDs; to avoid these situations, use
+    :meth:Client.fetch_message_from_url
+
+
+    Parameters
+    -----------
+    url: :class:`str`
+        The jump URL (message link)
+
+    Raises
+    -------
+    ValueError
+        The URL does not match any recognized format.
+
+    Returns
+    -------
+    :class:`.Message`
+        The message referenced by the jump URL.
+    """
+    parsed = urlparse(url)
+    if parsed.netloc.lower() != 'discordapp.com':
+        raise ValueError("Jump URLs must be a path on discordapp.com")
+    match = re.match(r'^/channels/(\d+)/(\d+)/(\d+)/?$', parsed.path,
+                     flags=re.IGNORECASE)
+    if match is None:
+        raise ValueError("Jump URL does not match any known format")
+    return (int(id) for id in match.groups())

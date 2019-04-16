@@ -30,6 +30,7 @@ import inspect
 import discord
 
 from .errors import BadArgument, NoPrivateMessage
+from discord.errors import Forbidden, HTTPException
 
 __all__ = ['Converter', 'MemberConverter', 'UserConverter',
            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
@@ -405,6 +406,22 @@ class PartialEmojiConverter(Converter):
                                                    id=emoji_id)
 
         raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+
+class MessageConverter(Converter):
+    """Converts a jump URL to a :class:`Message`
+
+    This is done by extracting the guild_id, channel_id, and message_id from
+    a jump URL, taking into account any jump URL special cases.
+    """
+    async def convert(self, ctx, argument):
+        try:
+            return await ctx.bot.fetch_message_from_url(argument)
+        except ValueError:
+            raise BadArgument("Jump URL does not match any known format")
+        except HTTPException:
+            raise BadArgument("Retrieving the message failed")
+        except Forbidden:
+            raise BadArgument("Lack permissions to retrieve message")
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of

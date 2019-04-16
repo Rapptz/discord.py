@@ -29,6 +29,7 @@ from collections import namedtuple
 import logging
 import signal
 import sys
+import re
 import traceback
 
 import aiohttp
@@ -1004,12 +1005,22 @@ class Client:
         :class:`.Message`
             The message referenced by the jump URL.
         """
-        channel_id, message_id = url.split(r"/")[-2:]
-        message_channel = self.get_channel(int(channel_id))
+        guild_id, channel_id, message_id = utils.parse_jump_url(url)
+        message_guild = self.get_guild(guild_id)
+        if message_guild is None:
+            return None
+        message_channel = message_guild.get_channel(channel_id)
         if message_channel is None:
             return None
+
+        if message_id == 0:
+            try:
+                return await message_channel.history(limit=1,
+                                                     oldest_first=True).next()
+            except NoMoreItems:
+                return None
         try:
-            return await message_channel.fetch_message(int(message_id))
+            return await message_channel.fetch_message(message_id)
         except NotFound:
             return None
 
