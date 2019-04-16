@@ -106,6 +106,11 @@ class Asset:
 
         url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
         return cls(state, url.format(id, hash, format, size, key=key))
+    
+    @property
+    def url(self):
+        """Returns the URL of the CDN asset."""
+        return self.__str__()
 
     def __str__(self):
         return self._url if self._url is not None else ''
