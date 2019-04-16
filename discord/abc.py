@@ -854,7 +854,7 @@ class Messageable(metaclass=abc.ABCMeta):
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def create_partial_message(self, id):
+    def create_partial_message(self, id):
         """|coro|
         Creates a single :class:`PartialMessage` from the destination.
 
@@ -870,8 +870,7 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         # Avoid circular import
         from .message import PartialMessage
-        channel = await self._get_channel()
-        return PartialMessage(state=self._state, channel_id=channel.id, message_id=id)
+        return PartialMessage(messageable=self, message_id=id)
 
     async def pins(self):
         """|coro|

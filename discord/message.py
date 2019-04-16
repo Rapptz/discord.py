@@ -28,6 +28,7 @@ import asyncio
 import datetime
 import re
 import io
+from functools import wraps
 
 from . import utils
 from .reaction import Reaction
@@ -124,6 +125,13 @@ class Attachment:
             with open(fp, 'wb') as f:
                 return f.write(data)
 
+def resolve_destination(coro):
+    @wraps(coro)
+    async def wrapped(self, *args, **kwargs):
+        if self.channel is None:
+            self.channel = await self._messageable._get_channel()
+        return await coro(self, *args, **kwargs)
+    return wrapped
 
 class PartialMessage:
     """Represents a contentless message from Discord.
@@ -133,12 +141,13 @@ class PartialMessage:
     These should be created with :meth:`abc.Messageable.create_partial_message`
     """
 
-    def __init__(self, *, state, channel_id, message_id):
-        self._state = state
-        self.channel = Object(id=channel_id)
+    def __init__(self, *, messageable, message_id):
+        self._state = messageable._state
+        self.channel = None
+        self._messageable = messageable
         self.id = message_id
 
-
+    @resolve_destination
     async def delete(self):
         """|coro|
 
@@ -185,7 +194,7 @@ class PartialMessage:
 
         asyncio.ensure_future(delete(), loop=self._state.loop)
 
-
+    @resolve_destination
     async def edit(self, **fields):
         """|coro|
 
@@ -224,6 +233,7 @@ class PartialMessage:
             if delete_after is not None:
                 await self._delete_after(delete_after)
 
+    @resolve_destination
     async def pin(self):
         """|coro|
 
@@ -245,6 +255,7 @@ class PartialMessage:
 
         await self._state.http.pin_message(self.channel.id, self.id)
 
+    @resolve_destination
     async def unpin(self):
         """|coro|
 
@@ -265,6 +276,7 @@ class PartialMessage:
 
         await self._state.http.unpin_message(self.channel.id, self.id)
 
+    @resolve_destination
     async def add_reaction(self, emoji):
         """|coro|
 
@@ -296,6 +308,7 @@ class PartialMessage:
         emoji = self._emoji_reaction(emoji)
         await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
+    @resolve_destination
     async def remove_reaction(self, emoji, member):
         """|coro|
 
@@ -349,6 +362,7 @@ class PartialMessage:
 
         raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
+    @resolve_destination
     async def clear_reactions(self):
         """|coro|
 
@@ -365,6 +379,7 @@ class PartialMessage:
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
+    @resolve_destination
     def ack(self):
         """|coro|
 
