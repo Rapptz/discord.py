@@ -29,9 +29,31 @@ import sys
 from pathlib import Path
 
 import discord
+import pkg_resources
+import aiohttp
+import websockets
+import platform
+
+def show_version():
+    entries = []
+
+    entries.append('- Python v{0.major}.{0.minor}.{0.micro}-{0.releaselevel}'.format(sys.version_info))
+    version_info = discord.version_info
+    entries.append('- discord.py v{0.major}.{0.minor}.{0.micro}-{0.releaselevel}'.format(version_info))
+    if version_info.releaselevel != 'final':
+        pkg = pkg_resources.get_distribution('discord.py')
+        if pkg:
+            entries.append('    - discord.py pkg_resources: v{0}'.format(pkg.version))
+
+    entries.append('- aiohttp v{0.__version__}'.format(aiohttp))
+    entries.append('- websockets v{0.__version__}'.format(websockets))
+    uname = platform.uname()
+    entries.append('- system info: {0.system} {0.release} {0.version}'.format(uname))
+    print('\n'.join(entries))
 
 def core(parser, args):
-    pass
+    if args.version:
+        show_version()
 
 bot_template = """#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -268,9 +290,7 @@ def add_newcog_args(subparser):
 
 def parse_args():
     parser = argparse.ArgumentParser(prog='discord', description='Tools for helping with discord.py')
-
-    version = 'discord.py v{0.__version__} for Python {1[0]}.{1[1]}.{1[2]}'.format(discord, sys.version_info)
-    parser.add_argument('-v', '--version', action='version', version=version, help='shows the library version')
+    parser.add_argument('-v', '--version', action='store_true', help='shows the library version')
     parser.set_defaults(func=core)
 
     subparser = parser.add_subparsers(dest='subcommand', title='subcommands')
