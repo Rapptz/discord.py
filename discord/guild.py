@@ -507,7 +507,7 @@ class Guild(Hashable):
 
     @property
     def widget_image_url(self):
-        """Returns a URL to the guild's widget image."""
+        """:class:`Asset`: Returns an asset of the guild's widget image."""
         return self.widget_image_url_as()
     
     def widget_image_url_as(self, *, style='shield'):
