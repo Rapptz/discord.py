@@ -82,3 +82,25 @@ class ExpectedClosingQuoteError(ArgumentParsingError):
     close_quote: str
 
     def __init__(self, close_quote: str) -> None: ...
+
+class ExtensionError(DiscordException):
+    name: str
+
+class ExtensionAlreadyLoaded(ExtensionError):
+    def __init__(self, name: str) -> None: ...
+
+class ExtensionNotLoaded(ExtensionError):
+    def __init__(self, name: str) -> None: ...
+
+class NoEntryPointError(ExtensionError):
+    def __init__(self, name: str) -> None: ...
+
+class ExtensionFailed(ExtensionError):
+    original: Exception
+
+    def __init__(self, name: str, original: Exception) -> None: ...
+
+class ExtensionNotFound(ExtensionError):
+    original: ImportError
+
+    def __init__(self, name: str, original: ImportError) -> None: ...
