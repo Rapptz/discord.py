@@ -216,7 +216,7 @@ class AuditLogEntry:
         self._from_data(data)
 
     def _from_data(self, data):
-        self.action = enums.AuditLogAction(data['action_type'])
+        self.action = enums.try_enum(enums.AuditLogAction, data['action_type'])
         self.id = int(data['id'])
 
         # this key is technically not usually present
