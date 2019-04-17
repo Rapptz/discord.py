@@ -146,8 +146,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
-        n = self.name
-        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw
 
     def is_news(self):
         """Checks if the channel is a news channel."""
@@ -628,8 +627,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """Checks if the category is NSFW."""
-        n = self.name
-        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -791,8 +789,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
-        n = self.name
-        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw
 
     async def edit(self, *, reason=None, **options):
         """|coro|
