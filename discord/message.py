@@ -563,7 +563,7 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
-    async def delete(self):
+    async def delete(self, *, delay=None):
         """|coro|
 
         Deletes the message.
@@ -572,6 +572,12 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
+        Parameters
+        -----------
+        delay: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message.
+
         Raises
         ------
         Forbidden
@@ -579,7 +585,17 @@ class Message:
         HTTPException
             Deleting the message failed.
         """
-        await self._state.http.delete_message(self.channel.id, self.id)
+        if delay is not None:
+            async def delete():
+                await asyncio.sleep(delay, loop=self._state.loop)
+                try:
+                    await self._state.http.delete_message(self.channel.id, self.id)
+                except HTTPException:
+                    pass
+
+            asyncio.ensure_future(delete(), loop=self._state.loop)
+        else:
+            await self._state.http.delete_message(self.channel.id, self.id)
 
     async def edit(self, **fields):
         """|coro|
@@ -632,14 +648,7 @@ class Message:
             pass
         else:
             if delete_after is not None:
-                async def delete():
-                    await asyncio.sleep(delete_after, loop=self._state.loop)
-                    try:
-                        await self._state.http.delete_message(self.channel.id, self.id)
-                    except HTTPException:
-                        pass
-
-                asyncio.ensure_future(delete(), loop=self._state.loop)
+                await self.delete(delay=delete_after)
 
     async def pin(self):
         """|coro|
