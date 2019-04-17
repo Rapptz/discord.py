@@ -764,7 +764,9 @@ class Message:
         if isinstance(emoji, PartialEmoji):
             return emoji._as_reaction()
         if isinstance(emoji, str):
-            return emoji # this is okay
+            # Reactions can be in :name:id format, but not <:name:id>.
+            # No existing emojis have <> in them, so this should be okay.
+            return emoji.strip('<>')
 
         raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
