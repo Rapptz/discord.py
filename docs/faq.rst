@@ -164,7 +164,7 @@ Quick example: ::
 In case you want to use emoji that come from a message, you already get their code points in the content without needing
 to do anything special. You **cannot** send ``':thumbsup:'`` style shorthands.
 
-For custom emoji, you should pass an instance of :class:`Emoji`. You can also pass a ``'name:id'`` string, but if you
+For custom emoji, you should pass an instance of :class:`Emoji`. You can also pass a ``'<:name:id>'`` string, but if you
 can use said emoji, you should be able to use :meth:`Client.get_emoji` to get an emoji via ID or use :func:`utils.find`/
 :func:`utils.get` on :attr:`Client.emojis` or :attr:`Guild.emojis` collections.
 
@@ -184,7 +184,7 @@ Quick example: ::
         await message.add_reaction(emoji)
 
     # if you have the name and ID of a custom emoji:
-    emoji = 'python3:232720527448342530'
+    emoji = '<:python3:232720527448342530>'
     await message.add_reaction(emoji)
 
 How do I pass a coroutine to the player's "after" function?
