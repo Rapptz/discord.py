@@ -159,8 +159,10 @@ class UserConverter(IDConverter):
 
         return result
 
-class MessageConverter(IDConverter):
+class MessageConverter:
     """Converts to a :class:`discord.Message`.
+
+    .. versionadded:: 1.1.0
 
     The lookup strategy is as follows (in order):
 
@@ -174,7 +176,7 @@ class MessageConverter(IDConverter):
         link_regex = re.compile(
             r'^https?://(?:(ptb|canary)\.)?discordapp\.com/channels/'
             r'(?:([0-9]{15,21})|(@me))'
-            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})$'
+            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
         )
         match = id_regex.match(argument) or link_regex.match(argument)
         if not match:
@@ -189,9 +191,9 @@ class MessageConverter(IDConverter):
             raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
         try:
             return await channel.fetch_message(message_id)
-        except discord.errors.NotFound:
+        except discord.NotFound:
             raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
-        except discord.errors.Forbidden:
+        except discord.Forbidden:
             raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
 
 class TextChannelConverter(IDConverter):
