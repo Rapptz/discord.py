@@ -137,7 +137,7 @@ class PartialMessage:
     For use when you have a message and channel ID, but do not have a readily available
     :class:`Message` object.
 
-    These should be created with :meth:`abc.Messageable.create_partial_message`
+    These can be created with :meth:`abc.Messageable.create_partial_message`
     """
 
     def __init__(self, *, messageable, message_id):

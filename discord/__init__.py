@@ -29,7 +29,7 @@ from .channel import *
 from .guild import Guild
 from .relationship import Relationship
 from .member import Member, VoiceState
-from .message import Message, Attachment
+from .message import Message, Attachment, PartialMessage
 from .asset import Asset
 from .errors import *
 from .calls import CallMessage, GroupCall
