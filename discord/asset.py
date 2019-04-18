@@ -48,6 +48,18 @@ class Asset:
         .. describe:: bool(x)
 
             Checks if the Asset has a URL.
+
+        .. describe:: x == y
+
+            Checks if the asset is equal to another asset.
+
+        .. describe:: x != y
+
+            Checks if the asset is not equal to another asset.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the asset.
     """
     __slots__ = ('_state', '_url')
 
@@ -108,6 +120,15 @@ class Asset:
 
     def __repr__(self):
         return '<Asset url={0._url!r}>'.format(self)
+
+    def __eq__(self, other):
+        return isinstance(other, Asset) and self._url == other._url
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self._url)
 
     async def save(self, fp, *, seek_begin=True):
         """|coro|

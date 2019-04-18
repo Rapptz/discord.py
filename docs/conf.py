@@ -43,11 +43,14 @@ extensions = [
 autodoc_member_order = 'bysource'
 
 extlinks = {
-    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
+    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
 }
 
 # Links used for cross-referencing stuff in other documentation
-intersphinx_mapping = {'py': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {
+  'py': ('https://docs.python.org/3', None),
+  'aio': ('https://aiohttp.readthedocs.io/en/stable/', None)
+}
 
 rst_prolog = """
 .. |coro| replace:: This function is a |corourl|_.

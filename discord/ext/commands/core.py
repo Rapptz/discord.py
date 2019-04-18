@@ -28,6 +28,7 @@ import asyncio
 import functools
 import inspect
 import typing
+import datetime
 
 import discord
 
@@ -40,7 +41,7 @@ from .cog import Cog
 __all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
            'has_role', 'has_permissions', 'has_any_role', 'check',
            'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-           'cooldown', 'guild_only', 'is_owner', 'is_nsfw']
+           'cooldown', 'dm_only', 'guild_only', 'is_owner', 'is_nsfw']
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -325,7 +326,7 @@ class Command(_BaseCommand):
         except AttributeError:
             pass
         else:
-            if module.startswith('discord.') and not module.endswith('converter'):
+            if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
                 converter = getattr(converters, converter.__name__ + 'Converter')
 
         try:
@@ -639,7 +640,8 @@ class Command(_BaseCommand):
     def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
-            retry_after = bucket.update_rate_limit()
+            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            retry_after = bucket.update_rate_limit(current)
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
@@ -1430,6 +1432,24 @@ def bot_has_permissions(**perms):
             return True
 
         raise BotMissingPermissions(missing)
+
+    return check(predicate)
+
+def dm_only():
+    """A :func:`.check` that indicates this command must only be used in a
+    DM context only. Only private messages are allowed when
+    using the command.
+
+    This check raises a special exception, :exc:`.PrivateMessageOnly`
+    that is inherited from :exc:`.CheckFailure`.
+
+    .. versionadded:: 1.1.0
+    """
+
+    def predicate(ctx):
+        if ctx.guild is not None:
+            raise PrivateMessageOnly('This command can only be used in private messages.')
+        return True
 
     return check(predicate)
 

@@ -931,6 +931,10 @@ class Guild(Hashable):
 
         Retreives a :class:`Member` from a guild ID, and a member ID.
 
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_member` instead.
+
         Parameters
         -----------
         member_id: :class:`int`
@@ -1017,8 +1021,8 @@ class Guild(Hashable):
                          reason=e['reason'])
                 for e in data]
 
-    async def prune_members(self, *, days, reason=None):
-        """|coro|
+    async def prune_members(self, *, days, compute_prune_count=True, reason=None):
+        r"""|coro|
 
         Prunes the guild from its inactive members.
 
@@ -1037,6 +1041,11 @@ class Guild(Hashable):
             The number of days before counting as inactive.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
+        compute_prune_count: :class:`bool`
+            Whether to compute the prune count. This defaults to ``True``
+            which makes it prone to timeouts in very large guilds. In order
+            to prevent timeouts, you must set this to ``False``. If this is
+            set to ``False``\, then this function will always return ``None``.
 
         Raises
         -------
@@ -1049,14 +1058,15 @@ class Guild(Hashable):
 
         Returns
         ---------
-        :class:`int`
-            The number of members pruned.
+        Optional[:class:`int`]
+            The number of members pruned. If ``compute_prune_count`` is ``False``
+            then this returns ``None``.
         """
 
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = await self._state.http.prune_members(self.id, days, reason=reason)
+        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, reason=reason)
         return data['pruned']
 
     async def webhooks(self):
@@ -1149,6 +1159,10 @@ class Guild(Hashable):
 
         Retrieves all custom :class:`Emoji`\s from the guild.
 
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`emojis` instead.
+
         Raises
         ---------
         HTTPException
@@ -1166,6 +1180,11 @@ class Guild(Hashable):
         """|coro|
 
         Retrieves a custom :class:`Emoji` from the guild.
+
+        .. note::
+
+            This method is an API call.
+            For general usage, consider iterating over :attr:`emojis` instead.
 
         Parameters
         -------------

@@ -623,7 +623,7 @@ class Message:
             if embed is not None:
                 fields['embed'] = embed.to_dict()
 
-        data = await self._state.http.edit_message(self.id, self.channel.id, **fields)
+        data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
         self._update(channel=self.channel, data=data)
 
         try:
@@ -713,7 +713,7 @@ class Message:
         """
 
         emoji = self._emoji_reaction(emoji)
-        await self._state.http.add_reaction(self.id, self.channel.id, emoji)
+        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
     async def remove_reaction(self, emoji, member):
         """|coro|
@@ -750,9 +750,9 @@ class Message:
         emoji = self._emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
-            await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
+            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
         else:
-            await self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
 
     @staticmethod
     def _emoji_reaction(emoji):
@@ -764,7 +764,9 @@ class Message:
         if isinstance(emoji, PartialEmoji):
             return emoji._as_reaction()
         if isinstance(emoji, str):
-            return emoji # this is okay
+            # Reactions can be in :name:id format, but not <:name:id>.
+            # No existing emojis have <> in them, so this should be okay.
+            return emoji.strip('<>')
 
         raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
@@ -782,7 +784,7 @@ class Message:
         Forbidden
             You do not have the proper permissions to remove all the reactions.
         """
-        await self._state.http.clear_reactions(self.id, self.channel.id)
+        await self._state.http.clear_reactions(self.channel.id, self.id)
 
     def ack(self):
         """|coro|

@@ -394,6 +394,8 @@ converter is given below:
 +-----------------------+-------------------------------------------------+
 | :class:`Member`       | :class:`~ext.commands.MemberConverter`          |
 +-----------------------+-------------------------------------------------+
+| :class:`Message`      | :class:`~ext.commands.MessageConverter`         |
++-----------------------+-------------------------------------------------+
 | :class:`User`         | :class:`~ext.commands.UserConverter`            |
 +-----------------------+-------------------------------------------------+
 | :class:`TextChannel`  | :class:`~ext.commands.TextChannelConverter`     |

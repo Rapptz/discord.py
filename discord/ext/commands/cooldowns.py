@@ -61,8 +61,8 @@ class Cooldown:
             tokens = self.rate
         return tokens
 
-    def update_rate_limit(self):
-        current = time.time()
+    def update_rate_limit(self, current=None):
+        current = current or time.time()
         self._last = current
 
         self._tokens = self.get_tokens(current)

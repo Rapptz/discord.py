@@ -151,7 +151,7 @@ class ReactionIterator(_AsyncIterator):
             retrieve = self.limit if self.limit <= 100 else 100
 
             after = self.after.id if self.after else None
-            data = await self.getter(self.message.id, self.channel_id, self.emoji, retrieve, after=after)
+            data = await self.getter(self.channel_id, self.message.id, self.emoji, retrieve, after=after)
 
             if data:
                 self.limit -= retrieve
@@ -199,7 +199,7 @@ class HistoryIterator(_AsyncIterator):
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
     oldest_first: :class:`bool`
-        If set to true, return messages in oldest->newest order. Defaults to 
+        If set to true, return messages in oldest->newest order. Defaults to
         True if ``after`` is specified, otherwise False.
     """
 
@@ -380,7 +380,7 @@ class AuditLogIterator(_AsyncIterator):
 
         self.entries = asyncio.Queue(loop=self.loop)
 
-        
+
         if self.reverse:
             self._strategy = self._after_strategy
             if self.before:
