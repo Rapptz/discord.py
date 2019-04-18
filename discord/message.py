@@ -128,7 +128,7 @@ def resolve_destination(coro):
     @wraps(coro)
     async def wrapped(self, *args, **kwargs):
         if self.channel is None:
-            self.channel = await self._messageable._get_channel()
+            self.channel = await self.messageable._get_channel()
         return await coro(self, *args, **kwargs)
     return wrapped
 
@@ -138,12 +138,19 @@ class PartialMessage:
     :class:`Message` object.
 
     These can be created with :meth:`abc.Messageable.create_partial_message`
+
+    Attributes
+    -----------
+    messageable: :class:`abc.Messageable`
+        The Messageable containing the message to be represented.
+    message_id: :class:`int`
+        The ID of the message represented.
     """
 
     def __init__(self, *, messageable, message_id):
         self._state = messageable._state
         self.channel = None
-        self._messageable = messageable
+        self.messageable = messageable
         self.id = message_id
 
     @resolve_destination
