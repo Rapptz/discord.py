@@ -113,8 +113,8 @@ class Guild(Hashable):
         The guild's explicit content filter.
     default_notifications: :class:`NotificationLevel`
         The guild's notification settings.
-    features: List[:class:`str`]
-        A list of features that the guild has. They are currently as follows:
+    features: FrozenSet[:class:`str`]
+        A unique set of features that the guild has. They are currently as follows:
 
         - ``VIP_REGIONS``: Guild has VIP voice regions
         - ``VANITY_URL``: Guild has a vanity invite URL (e.g. discord.gg/discord-api)
@@ -231,7 +231,7 @@ class Guild(Hashable):
 
         self.mfa_level = guild.get('mfa_level')
         self.emojis = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.features = guild.get('features', [])
+        self.features = frozenset(guild.get('features', []))
         self.splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description = guild.get('description')
