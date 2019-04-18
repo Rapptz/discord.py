@@ -563,7 +563,7 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
-    async def delete(self, delay=None):
+    async def delete(self, *, delay=None):
         """|coro|
 
         Deletes the message.
