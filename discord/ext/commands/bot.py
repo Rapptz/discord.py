@@ -161,10 +161,7 @@ class BotBase(GroupMixin):
 
         cog = context.cog
         if cog:
-            handler = getattr(cog, 'cog_command_error')
-            overridden = Cog._get_overridden_method(handler)
-
-            if overridden:
+            if Cog._get_overridden_method(cog.cog_command_error) is not None:
                 return
 
         print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
