@@ -572,6 +572,9 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
+        .. versionchanged:: 1.1.0
+            Added the new ``delay`` keyword-only parameter.
+
         Parameters
         -----------
         delay: Optional[:class:`float`]
