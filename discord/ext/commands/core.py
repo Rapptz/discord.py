@@ -504,6 +504,27 @@ class Command(_BaseCommand):
         return ' '.join(reversed(entries))
 
     @property
+    def parents(self):
+        """Retrieves the parents of this command.
+
+        .. versionadded:: 1.1.0
+
+        If the command has no parents then it returns an empty :class:`list`.
+
+        For example in commands ``?a b c test``,
+        the parents are ``[c, b, a]``.
+
+
+        """
+        entries = []
+        command = self
+        while command.parent is not None:
+            command = command.parent
+            entries.append(command)
+
+        return entries
+
+    @property
     def root_parent(self):
         """Retrieves the root parent of this command.
 
@@ -512,16 +533,9 @@ class Command(_BaseCommand):
         For example in commands ``?a b c test``, the root parent is
         ``a``.
         """
-        entries = []
-        command = self
-        while command.parent is not None:
-            command = command.parent
-            entries.append(command)
-
-        if len(entries) == 0:
+        if not self.parent:
             return None
-
-        return entries[-1]
+        return self.parents[-1]
 
     @property
     def qualified_name(self):
