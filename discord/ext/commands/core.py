@@ -505,17 +505,20 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """Retrieves the parents of this command.
+        """
+        Retrieves the parents of this command.
+
+        .. versionadded:: 1.1.0
 
         If the command has no parents then it returns an empty :class:`list`.
 
         For example in commands ``?a b c test``,
         the parents are ``[a, b, c]``.
 
-        .. versionadded:: 1.1.0
+
         """
-        command = self
         entries = []
+        command = self
         while command.parent is not None:
             command = command.parent
             entries.append(command)
