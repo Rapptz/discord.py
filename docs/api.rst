@@ -157,7 +157,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         ``on_error`` will only be dispatched to :meth:`Client.event`.
 
         It will not be received by :meth:`Client.wait_for`, or, if used,
-        :class:`~ext.commands.Bot` listeners such as
+        :ref:`ext_commands_api_bot` listeners such as
         :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
 
     :param event: The name of the event that raised the exception.
