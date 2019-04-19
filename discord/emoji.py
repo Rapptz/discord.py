@@ -67,7 +67,7 @@ class PartialEmoji:
 
     __slots__ = ('animated', 'name', 'id', '_state')
 
-    def __init__(self, *, animated, name, id=None):
+    def __init__(self, animated, name, id=None):
         self.animated = animated
         self.name = name
         self.id = id
