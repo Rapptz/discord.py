@@ -15,6 +15,9 @@ class MemberConverter(IDConverter):
 class UserConverter(IDConverter):
     async def convert(self, ctx: Context, argument: str) -> discord.User: ...
 
+class MessageConverter(IDConverter):
+    async def convert(self, ctx: Context, argument: str) -> discord.Message: ...
+
 class TextChannelConverter(IDConverter):
     async def convert(self, ctx: Context, argument: str) -> discord.TextChannel: ...
 

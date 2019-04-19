@@ -21,6 +21,7 @@ from .relationship import Relationship
 from .abc import Snowflake
 from .widget import Widget
 from .appinfo import AppInfo
+from .utils import SequenceProxy
 
 import asyncio
 import aiohttp
@@ -59,6 +60,8 @@ class Client:
     def guilds(self) -> List[Guild]: ...
     @property
     def emojis(self) -> List[Emoji]: ...
+    @property
+    def cached_messages(self) -> SequenceProxy[Message]: ...
     @property
     def private_channels(self) -> List[Union[DMChannel, GroupChannel]]: ...
     @property

@@ -6,7 +6,9 @@ from .guild import Guild
 from .invite import Invite
 from .object import Object
 
-from typing import Any, Optional, Union, List, Iterable, TypeVar, Type, Callable, Coroutine, Generic, Pattern, overload
+from typing import (
+    Any, Optional, Union, List, Iterable, TypeVar, Type, Callable, Coroutine, Generic, Pattern, Sequence, overload
+)
 from typing_extensions import Final
 
 _T = TypeVar('_T')
@@ -32,6 +34,15 @@ class CachedSlotProperty(Generic[_T, _U_co]):
     def __get__(self, instance: None, owner: Type[_T]) -> CachedSlotProperty[_T, _U_co]: ...
 
 def cached_slot_property(name: str) -> Callable[[Callable[[_T], _U_co]], CachedSlotProperty[_T, _U_co]]: ...
+
+class SequenceProxy(Sequence[_T]):
+    def __init__(self, sequence: Sequence[_T]) -> None:...
+    @overload
+    def __getitem__(self, i: int) -> _T: ...
+    @overload
+    def __getitem__(self, s: slice) -> Sequence[_T]: ...
+    def __len__(self) -> int: ...
+
 def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]: ...
 def deprecated(instead: Optional[str] = ...) -> Callable[[_F], _F]: ...
 def oauth_url(client_id: str, permissions: Optional[Permissions] = ..., guild: Optional[Guild] = ...,

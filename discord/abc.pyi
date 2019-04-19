@@ -15,8 +15,10 @@ from .role import Role
 from .user import ClientUser
 from .voice_client import VoiceClient
 
-from typing import Any, Optional, Union, List, Dict
+from typing import Any, Optional, Union, List, Dict, TypeVar
 from typing_extensions import Protocol, runtime
+
+_GC = TypeVar('_GC', bound=GuildChannel)
 
 @runtime
 class Snowflake(Protocol):
@@ -67,6 +69,7 @@ class GuildChannel:
     async def set_permissions(self, target: Union[Member, Role], *,
                               overwrite: Optional[PermissionOverwrite] = ...,
                               reason: Optional[str] = ..., **permissions: Optional[bool]) -> None: ...
+    async def clone(self: _GC, *, name: Optional[str] = ..., reason: Optional[str] = ...) -> _GC: ...
     async def create_invite(self, *, reason: Optional[str] = ..., max_age: int = ..., max_uses: int = ...,
                             temporary: bool = ..., unique: bool = ...) -> Invite: ...
     async def invites(self) -> List[Invite]: ...
