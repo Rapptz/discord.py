@@ -15,7 +15,7 @@ from .role import Role
 from .user import ClientUser
 from .voice_client import VoiceClient
 
-from typing import Any, Optional, Union, List, Dict, TypeVar
+from typing import Any, Optional, Union, List, Dict, TypeVar, overload
 from typing_extensions import Protocol, runtime
 
 _GC = TypeVar('_GC', bound=GuildChannel)
@@ -66,9 +66,26 @@ class GuildChannel:
     def category(self) -> Optional[CategoryChannel]: ...
     def permissions_for(self, member: Member) -> Permissions: ...
     async def delete(self, *, reason: Optional[str] = ...) -> None: ...
-    async def set_permissions(self, target: Union[Member, Role], *,
-                              overwrite: Optional[PermissionOverwrite] = ...,
-                              reason: Optional[str] = ..., **permissions: Optional[bool]) -> None: ...
+    @overload
+    async def set_permissions(self, target: Union[Member, Role], *, overwrite: Optional[PermissionOverwrite] = ...,
+                              reason: Optional[str] = ...) -> None: ...
+    @overload
+    async def set_permissions(self, target: Union[Member, Role], *, reason: Optional[str] = ...,
+                              create_instant_invite: Optional[bool] = ..., kick_members: Optional[bool] = ...,
+                              ban_members: Optional[bool] = ..., administrator: Optional[bool] = ...,
+                              manage_channels: Optional[bool] = ..., manage_guild: Optional[bool] = ...,
+                              add_reactions: Optional[bool] = ..., view_audit_log: Optional[bool] = ...,
+                              priority_speaker: Optional[bool] = ..., stream: Optional[bool] = ...,
+                              read_messages: Optional[bool] = ..., send_messages: Optional[bool] = ...,
+                              send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
+                              embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
+                              read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
+                              external_emojis: Optional[bool] = ..., connect: Optional[bool] = ...,
+                              speak: Optional[bool] = ..., mute_members: Optional[bool] = ...,
+                              deafen_members: Optional[bool] = ..., move_members: Optional[bool] = ...,
+                              use_voice_activation: Optional[bool] = ..., change_nickname: Optional[bool] = ...,
+                              manage_nicknames: Optional[bool] = ..., manage_roles: Optional[bool] = ...,
+                              manage_webhooks: Optional[bool] = ..., manage_emojis: Optional[bool] = ...) -> None: ...
     async def clone(self: _GC, *, name: Optional[str] = ..., reason: Optional[str] = ...) -> _GC: ...
     async def create_invite(self, *, reason: Optional[str] = ..., max_age: int = ..., max_uses: int = ...,
                             temporary: bool = ..., unique: bool = ...) -> Invite: ...
