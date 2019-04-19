@@ -537,14 +537,15 @@ class HTTPClient:
 
     # Webhook management
 
-    def create_webhook(self, channel_id, *, name, avatar=None):
+    def create_webhook(self, channel_id, *, name, avatar=None, reason=None):
         payload = {
             'name': name
         }
         if avatar is not None:
             payload['avatar'] = avatar
 
-        return self.request(Route('POST', '/channels/{channel_id}/webhooks', channel_id=channel_id), json=payload)
+        r = Route('POST', '/channels/{channel_id}/webhooks', channel_id=channel_id)
+        return self.request(r, json=payload, reason=reason)
 
     def channel_webhooks(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/webhooks', channel_id=channel_id))

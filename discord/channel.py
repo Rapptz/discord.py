@@ -403,12 +403,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name, avatar=None):
+    async def create_webhook(self, *, name, avatar=None, reason=None):
         """|coro|
 
         Creates a webhook for this channel.
 
         Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        .. versionchanged:: 1.1.0
+            Added the ``reason`` keyword-only parameter.
 
         Parameters
         -------------
@@ -417,6 +420,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's default avatar.
             This operates similarly to :meth:`~ClientUser.edit`.
+        reason: Optional[:class:`str`]
+            The reason for creating this webhook. Shows up in the audit logs.
 
         Raises
         -------
@@ -434,7 +439,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if avatar is not None:
             avatar = utils._bytes_to_base64_data(avatar)
 
-        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar)
+        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
