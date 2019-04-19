@@ -179,7 +179,7 @@ class MissingRole(CommandError):
     """
     def __init__(self, missing_role, *args):
         self.missing_role = missing_role
-        message = 'You are missing the required {} role to run this command.'.format(missing_role)
+        message = 'You are missing the required role {} to run this command.'.format(missing_role)
         super().__init__(message, *args)
 
 class BotMissingRole(CommandError):
@@ -192,7 +192,7 @@ class BotMissingRole(CommandError):
     """
     def __init__(self, missing_role, *args):
         self.missing_role = missing_role
-        message = 'Bot requires the {} role to run this command'.format(missing_role)
+        message = 'Bot requires the role {} to run this command'.format(missing_role)
         super().__init__(message, *args)
 
 class MissingAnyRole(CommandError):
@@ -214,8 +214,7 @@ class MissingAnyRole(CommandError):
         else:
             fmt = ' or '.join(missing)
 
-        message = "You are missing at least one of the required roles: {}"
-        message.format(fmt)
+        message = "You are missing at least one of the required roles: {}".format(fmt)
         super().__init__(message, *args)
 
 
@@ -238,8 +237,7 @@ class BotMissingAnyRole(CommandError):
         else:
             fmt = ' or '.join(missing)
 
-        message = "Bot is missing at least one of the required roles: {}"
-        message.format(fmt)
+        message = "Bot is missing at least one of the required roles: {}".format(fmt)
         super().__init__(message, *args)
 
 class IsSFW(CommandError):
