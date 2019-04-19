@@ -168,6 +168,9 @@ Converters
 .. autoclass:: discord.ext.commands.UserConverter
     :members:
 
+.. autoclass:: discord.ext.commands.MessageConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 

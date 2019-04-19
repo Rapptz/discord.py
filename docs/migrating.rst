@@ -206,8 +206,6 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.wait_until_login``           | Removed                                                                      |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.messages``                   | Removed                                                                      |
-+---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.wait_until_ready``           | No change                                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 
@@ -329,6 +327,10 @@ They will be enumerated here.
 - ``Client.get_all_emojis``
 
     - Use :attr:`Client.emojis` instead.
+
+` ``Client.messages``
+
+    - Use read-only :attr:`Client.cached_messages` instead.
 
 - ``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone.
 
@@ -801,21 +803,25 @@ will either DM the user in a DM context or send a message in the channel it was 
 functionality. The old helpers have been removed in favour of the new :class:`abc.Messageable` interface. See
 :ref:`migrating_1_0_removed_helpers` for more information.
 
-Since the :class:`~ext.commands.Context` is now by default passed, several shortcuts have been added:
+Since the :class:`~ext.commands.Context` is now passed by default, several shortcuts have been added:
 
 **New Shortcuts**
 
-- :attr:`~ext.commands.Context.author` is a shortcut for ``ctx.message.author``.
-- :attr:`~ext.commands.Context.guild` is a shortcut for ``ctx.message.guild``.
-- :attr:`~ext.commands.Context.channel` is a shortcut for ``ctx.message.channel``.
-- :attr:`~ext.commands.Context.me` is a shortcut for ``ctx.message.guild.me`` or ``ctx.bot.user``.
-- :attr:`~ext.commands.Context.voice_client` is a shortcut for ``ctx.message.guild.voice_client``.
+- :attr:`ctx.author <ext.commands.Context.author>` is a shortcut for ``ctx.message.author``.
+- :attr:`ctx.guild <ext.commands.Context.guild>` is a shortcut for ``ctx.message.guild``.
+- :attr:`ctx.channel <ext.commands.Context.channel>` is a shortcut for ``ctx.message.channel``.
+- :attr:`ctx.me <ext.commands.Context.me>` is a shortcut for ``ctx.message.guild.me`` or ``ctx.bot.user``.
+- :attr:`ctx.voice_client <ext.commands.Context.voice_client>` is a shortcut for ``ctx.message.guild.voice_client``.
 
 **New Functionality**
 
-- :meth:`~.Context.reinvoke` to invoke a command again.
+- :meth:`.Context.reinvoke` to invoke a command again.
 
     - This is useful for bypassing cooldowns.
+- :attr:`.Context.valid` to check if a context can be invoked with :meth:`.Bot.invoke`.
+- :meth:`.Context.send_help` to show the help command for an entity using the new :class:`~.ext.commands.HelpCommand` system.
+
+    - This is useful if you want to show the user help if they misused a command.
 
 Subclassing Context
 ++++++++++++++++++++

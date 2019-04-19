@@ -146,8 +146,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
-        n = self.name
-        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw
 
     def is_news(self):
         """Checks if the channel is a news channel."""
@@ -214,6 +213,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Editing the channel failed.
         """
         await self._edit(options, reason=reason)
+
+    async def clone(self, *, name=None, reason=None):
+        return await self._clone_impl({
+            'topic': self.topic,
+            'nsfw': self.nsfw,
+            'rate_limit_per_user': self.slowmode_delay
+        }, name=name, reason=reason)
+
+    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def delete_messages(self, messages):
         """|coro|
@@ -395,12 +403,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name, avatar=None):
+    async def create_webhook(self, *, name, avatar=None, reason=None):
         """|coro|
 
         Creates a webhook for this channel.
 
         Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        .. versionchanged:: 1.1.0
+            Added the ``reason`` keyword-only parameter.
 
         Parameters
         -------------
@@ -409,6 +420,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's default avatar.
             This operates similarly to :meth:`~ClientUser.edit`.
+        reason: Optional[:class:`str`]
+            The reason for creating this webhook. Shows up in the audit logs.
 
         Raises
         -------
@@ -426,7 +439,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if avatar is not None:
             avatar = utils._bytes_to_base64_data(avatar)
 
-        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar)
+        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
@@ -526,6 +539,14 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         return base
 
     permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
+
+    async def clone(self, *, name=None, reason=None):
+        return await self._clone_impl({
+            'bitrate': self.bitrate,
+            'user_limit': self.user_limit
+        }, name=name, reason=reason)
+
+    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -628,8 +649,14 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """Checks if the category is NSFW."""
-        n = self.name
-        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw
+
+    async def clone(self, *, name=None, reason=None):
+        return await self._clone_impl({
+            'nsfw': self.nsfw
+        }, name=name, reason=reason)
+
+    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -791,8 +818,14 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """Checks if the channel is NSFW."""
-        n = self.name
-        return self.nsfw or n == 'nsfw' or n[:5] == 'nsfw-'
+        return self.nsfw
+
+    async def clone(self, *, name=None, reason=None):
+        return await self._clone_impl({
+            'nsfw': self.nsfw
+        }, name=name, reason=reason)
+
+    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|

@@ -31,7 +31,7 @@ import discord
 
 from .errors import BadArgument, NoPrivateMessage
 
-__all__ = ['Converter', 'MemberConverter', 'UserConverter',
+__all__ = ['Converter', 'MemberConverter', 'UserConverter', 'MessageConverter',
            'TextChannelConverter', 'InviteConverter', 'RoleConverter',
            'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
            'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
@@ -158,6 +158,43 @@ class UserConverter(IDConverter):
             raise BadArgument('User "{}" not found'.format(argument))
 
         return result
+
+class MessageConverter:
+    """Converts to a :class:`discord.Message`.
+
+    .. versionadded:: 1.1.0
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
+    2. Lookup by message ID (the message **must** be in the context channel)
+    3. Lookup by message URL
+    """
+
+    async def convert(self, ctx, argument):
+        id_regex = re.compile(r'^(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        link_regex = re.compile(
+            r'^https?://(?:(ptb|canary)\.)?discordapp\.com/channels/'
+            r'(?:([0-9]{15,21})|(@me))'
+            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
+        )
+        match = id_regex.match(argument) or link_regex.match(argument)
+        if not match:
+            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+        message_id = int(match.group("message_id"))
+        channel_id = match.group("channel_id")
+        message = ctx.bot._connection._get_message(message_id)
+        if message:
+            return message
+        channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
+        if not channel:
+            raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
+        try:
+            return await channel.fetch_message(message_id)
+        except discord.NotFound:
+            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+        except discord.Forbidden:
+            raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
 
 class TextChannelConverter(IDConverter):
     """Converts to a :class:`TextChannel`.
