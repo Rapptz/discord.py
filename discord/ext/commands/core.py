@@ -1210,17 +1210,16 @@ def command(name=None, cls=None, **attrs):
 
     return decorator
 
-def group(name=None, cls=None, **attrs):
+def group(name=None, **attrs):
     """A decorator that transforms a function into a :class:`.Group`.
 
-    This is similar to the :func:`.command` decorator but creates a
-    :class:`.Group` instead of a :class:`.Command` by default.
+    This is similar to the :func:`.command` decorator but the ``cls``
+    parameter is set to :class:`Group` by default.
     """
 
-    if cls is None:
-        cls = Group
+    attrs.setdefault('cls', Group)
 
-    return command(name=name, cls=cls, **attrs)
+    return command(name=name, **attrs)
 
 def check(predicate):
     r"""A decorator that adds a check to the :class:`.Command` or its
