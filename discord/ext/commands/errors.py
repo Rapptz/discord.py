@@ -31,9 +31,10 @@ __all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
            'PrivateMessageOnly', 'NoPrivateMessage', 'CheckFailure',
            'CommandNotFound', 'DisabledCommand', 'CommandInvokeError',
            'TooManyArguments','UserInputError', 'CommandOnCooldown',
-           'NotOwner', 'MissingPermissions', 'BotMissingPermissions',
-           'ConversionError', 'BadUnionArgument', 'ArgumentParsingError',
-           'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
+           'NotOwner', 'MissingRole', 'BotMissingRole', 'MissingAnyRole',
+           'BotMissingAnyRole','MissingPermissions', 'BotMissingPermissions',
+           'IsSFW', 'IsNSFW', 'ConversionError', 'BadUnionArgument',
+           'ArgumentParsingError', 'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
            'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
            'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
            'ExtensionNotFound']
@@ -173,12 +174,12 @@ class MissingRole(CommandError):
 
     Attributes
     -----------
-    missing_role: :class:`Role`
+    missing_role: Union[:class:`str`, :class:`int`]
         The required role that is missing.
     """
     def __init__(self, missing_role, *args):
         self.missing_role = missing_role
-        message = 'You are missing the required {} role to run this command.'.format(missing_role.name)
+        message = 'You are missing the required {} role to run this command.'.format(missing_role)
         super().__init__(message, *args)
 
 class BotMissingRole(CommandError):
@@ -186,12 +187,12 @@ class BotMissingRole(CommandError):
 
     Attributes
     -----------
-    missing_role: :class:`Role`
+    missing_role: Union[:class:`str`, :class:`int`]
         The required role that is missing.
     """
     def __init__(self, missing_role, *args):
         self.missing_role = missing_role
-        message = 'Bot requires the {} role to run this command'.format(missing_role.name)
+        message = 'Bot requires the {} role to run this command'.format(missing_role)
         super().__init__(message, *args)
 
 class MissingAnyRole(CommandError):
@@ -200,13 +201,13 @@ class MissingAnyRole(CommandError):
 
     Attributes
     -----------
-    missing_roles: List[:class:`Role`]
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
         The roles that the invoker lacks
     """
     def __init__(self, missing_roles, *args):
         self.missing_roles = missing_roles
 
-        missing = [role.name for role in missing_roles]
+        missing = [str(role) for role in missing_roles]
 
         if len(missing) > 2:
             fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
@@ -224,13 +225,13 @@ class BotMissingAnyRole(CommandError):
 
     Attributes
     -----------
-    missing_roles: List[:class:`Role`]
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
         The roles that the bot's member lacks
     """
     def __init__(self, missing_roles, *args):
         self.missing_roles = missing_roles
 
-        missing = [role.name for role in missing_roles]
+        missing = [str(role) for role in missing_roles]
 
         if len(missing) > 2:
             fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
@@ -242,6 +243,10 @@ class BotMissingAnyRole(CommandError):
         super().__init__(message, *args)
 
 class IsSFW(CommandError):
+    """Exception raised when the message channel is not-NSFW (SFW)."""
+    pass
+
+class IsNSFW(CommandError):
     """Exception raised when the message channel is not-NSFW (SFW)."""
     pass
 

@@ -1297,6 +1297,10 @@ def has_role(item):
     If the message is invoked in a private message context then the check will
     return ``False``.
 
+    This check raises one of two special exceptions, :exc:`.MissingRole` if the user
+    is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
+
     Parameters
     -----------
     item: Union[:class:`int`, :class:`str`]
@@ -1305,13 +1309,15 @@ def has_role(item):
 
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
-            return False
+            raise NoPrivateMessage('This command cannot be used in private messages.')
 
         if isinstance(item, int):
             role = discord.utils.get(ctx.author.roles, id=item)
         else:
             role = discord.utils.get(ctx.author.roles, name=item)
-        return role is not None
+        if role is None:
+            raise MissingRole(item)
+        return True
 
     return check(predicate)
 
@@ -1321,6 +1327,10 @@ def has_any_role(*items):
     one out of the three roles specified, then this check will return `True`.
 
     Similar to :func:`.has_role`\, the names or IDs passed in must be exact.
+
+    This check raises one of two special exceptions, :exc:`.MissingRole` if the user
+    is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
 
     Parameters
     -----------
@@ -1339,10 +1349,13 @@ def has_any_role(*items):
     """
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
-            return False
+            raise NoPrivateMessage('This command cannot be used in private messages.')
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
-        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
+        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+            return True
+        raise MissingAnyRole(items)
+
     return check(predicate)
 
 def has_permissions(**perms):
@@ -1387,31 +1400,45 @@ def has_permissions(**perms):
 def bot_has_role(item):
     """Similar to :func:`.has_role` except checks if the bot itself has the
     role.
+
+    This check raises one of two special exceptions, :exc:`.BotMissingRole` if the bot
+    is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
     """
 
     def predicate(ctx):
         ch = ctx.channel
         if not isinstance(ch, discord.abc.GuildChannel):
-            return False
+            raise NoPrivateMessage('This command cannot be used in private messages.')
+
         me = ch.guild.me
         if isinstance(item, int):
             role = discord.utils.get(me.roles, id=item)
         else:
             role = discord.utils.get(me.roles, name=item)
-        return role is not None
+        if role is None:
+            raise BotMissingRole(item)
+        return True
     return check(predicate)
 
 def bot_has_any_role(*items):
     """Similar to :func:`.has_any_role` except checks if the bot itself has
     any of the roles listed.
+
+    This check raises one of two special exceptions, :exc:`.BotMissingAnyRole` if the bot
+    is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
     """
     def predicate(ctx):
         ch = ctx.channel
         if not isinstance(ch, discord.abc.GuildChannel):
-            return False
+            raise NoPrivateMessage('This command cannot be used in private messages.')
+
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
-        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
+        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+            return True
+        raise BotMissingAnyRole(items)
     return check(predicate)
 
 def bot_has_permissions(**perms):
@@ -1487,9 +1514,27 @@ def is_owner():
     return check(predicate)
 
 def is_nsfw():
-    """A :func:`.check` that checks if the channel is a NSFW channel."""
+    """A :func:`.check` that checks if the channel is a NSFW channel.
+
+    This check raises a special exception, :exc:`.IsSFW` that is derived
+    from :exc:`.CheckFailure`.
+    """
     def pred(ctx):
-        return isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw()
+        if isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw():
+            return True
+        raise IsSFW()
+    return check(pred)
+
+def is_sfw():
+    """A :func:`.check` that checks if the channel is a not-NSFW channel.
+
+    This check raises a special exception, :exc:`.IsNSFW` that is derived
+    from :exc:`.CheckFailure`.
+    """
+    def pred(ctx):
+        if isinstance(ctx.channel, discord.TextChannel) and not ctx.channel.is_nsfw():
+            return True
+        raise IsNSFW()
     return check(pred)
 
 def cooldown(rate, per, type=BucketType.default):
