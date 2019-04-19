@@ -389,6 +389,12 @@ class Client:
         """|coro|
 
         Logs out of Discord and closes all connections.
+
+        .. note::
+
+            This is just an alias to :meth:`close`. If you want
+            to do extraneous cleanup when subclassing, it is suggested
+            to override :meth:`close` instead.
         """
         await self.close()
 
