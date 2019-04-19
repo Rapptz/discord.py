@@ -152,6 +152,14 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     ``raise`` statement.  Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
 
+    .. note::
+
+        ``on_error`` will only be dispatched to :meth:`Client.event`.
+
+        It will not be received by :meth:`Client.wait_for`, or, if used,
+        :class:`~ext.commands.Bot` listeners such as
+        :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
+
     :param event: The name of the event that raised the exception.
     :param args: The positional arguments for the event that raised the
         exception.
