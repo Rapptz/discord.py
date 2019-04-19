@@ -505,8 +505,7 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """
-        Retrieves the parents of this command.
+        """Retrieves the parents of this command.
 
         .. versionadded:: 1.1.0
 
