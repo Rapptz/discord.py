@@ -1215,6 +1215,10 @@ def group(name=None, **attrs):
 
     This is similar to the :func:`.command` decorator but the ``cls``
     parameter is set to :class:`Group` by default.
+
+    .. versionchanged 1.1.0
+
+        Allow passing of ``cls`` parameter
     """
 
     attrs.setdefault('cls', Group)
