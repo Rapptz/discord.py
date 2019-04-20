@@ -159,7 +159,8 @@ class PrivateMessageOnly(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
     """
-    pass
+    def __init__(self, message=None):
+        super().__init__(message or 'This command can only be used in private messages.')
 
 class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
@@ -168,8 +169,8 @@ class NoPrivateMessage(CheckFailure):
     This inherits from :exc:`CheckFailure`
     """
 
-    def __init__(self):
-        super().__init__('This command cannot be used in private messages.')
+    def __init__(self, message=None):
+        super().__init__(message or 'This command cannot be used in private messages.')
 
 class NotOwner(CheckFailure):
     """Exception raised when the message author is not the owner of the bot.

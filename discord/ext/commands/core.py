@@ -1525,7 +1525,7 @@ def dm_only():
 
     def predicate(ctx):
         if ctx.guild is not None:
-            raise PrivateMessageOnly('This command can only be used in private messages.')
+            raise PrivateMessageOnly()
         return True
 
     return check(predicate)
