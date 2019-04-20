@@ -132,7 +132,7 @@ class Guild(Hashable):
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
-                 'description', 'max_presences', 'max_members')
+                 'description', 'max_presences', 'max_members', 'premium_tier')
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -237,6 +237,7 @@ class Guild(Hashable):
         self.description = guild.get('description')
         self.max_presences = guild.get('max_presences')
         self.max_members = guild.get('max_members')
+        self.premium_tier = guild.get('premium_tier')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
