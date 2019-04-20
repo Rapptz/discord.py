@@ -507,14 +507,11 @@ class Command(_BaseCommand):
     def parents(self):
         """Retrieves the parents of this command.
 
-        .. versionadded:: 1.1.0
-
         If the command has no parents then it returns an empty :class:`list`.
 
-        For example in commands ``?a b c test``,
-        the parents are ``[c, b, a]``.
+        For example in commands ``?a b c test``, the parents are ``[c, b, a]``.
 
-
+        .. versionadded:: 1.1.0
         """
         entries = []
         command = self
@@ -530,8 +527,7 @@ class Command(_BaseCommand):
 
         If the command has no parents then it returns ``None``.
 
-        For example in commands ``?a b c test``, the root parent is
-        ``a``.
+        For example in commands ``?a b c test``, the root parent is ``a``.
         """
         if not self.parent:
             return None
