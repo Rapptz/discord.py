@@ -27,17 +27,40 @@ DEALINGS IN THE SOFTWARE.
 from discord.errors import DiscordException
 
 
-__all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'PrivateMessageOnly', 'NoPrivateMessage', 'CheckFailure',
-           'CommandNotFound', 'DisabledCommand', 'CommandInvokeError',
-           'TooManyArguments','UserInputError', 'CommandOnCooldown',
-           'NotOwner', 'MissingRole', 'BotMissingRole', 'MissingAnyRole',
-           'BotMissingAnyRole','MissingPermissions', 'BotMissingPermissions',
-           'NSFWChannelRequired', 'ConversionError', 'BadUnionArgument',
-           'ArgumentParsingError', 'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
-           'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
-           'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
-           'ExtensionNotFound']
+__all__ = (
+    'CommandError',
+    'MissingRequiredArgument',
+    'BadArgument',
+    'PrivateMessageOnly',
+    'NoPrivateMessage',
+    'CheckFailure',
+    'CommandNotFound',
+    'DisabledCommand',
+    'CommandInvokeError',
+    'TooManyArguments',
+    'UserInputError',
+    'CommandOnCooldown',
+    'NotOwner',
+    'MissingRole',
+    'BotMissingRole',
+    'MissingAnyRole',
+    'BotMissingAnyRole',
+    'MissingPermissions',
+    'BotMissingPermissions',
+    'NSFWChannelRequired',
+    'ConversionError',
+    'BadUnionArgument',
+    'ArgumentParsingError',
+    'UnexpectedQuoteError',
+    'InvalidEndOfQuotedStringError',
+    'ExpectedClosingQuoteError',
+    'ExtensionError',
+    'ExtensionAlreadyLoaded',
+    'ExtensionNotLoaded',
+    'NoEntryPointError',
+    'ExtensionFailed',
+    'ExtensionNotFound',
+)
 
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.

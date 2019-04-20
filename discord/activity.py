@@ -30,7 +30,12 @@ from .enums import ActivityType, try_enum
 from .colour import Colour
 from .utils import _get_as_snowflake
 
-__all__ = ['Activity', 'Streaming', 'Game', 'Spotify']
+__all__ = (
+    'Activity',
+    'Streaming',
+    'Game',
+    'Spotify',
+)
 
 """If curious, this is the current schema for an activity.
 

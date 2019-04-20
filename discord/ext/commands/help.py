@@ -33,12 +33,12 @@ import discord.utils
 from .core import Group, Command
 from .errors import CommandError
 
-__all__ = [
+__all__ = (
     'Paginator',
     'HelpCommand',
     'DefaultHelpCommand',
     'MinimalHelpCommand',
-]
+)
 
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
