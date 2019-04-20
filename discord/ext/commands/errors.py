@@ -59,7 +59,7 @@ class CommandError(DiscordException):
 class ConversionError(CommandError):
     """Exception raised when a Converter class raises non-CommandError.
 
-    This inherits from :exc:`.CommandError`.
+    This inherits from :exc:`CommandError`.
 
     Attributes
     ----------
@@ -77,7 +77,7 @@ class UserInputError(CommandError):
     """The base exception type for errors that involve errors
     regarding user input.
 
-    This inherits from :exc:`.CommandError`.
+    This inherits from :exc:`CommandError`.
     """
     pass
 
@@ -87,12 +87,16 @@ class CommandNotFound(CommandError):
 
     This is not raised for invalid subcommands, rather just the
     initial main command that is attempted to be invoked.
+
+    This inherits from :exc:`CommandError`.
     """
     pass
 
 class MissingRequiredArgument(UserInputError):
     """Exception raised when parsing a command and a parameter
     that is required is not encountered.
+
+    This inherits from :exc:`UserInputError`
 
     Attributes
     -----------
@@ -106,43 +110,62 @@ class MissingRequiredArgument(UserInputError):
 class TooManyArguments(UserInputError):
     """Exception raised when the command was passed too many arguments and its
     :attr:`.Command.ignore_extra` attribute was not set to ``True``.
+
+    This inherits from :exc:`UserInputError`
     """
     pass
 
 class BadArgument(UserInputError):
     """Exception raised when a parsing or conversion failure is encountered
     on an argument to pass into a command.
+
+    This inherits from :exc:`UserInputError`
     """
     pass
 
 class CheckFailure(CommandError):
-    """Exception raised when the predicates in :attr:`.Command.checks` have failed."""
+    """Exception raised when the predicates in :attr:`.Command.checks` have failed.
+
+    This inherits from :exc:`CommandError`
+    """
     pass
 
 class PrivateMessageOnly(CheckFailure):
     """Exception raised when an operation does not work outside of private
     message contexts.
+
+    This inherits from :exc:`CheckFailure`
     """
     pass
 
 class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
     contexts.
+
+    This inherits from :exc:`CheckFailure`
     """
 
     def __init__(self):
         super().__init__('This command cannot be used in private messages.')
 
 class NotOwner(CheckFailure):
-    """Exception raised when the message author is not the owner of the bot."""
+    """Exception raised when the message author is not the owner of the bot.
+
+    This inherits from :exc:`CheckFailure`
+    """
     pass
 
 class DisabledCommand(CommandError):
-    """Exception raised when the command being invoked is disabled."""
+    """Exception raised when the command being invoked is disabled.
+
+    This inherits from :exc:`CommandError`
+    """
     pass
 
 class CommandInvokeError(CommandError):
     """Exception raised when the command being invoked raised an exception.
+
+    This inherits from :exc:`CommandError`
 
     Attributes
     -----------
@@ -156,6 +179,8 @@ class CommandInvokeError(CommandError):
 
 class CommandOnCooldown(CommandError):
     """Exception raised when the command being invoked is on cooldown.
+
+    This inherits from :exc:`CommandError`
 
     Attributes
     -----------
@@ -173,7 +198,7 @@ class CommandOnCooldown(CommandError):
 class MissingRole(CheckFailure):
     """Exception raised when the command invoker lacks a role to run a command.
 
-    This inherits from :exc:`.CheckFailure`
+    This inherits from :exc:`CheckFailure`
 
     .. versionadded:: 1.1.0
 
@@ -191,7 +216,7 @@ class MissingRole(CheckFailure):
 class BotMissingRole(CheckFailure):
     """Exception raised when the bot's member lacks a role to run a command.
 
-    This inherits from :exc:`.CheckFailure`
+    This inherits from :exc:`CheckFailure`
 
     .. versionadded:: 1.1.0
 
@@ -210,7 +235,7 @@ class MissingAnyRole(CheckFailure):
     """Exception raised when the command invoker lacks any of
     the roles specified to run a command.
 
-    This inherits from :exc:`.CheckFailure`
+    This inherits from :exc:`CheckFailure`
 
     .. versionadded:: 1.1.0
 
@@ -238,7 +263,7 @@ class BotMissingAnyRole(CheckFailure):
     """Exception raised when the bot's member lacks any of
     the roles specified to run a command.
 
-    This inherits from :exc:`.CheckFailure`
+    This inherits from :exc:`CheckFailure`
 
     .. versionadded:: 1.1.0
 
@@ -265,7 +290,7 @@ class BotMissingAnyRole(CheckFailure):
 class NSFWChannelRequired(CheckFailure):
     """Exception raised when a channel does not have the required NSFW setting.
 
-    This inherits from :exc:`.CheckFailure`.
+    This inherits from :exc:`CheckFailure`.
 
     .. versionadded:: 1.1.0
 
@@ -281,6 +306,8 @@ class NSFWChannelRequired(CheckFailure):
 class MissingPermissions(CheckFailure):
     """Exception raised when the command invoker lacks permissions to run a
     command.
+
+    This inherits from :exc:`CheckFailure`
 
     Attributes
     -----------
@@ -303,6 +330,8 @@ class BotMissingPermissions(CheckFailure):
     """Exception raised when the bot's member lacks permissions to run a
     command.
 
+    This inherits from :exc:`CheckFailure`
+
     Attributes
     -----------
     missing_perms: :class:`list`
@@ -323,6 +352,8 @@ class BotMissingPermissions(CheckFailure):
 class BadUnionArgument(UserInputError):
     """Exception raised when a :class:`typing.Union` converter fails for all
     its associated types.
+
+    This inherits from :exc:`UserInputError`
 
     Attributes
     -----------
@@ -355,8 +386,10 @@ class BadUnionArgument(UserInputError):
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
 
-    This inherits from :exc:`UserInputError`. There are child classes
-    that implement more granular parsing errors for i18n purposes.
+    This inherits from :exc:`UserInputError`.
+
+    There are child classes that implement more granular parsing errors for
+    i18n purposes.
     """
     pass
 
