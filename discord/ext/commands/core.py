@@ -512,7 +512,7 @@ class Command(_BaseCommand):
         If the command has no parents then it returns an empty :class:`list`.
 
         For example in commands ``?a b c test``,
-        the parents are ``[a, b, c]``.
+        the parents are ``[c, b, a]``.
 
 
         """
