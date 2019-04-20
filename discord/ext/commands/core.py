@@ -1571,11 +1571,12 @@ def is_nsfw():
 
     .. versionchanged:: 1.1.0
 
-        Raise :exc:`.NSFWChannelRequired instead of generic :exc:`.CheckFailure`.`
+        Raise :exc:`.NSFWChannelRequired instead of generic :exc:`.CheckFailure`.
+        DM channels will also now pass this check.
     """
     def pred(ctx):
         ch = ctx.channel
-        if isinstance(ch, discord.TextChannel) and ch.is_nsfw():
+        if ctx.guild is None or (isinstance(ch, discord.TextChannel) and ch.is_nsfw()):
             return True
         raise NSFWChannelRequired(ch)
     return check(pred)
