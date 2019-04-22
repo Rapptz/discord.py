@@ -31,11 +31,24 @@ import discord
 
 from .errors import BadArgument, NoPrivateMessage
 
-__all__ = ['Converter', 'MemberConverter', 'UserConverter', 'MessageConverter',
-           'TextChannelConverter', 'InviteConverter', 'RoleConverter',
-           'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-           'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
-           'IDConverter', 'clean_content', 'Greedy']
+__all__ = (
+    'Converter',
+    'MemberConverter',
+    'UserConverter',
+    'MessageConverter',
+    'TextChannelConverter',
+    'InviteConverter',
+    'RoleConverter',
+    'GameConverter',
+    'ColourConverter',
+    'VoiceChannelConverter',
+    'EmojiConverter',
+    'PartialEmojiConverter',
+    'CategoryChannelConverter',
+    'IDConverter',
+    'clean_content',
+    'Greedy',
+)
 
 def _get_from_guilds(bot, getter, argument):
     result = None

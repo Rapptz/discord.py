@@ -36,12 +36,12 @@ from .context import Context
 from .core import Group, Command
 from .errors import CommandError
 
-__all__ = [
+__all__ = (
     'Paginator',
     'HelpCommand',
     'DefaultHelpCommand',
     'MinimalHelpCommand',
-]
+)
 
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
@@ -604,7 +604,7 @@ class HelpCommand(Generic[_CT]):
 
         Parameters
         ------------
-        mapping: Mapping[Optional[:class:`Cog`], List[:class:`Command`]
+        mapping: Mapping[Optional[:class:`Cog`], List[:class:`Command`]]
             A mapping of cogs to commands that have been requested by the user for help.
             The key of the mapping is the :class:`~.commands.Cog` that the command belongs to, or
             ``None`` if there isn't one, and the value is a list of commands that belongs to that cog.

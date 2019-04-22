@@ -798,7 +798,7 @@ class Message:
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    def ack(self):
+    async def ack(self):
         """|coro|
 
         Marks this message as read.
@@ -816,4 +816,4 @@ class Message:
         state = self._state
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
-        return state.http.ack_message(self.channel.id, self.id)
+        return await state.http.ack_message(self.channel.id, self.id)

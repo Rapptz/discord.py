@@ -26,11 +26,27 @@ DEALINGS IN THE SOFTWARE.
 
 from enum import Enum
 
-__all__ = ['ChannelType', 'MessageType', 'VoiceRegion', 'SpeakingState',
-           'VerificationLevel', 'ContentFilter', 'Status', 'DefaultAvatar',
-           'RelationshipType', 'AuditLogAction', 'AuditLogActionCategory',
-           'UserFlags', 'ActivityType', 'HypeSquadHouse', 'NotificationLevel',
-           'PremiumType', 'UserContentFilter', 'FriendFlags', 'Theme']
+__all__ = (
+    'ChannelType',
+    'MessageType',
+    'VoiceRegion',
+    'SpeakingState',
+    'VerificationLevel',
+    'ContentFilter',
+    'Status',
+    'DefaultAvatar',
+    'RelationshipType',
+    'AuditLogAction',
+    'AuditLogActionCategory',
+    'UserFlags',
+    'ActivityType',
+    'HypeSquadHouse',
+    'NotificationLevel',
+    'PremiumType',
+    'UserContentFilter',
+    'FriendFlags',
+    'Theme',
+)
 
 def fast_lookup(cls):
     # NOTE: implies hashable

@@ -27,7 +27,11 @@ DEALINGS IN THE SOFTWARE.
 import enum
 import time
 
-__all__ = ['BucketType', 'Cooldown', 'CooldownMapping']
+__all__ = (
+    'BucketType',
+    'Cooldown',
+    'CooldownMapping',
+)
 
 class BucketType(enum.Enum):
     default  = 0

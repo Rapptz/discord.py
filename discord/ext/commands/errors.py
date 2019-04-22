@@ -27,16 +27,40 @@ DEALINGS IN THE SOFTWARE.
 from discord.errors import DiscordException
 
 
-__all__ = ['CommandError', 'MissingRequiredArgument', 'BadArgument',
-           'PrivateMessageOnly', 'NoPrivateMessage', 'CheckFailure',
-           'CommandNotFound' ,'DisabledCommand', 'CommandInvokeError',
-           'TooManyArguments', 'UserInputError', 'CommandOnCooldown',
-           'NotOwner', 'MissingPermissions', 'BotMissingPermissions',
-           'ConversionError', 'BadUnionArgument', 'ArgumentParsingError',
-           'UnexpectedQuoteError', 'InvalidEndOfQuotedStringError',
-           'ExpectedClosingQuoteError', 'ExtensionError', 'ExtensionAlreadyLoaded',
-           'ExtensionNotLoaded', 'NoEntryPointError', 'ExtensionFailed',
-           'ExtensionNotFound']
+__all__ = (
+    'CommandError',
+    'MissingRequiredArgument',
+    'BadArgument',
+    'PrivateMessageOnly',
+    'NoPrivateMessage',
+    'CheckFailure',
+    'CommandNotFound',
+    'DisabledCommand',
+    'CommandInvokeError',
+    'TooManyArguments',
+    'UserInputError',
+    'CommandOnCooldown',
+    'NotOwner',
+    'MissingRole',
+    'BotMissingRole',
+    'MissingAnyRole',
+    'BotMissingAnyRole',
+    'MissingPermissions',
+    'BotMissingPermissions',
+    'NSFWChannelRequired',
+    'ConversionError',
+    'BadUnionArgument',
+    'ArgumentParsingError',
+    'UnexpectedQuoteError',
+    'InvalidEndOfQuotedStringError',
+    'ExpectedClosingQuoteError',
+    'ExtensionError',
+    'ExtensionAlreadyLoaded',
+    'ExtensionNotLoaded',
+    'NoEntryPointError',
+    'ExtensionFailed',
+    'ExtensionNotFound',
+)
 
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.
@@ -58,7 +82,7 @@ class CommandError(DiscordException):
 class ConversionError(CommandError):
     """Exception raised when a Converter class raises non-CommandError.
 
-    This inherits from :exc:`.CommandError`.
+    This inherits from :exc:`CommandError`.
 
     Attributes
     ----------
@@ -76,7 +100,7 @@ class UserInputError(CommandError):
     """The base exception type for errors that involve errors
     regarding user input.
 
-    This inherits from :exc:`.CommandError`.
+    This inherits from :exc:`CommandError`.
     """
     pass
 
@@ -86,12 +110,16 @@ class CommandNotFound(CommandError):
 
     This is not raised for invalid subcommands, rather just the
     initial main command that is attempted to be invoked.
+
+    This inherits from :exc:`CommandError`.
     """
     pass
 
 class MissingRequiredArgument(UserInputError):
     """Exception raised when parsing a command and a parameter
     that is required is not encountered.
+
+    This inherits from :exc:`UserInputError`
 
     Attributes
     -----------
@@ -105,41 +133,63 @@ class MissingRequiredArgument(UserInputError):
 class TooManyArguments(UserInputError):
     """Exception raised when the command was passed too many arguments and its
     :attr:`.Command.ignore_extra` attribute was not set to ``True``.
+
+    This inherits from :exc:`UserInputError`
     """
     pass
 
 class BadArgument(UserInputError):
     """Exception raised when a parsing or conversion failure is encountered
     on an argument to pass into a command.
+
+    This inherits from :exc:`UserInputError`
     """
     pass
 
 class CheckFailure(CommandError):
-    """Exception raised when the predicates in :attr:`.Command.checks` have failed."""
+    """Exception raised when the predicates in :attr:`.Command.checks` have failed.
+
+    This inherits from :exc:`CommandError`
+    """
     pass
 
 class PrivateMessageOnly(CheckFailure):
     """Exception raised when an operation does not work outside of private
     message contexts.
+
+    This inherits from :exc:`CheckFailure`
     """
-    pass
+    def __init__(self, message=None):
+        super().__init__(message or 'This command can only be used in private messages.')
 
 class NoPrivateMessage(CheckFailure):
     """Exception raised when an operation does not work in private message
     contexts.
+
+    This inherits from :exc:`CheckFailure`
+    """
+
+    def __init__(self, message=None):
+        super().__init__(message or 'This command cannot be used in private messages.')
+
+class NotOwner(CheckFailure):
+    """Exception raised when the message author is not the owner of the bot.
+
+    This inherits from :exc:`CheckFailure`
     """
     pass
 
-class NotOwner(CheckFailure):
-    """Exception raised when the message author is not the owner of the bot."""
-    pass
-
 class DisabledCommand(CommandError):
-    """Exception raised when the command being invoked is disabled."""
+    """Exception raised when the command being invoked is disabled.
+
+    This inherits from :exc:`CommandError`
+    """
     pass
 
 class CommandInvokeError(CommandError):
     """Exception raised when the command being invoked raised an exception.
+
+    This inherits from :exc:`CommandError`
 
     Attributes
     -----------
@@ -154,6 +204,8 @@ class CommandInvokeError(CommandError):
 class CommandOnCooldown(CommandError):
     """Exception raised when the command being invoked is on cooldown.
 
+    This inherits from :exc:`CommandError`
+
     Attributes
     -----------
     cooldown: Cooldown
@@ -167,9 +219,119 @@ class CommandOnCooldown(CommandError):
         self.retry_after = retry_after
         super().__init__('You are on cooldown. Try again in {:.2f}s'.format(retry_after))
 
+class MissingRole(CheckFailure):
+    """Exception raised when the command invoker lacks a role to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~.commands.has_role`.
+    """
+    def __init__(self, missing_role):
+        self.missing_role = missing_role
+        message = 'Role {0!r} is required to run this command.'.format(missing_role)
+        super().__init__(message)
+
+class BotMissingRole(CheckFailure):
+    """Exception raised when the bot's member lacks a role to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~.commands.has_role`.
+    """
+    def __init__(self, missing_role):
+        self.missing_role = missing_role
+        message = 'Bot requires the role {0!r} to run this command'.format(missing_role)
+        super().__init__(message)
+
+class MissingAnyRole(CheckFailure):
+    """Exception raised when the command invoker lacks any of
+    the roles specified to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the invoker is missing.
+        These are the parameters passed to :func:`~.commands.has_any_role`.
+    """
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
+
+        missing = ["'{}'".format(role) for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "You are missing at least one of the required roles: {}".format(fmt)
+        super().__init__(message)
+
+
+class BotMissingAnyRole(CheckFailure):
+    """Exception raised when the bot's member lacks any of
+    the roles specified to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    .. versionadded:: 1.1.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the bot's member is missing.
+        These are the parameters passed to :func:`~.commands.has_any_role`.
+
+    """
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
+
+        missing = ["'{}'".format(role) for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "Bot is missing at least one of the required roles: {}".format(fmt)
+        super().__init__(message)
+
+class NSFWChannelRequired(CheckFailure):
+    """Exception raised when a channel does not have the required NSFW setting.
+
+    This inherits from :exc:`CheckFailure`.
+
+    .. versionadded:: 1.1.0
+
+    Parameters
+    -----------
+    channel: :class:`discord.abc.GuildChannel`
+        The channel that does not have NSFW enabled.
+    """
+    def __init__(self, channel):
+        self.channel = channel
+        super().__init__("Channel '{}' needs to be NSFW for this command to work.".format(channel))
+
 class MissingPermissions(CheckFailure):
-    """Exception raised when the command invoker lacks permissions to run
+    """Exception raised when the command invoker lacks permissions to run a
     command.
+
+    This inherits from :exc:`CheckFailure`
 
     Attributes
     -----------
@@ -185,11 +347,14 @@ class MissingPermissions(CheckFailure):
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = 'You are missing {} permission(s) to run command.'.format(fmt)
+        message = 'You are missing {} permission(s) to run this command.'.format(fmt)
         super().__init__(message, *args)
 
 class BotMissingPermissions(CheckFailure):
-    """Exception raised when the bot lacks permissions to run command.
+    """Exception raised when the bot's member lacks permissions to run a
+    command.
+
+    This inherits from :exc:`CheckFailure`
 
     Attributes
     -----------
@@ -205,12 +370,14 @@ class BotMissingPermissions(CheckFailure):
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = 'Bot requires {} permission(s) to run command.'.format(fmt)
+        message = 'Bot requires {} permission(s) to run this command.'.format(fmt)
         super().__init__(message, *args)
 
 class BadUnionArgument(UserInputError):
     """Exception raised when a :class:`typing.Union` converter fails for all
     its associated types.
+
+    This inherits from :exc:`UserInputError`
 
     Attributes
     -----------
@@ -243,8 +410,10 @@ class BadUnionArgument(UserInputError):
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
 
-    This inherits from :exc:`UserInputError`. There are child classes
-    that implement more granular parsing errors for i18n purposes.
+    This inherits from :exc:`UserInputError`.
+
+    There are child classes that implement more granular parsing errors for
+    i18n purposes.
     """
     pass
 

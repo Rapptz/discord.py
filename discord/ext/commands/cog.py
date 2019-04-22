@@ -30,7 +30,10 @@ import copy
 from ._types import _BaseCommand
 from .context import Context
 
-__all__ = ('CogMeta', 'Cog')
+__all__ = (
+    'CogMeta',
+    'Cog',
+)
 
 class CogMeta(type):
     """A　metaclass for defining a cog.

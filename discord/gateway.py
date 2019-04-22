@@ -44,8 +44,13 @@ from .errors import ConnectionClosed, InvalidArgument
 
 log = logging.getLogger(__name__)
 
-__all__ = ['DiscordWebSocket', 'KeepAliveHandler', 'VoiceKeepAliveHandler',
-           'DiscordVoiceWebSocket', 'ResumeWebSocket']
+__all__ = (
+    'DiscordWebSocket',
+    'KeepAliveHandler',
+    'VoiceKeepAliveHandler',
+    'DiscordVoiceWebSocket',
+    'ResumeWebSocket',
+)
 
 class ResumeWebSocket(Exception):
     """Signals to initialise via RESUME opcode instead of IDENTIFY."""

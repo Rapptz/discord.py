@@ -102,7 +102,7 @@ class Asset:
             raise InvalidArgument("format must be one of {}".format(VALID_STATIC_FORMATS))
 
         if hash is None:
-            return Asset(state)
+            return cls(state)
 
         url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
         return cls(state, url.format(id, hash, format, size, key=key))
@@ -130,38 +130,32 @@ class Asset:
     def __hash__(self):
         return hash(self._url)
 
-    async def save(self, fp, *, seek_begin=True):
+    async def read(self):
         """|coro|
 
-        Saves this asset into a file-like object.
+        Retrieves the content of this asset as a :class:`bytes` object.
 
-        Parameters
-        -----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
+        .. warning::
+
+            :class:`PartialEmoji` won't have a connection state if user created,
+            and a URL won't be present if a custom image isn't associated with
+            the asset, e.g. a guild with no custom icon.
+
+        .. versionadded:: 1.1.0
 
         Raises
-        --------
+        ------
         DiscordException
             There was no valid URL or internal connection state.
-
-            .. note::
-
-                :class:`PartialEmoji` will not have a state if you make
-                your own instance via ``PartialEmoji(animated=False, name='x', id=2345678)``.
-
-                The URL will not be provided if there is no custom image.
         HTTPException
-            Saving the asset failed.
+            Downloading the asset failed.
         NotFound
             The asset was deleted.
 
         Returns
-        --------
-        :class:`int`
-            The number of bytes written.
+        -------
+        :class:`bytes`
+            The content of the asset.
         """
         if not self._url:
             raise DiscordException('Invalid asset (no URL provided)')
@@ -169,7 +163,31 @@ class Asset:
         if self._state is None:
             raise DiscordException('Invalid state (no ConnectionState provided)')
 
-        data = await self._state.http.get_from_cdn(self._url)
+        return await self._state.http.get_from_cdn(self._url)
+
+    async def save(self, fp, *, seek_begin=True):
+        """|coro|
+
+        Saves this asset into a file-like object.
+
+        Parameters
+        ----------
+        fp: Union[BinaryIO, :class:`os.PathLike`]
+            Same as in :meth:`Attachment.save`.
+        seek_begin: :class:`bool`
+            Same as in :meth:`Attachment.save`.
+
+        Raises
+        ------
+        Same as :meth:`read`.
+
+        Returns
+        --------
+        :class:`int`
+            The number of bytes written.
+        """
+
+        data = await self.read()
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:

@@ -36,7 +36,7 @@ from .asset import Asset
 from .errors import ClientException, NoMoreItems
 from .webhook import Webhook
 
-__all__ = [
+__all__ = (
     'TextChannel',
     'VoiceChannel',
     'DMChannel',
@@ -44,7 +44,7 @@ __all__ = [
     'StoreChannel',
     'GroupChannel',
     '_channel_factory',
-]
+)
 
 async def _single_delete_strategy(messages):
     for m in messages:

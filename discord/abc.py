@@ -543,7 +543,7 @@ class GuildChannel:
 
         Using :class:`PermissionOverwrite` ::
 
-            overwrite = PermissionOverwrite()
+            overwrite = discord.PermissionOverwrite()
             overwrite.send_messages = False
             overwrite.read_messages = True
             await channel.set_permissions(member, overwrite=overwrite)

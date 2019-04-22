@@ -36,7 +36,12 @@ from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .user import BaseUser, User
 from .asset import Asset
 
-__all__ = ['WebhookAdapter', 'AsyncWebhookAdapter', 'RequestsWebhookAdapter', 'Webhook']
+__all__ = (
+    'WebhookAdapter',
+    'AsyncWebhookAdapter',
+    'RequestsWebhookAdapter',
+    'Webhook',
+)
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
