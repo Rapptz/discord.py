@@ -1,10 +1,10 @@
 from discord.errors import DiscordException
-from discord import Permissions
+from discord import Permissions, abc
 from inspect import Parameter
 
 from .cooldowns import Cooldown
 
-from typing import Any, Optional, List, Tuple
+from typing import Any, Optional, Union, List, Tuple
 
 class CommandError(DiscordException):
     def __init__(self, message: Optional[str] = ..., *args: Any) -> None: ...
@@ -32,7 +32,8 @@ class CheckFailure(CommandError): ...
 
 class PrivateMessageOnly(CheckFailure): ...
 
-class NoPrivateMessage(CheckFailure): ...
+class NoPrivateMessage(CheckFailure):
+    def __init__(self, message: Optional[str] = ...) -> None: ...
 
 class NotOwner(CheckFailure): ...
 
@@ -48,6 +49,31 @@ class CommandOnCooldown(CommandError):
     retry_after: float
 
     def __init__(self, cooldown: Cooldown, retry_after: float) -> None: ...
+
+class MissingRole(CheckFailure):
+    missing_role: Union[str, int]
+
+    def __init__(self, missing_role: Union[str, int]) -> None: ...
+
+class BotMissingRole(CheckFailure):
+    missing_role: Union[str, int]
+
+    def __init__(self, missing_role: Union[str, int]) -> None: ...
+
+class MissingAnyRole(CheckFailure):
+    missing_roles: List[Union[str, int]]
+
+    def __init__(self, missing_roles: List[Union[str, int]]) -> None: ...
+
+class BotMissingAnyRole(CheckFailure):
+    missing_roles: List[Union[str, int]]
+
+    def __init__(self, missing_roles: List[Union[str, int]]) -> None: ...
+
+class NSFWChannelRequired(CheckFailure):
+    channel: abc.GuildChannel
+
+    def __init__(self, channel: abc.GuildChannel) -> None: ...
 
 class MissingPermissions(CheckFailure):
     missing_perms: List[Permissions]

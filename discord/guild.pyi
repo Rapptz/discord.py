@@ -40,6 +40,7 @@ class Guild(Hashable):
     unavailable: bool
     max_presences: Optional[int]
     max_members: Optional[int]
+    premium_tier: Optional[Any]
     banner: Optional[str]
     description: Optional[str]
     mfa_level: int
