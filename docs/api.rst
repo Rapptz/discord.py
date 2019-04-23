@@ -940,23 +940,6 @@ All enumerations are subclasses of `enum`_.
         a presence a la :meth:`Client.change_presence`. When you receive a
         user's presence this will be :attr:`offline` instead.
 
-.. class:: RelationshipType
-
-    Specifies the type of :class:`Relationship`
-
-    .. attribute:: friend
-
-        You are friends with this user.
-    .. attribute:: blocked
-
-        You have blocked this user.
-    .. attribute:: incoming_request
-
-        The user has sent you a friend request.
-    .. attribute:: outgoing_request
-
-        You have sent a friend request to this user.
-
 
 .. class:: AuditLogAction
 
@@ -1366,10 +1349,39 @@ All enumerations are subclasses of `enum`_.
         The action is the update of something.
 
 
+.. class:: RelationshipType
+
+    Specifies the type of :class:`Relationship`.
+
+    .. note::
+
+        This only applies to users, *not* bots.
+
+    .. attribute:: friend
+
+        You are friends with this user.
+
+    .. attribute:: blocked
+
+        You have blocked this user.
+
+    .. attribute:: incoming_request
+
+        The user has sent you a friend request.
+
+    .. attribute:: outgoing_request
+
+        You have sent a friend request to this user.
+
+
 .. class:: UserContentFilter
 
     Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``
     in the Discord client.
+
+    .. note::
+
+        This only applies to users, *not* bots.
 
     .. attribute:: all_messages
 
@@ -1388,6 +1400,10 @@ All enumerations are subclasses of `enum`_.
 
     Represents the options found in ``Settings > Privacy & Safety > Who Can Add You As A Friend``
     in the Discord client.
+
+    .. note::
+
+        This only applies to users, *not* bots.
 
     .. attribute:: noone
 
@@ -1414,6 +1430,10 @@ All enumerations are subclasses of `enum`_.
 
     Represents the user's Discord Nitro subscription type.
 
+    .. note::
+
+        This only applies to users, *not* bots.
+
     .. attribute:: nitro
 
         Represents the Discord Nitro with Nitro-exclusive games.
@@ -1426,6 +1446,10 @@ All enumerations are subclasses of `enum`_.
 .. class:: Theme
 
     Represents the theme synced across all Discord clients.
+
+    .. note::
+
+        This only applies to users, *not* bots.
 
     .. attribute:: light
 
