@@ -170,7 +170,7 @@ class Client:
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
-        self._closed = asyncio.Event(loop=self.loop)
+        self._closed = False
         self._ready = asyncio.Event(loop=self.loop)
         self._connection._get_websocket = lambda g: self.ws
 
@@ -478,11 +478,11 @@ class Client:
 
         Closes the connection to discord.
         """
-        if self.is_closed():
+        if self._closed:
             return
 
         await self.http.close()
-        self._closed.set()
+        self._closed = True
 
         for voice in self.voice_clients:
             try:
@@ -503,7 +503,7 @@ class Client:
         and :meth:`.is_ready` both return ``False`` along with the bot's internal
         cache cleared.
         """
-        self._closed.clear()
+        self._closed = False
         self._ready.clear()
         self._connection.clear()
         self.http.recreate()
@@ -591,7 +591,7 @@ class Client:
 
     def is_closed(self):
         """:class:`bool`: Indicates if the websocket connection is closed."""
-        return self._closed.is_set()
+        return self._closed
 
     @property
     def activity(self):
