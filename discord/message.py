@@ -112,8 +112,7 @@ class Attachment:
         :class:`int`
             The number of bytes written.
         """
-        url = self.proxy_url if use_cached else self.url
-        data = await self._http.get_from_cdn(url)
+        data = await self.read(use_cached=use_cached)
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
