@@ -280,7 +280,7 @@ class AutoShardedClient(Client):
         if self.is_closed():
             return
 
-        self._closed.set()
+        self._closed = True
 
         for vc in self.voice_clients:
             try:
