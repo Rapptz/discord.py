@@ -497,7 +497,8 @@ class Spotify:
         return 'Spotify'
 
     def __eq__(self, other):
-        return isinstance(other, Spotify) and other._session_id == self._session_id
+        return (isinstance(other, Spotify) and other._session_id == self._session_id
+                and other._sync_id == self._sync_id and other.start == self.start)
 
     def __ne__(self, other):
         return not self.__eq__(other)
