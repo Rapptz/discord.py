@@ -528,7 +528,7 @@ class Guild(Hashable):
         Returns
         --------
         :class:`Asset`
-            The resulting widget image from the Discord API.
+            The resulting widget image.
         """
         return Asset._from_widget_image(self._state, self.id, style=style)
     
