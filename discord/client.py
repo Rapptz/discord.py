@@ -55,30 +55,24 @@ from .appinfo import AppInfo
 
 log = logging.getLogger(__name__)
 
-def _cancel_tasks(loop, tasks):
+def _cancel_tasks(loop):
+    try:
+        task_retriever = asyncio.Task.all_tasks
+    except AttributeError:
+        # future proofing for 3.9 I guess
+        task_retriever = asyncio.all_tasks
+
+    tasks = {t for t in task_retriever(loop=loop) if not t.done()}
+
     if not tasks:
         return
 
     log.info('Cleaning up after %d tasks.', len(tasks))
-    gathered = asyncio.gather(*tasks, loop=loop, return_exceptions=True)
-    gathered.cancel()
+    for task in tasks:
+        task.cancel()
 
-    def stop_and_silence(fut):
-        loop.stop()
-        try:
-            fut.result()
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            loop.call_exception_handler({
-                'message': 'Unhandled exception during Client.run shutdown.',
-                'exception': e,
-                'future': fut
-            })
-
-    gathered.add_done_callback(stop_and_silence)
-    while not gathered.done():
-        loop.run_forever()
+    loop.run_until_complete(asyncio.gather(*tasks, loop=loop, return_exceptions=True))
+    log.info('All tasks finished cancelling.')
 
     for task in tasks:
         if task.cancelled():
@@ -92,15 +86,12 @@ def _cancel_tasks(loop, tasks):
 
 def _cleanup_loop(loop):
     try:
-        task_retriever = asyncio.Task.all_tasks
-    except AttributeError:
-        # future proofing for 3.9 I guess
-        task_retriever = asyncio.all_tasks
-
-    all_tasks = {t for t in task_retriever(loop=loop) if not t.done()}
-    _cancel_tasks(loop, all_tasks)
-    if sys.version_info >= (3, 6):
-        loop.run_until_complete(loop.shutdown_asyncgens())
+        _cancel_tasks(loop)
+        if sys.version_info >= (3, 6):
+            loop.run_until_complete(loop.shutdown_asyncgens())
+    finally:
+        log.info('Closing the event loop.')
+        loop.close()
 
 class Client:
     r"""Represents a client connection that connects to Discord.
@@ -519,34 +510,6 @@ class Client:
         await self.login(*args, bot=bot)
         await self.connect(reconnect=reconnect)
 
-    def _do_cleanup(self):
-        log.info('Cleaning up event loop.')
-        loop = self.loop
-        if loop.is_closed():
-            return # we're already cleaning up
-
-        task = asyncio.ensure_future(self.close(), loop=loop)
-
-        def stop_loop(fut):
-            try:
-                fut.result()
-            except asyncio.CancelledError:
-                pass
-            except Exception as e:
-                loop.call_exception_handler({
-                    'message': 'Unexpected exception during Client.close',
-                    'exception': e
-                })
-            finally:
-                loop.stop()
-
-        task.add_done_callback(stop_loop)
-        try:
-            loop.run_forever()
-        finally:
-            _cleanup_loop(loop)
-            loop.close()
-
     def run(self, *args, **kwargs):
         """A blocking call that abstracts away the event loop
         initialisation from you.
@@ -571,21 +534,19 @@ class Client:
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
         """
-        is_windows = sys.platform == 'win32'
-        loop = self.loop
-        if not is_windows:
-            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
-            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
-
-        future = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
-        future.add_done_callback(lambda f: loop.stop())
+        async def runner():
+            try:
+                await self.start(*args, **kwargs)
+            finally:
+                await self.close()
 
         try:
-            loop.run_forever()
+            self.loop.run_until_complete(runner())
         except KeyboardInterrupt:
             log.info('Received signal to terminate bot and event loop.')
         finally:
-            self._do_cleanup()
+            log.info('Cleaning up tasks.')
+            _cleanup_loop(self.loop)
 
     # properties
 
