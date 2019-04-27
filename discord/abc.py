@@ -325,7 +325,7 @@ class GuildChannel:
 
         Returns
         ---------
-        :class:`PermissionOverwrite`
+         Optional[:class:`PermissionOverwrite`]
             The permission overwrites for this object, if set. Returns None otherwise.
         """
 
