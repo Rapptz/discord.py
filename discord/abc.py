@@ -313,9 +313,7 @@ class GuildChannel:
         return utils.snowflake_time(self.id)
 
     def overwrites_for(self, obj):
-        """Returns the channel-specific overwrites for a member or a role.
-
-        If no overwrites are set, returns None.
+        """Returns the channel-specific overwrites for a member or role, or None if no overwrites are set.
 
         Parameters
         -----------
