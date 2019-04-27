@@ -314,15 +314,15 @@ class GuildChannel:
 
     def overwrites_for(self, obj):
         """Returns the channel-specific overwrites for a member or a role.
-        
+
         If no overwrites are set, returns None.
-        
+
         Parameters
         -----------
         obj
             The :class:`Role` or :class:`abc.User` denoting
             whose overwrite to get.
-            
+
         Returns
         ---------
         :class:`PermissionOverwrite`
