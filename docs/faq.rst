@@ -230,6 +230,7 @@ one of the following functions:
 - :meth:`Client.get_emoji`
 - :meth:`Guild.get_member`
 - :meth:`Guild.get_channel`
+- :meth:`Guild.get_role`
 
 The following use an HTTP request:
 
