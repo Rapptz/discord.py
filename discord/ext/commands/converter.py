@@ -172,7 +172,7 @@ class UserConverter(IDConverter):
 
         return result
 
-class MessageConverter:
+class MessageConverter(IDConverter):
     """Converts to a :class:`discord.Message`.
 
     .. versionadded:: 1.1.0
