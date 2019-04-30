@@ -78,11 +78,7 @@ class BaseUser(_BaseUser):
 
     def __init__(self, *, state, data):
         self._state = state
-        self.name = data['username']
-        self.id = int(data['id'])
-        self.discriminator = data['discriminator']
-        self.avatar = data['avatar']
-        self.bot = data.get('bot', False)
+        self._update(data)
 
     def __str__(self):
         return '{0.name}#{0.discriminator}'.format(self)
@@ -95,6 +91,13 @@ class BaseUser(_BaseUser):
 
     def __hash__(self):
         return self.id >> 22
+
+    def _update(self, data):
+        self.name = data['username']
+        self.id = int(data['id'])
+        self.discriminator = data['discriminator']
+        self.avatar = data['avatar']
+        self.bot = data.get('bot', False)
 
     @classmethod
     def _copy(cls, user):
@@ -275,6 +278,8 @@ class ClientUser(BaseUser):
         Specifies if the user is a verified account.
     email: Optional[:class:`str`]
         The email the user used when registering.
+    locale: Optional[:class:`str`]
+        The IETF language tag used to identify the user is using.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
@@ -282,21 +287,27 @@ class ClientUser(BaseUser):
     premium_type: :class:`PremiumType`
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
     """
-    __slots__ = ('email', 'verified', 'mfa_enabled', 'premium', 'premium_type', '_relationships')
+    __slots__ = ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
+                 'premium', 'premium_type', '_relationships', '__weakref__')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
-        self.verified = data.get('verified', False)
-        self.email = data.get('email')
-        self.mfa_enabled = data.get('mfa_enabled', False)
-        self.premium = data.get('premium', False)
-        self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
         self._relationships = {}
 
     def __repr__(self):
         return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
                ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
 
+    def _update(self, data):
+        super()._update(data)
+        # There's actually an Optional[str] phone field as well but I won't use it
+        self.verified = data.get('verified', False)
+        self.email = data.get('email')
+        self.locale = data.get('locale')
+        self._flags = data.get('flags', 0)
+        self.mfa_enabled = data.get('mfa_enabled', False)
+        self.premium = data.get('premium', False)
+        self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
 
     def get_relationship(self, user_id):
         """Retrieves the :class:`Relationship` if applicable.
@@ -444,8 +455,7 @@ class ClientUser(BaseUser):
             except KeyError:
                 pass
 
-        # manually update data by calling __init__ explicitly.
-        self.__init__(state=self._state, data=data)
+        self._update(data)
 
     async def create_group(self, *recipients):
         r"""|coro|

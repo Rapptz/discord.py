@@ -57,13 +57,10 @@ class Loop:
         if coro is None:
             return
 
-        if inspect.iscoroutinefunction(coro):
-            if self._injected is not None:
-                await coro(self._injected)
-            else:
-                await coro()
+        if self._injected is not None:
+            await coro(self._injected)
         else:
-            await coro
+            await coro()
 
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
@@ -193,14 +190,16 @@ class Loop:
         return self._task
 
     def before_loop(self, coro):
-        """A function that also acts as a decorator to register a coroutine to be
-        called before the loop starts running. This is useful if you want to wait
-        for some bot state before the loop starts,
+        """A decorator that registers a coroutine to be called before the loop starts running.
+
+        This is useful if you want to wait for some bot state before the loop starts,
         such as :meth:`discord.Client.wait_until_ready`.
+
+        The coroutine must take no arguments (except ``self`` in a class context).
 
         Parameters
         ------------
-        coro: :term:`py:awaitable`
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register before the loop runs.
 
         Raises
@@ -209,19 +208,20 @@ class Loop:
             The function was not a coroutine.
         """
 
-        if not (inspect.iscoroutinefunction(coro) or inspect.isawaitable(coro)):
-            raise TypeError('Expected coroutine or awaitable, received {0.__name__!r}.'.format(type(coro)))
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._before_loop = coro
 
 
     def after_loop(self, coro):
-        """A function that also acts as a decorator to register a coroutine to be
-        called after the loop finished running.
+        """A decorator that register a coroutine to be called after the loop finished running.
+
+        The coroutine must take no arguments (except ``self`` in a class context).
 
         Parameters
         ------------
-        coro: :term:`py:awaitable`
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register after the loop finishes.
 
         Raises
@@ -230,8 +230,8 @@ class Loop:
             The function was not a coroutine.
         """
 
-        if not (inspect.iscoroutinefunction(coro) or inspect.isawaitable(coro)):
-            raise TypeError('Expected coroutine or awaitable, received {0.__name__!r}.'.format(type(coro)))
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._after_loop = coro
 
