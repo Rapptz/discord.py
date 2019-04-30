@@ -127,6 +127,8 @@ class Attachment:
 
         Retrieves the content of this attachment as a :class:`bytes` object.
 
+        .. versionadded:: 1.1.0
+
         Parameters
         -----------
         use_cached: :class:`bool`
@@ -136,8 +138,6 @@ class Attachment:
             after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
             on some type of attachments.
-
-        .. versionadded:: 1.1.0
 
         Raises
         ------
