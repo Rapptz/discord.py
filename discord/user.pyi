@@ -78,6 +78,7 @@ class BaseUser(_BaseUser):
 class ClientUser(BaseUser):
     verified: bool
     email: Optional[str]
+    locale: Optional[str]
     mfa_enabled: bool
     premium: bool
     premium_type: Optional[PremiumType]

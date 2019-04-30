@@ -18,6 +18,7 @@ from typing_extensions import Protocol
 _T = TypeVar('_T')
 _MaybeAwaitable = Union[Awaitable[_T], _T]
 _CT = TypeVar('_CT', bound=Context)
+_HC = TypeVar('_HC', bound=HelpCommand)
 
 class _CommandAttrs(TypedDict, total=False):
     name: str
@@ -60,6 +61,7 @@ class Paginator:
     def __repr__(self) -> str: ...
 
 class _HelpCommandImpl(Command[_CT]):
+    async def prepare(self, ctx: _CT) -> None: ...
     @property
     def clean_params(self) -> Mapping[str, Parameter]: ...
 
@@ -75,6 +77,7 @@ class HelpCommand(Generic[_CT]):
 
     def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ...,
                  command_attrs: _CommandAttrs = ...) -> None: ...
+    def copy(self: _HC) -> _HC: ...
     def get_bot_mapping(self) -> Dict[Optional[Cog[_CT]], List[Command[_CT]]]: ...
     @property
     def clean_prefix(self) -> str: ...
