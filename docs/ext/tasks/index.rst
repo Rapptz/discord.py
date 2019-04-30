@@ -97,6 +97,37 @@ Waiting until the bot is ready before the loop starts:
             print('waiting...')
             await self.bot.wait_until_ready()
 
+Doing something during cancellation:
+
+.. code-block:: python3
+
+    from discord.ext import tasks, commands
+    import asyncio
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.bot= bot
+            self._batch = []
+            self.lock = asyncio.Lock(loop=bot.loop)
+            self.bulker.start()
+
+        async def do_bulk(self):
+            # bulk insert data here
+            ...
+
+        @tasks.loop(seconds=10.0)
+        async def bulker(self):
+            async with self.lock:
+                await self.do_bulk()
+
+        @bulker.after_loop
+        async def on_bulker_cancel(self):
+            if self.bulker.is_being_cancelled() and len(self._batch) != 0:
+                # if we're cancelled and we have some data left...
+                # let's insert it to our database
+                await self.do_bulk()
+
+
 API Reference
 ---------------
 

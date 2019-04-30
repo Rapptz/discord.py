@@ -37,6 +37,7 @@ class Loop:
 
         self._before_loop = None
         self._after_loop = None
+        self._is_being_cancelled = False
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -69,8 +70,6 @@ class Loop:
             while True:
                 try:
                     await self.coro(*args, **kwargs)
-                except asyncio.CancelledError:
-                    break
                 except self._valid_exception as exc:
                     if not self.reconnect:
                         raise
@@ -81,8 +80,12 @@ class Loop:
                         break
 
                     await asyncio.sleep(self._sleep)
+        except asyncio.CancelledError:
+            self._is_being_cancelled = True
+            raise
         finally:
             await self._call_loop_function('after_loop')
+            self._is_being_cancelled = False
 
     def __get__(self, obj, objtype):
         if obj is None:
@@ -108,7 +111,7 @@ class Loop:
         Raises
         --------
         RuntimeError
-            A task has already been launched.
+            A task has already been launched and is running.
 
         Returns
         ---------
@@ -116,8 +119,8 @@ class Loop:
             The task that has been created.
         """
 
-        if self._task is not None:
-            raise RuntimeError('Task is already launched.')
+        if self._task is not None and not self._task.done():
+            raise RuntimeError('Task is already launched and is not completed.')
 
         if self._injected is not None:
             args = (self._injected, *args)
@@ -126,10 +129,9 @@ class Loop:
         return self._task
 
     def cancel(self):
-        """Cancels the internal task, if any are running."""
-        if self._task:
+        """Cancels the internal task, if it is running."""
+        if not self._is_being_cancelled and self._task and not self._task.done():
             self._task.cancel()
-            self._task = None
 
     def add_exception_type(self, exc):
         r"""Adds an exception type to be handled during the reconnect logic.
@@ -189,6 +191,10 @@ class Loop:
         """Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running."""
         return self._task
 
+    def is_being_cancelled(self):
+        """:class:`bool`: Whether the task is being cancelled."""
+        return self._is_being_cancelled
+
     def before_loop(self, coro):
         """A decorator that registers a coroutine to be called before the loop starts running.
 
@@ -218,6 +224,12 @@ class Loop:
         """A decorator that register a coroutine to be called after the loop finished running.
 
         The coroutine must take no arguments (except ``self`` in a class context).
+
+        .. note::
+
+            This coroutine is called even during cancellation. If it is desirable
+            to tell apart whether something was cancelled or not, check to see
+            whether :meth:`is_being_cancelled` is ``True`` or not.
 
         Parameters
         ------------
