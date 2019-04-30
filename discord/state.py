@@ -330,7 +330,8 @@ class ConnectionState:
 
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
         self.clear()
-        self.user = ClientUser(state=self, data=data['user'])
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self._users[user.id] = user
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -344,11 +345,11 @@ class ConnectionState:
             except KeyError:
                 continue
             else:
-                self.user._relationships[r_id] = Relationship(state=self, data=relationship)
+                user._relationships[r_id] = Relationship(state=self, data=relationship)
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
-            self._add_private_channel(factory(me=self.user, data=pm, state=self))
+            self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
@@ -472,7 +473,7 @@ class ConnectionState:
         self.dispatch('member_update', old_member, member)
 
     def parse_user_update(self, data):
-        self.user = ClientUser(state=self, data=data)
+        self.user._update(data)
 
     def parse_channel_delete(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -993,7 +994,8 @@ class AutoShardedConnectionState(ConnectionState):
         if not hasattr(self, '_ready_state'):
             self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
 
-        self.user = ClientUser(state=self, data=data['user'])
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self._users[user.id] = user
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -1003,7 +1005,7 @@ class AutoShardedConnectionState(ConnectionState):
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
-            self._add_private_channel(factory(me=self.user, data=pm, state=self))
+            self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         if self._ready_task is None:

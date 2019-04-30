@@ -81,26 +81,6 @@ Waiting until the bot is ready before the loop starts:
     class MyCog(commands.Cog):
         def __init__(self, bot):
             self.index = 0
-            self.printer.before_loop(bot.wait_until_ready())
-            self.printer.start()
-
-        def cog_unload(self):
-            self.printer.cancel()
-
-        @tasks.loop(seconds=5.0)
-        async def printer(self):
-            print(self.index)
-            self.index += 1
-
-:meth:`~.tasks.Loop.before_loop` can be used as a decorator as well:
-
-.. code-block:: python3
-
-    from discord.ext import tasks, commands
-
-    class MyCog(commands.Cog):
-        def __init__(self, bot):
-            self.index = 0
             self.bot = bot
             self.printer.start()
 

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import itertools
+import copy
 import functools
 import inspect
 import re
@@ -166,15 +167,23 @@ def _not_overriden(f):
 
 class _HelpCommandImpl(Command):
     def __init__(self, inject, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(inject.command_callback, *args, **kwargs)
+        self._original = inject
         self._injected = inject
 
-        on_error = inject.on_help_command_error
-        try:
-            on_error.__help_command_not_overriden__
-        except AttributeError:
-            # overridden
-            self.on_error = on_error
+    async def prepare(self, ctx):
+        self._injected = injected = self._original.copy()
+        injected.context = ctx
+        self.callback = injected.command_callback
+
+        on_error = injected.on_help_command_error
+        if not hasattr(on_error, '__help_command_not_overriden__'):
+            if self.cog is not None:
+                self.on_error = self._on_error_cog_implementation
+            else:
+                self.on_error = on_error
+
+        await super().prepare(ctx)
 
     async def _parse_arguments(self, ctx):
         # Make the parser think we don't have a cog so it doesn't
@@ -221,13 +230,6 @@ class _HelpCommandImpl(Command):
         cog.walk_commands = wrapped_walk_commands
         self.cog = cog
 
-        on_error = self._injected.on_help_command_error
-        try:
-            on_error.__help_command_not_overriden__
-        except AttributeError:
-            # overridden so let's swap it with our cog specific implementation
-            self.on_error = self._on_error_cog_implementation
-
     def _eject_cog(self):
         if self.cog is None:
             return
@@ -238,15 +240,17 @@ class _HelpCommandImpl(Command):
         cog.walk_commands = cog.walk_commands.__wrapped__
         self.cog = None
 
-        on_error = self._injected.on_help_command_error
-        try:
-            on_error.__help_command_not_overriden__
-        except AttributeError:
-            # overridden so let's swap it with our cog specific implementation
-            self.on_error = self._on_error_cog_implementation
-
 class HelpCommand:
     r"""The base implementation for help command formatting.
+
+    .. note::
+
+        Internally instances of this class are deep copied every time
+        the command itself is invoked to prevent a race condition
+        mentioned in :issue:`2123`.
+
+        This means that relying on the state of this class to be
+        the same between command invocations would not as expected.
 
     Attributes
     ------------
@@ -275,6 +279,25 @@ class HelpCommand:
 
     MENTION_PATTERN = re.compile('|'.join(MENTION_TRANSFORMS.keys()))
 
+    def __new__(cls, *args, **kwargs):
+        # To prevent race conditions of a single instance while also allowing
+        # for settings to be passed the original arguments passed must be assigned
+        # to allow for easier copies (which will be made when the help command is actually called)
+        # see issue 2123
+        self = super().__new__(cls)
+
+        # Shallow copies cannot be used in this case since it is not unusual to pass
+        # instances that need state, e.g. Paginator or what have you into the function
+        # The keys can be safely copied as-is since they're 99.99% certain of being
+        # string keys
+        deepcopy = copy.deepcopy
+        self.__original_kwargs__ = {
+            k: deepcopy(v)
+            for k, v in kwargs.items()
+        }
+        self.__original_args__ = deepcopy(args)
+        return self
+
     def __init__(self, **options):
         self.show_hidden = options.pop('show_hidden', False)
         self.verify_checks = options.pop('verify_checks', True)
@@ -284,8 +307,13 @@ class HelpCommand:
         self.context = None
         self._command_impl = None
 
+    def copy(self):
+        obj = self.__class__(*self.__original_args__, **self.__original_kwargs__)
+        obj._command_impl = self._command_impl
+        return obj
+
     def _add_to_bot(self, bot):
-        command = _HelpCommandImpl(self, self.command_callback, **self.command_attrs)
+        command = _HelpCommandImpl(self, **self.command_attrs)
         bot.add_command(command)
         self._command_impl = command
 
@@ -707,12 +735,7 @@ class HelpCommand:
         some state in your subclass before the command does its processing
         then this would be the place to do it.
 
-        The default implementation sets :attr:`context`.
-
-        .. warning::
-
-            If you override this method, be sure to call ``super()``
-            so the help command can be set up.
+        The default implementation does nothing.
 
         .. note::
 
@@ -726,7 +749,7 @@ class HelpCommand:
         command: Optional[:class:`str`]
             The argument passed to the help command.
         """
-        self.context = ctx
+        pass
 
     async def command_callback(self, ctx, *, command=None):
         """|coro|

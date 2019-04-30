@@ -112,8 +112,7 @@ class Attachment:
         :class:`int`
             The number of bytes written.
         """
-        url = self.proxy_url if use_cached else self.url
-        data = await self._http.get_from_cdn(url)
+        data = await self.read(use_cached=use_cached)
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
@@ -122,6 +121,42 @@ class Attachment:
         else:
             with open(fp, 'wb') as f:
                 return f.write(data)
+
+    async def read(self, *, use_cached=False):
+        """|coro|
+
+        Retrieves the content of this attachment as a :class:`bytes` object.
+
+        .. versionadded:: 1.1.0
+
+        Parameters
+        -----------
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, compared to the regular URL which is generally deleted right
+            after the message is deleted. Note that this can still fail to download
+            deleted attachments if too much time has passed and it does not work
+            on some type of attachments.
+
+        Raises
+        ------
+        HTTPException
+            Downloading the attachment failed.
+        Forbidden
+            You do not have permissions to access this attachment
+        NotFound
+            The attachment was deleted.
+
+        Returns
+        -------
+        :class:`bytes`
+            The contents of the attachment.
+        """
+        url = self.proxy_url if use_cached else self.url
+        data = await self._http.get_from_cdn(url)
+        return data
+
 
 class Message:
     r"""Represents a message from Discord.
