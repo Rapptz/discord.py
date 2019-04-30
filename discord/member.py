@@ -469,18 +469,22 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         All parameters are optional.
 
+        .. versionchanged:: 1.1.0
+            Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
+
         Parameters
         -----------
         nick: Optional[:class:`str`]
             The member's new nickname. Use ``None`` to remove the nickname.
-        mute: Optional[:class:`bool`]
+        mute: :class:`bool`
             Indicates if the member should be guild muted or un-muted.
-        deafen: Optional[:class:`bool`]
+        deafen: :class:`bool`
             Indicates if the member should be guild deafened or un-deafened.
-        roles: Optional[List[:class:`Roles`]]
+        roles: List[:class:`Roles`]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
             The voice channel to move the member to.
+            Pass ``None`` to kick them from voice.
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -520,7 +524,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
         else:
-            payload['channel_id'] = vc.id
+            payload['channel_id'] = vc and vc.id
 
         try:
             roles = fields['roles']
@@ -543,10 +547,14 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         This raises the same exceptions as :meth:`edit`.
 
+        .. versionchanged:: 1.1.0
+            Can now pass ``None`` to kick a member from voice.
+
         Parameters
         -----------
-        channel: :class:`VoiceChannel`
+        channel: Optional[:class:`VoiceChannel`]
             The new voice channel to move the member to.
+            Pass ``None`` to kick them from voice.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
         """
