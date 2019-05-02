@@ -653,6 +653,7 @@ When multiple checks are specified, **all** of them must be ``True``:
         return commands.check(predicate)
 
     @bot.command()
+    @commands.is_owner()
     @is_in_guild(41771983423143937)
     async def secretguilddata(ctx):
         """super secret stuff"""
@@ -667,6 +668,7 @@ raise a custom :exc:`~ext.commands.CommandError` derived exception, then it will
 .. code-block:: python3
 
     @bot.command()
+    @commands.is_owner()
     @is_in_guild(41771983423143937)
     async def secretguilddata(ctx):
         """super secret stuff"""
