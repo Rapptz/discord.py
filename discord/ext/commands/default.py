@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import discord
+
 from .errors import MissingRequiredArgument
 
 __all__ = (
@@ -49,9 +51,11 @@ class CustomDefaultMeta(type):
 class CustomDefault(metaclass=CustomDefaultMeta):
     """The base class of custom defaults that require the :class:`.Context`.
 
-    Classes that derive from this should override the :meth:`~.CustomDefault.default`
-    method to do its conversion logic. This method must be a coroutine.
+    Classes that derive from this should override the :attr:`~.CustomDefault.converters` attribute to specify
+    converters to use and the :meth:`~.CustomDefault.default` method to do its conversion logic.
+    This method must be a coroutine.
     """
+    converters = (str,)
 
     async def default(self, ctx, param):
         """|coro|
@@ -72,12 +76,14 @@ class CustomDefault(metaclass=CustomDefaultMeta):
 
 class Author(CustomDefault):
     """Default parameter which returns the author for this context."""
+    converters = (discord.Member, discord.User)
 
     async def default(self, ctx, param):
         return ctx.author
 
 class CurrentChannel(CustomDefault):
     """Default parameter which returns the channel for this context."""
+    converters = (discord.TextChannel,)
 
     async def default(self, ctx, param):
         return ctx.channel

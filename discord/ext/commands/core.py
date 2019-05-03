@@ -633,8 +633,10 @@ class Command(_BaseCommand):
     def _get_converter(self, param):
         converter = param.annotation
         if converter is param.empty:
-            if param.default is param.empty or param.default is None or (inspect.isclass(param.default) and issubclass(param.default, defaults.CustomDefault)) or isinstance(param.default, defaults.CustomDefault):
+            if param.default is param.empty or param.default is None:
                 converter = str
+            elif (inspect.isclass(param.default) and issubclass(param.default, defaults.CustomDefault)) or isinstance(param.default, defaults.CustomDefault):
+                converter = typing.Union[param.default.converters]
             else:
                 converter = type(param.default)
         return converter

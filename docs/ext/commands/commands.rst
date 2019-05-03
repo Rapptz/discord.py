@@ -656,6 +656,7 @@ A DefaultParam returning ``None`` is valid - if this should be an error, raise :
 
     class LastImage(CustomDefault):
         """Default param which finds the last image in chat."""
+        converters = (AnyImage,)
 
         async def default(self, ctx, param):
             for attachment in message.attachments:
@@ -672,7 +673,7 @@ A DefaultParam returning ``None`` is valid - if this should be an error, raise :
             raise errors.MissingRequiredArgument(param)
 
     @bot.command()
-    async def echo_image(ctx, *, image: Image = LastImage):
+    async def echo_image(ctx, *, image=LastImage):
         async with aiohttp.ClientSession() as sess:
             async with sess.get(image) as resp:
                 resp.raise_for_status()
