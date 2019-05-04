@@ -1,21 +1,15 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2015-2019, Rapptz
-# This file is distributed under the same license as the discord.py package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
-# 
 msgid ""
 msgstr ""
 "Project-Id-Version: discordpy-japanese\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-31 14:21-0400\n"
-"PO-Revision-Date: 2019-03-16 10:14\n"
-"Last-Translator: mistio100 <mistio100@gmail.com>\n"
+"POT-Creation-Date: 2019-04-23 10:19+0900\n"
+"PO-Revision-Date: 2019-05-04 06:10\n"
+"Last-Translator: Episword (mistio100)\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.5.3\n"
-"Language: ja_JP\n"
+"Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
 "X-Crowdin-Project: discordpy-japanese\n"
@@ -71,8 +65,8 @@ msgid "python3-dev"
 msgstr "python3-dev"
 
 #: ../../intro.rst:43
-msgid "For a debian-based system, the following command will help get those dependencies:"
-msgstr "Debianベースのシステムのでは、依存関係ライブラリの取得に、以下のコマンドが便利です。"
+msgid "For a Debian-based system, the following command will get these dependencies:"
+msgstr ""
 
 #: ../../intro.rst:49
 msgid "Remember to check your permissions!"
@@ -83,8 +77,8 @@ msgid "Virtual Environments"
 msgstr "仮想環境"
 
 #: ../../intro.rst:54
-msgid "Sometimes we don't want to pollute our system installs with a library or we want to maintain different versions of a library than the currently system installed one. Or we don't have permissions to install a library along side with the system installed ones. For this purpose, the standard library as of 3.3 comes with a concept called \"Virtual Environment\" to help maintain these separate versions."
-msgstr "システムへのインストールをライブラリで汚したくない場合や、現在インストールされているシステムとは異なるバージョンのライブラリを維持したい場合があります。または、システムへのライブラリインストールの権限がない場合もあります。こういった状況時のために、3.3の標準ライブラリには「仮想環境」というものが用意されています。"
+msgid "Sometimes you want to keep libraries from polluting system installs or use a different version of libraries than the ones installed on the system. You might also not have permissions to install libaries system-wide. For this purpose, the standard library as of Python 3.3 comes with a concept called \"Virtual Environment\"s to help maintain these separate versions."
+msgstr ""
 
 #: ../../intro.rst:59
 msgid "A more in-depth tutorial is found on `the official documentation. <https://docs.python.org/3/tutorial/venv.html>`_"
@@ -111,16 +105,16 @@ msgid "Use pip like usual:"
 msgstr "いつものようにpipインストールを実行します。"
 
 #: ../../intro.rst:88
-msgid "Congratulations. You now have a virtual environment all set up without messing with your system installation."
-msgstr "おめでとうございます。これで、仮想環境の設定は終わりです。あなたのシステムインストールに影響なく実行が可能になりました。"
+msgid "Congratulations. You now have a virtual environment all set up."
+msgstr ""
 
 #: ../../intro.rst:91
 msgid "Basic Concepts"
 msgstr "基本概念"
 
 #: ../../intro.rst:93
-msgid "discord.py revolves around the concept of :ref:`events <discord-api-events>`. An event is something you listen to and then respond to. For example, when a message happens, you will receive an event about it and you can then respond to it."
-msgstr "discord.pyは :ref:`events <discord-api-events>` の概念を中心としています。イベントは何かを受け取り、それに対する応答を行います。例えば、メッセージが発生すると、メッセージの発生に関連するイベントを受け取り、そのイベントに対して応答を返すことができます。"
+msgid "discord.py revolves around the concept of :ref:`events <discord-api-events>`. An event is something you listen to and then respond to. For example, when a message happens, you will receive an event about it that you can respond to."
+msgstr ""
 
 #: ../../intro.rst:97
 msgid "A quick example to showcase how events work:"
