@@ -247,6 +247,7 @@ class VoiceClient:
                     # 4014 - voice channel has been deleted.
                     # 4015 - voice server has crashed
                     if exc.code in (1000, 4014, 4015):
+                        log.info('Disconnecting from voice normally, close code %d.', exc.code)
                         await self.disconnect()
                         break
 

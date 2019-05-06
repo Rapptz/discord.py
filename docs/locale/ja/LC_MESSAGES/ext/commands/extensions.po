@@ -1,48 +1,36 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  discordpy-japanese\n"
+"Project-Id-Version: discordpy-japanese\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-08 17:55-0400\n"
-"PO-Revision-Date: 2019-03-16 10:14+0000\n"
-"Last-Translator: mistio100 <mistio100@gmail.com>\n"
-"Language: ja_JP\n"
+"POT-Creation-Date: 2019-04-23 10:19+0900\n"
+"PO-Revision-Date: 2019-05-04 06:10\n"
+"Last-Translator: Episword (mistio100)\n"
 "Language-Team: Japanese\n"
-"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.5.3\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /ext/commands/extensions.po\n"
 
 #: ../../ext/commands/extensions.rst:6
 msgid "Extensions"
 msgstr "エクステンション"
 
 #: ../../ext/commands/extensions.rst:8
-msgid ""
-"There comes a time in the bot development when you want to extend the bot"
-" functionality at run-time and quickly unload and reload code (also "
-"called hot-reloading). The command framework comes with this ability "
-"built-in, with a concept called **extensions**."
-msgstr ""
-"Bot開発ではBotを起動している間にコードを素早くアンロードし、再度ロードし直したい (ホットリロードとも呼ばれます) "
-"という時があります。コマンドフレームワークでは **エクステンション** と呼ばれる概念でこの機能が組み込まれています。"
+msgid "There comes a time in the bot development when you want to extend the bot functionality at run-time and quickly unload and reload code (also called hot-reloading). The command framework comes with this ability built-in, with a concept called **extensions**."
+msgstr "Bot開発ではBotを起動している間にコードを素早くアンロードし、再度ロードし直したい (ホットリロードとも呼ばれます) という時があります。コマンドフレームワークでは **エクステンション** と呼ばれる概念でこの機能が組み込まれています。"
 
 #: ../../ext/commands/extensions.rst:11
 msgid "Primer"
 msgstr "はじめに"
 
 #: ../../ext/commands/extensions.rst:13
-msgid ""
-"An extension at its core is a python file with an entry point called "
-"``setup``. This setup must be a plain Python function (not a coroutine). "
-"It takes a single parameter -- the :class:`~.commands.Bot` that loads the"
-" extension."
-msgstr ""
-"その中核となるエクステンションは ``setup`` "
-"というエントリポイントを持つPythonファイルです。このsetupは通常のPython関数である必要があります "
-"(コルーチンではありません)。この関数はエクステンションをロードする :class:`~.commands.Bot` "
-"を受け取るための単一のパラメータを持ちます。"
+msgid "An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension."
+msgstr "その中核となるエクステンションは ``setup`` というエントリポイントを持つPythonファイルです。このsetupは通常のPython関数である必要があります (コルーチンではありません)。この関数はエクステンションをロードする :class:`~.commands.Bot` を受け取るための単一のパラメータを持ちます。"
 
 #: ../../ext/commands/extensions.rst:15
 msgid "An example extension looks like this:"
@@ -53,57 +41,31 @@ msgid "hello.py"
 msgstr "hello.py"
 
 #: ../../ext/commands/extensions.rst:30
-msgid ""
-"In this example we define a simple command, and when the extension is "
-"loaded this command is added to the bot. Now the final step to this is "
-"loading the extension, which we do by calling "
-":meth:`.commands.Bot.load_extension`. To load this extension we call "
-"``bot.load_extension('hello')``."
-msgstr ""
-"この例では単純なコマンドを実装しており、エクステンションがロードされることでこのコマンドがBotに追加されます。最後にこのエクステンションをロードする必要があります。ロードには"
-" :meth:`.commands.Bot.load_extension` を実行します。このエクステンションを読み込むために "
-"``bot.load_extension('hello')`` を実行します。"
+msgid "In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.commands.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``."
+msgstr "この例では単純なコマンドを実装しており、エクステンションがロードされることでこのコマンドがBotに追加されます。最後にこのエクステンションをロードする必要があります。ロードには :meth:`.commands.Bot.load_extension` を実行します。このエクステンションを読み込むために ``bot.load_extension('hello')`` を実行します。"
 
 #: ../../ext/commands/extensions.rst:32
 msgid "Cogs"
 msgstr "コグ"
 
 #: ../../ext/commands/extensions.rst:35
-msgid ""
-"Extensions are usually used in conjunction with cogs. To read more about "
-"them, check out the documentation, :ref:`ext_commands_cogs`."
-msgstr ""
-"エクステンションは通常、コグと組み合わせて使用します。詳細については :ref:`ext_commands_cogs` "
-"のドキュメントを参照してください。"
+msgid "Extensions are usually used in conjunction with cogs. To read more about them, check out the documentation, :ref:`ext_commands_cogs`."
+msgstr "エクステンションは通常、コグと組み合わせて使用します。詳細については :ref:`ext_commands_cogs` のドキュメントを参照してください。"
 
 #: ../../ext/commands/extensions.rst:39
-msgid ""
-"Extension paths are ultimately similar to the import mechanism. What this"
-" means is that if there is a folder, then it must be dot-qualified. For "
-"example to load an extension in ``plugins/hello.py`` then we use the "
-"string ``plugins.hello``."
-msgstr ""
-"エクステンションのパスは究極的にはimportのメカニズムと似ています。これはフォルダ等がある場合、それをドットで区切らなければならないということです。例えば"
-" ``plugins/hello.py`` というエクステンションをロードする場合は、 ``plugins.hello`` "
-"という文字列を使います。"
+msgid "Extension paths are ultimately similar to the import mechanism. What this means is that if there is a folder, then it must be dot-qualified. For example to load an extension in ``plugins/hello.py`` then we use the string ``plugins.hello``."
+msgstr "エクステンションのパスは究極的にはimportのメカニズムと似ています。これはフォルダ等がある場合、それをドットで区切らなければならないということです。例えば ``plugins/hello.py`` というエクステンションをロードする場合は、 ``plugins.hello`` という文字列を使います。"
 
 #: ../../ext/commands/extensions.rst:42
 msgid "Reloading"
 msgstr "リロード"
 
 #: ../../ext/commands/extensions.rst:44
-msgid ""
-"When you make a change to the extension and want to reload the "
-"references, the library comes with a function to do this for you, "
-":meth:`Bot.reload_extension`."
+msgid "When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`Bot.reload_extension`."
 msgstr ""
 
 #: ../../ext/commands/extensions.rst:50
-msgid ""
-"Once the extension reloads, any changes that we did will be applied. This"
-" is useful if we want to add or remove functionality without restarting "
-"our bot. If an error occurred during the reloading process, the bot will "
-"pretend as if the reload never happened."
+msgid "Once the extension reloads, any changes that we did will be applied. This is useful if we want to add or remove functionality without restarting our bot. If an error occurred during the reloading process, the bot will pretend as if the reload never happened."
 msgstr ""
 
 #: ../../ext/commands/extensions.rst:53
@@ -111,32 +73,10 @@ msgid "Cleaning Up"
 msgstr "クリーンアップ"
 
 #: ../../ext/commands/extensions.rst:55
-msgid ""
-"Although rare, sometimes an extension needs to clean-up or know when it's"
-" being unloaded. For cases like these, there is another entry point named"
-" ``teardown`` which is similar to ``setup`` except called when the "
-"extension is unloaded."
-msgstr ""
-"稀ではありますが、エクステンションにクリーンアップが必要だったり、いつアンロードするかを確認したい場合があります。このために ``setup`` "
-"に似たエクステンションがアンロードされるときに呼び出される ``teardown`` というエントリポイントが用意されています。"
+msgid "Although rare, sometimes an extension needs to clean-up or know when it's being unloaded. For cases like these, there is another entry point named ``teardown`` which is similar to ``setup`` except called when the extension is unloaded."
+msgstr "稀ではありますが、エクステンションにクリーンアップが必要だったり、いつアンロードするかを確認したい場合があります。このために ``setup`` に似たエクステンションがアンロードされるときに呼び出される ``teardown`` というエントリポイントが用意されています。"
 
 #: ../../ext/commands/extensions.rst:57
 msgid "basic_ext.py"
 msgstr "basic_ext.py"
-
-#~ msgid ""
-#~ "The act of reloading an extension "
-#~ "is actually quite simple -- it is"
-#~ " as simple as unloading it and "
-#~ "then reloading it."
-#~ msgstr "エクステンションをリロードするというのは、実のところアンロードしてから、リロードするのと同じくらい簡単です。"
-
-#~ msgid ""
-#~ "Once we remove and load the "
-#~ "extension, any changes that we did "
-#~ "will be applied upon load. This is"
-#~ " useful if we want to add or"
-#~ " remove functionality without restarting "
-#~ "our bot."
-#~ msgstr "エクステンションを削除してロードすると、あらゆる変更がロード時に適用されます。これはBotを再起動させずに機能を追加、あるいは削除したい場合に便利です。"
 

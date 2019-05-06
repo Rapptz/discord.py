@@ -5,6 +5,7 @@
 venv
 .venv
 docs/_build
+docs/crowdin.py
 *.buildinfo
 *.mp3
 *.m4a
