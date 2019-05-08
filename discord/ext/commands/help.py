@@ -1222,6 +1222,9 @@ class MinimalHelpCommand(HelpCommand):
         if note:
             self.paginator.add_line(note, empty=True)
 
+        if cog.description:
+            self.paginator.add_line(cog.description, empty=True)
+
         filtered = await self.filter_commands(cog.get_commands(), sort=self.sort_commands)
         if filtered:
             self.paginator.add_line('**%s %s**' % (cog.qualified_name, self.commands_heading))
