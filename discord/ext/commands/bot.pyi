@@ -7,21 +7,21 @@ from .context import Context
 from .help import HelpCommand
 from .cog import Cog
 
-from typing import Any, Optional, Union, Callable, Coroutine, List, Tuple, Dict, Set, TypeVar, Type, overload
+from typing import Any, Optional, Union, Callable, Coroutine, List, Tuple, Dict, Set, TypeVar, Type, Iterable, overload
 from types import MappingProxyType, ModuleType
-
-_CommandPrefix = Union[
-    str,
-    Callable[[Bot, discord.Message], Union[str, Coroutine[Any, Any, str]]]]
-
-def when_mentioned(bot: Bot, msg: discord.Message) -> List[str]: ...
-def when_mentioned_or(*prefixes: str) -> Callable[[Bot, discord.Message], List[str]]: ...
 
 _CT = TypeVar('_CT', bound=Context)
 _OT = TypeVar('_OT', bound=Context)
 
 _CoroType = Callable[..., Coroutine[Any, Any, Any]]
 _C = TypeVar('_C', bound=_CoroType)
+
+_T = TypeVar('_T')
+_CallablePrefix = Callable[[Bot, discord.Message], Union[_T, Coroutine[Any, Any, _T]]]
+_CommandPrefix = Union[str, Iterable[str], _CallablePrefix[str], _CallablePrefix[Iterable[str]]]
+
+def when_mentioned(bot: Bot, msg: discord.Message) -> List[str]: ...
+def when_mentioned_or(*prefixes: str) -> Callable[[Bot, discord.Message], List[str]]: ...
 
 class BotBase(GroupMixin[_CT]):
     command_prefix: _CommandPrefix

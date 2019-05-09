@@ -23,6 +23,7 @@ class RawBulkMessageDeleteEvent:
 class RawMessageUpdateEvent:
     message_id: int
     data: RawMessageDict
+    cached_message: Optional[Message]
 
     def __init__(self, data: RawMessageDict) -> None: ...
 
