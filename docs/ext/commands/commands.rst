@@ -357,7 +357,7 @@ Discord Converters
 Working with :ref:`discord_api_models` is a fairly common thing when defining commands, as a result the library makes
 working with them easy.
 
-For example, to receive a :class:`Member`, you can just pass it as a converter:
+For example, to receive a :class:`Member` you can just pass it as a converter:
 
 .. code-block:: python3
 
@@ -377,6 +377,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`VoiceChannel`
 - :class:`CategoryChannel`
 - :class:`Role`
+- :class:`Message` (since v1.1)
 - :class:`Invite`
 - :class:`Game`
 - :class:`Emoji`
