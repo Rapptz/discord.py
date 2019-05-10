@@ -137,7 +137,7 @@ class Loop:
             self._task.cancel()
 
     def restart(self, *args, **kwargs):
-        r"""A convenience method to restart the internal start.
+        r"""A convenience method to restart the internal task.
 
         .. note::
 
