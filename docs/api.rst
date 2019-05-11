@@ -778,6 +778,9 @@ All enumerations are subclasses of `enum`_.
     .. attribute:: hongkong
 
         The Hong Kong region.
+    .. attribute:: india
+
+        The India region.
     .. attribute:: japan
 
         The Japan region.
