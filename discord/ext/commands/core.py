@@ -1132,6 +1132,7 @@ class Group(GroupMixin, Command):
         return ret
 
     async def invoke(self, ctx):
+        ctx.invoked_subcommand = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
             await self.prepare(ctx)
@@ -1159,6 +1160,7 @@ class Group(GroupMixin, Command):
             await super().invoke(ctx)
 
     async def reinvoke(self, ctx, *, call_hooks=False):
+        ctx.invoked_subcommand = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
             ctx.command = self
