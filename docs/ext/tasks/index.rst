@@ -128,6 +128,8 @@ Doing something during cancellation:
                 await self.do_bulk()
 
 
+.. _ext_tasks_api:
+
 API Reference
 ---------------
 
