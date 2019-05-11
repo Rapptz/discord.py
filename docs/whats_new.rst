@@ -8,6 +8,21 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p1p1:
+
+v1.1.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Webhooks do not overwrite data on retrying their HTTP requests (:issue:`2140`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Add back signal handling to :meth:`Client.run` due to issues some users had with proper cleanup.
+
 .. _vp1p1p0:
 
 v1.1.0
