@@ -128,6 +128,8 @@ class Guild(Hashable):
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
+    premium_subscription_count: :class:`int`
+        How many users have currently "boosted" this guild.
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -136,7 +138,8 @@ class Guild(Hashable):
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
-                 'description', 'max_presences', 'max_members', 'premium_tier')
+                 'description', 'max_presences', 'max_members', 'premium_tier',
+                 'premium_subscription_count')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -254,7 +257,8 @@ class Guild(Hashable):
         self.description = guild.get('description')
         self.max_presences = guild.get('max_presences')
         self.max_members = guild.get('max_members')
-        self.premium_tier = guild.get('premium_tier')
+        self.premium_tier = guild.get('premium_tier', 0)
+        self.premium_subscription_count = guild.get('premium_subscription_count', 0)
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
