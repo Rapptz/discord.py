@@ -46,6 +46,7 @@ from .widget import Widget
 from .asset import Asset
 
 BanEntry = namedtuple('BanEntry', 'reason user')
+_GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
 
 class Guild(Hashable):
     """Represents a Discord guild.
@@ -124,6 +125,9 @@ class Guild(Hashable):
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
+    premium_tier: :class:`int`
+        The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
+        The number goes from 0 to 3 inclusive.
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -133,6 +137,14 @@ class Guild(Hashable):
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
                  'description', 'max_presences', 'max_members', 'premium_tier')
+
+    _PREMIUM_GUILD_LIMITS = {
+        None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
+        0: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
+        1: _GuildLimit(emoji=100, bitrate=128e3, filesize=8388608),
+        2: _GuildLimit(emoji=150, bitrate=256e3, filesize=52428800),
+        3: _GuildLimit(emoji=250, bitrate=384e3, filesize=104857600),
+    }
 
     def __init__(self, *, data, state):
         self._channels = {}
@@ -384,10 +396,27 @@ class Guild(Hashable):
     def system_channel(self):
         """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
 
-        Currently this is only for new member joins. If no channel is set, then this returns ``None``.
+        If no channel is set, then this returns ``None``.
         """
         channel_id = self._system_channel_id
         return channel_id and self._channels.get(channel_id)
+
+    @property
+    def emoji_limit(self):
+        """:class:`int`: The maximum number of emoji slots this guild has."""
+        more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
+        return max(more_emoji, self._PREMIUM_GUILD_LIMITS[self.premium_tier].emoji)
+
+    @property
+    def bitrate_limit(self):
+        """:class:`float`: The maximum bitrate for voice channels this guild can have."""
+        vip_guild = self._PREMIUM_GUILD_LIMITS[1].bitrate if 'VIP_REGIONS' in self.features else 96e3
+        return max(vip_guild, self._PREMIUM_GUILD_LIMITS[self.premium_tier].bitrate)
+
+    @property
+    def filesize_limit(self):
+        """:class:`int`: The maximum number of bytes files can have when uploaded to this guild."""
+        return self._PREMIUM_GUILD_LIMITS[self.premium_tier].filesize
 
     @property
     def members(self):
