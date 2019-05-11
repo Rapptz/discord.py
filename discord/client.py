@@ -534,19 +534,33 @@ class Client:
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
         """
+        loop = self.loop
+
+        try:
+            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
+            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
+        except NotImplementedError:
+            pass
+
         async def runner():
             try:
                 await self.start(*args, **kwargs)
             finally:
                 await self.close()
 
+        def stop_loop_on_completion(f):
+            loop.stop()
+
+        future = asyncio.ensure_future(runner(), loop=loop)
+        future.add_done_callback(stop_loop_on_completion)
         try:
-            self.loop.run_until_complete(runner())
+            loop.run_forever()
         except KeyboardInterrupt:
             log.info('Received signal to terminate bot and event loop.')
         finally:
+            future.remove_done_callback(stop_loop_on_completion)
             log.info('Cleaning up tasks.')
-            _cleanup_loop(self.loop)
+            _cleanup_loop(loop)
 
     # properties
 

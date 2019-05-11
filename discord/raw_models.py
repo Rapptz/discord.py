@@ -86,14 +86,17 @@ class RawMessageUpdateEvent:
         The message ID that got updated.
     data: :class:`dict`
         The raw data given by the
-        `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
+        `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`
+    cached_message: Optional[:class:`Message`]
+        The cached message, if found in the internal message cache.
     """
 
-    __slots__ = ('message_id', 'data')
+    __slots__ = ('message_id', 'data', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
         self.data = data
+        self.cached_message = None
 
 class RawReactionActionEvent:
     """Represents the payload for a :func:`on_raw_reaction_add` or

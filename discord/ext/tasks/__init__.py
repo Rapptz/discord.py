@@ -128,9 +128,36 @@ class Loop:
         self._task = self.loop.create_task(self._loop(*args, **kwargs))
         return self._task
 
+    def _can_be_cancelled(self):
+        return not self._is_being_cancelled and self._task and not self._task.done()
+
     def cancel(self):
         """Cancels the internal task, if it is running."""
-        if not self._is_being_cancelled and self._task and not self._task.done():
+        if self._can_be_cancelled():
+            self._task.cancel()
+
+    def restart(self, *args, **kwargs):
+        r"""A convenience method to restart the internal task.
+
+        .. note::
+
+            Due to the way this function works, the task is not
+            returned like :meth:`start`.
+
+        Parameters
+        ------------
+        \*args
+            The arguments to to use.
+        \*\*kwargs
+            The keyword arguments to use.
+        """
+
+        def restart_when_over(fut, *, args=args, kwargs=kwargs):
+            self._task.remove_done_callback(restart_when_over)
+            self.start(*args, **kwargs)
+
+        if self._can_be_cancelled():
+            self._task.add_done_callback(restart_when_over)
             self._task.cancel()
 
     def add_exception_type(self, exc):

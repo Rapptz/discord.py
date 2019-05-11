@@ -296,6 +296,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message is edited. Unlike :func:`on_message_edit`, this is called
     regardless of the state of the internal message cache.
 
+    If the message is found in the message cache,
+    it can be accessed via :attr:`RawMessageUpdateEvent.cached_message`
+
     Due to the inherently raw nature of this event, the data parameter coincides with
     the raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
 
@@ -940,23 +943,6 @@ All enumerations are subclasses of `enum`_.
         a presence a la :meth:`Client.change_presence`. When you receive a
         user's presence this will be :attr:`offline` instead.
 
-.. class:: RelationshipType
-
-    Specifies the type of :class:`Relationship`
-
-    .. attribute:: friend
-
-        You are friends with this user.
-    .. attribute:: blocked
-
-        You have blocked this user.
-    .. attribute:: incoming_request
-
-        The user has sent you a friend request.
-    .. attribute:: outgoing_request
-
-        You have sent a friend request to this user.
-
 
 .. class:: AuditLogAction
 
@@ -1365,6 +1351,116 @@ All enumerations are subclasses of `enum`_.
 
         The action is the update of something.
 
+
+.. class:: RelationshipType
+
+    Specifies the type of :class:`Relationship`.
+
+    .. note::
+
+        This only applies to users, *not* bots.
+
+    .. attribute:: friend
+
+        You are friends with this user.
+
+    .. attribute:: blocked
+
+        You have blocked this user.
+
+    .. attribute:: incoming_request
+
+        The user has sent you a friend request.
+
+    .. attribute:: outgoing_request
+
+        You have sent a friend request to this user.
+
+
+.. class:: UserContentFilter
+
+    Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``
+    in the Discord client.
+
+    .. note::
+
+        This only applies to users, *not* bots.
+
+    .. attribute:: all_messages
+
+        Scan all direct messages from everyone.
+
+    .. attribute:: friends
+
+        Scan all direct messages that aren't from friends.
+
+    .. attribute:: disabled
+
+        Don't scan any direct messages.
+
+
+.. class:: FriendFlags
+
+    Represents the options found in ``Settings > Privacy & Safety > Who Can Add You As A Friend``
+    in the Discord client.
+
+    .. note::
+
+        This only applies to users, *not* bots.
+
+    .. attribute:: noone
+
+        This allows no-one to add you as a friend.
+
+    .. attribute:: mutual_guilds
+
+        This allows guild members to add you as a friend.
+
+    .. attribute:: mutual_friends
+
+        This allows friends of friends to add you as a friend.
+
+    .. attribute:: guild_and_friends
+
+        This is a superset of :attr:`mutual_guilds` and :attr:`mutual_friends`.
+
+    .. attribute:: everyone
+
+        This allows everyone to add you as a friend.
+
+
+.. class:: PremiumType
+
+    Represents the user's Discord Nitro subscription type.
+
+    .. note::
+
+        This only applies to users, *not* bots.
+
+    .. attribute:: nitro
+
+        Represents the Discord Nitro with Nitro-exclusive games.
+
+    .. attribute:: nitro_classic
+
+        Represents the Discord Nitro with no Nitro-exclusive games.
+
+
+.. class:: Theme
+
+    Represents the theme synced across all Discord clients.
+
+    .. note::
+
+        This only applies to users, *not* bots.
+
+    .. attribute:: light
+
+        Represents the Light theme on Discord.
+
+    .. attribute:: dark
+
+        Represents the Dark theme on Discord.
 
 
 Async Iterator

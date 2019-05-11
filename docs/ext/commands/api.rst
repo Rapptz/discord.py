@@ -134,6 +134,8 @@ Checks
 
 .. autofunction:: discord.ext.commands.guild_only
 
+.. autofunction:: discord.ext.commands.dm_only
+
 .. autofunction:: discord.ext.commands.is_owner
 
 .. autofunction:: discord.ext.commands.is_nsfw

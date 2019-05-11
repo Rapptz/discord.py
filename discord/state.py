@@ -386,10 +386,11 @@ class ConnectionState:
 
     def parse_message_update(self, data):
         raw = RawMessageUpdateEvent(data)
-        self.dispatch('raw_message_edit', raw)
         message = self._get_message(raw.message_id)
         if message is not None:
             older_message = copy.copy(message)
+            raw.cached_message = older_message
+            self.dispatch('raw_message_edit', raw)
             if 'call' in data:
                 # call state message edit
                 message._handle_call(data['call'])
@@ -400,6 +401,8 @@ class ConnectionState:
                 message._update(channel=message.channel, data=data)
 
             self.dispatch('message_edit', older_message, message)
+        else:
+            self.dispatch('raw_message_edit', raw)
 
     def parse_message_reaction_add(self, data):
         emoji_data = data['emoji']

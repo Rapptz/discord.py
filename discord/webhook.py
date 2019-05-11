@@ -193,9 +193,9 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 file.reset(seek=tries)
 
             async with self.session.request(verb, url, headers=headers, data=data) as r:
-                data = await r.text(encoding='utf-8')
+                response = await r.text(encoding='utf-8')
                 if r.headers['Content-Type'] == 'application/json':
-                    data = json.loads(data)
+                    response = json.loads(response)
 
                 # check if we have rate limit header information
                 remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -204,11 +204,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     await asyncio.sleep(delta, loop=self.loop)
 
                 if 300 > r.status >= 200:
-                    return data
+                    return response
 
                 # we are being rate limited
                 if r.status == 429:
-                    retry_after = data['retry_after'] / 1000.0
+                    retry_after = response['retry_after'] / 1000.0
                     await asyncio.sleep(retry_after, loop=self.loop)
                     continue
 
@@ -217,11 +217,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     continue
 
                 if r.status == 403:
-                    raise Forbidden(r, data)
+                    raise Forbidden(r, response)
                 elif r.status == 404:
-                    raise NotFound(r, data)
+                    raise NotFound(r, response)
                 else:
-                    raise HTTPException(r, data)
+                    raise HTTPException(r, response)
 
     async def handle_execution_response(self, response, *, wait):
         data = await response
@@ -272,13 +272,13 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
-            data = r.text
+            response = r.text
 
             # compatibility with aiohttp
             r.status = r.status_code
 
             if r.headers['Content-Type'] == 'application/json':
-                data = json.loads(data)
+                response = json.loads(response)
 
             # check if we have rate limit header information
             remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -287,27 +287,27 @@ class RequestsWebhookAdapter(WebhookAdapter):
                 time.sleep(delta)
 
             if 300 > r.status >= 200:
-                return data
+                return response
 
             # we are being rate limited
             if r.status == 429:
                 if self.sleep:
-                    retry_after = data['retry_after'] / 1000.0
+                    retry_after = response['retry_after'] / 1000.0
                     time.sleep(retry_after)
                     continue
                 else:
-                    raise HTTPException(r, data)
+                    raise HTTPException(r, response)
 
             if self.sleep and r.status in (500, 502):
                 time.sleep(1 + tries * 2)
                 continue
 
             if r.status == 403:
-                raise Forbidden(r, data)
+                raise Forbidden(r, response)
             elif r.status == 404:
-                raise NotFound(r, data)
+                raise NotFound(r, response)
             else:
-                raise HTTPException(r, data)
+                raise HTTPException(r, response)
 
     def handle_execution_response(self, response, *, wait):
         if not wait:
