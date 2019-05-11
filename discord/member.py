@@ -432,13 +432,6 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.guild.ban(self, **kwargs)
 
-    async def unban(self, *, reason=None):
-        """|coro|
-
-        Unbans this member. Equivalent to :meth:`Guild.unban`
-        """
-        await self.guild.unban(self, reason=reason)
-
     async def kick(self, *, reason=None):
         """|coro|
 
