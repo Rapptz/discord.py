@@ -1105,8 +1105,8 @@ class MinimalHelpCommand(HelpCommand):
             The heading to add to the line.
         """
         if commands:
-            # U+2002 Middle Dot
-            joined = '\u2002'.join(c.name for c in commands)
+            # U+2022 = Middle Dot
+            joined = ' \u2022 '.join(c.name for c in commands)
             self.paginator.add_line('__**%s**__' % heading)
             self.paginator.add_line(joined)
 
