@@ -34,7 +34,19 @@ __all__ = (
     'Call',
 )
 
-class CustomDefault:
+class CustomDefaultMeta(type):
+    def __new__(cls, *args, **kwargs):
+        name, bases, attrs = args
+        attrs['display'] = kwargs.pop('display', name)
+        return super().__new__(cls, name, bases, attrs, **kwargs)
+
+    def __repr__(cls):
+        return str(cls)
+
+    def __str__(cls):
+        return cls.display
+
+class CustomDefault(metaclass=CustomDefaultMeta):
     """The base class of custom defaults that require the :class:`.Context`.
 
     Classes that derive from this should override the :meth:`~.CustomDefault.default`

@@ -679,6 +679,10 @@ A DefaultParam returning ``None`` is valid - if this should be an error, raise :
                 my_bytes = io.BytesIO(await resp.content.read())
         await ctx.send(file=discord.File(filename="your_image", fp=my_bytes))
 
+.. tip:: You can change the name of a Custom Default that is displayed in help command by passing ``display`` meta option. Using previous example: ``class LastImage(CustomDefault, display='last image from chat')``
+
+
+
 
 Checks
 -------
