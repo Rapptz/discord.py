@@ -86,6 +86,7 @@ class Loop:
         finally:
             await self._call_loop_function('after_loop')
             self._is_being_cancelled = False
+            self._current_loop = 0
 
     def __get__(self, obj, objtype):
         if obj is None:
