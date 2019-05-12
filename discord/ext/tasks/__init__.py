@@ -74,8 +74,6 @@ class Loop:
                 except self._valid_exception as exc:
                     if not self.reconnect:
                         raise
-                    if self._stop_next_iteration:
-                        return
                     await asyncio.sleep(backoff.delay())
                 else:
                     if self._stop_next_iteration:
@@ -140,6 +138,16 @@ class Loop:
 
         Unlike :meth:`cancel`\, this allows the task to finish its
         current iteration before gracefully exiting.
+
+        .. note::
+
+            If the internal function raises an error that can be
+            handled before finishing then it will retry until
+            it succeeds.
+
+            If this is undesirable, either remove the error handling
+            before stopping via :meth:`clear_exception_types` or
+            use :meth:`cancel` instead.
 
         .. versionadded:: 1.2
         """
