@@ -86,6 +86,9 @@ class PartialEmoji:
             return '<a:%s:%s>' % (self.name, self.id)
         return '<:%s:%s>' % (self.name, self.id)
 
+    def __repr__(self):
+        return '<{0.__class__.__name__} animated={0.animated} name={0.name!r} id={0.id}>'.format(self)
+
     def __eq__(self, other):
         if self.is_unicode_emoji():
             return isinstance(other, PartialEmoji) and self.name == other.name

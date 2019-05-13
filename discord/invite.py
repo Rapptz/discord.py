@@ -140,6 +140,10 @@ class PartialInviteGuild:
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r} features={0.features} ' \
+               'description={0.description!r}>'.format(self)
+
     @property
     def created_at(self):
         """Returns the guild's creation time in UTC."""
