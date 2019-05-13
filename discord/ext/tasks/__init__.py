@@ -271,7 +271,7 @@ class Loop:
             raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._before_loop = coro
-
+        return coro
 
     def after_loop(self, coro):
         """A decorator that register a coroutine to be called after the loop finished running.
@@ -299,6 +299,7 @@ class Loop:
             raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._after_loop = coro
+        return coro
 
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
