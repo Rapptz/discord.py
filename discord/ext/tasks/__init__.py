@@ -38,6 +38,7 @@ class Loop:
         self._before_loop = None
         self._after_loop = None
         self._is_being_cancelled = False
+        self._stop_next_iteration = False
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -75,6 +76,8 @@ class Loop:
                         raise
                     await asyncio.sleep(backoff.delay())
                 else:
+                    if self._stop_next_iteration:
+                        return
                     self._current_loop += 1
                     if self._current_loop == self.count:
                         break
@@ -86,6 +89,8 @@ class Loop:
         finally:
             await self._call_loop_function('after_loop')
             self._is_being_cancelled = False
+            self._current_loop = 0
+            self._stop_next_iteration = False
 
     def __get__(self, obj, objtype):
         if obj is None:
@@ -127,6 +132,27 @@ class Loop:
 
         self._task = self.loop.create_task(self._loop(*args, **kwargs))
         return self._task
+
+    def stop(self):
+        r"""Gracefully stops the task from running.
+
+        Unlike :meth:`cancel`\, this allows the task to finish its
+        current iteration before gracefully exiting.
+
+        .. note::
+
+            If the internal function raises an error that can be
+            handled before finishing then it will retry until
+            it succeeds.
+
+            If this is undesirable, either remove the error handling
+            before stopping via :meth:`clear_exception_types` or
+            use :meth:`cancel` instead.
+
+        .. versionadded:: 1.2
+        """
+        if self._task and not self._task.done():
+            self._stop_next_iteration = True
 
     def _can_be_cancelled(self):
         return not self._is_being_cancelled and self._task and not self._task.done()
