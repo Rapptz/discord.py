@@ -523,10 +523,10 @@ class Webhook:
 
     @property
     def avatar_url(self):
-        """Returns a friendly URL version of the avatar the webhook has.
+        """Returns a :class:`Asset`: for the avatar the webhook has.
 
-        If the webhook does not have a traditional avatar, their default
-        avatar URL is returned instead.
+        If the webhook does not have a traditional avatar, an asset for
+        the default avatar is returned instead.
 
         This is equivalent to calling :meth:`avatar_url_as` with the
         default parameters.
@@ -534,10 +534,10 @@ class Webhook:
         return self.avatar_url_as()
 
     def avatar_url_as(self, *, format=None, size=1024):
-        """Returns a friendly URL version of the avatar the webhook has.
+        """Returns a :class:`Asset`: for the avatar the webhook has.
 
-        If the webhook does not have a traditional avatar, their default
-        avatar URL is returned instead.
+        If the webhook does not have a traditional avatar, an asset for
+        the default avatar is returned instead.
 
         The format must be one of 'jpeg', 'jpg', or 'png'.
         The size must be a power of 2 between 16 and 1024.

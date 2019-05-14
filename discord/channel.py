@@ -1030,7 +1030,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the channel's icon asset if available."""
+        """:class:`Asset`: Returns the channel's icon asset."""
         return Asset._from_icon(self._state, self, 'channel')
 
     @property
