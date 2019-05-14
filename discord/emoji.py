@@ -167,7 +167,7 @@ class Emoji:
         The guild ID the emoji belongs to.
     user: Optional[:class:`User`]
         The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and
-        :attr:`~Permissions.manage_emojis` permission.
+        having the :attr:`~Permissions.manage_emojis` permission.
     """
     __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
                  '_state', 'user')
