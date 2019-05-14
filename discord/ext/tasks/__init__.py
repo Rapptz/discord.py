@@ -3,10 +3,13 @@ import aiohttp
 import websockets
 import discord
 import inspect
+import logging
 
 from discord.backoff import ExponentialBackoff
 
 MAX_ASYNCIO_SECONDS = 3456000
+
+log = logging.getLogger(__name__)
 
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
@@ -85,6 +88,9 @@ class Loop:
                     await asyncio.sleep(self._sleep)
         except asyncio.CancelledError:
             self._is_being_cancelled = True
+            raise
+        except Exception as e:
+            log.exception('Internal background task failed.')
             raise
         finally:
             await self._call_loop_function('after_loop')
