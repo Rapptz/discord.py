@@ -151,7 +151,7 @@ class PartialInviteGuild:
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the Guilds's icon asset."""
+        """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
@@ -160,7 +160,7 @@ class PartialInviteGuild:
 
     @property
     def banner_url(self):
-        """:class:`Asset`: Returns the Guild's banner asset."""
+        """:class:`Asset`: Returns the guild's banner asset."""
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
@@ -169,7 +169,7 @@ class PartialInviteGuild:
 
     @property
     def splash_url(self):
-        """:class:`Asset`: Returns the Guild's invite splash asset."""
+        """:class:`Asset`: Returns the guild's invite splash asset."""
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
