@@ -418,7 +418,7 @@ class Guild(Hashable):
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the guilds's icon asset."""
+        """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
