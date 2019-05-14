@@ -114,10 +114,10 @@ class BaseUser(_BaseUser):
 
     @property
     def avatar_url(self):
-        """Returns a friendly URL version of the avatar the user has.
+        """Returns a :class:`Asset`: for the avatar the user has.
 
-        If the user does not have a traditional avatar, their default
-        avatar URL is returned instead.
+        If the user does not have a traditional avatar, an asset for
+        the default avatar is returned instead.
 
         This is equivalent to calling :meth:`avatar_url_as` with
         the default parameters (i.e. webp/gif detection and a size of 1024).
@@ -129,10 +129,10 @@ class BaseUser(_BaseUser):
         return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns a friendly URL version of the avatar the user has.
+        """Returns a :class:`Asset`: for the avatar the user has.
 
-        If the user does not have a traditional avatar, their default
-        avatar URL is returned instead.
+        If the user does not have a traditional avatar, an asset for
+        the default avatar is returned instead.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
         'gif' is only valid for animated avatars. The size must be a power of 2
