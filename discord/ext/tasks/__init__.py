@@ -317,6 +317,43 @@ class Loop:
         self._after_loop = coro
         return coro
 
+    def change_interval(self, *, seconds=0, minutes=0, hours=0):
+        """Changes the interval for the sleep time, which can be called at run-time.
+
+        .. note::
+
+            This only applies on the next loop. If it is desirable for the change of interval
+            to be applied right away, the loop can be cancelled, then the interval can be 
+            changed and the loop can be restarted after that.
+
+        Parameters
+        ------------
+        seconds: :class:`float`
+            The number of seconds between every iteration.
+        minutes: :class:`float`
+            The number of minutes between every iteration.
+        hours: :class:`float`
+            The number of hours between every iteration.
+
+        Raises
+        -------
+        ValueError
+            An invalid value was given.
+        """
+
+        sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
+        if sleep >= MAX_ASYNCIO_SECONDS:
+            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
+            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
+
+        if sleep < 0:
+            raise ValueError('Total number of seconds cannot be less than zero.')
+
+        self._sleep = sleep
+        self.seconds = seconds
+        self.hours = hours
+        self.minutes = minutes
+
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic.
