@@ -373,6 +373,7 @@ class Client:
         """
 
         log.info('logging in using static token')
+        token = token.replace("\n", "")
         await self.http.static_login(token, bot=bot)
         self._connection.is_bot = bot
 
