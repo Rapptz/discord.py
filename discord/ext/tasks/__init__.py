@@ -18,9 +18,6 @@ class Loop:
     """
     def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
         self.coro = coro
-        self.seconds = seconds
-        self.hours = hours
-        self.minutes = minutes
         self.reconnect = reconnect
         self.loop = loop or asyncio.get_event_loop()
         self.count = count
@@ -47,13 +44,7 @@ class Loop:
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
 
-        self._sleep = sleep = self.seconds + (self.minutes * 60.0) + (self.hours * 3600.0)
-        if sleep >= MAX_ASYNCIO_SECONDS:
-            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
-            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
-
-        if sleep < 0:
-            raise ValueError('Total number of seconds cannot be less than zero.')
+        self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
