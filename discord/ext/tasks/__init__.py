@@ -309,13 +309,12 @@ class Loop:
         return coro
 
     def change_interval(self, *, seconds=0, minutes=0, hours=0):
-        """Changes the interval for the sleep time, which can be called at run-time.
+        """Changes the interval for the sleep time.
 
         .. note::
 
-            This only applies on the next loop. If it is desirable for the change of interval
-            to be applied right away, the loop can be cancelled, then the interval can be 
-            changed and the loop can be restarted after that.
+            This only applies on the next loop iteration. If it is desirable for the change of interval
+            to be applied right away, cancel the task with :meth:`cancel`.
 
         Parameters
         ------------
