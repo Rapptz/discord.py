@@ -148,7 +148,7 @@ class BaseUser(_BaseUser):
         static_format: Optional[:class:`str`]
             Format to attempt to convert only non-animated avatars to.
             Defaults to 'webp'
-        size: Optional[:class:`int`]
+        size: :class:`int`
             The size of the image to display.
 
         Raises
@@ -179,11 +179,18 @@ class BaseUser(_BaseUser):
         """:class:`Colour`: A property that returns a colour denoting the rendered colour
         for the user. This always returns :meth:`Colour.default`.
 
-        There is an alias for this under ``color``.
+        There is an alias for this named :meth:`color`.
         """
         return Colour.default()
 
-    color = colour
+    @property
+    def color(self):
+        """:class:`Colour`: A property that returns a color denoting the rendered color
+        for the user. This always returns :meth:`Colour.default`.
+
+        There is an alias for this named :meth:`colour`.
+        """
+        return self.colour
 
     @property
     def mention(self):
@@ -230,10 +237,6 @@ class BaseUser(_BaseUser):
         -----------
         message: :class:`Message`
             The message to check if you're mentioned in.
-
-        Returns
-        --------
-        :class:`bool`
         """
 
         if message.mention_everyone:
@@ -328,7 +331,7 @@ class ClientUser(BaseUser):
         Returns
         --------
         Optional[:class:`Relationship`]
-            The relationship if available or ``None``
+            The relationship if available or ``None``.
         """
         return self._relationships.get(user_id)
 

@@ -34,7 +34,7 @@ __all__ = (
 )
 
 class CogMeta(type):
-    """A　metaclass for defining a cog.
+    """A metaclass for defining a cog.
 
     Note that you should probably not use this directly. It is exposed
     purely for documentation purposes along with making custom metaclasses to intermix

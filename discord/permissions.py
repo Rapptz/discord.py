@@ -344,7 +344,7 @@ class Permissions:
 
         .. note::
 
-            Note that there are currently no ways to modify other people's messages.
+            Note that there are currently no ways to edit other people's messages.
         """
         return self._bit(13)
 

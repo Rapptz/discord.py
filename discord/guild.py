@@ -75,7 +75,7 @@ class Guild(Hashable):
     name: :class:`str`
         The guild name.
     emojis: Tuple[:class:`Emoji`, ...]
-        A :class:`tuple` of :class:`Emoji` that the guild owns.
+        All emojis that the guild owns.
     region: :class:`VoiceRegion`
         The region the guild belongs on. There is a chance that the region
         will be a :class:`str` if the value is not recognised by the enumerator.

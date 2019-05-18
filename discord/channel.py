@@ -141,7 +141,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """List[:class:`Member`]: Returns a :class:`list` of :class:`Member` that can see this channel."""
+        """List[:class:`Member`]: Returns all members that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
@@ -518,7 +518,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """List[:class:`Member`]: Returns a list of :class:`Member` that are currently inside this voice channel."""
+        """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
         ret = []
         for user_id, state in self.guild._voice_states.items():
             if state.channel.id == self.id:

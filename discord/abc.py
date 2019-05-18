@@ -550,7 +550,7 @@ class GuildChannel:
 
         Parameters
         -----------
-        target: Union[~discordMember`, :class:`~discord.Role`]
+        target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
             The member or role to overwrite permissions for.
         overwrite: :class:`~discord.PermissionOverwrite`
             The permissions to allow and deny to the target.

@@ -463,5 +463,5 @@ Bug Fixes
 - Fix bug where :meth:`Permissions.kick_members` and :meth:`Permissions.ban_members` were flipped.
 - Mentions are now triggered normally. This was changed due to the way discord handles it internally.
 - Fix issue when a :class:`Message` would attempt to upgrade a :attr:`Message.server` when the channel is
-  a :class:`Snowflake`.
+  a :class:`Object`.
 - Unavailable servers were not being added into cache, this has been corrected.

@@ -172,7 +172,7 @@ class Embed:
         return self
 
     def copy(self):
-        """:class:`Embed`: Returns a shallow copy of the embed."""
+        """Returns a shallow copy of the embed."""
         return Embed.from_dict(self.to_dict())
 
     def __len__(self):

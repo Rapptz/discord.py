@@ -1039,7 +1039,7 @@ All enumerations are subclasses of :class:`enum.Enum`.
         A new channel was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        either a :class:`abc.GuildChannel` or :class:`Snowflake` with an ID.
+        either a :class:`abc.GuildChannel` or :class:`Object` with an ID.
 
         A more filled out object in the :class:`Object` case can be found
         by using :attr:`~AuditLogEntry.after`.
@@ -1058,7 +1058,7 @@ All enumerations are subclasses of :class:`enum.Enum`.
         - The channel bitrate was changed
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`abc.GuildChannel` or :class:`Snowflake` with an ID.
+        the :class:`abc.GuildChannel` or :class:`Object` with an ID.
 
         A more filled out object in the :class:`Object` case can be found
         by using :attr:`~AuditLogEntry.after` or :attr:`~AuditLogEntry.before`.
@@ -1093,7 +1093,7 @@ All enumerations are subclasses of :class:`enum.Enum`.
         A channel permission overwrite was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`abc.GuildChannel` or :class:`Snowflake` with an ID.
+        the :class:`abc.GuildChannel` or :class:`Object` with an ID.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         either a :class:`Role` or :class:`Member`. If the object is not found
@@ -1387,7 +1387,7 @@ All enumerations are subclasses of :class:`enum.Enum`.
         set to an unspecified proxy object with two attributes:
 
         - ``count``: An integer specifying how many messages were deleted.
-        - ``channel``: A :class:`TextChannel` or :class:`Snowflake` with the channel ID where the message got deleted.
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message got deleted.
 
 
 .. class:: AuditLogActionCategory
@@ -1720,18 +1720,18 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: afk_channel
 
-        Union[:class:`VoiceChannel`, :class:`abc.Snowflake`] – The guild's AFK channel.
+        Union[:class:`VoiceChannel`, :class:`Object`] – The guild's AFK channel.
 
-        If this could not be found, then it falls back to a :class:`abc.Snowflake`
+        If this could not be found, then it falls back to a :class:`Object`
         with the ID being set.
 
         See :attr:`Guild.afk_channel`.
 
     .. attribute:: system_channel
 
-        Union[:class:`TextChannel`, :class:`abc.Snowflake`] – The guild's system channel.
+        Union[:class:`TextChannel`, :class:`Object`] – The guild's system channel.
 
-        If this could not be found, then it falls back to a :class:`abc.Snowflake`
+        If this could not be found, then it falls back to a :class:`Object`
         with the ID being set.
 
         See :attr:`Guild.system_channel`.
@@ -1750,9 +1750,9 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. attribute:: widget_channel
 
-        Union[:class:`TextChannel`, :class:`abc.Snowflake`] – The widget's channel.
+        Union[:class:`TextChannel`, :class:`Object`] – The widget's channel.
 
-        If this could not be found then it falls back to a :class:`abc.Snowflake`
+        If this could not be found then it falls back to a :class:`Object`
         with the ID being set.
 
     .. attribute:: verification_level

@@ -154,6 +154,11 @@ def is_loaded():
     via the :func:`ctypes.util.find_library` call of :func:`load_opus`.
 
     This must return ``True`` for voice to work.
+
+    Returns
+    -------
+    :class:`bool`
+        Indicates if the opus library has been loaded.
     """
     global _lib
     return _lib is not None

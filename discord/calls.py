@@ -122,8 +122,7 @@ class GroupCall:
 
     @property
     def connected(self):
-        """List[:class:`User`]: A property that returns the :class:`list` of :class:`User` that are currently
-        in this call."""
+        """List[:class:`User`]: A property that returns all users that are currently in this call."""
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:

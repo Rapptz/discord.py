@@ -374,7 +374,7 @@ class BotMissingPermissions(CheckFailure):
         super().__init__(message, *args)
 
 class BadUnionArgument(UserInputError):
-    """Exception raised when a :class:`typing.Union` converter fails for all
+    """Exception raised when a :data:`typing.Union` converter fails for all
     its associated types.
 
     This inherits from :exc:`UserInputError`

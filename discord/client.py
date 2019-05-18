@@ -120,7 +120,7 @@ class Client:
     shard_count: Optional[:class:`int`]
         The total number of shards.
     fetch_offline_members: :class:`bool`
-        Indicates if :func:`on_ready` should be delayed to fetch all offline
+        Indicates if :func:`.on_ready` should be delayed to fetch all offline
         members from the guilds the bot belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
@@ -220,7 +220,7 @@ class Client:
 
     @property
     def cached_messages(self):
-        """Sequence[:class:`~discord.Message`]: Read-only list of messages the connected client has cached.
+        """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
         .. versionadded:: 1.1.0
         """
@@ -304,7 +304,7 @@ class Client:
 
         By default this prints to :data:`sys.stderr` however it could be
         overridden to have a different implementation.
-        Check :func:`discord.on_error` for more details.
+        Check :func:`~discord.on_error` for more details.
         """
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
@@ -592,7 +592,7 @@ class Client:
 
     def get_channel(self, id):
         """Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]: Returns a channel with the
-        following ID.
+        given ID.
 
         If not found, returns ``None``.
         """
@@ -909,7 +909,7 @@ class Client:
 
         .. note::
 
-            Using this, you will not receive :attr:`.Guild.channels`, :class:`.Guild.members`,
+            Using this, you will **not** receive :attr:`.Guild.channels`, :class:`.Guild.members`,
             :attr:`.Member.activity` and :attr:`.Member.voice` per :class:`.Member`.
 
         .. note::
