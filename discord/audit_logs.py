@@ -265,7 +265,7 @@ class AuditLogEntry:
 
     @utils.cached_property
     def created_at(self):
-        """Returns the entry's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the entry's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @utils.cached_property

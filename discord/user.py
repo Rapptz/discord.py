@@ -114,7 +114,7 @@ class BaseUser(_BaseUser):
 
     @property
     def avatar_url(self):
-        """Returns a :class:`Asset`: for the avatar the user has.
+        """:class:`Asset`: Returns an asset of the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -125,11 +125,11 @@ class BaseUser(_BaseUser):
         return self.avatar_url_as(format=None, size=1024)
 
     def is_avatar_animated(self):
-        """:class:`bool`: Returns True if the user has an animated avatar."""
+        """Indicates if the user has an animated avatar."""
         return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns a :class:`Asset`: for the avatar the user has.
+        """Returns a :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -148,7 +148,7 @@ class BaseUser(_BaseUser):
         static_format: Optional[:class:`str`]
             Format to attempt to convert only non-animated avatars to.
             Defaults to 'webp'
-        size: :class:`int`
+        size: Optional[:class:`int`]
             The size of the image to display.
 
         Raises
@@ -166,17 +166,17 @@ class BaseUser(_BaseUser):
 
     @property
     def default_avatar(self):
-        """Returns the default avatar for a given user. This is calculated by the user's discriminator"""
+        """class:`DefaultAvatar`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
         return try_enum(DefaultAvatar, int(self.discriminator) % len(DefaultAvatar))
 
     @property
     def default_avatar_url(self):
-        """Returns a URL for a user's default avatar."""
+        """:class:`Asset`: Returns a URL for a user's default avatar."""
         return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):
-        """A property that returns a :class:`Colour` denoting the rendered colour
+        """:class:`Colour`: A property that returns a colour denoting the rendered colour
         for the user. This always returns :meth:`Colour.default`.
 
         There is an alias for this under ``color``.
@@ -187,7 +187,7 @@ class BaseUser(_BaseUser):
 
     @property
     def mention(self):
-        """Returns a string that allows you to mention the given user."""
+        """:class:`str`: Returns a string that allows you to mention the given user."""
         return '<@{0.id}>'.format(self)
 
     def permissions_in(self, channel):
@@ -208,14 +208,14 @@ class BaseUser(_BaseUser):
 
     @property
     def created_at(self):
-        """Returns the user's creation time in UTC.
+        """:class:`datetime.datetime`: Returns the user's creation time in UTC.
 
         This is when the user's discord account was created."""
         return snowflake_time(self.id)
 
     @property
     def display_name(self):
-        """Returns the user's display name.
+        """:class:`str`: Returns the user's display name.
 
         For regular users this is just their username, but
         if they have a guild specific nickname then that
@@ -230,6 +230,10 @@ class BaseUser(_BaseUser):
         -----------
         message: :class:`Message`
             The message to check if you're mentioned in.
+
+        Returns
+        --------
+        :class:`bool`
         """
 
         if message.mention_everyone:
@@ -330,7 +334,7 @@ class ClientUser(BaseUser):
 
     @property
     def relationships(self):
-        """Returns a :class:`list` of :class:`Relationship` that the user has.
+        """List[:class:`User`]: Returns all the relationships that the user has.
 
         .. note::
 
@@ -340,7 +344,7 @@ class ClientUser(BaseUser):
 
     @property
     def friends(self):
-        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with.
+        r"""List[:class:`User`]: Returns all the users that the user is friends with.
 
         .. note::
 
@@ -350,7 +354,7 @@ class ClientUser(BaseUser):
 
     @property
     def blocked(self):
-        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked.
+        r"""List[:class:`User`]: Returns all the users that the user has blocked.
 
         .. note::
 
@@ -366,14 +370,14 @@ class ClientUser(BaseUser):
         If a bot account is used then a password field is optional,
         otherwise it is required.
 
-        Note
-        -----
-        To upload an avatar, a :term:`py:bytes-like object` must be passed in that
-        represents the image being uploaded. If this is done through a file
-        then the file must be opened via ``open('some_filename', 'rb')`` and
-        the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
+        .. note::
 
-        The only image formats supported for uploading is JPEG and PNG.
+            To upload an avatar, a :term:`py:bytes-like object` must be passed in that
+            represents the image being uploaded. If this is done through a file
+            then the file must be opened via ``open('some_filename', 'rb')`` and
+            the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
+
+            The only image formats supported for uploading is JPEG and PNG.
 
         Parameters
         -----------
@@ -542,7 +546,7 @@ class ClientUser(BaseUser):
         inline_embed_media: :class:`bool`
             Whether or not to display videos and images from links posted in chat.
         locale: :class:`str`
-            The RFC 3066 language identifier of the locale to use for the language
+            The :rfc:`3066` language identifier of the locale to use for the language
             of the Discord client.
         message_display_compact: :class:`bool`
             Whether or not to use the compact Discord display mode.
@@ -654,7 +658,7 @@ class User(BaseUser, discord.abc.Messageable):
 
     @property
     def dm_channel(self):
-        """Returns the :class:`DMChannel` associated with this user if it exists.
+        """Optional[:class:`DMChannel`]: Returns the channel associated with this user if it exists.
 
         If this returns ``None``, you can create a DM channel by calling the
         :meth:`create_dm` coroutine function.
@@ -711,7 +715,7 @@ class User(BaseUser, discord.abc.Messageable):
         return [User(state=state, data=friend) for friend in mutuals]
 
     def is_friend(self):
-        """:class:`bool`: Checks if the user is your friend.
+        """Checks if the user is your friend.
 
         .. note::
 
@@ -723,7 +727,7 @@ class User(BaseUser, discord.abc.Messageable):
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """:class:`bool`: Checks if the user is blocked.
+        """Checks if the user is blocked.
 
         .. note::
 

@@ -63,7 +63,7 @@ class AudioSource:
         If the audio is complete, then returning an empty
         :term:`py:bytes-like object` to signal this is the way to do so.
 
-        If :meth:`is_opus` method returns ``True``, then it must return
+        If :meth:`.is_opus` method returns ``True``, then it must return
         20ms worth of Opus encoded audio. Otherwise, it must be 20ms
         worth of 16-bit 48KHz stereo PCM, which is about 3,840 bytes
         per frame (20ms worth of audio).
@@ -76,10 +76,7 @@ class AudioSource:
         raise NotImplementedError
 
     def is_opus(self):
-        """Checks if the audio source is already encoded in Opus.
-
-        Defaults to ``False``.
-        """
+        """Checks if the audio source is already encoded in Opus."""
         return False
 
     def cleanup(self):
@@ -98,7 +95,7 @@ class PCMAudio(AudioSource):
 
     Attributes
     -----------
-    stream: file-like object
+    stream: :term:`py:file object`
         A file-like object that reads byte data representing raw PCM.
     """
     def __init__(self, stream):
@@ -122,16 +119,16 @@ class FFmpegPCMAudio(AudioSource):
 
     Parameters
     ------------
-    source: Union[:class:`str`, BinaryIO]
+    source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to PCM bytes.
         If ``pipe`` is True then this is a file-like object that is
         passed to the stdin of ffmpeg.
     executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
     pipe: :class:`bool`
-        If true, denotes that ``source`` parameter will be passed
+        If ``True``, denotes that ``source`` parameter will be passed
         to the stdin of ffmpeg. Defaults to ``False``.
-    stderr: Optional[BinaryIO]
+    stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
         Could also be an instance of ``subprocess.PIPE``.
     options: Optional[:class:`str`]
@@ -203,7 +200,7 @@ class PCMVolumeTransformer(AudioSource):
     ------------
     original: :class:`AudioSource`
         The original AudioSource to transform.
-    volume: float
+    volume: :class:`float`
         The initial volume to set it to.
         See :attr:`volume` for more info.
 

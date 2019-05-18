@@ -87,10 +87,9 @@ class Embed:
     url: :class:`str`
         The URL of the embed.
         This can be set during initialisation.
-    timestamp: `datetime.datetime`
+    timestamp: :class:`datetime.datetime`
         The timestamp of the embed content. This could be a naive or aware datetime.
-        This can be set during initialisation.
-    colour: :class:`Colour` or :class:`int`
+    colour: Union[:class:`Colour`, :class:`int`]
         The colour code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
     Empty
@@ -173,7 +172,7 @@ class Embed:
         return self
 
     def copy(self):
-        """Returns a shallow copy of the embed."""
+        """:class:`Embed`: Returns a shallow copy of the embed."""
         return Embed.from_dict(self.to_dict())
 
     def __len__(self):
