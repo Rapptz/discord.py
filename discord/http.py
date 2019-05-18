@@ -408,6 +408,10 @@ class HTTPClient:
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r)
 
+    def get_channel(self, channel_id):
+        r = Route('GET', '/channels/{channel_id}', channel_id=channel_id)
+        return self.request(r)
+
     def logs_from(self, channel_id, limit, before=None, after=None, around=None):
         params = {
             'limit': limit
@@ -613,6 +617,9 @@ class HTTPClient:
     def change_vanity_code(self, guild_id, code, *, reason=None):
         payload = {'code': code}
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
+
+    def get_all_guild_channels(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))

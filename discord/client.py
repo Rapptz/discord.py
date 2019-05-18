@@ -39,6 +39,8 @@ from .asset import Asset
 from .invite import Invite
 from .widget import Widget
 from .guild import Guild
+from .channel import _channel_factory
+from .enums import ChannelType
 from .member import Member
 from .errors import *
 from .enums import Status, VoiceRegion
@@ -48,6 +50,7 @@ from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
+from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
@@ -1184,6 +1187,48 @@ class Client:
                        mutual_guilds=mutual_guilds,
                        user=User(data=user, state=state),
                        connected_accounts=data['connected_accounts'])
+
+    async def fetch_channel(self, channel_id):
+        """|coro|
+
+        Retrieves a :class:`.abc.GuildChannel` or :class:`.abc.PrivateChannel` with the specified ID.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_channel` instead.
+
+        .. versionadded:: 1.2.0
+
+        Raises
+        -------
+        TypeError
+            An unknown channel type was received from Discord.
+        :exc:`.HTTPException`
+            Retrieving the channel failed.
+        :exc:`.NotFound`
+            Invalid Channel ID.
+        :exc:`.Forbidden`
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]
+            The channel from the ID.
+        """
+        data = await self.http.get_channel(channel_id)
+
+        factory, ch_type = _channel_factory(data['type'])
+        if factory is None:
+            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+
+        if ch_type in (ChannelType.group, ChannelType.private):
+            channel = factory(me=self.user, data=data, state=self._connection)
+        else:
+            guild_id = int(data['guild_id'])
+            guild = self.get_guild(guild_id) or Object(id=guild_id)
+            channel = factory(guild=guild, state=self._connection, data=data)
+
+        return channel
 
     async def fetch_webhook(self, webhook_id):
         """|coro|

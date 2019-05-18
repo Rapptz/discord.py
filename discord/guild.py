@@ -32,6 +32,7 @@ from .role import Role
 from .member import Member, VoiceState
 from .activity import create_activity
 from .emoji import Emoji
+from .errors import InvalidData
 from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
@@ -1103,6 +1104,41 @@ class Guild(Hashable):
 
         fields['system_channel_flags'] = system_channel_flags.value
         await http.edit_guild(self.id, reason=reason, **fields)
+
+    async def fetch_channels(self):
+        """|coro|
+
+        Retrieves all :class:`abc.GuildChannel` that the guild has.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`channels` instead.
+
+        .. versionadded:: 1.2.0
+
+        Raises
+        -------
+        TypeError
+            An unknown channel type was received from Discord.
+        HTTPException
+            Retrieving the channels failed.
+
+        Returns
+        -------
+        List[:class:`abc.GuildChannel`]
+            All channels in the guild.
+        """
+        data = await self._state.http.get_all_guild_channels(self.id)
+
+        def convert(d):
+            factory, ch_type = _channel_factory(d['type'])
+            if factory is None:
+                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+
+            channel = factory(guild=self, state=self._state, data=d)
+            return channel
+
+        return [convert(d) for d in data]
 
     async def fetch_member(self, member_id):
         """|coro|
