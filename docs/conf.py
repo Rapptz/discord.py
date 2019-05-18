@@ -49,14 +49,15 @@ extlinks = {
 # Links used for cross-referencing stuff in other documentation
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
-  'aio': ('https://aiohttp.readthedocs.io/en/stable/', None)
+  'aio': ('https://aiohttp.readthedocs.io/en/stable/', None),
+  'req': ('http://docs.python-requests.org/en/latest/', 'requests.inv')
 }
 
 rst_prolog = """
-.. |coro| replace:: This function is a |corourl|_.
-.. |maybecoro| replace:: This function *could be a* |corourl|_.
-.. |corourl| replace:: *coroutine*
-.. _corourl: https://docs.python.org/3/library/asyncio-task.html#coroutine
+.. |coro| replace:: This function is a |coroutine_link|_.
+.. |maybecoro| replace:: This function *could be a* |coroutine_link|_.
+.. |coroutine_link| replace:: *coroutine*
+.. _coroutine_link: https://docs.python.org/3/library/asyncio-task.html#coroutine
 """
 
 # Add any paths that contain templates here, relative to this directory.

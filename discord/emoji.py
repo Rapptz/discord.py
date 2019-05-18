@@ -222,12 +222,12 @@ class Emoji:
 
     @property
     def created_at(self):
-        """Returns the emoji's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the emoji's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def url(self):
-        """Returns a URL version of the emoji."""
+        """:class:`Asset`: Returns the asset of the emoji."""
         _format = 'gif' if self.animated else 'png'
         url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)

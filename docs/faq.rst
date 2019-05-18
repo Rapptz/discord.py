@@ -18,7 +18,7 @@ Questions regarding coroutines and asyncio belong here.
 What is a coroutine?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-A coroutine is a function that must be invoked with ``await`` or ``yield from``. When Python encounters an ``await`` it stops
+A |coroutine_link|_ is a function that must be invoked with ``await`` or ``yield from``. When Python encounters an ``await`` it stops
 the function's execution at that point and works on other things until it comes back to that point and finishes off its work.
 This allows for your program to be doing multiple things at the same time without using threads or complicated
 multiprocessing.
@@ -51,9 +51,10 @@ instead. Similar to this example: ::
     # good
     await asyncio.sleep(10)
 
-Another common source of blocking for too long is using HTTP requests with the famous module ``requests``. While ``requests``
-is an amazing module for non-asynchronous programming, it is not a good choice for :mod:`asyncio` because certain requests can
-block the event loop too long. Instead, use the ``aiohttp`` library which is installed on the side with this library.
+Another common source of blocking for too long is using HTTP requests with the famous module :doc:`req:index`.
+While :doc:`req:index` is an amazing module for non-asynchronous programming, it is not a good choice for
+:mod:`asyncio` because certain requests can block the event loop too long. Instead, use the :doc:`aiohttp <aio:index>` library which
+is installed on the side with this library.
 
 Consider the following example: ::
 
@@ -128,7 +129,7 @@ To upload multiple files, you can use the ``files`` keyword argument instead of 
     ]
     await channel.send(files=my_files)
 
-If you want to upload something from a URL, you will have to use an HTTP request using ``aiohttp``
+If you want to upload something from a URL, you will have to use an HTTP request using :doc:`aiohttp <aio:index>`
 and then pass an :class:`io.BytesIO` instance to :class:`File` like so:
 
 .. code-block:: python3

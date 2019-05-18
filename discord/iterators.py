@@ -191,16 +191,16 @@ class HistoryIterator(_AsyncIterator):
         Messageable class to retrieve message history from.
     limit: :class:`int`
         Maximum number of messages to retrieve
-    before: :class:`abc.Snowflake`
+    before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Message before which all messages must be.
-    after: :class:`abc.Snowflake`
+    after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Message after which all messages must be.
-    around: :class:`abc.Snowflake`
+    around: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
-    oldest_first: :class:`bool`
-        If set to true, return messages in oldest->newest order. Defaults to
-        True if ``after`` is specified, otherwise False.
+    oldest_first: Optional[:class:`bool`]
+        If set to ``True``, return messages in oldest->newest order. Defaults to
+        True if ``after`` is specified, otherwise ``False``.
     """
 
     def __init__(self, messageable, limit,
@@ -482,9 +482,9 @@ class GuildIterator(_AsyncIterator):
         The client to retrieve the guilds from.
     limit: :class:`int`
         Maximum number of guilds to retrieve.
-    before: :class:`Snowflake`
+    before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Object before which all guilds must be.
-    after: :class:`Snowflake`
+    after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Object after which all guilds must be.
     """
     def __init__(self, bot, limit, before=None, after=None):

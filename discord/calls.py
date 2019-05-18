@@ -38,7 +38,7 @@ class CallMessage:
 
     Attributes
     -----------
-    ended_timestamp: Optional[datetime.datetime]
+    ended_timestamp: Optional[:class:`datetime.datetime`]
         A naive UTC datetime object that represents the time that the call has ended.
     participants: List[:class:`User`]
         The list of users that are participating in this call.
@@ -70,7 +70,7 @@ class CallMessage:
 
         Returns
         ---------
-        datetime.timedelta
+        :class:`datetime.timedelta`
             The timedelta object representing the duration.
         """
         if self.ended_timestamp is None:
@@ -122,7 +122,7 @@ class GroupCall:
 
     @property
     def connected(self):
-        """A property that returns the :class:`list` of :class:`User` that are currently in this call."""
+        """List[:class:`User`]: A property that returns all users that are currently in this call."""
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:

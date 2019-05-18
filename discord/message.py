@@ -88,7 +88,7 @@ class Attachment:
 
         Parameters
         -----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
@@ -175,7 +175,7 @@ class Message:
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
         in cases where it might be a system message for :attr:`system_content`.
-    author
+    author: :class:`abc.User`
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
@@ -185,7 +185,7 @@ class Message:
         This is typically non-important.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel
+    channel: Union[:class:`abc.Messageable`]
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     call: Optional[:class:`CallMessage`]
@@ -199,8 +199,7 @@ class Message:
             This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
             Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
             **and** it did end up mentioning.
-
-    mentions: :class:`list`
+    mentions: List[:class:`abc.User`]
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list will be of :class:`User` instead. For messages that are not of type
         :attr:`MessageType.default`\, this array can be used to aid in system messages.
@@ -210,11 +209,10 @@ class Message:
 
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a discord limitation, not one with the library.
-
-    channel_mentions: :class:`list`
+    channel_mentions: List[:class:`abc.GuildChannel`]
         A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
         then the list is always empty.
-    role_mentions: :class:`list`
+    role_mentions: List[:class:`Role`]
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
     id: :class:`int`
@@ -408,8 +406,8 @@ class Message:
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self):
-        """A property that returns an array of user IDs matched with
-        the syntax of <@user_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of user IDs matched with
+        the syntax of ``<@user_id>`` in the message content.
 
         This allows you to receive the user IDs of mentioned users
         even in a private message context.
@@ -418,15 +416,15 @@ class Message:
 
     @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
-        """A property that returns an array of channel IDs matched with
-        the syntax of <#channel_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of channel IDs matched with
+        the syntax of ``<#channel_id>`` in the message content.
         """
         return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
-        """A property that returns an array of role IDs matched with
-        the syntax of <@&role_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of role IDs matched with
+        the syntax of ``<@&role_id>`` in the message content.
         """
         return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
 
@@ -499,12 +497,12 @@ class Message:
 
     @property
     def created_at(self):
-        """datetime.datetime: The message's creation time in UTC."""
+        """:class:`datetime.datetime`: The message's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def edited_at(self):
-        """Optional[datetime.datetime]: A naive UTC datetime object containing the edited time of the message."""
+        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
     @property

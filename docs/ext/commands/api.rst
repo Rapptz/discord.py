@@ -38,9 +38,9 @@ are custom to the command extension module.
     A default one is provided (:meth:`.Bot.on_command_error`).
 
     :param ctx: The invocation context.
-    :type ctx: :class:`Context`
+    :type ctx: :class:`.Context`
     :param error: The error that was raised.
-    :type error: :class:`CommandError` derived
+    :type error: :class:`.CommandError` derived
 
 .. function:: on_command(ctx)
 
@@ -50,7 +50,7 @@ are custom to the command extension module.
     error or completes.
 
     :param ctx: The invocation context.
-    :type ctx: :class:`Context`
+    :type ctx: :class:`.Context`
 
 .. function:: on_command_completion(ctx)
 
@@ -60,7 +60,7 @@ are custom to the command extension module.
     passed and the user input it correctly.
 
     :param ctx: The invocation context.
-    :type ctx: :class:`Context`
+    :type ctx: :class:`.Context`
 
 .. _ext_commands_api_command:
 

@@ -66,7 +66,7 @@ class Converter:
     special cased ``discord`` classes.
 
     Classes that derive from this should override the :meth:`~.Converter.convert`
-    method to do its conversion logic. This method must be a coroutine.
+    method to do its conversion logic. This method must be a :ref:`coroutine <coroutine>`.
     """
 
     async def convert(self, ctx, argument):
@@ -96,7 +96,7 @@ class IDConverter(Converter):
         return self._id_regex.match(argument)
 
 class MemberConverter(IDConverter):
-    """Converts to a :class:`Member`.
+    """Converts to a :class:`~discord.Member`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -134,7 +134,7 @@ class MemberConverter(IDConverter):
         return result
 
 class UserConverter(IDConverter):
-    """Converts to a :class:`User`.
+    """Converts to a :class:`~discord.User`.
 
     All lookups are via the global user cache.
 
@@ -210,7 +210,7 @@ class MessageConverter(Converter):
             raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
 
 class TextChannelConverter(IDConverter):
-    """Converts to a :class:`TextChannel`.
+    """Converts to a :class:`~discord.TextChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -249,7 +249,7 @@ class TextChannelConverter(IDConverter):
         return result
 
 class VoiceChannelConverter(IDConverter):
-    """Converts to a :class:`VoiceChannel`.
+    """Converts to a :class:`~discord.VoiceChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -287,7 +287,7 @@ class VoiceChannelConverter(IDConverter):
         return result
 
 class CategoryChannelConverter(IDConverter):
-    """Converts to a :class:`CategoryChannel`.
+    """Converts to a :class:`~discord.CategoryChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -326,7 +326,7 @@ class CategoryChannelConverter(IDConverter):
         return result
 
 class ColourConverter(Converter):
-    """Converts to a :class:`Colour`.
+    """Converts to a :class:`~discord.Colour`.
 
     The following formats are accepted:
 
@@ -355,7 +355,7 @@ class ColourConverter(Converter):
             return method()
 
 class RoleConverter(IDConverter):
-    """Converts to a :class:`Role`.
+    """Converts to a :class:`~discord.Role`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -382,12 +382,12 @@ class RoleConverter(IDConverter):
         return result
 
 class GameConverter(Converter):
-    """Converts to :class:`Game`."""
+    """Converts to :class:`~discord.Game`."""
     async def convert(self, ctx, argument):
         return discord.Game(name=argument)
 
 class InviteConverter(Converter):
-    """Converts to a :class:`Invite`.
+    """Converts to a :class:`~discord.Invite`.
 
     This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
     """
@@ -399,7 +399,7 @@ class InviteConverter(Converter):
             raise BadArgument('Invite is invalid or expired') from exc
 
 class EmojiConverter(IDConverter):
-    """Converts to a :class:`Emoji`.
+    """Converts to a :class:`~discord.Emoji`.
 
     All lookups are done for the local guild first, if available. If that lookup
     fails, then it checks the client's global cache.
@@ -439,7 +439,7 @@ class EmojiConverter(IDConverter):
         return result
 
 class PartialEmojiConverter(Converter):
-    """Converts to a :class:`PartialEmoji`.
+    """Converts to a :class:`~discord.PartialEmoji`.
 
     This is done by extracting the animated flag, name and ID from the emoji.
     """
@@ -460,7 +460,7 @@ class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
     said content.
 
-    This behaves similarly to :attr:`.Message.clean_content`.
+    This behaves similarly to :attr:`~discord.Message.clean_content`.
 
     Attributes
     ------------

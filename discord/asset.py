@@ -163,6 +163,13 @@ class Asset:
 
         .. versionadded:: 1.1.0
 
+        Parameters
+        -----------
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
+            Same as in :meth:`Attachment.save`.
+        seek_begin: :class:`bool`
+            Same as in :meth:`Attachment.save`.
+
         Raises
         ------
         DiscordException

@@ -73,7 +73,7 @@ class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
 
     @property
     def created_at(self):
-        """Returns the channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
 
 class WidgetMember(BaseUser):
@@ -229,7 +229,7 @@ class Widget:
         """|coro|
 
         Retrieves an :class:`Invite` from a invite URL or ID.
-        This is the same as :meth:`Client.get_invite`; the invite
+        This is the same as :meth:`Client.fetch_invite`; the invite
         code is abstracted away.
 
         Parameters

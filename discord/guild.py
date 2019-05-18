@@ -191,8 +191,8 @@ class Guild(Hashable):
     ----------
     name: :class:`str`
         The guild name.
-    emojis
-        A :class:`tuple` of :class:`Emoji` that the guild owns.
+    emojis: Tuple[:class:`Emoji`, ...]
+        All emojis that the guild owns.
     region: :class:`VoiceRegion`
         The region the guild belongs on. There is a chance that the region
         will be a :class:`str` if the value is not recognised by the enumerator.
@@ -586,7 +586,7 @@ class Guild(Hashable):
         return bool(self.icon and self.icon.startswith('a_'))
 
     def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns a :class:`Asset` for the guild's icon.
+        """Returns an :class:`Asset` for the guild's icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
         'gif' is only valid for animated avatars. The size must be a power of 2
@@ -622,7 +622,7 @@ class Guild(Hashable):
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """Returns a :class:`Asset` for the guild's banner.
+        """Returns an :class:`Asset` for the guild's banner.
 
         The format must be one of 'webp', 'jpeg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
@@ -652,7 +652,7 @@ class Guild(Hashable):
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """Returns a :class:`Asset` for the guild's invite splash.
+        """Returns an :class:`Asset` for the guild's invite splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
@@ -698,7 +698,7 @@ class Guild(Hashable):
 
     @property
     def shard_id(self):
-        """Returns the shard ID for this guild if applicable."""
+        """:class:`int`: Returns the shard ID for this guild if applicable."""
         count = self._state.shard_count
         if count is None:
             return None
@@ -706,7 +706,7 @@ class Guild(Hashable):
 
     @property
     def created_at(self):
-        """Returns the guild's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def get_member_named(self, name):
@@ -1483,10 +1483,10 @@ class Guild(Hashable):
             This is aliased to ``color`` as well.
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
-            Defaults to False.
+            Defaults to ``False``.
         mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
-            Defaults to False.
+            Defaults to ``False``.
         reason: Optional[:class:`str`]
             The reason for creating this role. Shows up on the audit log.
 
@@ -1697,15 +1697,15 @@ class Guild(Hashable):
         -----------
         limit: Optional[:class:`int`]
             The number of entries to retrieve. If ``None`` retrieve all entries.
-        before: Union[:class:`abc.Snowflake`, datetime]
+        before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries before this date or entry.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        after: Union[:class:`abc.Snowflake`, datetime]
+        after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries after this date or entry.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
         oldest_first: :class:`bool`
-            If set to true, return entries in oldest->newest order. Defaults to True if
-            ``after`` is specified, otherwise False.
+            If set to ``True``, return entries in oldest->newest order. Defaults to True if
+            ``after`` is specified, otherwise ``False``.
         user: :class:`abc.Snowflake`
             The moderator to filter entries from.
         action: :class:`AuditLogAction`

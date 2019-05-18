@@ -550,7 +550,7 @@ class HelpCommand:
         return max(as_lengths, default=0)
 
     def get_destination(self):
-        """Returns the :class:`abc.Messageable` where the help command will be output.
+        """Returns the :class:`~discord.abc.Messageable` where the help command will be output.
 
         You can override this method to customise the behaviour.
 

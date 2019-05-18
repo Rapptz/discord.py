@@ -33,7 +33,7 @@ class File:
 
     Attributes
     -----------
-    fp: Union[:class:`str`, BinaryIO]
+    fp: Union[:class:`str`, :class:`io.BufferedIOBase`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
         open.
