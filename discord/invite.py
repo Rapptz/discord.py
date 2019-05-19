@@ -177,7 +177,7 @@ class PartialInviteGuild:
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
 class Invite(Hashable):
-    """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
+    r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
@@ -199,6 +199,28 @@ class Invite(Hashable):
         .. describe:: str(x)
 
             Returns the invite URL.
+
+    The following table illustrates what methods will obtain the attributes:
+
+    +------------------------------------+----------------------------------------------------------+
+    |             Attribute              |                          Method                          |
+    +====================================+==========================================================+
+    | :attr:`max_age`                    | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`max_uses`                   | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`created_at`                 | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`temporary`                  | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`uses`                       | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`approximate_member_count`   | :meth:`Client.fetch_invite`                              |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite`                              |
+    +------------------------------------+----------------------------------------------------------+
+
+    If it's not in the table above then it is available by all methods.
 
     Attributes
     -----------
