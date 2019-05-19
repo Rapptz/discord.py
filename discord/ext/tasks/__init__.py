@@ -316,6 +316,8 @@ class Loop:
             This only applies on the next loop iteration. If it is desirable for the change of interval
             to be applied right away, cancel the task with :meth:`cancel`.
 
+        .. versionadded:: 1.2.0
+
         Parameters
         ------------
         seconds: :class:`float`
