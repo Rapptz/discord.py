@@ -503,10 +503,19 @@ class Client:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
+
+        Raises
+        -------
+        TypeError
+            An unexpected keyword argument was received.
         """
 
         bot = kwargs.pop('bot', True)
         reconnect = kwargs.pop('reconnect', True)
+
+        if kwargs:
+            raise TypeError("unexpected keyword argument(s) %s" % list(kwargs.keys()))
+
         await self.login(*args, bot=bot)
         await self.connect(reconnect=reconnect)
 
