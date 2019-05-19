@@ -58,6 +58,7 @@ class WebhookAdapter:
         self._webhook_id = webhook.id
         self._webhook_token = webhook.token
         self._request_url = '{0.BASE}/webhooks/{1}/{2}'.format(self, webhook.id, webhook.token)
+        self._move_url = '{0.BASE}/webhooks/{1}'.format(self, webhook.id)
         self.webhook = webhook
 
     def request(self, verb, url, payload=None, multipart=None):
@@ -87,6 +88,9 @@ class WebhookAdapter:
 
     def edit_webhook(self, **payload):
         return self.request('PATCH', self._request_url, payload=payload)
+
+    def move_webhook(self, token, **payload):
+        return self.request('PATCH', self._move_url, payload=payload, token=token)
 
     def handle_execution_response(self, data, *, wait):
         """Transforms the webhook execution response into something
@@ -172,8 +176,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None, token=None):
         headers = {}
+        if token:
+            headers['Authorization'] = token
+
         data = None
         files = files or []
         if payload:
@@ -255,8 +262,11 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None, *, files=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None, token=None):
         headers = {}
+        if token:
+            headers['Authorization'] = token
+
         data = None
         files = files or []
         if payload:
@@ -641,6 +651,66 @@ class Webhook:
                 payload['avatar'] = None
 
         return self._adapter.edit_webhook(**payload)
+
+    async def _async_move(self, channel_id, token, payload):
+        try:
+            await self._adapter.move_webhook(token, **payload)
+        finally:
+            self.channel_id = channel_id
+
+    def _sync_move(self, channel_id, token, payload):
+        try:
+            self._adapter.move_webhook(token, **payload)
+        finally:
+            self.channel_id = channel_id
+
+    def move_to(self, channel):
+        """|maybecoro|
+
+        Moves this Webhook.
+
+        If the webhook is constructed with a :class:`RequestsWebhookAdapter` then this is
+        not a coroutine.
+
+        .. warning::
+
+            This will only work if you fetch the webhook from a client, as there is a state attached.
+
+        .. versionadded:: 1.2.0
+
+        Parameters
+        -----------
+        channel: Union[:class:`TextChannel`]
+            Where to move the webhook. Must be a text channel.
+
+        Raises
+        -------
+        TypeError
+            A :class:`TextChannel` was not received for the parameter.
+        HTTPException
+            Moving the webhook failed.
+        NotFound
+            This webhook does not exist.
+        Forbidden
+            You do not have permissions to move this webhook.
+        """
+        from .channel import TextChannel
+        # cyclic import
+
+        if not isinstance(channel, TextChannel):
+            raise TypeError('Expected TextChannel parameter, received %s instead.' % channel.__class__.__name__)
+
+        payload = {'channel_id': channel.id}
+
+        token = channel._state.http.token
+
+        if self._state.is_bot:
+            token = 'Bot ' + token
+
+        if isinstance(self._adapter, AsyncWebhookAdapter):
+            return self._async_move(channel.id, token, payload)
+        elif isinstance(self._adapter, RequestsWebhookAdapter):
+            return self._sync_move(channel.id, token, payload)
 
     def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
                                     file=None, files=None, embed=None, embeds=None):
