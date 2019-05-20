@@ -653,16 +653,12 @@ class Webhook:
         return self._adapter.edit_webhook(**payload)
 
     async def _async_move(self, channel_id, token, payload):
-        try:
-            await self._adapter.move_webhook(token, **payload)
-        finally:
-            self.channel_id = channel_id
+        await self._adapter.move_webhook(token, **payload)
+        self.channel_id = channel_id
 
     def _sync_move(self, channel_id, token, payload):
-        try:
-            self._adapter.move_webhook(token, **payload)
-        finally:
-            self.channel_id = channel_id
+        self._adapter.move_webhook(token, **payload)
+        self.channel_id = channel_id
 
     def move_to(self, channel):
         """|maybecoro|
@@ -680,7 +676,7 @@ class Webhook:
 
         Parameters
         -----------
-        channel: Union[:class:`TextChannel`]
+        channel: :class:`TextChannel`
             Where to move the webhook. Must be a text channel.
 
         Raises
