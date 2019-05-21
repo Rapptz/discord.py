@@ -22,7 +22,7 @@ import logging
 
 from .client import Client
 from .appinfo import AppInfo
-from .user import User, ClientUser, Profile
+from .user import User, ClientUser, Profile, Settings
 from .emoji import Emoji, PartialEmoji
 from .activity import *
 from .channel import *

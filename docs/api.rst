@@ -194,6 +194,19 @@ to handle it, which defaults to print a traceback and ignoring the exception.
                     WebSocket library. It can be :class:`bytes` to denote a binary
                     message or :class:`str` to denote a regular text message.
 
+.. function:: on_settings_update(before, after)
+
+    Called when the :attr:`ClientUser.settings` is updated.
+
+    .. note::
+
+        This only applies to non-bot accounts.
+
+    :param before: The settings before they were updated.
+    :type before: :class:`Settings`
+    :param after: The settings after they were updated.
+    :type after: :class:`Settings`
+
 .. function:: on_typing(channel, user, when)
 
     Called when someone begins typing a message.
@@ -1982,6 +1995,9 @@ ClientUser
 .. autoclass:: ClientUser()
     :members:
     :inherited-members:
+
+.. autoclass:: Settings()
+    :members:
 
 Relationship
 ~~~~~~~~~~~~~~

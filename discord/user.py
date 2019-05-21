@@ -28,7 +28,7 @@ from collections import namedtuple
 
 import discord.abc
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time
-from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
+from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, UserContentFilter, Status, Theme, FriendFlags, try_enum
 from .errors import ClientException
 from .colour import Colour
 from .asset import Asset
@@ -70,6 +70,203 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
     def hypesquad_houses(self):
         flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
         return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
+
+class Settings:
+    """Represents the client user's settings.
+
+    .. note::
+
+        This only applies to non-bot accounts.
+
+    Attributes
+    -----------
+    afk_timeout: :class:`int`
+        How long (in seconds) the user needs to be AFK until Discord
+        sends push notifications to your mobile device.
+    animate_emojis: :class:`bool`
+        Whether or not to animate emojis in the chat.
+    convert_emoticons: :class:`bool`
+        Whether or not to automatically convert emoticons into emojis.
+        e.g. ``:-)`` -> 😃
+    default_guilds_restricted: :class:`bool`
+        Whether or not to automatically disable DMs between you and
+        members of new guilds you join.
+    detect_platform_accounts: :class:`bool`
+        Whether or not to automatically detect accounts from services
+        like Steam and Blizzard when you open the Discord client.
+    developer_mode: :class:`bool`
+        Whether or not to enable developer mode.
+    disable_games_tab: :class:`bool`
+        Whether or not to disable the showing of the Games tab.
+    enable_tts_command: :class:`bool`
+        Whether or not to allow tts messages to be played/sent.
+    explicit_content_filter: :class:`UserContentFilter`
+        The filter for explicit content in all messages.
+    friend_source_flags: :class:`FriendFlags`
+        Who can add you as a friend.
+    gif_auto_play: :class:`bool`
+        Whether or not to automatically play GIFs that are in the chat.
+    guild_positions: List[:class:`abc.Snowflake`]
+        A list of guilds in order of the guild/guild icons that are on
+        the left hand side of the UI.
+    inline_attachment_media: :class:`bool`
+        Whether or not to display attachments when they are uploaded in chat.
+    inline_embed_media: :class:`bool`
+        Whether or not to display videos and images from links posted in chat.
+    locale: :class:`str`
+        The :rfc:`3066` language identifier of the locale to use for the language
+        of the Discord client.
+    message_display_compact: :class:`bool`
+        Whether or not to use the compact Discord display mode.
+    render_embeds: :class:`bool`
+        Whether or not to render embeds that are sent in the chat.
+    render_reactions: :class:`bool`
+        Whether or not to render reactions that are added to messages.
+    restricted_guilds: List[:class:`abc.Snowflake`]
+        A list of guilds that you will not receive DMs from.
+    show_current_game: :class:`bool`
+        Whether or not to display the game that you are currently playing.
+    status: :class:`Status`
+        The clients status that is shown to others.
+    theme: :class:`Theme`
+        The theme of the Discord UI.
+    timezone_offset: :class:`int`
+        The timezone offset to use.
+    """
+    __slots__ = ('render_reactions', 'afk_timeout', 'locale', 'inline_embed_media',
+                 'gif_auto_play', 'explicit_content_filter', 'message_display_compact',
+                 'theme', 'render_embeds', 'show_current_game', 'inline_attachment_media',
+                 'timezone_offset', 'enable_tts_command', 'disable_games_tab', 'developer_mode',
+                 'convert_emoticons', 'friend_source_flags', 'animate_emoji', 'guild_positions',
+                 'restricted_guilds', 'status', 'detect_platform_accounts', 'default_guilds_restricted',
+                 '_state')
+
+    FRIEND_FLAGS = [{}, {'mutual_guilds': True}, {'mutual_friends': True},
+                    {'mutual_guilds': True, 'mutual_friends': True}, {'all': True}]
+
+    def __init__(self, *, state, data):
+        self._state = state
+        self._update(**data)
+
+    def _update(self, **data):
+        for k, v in data.items():
+            if k == 'explicit_content_filter':
+                self.explicit_content_filter = try_enum(UserContentFilter, v)
+            elif k == 'friend_source_flags':
+                self.friend_source_flags = try_enum(FriendFlags, self.FRIEND_FLAGS.index(v))
+            elif k == 'guild_positions':
+                self.guild_positions = [int(guild_id) for guild_id in v]
+            elif k == 'restricted_guilds':
+                self.restricted_guilds = [int(guild_id) for guild_id in v]
+            elif k == 'status':
+                self.status = try_enum(Status, v)
+            elif k == 'theme':
+                self.theme = try_enum(Theme, v)
+            else:
+                setattr(self, k, v)
+
+    def __repr__(self):
+        return '<Settings locale={0.locale!r} status={0.status} theme={0.theme}>'.format(self)
+
+    async def edit(self, **kwargs):
+        """|coro|
+
+        Edits the client user's settings.
+
+        Parameters
+        -----------
+        afk_timeout: :class:`int`
+            How long (in seconds) the user needs to be AFK until Discord
+            sends push notifications to your mobile device.
+        animate_emojis: :class:`bool`
+            Whether or not to animate emojis in the chat.
+        convert_emoticons: :class:`bool`
+            Whether or not to automatically convert emoticons into emojis.
+            e.g. ``:-)`` -> 😃
+        default_guilds_restricted: :class:`bool`
+            Whether or not to automatically disable DMs between you and
+            members of new guilds you join.
+        detect_platform_accounts: :class:`bool`
+            Whether or not to automatically detect accounts from services
+            like Steam and Blizzard when you open the Discord client.
+        developer_mode: :class:`bool`
+            Whether or not to enable developer mode.
+        disable_games_tab: :class:`bool`
+            Whether or not to disable the showing of the Games tab.
+        enable_tts_command: :class:`bool`
+            Whether or not to allow tts messages to be played/sent.
+        explicit_content_filter: :class:`UserContentFilter`
+            The filter for explicit content in all messages.
+        friend_source_flags: :class:`FriendFlags`
+            Who can add you as a friend.
+        gif_auto_play: :class:`bool`
+            Whether or not to automatically play GIFs that are in the chat.
+        guild_positions: List[:class:`abc.Snowflake`]
+            A list of guilds in order of the guild/guild icons that are on
+            the left hand side of the UI.
+        inline_attachment_media: :class:`bool`
+            Whether or not to display attachments when they are uploaded in chat.
+        inline_embed_media: :class:`bool`
+            Whether or not to display videos and images from links posted in chat.
+        locale: :class:`str`
+            The RFC 3066 language identifier of the locale to use for the language
+            of the Discord client.
+        message_display_compact: :class:`bool`
+            Whether or not to use the compact Discord display mode.
+        render_embeds: :class:`bool`
+            Whether or not to render embeds that are sent in the chat.
+        render_reactions: :class:`bool`
+            Whether or not to render reactions that are added to messages.
+        restricted_guilds: List[:class:`abc.Snowflake`]
+            A list of guilds that you will not receive DMs from.
+        show_current_game: :class:`bool`
+            Whether or not to display the game that you are currently playing.
+        status: :class:`Status`
+            The clients status that is shown to others.
+        theme: :class:`Theme`
+            The theme of the Discord UI.
+        timezone_offset: :class:`int`
+            The timezone offset to use.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+        Forbidden
+            The client is a bot user and not a user account.
+        """
+        payload = {}
+
+        content_filter = kwargs.pop('explicit_content_filter', None)
+        if content_filter:
+            payload.update({'explicit_content_filter': content_filter.value})
+
+        friend_flags = kwargs.pop('friend_source_flags', None)
+        if friend_flags:
+            payload.update({'friend_source_flags': self.FRIEND_FLAGS[friend_flags.value]})
+
+        guild_positions = kwargs.pop('guild_positions', None)
+        if guild_positions:
+            guild_positions = [str(x.id) for x in guild_positions]
+            payload.update({'guild_positions': guild_positions})
+
+        restricted_guilds = kwargs.pop('restricted_guilds', None)
+        if restricted_guilds:
+            restricted_guilds = [str(x.id) for x in restricted_guilds]
+            payload.update({'restricted_guilds': restricted_guilds})
+
+        status = kwargs.pop('status', None)
+        if status:
+            payload.update({'status': status.value})
+
+        theme = kwargs.pop('theme', None)
+        if theme:
+            payload.update({'theme': theme.value})
+
+        payload.update(kwargs)
+
+        data = await self._state.http.edit_settings(**payload)
+        return self._update(**data)
 
 _BaseUser = discord.abc.User
 
@@ -286,13 +483,17 @@ class ClientUser(BaseUser):
         Specifies if the user is a premium user (e.g. has Discord Nitro).
     premium_type: :class:`PremiumType`
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
+    settings: :class:`Settings`
+        The user's settings for the official Discord clients.
     """
     __slots__ = ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
-                 'premium', 'premium_type', '_relationships', '__weakref__')
+                 'premium', 'premium_type', '_relationships', '__weakref__',
+                 'settings')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
         self._relationships = {}
+        self.settings = None
 
     def __repr__(self):
         return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
@@ -497,116 +698,51 @@ class ClientUser(BaseUser):
         data = await self._state.http.start_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
 
-    async def edit_settings(self, **kwargs):
+    async def fetch_settings(self):
         """|coro|
 
-        Edits the client user's settings.
+        Retrieves the user's settings.
 
         .. note::
 
             This only applies to non-bot accounts.
 
-        Parameters
-        -------
-        afk_timeout: :class:`int`
-            How long (in seconds) the user needs to be AFK until Discord
-            sends push notifications to your mobile device.
-        animate_emojis: :class:`bool`
-            Whether or not to animate emojis in the chat.
-        convert_emoticons: :class:`bool`
-            Whether or not to automatically convert emoticons into emojis.
-            e.g. :-) -> 😃
-        default_guilds_restricted: :class:`bool`
-            Whether or not to automatically disable DMs between you and
-            members of new guilds you join.
-        detect_platform_accounts: :class:`bool`
-            Whether or not to automatically detect accounts from services
-            like Steam and Blizzard when you open the Discord client.
-        developer_mode: :class:`bool`
-            Whether or not to enable developer mode.
-        disable_games_tab: :class:`bool`
-            Whether or not to disable the showing of the Games tab.
-        enable_tts_command: :class:`bool`
-            Whether or not to allow tts messages to be played/sent.
-        explicit_content_filter: :class:`UserContentFilter`
-            The filter for explicit content in all messages.
-        friend_source_flags: :class:`FriendFlags`
-            Who can add you as a friend.
-        gif_auto_play: :class:`bool`
-            Whether or not to automatically play gifs that are in the chat.
-        guild_positions: List[:class:`abc.Snowflake`]
-            A list of guilds in order of the guild/guild icons that are on
-            the left hand side of the UI.
-        inline_attachment_media: :class:`bool`
-            Whether or not to display attachments when they are uploaded in chat.
-        inline_embed_media: :class:`bool`
-            Whether or not to display videos and images from links posted in chat.
-        locale: :class:`str`
-            The RFC 3066 language identifier of the locale to use for the language
-            of the Discord client.
-        message_display_compact: :class:`bool`
-            Whether or not to use the compact Discord display mode.
-        render_embeds: :class:`bool`
-            Whether or not to render embeds that are sent in the chat.
-        render_reactions: :class:`bool`
-            Whether or not to render reactions that are added to messages.
-        restricted_guilds: List[:class:`abc.Snowflake`]
-            A list of guilds that you will not receive DMs from.
-        show_current_game: :class:`bool`
-            Whether or not to display the game that you are currently playing.
-        status: :class:`Status`
-            The clients status that is shown to others.
-        theme: :class:`Theme`
-            The theme of the Discord UI.
-        timezone_offset: :class:`int`
-            The timezone offset to use.
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`settings` instead.
 
         Raises
         -------
         HTTPException
-            Editing the settings failed.
+            Retrieving the settings failed.
         Forbidden
             The client is a bot user and not a user account.
 
         Returns
+        --------
+        :class:`Settings`
+            The client user's settings.
+        """
+        data = await self._state.http.get_settings()
+
+        return Settings(state=self._state, data=data)
+
+    async def edit_settings(self, **kwargs):
+        """|coro|
+
+        Compatibility method for :meth:`Settings.edit`.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+
+        Returns
         -------
-        :class:`dict`
+        :class:`Settings`
             The client user's updated settings.
         """
-        payload = {}
+        return await self.settings.edit(**kwargs)
 
-        content_filter = kwargs.pop('explicit_content_filter', None)
-        if content_filter:
-            payload.update({'explicit_content_filter': content_filter.value})
-
-        friend_flags = kwargs.pop('friend_source_flags', None)
-        if friend_flags:
-            dicts = [{}, {'mutual_guilds': True}, {'mutual_friends': True},
-            {'mutual_guilds': True, 'mutual_friends': True}, {'all': True}]
-            payload.update({'friend_source_flags': dicts[friend_flags.value]})
-
-        guild_positions = kwargs.pop('guild_positions', None)
-        if guild_positions:
-            guild_positions = [str(x.id) for x in guild_positions]
-            payload.update({'guild_positions': guild_positions})
-
-        restricted_guilds = kwargs.pop('restricted_guilds', None)
-        if restricted_guilds:
-            restricted_guilds = [str(x.id) for x in restricted_guilds]
-            payload.update({'restricted_guilds': restricted_guilds})
-
-        status = kwargs.pop('status', None)
-        if status:
-            payload.update({'status': status.value})
-
-        theme = kwargs.pop('theme', None)
-        if theme:
-            payload.update({'theme': theme.value})
-
-        payload.update(kwargs)
-
-        data = await self._state.http.edit_settings(**payload)
-        return data
 
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.

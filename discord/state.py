@@ -36,7 +36,7 @@ import weakref
 
 from .guild import Guild
 from .activity import _ActivityTag
-from .user import User, ClientUser
+from .user import User, ClientUser, Settings
 from .emoji import Emoji, PartialEmoji
 from .message import Message
 from .relationship import Relationship
@@ -351,6 +351,11 @@ class ConnectionState:
             factory, _ = _channel_factory(pm['type'])
             self._add_private_channel(factory(me=user, data=pm, state=self))
 
+        user_settings = data.get('user_settings', {})
+
+        if user_settings:
+            self.user.settings = Settings(state=self, data=user_settings)
+
         self.dispatch('connect')
         self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
 
@@ -477,6 +482,11 @@ class ConnectionState:
 
     def parse_user_update(self, data):
         self.user._update(data)
+
+    def parse_user_settings_update(self, data):
+        old_settings = copy.copy(self.user.settings)
+        self.user.settings._update(**data)
+        self.dispatch('settings_update', old_settings, self.user.settings)
 
     def parse_channel_delete(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
