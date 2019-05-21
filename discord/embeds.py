@@ -422,6 +422,37 @@ class Embed:
             self._fields = [field]
 
         return self
+   
+    def insert_field_at(self, index, *, name, value, inline=True):
+        """Inserts a field before a specified index to the embed.
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        
+        Parameters
+        -----------
+        index: :class:`int`
+            The index of where to insert the field.
+        name: :class:`str`
+            The name of the field.
+        value: :class:`str`
+            The value of the field.
+        inline: :class:`bool`
+            Whether the field should be displayed inline.
+        """
+
+        field = {
+            'inline': inline,
+            'name': str(name),
+            'value': str(value)
+        }
+
+        try:
+            self._fields.insert(index, field)
+        except AttributeError:
+            self._fields = [field]
+
+        return self
 
     def clear_fields(self):
         """Removes all fields from this embed."""
