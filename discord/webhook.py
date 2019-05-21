@@ -663,21 +663,21 @@ class Webhook:
     def move_to(self, channel):
         """|maybecoro|
 
-        Moves this Webhook.
+        Moves this Webhook to another channel.
 
         If the webhook is constructed with a :class:`RequestsWebhookAdapter` then this is
         not a coroutine.
 
         .. warning::
 
-            This will only work if you fetch the webhook from a client, as there is a state attached.
+            This will only work if you fetch the channel from a client, as there is a state attached.
 
         .. versionadded:: 1.2.0
 
         Parameters
         -----------
         channel: :class:`TextChannel`
-            Where to move the webhook. Must be a text channel.
+            Where to move the webhook.
 
         Raises
         -------
@@ -700,7 +700,7 @@ class Webhook:
 
         token = channel._state.http.token
 
-        if self._state.is_bot:
+        if channel._state.is_bot:
             token = 'Bot ' + token
 
         if isinstance(self._adapter, AsyncWebhookAdapter):
