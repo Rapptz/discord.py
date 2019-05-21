@@ -279,7 +279,7 @@ class ClientUser(BaseUser):
     email: Optional[:class:`str`]
         The email the user used when registering.
     locale: Optional[:class:`str`]
-        The IETF language tag used to identify the user is using.
+        The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
