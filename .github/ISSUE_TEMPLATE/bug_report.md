@@ -22,7 +22,7 @@ about: Report broken or incorrect behaviour
 
 ### Checklist
 
-<!-- Put an x inside [ ] to check it -->
+<!-- Put an x inside [ ] to check it, like so: [x] -->
 
 - [ ] I have searched the open issues for duplicates.
 - [ ] I have shown the entire traceback, if possible.
