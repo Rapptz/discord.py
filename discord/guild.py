@@ -32,6 +32,7 @@ from .role import Role
 from .member import Member, VoiceState
 from .activity import create_activity
 from .emoji import Emoji
+from .errors import InvalidData
 from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
@@ -955,7 +956,7 @@ class Guild(Hashable):
         def convert(d):
             factory, ch_type = _channel_factory(d['type'])
             if factory is None:
-                raise TypeError('Unknown channel type %s.' % d['type'])
+                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 
             channel = factory(guild=self, state=self._state, data=d)
             return channel

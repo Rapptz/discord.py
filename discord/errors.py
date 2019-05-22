@@ -125,6 +125,12 @@ class NotFound(HTTPException):
     pass
 
 
+class InvalidData(ClientException):
+    """Exception that's raised when the library encounters unknown
+    or invalid data from Discord.
+    """
+    pass
+
 class InvalidArgument(ClientException):
     """Exception that's thrown when an argument to a function
     is invalid some way (e.g. wrong value or wrong type).

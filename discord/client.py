@@ -1189,14 +1189,13 @@ class Client:
 
         factory, ch_type = _channel_factory(data['type'])
         if factory is None:
-            raise TypeError('Unknown channel type %s.' % data['type'])
+            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 
         if ch_type in (ChannelType.group, ChannelType.private):
             channel = factory(me=self.user, data=data, state=self._connection)
         else:
             guild_id = int(data['guild_id'])
             guild = self.get_guild(guild_id) or Object(id=guild_id)
-
             channel = factory(guild=guild, state=self._connection, data=data)
 
         return channel
