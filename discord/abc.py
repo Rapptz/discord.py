@@ -905,7 +905,7 @@ class Messageable(metaclass=abc.ABCMeta):
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
-        """Return an :class:`.AsyncIterator` that enables receiving the destination's message history.
+        """Returns an :class:`.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
 

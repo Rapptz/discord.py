@@ -1642,7 +1642,7 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
     .. describe:: iter(diff)
 
-        Return an iterator over (attribute, value) tuple of this diff.
+        Returns an iterator over (attribute, value) tuple of this diff.
 
     .. attribute:: name
 
