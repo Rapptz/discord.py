@@ -64,9 +64,9 @@ class Embed:
             Returns the total size of the embed.
             Useful for checking if it's within the 6000 character limit.
 
-    Certain properties return an ``EmbedProxy``. Which is a type
-    that acts similar to a regular :class:`dict` except access the attributes
-    via dotted access, e.g. ``embed.author.icon_url``. If the attribute
+    Certain properties return an ``EmbedProxy``, a type
+    that acts similar to a regular :class:`dict` except using dotted access,
+    e.g. ``embed.author.icon_url``. If the attribute
     is invalid or empty, then a special sentinel value is returned,
     :attr:`Embed.Empty`.
 
