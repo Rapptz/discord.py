@@ -429,6 +429,8 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
         
+        .. versionadded:: 1.2.0
+        
         Parameters
         -----------
         index: :class:`int`
