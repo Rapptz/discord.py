@@ -104,11 +104,11 @@ class HTTPException(DiscordException):
             self.text = message
             self.code = 0
 
-        fmt = '{0.reason} (status code: {0.status})'
+        fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
-            fmt = fmt + ': {1}'
+            fmt = fmt + ': {2}'
 
-        super().__init__(fmt.format(self.response, self.text))
+        super().__init__(fmt.format(self.response, self.code, self.text))
 
 class Forbidden(HTTPException):
     """Exception that's thrown for when status code 403 occurs.
