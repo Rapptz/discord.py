@@ -32,7 +32,7 @@ If the bug report is missing this information then it'll take us longer to fix t
 
 ## Submitting a Pull Request
 
-Submitting a pull request is fairly simple, just make sure it focuses on a single aspect and doesn't manage to have scope creep and it's probably good to go. It would be incredibly lovely if the style is consistent to those found in the project. This project follows PEP-8 guidelines (mostly) with a column limit of 125.
+Submitting a pull request is fairly simple, just make sure it focuses on a single aspect and doesn't manage to have scope creep and it's probably good to go. It would be incredibly lovely if the style is consistent to that found in the project. This project follows PEP-8 guidelines (mostly) with a column limit of 125.
 
 ### Git Commit Guidelines
 
