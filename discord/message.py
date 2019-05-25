@@ -167,6 +167,8 @@ class Message:
     -----------
     tts: :class:`bool`
         Specifies if the message was done with text-to-speech.
+        This can only be accurately received in :func:`on_message` due to
+        a discord limitation.
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
         in cases where it might be a system message for :attr:`system_content`.
