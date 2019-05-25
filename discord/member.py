@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import itertools
+from operator import attrgetter
 
 import discord.abc
 
@@ -90,10 +91,12 @@ def flatten_user(cls):
         # if it's a slotted attribute or a property, redirect it
         # slotted members are implemented as member_descriptors in Type.__dict__
         if not hasattr(value, '__annotations__'):
-            def getter(self, x=attr):
-                return getattr(self._user, x)
+            getter = attrgetter('_user.' + attr)
             setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
         else:
+            # Technically, this can also use attrgetter
+            # However I'm not sure how I feel about "functions" returning properties
+            # It probably breaks something in Sphinx.
             # probably a member function by now
             def generate_function(x):
                 def general(self, *args, **kwargs):
