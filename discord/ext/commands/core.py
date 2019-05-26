@@ -215,7 +215,7 @@ class Command(_BaseCommand):
 
         self.help = help_doc
 
-        self.brief = kwargs.get('brief')
+        self.brief = kwargs.get('brief', self.help.split('\n')[0])
         self.usage = kwargs.get('usage')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
