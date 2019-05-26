@@ -206,7 +206,7 @@ class Emoji:
         return "<:{0.name}:{0.id}>".format(self)
 
     def __repr__(self):
-        return '<Emoji id={0.id} name={0.name!r}>'.format(self)
+        return '<Emoji id={0.id} name={0.name!r} animated={0.animated} managed={0.managed}>'.format(self)
 
     def __eq__(self, other):
         return isinstance(other, (PartialEmoji, Emoji)) and self.id == other.id

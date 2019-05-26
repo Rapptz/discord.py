@@ -107,7 +107,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<TextChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('position', self.position),
+            ('nsfw', self.nsfw),
+            ('news', self.is_news()),
+            ('category_id', self.category_id)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
 
     def _update(self, guild, data):
         self.guild = guild
@@ -491,7 +499,15 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<VoiceChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('position', self.position),
+            ('bitrate', self.bitrate),
+            ('user_limit', self.user_limit),
+            ('category_id', self.category_id)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
 
     def _get_voice_client_key(self):
         return self.guild.id, 'guild_id'
@@ -629,7 +645,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
 
     def _update(self, guild, data):
         self.guild = guild
@@ -788,7 +804,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<StoreChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        return '<StoreChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
 
     def _update(self, guild, data):
         self.guild = guild
@@ -1030,7 +1046,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the channel's icon asset."""
+        """:class:`Asset`: Returns the channel's icon asset if available."""
         return Asset._from_icon(self._state, self, 'channel')
 
     @property

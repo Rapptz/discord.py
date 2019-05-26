@@ -152,6 +152,18 @@ class Activity(_ActivityTag):
         self.session_id = kwargs.pop('session_id', None)
         self.type = try_enum(ActivityType, kwargs.pop('type', -1))
 
+    def __repr__(self):
+        attrs = (
+            'type',
+            'name',
+            'url',
+            'details',
+            'application_id',
+            'session_id',
+        )
+        mapped = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in attrs)
+        return '<Activity %s>' % mapped
+
     def to_dict(self):
         ret = {}
         for attr in self.__slots__:

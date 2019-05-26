@@ -294,7 +294,9 @@ class Invite(Hashable):
         return self.url
 
     def __repr__(self):
-        return '<Invite code={0.code!r}>'.format(self)
+        return '<Invite code={0.code!r} guild={0.guild!r} ' \
+                'online={0.approximate_presence_count} ' \
+                'members={0.approximate_member_count}>'.format(self)
 
     def __hash__(self):
         return hash(self.code)
