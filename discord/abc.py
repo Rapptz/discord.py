@@ -893,6 +893,12 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Returns a :class:`list` of :class:`.Message` that are currently pinned.
 
+        .. note::
+
+            Due to a limitation with the Discord API, the :class:`Message`
+            objects returned by this method do not contain complete
+            :attr:`Message.reactions` data.
+
         Raises
         -------
         :exc:`.HTTPException`
