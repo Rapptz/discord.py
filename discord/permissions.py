@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 class Permissions:
-    """Wraps up the Discord permission value.
+    r"""Wraps up the Discord permission value.
 
     The properties provided are two way. You can set and retrieve individual
     bits using the properties as if they were regular bools. This allows
@@ -59,6 +59,17 @@ class Permissions:
                Returns an iterator of ``(perm, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
 
+    Parameters
+    -----------
+    permissions: :class:`int`
+        The raw permissions value to instantiate this class with.
+        See :attr:`value` for information.
+    \*\*kwargs
+        A list of key/value pairs to set permission values with.
+        The values of the permissions passed will take priority over their
+        respective bit flag in ``permissions``, if it is provided.
+        Permissions not passed default to ``False``.
+
     Attributes
     -----------
     value
@@ -68,11 +79,12 @@ class Permissions:
     """
 
     __slots__ = ('value',)
-    def __init__(self, permissions=0):
+    def __init__(self, permissions=0, **kwargs):
         if not isinstance(permissions, int):
             raise TypeError('Expected int parameter, received %s instead.' % permissions.__class__.__name__)
 
         self.value = permissions
+        self.update(**kwargs)
 
     def __eq__(self, other):
         return isinstance(other, Permissions) and self.value == other.value
