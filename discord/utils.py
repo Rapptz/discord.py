@@ -34,6 +34,7 @@ import datetime
 from email.utils import parsedate_to_datetime
 import functools
 from inspect import isawaitable as _isawaitable
+from operator import attrgetter
 import json
 import re
 import warnings
@@ -247,19 +248,28 @@ def get(iterable, **attrs):
         Keyword arguments that denote attributes to search with.
     """
 
-    def predicate(elem):
-        for attr, val in attrs.items():
-            nested = attr.split('__')
-            obj = elem
-            for attribute in nested:
-                obj = getattr(obj, attribute)
+    # global -> local
+    _all = all
+    attrget = attrgetter
 
-            if obj != val:
-                return False
-        return True
+    # Special case the single element call
+    if len(attrs) == 1:
+        k, v = attrs.popitem()
+        pred = attrget(k.replace('__', '.'))
+        for elem in iterable:
+            if pred(elem) == v:
+                return elem
+        return None
 
-    return find(predicate, iterable)
+    converted = [
+        (attrget(attr.replace('__', '.')), value)
+        for attr, value in attrs.items()
+    ]
 
+    for elem in iterable:
+        if _all(pred(elem) == value for pred, value in converted):
+            return elem
+    return None
 
 def _unique(iterable):
     seen = set()
