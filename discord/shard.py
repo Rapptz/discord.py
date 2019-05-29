@@ -221,6 +221,7 @@ class AutoShardedClient(Client):
 
         ws.token = self.http.token
         ws._connection = self._connection
+        ws._discord_parsers = self._connection.parsers
         ws._dispatch = self.dispatch
         ws.gateway = gateway
         ws.shard_id = shard_id

@@ -227,6 +227,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         # dynamically add attributes needed
         ws.token = client.http.token
         ws._connection = client._connection
+        ws._discord_parsers = client._connection.parsers
         ws._dispatch = client.dispatch
         ws.gateway = gateway
         ws.shard_id = shard_id
@@ -414,11 +415,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
                      self.shard_id, self.session_id, ', '.join(trace))
 
-        parser = 'parse_' + event.lower()
-
         try:
-            func = getattr(self._connection, parser)
-        except AttributeError:
+            func = self._discord_parsers[event]
+        except KeyError:
             log.warning('Unknown event %s.', event)
         else:
             func(data)
