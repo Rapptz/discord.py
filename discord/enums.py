@@ -76,14 +76,18 @@ class ChannelType(Enum):
 
 @fast_lookup
 class MessageType(Enum):
-    default             = 0
-    recipient_add       = 1
-    recipient_remove    = 2
-    call                = 3
-    channel_name_change = 4
-    channel_icon_change = 5
-    pins_add            = 6
-    new_member          = 7
+    default                    = 0
+    recipient_add              = 1
+    recipient_remove           = 2
+    call                       = 3
+    channel_name_change        = 4
+    channel_icon_change        = 5
+    pins_add                   = 6
+    new_member                 = 7
+    premium_guild_subscription = 8
+    premium_guild_tier_1       = 9
+    premium_guild_tier_2       = 10
+    premium_guild_tier_3       = 11
 
 @fast_lookup
 class VoiceRegion(Enum):

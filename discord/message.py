@@ -603,6 +603,18 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
+        if self.type is MessageType.premium_guild_subscription:
+            return '{0.author.name} just boosted the server!'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_1:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_2:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 2!**'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_3:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 3!**'.format(self)
+
     async def delete(self, *, delay=None):
         """|coro|
 

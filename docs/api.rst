@@ -720,6 +720,22 @@ All enumerations are subclasses of `enum`_.
 
         The system message denoting that a new member has joined a Guild.
 
+    .. attribute:: premium_guild_subscription
+
+        The system message denoting that a member has "nitro boosted" a guild.
+    .. attribute:: premium_guild_tier_1
+
+        The system message denoting that a member has "nitro boosted" a guild
+        and it achieved level 1.
+    .. attribute:: premium_guild_tier_2
+
+        The system message denoting that a member has "nitro boosted" a guild
+        and it achieved level 2.
+    .. attribute:: premium_guild_tier_3
+
+        The system message denoting that a member has "nitro boosted" a guild
+        and it achieved level 3.
+
 .. class:: ActivityType
 
     Specifies the type of :class:`Activity`. This is used to check how to
