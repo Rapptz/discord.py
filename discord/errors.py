@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -38,6 +38,11 @@ class ClientException(DiscordException):
     """
     pass
 
+class NoMoreItems(DiscordException):
+    """Exception that is thrown when an async iteration operation has no more
+    items."""
+    pass
+
 class GatewayNotFound(DiscordException):
     """An exception that is usually thrown when the gateway hub
     for the :class:`Client` websocket is not found."""
@@ -45,34 +50,65 @@ class GatewayNotFound(DiscordException):
         message = 'The gateway to connect to discord was not found.'
         super(GatewayNotFound, self).__init__(message)
 
+def flatten_error_dict(d, key=''):
+    items = []
+    for k, v in d.items():
+        new_key = key + '.' + k if key else k
+
+        if isinstance(v, dict):
+            try:
+                _errors = v['_errors']
+            except KeyError:
+                items.extend(flatten_error_dict(v, new_key).items())
+            else:
+                items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
+        else:
+            items.append((new_key, v))
+
+    return dict(items)
+
 class HTTPException(DiscordException):
     """Exception that's thrown when an HTTP request operation fails.
 
-    .. attribute:: response
-
+    Attributes
+    ------------
+    response: aiohttp.ClientResponse
         The response of the failed HTTP request. This is an
-        instance of `aiohttp.ClientResponse`__.
+        instance of `aiohttp.ClientResponse`__. In some cases
+        this could also be a ``requests.Response``.
 
         __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
 
-    .. attribute:: text
-
+    text: :class:`str`
         The text of the error. Could be an empty string.
+    status: :class:`int`
+        The status code of the HTTP request.
+    code: :class:`int`
+        The Discord specific error code for the failure.
     """
 
     def __init__(self, response, message):
         self.response = response
-        if type(message) is dict:
-            self.text = message.get('message', '')
+        self.status = response.status
+        if isinstance(message, dict):
             self.code = message.get('code', 0)
+            base = message.get('message', '')
+            errors = message.get('errors')
+            if errors:
+                errors = flatten_error_dict(errors)
+                helpful = '\n'.join('In %s: %s' % t for t in errors.items())
+                self.text = base + '\n' + helpful
+            else:
+                self.text = base
         else:
             self.text = message
+            self.code = 0
 
-        fmt = '{0.reason} (status code: {0.status})'
+        fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
-            fmt = fmt + ': {1}'
+            fmt = fmt + ': {2}'
 
-        super().__init__(fmt.format(self.response, self.text))
+        super().__init__(fmt.format(self.response, self.code, self.text))
 
 class Forbidden(HTTPException):
     """Exception that's thrown for when status code 403 occurs.
@@ -94,7 +130,7 @@ class InvalidArgument(ClientException):
     is invalid some way (e.g. wrong value or wrong type).
 
     This could be considered the analogous of ``ValueError`` and
-    ``TypeError`` except derived from :exc:`ClientException` and thus
+    ``TypeError`` except inherited from :exc:`ClientException` and thus
     :exc:`DiscordException`.
     """
     pass
@@ -112,14 +148,17 @@ class ConnectionClosed(ClientException):
 
     Attributes
     -----------
-    code : int
+    code: :class:`int`
         The close code of the websocket.
-    reason : str
+    reason: :class:`str`
         The reason provided for the closure.
+    shard_id: Optional[:class:`int`]
+        The shard ID that got closed if applicable.
     """
-    def __init__(self, original):
+    def __init__(self, original, *, shard_id):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
         self.code = original.code
         self.reason = original.reason
+        self.shard_id = shard_id
         super().__init__(str(original))

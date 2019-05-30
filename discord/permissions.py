@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -27,48 +27,51 @@ DEALINGS IN THE SOFTWARE.
 class Permissions:
     """Wraps up the Discord permission value.
 
-    Supported operations:
+    The properties provided are two way. You can set and retrieve individual
+    bits using the properties as if they were regular bools. This allows
+    you to edit permissions.
 
-    +-----------+------------------------------------------+
-    | Operation |               Description                |
-    +===========+==========================================+
-    | x == y    | Checks if two permissions are equal.     |
-    +-----------+------------------------------------------+
-    | x != y    | Checks if two permissions are not equal. |
-    +-----------+------------------------------------------+
-    | x <= y    | Checks if a permission is a subset       |
-    |           | of another permission.                   |
-    +-----------+------------------------------------------+
-    | x >= y    | Checks if a permission is a superset     |
-    |           | of another permission.                   |
-    +-----------+------------------------------------------+
-    | x < y     | Checks if a permission is a strict       |
-    |           | subset of another permission.            |
-    +-----------+------------------------------------------+
-    | x > y     | Checks if a permission is a strict       |
-    |           | superset of another permission.          |
-    +-----------+------------------------------------------+
-    | hash(x)   | Return the permission's hash.            |
-    +-----------+------------------------------------------+
-    | iter(x)   | Returns an iterator of (perm, value)     |
-    |           | pairs. This allows this class to be used |
-    |           | as an iterable in e.g. set/list/dict     |
-    |           | constructions.                           |
-    +-----------+------------------------------------------+
+    .. container:: operations
 
-    The properties provided are two way. You can set and retrieve individual bits using the properties as if they
-    were regular bools. This allows you to edit permissions.
+        .. describe:: x == y
+
+            Checks if two permissions are equal.
+        .. describe:: x != y
+
+            Checks if two permissions are not equal.
+        .. describe:: x <= y
+
+            Checks if a permission is a subset of another permission.
+        .. describe:: x >= y
+
+            Checks if a permission is a superset of another permission.
+        .. describe:: x < y
+
+             Checks if a permission is a strict subset of another permission.
+        .. describe:: x > y
+
+             Checks if a permission is a strict superset of another permission.
+        .. describe:: hash(x)
+
+               Return the permission's hash.
+        .. describe:: iter(x)
+
+               Returns an iterator of ``(perm, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
 
     Attributes
     -----------
     value
-        The raw value. This value is a bit array field of a 32-bit integer
+        The raw value. This value is a bit array field of a 53-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
     """
 
-    __slots__ = [ 'value' ]
-    def __init__(self, permissions=0, **kwargs):
+    __slots__ = ('value',)
+    def __init__(self, permissions=0):
+        if not isinstance(permissions, int):
+            raise TypeError('Expected int parameter, received %s instead.' % permissions.__class__.__name__)
+
         self.value = permissions
 
     def __eq__(self, other):
@@ -79,6 +82,9 @@ class Permissions:
 
     def __hash__(self):
         return hash(self.value)
+
+    def __repr__(self):
+        return '<Permissions value=%s>' % self.value
 
     def _perm_iterator(self):
         for attr in dir(self):
@@ -91,18 +97,18 @@ class Permissions:
         return self._perm_iterator()
 
     def is_subset(self, other):
-        """Returns True if other has the same or fewer permissions as self."""
+        """Returns True if self has the same or fewer permissions as other."""
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
 
     def is_superset(self, other):
-        """Returns True if other has the same or more permissions as self."""
+        """Returns True if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__name))
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
 
     def is_strict_subset(self, other):
         """Returns True if the permissions on other are a strict subset of those on self."""
@@ -127,19 +133,19 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111110001111111)
+        return cls(0b01111111111101111111111111111111)
 
     @classmethod
     def all_channel(cls):
         """A :class:`Permissions` with all channel-specific permissions set to
-        True and the server-specific ones set to False. The server-specific
+        True and the guild-specific ones set to False. The guild-specific
         permissions are currently:
 
-        - manager_server
+        - manage_guild
         - kick_members
         - ban_members
         - administrator
-        - change_nicknames
+        - change_nickname
         - manage_nicknames
         """
         return cls(0b00110011111101111111110001010001)
@@ -148,7 +154,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to True."""
-        return cls(0b01111100000000000000000000111111)
+        return cls(0b01111100000000000000000010111111)
 
     @classmethod
     def text(cls):
@@ -160,10 +166,10 @@ class Permissions:
     def voice(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to True."""
-        return cls(0b00000011111100000000000000000000)
+        return cls(0b00000011111100000000001100000000)
 
     def update(self, **kwargs):
-        """Bulk updates this permission object.
+        r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
         arguments. The names must be equivalent to the properties
@@ -187,9 +193,9 @@ class Permissions:
         return bool((self.value >> index) & 1)
 
     def _set(self, index, value):
-        if value == True:
+        if value is True:
             self.value |= (1 << index)
-        elif value == False:
+        elif value is False:
             self.value &= ~(1 << index)
         else:
             raise TypeError('Value to set for Permissions must be a bool.')
@@ -220,7 +226,7 @@ class Permissions:
 
     @property
     def kick_members(self):
-        """Returns True if the user can kick users from the server."""
+        """Returns True if the user can kick users from the guild."""
         return self._bit(1)
 
     @kick_members.setter
@@ -229,7 +235,7 @@ class Permissions:
 
     @property
     def ban_members(self):
-        """Returns True if a user can ban users from the server."""
+        """Returns True if a user can ban users from the guild."""
         return self._bit(2)
 
     @ban_members.setter
@@ -250,9 +256,9 @@ class Permissions:
 
     @property
     def manage_channels(self):
-        """Returns True if a user can edit, delete, or create channels in the server.
+        """Returns True if a user can edit, delete, or create channels in the guild.
 
-        This also corresponds to the "manage channel" channel-specific override."""
+        This also corresponds to the "Manage Channel" channel-specific override."""
         return self._bit(4)
 
     @manage_channels.setter
@@ -260,12 +266,12 @@ class Permissions:
         self._set(4, value)
 
     @property
-    def manage_server(self):
-        """Returns True if a user can edit server properties."""
+    def manage_guild(self):
+        """Returns True if a user can edit guild properties."""
         return self._bit(5)
 
-    @manage_server.setter
-    def manage_server(self, value):
+    @manage_guild.setter
+    def manage_guild(self, value):
         self._set(5, value)
 
     @property
@@ -277,7 +283,32 @@ class Permissions:
     def add_reactions(self, value):
         self._set(6, value)
 
-    # 4 unused
+    @property
+    def view_audit_log(self):
+        """Returns True if a user can view the guild's audit log."""
+        return self._bit(7)
+
+    @view_audit_log.setter
+    def view_audit_log(self, value):
+        self._set(7, value)
+
+    @property
+    def priority_speaker(self):
+        """Returns True if a user can be more easily heard while talking."""
+        return self._bit(8)
+
+    @priority_speaker.setter
+    def priority_speaker(self, value):
+        self._set(8, value)
+
+    @property
+    def stream(self):
+        """Returns ``True`` if a user can stream in a voice channel."""
+        return self._bit(9)
+
+    @stream.setter
+    def stream(self, value):
+        self._set(9, value)
 
     @property
     def read_messages(self):
@@ -308,7 +339,7 @@ class Permissions:
 
     @property
     def manage_messages(self):
-        """Returns True if a user can delete messages from a text channel. Note that there are currently no ways to edit other people's messages."""
+        """Returns True if a user can delete or pin messages in a text channel. Note that there are currently no ways to edit other people's messages."""
         return self._bit(13)
 
     @manage_messages.setter
@@ -344,7 +375,7 @@ class Permissions:
 
     @property
     def mention_everyone(self):
-        """Returns True if a user's @everyone will mention everyone in the text channel."""
+        """Returns True if a user's @everyone or @here will mention everyone in the text channel."""
         return self._bit(17)
 
     @mention_everyone.setter
@@ -353,7 +384,7 @@ class Permissions:
 
     @property
     def external_emojis(self):
-        """Returns True if a user can use emojis from other servers."""
+        """Returns True if a user can use emojis from other guilds."""
         return self._bit(18)
 
     @external_emojis.setter
@@ -418,7 +449,7 @@ class Permissions:
 
     @property
     def change_nickname(self):
-        """Returns True if a user can change their nickname in the server."""
+        """Returns True if a user can change their nickname in the guild."""
         return self._bit(26)
 
     @change_nickname.setter
@@ -427,7 +458,7 @@ class Permissions:
 
     @property
     def manage_nicknames(self):
-        """Returns True if a user can change other user's nickname in the server."""
+        """Returns True if a user can change other user's nickname in the guild."""
         return self._bit(27)
 
     @manage_nicknames.setter
@@ -438,7 +469,7 @@ class Permissions:
     def manage_roles(self):
         """Returns True if a user can create or edit roles less than their role's position.
 
-        This also corresponds to the "manage permissions" channel-specific override.
+        This also corresponds to the "Manage Permissions" channel-specific override.
         """
         return self._bit(28)
 
@@ -469,7 +500,7 @@ class Permissions:
     # after these 32 bits, there's 21 more unused ones technically
 
 def augment_from_permissions(cls):
-    cls.VALID_NAMES = { name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property) }
+    cls.VALID_NAMES = {name for name in dir(Permissions) if isinstance(getattr(Permissions, name), property)}
 
     # make descriptors for all the valid names
     for name in cls.VALID_NAMES:
@@ -486,7 +517,7 @@ def augment_from_permissions(cls):
 
 @augment_from_permissions
 class PermissionOverwrite:
-    """A type that is used to represent a channel specific permission.
+    r"""A type that is used to represent a channel specific permission.
 
     Unlike a regular :class:`Permissions`\, the default value of a
     permission is equivalent to ``None`` and not ``False``. Setting
@@ -502,6 +533,10 @@ class PermissionOverwrite:
     +-----------+------------------------------------------+
     | Operation |               Description                |
     +===========+==========================================+
+    | x == y    | Checks if two overwrites are equal.      |
+    +-----------+------------------------------------------+
+    | x != y    | Checks if two overwrites are not equal.  |
+    +-----------+------------------------------------------+
     | iter(x)   | Returns an iterator of (perm, value)     |
     |           | pairs. This allows this class to be used |
     |           | as an iterable in e.g. set/list/dict     |
@@ -514,11 +549,19 @@ class PermissionOverwrite:
         Set the value of permissions by their name.
     """
 
+    __slots__ = ('_values',)
+
     def __init__(self, **kwargs):
         self._values = {}
 
         for key, value in kwargs.items():
+            if key not in self.VALID_NAMES:
+                raise ValueError('no permission called {0}.'.format(key))
+
             setattr(self, key, value)
+
+    def __eq__(self, other):
+        return self._values == other._values
 
     def _set(self, key, value):
         if value not in (True, None, False):
@@ -533,7 +576,7 @@ class PermissionOverwrite:
         """
 
         allow = Permissions.none()
-        deny  = Permissions.none()
+        deny = Permissions.none()
 
         for key, value in self._values.items():
             if value is True:
@@ -566,7 +609,7 @@ class PermissionOverwrite:
         return all(x is None for x in self._values.values())
 
     def update(self, **kwargs):
-        """Bulk updates this permission overwrite object.
+        r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword
         arguments. The names must be equivalent to the properties

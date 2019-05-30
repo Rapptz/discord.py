@@ -1,24 +1,20 @@
 import discord
 import asyncio
 
-client = discord.Client()
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print('Connected!')
+        print('Username: {0.name}\nID: {0.id}'.format(self.user))
 
-@client.event
-async def on_ready():
-    print('Connected!')
-    print('Username: ' + client.user.name)
-    print('ID: ' + client.user.id)
+    async def on_message(self, message):
+        if message.content.startswith('!editme'):
+            msg = await message.channel.send('10')
+            await asyncio.sleep(3.0)
+            await msg.edit(content='40')
 
-@client.event
-async def on_message(message):
-    if message.content.startswith('!editme'):
-        msg = await client.send_message(message.author, '10')
-        await asyncio.sleep(3)
-        await client.edit_message(msg, '40')
+    async def on_message_edit(self, before, after):
+        fmt = '**{0.author}** edited their message:\n{0.content} -> {1.content}'
+        await before.channel.send(fmt.format(before, after))
 
-@client.event
-async def on_message_edit(before, after):
-    fmt = '**{0.author}** edited their message:\n{1.content}'
-    await client.send_message(after.channel, fmt.format(after, before))
-
+client = MyClient()
 client.run('token')

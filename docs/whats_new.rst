@@ -2,11 +2,144 @@
 
 .. _whats_new:
 
-What's New
+Changelog
 ============
 
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
+
+.. _vp1p1p1:
+
+v1.1.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Webhooks do not overwrite data on retrying their HTTP requests (:issue:`2140`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Add back signal handling to :meth:`Client.run` due to issues some users had with proper cleanup.
+
+.. _vp1p1p0:
+
+v1.1.0
+---------
+
+New Features
+~~~~~~~~~~~~~~
+
+- **There is a new extension dedicated to making background tasks easier.**
+    - You can check the documentation here: :ref:`ext_tasks_api`.
+- Add :attr:`Permissions.stream` permission. (:issue:`2077`)
+- Add equality comparison and hash support to :class:`Asset`
+- Add ``compute_prune_members`` parameter to :meth:`Guild.prune_members` (:issue:`2085`)
+- Add :attr:`Client.cached_messages` attribute to fetch the message cache (:issue:`2086`)
+- Add :meth:`abc.GuildChannel.clone` to clone a guild channel. (:issue:`2093`)
+- Add ``delay`` keyword-only argument to :meth:`Message.delete` (:issue:`2094`)
+- Add support for ``<:name:id>`` when adding reactions (:issue:`2095`)
+- Add :meth:`Asset.read` to fetch the bytes content of an asset (:issue:`2107`)
+- Add :meth:`Attachment.read` to fetch the bytes content of an attachment (:issue:`2118`)
+- Add support for voice kicking by passing ``None`` to :meth:`Member.move_to`.
+
+``discord.ext.commands``
+++++++++++++++++++++++++++
+
+- Add new :func:`~.commands.dm_only` check.
+- Support callable converters in :data:`~.commands.Greedy`
+- Add new :class:`~.commands.MessageConverter`.
+    - This allows you to use :class:`Message` as a type hint in functions.
+- Allow passing ``cls`` in the :func:`~.commands.group` decorator (:issue:`2061`)
+- Add :attr:`.Command.parents` to fetch the parents of a command (:issue:`2104`)
+
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Fix :exc:`AttributeError` when using ``__repr__`` on :class:`Widget`.
+- Fix issue with :attr:`abc.GuildChannel.overwrites` returning ``None`` for keys.
+- Remove incorrect legacy NSFW checks in e.g. :meth:`TextChannel.is_nsfw`.
+- Fix :exc:`UnboundLocalError` when :class:`RequestsWebhookAdapter` raises an error.
+- Fix bug where updating your own user did not update your member instances.
+- Tighten constraints of ``__eq__`` in :class:`Spotify` objects (:issue:`2113`, :issue:`2117`)
+
+``discord.ext.commands``
+++++++++++++++++++++++++++
+
+- Fix lambda converters in a non-module context (e.g. ``eval``).
+- Use message creation time for reference time when computing cooldowns.
+    - This prevents cooldowns from triggering during e.g. a RESUME session.
+- Fix the default :func:`on_command_error` to work with new-style cogs (:issue:`2094`)
+- DM channels are now recognised as NSFW in :func:`~.commands.is_nsfw` check.
+- Fix race condition with help commands (:issue:`2123`)
+- Fix cog descriptions not showing in :class:`~.commands.MinimalHelpCommand` (:issue:`2139`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Improve the performance of internal enum creation in the library by about 5x.
+- Make the output of ``python -m discord --version`` a bit more useful.
+- The loop cleanup facility has been rewritten again.
+- The signal handling in :meth:`Client.run` has been removed.
+
+``discord.ext.commands``
+++++++++++++++++++++++++++
+
+- Custom exception classes are now used for all default checks in the library (:issue:`2101`)
+
+
+.. _vp1p0p1:
+
+v1.0.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix issue with speaking state being cast to ``int`` when it was invalid.
+- Fix some issues with loop cleanup that some users experienced on Linux machines.
+- Fix voice handshake race condition (:issue:`2056`, :issue:`2063`)
+
+.. _vp1p0p0:
+
+v1.0.0
+--------
+
+The changeset for this version are too big to be listed here, for more information please
+see :ref:`the migrating page <migrating_1_0>`.
+
+
+.. _vp0p16p6:
+
+v0.16.6
+--------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix issue with :meth:`Client.create_server` that made it stop working.
+- Fix main thread being blocked upon calling ``StreamPlayer.stop``.
+- Handle HEARTBEAT_ACK and resume gracefully when it occurs.
+- Fix race condition when pre-emptively rate limiting that caused releasing an already released lock.
+- Fix invalid state errors when immediately cancelling a coroutine.
+
+.. _vp0p16p1:
+
+v0.16.1
+--------
+
+This release is just a bug fix release with some better rate limit implementation.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Servers are now properly chunked for user bots.
+- The CDN URL is now used instead of the API URL for assets.
+- Rate limit implementation now tries to use header information if possible.
+- Event loop is now properly propagated (:issue:`420`)
+- Allow falsey values in :meth:`Client.send_message` and :meth:`Client.send_file`.
 
 .. _vp0p16p0:
 

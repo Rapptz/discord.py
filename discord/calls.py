@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,9 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from . import utils
 import datetime
-from .enums import ServerRegion, try_enum
+
+from . import utils
+from .enums import VoiceRegion, try_enum
 from .member import VoiceState
 
 class CallMessage:
@@ -52,12 +53,12 @@ class CallMessage:
 
     @property
     def call_ended(self):
-        """bool: Indicates if the call has ended."""
+        """:class:`bool`: Indicates if the call has ended."""
         return self.ended_timestamp is not None
 
     @property
     def channel(self):
-        """:class:`PrivateChannel`\: The private channel associated with this message."""
+        r""":class:`GroupChannel`\: The private channel associated with this message."""
         return self.message.channel
 
     @property
@@ -73,9 +74,9 @@ class CallMessage:
             The timedelta object representing the duration.
         """
         if self.ended_timestamp is None:
-            return datetime.datetime.utcnow() - self.message.timestamp
+            return datetime.datetime.utcnow() - self.message.created_at
         else:
-            return self.ended_timestamp - self.message.timestamp
+            return self.ended_timestamp - self.message.created_at
 
 class GroupCall:
     """Represents the actual group call from Discord.
@@ -86,12 +87,12 @@ class GroupCall:
     -----------
     call: :class:`CallMessage`
         The call message associated with this group call.
-    unavailable: bool
+    unavailable: :class:`bool`
         Denotes if this group call is unavailable.
     ringing: List[:class:`User`]
         A list of users that are currently being rung to join the call.
-    region: :class:`ServerRegion`
-        The server region the group call is being hosted on.
+    region: :class:`VoiceRegion`
+        The guild region the group call is being hosted on.
     """
 
     def __init__(self, **kwargs):
@@ -105,24 +106,23 @@ class GroupCall:
         self._update(**kwargs)
 
     def _update(self, **kwargs):
-        self.region = try_enum(ServerRegion, kwargs.get('region'))
+        self.region = try_enum(VoiceRegion, kwargs.get('region'))
         lookup = {u.id: u for u in self.call.channel.recipients}
         me = self.call.channel.me
         lookup[me.id] = me
-        self.ringing = list(filter(None, map(lambda i: lookup.get(i), kwargs.get('ringing', []))))
+        self.ringing = list(filter(None, map(lookup.get, kwargs.get('ringing', []))))
 
     def _update_voice_state(self, data):
-        user_id = data['user_id']
+        user_id = int(data['user_id'])
         # left the voice channel?
         if data['channel_id'] is None:
             self._voice_states.pop(user_id, None)
         else:
-            data['voice_channel'] = self.channel
-            self._voice_states[user_id] = VoiceState(**data)
+            self._voice_states[user_id] = VoiceState(data=data, channel=self.channel)
 
     @property
     def connected(self):
-        """A property that returns the list of :class:`User` that are currently in this call."""
+        """A property that returns the :class:`list` of :class:`User` that are currently in this call."""
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:
@@ -132,7 +132,7 @@ class GroupCall:
 
     @property
     def channel(self):
-        """:class:`PrivateChannel`\: Returns the channel the group call is in."""
+        r""":class:`GroupChannel`\: Returns the channel the group call is in."""
         return self.call.channel
 
     def voice_state_for(self, user):
@@ -148,9 +148,8 @@ class GroupCall:
 
         Returns
         --------
-        Optiona[:class:`VoiceState`]
+        Optional[:class:`VoiceState`]
             The voice state associated with this user.
         """
 
         return self._voice_states.get(user.id)
-

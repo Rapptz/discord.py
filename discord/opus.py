@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,13 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import array
 import ctypes
 import ctypes.util
-import array
-from .errors import DiscordException
 import logging
-import sys
 import os.path
+import sys
+
+from .errors import DiscordException
 
 log = logging.getLogger(__name__)
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
@@ -42,17 +43,37 @@ class EncoderStruct(ctypes.Structure):
 
 EncoderStructPtr = ctypes.POINTER(EncoderStruct)
 
+def _err_lt(result, func, args):
+    if result < 0:
+        log.info('error has happened in %s', func.__name__)
+        raise OpusError(result)
+    return result
+
+def _err_ne(result, func, args):
+    ret = args[-1]._obj
+    if ret.value != 0:
+        log.info('error has happened in %s', func.__name__)
+        raise OpusError(ret.value)
+    return result
+
 # A list of exported functions.
 # The first argument is obviously the name.
 # The second one are the types of arguments it takes.
 # The third is the result type.
+# The fourth is the error handler.
 exported_functions = [
-    ('opus_strerror', [ctypes.c_int], ctypes.c_char_p),
-    ('opus_encoder_get_size', [ctypes.c_int], ctypes.c_int),
-    ('opus_encoder_create', [ctypes.c_int, ctypes.c_int, ctypes.c_int, c_int_ptr], EncoderStructPtr),
-    ('opus_encode', [EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int32),
-    ('opus_encoder_ctl', None, ctypes.c_int32),
-    ('opus_encoder_destroy', [EncoderStructPtr], None)
+    ('opus_strerror',
+        [ctypes.c_int], ctypes.c_char_p, None),
+    ('opus_encoder_get_size',
+        [ctypes.c_int], ctypes.c_int, None),
+    ('opus_encoder_create',
+        [ctypes.c_int, ctypes.c_int, ctypes.c_int, c_int_ptr], EncoderStructPtr, _err_ne),
+    ('opus_encode',
+        [EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int32, _err_lt),
+    ('opus_encoder_ctl',
+        None, ctypes.c_int32, _err_lt),
+    ('opus_encoder_destroy',
+        [EncoderStructPtr], None, None),
 ]
 
 def libopus_loader(name):
@@ -61,10 +82,7 @@ def libopus_loader(name):
 
     # register the functions...
     for item in exported_functions:
-        try:
-            func = getattr(lib, item[0])
-        except Exception as e:
-            raise e
+        func = getattr(lib, item[0])
 
         try:
             if item[1]:
@@ -73,6 +91,12 @@ def libopus_loader(name):
             func.restype = item[2]
         except KeyError:
             pass
+
+        try:
+            if item[3]:
+                func.errcheck = item[3]
+        except KeyError:
+            log.exception("Error assigning check function to %s", func)
 
     return lib
 
@@ -84,7 +108,7 @@ try:
         _lib = libopus_loader(_filename)
     else:
         _lib = libopus_loader(ctypes.util.find_library('opus'))
-except Exception as e:
+except Exception:
     _lib = None
 
 def load_opus(name):
@@ -101,23 +125,28 @@ def load_opus(name):
 
     This function propagates the exceptions thrown.
 
-    Warning
-    --------
-    The bitness of the library must match the bitness of your python
-    interpreter. If the library is 64-bit then your python interpreter
-    must be 64-bit as well. Usually if there's a mismatch in bitness then
-    the load will throw an exception.
+    .. note::
 
-    Note
-    ----
-    On Windows, the .dll extension is not necessary. However, on Linux
-    the full extension is required to load the library, e.g. ``libopus.so.1``.
-    On Linux however, `find library`_ will usually find the library automatically
-    without you having to call this.
+        On Windows, this function should not need to be called as the binaries
+        are automatically loaded.
+
+    .. warning::
+
+        The bitness of the library must match the bitness of your python
+        interpreter. If the library is 64-bit then your python interpreter
+        must be 64-bit as well. Usually if there's a mismatch in bitness then
+        the load will throw an exception.
+
+    .. note::
+
+        On Windows, the .dll extension is not necessary. However, on Linux
+        the full extension is required to load the library, e.g. ``libopus.so.1``.
+        On Linux however, `find library`_ will usually find the library automatically
+        without you having to call this.
 
     Parameters
     ----------
-    name: str
+    name: :class:`str`
         The filename of the shared library.
     """
     global _lib
@@ -131,7 +160,7 @@ def is_loaded():
 
     Returns
     -------
-    bool
+    :class:`bool`
         Indicates if the opus library has been loaded.
     """
     global _lib
@@ -142,14 +171,14 @@ class OpusError(DiscordException):
 
     Attributes
     ----------
-    code : int
+    code: :class:`int`
         The error code returned.
     """
 
     def __init__(self, code):
         self.code = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
-        log.info('"{}" has happened'.format(msg))
+        log.info('"%s" has happened', msg)
         super().__init__(msg)
 
 class OpusNotLoaded(DiscordException):
@@ -166,6 +195,7 @@ CTL_SET_BITRATE      = 4002
 CTL_SET_BANDWIDTH    = 4008
 CTL_SET_FEC          = 4012
 CTL_SET_PLP          = 4014
+CTL_SET_SIGNAL       = 4024
 
 band_ctl = {
     'narrow': 1101,
@@ -175,16 +205,23 @@ band_ctl = {
     'full': 1105,
 }
 
-class Encoder:
-    def __init__(self, sampling, channels, application=APPLICATION_AUDIO):
-        self.sampling_rate = sampling
-        self.channels = channels
-        self.application = application
+signal_ctl = {
+    'auto': -1000,
+    'voice': 3001,
+    'music': 3002,
+}
 
-        self.frame_length = 20
-        self.sample_size = 2 * self.channels  # (bit_rate / 8) but bit_rate == 16
-        self.samples_per_frame = int(self.sampling_rate / 1000 * self.frame_length)
-        self.frame_size = self.samples_per_frame * self.sample_size
+class Encoder:
+    SAMPLING_RATE = 48000
+    CHANNELS = 2
+    FRAME_LENGTH = 20
+    SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
+    SAMPLES_PER_FRAME = int(SAMPLING_RATE / 1000 * FRAME_LENGTH)
+
+    FRAME_SIZE = SAMPLES_PER_FRAME * SAMPLE_SIZE
+
+    def __init__(self, application=APPLICATION_AUDIO):
+        self.application = application
 
         if not is_loaded():
             raise OpusNotLoaded()
@@ -194,6 +231,7 @@ class Encoder:
         self.set_fec(True)
         self.set_expected_packet_loss_percent(0.15)
         self.set_bandwidth('full')
+        self.set_signal_type('auto')
 
     def __del__(self):
         if hasattr(self, '_state'):
@@ -202,22 +240,12 @@ class Encoder:
 
     def _create_state(self):
         ret = ctypes.c_int()
-        result = _lib.opus_encoder_create(self.sampling_rate, self.channels, self.application, ctypes.byref(ret))
-
-        if ret.value != 0:
-            log.info('error has happened in state creation')
-            raise OpusError(ret.value)
-
-        return result
+        return _lib.opus_encoder_create(self.SAMPLING_RATE, self.CHANNELS, self.application, ctypes.byref(ret))
 
     def set_bitrate(self, kbps):
         kbps = min(128, max(16, int(kbps)))
 
-        ret = _lib.opus_encoder_ctl(self._state, CTL_SET_BITRATE, kbps * 1024)
-        if ret < 0:
-            log.info('error has happened in set_bitrate')
-            raise OpusError(ret)
-
+        _lib.opus_encoder_ctl(self._state, CTL_SET_BITRATE, kbps * 1024)
         return kbps
 
     def set_bandwidth(self, req):
@@ -225,25 +253,20 @@ class Encoder:
             raise KeyError('%r is not a valid bandwidth setting. Try one of: %s' % (req, ','.join(band_ctl)))
 
         k = band_ctl[req]
-        ret = _lib.opus_encoder_ctl(self._state, CTL_SET_BANDWIDTH, k)
+        _lib.opus_encoder_ctl(self._state, CTL_SET_BANDWIDTH, k)
 
-        if ret < 0:
-            log.info('error has happened in set_bandwidth')
-            raise OpusError(ret)
-            
+    def set_signal_type(self, req):
+        if req not in signal_ctl:
+            raise KeyError('%r is not a valid signal setting. Try one of: %s' % (req, ','.join(signal_ctl)))
+
+        k = signal_ctl[req]
+        _lib.opus_encoder_ctl(self._state, CTL_SET_SIGNAL, k)
+
     def set_fec(self, enabled=True):
-        ret = _lib.opus_encoder_ctl(self._state, CTL_SET_FEC, 1 if enabled else 0)
-        
-        if ret < 0:
-            log.info('error has happened in set_fec')
-            raise OpusError(ret)
-            
+        _lib.opus_encoder_ctl(self._state, CTL_SET_FEC, 1 if enabled else 0)
+
     def set_expected_packet_loss_percent(self, percentage):
-        ret = _lib.opus_encoder_ctl(self._state, CTL_SET_PLP, min(100, max(0, int(percentage * 100))))
-        
-        if ret < 0:
-            log.info('error has happened in set_expected_packet_loss_percent')
-            raise OpusError(ret)
+        _lib.opus_encoder_ctl(self._state, CTL_SET_PLP, min(100, max(0, int(percentage * 100))))
 
     def encode(self, pcm, frame_size):
         max_data_bytes = len(pcm)
@@ -251,8 +274,5 @@ class Encoder:
         data = (ctypes.c_char * max_data_bytes)()
 
         ret = _lib.opus_encode(self._state, pcm, frame_size, data, max_data_bytes)
-        if ret < 0:
-            log.info('error has happened in encode')
-            raise OpusError(ret)
 
         return array.array('b', data[:ret]).tobytes()

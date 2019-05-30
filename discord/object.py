@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,8 +25,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import utils
+from .mixins import Hashable
 
-class Object:
+class Object(Hashable):
     """Represents a generic Discord object.
 
     The purpose of this class is to allow you to create 'miniature'
@@ -39,14 +41,31 @@ class Object:
     receive this class rather than the actual data class. These cases are
     extremely rare.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two objects are equal.
+
+        .. describe:: x != y
+
+            Checks if two objects are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the object's hash.
+
     Attributes
     -----------
-    id : str
+    id: :class:`str`
         The ID of the object.
     """
 
     def __init__(self, id):
         self.id = id
+
+    def __repr__(self):
+        return '<Object id=%r>' % self.id
 
     @property
     def created_at(self):

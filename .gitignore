@@ -1,7 +1,11 @@
 *.json
-*.pyc
+*.py[cod]
 *.log
+*.egg-info
+venv
+.venv
 docs/_build
+docs/crowdin.py
 *.buildinfo
 *.mp3
 *.m4a
@@ -9,3 +13,4 @@ docs/_build
 *.png
 *.jpg
 *.flac
+*.mo
