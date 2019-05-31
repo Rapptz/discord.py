@@ -1107,7 +1107,7 @@ class Group(GroupMixin, Command):
 
     Attributes
     -----------
-    invoke_without_command: :class:`bool`
+    only_invoke_without_command: :class:`bool`
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -1121,7 +1121,7 @@ class Group(GroupMixin, Command):
         Defaults to ``False``.
     """
     def __init__(self, *args, **attrs):
-        self.invoke_without_command = attrs.pop('invoke_without_command', False)
+        self.only_invoke_without_command = attrs.pop('only_invoke_without_command', False)
         super().__init__(*args, **attrs)
 
     def copy(self):
@@ -1133,7 +1133,7 @@ class Group(GroupMixin, Command):
 
     async def invoke(self, ctx):
         ctx.invoked_subcommand = None
-        early_invoke = not self.invoke_without_command
+        early_invoke = not self.only_invoke_without_command
         if early_invoke:
             await self.prepare(ctx)
 
@@ -1161,7 +1161,7 @@ class Group(GroupMixin, Command):
 
     async def reinvoke(self, ctx, *, call_hooks=False):
         ctx.invoked_subcommand = None
-        early_invoke = not self.invoke_without_command
+        early_invoke = not self.only_invoke_without_command
         if early_invoke:
             ctx.command = self
             await self._parse_arguments(ctx)
