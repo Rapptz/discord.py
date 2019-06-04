@@ -523,7 +523,7 @@ class Webhook:
 
     @property
     def avatar_url(self):
-        """Returns a :class:`Asset`: for the avatar the webhook has.
+        """Returns a :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -534,7 +534,7 @@ class Webhook:
         return self.avatar_url_as()
 
     def avatar_url_as(self, *, format=None, size=1024):
-        """Returns a :class:`Asset`: for the avatar the webhook has.
+        """Returns a :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
         the default avatar is returned instead.

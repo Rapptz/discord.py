@@ -500,7 +500,7 @@ class Guild(Hashable):
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """Returns a :class:`Asset`: for the guild's banner.
+        """Returns a :class:`Asset` for the guild's banner.
 
         The format must be one of 'webp', 'jpeg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
@@ -530,7 +530,7 @@ class Guild(Hashable):
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """Returns a :class:`Asset`: for the guild's invite splash.
+        """Returns a :class:`Asset` for the guild's invite splash.
 
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
