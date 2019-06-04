@@ -459,16 +459,26 @@ class Guild(Hashable):
         """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
-    def icon_url_as(self, *, format='webp', size=1024):
-        """Returns a :class:`Asset`: for the guild's icon.
+    def is_icon_animated(self):
+        """:class:`bool`: Returns True if the guild has an animated icon."""
+        return bool(self.icon and self.icon.startswith('a_'))
 
-        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 4096.
+    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
+        """Returns a :class:`Asset` for the guild's icon.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 4096.
 
         Parameters
         -----------
-        format: :class:`str`
+        format: Optional[:class:`str`]
             The format to attempt to convert the icon to.
+            If the format is ``None``, then it is automatically
+            detected into either 'gif' or static_format depending on the
+            icon being animated or not.
+        static_format: Optional[:class:`str`]
+            Format to attempt to convert only non-animated icons to.
         size: :class:`int`
             The size of the image to display.
 
@@ -482,7 +492,7 @@ class Guild(Hashable):
         :class:`Asset`
             The resulting CDN asset.
         """
-        return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
+        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
     def banner_url(self):

@@ -136,7 +136,7 @@ class BaseUser(_BaseUser):
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
         'gif' is only valid for animated avatars. The size must be a power of 2
-        between 16 and 1024.
+        between 16 and 4096.
 
         Parameters
         -----------
