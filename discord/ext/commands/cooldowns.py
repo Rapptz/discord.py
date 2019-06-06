@@ -40,6 +40,7 @@ class BucketType(enum.Enum):
     channel  = 3
     member   = 4
     category = 5
+    role     = 6
 
 class Cooldown:
     __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
@@ -127,6 +128,8 @@ class CooldownMapping:
             return ((msg.guild and msg.guild.id), msg.author.id)
         elif bucket_type is BucketType.category:
             return (msg.channel.category or msg.channel).id
+        elif bucket_type is BucketType.role:
+            return msg.author.top_role.id
 
     def _verify_cache_integrity(self, current=None):
         # we want to delete all cache objects that haven't been used
