@@ -78,6 +78,9 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
+    def __repr__(self):
+        return '<Attachment id={0.id} filename={0.filename!r} url={0.url!r}>'.format(self)
+
     async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
@@ -98,7 +101,7 @@ class Attachment:
             more often, compared to the regular URL which is generally deleted right
             after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
-            on some type of attachments.
+            on some types of attachments.
 
         Raises
         --------
@@ -137,7 +140,7 @@ class Attachment:
             more often, compared to the regular URL which is generally deleted right
             after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
-            on some type of attachments.
+            on some types of attachments.
 
         Raises
         ------
@@ -167,6 +170,8 @@ class Message:
     -----------
     tts: :class:`bool`
         Specifies if the message was done with text-to-speech.
+        This can only be accurately received in :func:`on_message` due to
+        a discord limitation.
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
         in cases where it might be a system message for :attr:`system_content`.
@@ -259,7 +264,7 @@ class Message:
         self._update(channel, data)
 
     def __repr__(self):
-        return '<Message id={0.id} pinned={0.pinned} author={0.author!r}>'.format(self)
+        return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r}>'.format(self)
 
     def _try_patch(self, data, key, transform=None):
         try:

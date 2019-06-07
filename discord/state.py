@@ -33,6 +33,7 @@ import itertools
 import logging
 import math
 import weakref
+import inspect
 
 from .guild import Guild
 from .activity import _ActivityTag
@@ -87,6 +88,11 @@ class ConnectionState:
 
         self._activity = activity
         self._status = status
+
+        self.parsers = parsers = {}
+        for attr, func in inspect.getmembers(self):
+            if attr.startswith('parse_'):
+                parsers[attr[6:].upper()] = func
 
         self.clear()
 

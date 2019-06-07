@@ -893,6 +893,12 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Retrieves all messages that are currently pinned in the channel.
 
+        .. note::
+
+            Due to a limitation with the Discord API, the :class:`.Message`
+            objects returned by this method do not contain complete
+            :attr:`.Message.reactions` data.
+
         Raises
         -------
         :exc:`~discord.HTTPException`
@@ -910,7 +916,7 @@ class Messageable(metaclass=abc.ABCMeta):
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
-        """Return an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
+        """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
 

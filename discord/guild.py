@@ -160,7 +160,12 @@ class Guild(Hashable):
         return self.name
 
     def __repr__(self):
-        return '<Guild id={0.id} name={0.name!r} chunked={0.chunked}>'.format(self)
+        attrs = (
+            'id', 'name', 'shard_id', 'chunked'
+        )
+        resolved = ['%s=%r' % (attr, getattr(self, attr)) for attr in attrs]
+        resolved.append('member_count=%r' % getattr(self, '_member_count', None))
+        return '<Guild %s>' % ' '.join(resolved)
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
@@ -1458,7 +1463,7 @@ class Guild(Hashable):
         return state.http.ack_guild(self.id)
 
     def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
-        """Return an :class:`AsyncIterator` that enables receiving the guild's audit logs.
+        """Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
         You must have the :attr:`~Permissions.view_audit_log` permission to use this.
 

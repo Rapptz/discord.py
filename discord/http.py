@@ -619,7 +619,7 @@ class HTTPClient:
     def prune_members(self, guild_id, days, compute_prune_count, *, reason=None):
         params = {
             'days': days,
-            'compute_prune_count': compute_prune_count
+            'compute_prune_count': 'true' if compute_prune_count else 'false'
         }
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params, reason=reason)
 
