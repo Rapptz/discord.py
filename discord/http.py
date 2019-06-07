@@ -613,6 +613,16 @@ class HTTPClient:
         payload = {'code': code}
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
 
+    def get_members(self, guild_id, limit, after):
+        params = {
+            'limit': limit,
+        }
+        if after:
+            params['after'] = after
+
+        r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
+        return self.request(r, params=params)
+
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
