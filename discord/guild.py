@@ -41,7 +41,7 @@ from .enums import VoiceRegion, Status, ChannelType, try_enum, VerificationLevel
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
-from .iterators import AuditLogIterator
+from .iterators import AuditLogIterator, MemberIterator
 from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
@@ -1151,6 +1151,53 @@ class Guild(Hashable):
             return channel
 
         return [convert(d) for d in data]
+
+    def fetch_members(self, *, limit=1, after=None):
+        """|coro|
+
+        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`members` instead.
+
+        .. versionadded:: 1.3.0
+
+        All parameters are optional.
+
+        Parameters
+        ----------
+        limit: Optional[:class:`int`]
+            The number of members to retrieve.
+            Defaults to 1.
+        after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve members after this date or object.
+            If a date is provided it must be a timezone-naive datetime representing UTC time.
+
+        Raises
+        ------
+        HTTPException
+            Getting the members failed.
+
+        Yields
+        ------
+        :class:`.Member`
+            The member with the member data parsed.
+
+        Examples
+        --------
+
+        Usage ::
+
+            async for member in guild.fetch_members(limit=150):
+                print(member.name)
+
+        Flattening into a list ::
+
+            members = await guild.fetch_members(limit=150).flatten()
+            # members is now a list of Member...
+        """
+        return MemberIterator(self, limit=limit, after=after)
 
     async def fetch_member(self, member_id):
         """|coro|

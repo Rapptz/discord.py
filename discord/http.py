@@ -621,6 +621,16 @@ class HTTPClient:
     def get_all_guild_channels(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
+    def get_members(self, guild_id, limit, after):
+        params = {
+            'limit': limit,
+        }
+        if after:
+            params['after'] = after
+
+        r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
+        return self.request(r, params=params)
+
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
