@@ -2311,6 +2311,13 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
+SystemChannelFlags
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: SystemChannelFlags
+    :members:
+
+
 Exceptions
 ------------
 
