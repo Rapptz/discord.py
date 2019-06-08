@@ -1121,6 +1121,8 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`members` instead.
 
+        .. versionadded:: 1.2.0
+
         All parameters are optional.
 
         Parameters
