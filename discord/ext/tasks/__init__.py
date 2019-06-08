@@ -245,7 +245,7 @@ class Loop:
         return self._task
 
     def is_being_cancelled(self):
-        """:class:`bool`: Whether the task is being cancelled."""
+        """Whether the task is being cancelled."""
         return self._is_being_cancelled
 
     def failed(self):

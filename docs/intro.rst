@@ -13,7 +13,7 @@ Prerequisites
 
 discord.py works with Python 3.5.3 or higher. Support for earlier versions of Python
 is not provided. Python 2.7 or lower is not supported. Python 3.4 or lower is not supported
-due to one of the dependencies (``aiohttp``) not supporting Python 3.4.
+due to one of the dependencies (:doc:`aiohttp <aio:index>`) not supporting Python 3.4.
 
 
 .. _installing:
@@ -36,9 +36,9 @@ To get voice support, you should use ``discord.py[voice]`` instead of ``discord.
 
 On Linux environments, installing voice requires getting the following dependencies:
 
-- libffi
-- libnacl
-- python3-dev
+- `libffi <https://github.com/libffi/libffi>`_
+- `libnacl <https://github.com/saltstack/libnacl>`_
+- `python3-dev <https://packages.debian.org/python3-dev>`_
 
 For a Debian-based system, the following command will get these dependencies:
 
@@ -56,7 +56,7 @@ libraries than the ones installed on the system. You might also not have permiss
 For this purpose, the standard library as of Python 3.3 comes with a concept called "Virtual Environment"s to
 help maintain these separate versions.
 
-A more in-depth tutorial is found on `the official documentation. <https://docs.python.org/3/tutorial/venv.html>`_
+A more in-depth tutorial is found on :doc:`py:tutorial/venv`.
 
 However, for the quick and dirty:
 

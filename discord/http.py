@@ -408,6 +408,10 @@ class HTTPClient:
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r)
 
+    def get_channel(self, channel_id):
+        r = Route('GET', '/channels/{channel_id}', channel_id=channel_id)
+        return self.request(r)
+
     def logs_from(self, channel_id, limit, before=None, after=None, around=None):
         params = {
             'limit': limit
@@ -592,7 +596,8 @@ class HTTPClient:
         valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
                       'system_channel_id', 'default_message_notifications',
-                      'description', 'explicit_content_filter', 'banner')
+                      'description', 'explicit_content_filter', 'banner',
+                      'system_channel_flags')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys
@@ -622,6 +627,9 @@ class HTTPClient:
 
         r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
         return self.request(r, params=params)
+      
+    def get_all_guild_channels(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))

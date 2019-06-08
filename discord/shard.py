@@ -102,11 +102,11 @@ class AutoShardedClient(Client):
     It is recommended to use this client only if you have surpassed at least
     1000 guilds.
 
-    If no :attr:`shard_count` is provided, then the library will use the
+    If no :attr:`.shard_count` is provided, then the library will use the
     Bot Gateway endpoint call to figure out how many shards to use.
 
     If a ``shard_ids`` parameter is given, then those shard IDs will be used
-    to launch the internal shards. Note that :attr:`shard_count` must be provided
+    to launch the internal shards. Note that :attr:`.shard_count` must be provided
     if this is used. By default, when omitted, the client will launch shards from
     0 to ``shard_count - 1``.
 
@@ -163,7 +163,7 @@ class AutoShardedClient(Client):
     def latency(self):
         """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
-        This operates similarly to :meth:`.Client.latency` except it uses the average
+        This operates similarly to :meth:`Client.latency` except it uses the average
         latency of every shard's latency. To get a list of shard latency, check the
         :attr:`latencies` property. Returns ``nan`` if there are no shards ready.
         """
@@ -314,7 +314,7 @@ class AutoShardedClient(Client):
         activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
-            Indicates what status to change to. If None, then
+            Indicates what status to change to. If ``None``, then
             :attr:`Status.online` is used.
         afk: :class:`bool`
             Indicates if you are going AFK. This allows the discord

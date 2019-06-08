@@ -34,7 +34,7 @@ class Context(discord.abc.Messageable):
     the invocation context. This class is not created manually and is instead
     passed around to commands as the first parameter.
 
-    This class implements the :class:`abc.Messageable` ABC.
+    This class implements the :class:`~discord.abc.Messageable` ABC.
 
     Attributes
     -----------
@@ -61,12 +61,12 @@ class Context(discord.abc.Messageable):
     invoked_subcommand
         The subcommand (i.e. :class:`.Command` or its subclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
-        `None`.
+        ``None``.
     subcommand_passed: Optional[:class:`str`]
         The string that was attempted to call a subcommand. This does not have
         to point to a valid registered subcommand and could just point to a
         nonsense string. If nothing was passed to attempt a call to a
-        subcommand then this is set to `None`.
+        subcommand then this is set to ``None``.
     command_failed: :class:`bool`
         A boolean that indicates if the command failed to be parsed, checked,
         or invoked.

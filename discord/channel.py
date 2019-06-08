@@ -149,7 +149,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """Returns a :class:`list` of :class:`Member` that can see this channel."""
+        """List[:class:`Member`]: Returns all members that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
@@ -313,22 +313,22 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         limit: Optional[:class:`int`]
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
-        check: predicate
+        check: Callable[[:class:`Message`], :class:`bool`]
             The function used to check if a message should be deleted.
             It must take a :class:`Message` as its sole parameter.
-        before
+        before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
             Same as ``before`` in :meth:`history`.
-        after
+        after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
             Same as ``after`` in :meth:`history`.
-        around
+        around: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
             Same as ``around`` in :meth:`history`.
-        oldest_first
+        oldest_first: Optional[:class:`bool`]
             Same as ``oldest_first`` in :meth:`history`.
-        bulk: :class:`bool`
-            If True, use bulk delete. bulk=False is useful for mass-deleting
-            a bot's own messages without manage_messages. When True, will fall
-            back to single delete if current account is a user bot, or if
-            messages are older than two weeks.
+        bulk: class:`bool`
+            If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
+            a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
+            fall back to single delete if current account is a user bot, or if messages are
+            older than two weeks.
 
         Raises
         -------
@@ -534,7 +534,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """Returns a list of :class:`Member` that are currently inside this voice channel."""
+        """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
         ret = []
         for user_id, state in self.guild._voice_states.items():
             if state.channel.id == self.id:
@@ -943,10 +943,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to true except:
+        This returns all the Text related permissions set to ``True`` except:
 
-        - send_tts_messages: You cannot send TTS messages in a DM.
-        - manage_messages: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
+        - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
 
         Parameters
         -----------
@@ -988,7 +988,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipients: :class:`list` of :class:`User`
+    recipients: List[:class:`User`]
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
         The user presenting yourself.
@@ -1051,7 +1051,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def created_at(self):
-        """Returns the channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, user):
@@ -1061,7 +1061,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to true except:
+        This returns all the Text related permissions set to ``True`` except:
 
         - send_tts_messages: You cannot send TTS messages in a DM.
         - manage_messages: You cannot delete others messages in a DM.

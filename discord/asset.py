@@ -70,7 +70,7 @@ class Asset:
     @classmethod
     def _from_avatar(cls, state, user, *, format=None, static_format='webp', size=1024):
         if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format is not None and format not in VALID_AVATAR_FORMATS:
             raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
         if format == "gif" and not user.is_avatar_animated():
@@ -107,6 +107,26 @@ class Asset:
         url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
         return cls(state, url.format(id, hash, format, size, key=key))
 
+    @classmethod
+    def _from_guild_icon(cls, state, guild, *, format=None, static_format='webp', size=1024):
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not guild.is_icon_animated():
+            raise InvalidArgument("non animated guild icons do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+
+        if guild.icon is None:
+            return cls(state)
+
+        if format is None:
+            format = 'gif' if guild.is_icon_animated() else static_format
+
+        return cls(state, 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
+
+
     def __str__(self):
         return self._url if self._url is not None else ''
 
@@ -142,6 +162,13 @@ class Asset:
             the asset, e.g. a guild with no custom icon.
 
         .. versionadded:: 1.1.0
+
+        Parameters
+        -----------
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
+            Same as in :meth:`Attachment.save`.
+        seek_begin: :class:`bool`
+            Same as in :meth:`Attachment.save`.
 
         Raises
         ------

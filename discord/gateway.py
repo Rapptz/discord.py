@@ -269,7 +269,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             properties. The data parameter is the 'd' key in the JSON message.
         result
             A function that takes the same data parameter and executes to send
-            the result to the future. If None, returns the data.
+            the result to the future. If ``None``, returns the data.
 
         Returns
         --------

@@ -26,7 +26,7 @@ from .user import User, ClientUser, Profile
 from .emoji import Emoji, PartialEmoji
 from .activity import *
 from .channel import *
-from .guild import Guild
+from .guild import Guild, SystemChannelFlags
 from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message, Attachment

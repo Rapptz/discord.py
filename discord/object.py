@@ -69,5 +69,5 @@ class Object(Hashable):
 
     @property
     def created_at(self):
-        """Returns the snowflake's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
         return utils.snowflake_time(self.id)

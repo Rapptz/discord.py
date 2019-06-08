@@ -88,7 +88,7 @@ class Attachment:
 
         Parameters
         -----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
@@ -160,7 +160,19 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
+def flatten_handlers(cls):
+    prefix = len('_handle_')
+    cls._HANDLERS = {
+        key[prefix:]: value
+        for key, value in cls.__dict__.items()
+        if key.startswith('_handle_')
+    }
+    cls._CACHED_SLOTS = [
+        attr for attr in cls.__slots__ if attr.startswith('_cs_')
+    ]
+    return cls
 
+@flatten_handlers
 class Message:
     r"""Represents a message from Discord.
 
@@ -175,7 +187,7 @@ class Message:
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
         in cases where it might be a system message for :attr:`system_content`.
-    author
+    author: :class:`abc.User`
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
@@ -185,7 +197,7 @@ class Message:
         This is typically non-important.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel
+    channel: Union[:class:`abc.Messageable`]
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     call: Optional[:class:`CallMessage`]
@@ -199,8 +211,7 @@ class Message:
             This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
             Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
             **and** it did end up mentioning.
-
-    mentions: :class:`list`
+    mentions: List[:class:`abc.User`]
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list will be of :class:`User` instead. For messages that are not of type
         :attr:`MessageType.default`\, this array can be used to aid in system messages.
@@ -210,11 +221,10 @@ class Message:
 
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a discord limitation, not one with the library.
-
-    channel_mentions: :class:`list`
+    channel_mentions: List[:class:`abc.GuildChannel`]
         A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
         then the list is always empty.
-    role_mentions: :class:`list`
+    role_mentions: List[:class:`Role`]
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
     id: :class:`int`
@@ -261,9 +271,24 @@ class Message:
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.attachments = [Attachment(data=a, state=self._state) for a in data['attachments']]
+        self.embeds = [Embed.from_dict(a) for a in data['embeds']]
         self.application = data.get('application')
         self.activity = data.get('activity')
-        self._update(channel, data)
+        self.channel = channel
+        self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
+        self.type = try_enum(MessageType, data['type'])
+        self.pinned = data['pinned']
+        self.mention_everyone = data['mention_everyone']
+        self.tts = data['tts']
+        self.content = data['content']
+        self.nonce = data.get('nonce')
+
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+            try:
+                getattr(self, '_handle_%s' % handler)(data[handler])
+            except KeyError:
+                continue
 
     def __repr__(self):
         return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r}>'.format(self)
@@ -312,33 +337,52 @@ class Message:
 
         return reaction
 
-    def _update(self, channel, data):
-        self.channel = channel
-        self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
-        self._try_patch(data, 'pinned')
-        self._try_patch(data, 'application')
-        self._try_patch(data, 'activity')
-        self._try_patch(data, 'mention_everyone')
-        self._try_patch(data, 'tts')
-        self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
-        self._try_patch(data, 'content')
-        self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
-        self._try_patch(data, 'nonce')
-
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+    def _update(self, data):
+        handlers = self._HANDLERS
+        for key, value in data.items():
             try:
-                getattr(self, '_handle_%s' % handler)(data[handler])
+                handler = handlers[key]
             except KeyError:
                 continue
+            else:
+                handler(self, value)
 
         # clear the cached properties
-        cached = filter(lambda attr: attr.startswith('_cs_'), self.__slots__)
-        for attr in cached:
+        for attr in self._CACHED_SLOTS:
             try:
                 delattr(self, attr)
             except AttributeError:
                 pass
+
+    def _handle_pinned(self, value):
+        self.pinned = value
+
+    def _handle_application(self, value):
+        self.application = value
+
+    def _handle_activity(self, value):
+        self.activity = value
+
+    def _handle_mention_everyone(self, value):
+        self.mention_everyone = value
+
+    def _handle_tts(self, value):
+        self.tts = value
+
+    def _handle_type(self, value):
+        self.type = try_enum(MessageType, value)
+
+    def _handle_content(self, value):
+        self.content = value
+
+    def _handle_attachments(self, value):
+        self.attachments = [Attachment(data=a, state=self._state) for a in value]
+
+    def _handle_embeds(self, value):
+        self.embeds = [Embed.from_dict(data) for data in value]
+
+    def _handle_nonce(self, value):
+        self.nonce = value
 
     def _handle_author(self, author):
         self.author = self._state.store_user(author)
@@ -408,8 +452,8 @@ class Message:
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self):
-        """A property that returns an array of user IDs matched with
-        the syntax of <@user_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of user IDs matched with
+        the syntax of ``<@user_id>`` in the message content.
 
         This allows you to receive the user IDs of mentioned users
         even in a private message context.
@@ -418,15 +462,15 @@ class Message:
 
     @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
-        """A property that returns an array of channel IDs matched with
-        the syntax of <#channel_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of channel IDs matched with
+        the syntax of ``<#channel_id>`` in the message content.
         """
         return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
-        """A property that returns an array of role IDs matched with
-        the syntax of <@&role_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of role IDs matched with
+        the syntax of ``<@&role_id>`` in the message content.
         """
         return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
 
@@ -499,12 +543,12 @@ class Message:
 
     @property
     def created_at(self):
-        """datetime.datetime: The message's creation time in UTC."""
+        """:class:`datetime.datetime`: The message's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def edited_at(self):
-        """Optional[datetime.datetime]: A naive UTC datetime object containing the edited time of the message."""
+        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
     @property
@@ -603,6 +647,18 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
+        if self.type is MessageType.premium_guild_subscription:
+            return '{0.author.name} just boosted the server!'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_1:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_2:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 2!**'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_3:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 3!**'.format(self)
+
     async def delete(self, *, delay=None):
         """|coro|
 
@@ -683,7 +739,7 @@ class Message:
                 fields['embed'] = embed.to_dict()
 
         data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
-        self._update(channel=self.channel, data=data)
+        self._update(data)
 
         try:
             delete_after = fields['delete_after']

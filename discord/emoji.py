@@ -168,12 +168,14 @@ class Emoji:
         If this emoji is managed by a Twitch integration.
     guild_id: :class:`int`
         The guild ID the emoji belongs to.
+    available: :class:`bool`
+        Whether the emoji is available for use.
     user: Optional[:class:`User`]
         The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and
         having the :attr:`~Permissions.manage_emojis` permission.
     """
     __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
-                 '_state', 'user')
+                 '_state', 'user', 'available')
 
     def __init__(self, *, guild, state, data):
         self.guild_id = guild.id
@@ -186,6 +188,7 @@ class Emoji:
         self.id = int(emoji['id'])
         self.name = emoji['name']
         self.animated = emoji.get('animated', False)
+        self.available = emoji.get('available', True)
         self._roles = utils.SnowflakeList(map(int, emoji.get('roles', [])))
         user = emoji.get('user')
         self.user = User(state=self._state, data=user) if user else None
@@ -219,12 +222,12 @@ class Emoji:
 
     @property
     def created_at(self):
-        """Returns the emoji's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the emoji's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def url(self):
-        """Returns a URL version of the emoji."""
+        """:class:`Asset`: Returns the asset of the emoji."""
         _format = 'gif' if self.animated else 'png'
         url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)

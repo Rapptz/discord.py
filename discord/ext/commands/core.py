@@ -145,10 +145,10 @@ class Command(_BaseCommand):
         If the command is invoked while it is disabled, then
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
-    parent: Optional[command]
+    parent: Optional[:class:`Command`]
         The parent command that this command belongs to. ``None`` if there
         isn't one.
-    checks
+    checks: List[Callable[..., :class:`bool`]]
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
         is necessary to be thrown to signal failure, then one inherited from
@@ -297,7 +297,7 @@ class Command(_BaseCommand):
         return other
 
     def copy(self):
-        """Creates a copy of this :class:`Command`."""
+        """Creates a copy of this command."""
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         return self._ensure_assignment_on_copy(ret)
 
@@ -505,7 +505,7 @@ class Command(_BaseCommand):
 
     @property
     def full_parent_name(self):
-        """Retrieves the fully qualified parent command name.
+        """:class:`str`: Retrieves the fully qualified parent command name.
 
         This the base command name required to execute it. For example,
         in ``?one two three`` the parent name would be ``one two``.
@@ -520,7 +520,7 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """Retrieves the parents of this command.
+        """:class:`Command`: Retrieves the parents of this command.
 
         If the command has no parents then it returns an empty :class:`list`.
 
@@ -550,7 +550,7 @@ class Command(_BaseCommand):
 
     @property
     def qualified_name(self):
-        """Retrieves the fully qualified command name.
+        """:class:`str`: Retrieves the fully qualified command name.
 
         This is the full parent name with the command name as well.
         For example, in ``?one two three`` the qualified name would be
@@ -688,7 +688,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        ctx: :class:`.Context.`
+        ctx: :class:`.Context`
             The invocation context to use when checking the commands cooldown status.
 
         Returns
@@ -821,12 +821,12 @@ class Command(_BaseCommand):
 
     @property
     def cog_name(self):
-        """The name of the cog this command belongs to. None otherwise."""
+        """:class:`str`: The name of the cog this command belongs to. None otherwise."""
         return type(self.cog).__cog_name__ if self.cog is not None else None
 
     @property
     def short_doc(self):
-        """Gets the "short" documentation of a command.
+        """:class:`str`: Gets the "short" documentation of a command.
 
         By default, this is the :attr:`brief` attribute.
         If that lookup leads to an empty string then the first line of the
@@ -851,7 +851,7 @@ class Command(_BaseCommand):
 
     @property
     def signature(self):
-        """Returns a POSIX-like signature useful for help command output."""
+        """:class:`str`: Returns a POSIX-like signature useful for help command output."""
         if self.usage is not None:
             return self.usage
 
@@ -971,7 +971,7 @@ class GroupMixin:
 
         Parameters
         -----------
-        command
+        command: :class:`Command`
             The command to add.
 
         Raises
@@ -1107,7 +1107,7 @@ class Group(GroupMixin, Command):
 
     Attributes
     -----------
-    invoke_without_command: :class:`bool`
+    invoke_without_command: Optional[:class:`bool`]
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -1116,7 +1116,7 @@ class Group(GroupMixin, Command):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
-    case_insensitive: :class:`bool`
+    case_insensitive: Optional[:class:`bool`]
         Indicates if the group's commands should be case insensitive.
         Defaults to ``False``.
     """
@@ -1301,7 +1301,7 @@ def check(predicate):
 
     Parameters
     -----------
-    predicate: Callable[:class:`Context`, :class:`bool`]
+    predicate: Callable[[:class:`Context`], :class:`bool`]
         The predicate to check if the command should be invoked.
     """
 

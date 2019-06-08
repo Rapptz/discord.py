@@ -158,17 +158,17 @@ class Role(Hashable):
 
     @property
     def created_at(self):
-        """Returns the role's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the role's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
     def mention(self):
-        """Returns a string that allows you to mention a role."""
+        """:class:`str`: Returns a string that allows you to mention a role."""
         return '<@&%s>' % self.id
 
     @property
     def members(self):
-        """Returns a :class:`list` of :class:`Member` with this role."""
+        """List[:class:`Member`]: Returns all the members with this role."""
         all_members = self.guild.members
         if self.is_default():
             return all_members
