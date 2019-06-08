@@ -561,6 +561,11 @@ class Guild(Hashable):
         return self._members.get(user_id)
 
     @property
+    def premium_subscribers(self):
+        """List[:class:`Member`]: A list of members who have "boosted" this guild."""
+        return [member for member in self.members if member.premium_since is not None]
+
+    @property
     def roles(self):
         """Returns a :class:`list` of the guild's roles in hierarchy order.
 
