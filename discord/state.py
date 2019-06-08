@@ -397,15 +397,7 @@ class ConnectionState:
             older_message = copy.copy(message)
             raw.cached_message = older_message
             self.dispatch('raw_message_edit', raw)
-            if 'call' in data:
-                # call state message edit
-                message._handle_call(data['call'])
-            elif 'content' not in data:
-                # embed only edit
-                message.embeds = [Embed.from_dict(d) for d in data['embeds']]
-            else:
-                message._update(channel=message.channel, data=data)
-
+            message._update(data)
             self.dispatch('message_edit', older_message, message)
         else:
             self.dispatch('raw_message_edit', raw)

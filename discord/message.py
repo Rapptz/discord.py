@@ -160,7 +160,19 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
+def flatten_handlers(cls):
+    prefix = len('_handle_')
+    cls._HANDLERS = {
+        key[prefix:]: value
+        for key, value in cls.__dict__.items()
+        if key.startswith('_handle_')
+    }
+    cls._CACHED_SLOTS = [
+        attr for attr in cls.__slots__ if attr.startswith('_cs_')
+    ]
+    return cls
 
+@flatten_handlers
 class Message:
     r"""Represents a message from Discord.
 
@@ -259,9 +271,24 @@ class Message:
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.attachments = [Attachment(data=a, state=self._state) for a in data['attachments']]
+        self.embeds = [Embed.from_dict(a) for a in data['embeds']]
         self.application = data.get('application')
         self.activity = data.get('activity')
-        self._update(channel, data)
+        self.channel = channel
+        self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
+        self.type = try_enum(MessageType, data['type'])
+        self.pinned = data['pinned']
+        self.mention_everyone = data['mention_everyone']
+        self.tts = data['tts']
+        self.content = data['content']
+        self.nonce = data.get('nonce')
+
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+            try:
+                getattr(self, '_handle_%s' % handler)(data[handler])
+            except KeyError:
+                continue
 
     def __repr__(self):
         return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r}>'.format(self)
@@ -310,33 +337,52 @@ class Message:
 
         return reaction
 
-    def _update(self, channel, data):
-        self.channel = channel
-        self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
-        self._try_patch(data, 'pinned')
-        self._try_patch(data, 'application')
-        self._try_patch(data, 'activity')
-        self._try_patch(data, 'mention_everyone')
-        self._try_patch(data, 'tts')
-        self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
-        self._try_patch(data, 'content')
-        self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
-        self._try_patch(data, 'nonce')
-
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+    def _update(self, data):
+        handlers = self._HANDLERS
+        for key, value in data.items():
             try:
-                getattr(self, '_handle_%s' % handler)(data[handler])
+                handler = handlers[key]
             except KeyError:
                 continue
+            else:
+                handler(self, value)
 
         # clear the cached properties
-        cached = filter(lambda attr: attr.startswith('_cs_'), self.__slots__)
-        for attr in cached:
+        for attr in self._CACHED_SLOTS:
             try:
                 delattr(self, attr)
             except AttributeError:
                 pass
+
+    def _handle_pinned(self, value):
+        self.pinned = value
+
+    def _handle_application(self, value):
+        self.application = value
+
+    def _handle_activity(self, value):
+        self.activity = value
+
+    def _handle_mention_everyone(self, value):
+        self.mention_everyone = value
+
+    def _handle_tts(self, value):
+        self.tts = value
+
+    def _handle_type(self, value):
+        self.type = try_enum(MessageType, value)
+
+    def _handle_content(self, value):
+        self.content = value
+
+    def _handle_attachments(self, value):
+        self.attachments = [Attachment(data=a, state=self._state) for a in value]
+
+    def _handle_embeds(self, value):
+        self.embeds = [Embed.from_dict(data) for data in value]
+
+    def _handle_nonce(self, value):
+        self.nonce = value
 
     def _handle_author(self, author):
         self.author = self._state.store_user(author)
@@ -693,7 +739,7 @@ class Message:
                 fields['embed'] = embed.to_dict()
 
         data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
-        self._update(channel=self.channel, data=data)
+        self._update(data)
 
         try:
             delete_after = fields['delete_after']
