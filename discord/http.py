@@ -722,6 +722,9 @@ class HTTPClient:
 
     # Role management
 
+    def get_roles(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/roles', guild_id=guild_id))
+
     def edit_role(self, guild_id, role_id, *, reason=None, **fields):
         r = Route('PATCH', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')

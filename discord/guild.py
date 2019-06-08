@@ -1521,6 +1521,30 @@ class Guild(Hashable):
         data = await self._state.http.create_custom_emoji(self.id, name, img, roles=roles, reason=reason)
         return self._state.store_emoji(self, data)
 
+    async def fetch_roles(self):
+        """|coro|
+
+        Retrieves all :class:`Role` that the guild has.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`roles` instead.
+
+        .. versionadded:: 1.3.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the roles failed.
+
+        Returns
+        -------
+        List[:class:`Role`]
+            All roles in the guild.
+        """
+        data = await self._state.http.get_roles(self.id)
+        return [Role(guild=self, state=self._state, data=d) for d in data]
+
     async def create_role(self, *, reason=None, **fields):
         """|coro|
 
