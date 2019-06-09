@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import types
-import inspect
 from collections import namedtuple
 
 __all__ = (
@@ -57,6 +56,9 @@ def _create_value_cls(name):
     cls.__str__ = lambda self: '%s.%s' % (name, self.name)
     return cls
 
+def _is_descriptor(obj):
+    return hasattr(obj, '__get__') or hasattr(obj, '__set__') or hasattr(obj, '__delete__')
+
 class EnumMeta(type):
     def __new__(cls, name, bases, attrs):
         value_mapping = {}
@@ -65,16 +67,17 @@ class EnumMeta(type):
 
         value_cls = _create_value_cls(name)
         for key, value in list(attrs.items()):
-            is_function = isinstance(value, types.FunctionType)
-            if key[0] == '_' and not is_function:
+            is_descriptor = _is_descriptor(value)
+            if key[0] == '_' and not is_descriptor:
                 continue
 
-            if is_function:
+            # Special case classmethod to just pass through
+            if isinstance(value, classmethod):
+                continue
+
+            if is_descriptor:
                 setattr(value_cls, key, value)
                 del attrs[key]
-                continue
-
-            if inspect.ismethoddescriptor(value):
                 continue
 
             try:
