@@ -122,6 +122,9 @@ class EnumMeta(type):
     def __setattr__(cls, name, value):
         raise TypeError('Enums are immutable.')
 
+    def __delattr__(cls, attr):
+        raise TypeError('Enums are immutable')
+
     def __instancecheck__(self, instance):
         # isinstance(x, Y)
         # -> __instancecheck__(Y, x)
