@@ -11,6 +11,17 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p2p1:
+
+v1.2.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- :attr:`User.avatar_url` and related attributes no longer raise an error.
+- More compatibility shims with the ``enum.Enum`` code.
+
 .. _vp1p2p0:
 
 v1.2.0
