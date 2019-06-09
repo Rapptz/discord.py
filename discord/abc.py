@@ -611,7 +611,7 @@ class GuildChannel:
         base_attrs['name'] = name or self.name
         guild_id = self.guild.id
         cls = self.__class__
-        data = await self._state.http.create_channel(guild_id, self._type, reason=reason, **base_attrs)
+        data = await self._state.http.create_channel(guild_id, self.type.value, reason=reason, **base_attrs)
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # temporarily add it to the cache

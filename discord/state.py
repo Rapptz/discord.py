@@ -367,7 +367,7 @@ class ConnectionState:
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
         self._messages.append(message)
-        if channel and channel._type in (0, 5):
+        if channel and channel.__class__ is TextChannel:
             channel.last_message_id = message.id
 
     def parse_message_delete(self, data):

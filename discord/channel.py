@@ -134,6 +134,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self
 
     @property
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return try_enum(ChannelType, self._type)
+
+    @property
     def _sorting_bucket(self):
         return ChannelType.text.value
 
@@ -516,8 +521,9 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         return self.guild.id, self.id
 
     @property
-    def _type(self):
-        return ChannelType.voice.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.voice
 
     def _update(self, guild, data):
         self.guild = guild
@@ -660,8 +666,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category.value
 
     @property
-    def _type(self):
-        return ChannelType.category.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.category
 
     def is_nsfw(self):
         """Checks if the category is NSFW."""
@@ -819,8 +826,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.text.value
 
     @property
-    def _type(self):
-        return ChannelType.store.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.store
 
     def permissions_for(self, member):
         base = super().permissions_for(member)
@@ -928,8 +936,9 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
 
     @property
-    def _type(self):
-        return ChannelType.private.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.private
 
     @property
     def created_at(self):
@@ -1041,8 +1050,9 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
 
     @property
-    def _type(self):
-        return ChannelType.group.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.group
 
     @property
     def icon_url(self):
