@@ -97,6 +97,9 @@ class EnumMeta(type):
     def __iter__(cls):
         return (cls._enum_member_map_[name] for name in cls._enum_member_names_)
 
+    def __len__(cls):
+        return len(cls._enum_member_names_)
+
     def __repr__(cls):
         return '<enum %r>' % cls.__name__
 
