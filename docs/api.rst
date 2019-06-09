@@ -2386,6 +2386,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: NotFound
 
+.. autoexception:: InvalidData
+
 .. autoexception:: InvalidArgument
 
 .. autoexception:: GatewayNotFound
@@ -2404,11 +2406,12 @@ Exception Hierarchy
     - :exc:`Exception`
         - :exc:`DiscordException`
             - :exc:`ClientException`
+                - :exc:`InvalidData`
+                - :exc:`InvalidArgument`
+                - :exc:`LoginFailure`
+                - :exc:`ConnectionClosed`
             - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
                 - :exc:`NotFound`
-            - :exc:`InvalidArgument`
-            - :exc:`LoginFailure`
-            - :exc:`ConnectionClosed`
