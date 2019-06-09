@@ -716,7 +716,8 @@ Enumerations
 The API provides some enumerations for certain types of strings to avoid the API
 from being stringly typed in case the strings change in the future.
 
-All enumerations are subclasses of :class:`enum.Enum`.
+All enumerations are subclasses of an internal class which mimics the behaviour
+of :class:`enum.Enum`.
 
 .. class:: ChannelType
 
