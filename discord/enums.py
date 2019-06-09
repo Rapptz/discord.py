@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import types
 import inspect
 from collections import namedtuple
-from operator import attrgetter
 
 __all__ = (
     'Enum',
