@@ -1,5 +1,8 @@
 .. currentmodule:: discord
 
+.. |commands| replace:: [:ref:`ext.commands <discord_ext_commands>`]
+.. |tasks| replace:: [:ref:`ext.tasks <discord_ext_tasks>`]
+
 .. _whats_new:
 
 Changelog
@@ -7,6 +10,59 @@ Changelog
 
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
+
+.. _vp1p2p0:
+
+v1.2.0
+--------
+
+This update mainly brings performance improvements and various nitro boosting attributes (referred to in the API as "premium guilds").
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add :attr:`Guild.premium_tier` to query the guild's current nitro boost level.
+- Add :attr:`Guild.emoji_limit`, :attr:`Guild.bitrate_limit`, :attr:`Guild.filesize_limit` to query the new limits of a guild when taking into consideration boosting.
+- Add :attr:`Guild.premium_subscription_count` to query how many members are boosting a guild.
+- Add :attr:`Member.premium_since` to query since when a member has boosted a guild.
+- Add :attr:`Guild.premium_subscribers` to query all the members currently boosting the guild.
+- Add :attr:`Guild.system_channel_flags` to query the settings for a guild's :attr:`Guild.system_channel`.
+    - This includes a new type named :class:`SystemChannelFlags`
+- Add :attr:`Emoji.available` to query if an emoji can be used (within the guild or otherwise).
+- Add support for animated icons in :meth:`Guild.icon_url_as` and :attr:`Guild.icon_url`.
+- Add :meth:`Guild.is_icon_animated`.
+- Add support for the various new :class:`MessageType` involving nitro boosting.
+- Add :attr:`VoiceRegion.india`. (:issue:`2145`)
+- Add :meth:`Embed.insert_field_at`. (:issue:`2178`)
+- Add a ``type`` attribute for all channels to their appropriate :class:`ChannelType`. (:issue:`2185`)
+- |tasks| Add :meth:`Loop.stop <.ext.tasks.Loop.stop>` to gracefully stop a task rather than cancelling.
+- |tasks| Add :meth:`Loop.failed <.ext.tasks.Loop.failed>` to query if a task had failed somehow.
+- |tasks| Add :meth:`Loop.change_interval <.ext.tasks.Loop.change_interval>` to change the sleep interval at runtime (:issue:`2158`, :issue:`2162`)
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix internal error when using :meth:`Guild.prune_members`.
+- |commands| Fix :attr:`~ext.commands.Group.invoked_subcommand` being invalid in many cases.
+- |tasks| Reset iteration count when the loop terminates and is restarted.
+- |tasks| The decorator interface now works as expected when stacking (:issue:`2154`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Improve performance of all Enum related code significantly.
+    - This was done by replacing the ``enum.Enum`` code with an API compatible one.
+    - This should not be a breaking change for most users due to duck-typing.
+- Improve performance of message creation by about 1.5x.
+- Improve performance of message editing by about 1.5-4x depending on payload size.
+- Improve performance of attribute access on :class:`Member` about by 2x.
+- Improve performance of :func:`utils.get` by around 4-6x depending on usage.
+- Improve performance of event parsing lookup by around 2.5x.
+- Keyword arguments in :meth:`Client.start` and :meth:`Client.run` are now validated (:issue:`953`, :issue:`2170`)
+- The Discord error code is now shown in the exception message for :exc:`HTTPException`.
+- Internal tasks launched by the library will now have their own custom ``__repr__``.
+- All public facing types should now have a proper and more detailed ``__repr__``.
+- |tasks| Errors are now logged via the standard :mod:`py:logging` module.
 
 .. _vp1p1p1:
 

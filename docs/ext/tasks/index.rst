@@ -1,3 +1,5 @@
+.. _discord_ext_tasks:
+
 ``discord.ext.tasks`` -- asyncio.Task helpers
 ====================================================
 
