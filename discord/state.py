@@ -28,7 +28,6 @@ import asyncio
 from collections import deque, namedtuple, OrderedDict
 import copy
 import datetime
-import enum
 import itertools
 import logging
 import math
@@ -45,11 +44,11 @@ from .channel import *
 from .raw_models import *
 from .member import Member
 from .role import Role
-from .enums import ChannelType, try_enum, Status
+from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
 from .embeds import Embed
 
-class ListenerType(enum.Enum):
+class ListenerType(Enum):
     chunk = 0
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))

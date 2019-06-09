@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import enum
+from discord.enums import Enum
 import time
 
 __all__ = (
@@ -33,7 +33,7 @@ __all__ = (
     'CooldownMapping',
 )
 
-class BucketType(enum.Enum):
+class BucketType(Enum):
     default  = 0
     user     = 1
     guild    = 2
