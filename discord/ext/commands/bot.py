@@ -125,8 +125,7 @@ class BotBase(GroupMixin):
         super().dispatch(event_name, *args, **kwargs)
         ev = 'on_' + event_name
         for event in self.extra_events.get(ev, []):
-            coro = self._run_event(event, event_name, *args, **kwargs)
-            asyncio.ensure_future(coro, loop=self.loop)
+            self._schedule_event(event, ev, *args, **kwargs)
 
     async def close(self):
         for extension in tuple(self.__extensions):
@@ -148,7 +147,7 @@ class BotBase(GroupMixin):
 
         The default command error handler provided by the bot.
 
-        By default this prints to ``sys.stderr`` however it could be
+        By default this prints to :data:`sys.stderr` however it could be
         overridden to have a different implementation.
 
         This only fires if you do not specify any listeners for command error.
@@ -209,7 +208,7 @@ class BotBase(GroupMixin):
             The function that was used as a global check.
         call_once: :class:`bool`
             If the function should only be called once per
-            :meth:`.Command.invoke` call.
+            :meth:`Command.invoke` call.
         """
 
         if call_once:
@@ -242,7 +241,7 @@ class BotBase(GroupMixin):
         r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
-        per :meth:`.Command.invoke` call.
+        per :meth:`Command.invoke` call.
 
         Regular global checks are called whenever a command is called
         or :meth:`.Command.can_run` is called. This type of check
@@ -289,6 +288,11 @@ class BotBase(GroupMixin):
         -----------
         user: :class:`.abc.User`
             The user to check for.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the user is the owner.
         """
 
         if self.owner_id is None:
@@ -315,7 +319,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the pre-invoke hook.
 
         Raises
@@ -348,7 +352,7 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        coro
+        coro: :ref:`coroutine <coroutine>`
             The coroutine to register as the post-invoke hook.
 
         Raises
@@ -421,7 +425,7 @@ class BotBase(GroupMixin):
         event listener. Basically this allows you to listen to multiple
         events from different places e.g. such as :func:`.on_ready`
 
-        The functions being listened to must be a coroutine.
+        The functions being listened to must be a :ref:`coroutine <coroutine>`.
 
         Example
         --------

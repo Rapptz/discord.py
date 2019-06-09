@@ -34,6 +34,7 @@ import datetime
 from email.utils import parsedate_to_datetime
 import functools
 from inspect import isawaitable as _isawaitable
+from operator import attrgetter
 import json
 import re
 import warnings
@@ -134,10 +135,10 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     -----------
     client_id: :class:`str`
         The client ID for your bot.
-    permissions: :class:`Permissions`
+    permissions: :class:`~discord.Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
-    guild: :class:`Guild`
+    guild: :class:`~discord.Guild`
         The guild to pre-select in the authorization screen, if available.
     redirect_uri: :class:`str`
         An optional valid redirect URI.
@@ -154,18 +155,18 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
 
 
 def snowflake_time(id):
-    """Returns the creation date in UTC of a discord id."""
+    """Returns the creation date in UTC of a Discord snowflake ID."""
     return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
 
 def time_snowflake(datetime_obj, high=False):
     """Returns a numeric snowflake pretending to be created at the given date.
 
-    When using as the lower end of a range, use time_snowflake(high=False) - 1 to be inclusive, high=True to be exclusive
-    When using as the higher end of a range, use time_snowflake(high=True) + 1 to be inclusive, high=False to be exclusive
+    When using as the lower end of a range, use ``time_snowflake(high=False) - 1`` to be inclusive, ``high=True`` to be exclusive
+    When using as the higher end of a range, use ``time_snowflake(high=True)`` + 1 to be inclusive, ``high=False`` to be exclusive
 
     Parameters
     -----------
-    datetime_obj
+    datetime_obj: :class:`datetime.datetime`
         A timezone-naive datetime object representing UTC time.
     high: :class:`bool`
         Whether or not to set the lower 22 bit to high or low.
@@ -181,14 +182,11 @@ def find(predicate, seq):
 
         member = find(lambda m: m.name == 'Mighty', channel.guild.members)
 
-    would find the first :class:`Member` whose name is 'Mighty' and return it.
+    would find the first :class:`~discord.Member` whose name is 'Mighty' and return it.
     If an entry is not found, then ``None`` is returned.
 
-    This is different from `filter`_ due to the fact it stops the moment it finds
+    This is different from :func:`py:filter` due to the fact it stops the moment it finds
     a valid entry.
-
-
-    .. _filter: https://docs.python.org/3.6/library/functions.html#filter
 
     Parameters
     -----------
@@ -206,7 +204,7 @@ def find(predicate, seq):
 def get(iterable, **attrs):
     r"""A helper that returns the first element in the iterable that meets
     all the traits passed in ``attrs``. This is an alternative for
-    :func:`discord.utils.find`.
+    :func:`~discord.utils.find`.
 
     When multiple attributes are specified, they are checked using
     logical AND, not logical OR. Meaning they have to meet every
@@ -247,19 +245,28 @@ def get(iterable, **attrs):
         Keyword arguments that denote attributes to search with.
     """
 
-    def predicate(elem):
-        for attr, val in attrs.items():
-            nested = attr.split('__')
-            obj = elem
-            for attribute in nested:
-                obj = getattr(obj, attribute)
+    # global -> local
+    _all = all
+    attrget = attrgetter
 
-            if obj != val:
-                return False
-        return True
+    # Special case the single element call
+    if len(attrs) == 1:
+        k, v = attrs.popitem()
+        pred = attrget(k.replace('__', '.'))
+        for elem in iterable:
+            if pred(elem) == v:
+                return elem
+        return None
 
-    return find(predicate, iterable)
+    converted = [
+        (attrget(attr.replace('__', '.')), value)
+        for attr, value in attrs.items()
+    ]
 
+    for elem in iterable:
+        if _all(pred(elem) == value for pred, value in converted):
+            return elem
+    return None
 
 def _unique(iterable):
     seen = set()
@@ -371,11 +378,11 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
 
 def resolve_invite(invite):
     """
-    Resolves an invite from a :class:`Invite`, URL or ID
+    Resolves an invite from a :class:`~discord.Invite`, URL or ID
 
     Parameters
     -----------
-    invite: Union[:class:`Invite`, :class:`Object`, :class:`str`]
+    invite: Union[:class:`~discord.Invite`, :class:`~discord.Object`, :class:`str`]
         The invite.
 
     Returns

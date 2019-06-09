@@ -152,6 +152,18 @@ class Activity(_ActivityTag):
         self.session_id = kwargs.pop('session_id', None)
         self.type = try_enum(ActivityType, kwargs.pop('type', -1))
 
+    def __repr__(self):
+        attrs = (
+            'type',
+            'name',
+            'url',
+            'details',
+            'application_id',
+            'session_id',
+        )
+        mapped = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in attrs)
+        return '<Activity %s>' % mapped
+
     def to_dict(self):
         ret = {}
         for attr in self.__slots__:
@@ -497,7 +509,8 @@ class Spotify:
         return 'Spotify'
 
     def __eq__(self, other):
-        return isinstance(other, Spotify) and other._session_id == self._session_id
+        return (isinstance(other, Spotify) and other._session_id == self._session_id
+                and other._sync_id == self._sync_id and other.start == self.start)
 
     def __ne__(self, other):
         return not self.__eq__(other)

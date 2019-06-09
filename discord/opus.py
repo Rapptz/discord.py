@@ -115,20 +115,12 @@ def load_opus(name):
     """Loads the libopus shared library for use with voice.
 
     If this function is not called then the library uses the function
-    `ctypes.util.find_library`__ and then loads that one
+    :func:`ctypes.util.find_library` and then loads that one
     if available.
-
-    .. _find library: https://docs.python.org/3.5/library/ctypes.html#finding-shared-libraries
-    __ `find library`_
 
     Not loading a library leads to voice not working.
 
     This function propagates the exceptions thrown.
-
-    .. note::
-
-        On Windows, this function should not need to be called as the binaries
-        are automatically loaded.
 
     .. warning::
 
@@ -139,9 +131,14 @@ def load_opus(name):
 
     .. note::
 
+        On Windows, this function should not need to be called as the binaries
+        are automatically loaded.
+
+    .. note::
+
         On Windows, the .dll extension is not necessary. However, on Linux
         the full extension is required to load the library, e.g. ``libopus.so.1``.
-        On Linux however, `find library`_ will usually find the library automatically
+        On Linux however, :func:`ctypes.util.find_library` will usually find the library automatically
         without you having to call this.
 
     Parameters
@@ -154,7 +151,7 @@ def load_opus(name):
 
 def is_loaded():
     """Function to check if opus lib is successfully loaded either
-    via the ``ctypes.util.find_library`` call of :func:`load_opus`.
+    via the :func:`ctypes.util.find_library` call of :func:`load_opus`.
 
     This must return ``True`` for voice to work.
 

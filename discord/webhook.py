@@ -164,7 +164,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
     Parameters
     -----------
-    session: aiohttp.ClientSession
+    session: :class:`aiohttp.ClientSession`
         The session to use to send requests.
     """
 
@@ -193,9 +193,9 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 file.reset(seek=tries)
 
             async with self.session.request(verb, url, headers=headers, data=data) as r:
-                data = await r.text(encoding='utf-8')
+                response = await r.text(encoding='utf-8')
                 if r.headers['Content-Type'] == 'application/json':
-                    data = json.loads(data)
+                    response = json.loads(response)
 
                 # check if we have rate limit header information
                 remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -204,11 +204,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     await asyncio.sleep(delta, loop=self.loop)
 
                 if 300 > r.status >= 200:
-                    return data
+                    return response
 
                 # we are being rate limited
                 if r.status == 429:
-                    retry_after = data['retry_after'] / 1000.0
+                    retry_after = response['retry_after'] / 1000.0
                     await asyncio.sleep(retry_after, loop=self.loop)
                     continue
 
@@ -217,11 +217,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     continue
 
                 if r.status == 403:
-                    raise Forbidden(r, data)
+                    raise Forbidden(r, response)
                 elif r.status == 404:
-                    raise NotFound(r, data)
+                    raise NotFound(r, response)
                 else:
-                    raise HTTPException(r, data)
+                    raise HTTPException(r, response)
 
     async def handle_execution_response(self, response, *, wait):
         data = await response
@@ -235,7 +235,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 class RequestsWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with ``requests``.
 
-    Only versions of requests higher than 2.13.0 are supported.
+    Only versions of :doc:`req:index` higher than 2.13.0 are supported.
 
     Parameters
     -----------
@@ -272,13 +272,13 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
-            data = r.text
+            response = r.text
 
             # compatibility with aiohttp
             r.status = r.status_code
 
             if r.headers['Content-Type'] == 'application/json':
-                data = json.loads(data)
+                response = json.loads(response)
 
             # check if we have rate limit header information
             remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -287,27 +287,27 @@ class RequestsWebhookAdapter(WebhookAdapter):
                 time.sleep(delta)
 
             if 300 > r.status >= 200:
-                return data
+                return response
 
             # we are being rate limited
             if r.status == 429:
                 if self.sleep:
-                    retry_after = data['retry_after'] / 1000.0
+                    retry_after = response['retry_after'] / 1000.0
                     time.sleep(retry_after)
                     continue
                 else:
-                    raise HTTPException(r, data)
+                    raise HTTPException(r, response)
 
             if self.sleep and r.status in (500, 502):
                 time.sleep(1 + tries * 2)
                 continue
 
             if r.status == 403:
-                raise Forbidden(r, data)
+                raise Forbidden(r, response)
             elif r.status == 404:
-                raise NotFound(r, data)
+                raise NotFound(r, response)
             else:
-                raise HTTPException(r, data)
+                raise HTTPException(r, response)
 
     def handle_execution_response(self, response, *, wait):
         if not wait:
@@ -369,9 +369,9 @@ class Webhook:
     it bound to a websocket connection using the :meth:`~.Webhook.from_url` or
     :meth:`~.Webhook.partial` classmethods. This form allows finer grained control
     over how requests are done, allowing you to mix async and sync code using either
-    ``aiohttp`` or ``requests``.
+    :doc:`aiohttp <aio:index>` or :doc:`req:index`.
 
-    For example, creating a webhook from a URL and using ``aiohttp``:
+    For example, creating a webhook from a URL and using :doc:`aiohttp <aio:index>`:
 
     .. code-block:: python3
 
@@ -383,7 +383,7 @@ class Webhook:
                 webhook = Webhook.from_url('url-here', adapter=AsyncWebhookAdapter(session))
                 await webhook.send('Hello World', username='Foo')
 
-    Or creating a webhook from an ID and token and using ``requests``:
+    Or creating a webhook from an ID and token and using :doc:`req:index`:
 
     .. code-block:: python3
 
@@ -456,8 +456,8 @@ class Webhook:
             The authentication token of the webhook.
         adapter: :class:`WebhookAdapter`
             The webhook adapter to use when sending requests. This is
-            typically :class:`AsyncWebhookAdapter` for ``aiohttp`` or
-            :class:`RequestsWebhookAdapter` for ``requests``.
+            typically :class:`AsyncWebhookAdapter` for :doc:`aiohttp <aio:index>` or
+            :class:`RequestsWebhookAdapter` for :doc:`req:index`.
         """
 
         if not isinstance(adapter, WebhookAdapter):
@@ -480,8 +480,8 @@ class Webhook:
             The URL of the webhook.
         adapter: :class:`WebhookAdapter`
             The webhook adapter to use when sending requests. This is
-            typically :class:`AsyncWebhookAdapter` for ``aiohttp`` or
-            :class:`RequestsWebhookAdapter` for ``requests``.
+            typically :class:`AsyncWebhookAdapter` for :doc:`aiohttp <aio:index>` or
+            :class:`RequestsWebhookAdapter` for :doc:`req:index`.
 
         Raises
         -------
@@ -518,15 +518,15 @@ class Webhook:
 
     @property
     def created_at(self):
-        """Returns the webhook's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the webhook's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def avatar_url(self):
-        """Returns a friendly URL version of the avatar the webhook has.
+        """Returns an :class:`Asset` for the avatar the webhook has.
 
-        If the webhook does not have a traditional avatar, their default
-        avatar URL is returned instead.
+        If the webhook does not have a traditional avatar, an asset for
+        the default avatar is returned instead.
 
         This is equivalent to calling :meth:`avatar_url_as` with the
         default parameters.
@@ -534,10 +534,10 @@ class Webhook:
         return self.avatar_url_as()
 
     def avatar_url_as(self, *, format=None, size=1024):
-        """Returns a friendly URL version of the avatar the webhook has.
+        """Returns an :class:`Asset` for the avatar the webhook has.
 
-        If the webhook does not have a traditional avatar, their default
-        avatar URL is returned instead.
+        If the webhook does not have a traditional avatar, an asset for
+        the default avatar is returned instead.
 
         The format must be one of 'jpeg', 'jpg', or 'png'.
         The size must be a power of 2 between 16 and 1024.

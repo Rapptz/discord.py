@@ -34,7 +34,7 @@ class Context(discord.abc.Messageable):
     the invocation context. This class is not created manually and is instead
     passed around to commands as the first parameter.
 
-    This class implements the :class:`abc.Messageable` ABC.
+    This class implements the :class:`~discord.abc.Messageable` ABC.
 
     Attributes
     -----------
@@ -61,12 +61,12 @@ class Context(discord.abc.Messageable):
     invoked_subcommand
         The subcommand (i.e. :class:`.Command` or its subclasses) that was
         invoked. If no valid subcommand was invoked then this is equal to
-        `None`.
+        ``None``.
     subcommand_passed: Optional[:class:`str`]
         The string that was attempted to call a subcommand. This does not have
         to point to a valid registered subcommand and could just point to a
         nonsense string. If nothing was passed to attempt a call to a
-        subcommand then this is set to `None`.
+        subcommand then this is set to ``None``.
     command_failed: :class:`bool`
         A boolean that indicates if the command failed to be parsed, checked,
         or invoked.
@@ -94,13 +94,18 @@ class Context(discord.abc.Messageable):
         This is useful if you want to just call the callback that a
         :class:`.Command` holds internally.
 
-        Note
-        ------
-        You do not pass in the context as it is done for you.
+        .. note::
 
-        Warning
-        ---------
-        The first parameter passed **must** be the command being invoked.
+            This does not handle converters, checks, cooldowns, pre-invoke,
+            or after-invoke hooks in any matter. It calls the internal callback
+            directly as-if it was a regular function.
+
+            You must take care in passing the proper arguments when
+            using this function.
+
+        .. warning::
+
+            The first parameter passed **must** be the command being invoked.
 
         Parameters
         -----------
@@ -261,6 +266,8 @@ class Context(discord.abc.Messageable):
         if cmd is None:
             return None
 
+        cmd = cmd.copy()
+        cmd.context = self
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)
             mapping = cmd.get_bot_mapping()

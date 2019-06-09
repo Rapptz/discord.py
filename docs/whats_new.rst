@@ -1,5 +1,8 @@
 .. currentmodule:: discord
 
+.. |commands| replace:: [:ref:`ext.commands <discord_ext_commands>`]
+.. |tasks| replace:: [:ref:`ext.tasks <discord_ext_tasks>`]
+
 .. _whats_new:
 
 Changelog
@@ -7,6 +10,154 @@ Changelog
 
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
+
+.. _vp1p2p1:
+
+v1.2.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- :attr:`User.avatar_url` and related attributes no longer raise an error.
+- More compatibility shims with the ``enum.Enum`` code.
+
+.. _vp1p2p0:
+
+v1.2.0
+--------
+
+This update mainly brings performance improvements and various nitro boosting attributes (referred to in the API as "premium guilds").
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add :attr:`Guild.premium_tier` to query the guild's current nitro boost level.
+- Add :attr:`Guild.emoji_limit`, :attr:`Guild.bitrate_limit`, :attr:`Guild.filesize_limit` to query the new limits of a guild when taking into consideration boosting.
+- Add :attr:`Guild.premium_subscription_count` to query how many members are boosting a guild.
+- Add :attr:`Member.premium_since` to query since when a member has boosted a guild.
+- Add :attr:`Guild.premium_subscribers` to query all the members currently boosting the guild.
+- Add :attr:`Guild.system_channel_flags` to query the settings for a guild's :attr:`Guild.system_channel`.
+    - This includes a new type named :class:`SystemChannelFlags`
+- Add :attr:`Emoji.available` to query if an emoji can be used (within the guild or otherwise).
+- Add support for animated icons in :meth:`Guild.icon_url_as` and :attr:`Guild.icon_url`.
+- Add :meth:`Guild.is_icon_animated`.
+- Add support for the various new :class:`MessageType` involving nitro boosting.
+- Add :attr:`VoiceRegion.india`. (:issue:`2145`)
+- Add :meth:`Embed.insert_field_at`. (:issue:`2178`)
+- Add a ``type`` attribute for all channels to their appropriate :class:`ChannelType`. (:issue:`2185`)
+- Add :meth:`Client.fetch_channel` to fetch a channel by ID via HTTP. (:issue:`2169`)
+- Add :meth:`Guild.fetch_channels` to fetch all channels via HTTP. (:issue:`2169`)
+- |tasks| Add :meth:`Loop.stop <.ext.tasks.Loop.stop>` to gracefully stop a task rather than cancelling.
+- |tasks| Add :meth:`Loop.failed <.ext.tasks.Loop.failed>` to query if a task had failed somehow.
+- |tasks| Add :meth:`Loop.change_interval <.ext.tasks.Loop.change_interval>` to change the sleep interval at runtime (:issue:`2158`, :issue:`2162`)
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix internal error when using :meth:`Guild.prune_members`.
+- |commands| Fix :attr:`.Command.invoked_subcommand` being invalid in many cases.
+- |tasks| Reset iteration count when the loop terminates and is restarted.
+- |tasks| The decorator interface now works as expected when stacking (:issue:`2154`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Improve performance of all Enum related code significantly.
+    - This was done by replacing the ``enum.Enum`` code with an API compatible one.
+    - This should not be a breaking change for most users due to duck-typing.
+- Improve performance of message creation by about 1.5x.
+- Improve performance of message editing by about 1.5-4x depending on payload size.
+- Improve performance of attribute access on :class:`Member` about by 2x.
+- Improve performance of :func:`utils.get` by around 4-6x depending on usage.
+- Improve performance of event parsing lookup by around 2.5x.
+- Keyword arguments in :meth:`Client.start` and :meth:`Client.run` are now validated (:issue:`953`, :issue:`2170`)
+- The Discord error code is now shown in the exception message for :exc:`HTTPException`.
+- Internal tasks launched by the library will now have their own custom ``__repr__``.
+- All public facing types should now have a proper and more detailed ``__repr__``.
+- |tasks| Errors are now logged via the standard :mod:`py:logging` module.
+
+.. _vp1p1p1:
+
+v1.1.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Webhooks do not overwrite data on retrying their HTTP requests (:issue:`2140`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Add back signal handling to :meth:`Client.run` due to issues some users had with proper cleanup.
+
+.. _vp1p1p0:
+
+v1.1.0
+---------
+
+New Features
+~~~~~~~~~~~~~~
+
+- **There is a new extension dedicated to making background tasks easier.**
+    - You can check the documentation here: :ref:`ext_tasks_api`.
+- Add :attr:`Permissions.stream` permission. (:issue:`2077`)
+- Add equality comparison and hash support to :class:`Asset`
+- Add ``compute_prune_members`` parameter to :meth:`Guild.prune_members` (:issue:`2085`)
+- Add :attr:`Client.cached_messages` attribute to fetch the message cache (:issue:`2086`)
+- Add :meth:`abc.GuildChannel.clone` to clone a guild channel. (:issue:`2093`)
+- Add ``delay`` keyword-only argument to :meth:`Message.delete` (:issue:`2094`)
+- Add support for ``<:name:id>`` when adding reactions (:issue:`2095`)
+- Add :meth:`Asset.read` to fetch the bytes content of an asset (:issue:`2107`)
+- Add :meth:`Attachment.read` to fetch the bytes content of an attachment (:issue:`2118`)
+- Add support for voice kicking by passing ``None`` to :meth:`Member.move_to`.
+
+``discord.ext.commands``
+++++++++++++++++++++++++++
+
+- Add new :func:`~.commands.dm_only` check.
+- Support callable converters in :data:`~.commands.Greedy`
+- Add new :class:`~.commands.MessageConverter`.
+    - This allows you to use :class:`Message` as a type hint in functions.
+- Allow passing ``cls`` in the :func:`~.commands.group` decorator (:issue:`2061`)
+- Add :attr:`.Command.parents` to fetch the parents of a command (:issue:`2104`)
+
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Fix :exc:`AttributeError` when using ``__repr__`` on :class:`Widget`.
+- Fix issue with :attr:`abc.GuildChannel.overwrites` returning ``None`` for keys.
+- Remove incorrect legacy NSFW checks in e.g. :meth:`TextChannel.is_nsfw`.
+- Fix :exc:`UnboundLocalError` when :class:`RequestsWebhookAdapter` raises an error.
+- Fix bug where updating your own user did not update your member instances.
+- Tighten constraints of ``__eq__`` in :class:`Spotify` objects (:issue:`2113`, :issue:`2117`)
+
+``discord.ext.commands``
+++++++++++++++++++++++++++
+
+- Fix lambda converters in a non-module context (e.g. ``eval``).
+- Use message creation time for reference time when computing cooldowns.
+    - This prevents cooldowns from triggering during e.g. a RESUME session.
+- Fix the default :func:`on_command_error` to work with new-style cogs (:issue:`2094`)
+- DM channels are now recognised as NSFW in :func:`~.commands.is_nsfw` check.
+- Fix race condition with help commands (:issue:`2123`)
+- Fix cog descriptions not showing in :class:`~.commands.MinimalHelpCommand` (:issue:`2139`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Improve the performance of internal enum creation in the library by about 5x.
+- Make the output of ``python -m discord --version`` a bit more useful.
+- The loop cleanup facility has been rewritten again.
+- The signal handling in :meth:`Client.run` has been removed.
+
+``discord.ext.commands``
+++++++++++++++++++++++++++
+
+- Custom exception classes are now used for all default checks in the library (:issue:`2101`)
+
 
 .. _vp1p0p1:
 

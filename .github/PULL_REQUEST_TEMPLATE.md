@@ -4,7 +4,7 @@
 
 ### Checklist
 
-<!-- Put an x inside [ ] to check it -->
+<!-- Put an x inside [ ] to check it, like so: [x] -->
 
 - [ ] If code changes were made then they have been tested.
     - [ ] I have updated the documentation to reflect the changes.

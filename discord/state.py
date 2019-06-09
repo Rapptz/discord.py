@@ -28,11 +28,11 @@ import asyncio
 from collections import deque, namedtuple, OrderedDict
 import copy
 import datetime
-import enum
 import itertools
 import logging
 import math
 import weakref
+import inspect
 
 from .guild import Guild
 from .activity import _ActivityTag
@@ -44,11 +44,11 @@ from .channel import *
 from .raw_models import *
 from .member import Member
 from .role import Role
-from .enums import ChannelType, try_enum, Status
+from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
 from .embeds import Embed
 
-class ListenerType(enum.Enum):
+class ListenerType(Enum):
     chunk = 0
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
@@ -87,6 +87,11 @@ class ConnectionState:
 
         self._activity = activity
         self._status = status
+
+        self.parsers = parsers = {}
+        for attr, func in inspect.getmembers(self):
+            if attr.startswith('parse_'):
+                parsers[attr[6:].upper()] = func
 
         self.clear()
 
@@ -330,7 +335,8 @@ class ConnectionState:
 
         self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
         self.clear()
-        self.user = ClientUser(state=self, data=data['user'])
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self._users[user.id] = user
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -344,11 +350,11 @@ class ConnectionState:
             except KeyError:
                 continue
             else:
-                self.user._relationships[r_id] = Relationship(state=self, data=relationship)
+                user._relationships[r_id] = Relationship(state=self, data=relationship)
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
-            self._add_private_channel(factory(me=self.user, data=pm, state=self))
+            self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
@@ -361,7 +367,7 @@ class ConnectionState:
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
         self._messages.append(message)
-        if channel and channel._type in (0, 5):
+        if channel and channel.__class__ is TextChannel:
             channel.last_message_id = message.id
 
     def parse_message_delete(self, data):
@@ -385,20 +391,15 @@ class ConnectionState:
 
     def parse_message_update(self, data):
         raw = RawMessageUpdateEvent(data)
-        self.dispatch('raw_message_edit', raw)
         message = self._get_message(raw.message_id)
         if message is not None:
             older_message = copy.copy(message)
-            if 'call' in data:
-                # call state message edit
-                message._handle_call(data['call'])
-            elif 'content' not in data:
-                # embed only edit
-                message.embeds = [Embed.from_dict(d) for d in data['embeds']]
-            else:
-                message._update(channel=message.channel, data=data)
-
+            raw.cached_message = older_message
+            self.dispatch('raw_message_edit', raw)
+            message._update(data)
             self.dispatch('message_edit', older_message, message)
+        else:
+            self.dispatch('raw_message_edit', raw)
 
     def parse_message_reaction_add(self, data):
         emoji_data = data['emoji']
@@ -472,7 +473,7 @@ class ConnectionState:
         self.dispatch('member_update', old_member, member)
 
     def parse_user_update(self, data):
-        self.user = ClientUser(state=self, data=data)
+        self.user._update(data)
 
     def parse_channel_delete(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -993,7 +994,8 @@ class AutoShardedConnectionState(ConnectionState):
         if not hasattr(self, '_ready_state'):
             self._ready_state = ReadyState(launch=asyncio.Event(), guilds=[])
 
-        self.user = ClientUser(state=self, data=data['user'])
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self._users[user.id] = user
 
         guilds = self._ready_state.guilds
         for guild_data in data['guilds']:
@@ -1003,7 +1005,7 @@ class AutoShardedConnectionState(ConnectionState):
 
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
-            self._add_private_channel(factory(me=self.user, data=pm, state=self))
+            self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         if self._ready_task is None:

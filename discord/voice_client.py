@@ -84,7 +84,7 @@ class VoiceClient:
         The endpoint we are connecting to.
     channel: :class:`abc.Connectable`
         The voice channel connected to.
-    loop
+    loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the voice client is running on.
     """
     def __init__(self, state, timeout, channel):
@@ -247,6 +247,7 @@ class VoiceClient:
                     # 4014 - voice channel has been deleted.
                     # 4015 - voice server has crashed
                     if exc.code in (1000, 4014, 4015):
+                        log.info('Disconnecting from voice normally, close code %d.', exc.code)
                         await self.disconnect()
                         break
 
@@ -300,7 +301,7 @@ class VoiceClient:
         await self.main_ws.voice_state(guild_id, channel.id)
 
     def is_connected(self):
-        """:class:`bool`: Indicates if the voice client is connected to voice."""
+        """Indicates if the voice client is connected to voice."""
         return self._connected.is_set()
 
     # audio related
@@ -344,7 +345,7 @@ class VoiceClient:
         -----------
         source: :class:`AudioSource`
             The audio source we're reading from.
-        after
+        after: Callable[[:class:`Exception`], Any]
             The finalizer that is called after the stream is exhausted.
             All exceptions it throws are silently discarded. This function
             must have a single parameter, ``error``, that denotes an
@@ -419,16 +420,16 @@ class VoiceClient:
 
         Parameters
         ----------
-        data: bytes
+        data: :class:`bytes`
             The :term:`py:bytes-like object` denoting PCM or Opus voice data.
-        encode: bool
+        encode: :class:`bool`
             Indicates if ``data`` should be encoded into Opus.
 
         Raises
         -------
         ClientException
             You are not connected.
-        OpusError
+        opus.OpusError
             Encoding the data failed.
         """
 
