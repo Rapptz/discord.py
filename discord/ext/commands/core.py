@@ -167,6 +167,8 @@ class Command(_BaseCommand):
         regular matter rather than passing the rest completely raw. If ``True``
         then the keyword-only argument will pass in the rest of the arguments
         in a completely raw matter. Defaults to ``False``.
+    invoked_subcommand: Optional[:class:`Command`]
+        The subcommand that was invoked, if any.
     ignore_extra: :class:`bool`
         If ``True``\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``

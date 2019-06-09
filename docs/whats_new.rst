@@ -35,6 +35,8 @@ New Features
 - Add :attr:`VoiceRegion.india`. (:issue:`2145`)
 - Add :meth:`Embed.insert_field_at`. (:issue:`2178`)
 - Add a ``type`` attribute for all channels to their appropriate :class:`ChannelType`. (:issue:`2185`)
+- Add :meth:`Client.fetch_channel` to fetch a channel by ID via HTTP. (:issue:`2169`)
+- Add :meth:`Guild.fetch_channels` to fetch all channels via HTTP. (:issue:`2169`)
 - |tasks| Add :meth:`Loop.stop <.ext.tasks.Loop.stop>` to gracefully stop a task rather than cancelling.
 - |tasks| Add :meth:`Loop.failed <.ext.tasks.Loop.failed>` to query if a task had failed somehow.
 - |tasks| Add :meth:`Loop.change_interval <.ext.tasks.Loop.change_interval>` to change the sleep interval at runtime (:issue:`2158`, :issue:`2162`)
@@ -43,7 +45,7 @@ Bug Fixes
 ~~~~~~~~~~~
 
 - Fix internal error when using :meth:`Guild.prune_members`.
-- |commands| Fix :attr:`~ext.commands.Group.invoked_subcommand` being invalid in many cases.
+- |commands| Fix :attr:`.Command.invoked_subcommand` being invalid in many cases.
 - |tasks| Reset iteration count when the loop terminates and is restarted.
 - |tasks| The decorator interface now works as expected when stacking (:issue:`2154`)
 
