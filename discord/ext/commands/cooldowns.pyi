@@ -1,4 +1,4 @@
-import enum
+from discord.enums import Enum
 
 from .context import Context
 from ...message import Message
@@ -7,7 +7,7 @@ from typing import Optional, TypeVar, Type
 
 _CM = TypeVar('_CM', bound=CooldownMapping)
 
-class BucketType(enum.Enum):
+class BucketType(Enum):
     default: int
     user: int
     guild: int

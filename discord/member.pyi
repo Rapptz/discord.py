@@ -30,6 +30,7 @@ class Member(discord.abc.Messageable, discord.abc.User):
     joined_at: Optional[datetime.datetime]
     activities: Tuple[Union[Activity, Game, Streaming, Spotify], ...]
     nick: Optional[str]
+    premium_since: Optional[datetime.datetime]
     guild: Guild
 
     # From discord.user.BaseUser

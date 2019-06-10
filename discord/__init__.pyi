@@ -6,7 +6,7 @@ from .user import User as User, ClientUser as ClientUser, Profile as Profile
 from .emoji import Emoji as Emoji, PartialEmoji as PartialEmoji
 from .activity import *
 from .channel import *
-from .guild import Guild as Guild
+from .guild import Guild as Guild, SystemChannelFlags as SystemChannelFlags
 from .relationship import Relationship as Relationship
 from .member import Member as Member, VoiceState as VoiceState
 from .message import Message as Message, Attachment as Attachment

@@ -1,5 +1,9 @@
-from enum import Enum
+from enum import Enum as Enum
 from typing import Union, TypeVar, Type, overload
+
+# Technically, these enumerations do not inherit from enum.Enum, but because type checking
+# does something special for enum.Enum and discord.enums.Enum is a drop-in replacement for
+# enum.Enum, typings are using enum.Enum directly
 
 class ChannelType(Enum):
     text: int
@@ -21,6 +25,10 @@ class MessageType(Enum):
     channel_icon_change: int
     pins_add: int
     new_member: int
+    premium_guild_subscription: int
+    premium_guild_tier_1: int
+    premium_guild_tier_2: int
+    premium_guild_tier_3: int
 
 class VoiceRegion(Enum):
     us_west: str
@@ -37,6 +45,9 @@ class VoiceRegion(Enum):
     brazil: str
     hongkong: str
     russia: str
+    japan: str
+    southafrica: str
+    india: str
     vip_us_east: str
     vip_us_west: str
     vip_amsterdam: str

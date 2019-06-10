@@ -31,6 +31,7 @@ class Emoji:
     animated: bool
     managed: bool
     guild_id: int
+    available: bool
     user: Optional[User]
 
     def __iter__(self) -> Iterator[Tuple[str, Any]]: ...
