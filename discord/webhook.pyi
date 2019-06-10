@@ -58,7 +58,6 @@ class Webhook:
     avatar: Optional[str]
     user: Optional[ABCUser]
 
-    def __repr__(self) -> str: ...
     @property
     def url(self) -> str: ...
     @classmethod

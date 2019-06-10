@@ -47,12 +47,12 @@ class PrivateChannel(Protocol):
     me: ClientUser
 
 class GuildChannel:
+    id: int
     name: str
     guild: Guild
     position: int
     category_id: Optional[int]
 
-    def __str__(self) -> str: ...
     @property
     def changed_roles(self) -> List[Role]: ...
     @property

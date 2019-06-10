@@ -14,8 +14,6 @@ class ChannelType(Enum):
     news: int
     store: int
 
-    def __str__(self) -> str: ...
-
 class MessageType(Enum):
     default: int
     recipient_add: int
@@ -52,15 +50,12 @@ class VoiceRegion(Enum):
     vip_us_west: str
     vip_amsterdam: str
 
-    def __str__(self) -> str: ...
-
 class SpeakingState(Enum):
     none: int
     voice: int
     soundshare: int
     priority: int
 
-    def __str__(self) -> str: ...
     def __int__(self) -> int: ...
 
 class VerificationLevel(Enum):
@@ -72,14 +67,10 @@ class VerificationLevel(Enum):
     extreme: int
     double_table_flip: int
 
-    def __str__(self) -> str: ...
-
 class ContentFilter(Enum):
     disabled: int
     no_role: int
     all_members: int
-
-    def __str__(self) -> str: ...
 
 class UserContentFilter(Enum):
     disabled: int
@@ -105,8 +96,6 @@ class Status(Enum):
     do_not_disturb: str
     invisible: str
 
-    def __str__(self) -> str: ...
-
 class DefaultAvatar(Enum):
     blurple: int
     grey: int
@@ -114,8 +103,6 @@ class DefaultAvatar(Enum):
     green: int
     orange: int
     red: int
-
-    def __str__(self) -> str: ...
 
 class RelationshipType(Enum):
     friend: int

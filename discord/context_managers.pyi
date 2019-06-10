@@ -1,10 +1,12 @@
 import asyncio
 
 from .abc import Messageable
-from typing import Any
+from typing import Any, Optional
 
 class Typing:
     loop: asyncio.AbstractEventLoop
+    messageable: Messageable
+    task: Optional[asyncio.Task[None]]
 
     def __init__(self, messageable: Messageable) -> None: ...
     async def do_typing(self) -> None: ...

@@ -60,7 +60,6 @@ class Message:
     activity: Optional[MessageActivity]
     application: Optional[MessageApplication]
 
-    def __repr__(self) -> str: ...
     @property
     def guild(self) -> Optional[Guild]: ...
     @property

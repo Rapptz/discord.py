@@ -1,8 +1,9 @@
 from inspect import Parameter
 
 from .context import Context
-from .cooldowns import CooldownMapping, BucketType
+from .cooldowns import CooldownMapping, BucketType, Cooldown
 from .cog import Cog
+from ._types import _BaseCommand
 
 from typing import Any, Optional, Union, Callable, Dict, Iterator, Coroutine, Type, ValuesView, List, TypeVar, Mapping, Generic, overload
 
@@ -14,7 +15,7 @@ _C = TypeVar('_C', bound=_CoroType)
 _CMD = TypeVar('_CMD', bound=Command)
 _F = TypeVar('_F', bound=Union[_CoroType, Command[Any]])
 
-class Command(Generic[_CT]):
+class Command(_BaseCommand, Generic[_CT]):
     name: str
     callback: _CoroType
     help: str
@@ -36,7 +37,8 @@ class Command(Generic[_CT]):
     def __init__(self, func: _CoroType, *, name: str = ..., enabled: bool = ...,
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
                  aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-                 rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
+                 rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+                 checks: List[_CheckType] = ..., cooldown: Cooldown = ..., parent: _BaseCommand = ...) -> None: ...
     def update(self, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
                usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
                rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
@@ -54,7 +56,6 @@ class Command(Generic[_CT]):
     def root_parent(self) -> Optional[Command[_CT]]: ...
     @property
     def qualified_name(self) -> str: ...
-    def __str__(self) -> str: ...
     async def call_before_hooks(self, ctx: _CT) -> None: ...
     async def call_after_hooks(self, ctx: _CT) -> None: ...
     async def prepare(self, ctx: _CT) -> None: ...
