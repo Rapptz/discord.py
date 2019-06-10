@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p2p2:
+
+v1.2.2
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Audit log related attribute access have been fixed to not error out when they shouldn't have.
+
 .. _vp1p2p1:
 
 v1.2.1
