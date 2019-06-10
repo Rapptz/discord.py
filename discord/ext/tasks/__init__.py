@@ -3,10 +3,13 @@ import aiohttp
 import websockets
 import discord
 import inspect
+import logging
 
 from discord.backoff import ExponentialBackoff
 
 MAX_ASYNCIO_SECONDS = 3456000
+
+log = logging.getLogger(__name__)
 
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
@@ -15,9 +18,6 @@ class Loop:
     """
     def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
         self.coro = coro
-        self.seconds = seconds
-        self.hours = hours
-        self.minutes = minutes
         self.reconnect = reconnect
         self.loop = loop or asyncio.get_event_loop()
         self.count = count
@@ -38,18 +38,13 @@ class Loop:
         self._before_loop = None
         self._after_loop = None
         self._is_being_cancelled = False
+        self._has_failed = False
         self._stop_next_iteration = False
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
 
-        self._sleep = sleep = self.seconds + (self.minutes * 60.0) + (self.hours * 3600.0)
-        if sleep >= MAX_ASYNCIO_SECONDS:
-            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
-            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
-
-        if sleep < 0:
-            raise ValueError('Total number of seconds cannot be less than zero.')
+        self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
@@ -86,11 +81,16 @@ class Loop:
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
+        except Exception:
+            self._has_failed = True
+            log.exception('Internal background task failed.')
+            raise
         finally:
             await self._call_loop_function('after_loop')
             self._is_being_cancelled = False
             self._current_loop = 0
             self._stop_next_iteration = False
+            self._has_failed = False
 
     def __get__(self, obj, objtype):
         if obj is None:
@@ -149,7 +149,7 @@ class Loop:
             before stopping via :meth:`clear_exception_types` or
             use :meth:`cancel` instead.
 
-        .. versionadded:: 1.2
+        .. versionadded:: 1.2.0
         """
         if self._task and not self._task.done():
             self._stop_next_iteration = True
@@ -245,8 +245,15 @@ class Loop:
         return self._task
 
     def is_being_cancelled(self):
-        """:class:`bool`: Whether the task is being cancelled."""
+        """Whether the task is being cancelled."""
         return self._is_being_cancelled
+
+    def failed(self):
+        """:class:`bool`: Whether the internal task has failed.
+
+        .. versionadded:: 1.2.0
+        """
+        return self._has_failed
 
     def before_loop(self, coro):
         """A decorator that registers a coroutine to be called before the loop starts running.
@@ -271,7 +278,7 @@ class Loop:
             raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._before_loop = coro
-
+        return coro
 
     def after_loop(self, coro):
         """A decorator that register a coroutine to be called after the loop finished running.
@@ -299,6 +306,45 @@ class Loop:
             raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._after_loop = coro
+        return coro
+
+    def change_interval(self, *, seconds=0, minutes=0, hours=0):
+        """Changes the interval for the sleep time.
+
+        .. note::
+
+            This only applies on the next loop iteration. If it is desirable for the change of interval
+            to be applied right away, cancel the task with :meth:`cancel`.
+
+        .. versionadded:: 1.2.0
+
+        Parameters
+        ------------
+        seconds: :class:`float`
+            The number of seconds between every iteration.
+        minutes: :class:`float`
+            The number of minutes between every iteration.
+        hours: :class:`float`
+            The number of hours between every iteration.
+
+        Raises
+        -------
+        ValueError
+            An invalid value was given.
+        """
+
+        sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
+        if sleep >= MAX_ASYNCIO_SECONDS:
+            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
+            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
+
+        if sleep < 0:
+            raise ValueError('Total number of seconds cannot be less than zero.')
+
+        self._sleep = sleep
+        self.seconds = seconds
+        self.hours = hours
+        self.minutes = minutes
 
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with

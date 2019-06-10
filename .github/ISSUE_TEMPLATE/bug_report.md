@@ -22,7 +22,7 @@ about: Report broken or incorrect behaviour
 
 ### Checklist
 
-<!-- Put an x inside [ ] to check it -->
+<!-- Put an x inside [ ] to check it, like so: [x] -->
 
 - [ ] I have searched the open issues for duplicates.
 - [ ] I have shown the entire traceback, if possible.
@@ -30,6 +30,5 @@ about: Report broken or incorrect behaviour
 
 ### System Information
 
-- discord.py version:
-- Python version:
-- Operating system:
+<!-- Run `python -m discord -v` and paste this information below. -->
+<!-- This command is available in v1.1.0 or higher. If you are unable to run this command, paste basic info (ie. Python version, library version, and your operating system -->

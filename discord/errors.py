@@ -72,12 +72,10 @@ class HTTPException(DiscordException):
 
     Attributes
     ------------
-    response: aiohttp.ClientResponse
+    response: :class:`aiohttp.ClientResponse`
         The response of the failed HTTP request. This is an
-        instance of `aiohttp.ClientResponse`__. In some cases
-        this could also be a ``requests.Response``.
-
-        __ http://aiohttp.readthedocs.org/en/stable/client_reference.html#aiohttp.ClientResponse
+        instance of :class:`aiohttp.ClientResponse`. In some cases
+        this could also be a :class:`requests.Response`.
 
     text: :class:`str`
         The text of the error. Could be an empty string.
@@ -104,11 +102,11 @@ class HTTPException(DiscordException):
             self.text = message
             self.code = 0
 
-        fmt = '{0.reason} (status code: {0.status})'
+        fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
-            fmt = fmt + ': {1}'
+            fmt = fmt + ': {2}'
 
-        super().__init__(fmt.format(self.response, self.text))
+        super().__init__(fmt.format(self.response, self.code, self.text))
 
 class Forbidden(HTTPException):
     """Exception that's thrown for when status code 403 occurs.
@@ -124,6 +122,12 @@ class NotFound(HTTPException):
     """
     pass
 
+
+class InvalidData(ClientException):
+    """Exception that's raised when the library encounters unknown
+    or invalid data from Discord.
+    """
+    pass
 
 class InvalidArgument(ClientException):
     """Exception that's thrown when an argument to a function

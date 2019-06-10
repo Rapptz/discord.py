@@ -68,6 +68,10 @@ class AppInfo:
         self.bot_require_code_grant = data['bot_require_code_grant']
         self.owner = User(state=self._state, data=data['owner'])
 
+    def __repr__(self):
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
+               'owner={0.owner!r}>'.format(self)
+
     @property
     def icon_url(self):
         """:class:`.Asset`: Retrieves the application's icon asset."""

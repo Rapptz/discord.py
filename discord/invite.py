@@ -71,12 +71,12 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
 
     @property
     def mention(self):
-        """:class:`str` : The string that allows you to mention the channel."""
+        """:class:`str`: The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
     def created_at(self):
-        """Returns the channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
 
 class PartialInviteGuild:
@@ -140,40 +140,44 @@ class PartialInviteGuild:
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r} features={0.features} ' \
+               'description={0.description!r}>'.format(self)
+
     @property
     def created_at(self):
-        """Returns the guild's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
     def icon_url(self):
-        """Returns the URL version of the guild's icon. Returns an empty string if it has no icon."""
+        """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """:class:`Asset`: The same operation as :meth:`Guild.icon_url_as`."""
+        """The same operation as :meth:`Guild.icon_url_as`."""
         return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
 
     @property
     def banner_url(self):
-        """Returns the URL version of the guild's banner. Returns an empty string if it has no banner."""
+        """:class:`Asset`: Returns the guild's banner asset."""
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """:class:`Asset`: The same operation as :meth:`Guild.banner_url_as`."""
+        """The same operation as :meth:`Guild.banner_url_as`."""
         return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
     def splash_url(self):
-        """Returns the URL version of the guild's invite splash. Returns an empty string if it has no splash."""
+        """:class:`Asset`: Returns the guild's invite splash asset."""
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """:class:`Asset`: The same operation as :meth:`Guild.splash_url_as`."""
+        """The same operation as :meth:`Guild.splash_url_as`."""
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
 class Invite(Hashable):
-    """Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
+    r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
 
     Depending on the way this object was created, some of the attributes can
     have a value of ``None``.
@@ -196,6 +200,28 @@ class Invite(Hashable):
 
             Returns the invite URL.
 
+    The following table illustrates what methods will obtain the attributes:
+
+    +------------------------------------+----------------------------------------------------------+
+    |             Attribute              |                          Method                          |
+    +====================================+==========================================================+
+    | :attr:`max_age`                    | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`max_uses`                   | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`created_at`                 | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`temporary`                  | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`uses`                       | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`approximate_member_count`   | :meth:`Client.fetch_invite`                              |
+    +------------------------------------+----------------------------------------------------------+
+    | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite`                              |
+    +------------------------------------+----------------------------------------------------------+
+
+    If it's not in the table above then it is available by all methods.
+
     Attributes
     -----------
     max_age: :class:`int`
@@ -206,11 +232,11 @@ class Invite(Hashable):
         The guild the invite is for.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
-    created_at: `datetime.datetime`
+    created_at: :class:`datetime.datetime`
         A datetime object denoting the time the invite was created.
     temporary: :class:`bool`
         Indicates that the invite grants temporary membership.
-        If True, members who joined via this invite will be kicked upon disconnect.
+        If ``True``, members who joined via this invite will be kicked upon disconnect.
     uses: :class:`int`
         How many times the invite has been used.
     max_uses: :class:`int`
@@ -268,19 +294,21 @@ class Invite(Hashable):
         return self.url
 
     def __repr__(self):
-        return '<Invite code={0.code!r}>'.format(self)
+        return '<Invite code={0.code!r} guild={0.guild!r} ' \
+                'online={0.approximate_presence_count} ' \
+                'members={0.approximate_member_count}>'.format(self)
 
     def __hash__(self):
         return hash(self.code)
 
     @property
     def id(self):
-        """Returns the proper code portion of the invite."""
+        """:class:`str`: Returns the proper code portion of the invite."""
         return self.code
 
     @property
     def url(self):
-        """A property that retrieves the invite URL."""
+        """:class:`str`: A property that retrieves the invite URL."""
         return 'http://discord.gg/' + self.code
 
     async def delete(self, *, reason=None):

@@ -93,7 +93,8 @@ class AuditLogDiff:
         return iter(self.__dict__.items())
 
     def __repr__(self):
-        return '<AuditLogDiff attrs={0!r}>'.format(tuple(self.__dict__))
+        values = ' '.join('%s=%r' % item for item in self.__dict__.items())
+        return '<AuditLogDiff %s>' % values
 
 class AuditLogChanges:
     TRANSFORMERS = {
@@ -163,6 +164,9 @@ class AuditLogChanges:
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
             self.before.color = self.before.colour
+
+    def __repr__(self):
+        return '<AuditLogChanges before=%r after=%r>' % (self.before, self.after)
 
     def _handle_role(self, first, second, entry, elem):
         if not hasattr(first, 'roles'):
@@ -265,7 +269,7 @@ class AuditLogEntry:
 
     @utils.cached_property
     def created_at(self):
-        """Returns the entry's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the entry's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @utils.cached_property

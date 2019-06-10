@@ -24,7 +24,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class RawMessageDeleteEvent:
+class _RawReprMixin:
+    def __repr__(self):
+        value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
+        return '<%s %s>' % (self.__class__.__name__, value)
+
+class RawMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_message_delete` event.
 
     Attributes
@@ -50,7 +55,7 @@ class RawMessageDeleteEvent:
         except KeyError:
             self.guild_id = None
 
-class RawBulkMessageDeleteEvent:
+class RawBulkMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_bulk_message_delete` event.
 
     Attributes
@@ -77,7 +82,7 @@ class RawBulkMessageDeleteEvent:
         except KeyError:
             self.guild_id = None
 
-class RawMessageUpdateEvent:
+class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
 
     Attributes
@@ -85,8 +90,7 @@ class RawMessageUpdateEvent:
     message_id: :class:`int`
         The message ID that got updated.
     data: :class:`dict`
-        The raw data given by the
-        `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`
+        The raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache.
     """
@@ -98,7 +102,7 @@ class RawMessageUpdateEvent:
         self.data = data
         self.cached_message = None
 
-class RawReactionActionEvent:
+class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
     :func:`on_raw_reaction_remove` event.
 
@@ -129,7 +133,7 @@ class RawReactionActionEvent:
         except KeyError:
             self.guild_id = None
 
-class RawReactionClearEvent:
+class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.
 
     Attributes

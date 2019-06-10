@@ -107,7 +107,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<TextChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('position', self.position),
+            ('nsfw', self.nsfw),
+            ('news', self.is_news()),
+            ('category_id', self.category_id)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
 
     def _update(self, guild, data):
         self.guild = guild
@@ -126,6 +134,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self
 
     @property
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return try_enum(ChannelType, self._type)
+
+    @property
     def _sorting_bucket(self):
         return ChannelType.text.value
 
@@ -141,7 +154,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """Returns a :class:`list` of :class:`Member` that can see this channel."""
+        """List[:class:`Member`]: Returns all members that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
@@ -305,22 +318,22 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         limit: Optional[:class:`int`]
             The number of messages to search through. This is not the number
             of messages that will be deleted, though it can be.
-        check: predicate
+        check: Callable[[:class:`Message`], :class:`bool`]
             The function used to check if a message should be deleted.
             It must take a :class:`Message` as its sole parameter.
-        before
+        before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
             Same as ``before`` in :meth:`history`.
-        after
+        after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
             Same as ``after`` in :meth:`history`.
-        around
+        around: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
             Same as ``around`` in :meth:`history`.
-        oldest_first
+        oldest_first: Optional[:class:`bool`]
             Same as ``oldest_first`` in :meth:`history`.
-        bulk: :class:`bool`
-            If True, use bulk delete. bulk=False is useful for mass-deleting
-            a bot's own messages without manage_messages. When True, will fall
-            back to single delete if current account is a user bot, or if
-            messages are older than two weeks.
+        bulk: class:`bool`
+            If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
+            a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
+            fall back to single delete if current account is a user bot, or if messages are
+            older than two weeks.
 
         Raises
         -------
@@ -491,7 +504,15 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<VoiceChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('position', self.position),
+            ('bitrate', self.bitrate),
+            ('user_limit', self.user_limit),
+            ('category_id', self.category_id)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
 
     def _get_voice_client_key(self):
         return self.guild.id, 'guild_id'
@@ -500,8 +521,9 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         return self.guild.id, self.id
 
     @property
-    def _type(self):
-        return ChannelType.voice.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.voice
 
     def _update(self, guild, data):
         self.guild = guild
@@ -518,7 +540,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     @property
     def members(self):
-        """Returns a list of :class:`Member` that are currently inside this voice channel."""
+        """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
         ret = []
         for user_id, state in self.guild._voice_states.items():
             if state.channel.id == self.id:
@@ -629,7 +651,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
 
     def _update(self, guild, data):
         self.guild = guild
@@ -644,8 +666,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category.value
 
     @property
-    def _type(self):
-        return ChannelType.category.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.category
 
     def is_nsfw(self):
         """Checks if the category is NSFW."""
@@ -788,7 +811,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<StoreChannel id={0.id} name={0.name!r} position={0.position}>'.format(self)
+        return '<StoreChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
 
     def _update(self, guild, data):
         self.guild = guild
@@ -803,8 +826,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.text.value
 
     @property
-    def _type(self):
-        return ChannelType.store.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.store
 
     def permissions_for(self, member):
         base = super().permissions_for(member)
@@ -912,8 +936,9 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
 
     @property
-    def _type(self):
-        return ChannelType.private.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.private
 
     @property
     def created_at(self):
@@ -927,10 +952,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to true except:
+        This returns all the Text related permissions set to ``True`` except:
 
-        - send_tts_messages: You cannot send TTS messages in a DM.
-        - manage_messages: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
+        - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
 
         Parameters
         -----------
@@ -972,7 +997,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipients: :class:`list` of :class:`User`
+    recipients: List[:class:`User`]
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
         The user presenting yourself.
@@ -1025,8 +1050,9 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
 
     @property
-    def _type(self):
-        return ChannelType.group.value
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.group
 
     @property
     def icon_url(self):
@@ -1035,7 +1061,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def created_at(self):
-        """Returns the channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, user):
@@ -1045,7 +1071,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to true except:
+        This returns all the Text related permissions set to ``True`` except:
 
         - send_tts_messages: You cannot send TTS messages in a DM.
         - manage_messages: You cannot delete others messages in a DM.

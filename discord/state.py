@@ -28,11 +28,11 @@ import asyncio
 from collections import deque, namedtuple, OrderedDict
 import copy
 import datetime
-import enum
 import itertools
 import logging
 import math
 import weakref
+import inspect
 
 from .guild import Guild
 from .activity import _ActivityTag
@@ -44,11 +44,11 @@ from .channel import *
 from .raw_models import *
 from .member import Member
 from .role import Role
-from .enums import ChannelType, try_enum, Status
+from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
 from .embeds import Embed
 
-class ListenerType(enum.Enum):
+class ListenerType(Enum):
     chunk = 0
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
@@ -87,6 +87,11 @@ class ConnectionState:
 
         self._activity = activity
         self._status = status
+
+        self.parsers = parsers = {}
+        for attr, func in inspect.getmembers(self):
+            if attr.startswith('parse_'):
+                parsers[attr[6:].upper()] = func
 
         self.clear()
 
@@ -362,7 +367,7 @@ class ConnectionState:
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
         self._messages.append(message)
-        if channel and channel._type in (0, 5):
+        if channel and channel.__class__ is TextChannel:
             channel.last_message_id = message.id
 
     def parse_message_delete(self, data):
@@ -391,15 +396,7 @@ class ConnectionState:
             older_message = copy.copy(message)
             raw.cached_message = older_message
             self.dispatch('raw_message_edit', raw)
-            if 'call' in data:
-                # call state message edit
-                message._handle_call(data['call'])
-            elif 'content' not in data:
-                # embed only edit
-                message.embeds = [Embed.from_dict(d) for d in data['embeds']]
-            else:
-                message._update(channel=message.channel, data=data)
-
+            message._update(data)
             self.dispatch('message_edit', older_message, message)
         else:
             self.dispatch('raw_message_edit', raw)

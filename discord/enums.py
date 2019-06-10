@@ -24,9 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from enum import Enum
+import types
+from collections import namedtuple
 
 __all__ = (
+    'Enum',
     'ChannelType',
     'MessageType',
     'VoiceRegion',
@@ -48,20 +50,101 @@ __all__ = (
     'Theme',
 )
 
-def fast_lookup(cls):
-    # NOTE: implies hashable
-    try:
-        lookup = cls._value2member_map_
-    except AttributeError:
-        lookup = {
-            member.value: member
-            for member in cls.__members__
-        }
-    finally:
-        cls.__fast_value_lookup__ = lookup
-        return cls
+def _create_value_cls(name):
+    cls = namedtuple('_EnumValue_' + name, 'name value')
+    cls.__repr__ = lambda self: '<%s.%s: %r>' % (name, self.name, self.value)
+    cls.__str__ = lambda self: '%s.%s' % (name, self.name)
+    return cls
 
-@fast_lookup
+def _is_descriptor(obj):
+    return hasattr(obj, '__get__') or hasattr(obj, '__set__') or hasattr(obj, '__delete__')
+
+class EnumMeta(type):
+    def __new__(cls, name, bases, attrs):
+        value_mapping = {}
+        member_mapping = {}
+        member_names = []
+
+        value_cls = _create_value_cls(name)
+        for key, value in list(attrs.items()):
+            is_descriptor = _is_descriptor(value)
+            if key[0] == '_' and not is_descriptor:
+                continue
+
+            # Special case classmethod to just pass through
+            if isinstance(value, classmethod):
+                continue
+
+            if is_descriptor:
+                setattr(value_cls, key, value)
+                del attrs[key]
+                continue
+
+            try:
+                new_value = value_mapping[value]
+            except KeyError:
+                new_value = value_cls(name=key, value=value)
+                value_mapping[value] = new_value
+                member_names.append(key)
+
+            member_mapping[key] = new_value
+            attrs[key] = new_value
+
+        attrs['_enum_value_map_'] = value_mapping
+        attrs['_enum_member_map_'] = member_mapping
+        attrs['_enum_member_names_'] = member_names
+        actual_cls = super().__new__(cls, name, bases, attrs)
+        value_cls._actual_enum_cls_ = actual_cls
+        return actual_cls
+
+    def __iter__(cls):
+        return (cls._enum_member_map_[name] for name in cls._enum_member_names_)
+
+    def __reversed__(cls):
+        return (cls._enum_member_map_[name] for name in reversed(cls._enum_member_names_))
+
+    def __len__(cls):
+        return len(cls._enum_member_names_)
+
+    def __repr__(cls):
+        return '<enum %r>' % cls.__name__
+
+    @property
+    def __members__(cls):
+        return types.MappingProxyType(cls._enum_member_map_)
+
+    def __call__(cls, value):
+        try:
+            return cls._enum_value_map_[value]
+        except (KeyError, TypeError):
+            raise ValueError("%r is not a valid %s" % (value, cls.__name__))
+
+    def __getitem__(cls, key):
+        return cls._enum_member_map_[key]
+
+    def __setattr__(cls, name, value):
+        raise TypeError('Enums are immutable.')
+
+    def __delattr__(cls, attr):
+        raise TypeError('Enums are immutable')
+
+    def __instancecheck__(self, instance):
+        # isinstance(x, Y)
+        # -> __instancecheck__(Y, x)
+        try:
+            return instance._actual_enum_cls_ is self
+        except AttributeError:
+            return False
+
+class Enum(metaclass=EnumMeta):
+    @classmethod
+    def try_value(cls, value):
+        try:
+            return cls._enum_value_map_[value]
+        except (KeyError, TypeError):
+            return value
+
+
 class ChannelType(Enum):
     text     = 0
     private  = 1
@@ -74,18 +157,20 @@ class ChannelType(Enum):
     def __str__(self):
         return self.name
 
-@fast_lookup
 class MessageType(Enum):
-    default             = 0
-    recipient_add       = 1
-    recipient_remove    = 2
-    call                = 3
-    channel_name_change = 4
-    channel_icon_change = 5
-    pins_add            = 6
-    new_member          = 7
+    default                    = 0
+    recipient_add              = 1
+    recipient_remove           = 2
+    call                       = 3
+    channel_name_change        = 4
+    channel_icon_change        = 5
+    pins_add                   = 6
+    new_member                 = 7
+    premium_guild_subscription = 8
+    premium_guild_tier_1       = 9
+    premium_guild_tier_2       = 10
+    premium_guild_tier_3       = 11
 
-@fast_lookup
 class VoiceRegion(Enum):
     us_west       = 'us-west'
     us_east       = 'us-east'
@@ -103,6 +188,7 @@ class VoiceRegion(Enum):
     russia        = 'russia'
     japan         = 'japan'
     southafrica   = 'southafrica'
+    india         = 'india'
     vip_us_east   = 'vip-us-east'
     vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
@@ -110,7 +196,6 @@ class VoiceRegion(Enum):
     def __str__(self):
         return self.value
 
-@fast_lookup
 class SpeakingState(Enum):
     none       = 0
     voice      = 1
@@ -123,7 +208,6 @@ class SpeakingState(Enum):
     def __int__(self):
         return self.value
 
-@fast_lookup
 class VerificationLevel(Enum):
     none              = 0
     low               = 1
@@ -136,7 +220,6 @@ class VerificationLevel(Enum):
     def __str__(self):
         return self.name
 
-@fast_lookup
 class ContentFilter(Enum):
     disabled    = 0
     no_role     = 1
@@ -145,13 +228,11 @@ class ContentFilter(Enum):
     def __str__(self):
         return self.name
 
-@fast_lookup
 class UserContentFilter(Enum):
     disabled    = 0
     friends     = 1
     all_messages = 2
 
-@fast_lookup
 class FriendFlags(Enum):
     noone = 0
     mutual_guilds = 1
@@ -159,12 +240,10 @@ class FriendFlags(Enum):
     guild_and_friends = 3
     everyone = 4
 
-@fast_lookup
 class Theme(Enum):
     light = 'light'
     dark = 'dark'
 
-@fast_lookup
 class Status(Enum):
     online = 'online'
     offline = 'offline'
@@ -176,7 +255,6 @@ class Status(Enum):
     def __str__(self):
         return self.value
 
-@fast_lookup
 class DefaultAvatar(Enum):
     blurple = 0
     grey    = 1
@@ -188,25 +266,21 @@ class DefaultAvatar(Enum):
     def __str__(self):
         return self.name
 
-@fast_lookup
 class RelationshipType(Enum):
     friend           = 1
     blocked          = 2
     incoming_request = 3
     outgoing_request = 4
 
-@fast_lookup
 class NotificationLevel(Enum):
     all_messages  = 0
     only_mentions = 1
 
-@fast_lookup
 class AuditLogActionCategory(Enum):
     create = 1
     delete = 2
     update = 3
 
-@fast_lookup
 class AuditLogAction(Enum):
     guild_update             = 1
     channel_create           = 10
@@ -289,7 +363,6 @@ class AuditLogAction(Enum):
         elif v < 80:
             return 'message'
 
-@fast_lookup
 class UserFlags(Enum):
     staff = 1
     partner = 2
@@ -300,7 +373,6 @@ class UserFlags(Enum):
     hypesquad_balance = 256
     early_supporter = 512
 
-@fast_lookup
 class ActivityType(Enum):
     unknown = -1
     playing = 0
@@ -308,13 +380,11 @@ class ActivityType(Enum):
     listening = 2
     watching = 3
 
-@fast_lookup
 class HypeSquadHouse(Enum):
     bravery = 1
     brilliance = 2
     balance = 3
 
-@fast_lookup
 class PremiumType(Enum):
     nitro_classic = 1
     nitro = 2
@@ -325,27 +395,7 @@ def try_enum(cls, val):
     If it fails it returns the value instead.
     """
 
-    # For some ungodly reason, `cls(x)` is *really* slow
-    # For most use cases it's about 750ns per call
-    # Internally this is dispatched like follows:
-    # cls(x)
-    # cls.__new__(cls, x)
-    # cls._value2member_map[x]
-    # if above fails ^
-    # find it in cls._member_map.items()
-
-    # Accessing the _value2member_map directly gives the biggest
-    # boost to performance, from 750ns to 130ns
-
-    # Now, the weird thing is that regular dict access is approx 31ns
-    # So there's a slowdown in the attribute access somewhere in the
-    # __getattr__ chain that I can't do much about
-
-    # Since this relies on internals the enums have an internal shim
-    # decorator that defines an alias for my own purposes or creates
-    # it for me under __fast_value_lookup__
-
     try:
-        return cls.__fast_value_lookup__[val]
-    except (KeyError, AttributeError):
+        return cls._enum_value_map_[val]
+    except (KeyError, TypeError, AttributeError):
         return val

@@ -61,7 +61,7 @@ class Snowflake(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def created_at(self):
-        """Returns the model's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the model's creation time as a naive datetime in UTC."""
         raise NotImplementedError
 
     @classmethod
@@ -82,11 +82,11 @@ class User(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`User`
-    - :class:`ClientUser`
-    - :class:`Member`
+    - :class:`~discord.User`
+    - :class:`~discord.ClientUser`
+    - :class:`~discord.Member`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`~discord.abc.Snowflake`.
 
     Attributes
     -----------
@@ -104,13 +104,13 @@ class User(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def display_name(self):
-        """Returns the user's display name."""
+        """:class:`str`: Returns the user's display name."""
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
     def mention(self):
-        """Returns a string that allows you to mention the given user."""
+        """:class:`str`: Returns a string that allows you to mention the given user."""
         raise NotImplementedError
 
     @classmethod
@@ -134,14 +134,14 @@ class PrivateChannel(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`DMChannel`
-    - :class:`GroupChannel`
+    - :class:`~discord.DMChannel`
+    - :class:`~discord.GroupChannel`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`~discord.abc.Snowflake`.
 
     Attributes
     -----------
-    me: :class:`ClientUser`
+    me: :class:`~discord.ClientUser`
         The user presenting yourself.
     """
     __slots__ = ()
@@ -166,17 +166,17 @@ class GuildChannel:
 
     The following implement this ABC:
 
-    - :class:`TextChannel`
-    - :class:`VoiceChannel`
-    - :class:`CategoryChannel`
+    - :class:`~discord.TextChannel`
+    - :class:`~discord.VoiceChannel`
+    - :class:`~discord.CategoryChannel`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`~discord.abc.Snowflake`.
 
     Attributes
     -----------
     name: :class:`str`
         The channel name.
-    guild: :class:`Guild`
+    guild: :class:`~discord.Guild`
         The guild the channel belongs to.
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0.
@@ -288,8 +288,8 @@ class GuildChannel:
 
     @property
     def changed_roles(self):
-        """Returns a :class:`list` of :class:`Roles` that have been overridden from
-        their default values in the :attr:`Guild.roles` attribute."""
+        """List[:class:`~discord.Role`]: Returns a list of roles that have been overridden from
+        their default values in the :attr:`~discord.Guild.roles` attribute."""
         ret = []
         g = self.guild
         for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
@@ -309,7 +309,7 @@ class GuildChannel:
 
     @property
     def created_at(self):
-        """Returns the channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def overwrites_for(self, obj):
@@ -317,13 +317,13 @@ class GuildChannel:
 
         Parameters
         -----------
-        obj
-            The :class:`Role` or :class:`abc.User` denoting
+        obj: Union[:class:`~discord.Role`, :class:`~discord.abc.User`]
+            The role or user denoting
             whose overwrite to get.
 
         Returns
         ---------
-        :class:`PermissionOverwrite`
+        :class:`~discord.PermissionOverwrite`
             The permission overwrites for this object.
         """
 
@@ -347,12 +347,12 @@ class GuildChannel:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
-        can be either a :class:`Role` or a :class:`Member` and the value is the
-        overwrite as a :class:`PermissionOverwrite`.
+        can be either a :class:`~discord.Role` or a :class:`~discord.Member` and the key is the
+        overwrite as a :class:`~discord.PermissionOverwrite`.
 
         Returns
         --------
-        Mapping[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]:
+        Mapping[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
         ret = {}
@@ -377,14 +377,14 @@ class GuildChannel:
 
     @property
     def category(self):
-        """Optional[:class:`CategoryChannel`]: The category this channel belongs to.
+        """Optional[:class:`~discord.CategoryChannel`]: The category this channel belongs to.
 
         If there is no category then this is ``None``.
         """
         return self.guild.get_channel(self.category_id)
 
     def permissions_for(self, member):
-        """Handles permission resolution for the current :class:`Member`.
+        """Handles permission resolution for the current :class:`~discord.Member`.
 
         This function takes into consideration the following cases:
 
@@ -395,12 +395,12 @@ class GuildChannel:
 
         Parameters
         ----------
-        member: :class:`Member`
+        member: :class:`~discord.Member`
             The member to resolve permissions for.
 
         Returns
         -------
-        :class:`Permissions`
+        :class:`~discord.Permissions`
             The resolved permissions for the member.
         """
 
@@ -500,11 +500,11 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :exc:`~discord.Forbidden`
             You do not have proper permissions to delete the channel.
-        NotFound
+        :exc:`~discord.NotFound`
             The channel was not found or was already deleted.
-        HTTPException
+        :exc:`~discord.HTTPException`
             Deleting the channel failed.
         """
         await self._state.http.delete_channel(self.id, reason=reason)
@@ -515,19 +515,19 @@ class GuildChannel:
         Sets the channel specific permission overwrites for a target in the
         channel.
 
-        The ``target`` parameter should either be a :class:`Member` or a
-        :class:`Role` that belongs to guild.
+        The ``target`` parameter should either be a :class:`~discord.Member` or a
+        :class:`~discord.Role` that belongs to guild.
 
         The ``overwrite`` parameter, if given, must either be ``None`` or
-        :class:`PermissionOverwrite`. For convenience, you can pass in
-        keyword arguments denoting :class:`Permissions` attributes. If this is
+        :class:`~discord.PermissionOverwrite`. For convenience, you can pass in
+        keyword arguments denoting :class:`~discord.Permissions` attributes. If this is
         done, then you cannot mix the keyword arguments with the ``overwrite``
         parameter.
 
         If the ``overwrite`` parameter is ``None``, then the permission
         overwrites are deleted.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to use this.
+        You must have the :attr:`~.Permissions.manage_roles` permission to use this.
 
         Examples
         ----------
@@ -541,7 +541,7 @@ class GuildChannel:
 
             await channel.set_permissions(member, overwrite=None)
 
-        Using :class:`PermissionOverwrite` ::
+        Using :class:`~discord.PermissionOverwrite` ::
 
             overwrite = discord.PermissionOverwrite()
             overwrite.send_messages = False
@@ -550,9 +550,9 @@ class GuildChannel:
 
         Parameters
         -----------
-        target
-            The :class:`Member` or :class:`Role` to overwrite permissions for.
-        overwrite: :class:`PermissionOverwrite`
+        target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
+            The member or role to overwrite permissions for.
+        overwrite: :class:`~discord.PermissionOverwrite`
             The permissions to allow and deny to the target.
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
@@ -562,15 +562,15 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :exc:`~discord.Forbidden`
             You do not have permissions to edit channel specific permissions.
-        HTTPException
+        :exc:`~discord.HTTPException`
             Editing channel specific permissions failed.
-        NotFound
+        :exc:`~discord.NotFound`
             The role or member being edited is not part of the guild.
-        InvalidArgument
+        :exc:`~discord.InvalidArgument`
             The overwrite parameter invalid or the target type was not
-            :class:`Role` or :class:`Member`.
+            :class:`~discord.Role` or :class:`~discord.Member`.
         """
 
         http = self._state.http
@@ -611,7 +611,7 @@ class GuildChannel:
         base_attrs['name'] = name or self.name
         guild_id = self.guild.id
         cls = self.__class__
-        data = await self._state.http.create_channel(guild_id, self._type, reason=reason, **base_attrs)
+        data = await self._state.http.create_channel(guild_id, self.type.value, reason=reason, **base_attrs)
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # temporarily add it to the cache
@@ -636,9 +636,9 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :exc:`~discord.Forbidden`
             You do not have the proper permissions to create this channel.
-        HTTPException
+        :exc:`~discord.HTTPException`
             Creating the channel failed.
         """
         raise NotImplementedError
@@ -648,7 +648,7 @@ class GuildChannel:
 
         Creates an instant invite.
 
-        You must have :attr:`~.Permissions.create_instant_invite` permission to
+        You must have the :attr:`~.Permissions.create_instant_invite` permission to
         do this.
 
         Parameters
@@ -661,22 +661,22 @@ class GuildChannel:
             are unlimited uses. Defaults to 0.
         temporary: :class:`bool`
             Denotes that the invite grants temporary membership
-            (i.e. they get kicked after they disconnect). Defaults to False.
+            (i.e. they get kicked after they disconnect). Defaults to ``False``.
         unique: :class:`bool`
             Indicates if a unique invite URL should be created. Defaults to True.
-            If this is set to False then it will return a previously created
+            If this is set to ``False`` then it will return a previously created
             invite.
         reason: Optional[:class:`str`]
             The reason for creating this invite. Shows up on the audit log.
 
         Raises
         -------
-        HTTPException
+        :exc:`~discord.HTTPException`
             Invite creation failed.
 
         Returns
         --------
-        :class:`Invite`
+        :class:`~discord.Invite`
             The invite that was created.
         """
 
@@ -692,14 +692,14 @@ class GuildChannel:
 
         Raises
         -------
-        Forbidden
+        :exc:`~discord.Forbidden`
             You do not have proper permissions to get the information.
-        HTTPException
+        :exc:`~discord.HTTPException`
             An error occurred while fetching the information.
 
         Returns
         -------
-        List[:class:`Invite`]
+        List[:class:`~discord.Invite`]
             The list of invites that are currently active.
         """
 
@@ -719,14 +719,14 @@ class Messageable(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`TextChannel`
-    - :class:`DMChannel`
-    - :class:`GroupChannel`
-    - :class:`User`
-    - :class:`Member`
-    - :class:`~ext.commands.Context`
+    - :class:`~discord.TextChannel`
+    - :class:`~discord.DMChannel`
+    - :class:`~discord.GroupChannel`
+    - :class:`~discord.User`
+    - :class:`~discord.Member`
+    - :class:`~discord.ext.commands.Context`
 
-    This ABC must also implement :class:`abc.Snowflake`.
+    This ABC must also implement :class:`~discord.abc.Snowflake`.
     """
 
     __slots__ = ()
@@ -745,24 +745,24 @@ class Messageable(metaclass=abc.ABCMeta):
         be provided.
 
         To upload a single file, the ``file`` parameter should be used with a
-        single :class:`.File` object. To upload multiple files, the ``files``
-        parameter should be used with a :class:`list` of :class:`.File` objects.
+        single :class:`~discord.File` object. To upload multiple files, the ``files``
+        parameter should be used with a :class:`list` of :class:`~discord.File` objects.
         **Specifying both parameters will lead to an exception**.
 
-        If the ``embed`` parameter is provided, it must be of type :class:`.Embed` and
+        If the ``embed`` parameter is provided, it must be of type :class:`~discord.Embed` and
         it must be a rich embed type.
 
         Parameters
         ------------
-        content
+        content: :class:`str`
             The content of the message to send.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
-        embed: :class:`.Embed`
+        embed: :class:`~discord.Embed`
             The rich embed for the content.
-        file: :class:`.File`
+        file: :class:`~discord.File`
             The file to upload.
-        files: List[:class:`.File`]
+        files: List[:class:`~discord.File`]
             A list of files to upload. Must be a maximum of 10.
         nonce: :class:`int`
             The nonce to use for sending this message. If the message was successfully sent,
@@ -774,17 +774,17 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         --------
-        :exc:`.HTTPException`
+        :exc:`~discord.HTTPException`
             Sending the message failed.
-        :exc:`.Forbidden`
+        :exc:`~discord.Forbidden`
             You do not have the proper permissions to send the message.
-        :exc:`.InvalidArgument`
+        :exc:`~discord.InvalidArgument`
             The ``files`` list is not of the appropriate size or
             you specified both ``file`` and ``files``.
 
         Returns
         ---------
-        :class:`.Message`
+        :class:`~discord.Message`
             The message that was sent.
         """
 
@@ -860,7 +860,7 @@ class Messageable(metaclass=abc.ABCMeta):
     async def fetch_message(self, id):
         """|coro|
 
-        Retrieves a single :class:`.Message` from the destination.
+        Retrieves a single :class:`~discord.Message` from the destination.
 
         This can only be used by bot accounts.
 
@@ -871,16 +871,16 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         --------
-        :exc:`.NotFound`
+        :exc:`~discord.NotFound`
             The specified message was not found.
-        :exc:`.Forbidden`
+        :exc:`~discord.Forbidden`
             You do not have the permissions required to get a message.
-        :exc:`.HTTPException`
+        :exc:`~discord.HTTPException`
             Retrieving the message failed.
 
         Returns
         --------
-        :class:`.Message`
+        :class:`~discord.Message`
             The message asked for.
         """
 
@@ -891,12 +891,23 @@ class Messageable(metaclass=abc.ABCMeta):
     async def pins(self):
         """|coro|
 
-        Returns a :class:`list` of :class:`.Message` that are currently pinned.
+        Retrieves all messages that are currently pinned in the channel.
+
+        .. note::
+
+            Due to a limitation with the Discord API, the :class:`.Message`
+            objects returned by this method do not contain complete
+            :attr:`.Message.reactions` data.
 
         Raises
         -------
-        :exc:`.HTTPException`
+        :exc:`~discord.HTTPException`
             Retrieving the pinned messages failed.
+
+        Returns
+        --------
+        List[:class:`~discord.Message`]
+            The messages that are currently pinned.
         """
 
         channel = await self._get_channel()
@@ -905,7 +916,7 @@ class Messageable(metaclass=abc.ABCMeta):
         return [state.create_message(channel=channel, data=m) for m in data]
 
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
-        """Return an :class:`.AsyncIterator` that enables receiving the destination's message history.
+        """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~.Permissions.read_message_history` permissions to use this.
 
@@ -932,31 +943,31 @@ class Messageable(metaclass=abc.ABCMeta):
             The number of messages to retrieve.
             If ``None``, retrieves every message in the channel. Note, however,
             that this would make it a slow operation.
-        before: :class:`.Message` or :class:`datetime.datetime`
+        before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages before this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        after: :class:`.Message` or :class:`datetime.datetime`
+        after: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages after this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        around: :class:`.Message` or :class:`datetime.datetime`
+        around: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages around this date or message.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
             even number then this will return at most limit + 1 messages.
         oldest_first: Optional[:class:`bool`]
-            If set to true, return messages in oldest->newest order. Defaults to True if
-            ``after`` is specified, otherwise False.
+            If set to ``True``, return messages in oldest->newest order. Defaults to ``True`` if
+            ``after`` is specified, otherwise ``False``.
 
         Raises
         ------
-        :exc:`.Forbidden`
+        :exc:`~discord.Forbidden`
             You do not have permissions to get channel message history.
-        :exc:`.HTTPException`
+        :exc:`~discord.HTTPException`
             The request to get message history failed.
 
         Yields
         -------
-        :class:`.Message`
+        :class:`~discord.Message`
             The message with the message data parsed.
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
@@ -968,7 +979,7 @@ class Connectable(metaclass=abc.ABCMeta):
 
     The following implement this ABC:
 
-    - :class:`VoiceChannel`
+    - :class:`~discord.VoiceChannel`
     """
     __slots__ = ()
 
@@ -997,16 +1008,16 @@ class Connectable(metaclass=abc.ABCMeta):
 
         Raises
         -------
-        asyncio.TimeoutError
+        :exc:`asyncio.TimeoutError`
             Could not connect to the voice channel in time.
-        ClientException
+        :exc:`~discord.ClientException`
             You are already connected to a voice channel.
-        OpusNotLoaded
+        :exc:`~discord.opus.OpusNotLoaded`
             The opus library has not been loaded.
 
         Returns
-        -------
-        :class:`VoiceClient`
+        --------
+        :class:`~discord.VoiceClient`
             A voice client that is fully connected to the voice server.
         """
         key_id, _ = self._get_voice_client_key()
