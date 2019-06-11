@@ -430,7 +430,7 @@ class Client:
         """|coro|
 
         Creates a websocket connection and lets the websocket listen
-        to messages from discord. This is a loop that runs the entire
+        to messages from Discord. This is a loop that runs the entire
         event system and miscellaneous aspects of the library. Control
         is not resumed until the WebSocket connection is terminated.
 
@@ -445,8 +445,8 @@ class Client:
         Raises
         -------
         :exc:`.GatewayNotFound`
-            If the gateway to connect to discord is not found. Usually if this
-            is thrown then there is a discord API outage.
+            If the gateway to connect to Discord is not found. Usually if this
+            is thrown then there is a Discord API outage.
         :exc:`.ConnectionClosed`
             The websocket connection has been terminated.
         """
@@ -491,7 +491,7 @@ class Client:
     async def close(self):
         """|coro|
 
-        Closes the connection to discord.
+        Closes the connection to Discord.
         """
         if self._closed:
             return
@@ -1027,7 +1027,7 @@ class Client:
         Parameters
         -----------
         url: :class:`str`
-            The discord invite ID or URL (must be a discord.gg URL).
+            The Discord invite ID or URL (must be a discord.gg URL).
         with_counts: :class:`bool`
             Whether to include count information in the invite. This fills the
             :attr:`.Invite.approximate_member_count` and :attr:`.Invite.approximate_presence_count`
