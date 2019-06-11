@@ -276,7 +276,7 @@ class AutoShardedClient(Client):
     async def close(self):
         """|coro|
 
-        Closes the connection to discord.
+        Closes the connection to Discord.
         """
         if self.is_closed():
             return
