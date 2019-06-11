@@ -1211,7 +1211,7 @@ class Client:
 
         Raises
         -------
-        TypeError
+        :exc:`.InvalidData`
             An unknown channel type was received from Discord.
         :exc:`.HTTPException`
             Retrieving the channel failed.

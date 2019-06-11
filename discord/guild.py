@@ -1130,7 +1130,7 @@ class Guild(Hashable):
 
         Raises
         -------
-        TypeError
+        InvalidData
             An unknown channel type was received from Discord.
         HTTPException
             Retrieving the channels failed.
