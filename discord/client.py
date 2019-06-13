@@ -120,11 +120,11 @@ class Client:
 
     Parameters
     -----------
-    message_cache : Optional[:class:`bool`]
+    message_cache: Optional[:class:`bool`]
         Whether to cache messages or not. Defaults to ``True``
         Without this, many methods such as :meth:`get_message` will only return ``None``.
-    max_messages : Optional[:class:`int`]
-        The maximum number of messages to store in :attr:`messages`.
+    max_messages: Optional[:class:`int`]
+        The maximum number of messages to store in the internal message cache.
         This defaults to 5000. Passing in ``None`` will use the default 
         instead of the passed in value.
     loop: Optional[:class:`asyncio.AbstractEventLoop`]
