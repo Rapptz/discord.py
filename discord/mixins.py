@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Rapptz
+Copyright (c) 2015-2019 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 class EqualityComparable:
-    __slots__ = []
+    __slots__ = ()
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and other.id == self.id
@@ -36,7 +36,7 @@ class EqualityComparable:
         return True
 
 class Hashable(EqualityComparable):
-    __slots__ = []
+    __slots__ = ()
 
     def __hash__(self):
-        return hash(self.id)
+        return self.id >> 22
