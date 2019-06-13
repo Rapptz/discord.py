@@ -290,7 +290,7 @@ class Command(_BaseCommand):
         other._after_invoke = self._after_invoke
         if self.checks != other.checks:
             other.checks = self.checks.copy()
-        if self._buckets != other._buckets:
+        if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
         try:
             other.on_error = self.on_error
@@ -305,8 +305,9 @@ class Command(_BaseCommand):
 
     def _update_copy(self, kwargs):
         if kwargs:
-            copy = self.__class__(self.callback, **kwargs)
-            copy.update(**self.__original_kwargs__)
+            kw = kwargs.copy()
+            kw.update(self.__original_kwargs__)
+            copy = self.__class__(self.callback, **kw)
             return self._ensure_assignment_on_copy(copy)
         else:
             return self.copy()
