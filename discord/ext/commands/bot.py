@@ -94,6 +94,19 @@ class _DefaultRepr:
 
 _default = _DefaultRepr()
 
+
+class Setup:
+    def __init__(self, cog):
+        self.cog = cog
+
+    def setup(self, bot):
+        bot.add_cog(self.cog(bot))
+
+
+def setup(func):
+    return Setup(func)
+
+
 class BotBase(GroupMixin):
     def __init__(self, command_prefix, help_command=_default, description=None, **options):
         super().__init__(**options)
@@ -570,14 +583,17 @@ class BotBase(GroupMixin):
 
     def _load_from_module_spec(self, lib, key):
         # precondition: key not in self.__extensions
-        try:
-            setup = getattr(lib, 'setup')
-        except AttributeError:
+        cog = None
+        for key, value in lib.__dict__.items():
+            if isinstance(value, Setup):
+                cog = value
+
+        if cog is None:
             del sys.modules[key]
             raise errors.NoEntryPointError(key)
 
         try:
-            setup(self)
+            cog.setup(self)
         except Exception as e:
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, key)
