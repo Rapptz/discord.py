@@ -568,13 +568,21 @@ class BotBase(GroupMixin):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    def _load_from_module_spec(self, lib, key):
+    def _load_from_module_spec(self, lib, key, default):
         # precondition: key not in self.__extensions
         try:
             setup = getattr(lib, 'setup')
         except AttributeError:
-            del sys.modules[key]
-            raise errors.NoEntryPointError(key)
+            if not default:
+                del sys.modules[key]
+                raise errors.NoEntryPointError(key)
+            else:
+                def setup(bot):
+                    for var_name in dir(lib):
+                        var = getattr(lib, var_name)
+                        if (inspect.isclass(var) and issubclass(var, Cog) and
+                            var is not Cog):
+                            bot.add_cog(var(bot))
 
         try:
             setup(self)
@@ -585,15 +593,16 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
-    def load_extension(self, name):
+    def load_extension(self, name, *, default_setup=False):
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
         listeners.
 
         An extension must have a global function, ``setup`` defined as
-        the entry point on what to do when the extension is loaded. This entry
-        point must have a single argument, the ``bot``.
+        the entry point on what to do when the extension is loaded, unless
+        default_setup is True. This entry point must have a single argument,
+        the ``bot``.
 
         Parameters
         ------------
@@ -601,6 +610,9 @@ class BotBase(GroupMixin):
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        default_setup: :class:`bool`
+            Whether to use a default setup function if one is not found.
+            This loads all classes that inherit :class:`commands.Cog`.
 
         Raises
         --------
@@ -609,7 +621,8 @@ class BotBase(GroupMixin):
         ExtensionAlreadyLoaded
             The extension is already loaded.
         NoEntryPointError
-            The extension does not have a setup function.
+            The extension does not have a setup function and default_setup is
+            False.
         ExtensionFailed
             The extension setup function had an execution error.
         """
@@ -622,7 +635,7 @@ class BotBase(GroupMixin):
         except ImportError as e:
             raise errors.ExtensionNotFound(name, e) from e
         else:
-            self._load_from_module_spec(lib, name)
+            self._load_from_module_spec(lib, name, default_setup)
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -655,7 +668,7 @@ class BotBase(GroupMixin):
         self._remove_module_references(lib.__name__)
         self._call_module_finalizers(lib, name)
 
-    def reload_extension(self, name):
+    def reload_extension(self, name, *, default_setup=False):
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
@@ -669,6 +682,9 @@ class BotBase(GroupMixin):
             The extension name to reload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        default_setup: :class:`bool`
+            Whether to use a default setup function if one is not found.
+            This loads all classes that inherit :class:`commands.Cog`.
 
         Raises
         -------
@@ -677,7 +693,8 @@ class BotBase(GroupMixin):
         ExtensionNotFound
             The extension could not be imported.
         NoEntryPointError
-            The extension does not have a setup function.
+            The extension does not have a setup function and default_setup is
+            False.
         ExtensionFailed
             The extension setup function had an execution error.
         """
@@ -697,7 +714,7 @@ class BotBase(GroupMixin):
             # Unload and then load the module...
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, name)
-            self.load_extension(name)
+            self.load_extension(name, default_setup)
         except Exception as e:
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
