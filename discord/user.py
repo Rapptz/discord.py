@@ -76,9 +76,9 @@ _BaseUser = discord.abc.User
 class BaseUser(_BaseUser):
     __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
 
-    def __init__(self, *, state, data):
+    def __init__(self, *, state, data, cache_state):
         self._state = state
-        self._update(data)
+        self._update(data, cache_state)
 
     def __str__(self):
         return '{0.name}#{0.discriminator}'.format(self)
@@ -92,12 +92,12 @@ class BaseUser(_BaseUser):
     def __hash__(self):
         return self.id >> 22
 
-    def _update(self, data):
-        self.name = data['username']
-        self.id = int(data['id'])
-        self.discriminator = data['discriminator']
-        self.avatar = data['avatar']
-        self.bot = data.get('bot', False)
+    def _update(self, data, cache_state):
+        self.name = data['username'] if 'username' in cache_state else None
+        self.id = int(data['id']) if 'id' in cache_state else None
+        self.discriminator = data['discriminator'] if 'discriminator' in cache_state else None
+        self.avatar = data['avatar'] if 'avatar' in cache_state else None
+        self.bot = data.get('bot', False) if 'bot' in cache_state else None
 
     @classmethod
     def _copy(cls, user):
@@ -297,16 +297,16 @@ class ClientUser(BaseUser):
     __slots__ = ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
                  'premium', 'premium_type', '_relationships', '__weakref__')
 
-    def __init__(self, *, state, data):
-        super().__init__(state=state, data=data)
+    def __init__(self, *, state, data, cache_state):
+        super().__init__(state=state, data=data, cache_state=cache_state)
         self._relationships = {}
 
     def __repr__(self):
         return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
                ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
 
-    def _update(self, data):
-        super()._update(data)
+    def _update(self, data, cache_state):
+        super()._update(data, cache_state)
         # There's actually an Optional[str] phone field as well but I won't use it
         self.verified = data.get('verified', False)
         self.email = data.get('email')
