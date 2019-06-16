@@ -432,7 +432,7 @@ class Webhook:
         elif state is None:
             self.user = BaseUser(state=None, data=user)
         else:
-            self.user = User(state=state, data=user)
+            self.user = User(state=state, data=user, cache_state=('id', 'bot', 'username', 'discriminator', 'avatar'))
 
     def __repr__(self):
         return '<Webhook id=%r>' % self.id
