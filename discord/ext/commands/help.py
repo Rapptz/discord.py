@@ -250,7 +250,7 @@ class HelpCommand:
         mentioned in :issue:`2123`.
 
         This means that relying on the state of this class to be
-        the same between command invocations would not as expected.
+        the same between command invocations would not work as expected.
 
     Attributes
     ------------
