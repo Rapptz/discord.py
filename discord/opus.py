@@ -240,7 +240,7 @@ class Encoder:
         return _lib.opus_encoder_create(self.SAMPLING_RATE, self.CHANNELS, self.application, ctypes.byref(ret))
 
     def set_bitrate(self, kbps):
-        kbps = min(128, max(16, int(kbps)))
+        kbps = min(512, max(16, int(kbps)))
 
         _lib.opus_encoder_ctl(self._state, CTL_SET_BITRATE, kbps * 1024)
         return kbps
