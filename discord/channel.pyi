@@ -9,7 +9,6 @@ from .message import Message
 from .mixins import Hashable
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role
-from .types import RawChannelDict
 from .user import BaseUser, User, ClientUser
 from .voice_client import VoiceClient
 from .webhook import Webhook

@@ -5,10 +5,23 @@ from .channel import GroupChannel
 from .enums import VoiceRegion
 from .member import VoiceState
 from .message import Message
-from .types import RawVoiceStateDict
 from .user import User, ClientUser
 
 from typing import List, Optional, Union
+from typing_extensions import TypedDict
+
+class _BaseVoiceStateDict(TypedDict):
+    channel_id: Optional[int]
+    user_id: int
+    session_id: str
+    deaf: bool
+    mute: bool
+    self_deaf: bool
+    self_mute: bool
+    suppress: bool
+
+class _VoiceStateDict(_BaseVoiceStateDict, total=False):
+    guild_id: int
 
 class CallMessage:
     ended_timestamp: Optional[datetime.datetime]
@@ -29,7 +42,7 @@ class GroupCall:
     ringing: List[User]
     region: VoiceRegion
 
-    def __init__(self, *, call: CallMessage, unavailable: bool, voice_states: List[RawVoiceStateDict] = ...,
+    def __init__(self, *, call: CallMessage, unavailable: bool, voice_states: List[_VoiceStateDict] = ...,
                  region: VoiceRegion, ringing: List[int] = ...) -> None: ...
     @property
     def connected(self) -> List[Union[User, ClientUser]]: ...

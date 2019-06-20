@@ -4,10 +4,10 @@ from .channel import DMChannel, GroupChannel
 from .enums import DefaultAvatar, HypeSquadHouse, PremiumType, UserContentFilter, FriendFlags, Status, Theme
 from .colour import Colour
 from .guild import Guild
+from .http import _ClientUserDict
 from .permissions import Permissions
 from .message import Message
 from .relationship import Relationship
-from .types import RawClientUserDict
 from .asset import Asset
 
 import datetime
@@ -101,7 +101,7 @@ class ClientUser(BaseUser):
                             message_display_compact: bool = ..., render_embeds: bool = ...,
                             render_reactions: bool = ..., restricted_guilds: List[discord.abc.Snowflake] = ...,
                             show_current_game: bool = ..., status: Status = ..., theme: Theme = ...,
-                            timezone_offset: int = ...) -> RawClientUserDict: ...
+                            timezone_offset: int = ...) -> _ClientUserDict: ...
 
 class User(BaseUser, discord.abc.Messageable):
     @property

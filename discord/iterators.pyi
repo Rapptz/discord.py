@@ -5,7 +5,7 @@ from .member import Member
 from .message import Message
 from .audit_logs import AuditLogEntry
 from .guild import Guild
-from .types import RawGuildDict
+from .http import _GuildDict
 from .object import Object
 
 from typing import Any, Optional, Union, TypeVar, List, Generic, Coroutine, Callable
@@ -51,6 +51,6 @@ class AuditLogIterator(_AsyncIterator[AuditLogEntry]):
 
 class GuildIterator(_AsyncIterator[Guild]):
     async def next(self) -> Guild: ...
-    def create_guild(self, data: RawGuildDict) -> Guild: ...
+    def create_guild(self, data: _GuildDict) -> Guild: ...
     async def flatten(self) -> List[Guild]: ...
     async def fill_guilds(self) -> None: ...
