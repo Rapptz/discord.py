@@ -213,6 +213,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
+        self.premium_since = member.premium_since
         self._client_status = member._client_status.copy()
         self.guild = member.guild
         self.nick = member.nick
@@ -239,6 +240,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
 
+        self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
 
     def _presence_update(self, data, user):
