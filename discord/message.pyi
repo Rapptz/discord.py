@@ -13,7 +13,7 @@ from .calls import CallMessage
 from .role import Role
 
 from typing import Any, Optional, List, Union, BinaryIO
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 from os import PathLike
 
 class Attachment:

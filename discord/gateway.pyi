@@ -1,12 +1,13 @@
 import websockets  # type: ignore
 import asyncio
 import threading
-from .client import Client, VoiceClient
+from .client import Client
+from .voice_client import VoiceClient
 from .activity import _ActivityTag
 from .enums import Status, SpeakingState
 
 from typing import Any, Optional, Union, Iterable, NamedTuple, Callable, Dict, ClassVar, TypeVar, Type
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 class KeepAlivePayloadDict(TypedDict):
     op: int
@@ -34,7 +35,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler): ...
 
 _T = TypeVar('_T', bound=DiscordWebSocket)
 
-class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
+class DiscordWebSocket(websockets.client.WebSocketClientProtocol):  # type: ignore
     DISPATCH: ClassVar[int] = ...
     HEARTBEAT: ClassVar[int] = ...
     IDENTIFY: ClassVar[int] = ...
@@ -76,7 +77,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
 _VT = TypeVar('_VT', bound=DiscordVoiceWebSocket)
 
-class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
+class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):  # type: ignore
     IDENTIFY: ClassVar[int] = ...
     SELECT_PROTOCOL: ClassVar[int] = ...
     READY: ClassVar[int] = ...

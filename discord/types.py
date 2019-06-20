@@ -1,5 +1,5 @@
 from typing import Any, Optional, Union, List
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 from .embeds import _EmptyEmbed
 

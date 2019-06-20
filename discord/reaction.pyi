@@ -5,8 +5,7 @@ from .iterators import ReactionIterator
 from .abc import Snowflake
 
 from typing import Any, Union, Optional
-from typing_extensions import Protocol
-from mypy_extensions import TypedDict
+from typing_extensions import Protocol, TypedDict
 
 class _RequiredReactionData(TypedDict):
     me: bool

@@ -4,8 +4,7 @@ from .colour import Colour
 from .types import RawEmbedDict, EmbedFooterData, EmbedImageData, EmbedVideoData, EmbedProviderData, EmbedAuthorData, EmbedFieldData
 
 from typing import Any, Union, Dict, List, ClassVar, TypeVar, Type
-from mypy_extensions import TypedDict
-from typing_extensions import Final
+from typing_extensions import Final, TypedDict
 
 class _EmptyEmbed:
     def __bool__(self) -> bool: ...

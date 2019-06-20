@@ -9,7 +9,7 @@ from .types import (
 )
 
 from typing import Any, Optional, Union, Coroutine, List, Dict, Tuple, ClassVar, BinaryIO, Iterable
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 class _PositionDict(TypedDict):
     id: int

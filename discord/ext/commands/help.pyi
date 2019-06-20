@@ -12,8 +12,8 @@ from typing import (
     Any, Optional, Union, List, Tuple, Dict, Iterable, Mapping, ClassVar, Pattern, TypeVar, Generic, Awaitable,
     Callable, Sequence
 )
-from mypy_extensions import TypedDict
 from typing_extensions import Protocol
+from mypy_extensions import TypedDict
 
 _T = TypeVar('_T')
 _MaybeAwaitable = Union[Awaitable[_T], _T]
