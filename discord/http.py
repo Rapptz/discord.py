@@ -374,6 +374,12 @@ class HTTPClient:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
+    def suppress_message_embeds(self, channel_id, message_id, *, suppress):
+        payload = { 'suppress': suppress }
+        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/suppress-embeds',
+                  channel_id=channel_id, message_id=message_id)
+        return self.request(r, json=payload)
+
     def add_reaction(self, channel_id, message_id, emoji):
         r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)

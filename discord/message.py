@@ -711,6 +711,11 @@ class Message:
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
+        suppress: :class:`bool`
+            Whether to suppress embeds for the message. This removes
+            all the embeds if set to ``True``. If set to ``False``
+            this brings the embeds back if they were suppressed.
+            Using this parameter requires :attr:`~.Permissions.manage_messages`.
         delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
@@ -720,6 +725,9 @@ class Message:
         -------
         HTTPException
             Editing the message failed.
+        Forbidden
+            Tried to suppress a message without permissions or
+            edited a message's content or embed that isn't yours.
         """
 
         try:
@@ -738,16 +746,21 @@ class Message:
             if embed is not None:
                 fields['embed'] = embed.to_dict()
 
-        data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
-        self._update(data)
-
         try:
-            delete_after = fields['delete_after']
+            suppress = fields.pop('suppress')
         except KeyError:
             pass
         else:
-            if delete_after is not None:
-                await self.delete(delay=delete_after)
+            await self._state.http.suppress_message_embeds(self.channel.id, self.id, suppress=suppress)
+
+        delete_after = fields.pop('delete_after', None)
+
+        if fields:
+            data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
+            self._update(data)
+
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
 
     async def pin(self):
         """|coro|
