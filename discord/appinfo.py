@@ -68,10 +68,10 @@ class AppInfo:
         his field will be the id of the "Game SKU" that is created, if exists
     slug: Optional[:class:`str`]
         If this application is a game sold on Discord,
-        this field will be the URL slug that links to the store page  
+        this field will be the URL slug that links to the store page
     cover_image: Optional[:class:`str`]
         If this application is a game sold on Discord,
-        this field will be the hash of the image on store embeds    
+        this field will be the hash of the image on store embeds
     """
     __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
                  'bot_public', 'bot_require_code_grant', 'owner', 'icon',
@@ -89,12 +89,15 @@ class AppInfo:
         self.bot_public = data['bot_public']
         self.bot_require_code_grant = data['bot_require_code_grant']
         self.owner = User(state=self._state, data=data['owner'])
+
         team = data.get('team')
         self.team = Team(state, team) if team else None
         self.summary = data['summary']
         self.verify_key = data['verify_key']
+
         guild_id = data.get('guild_id')
-        self.guild_id = int(guild_id) if guild_id else None
+        self.guild = self._state._get_guild(int(guild_id)) if guild_id else None
+
         primary_sku_id = data.get('primary_sku_id')
         self.primary_sku_id = int(primary_sku_id) if primary_sku_id else None
         self.slug = data.get('slug')

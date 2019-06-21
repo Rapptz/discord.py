@@ -55,7 +55,7 @@ class Team:
         self.id = int(data['id'])
         self.name = data['name']
         self.icon = data['icon']
-        self.owner_id = int(data['owner_user_id'])
+        self.owner = self._state.get_user(int(data['owner_user_id']))
         self.members = [TeamMember(self, self._state, member) for member in data['members']]
 
     def __repr__(self):
