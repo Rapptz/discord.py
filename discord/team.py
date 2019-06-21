@@ -51,7 +51,6 @@ class Team:
     def __init__(self, state, data):
         self._state = state
 
-        self._data = data
         self.id = int(data['id'])
         self.name = data['name']
         self.icon = data['icon']
