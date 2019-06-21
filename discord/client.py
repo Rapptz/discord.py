@@ -594,7 +594,8 @@ class Client:
             log.info('Cleaning up tasks.')
             _cleanup_loop(loop)
 
-        return future.result()
+        if not future.cancelled():
+            return future.result()
 
     # properties
 
