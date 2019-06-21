@@ -108,6 +108,16 @@ class BotBase(GroupMixin):
         self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
+        self.owner_ids = options.get('owner_ids', {})
+
+        if self.owner_id and self.owner_ids:
+            raise ValueError('Both owner_id and owner_ids are set.')
+        elif not isinstance(self.owner_id, int):
+            raise ValueError('owner_id is not an int.')
+        elif not isinstance(self.owner_ids, (set, list, tuple)):
+            raise ValueError('owner_ids is not a set, list or tuple.')
+        elif not all(isinstance(i, int) for i in self.owner_ids):
+            raise ValueError('owner_ids has to be an iterable of int.')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -284,6 +294,9 @@ class BotBase(GroupMixin):
         If an :attr:`owner_id` is not set, it is fetched automatically
         through the use of :meth:`~.Bot.application_info`.
 
+        The function also checks if the application is team-owned if
+        :attr:`owner_id` is not set.
+
         Parameters
         -----------
         user: :class:`.abc.User`
@@ -295,11 +308,18 @@ class BotBase(GroupMixin):
             Whether the user is the owner.
         """
 
-        if self.owner_id is None:
+        if self.owner_id:
+            return user.id == self.owner_id
+        elif self.owner_ids:
+            return user.id in self.owner_ids
+        else:
             app = await self.application_info()
-            self.owner_id = owner_id = app.owner.id
-            return user.id == owner_id
-        return user.id == self.owner_id
+            if app.team:
+                self.owner_ids = {m.id for m in app.team.members}
+                return user.id in self.owner_ids
+            else:
+                self.owner_id = owner_id = app.owner.id
+                return user.id == owner_id
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
@@ -959,6 +979,9 @@ class Bot(BotBase, discord.Client):
         The ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.
+    owner_ids: Optional[:class:`set`]
+        The IDs that owns the bot. This is similar to `owner_id`.
+        If both `owner_id` and `owner_ids` are set, ValueError would be raised.
     """
     pass
 

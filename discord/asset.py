@@ -95,6 +95,14 @@ class Asset:
         return cls(state, url)
 
     @classmethod
+    def _from_cover_image(cls, state, obj):
+        if obj.cover_image is None:
+            return cls(state)
+
+        url = 'https://cdn.discordapp.com/app-assets/{0.id}/store/{0.cover_image}.jpg'.format(obj)
+        return cls(state, url)
+
+    @classmethod
     def _from_guild_image(cls, state, id, hash, key, *, format='webp', size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
