@@ -594,6 +594,8 @@ class Client:
             log.info('Cleaning up tasks.')
             _cleanup_loop(loop)
 
+        return future.result()
+
     # properties
 
     def is_closed(self):
