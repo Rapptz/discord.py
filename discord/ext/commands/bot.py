@@ -108,7 +108,7 @@ class BotBase(GroupMixin):
         self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
-        self.team_ids = {}
+        self.team_member_ids = {}
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -301,13 +301,13 @@ class BotBase(GroupMixin):
 
         if self.owner_id:
             return user.id == self.owner_id
-        elif self.team_ids:
-            return user.id in self.team_ids
+        elif self.team_member_ids:
+            return user.id in self.team_member_ids
         else:
             app = await self.application_info()
             if app.team:
-                self.team_ids = {m.id for m in app.team.members}
-                return user.id in self.team_ids
+                self.team_member_ids = {m.id for m in app.team.members}
+                return user.id in self.team_member_ids
             else:
                 self.owner_id = owner_id = app.owner.id
                 return user.id == owner_id
