@@ -832,3 +832,8 @@ class HTTPClient:
 
     def edit_settings(self, **payload):
         return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
+
+    def suppress_embeds(self, channel_id, message_id):
+        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/suppress-embeds', channel_id=channel_id, message_id=message_id)
+        payload = {'suppress': True}
+        return self.request(r, json=payload)

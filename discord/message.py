@@ -913,3 +913,16 @@ class Message:
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
+
+    async def suppress_embeds(self):
+        """|coro|
+
+        Suppresses all embeds of this message.
+
+        Embeds of your own messages could be suppressed without any proper permissions. However to
+        suppress embeds of other people's messages, you need the :attr:`~Permissions.manage_messages`
+        permission.
+
+        .. versionadded:: 1.3.0
+        """
+        await self._state.http.suppress_embeds(self.channel.id, self.id)
