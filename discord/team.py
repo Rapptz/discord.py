@@ -67,7 +67,7 @@ class Team:
 
 
 class TeamMember:
-    """Represents an team member in a team.
+    """Represents a team member in a team.
 
 
     Attributes
