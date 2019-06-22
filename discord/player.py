@@ -31,9 +31,12 @@ import asyncio
 import logging
 import shlex
 import time
+import json
+import re
 
 from .errors import ClientException
 from .opus import Encoder as OpusEncoder
+from .oggparse import OggStream
 
 log = logging.getLogger(__name__)
 
@@ -107,7 +110,57 @@ class PCMAudio(AudioSource):
             return b''
         return ret
 
-class FFmpegPCMAudio(AudioSource):
+class FFmpegAudio(AudioSource):
+    """Represents an FFmpeg based AudioSource."""
+
+    def __init__(self, source, *, ffmpeg_args, **subprocess_kwargs):
+        args = [executable, *ffmpeg_args]
+        kwargs = {'stdout': subprocess.PIPE}
+        kwargs.update(subprocess_kwargs)
+
+        self._process = self._spawn_process(args, **subprocess_kwargs)
+        self._stdout = self._process.stdout
+
+    def _spawn_process(self, args, **subprocess_kwargs):
+        process = None
+        try:
+            process = subprocess.Popen(args, **subprocess_kwargs)
+        except FileNotFoundError:
+            executable = args.partition(' ')[0] if isinstance(args, str) else args[0]
+            raise ClientException(executable + ' was not found.') from None
+        except subprocess.SubprocessError as exc:
+            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+        else:
+            return process
+
+    def read(self):
+        raise NotImplementedError
+
+    def is_opus(self):
+        return NotImplementedError
+
+    def cleanup(self):
+        proc = self._process
+        if proc is None:
+            return
+
+        log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
+
+        try:
+            proc.kill()
+        except:
+            pass
+
+        if proc.poll() is None:
+            log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
+            proc.communicate()
+            log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
+        else:
+            log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
+
+        self._process = None
+
+class FFmpegPCMAudio(FFmpegAudio):
     """An audio source from FFmpeg (or AVConv).
 
     This launches a sub-process to a specific input file given.
@@ -143,9 +196,8 @@ class FFmpegPCMAudio(AudioSource):
     """
 
     def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
-        stdin = None if not pipe else source
-
         args = [executable]
+        subprocess_kwargs = {'stdin': None if not pipe else source, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -159,14 +211,7 @@ class FFmpegPCMAudio(AudioSource):
 
         args.append('pipe:1')
 
-        self._process = None
-        try:
-            self._process = subprocess.Popen(args, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
-            self._stdout = self._process.stdout
-        except FileNotFoundError:
-            raise ClientException(executable + ' was not found.') from None
-        except subprocess.SubprocessError as exc:
-            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+        super().__init__(source, executable=executable, ffmpeg_args=args, **subprocess_kwargs)
 
     def read(self):
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
@@ -174,21 +219,96 @@ class FFmpegPCMAudio(AudioSource):
             return b''
         return ret
 
-    def cleanup(self):
-        proc = self._process
-        if proc is None:
-            return
+    def is_opus(self):
+        return False
 
-        log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
-        proc.kill()
-        if proc.poll() is None:
-            log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
-            proc.communicate()
-            log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
+class FFmpegOpusAudio(FFmpegAudio):
+    """TODO"""
+
+    def __init__(self, source, *, bitrate=None, probe=False, executable='ffmpeg',
+                 pipe=False, stderr=None, before_options=None, options=None):
+
+        args = [executable]
+        subprocess_kwargs = {'stdin': None if not pipe else source, 'stderr': stderr}
+
+        if isinstance(before_options, str):
+            args.extend(shlex.split(before_options))
+
+        args.append('-i')
+        args.append('-' if pipe else source)
+
+        if probe:
+            codec, probed_bitrate = self.probe(source)
+
+            if codec in ('opus', 'libopus'):
+                codec = 'copy'
+            else:
+                codec = 'libopus'
+
+        args.extend(('-map_metadata', '-1', '-f', 'opus', '-c:a', codec, '-ar', '48000',
+                     '-ac', '2', '-loglevel', 'warning'))
+
+        if bitrate is not None or probed_bitrate:
+            br = bitrate or probed_bitrate
+            args.extend(('-b:a', str(br)+'k'))
+
+        if isinstance(options, str):
+            args.extend(shlex.split(options))
+
+        args.append('pipe:1')
+
+        super().__init__(source, executable=executable, ffmpeg_args=args, **subprocess_kwargs)
+        self._packet_iter = OggStream(self._stdout).iter_packets()
+
+    def probe(self, source, *, method='ffprobe'):
+        """TODO"""
+
+        if isinstance(method, str):
+            probefunc = getattr(self, '_probe_codec_' + method, None)
+            if probefunc is None:
+                raise AttributeError("Invalid probe method: %s" % method)
+        elif callable(method):
+            probefunc = method
         else:
-            log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
+            raise TypeError("Expected str or callable for parameter 'probe', " \
+                            "not '{0.__class__.__name__}'" .format(method))
 
-        self._process = None
+        codec = bitrate = None
+        try:
+            codec, bitrate = probefunc(source)
+        except:
+            log.exception("Failed to probe with %s, falling back to ffmpeg probe", method)
+            try:
+                codec, bitrate = self._probe_codec_ffmpeg(source)
+            except:
+                log.exception("Fallback ffmpeg probe failed")
+
+        log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
+        return codec, bitrate
+
+    def _probe_codec_ffprobe(self, source):
+        args = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', '-select_streams', 'a:0', source]
+        output = subprocess.check_output(args)
+        if output:
+            data = json.loads(output)
+            streamdata = data['streams'][0]
+            bitrate = int(streamdata.get('bit_rate'))
+            return codec = streamdata.get('codec_name'), max(round(bitrate/1000, 0), 128)
+
+    def _probe_codec_ffmpeg(self, source):
+        args = ['ffmpeg','-hide_banner', '-i',  source]
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output, _ = proc.communicate()
+
+        match = re.search(r"Stream #0.*?Audio: (\w+).*(\d+) [kK]?b/s", string)
+        if match:
+            return match.groups()
+
+    def read(self):
+        return next(self.packet_iter, b'')
+
+    def is_opus(self):
+        return True
 
 class PCMVolumeTransformer(AudioSource):
     """Transforms a previous :class:`AudioSource` to have volume controls.
