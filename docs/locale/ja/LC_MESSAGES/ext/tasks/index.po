@@ -3,10 +3,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  discordpy-japanese\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-09 06:30-0400\n"
-"PO-Revision-Date: 2019-06-09 10:28+0000\n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-22 13:03+0000\n"
 "Last-Translator: Episword (mistio100)\n"
-"Language: ja\n"
+"Language: ja_JP\n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
@@ -109,7 +109,7 @@ msgstr ""
 #: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
 #: discord.ext.tasks.Loop.start discord.ext.tasks.loop of
 msgid "raises"
-msgstr "例外"
+msgstr ""
 
 #: discord.ext.tasks.Loop.start:6 of
 msgid ":exc:`RuntimeError` -- A task has already been launched and is running."
@@ -254,7 +254,7 @@ msgstr ""
 #: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:11
 #: discord.ext.tasks.loop:22 of
 msgid ":exc:`TypeError` -- The function was not a coroutine."
-msgstr ":exc:`TypeError` -- 関数がコルーチンでない。"
+msgstr ""
 
 #: discord.ext.tasks.Loop.after_loop:1 of
 msgid ""
@@ -330,35 +330,9 @@ msgstr ""
 msgid ":class:`Loop`"
 msgstr ":class:`Loop`"
 
-#~ msgid ":meth:`~.tasks.Loop.before_loop` can be used as a decorator as well:"
-#~ msgstr ""
-
 #~ msgid "type"
 #~ msgstr "型"
 
 #~ msgid ":class:`int`"
 #~ msgstr ":class:`int`"
-
-#~ msgid ":exc:`RuntimeError` -- A task has already been launched."
-#~ msgstr ""
-
-#~ msgid "Cancels the internal task, if any are running."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "A function that also acts as a "
-#~ "decorator to register a coroutine to "
-#~ "be called before the loop starts "
-#~ "running. This is useful if you "
-#~ "want to wait for some bot state"
-#~ " before the loop starts, such as "
-#~ ":meth:`discord.Client.wait_until_ready`."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "A function that also acts as a "
-#~ "decorator to register a coroutine to "
-#~ "be called after the loop finished "
-#~ "running."
-#~ msgstr ""
 
