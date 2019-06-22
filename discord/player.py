@@ -115,12 +115,12 @@ class PCMAudio(AudioSource):
 class FFmpegAudio(AudioSource):
     """Represents an FFmpeg based AudioSource."""
 
-    def __init__(self, source, *, args, **subprocess_kwargs):
+    def __init__(self, source, *, executable='ffmpeg', args, **subprocess_kwargs):
         args = [executable, *args]
         kwargs = {'stdout': subprocess.PIPE}
         kwargs.update(subprocess_kwargs)
 
-        self._process = self._spawn_process(args, **subprocess_kwargs)
+        self._process = self._spawn_process(args, **kwargs)
         self._stdout = self._process.stdout
 
     def _spawn_process(self, args, **subprocess_kwargs):
@@ -198,7 +198,7 @@ class FFmpegPCMAudio(FFmpegAudio):
     """
 
     def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
-        args = [executable]
+        args = []
         subprocess_kwargs = {'stdin': None if not pipe else source, 'stderr': stderr}
 
         if isinstance(before_options, str):
@@ -231,7 +231,7 @@ class FFmpegOpusAudio(FFmpegAudio):
                  pipe=False, stderr=None, before_options=None, options=None):
 
         self.executable = executable
-        args = [executable]
+        args = []
         subprocess_kwargs = {'stdin': None if not pipe else source, 'stderr': stderr}
 
         if isinstance(before_options, str):
@@ -240,20 +240,21 @@ class FFmpegOpusAudio(FFmpegAudio):
         args.append('-i')
         args.append('-' if pipe else source)
 
+        codec = 'libopus'
         if probe:
-            codec, probed_bitrate = self.probe(source)
-
-            if codec in ('opus', 'libopus'):
+            probed_codec, probed_bitrate = self.probe(source)
+            if probed_codec in ('opus', 'libopus'):
                 codec = 'copy'
-            else:
-                codec = 'libopus'
 
         args.extend(('-map_metadata', '-1', '-f', 'opus', '-c:a', codec, '-ar', '48000',
                      '-ac', '2', '-loglevel', 'warning'))
 
         if bitrate is not None or probed_bitrate:
             br = bitrate or probed_bitrate
-            args.extend(('-b:a', str(br)+'k'))
+        else:
+            br = 128
+
+        args.extend(('-b:a', str(br)+'k'))
 
         if isinstance(options, str):
             args.extend(shlex.split(options))
@@ -302,21 +303,29 @@ class FFmpegOpusAudio(FFmpegAudio):
         if output:
             data = json.loads(output)
             streamdata = data['streams'][0]
-            bitrate = int(streamdata.get('bit_rate'))
+            bitrate = int(streamdata.get('bit_rate', 0))
 
             return streamdata.get('codec_name'), max(round(bitrate/1000, 0), 128)
 
     def _probe_codec_ffmpeg(self, source):
         args = [self.executable, '-hide_banner', '-i',  source]
         proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output, _ = proc.communicate()
+        out, _ = proc.communicate()
+        output = out.decode('utf8')
+        codec = br = None
 
-        match = re.search(r"Stream #0.*?Audio: (\w+).*(\d+) [kK]?b/s", string)
-        if match:
-            return match.groups()
+        codec_match = re.search(r"Stream #0.*?Audio: (\w+)", output)
+        if codec_match:
+            codec = codec_match.group(1)
+
+        br_match = re.search(r"(\d+) [kK]b/s", output)
+        if br_match:
+            br = br_match.group(1)
+
+        return codec, br
 
     def read(self):
-        return next(self.packet_iter, b'')
+        return next(self._packet_iter, b'')
 
     def is_opus(self):
         return True
