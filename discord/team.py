@@ -72,8 +72,6 @@ class TeamMember:
 
     Attributes
     -------------
-    id: :class:`int`
-        The application ID.
     team: :class:`team`
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`

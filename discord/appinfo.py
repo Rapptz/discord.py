@@ -55,28 +55,13 @@ class AppInfo:
         grant flow to join.
     rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
-    summary: Optional[:class:`str`]
+    game_info: Optional[:class:GameInfo]
         If this application is a game sold on Discord,
-        this field will be the summary field for the store page of its primary SKU
-    verify_key: Optional[:class:`str`]
-        The base64 encoded key for the GameSDK's GetTicket
-    guild: Optional[:class:`Guild`]
-        If this application is a game sold on Discord,
-        this field will be the guild to which it has been linked
-    primary_sku_id: Optional[:class:`int`]
-        If this application is a game sold on Discord,
-        this field will be the id of the "Game SKU" that is created, if exists
-    slug: Optional[:class:`str`]
-        If this application is a game sold on Discord,
-        this field will be the URL slug that links to the store page
-    cover_image: Optional[:class:`str`]
-        If this application is a game sold on Discord,
-        this field will be the hash of the image on store embeds
+        this field will be the information related to the game.
     """
     __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
                  'bot_public', 'bot_require_code_grant', 'owner', 'icon',
-                 'summary', 'verify_key', 'team', 'guild_id', 'primary_sku_id',
-                 'slug', 'cover_image')
+                 'game_info')
 
     def __init__(self, state, data):
         self._state = state
@@ -92,6 +77,43 @@ class AppInfo:
 
         team = data.get('team')
         self.team = Team(state, team) if team else None
+
+        self.game_info = GameInfo(state, data) if data['summary'] else None
+
+    def __repr__(self):
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
+               'owner={0.owner!r}>'.format(self)
+
+    @property
+    def icon_url(self):
+        """:class:`.Asset`: Retrieves the application's icon asset."""
+        return Asset._from_icon(self._state, self, 'app')
+
+
+class GameInfo:
+
+    """Represents the game information if the
+    application is a game sold on Discord.
+
+    Attributes
+    -------------
+    summary: :class:`str`
+        The summary field for the store page of its primary SKU.
+    verify_key: :class:`str`
+        The base64 encoded key for the GameSDK's GetTicket.
+    guild: Optional[:class:`Guild`]
+        The guild to which it has been linked.
+    primary_sku_id: Optional[:class:`int`]
+        The id of the "Game SKU" that is created, if exists.
+    slug: Optional[:class:`str`]
+        The URL slug that links to the store page.
+    cover_image: Optional[:class:`str`]
+        The hash of the image on store embeds.
+    """
+
+    def __init__(self, state, data):
+        self._state = state
+
         self.summary = data['summary']
         self.verify_key = data['verify_key']
 
@@ -102,15 +124,6 @@ class AppInfo:
         self.primary_sku_id = int(primary_sku_id) if primary_sku_id else None
         self.slug = data.get('slug')
         self.cover_image = data.get('cover_image')
-
-    def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
-               'owner={0.owner!r}>'.format(self)
-
-    @property
-    def icon_url(self):
-        """:class:`.Asset`: Retrieves the application's icon asset."""
-        return Asset._from_icon(self._state, self, 'app')
 
     @property
     def cover_image_url(self):
