@@ -41,7 +41,7 @@ class Team:
         The team name
     icon: Optional[:class:`str`]
         The icon hash, if it exists.
-    owner_id: :class:`int`
+    owner: :class:`User`
         The team's owner ID
     members: List[:class:`TeamMember`]
         A list of the members in the team

@@ -57,15 +57,15 @@ class AppInfo:
         A list of RPC origin URLs, if RPC is enabled.
     summary: Optional[:class:`str`]
         If this application is a game sold on Discord,
-        this field will be the summary field for the store page of its primary sku
+        this field will be the summary field for the store page of its primary SKU
     verify_key: Optional[:class:`str`]
         The base64 encoded key for the GameSDK's GetTicket
-    guild_id: Optional[:class:`int`]
+    guild: Optional[:class:`Guild`]
         If this application is a game sold on Discord,
         this field will be the guild to which it has been linked
     primary_sku_id: Optional[:class:`int`]
         If this application is a game sold on Discord,
-        his field will be the id of the "Game SKU" that is created, if exists
+        this field will be the id of the "Game SKU" that is created, if exists
     slug: Optional[:class:`str`]
         If this application is a game sold on Discord,
         this field will be the URL slug that links to the store page
