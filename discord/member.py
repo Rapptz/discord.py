@@ -402,6 +402,22 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         return channel.permissions_for(self)
 
+    def has_role(self, role_id):
+        """Check if a user has a role with the given ID.
+
+        Parameters
+        ----------
+        role_id: :class:`int`
+            The ID for the role.
+
+        Returns
+        -------
+        bool
+            :code:`True` if the user has a role with the
+            given ID.
+        """
+        return self._roles.has(role_id)
+
     @property
     def top_role(self):
         """:class:`Role`: Returns the member's highest role.
