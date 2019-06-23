@@ -1352,7 +1352,7 @@ def has_role(item):
             raise NoPrivateMessage()
 
         if isinstance(item, int):
-            role = discord.utils.get(ctx.author.roles, id=item)
+            role = ctx.author.has_role(item) or None
         else:
             role = discord.utils.get(ctx.author.roles, name=item)
         if role is None:
@@ -1396,8 +1396,9 @@ def has_any_role(*items):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
             raise NoPrivateMessage()
 
-        getter = functools.partial(discord.utils.get, ctx.author.roles)
-        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+        author = ctx.author
+        getter = functools.partial(discord.utils.get, author.roles)
+        if any(author.has_role(item) is True if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
         raise MissingAnyRole(items)
 
@@ -1424,7 +1425,7 @@ def bot_has_role(item):
 
         me = ch.guild.me
         if isinstance(item, int):
-            role = discord.utils.get(me.roles, id=item)
+            role = me.has_role(item) or None
         else:
             role = discord.utils.get(me.roles, name=item)
         if role is None:
@@ -1452,7 +1453,7 @@ def bot_has_any_role(*items):
 
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
-        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+        if any(me.has_role(item) is True if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
         raise BotMissingAnyRole(items)
     return check(predicate)
