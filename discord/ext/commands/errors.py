@@ -503,7 +503,7 @@ class NoEntryPointError(ExtensionError):
         super().__init__("Extension {!r} has no 'setup' function.".format(name), name=name)
 
 class ExtensionFailed(ExtensionError):
-    """An exception raised when an extension failed to load during execution of the ``setup`` entry point.
+    """An exception raised when an extension failed to load during execution of the module or ``setup`` entry point.
 
     This inherits from :exc:`ExtensionError`
 
@@ -521,7 +521,7 @@ class ExtensionFailed(ExtensionError):
         super().__init__(fmt.format(name, original), name=name)
 
 class ExtensionNotFound(ExtensionError):
-    """An exception raised when an extension failed to be imported.
+    """An exception raised when an extension is not found.
 
     This inherits from :exc:`ExtensionError`
 
@@ -529,11 +529,7 @@ class ExtensionNotFound(ExtensionError):
     -----------
     name: :class:`str`
         The extension that had the error.
-    original: :exc:`ImportError`
-        The original exception that was raised. You can also get this via
-        the ``__cause__`` attribute.
     """
-    def __init__(self, name, original):
-        self.original = original
+    def __init__(self, name):
         fmt = 'Extension {0!r} could not be loaded.'
         super().__init__(fmt.format(name), name=name)
