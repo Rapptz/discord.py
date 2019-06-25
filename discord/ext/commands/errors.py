@@ -529,7 +529,10 @@ class ExtensionNotFound(ExtensionError):
     -----------
     name: :class:`str`
         The extension that had the error.
+    original: :class:`NoneType`
+        Always ``None`` for backwards compatibility.
     """
     def __init__(self, name):
+        self.original = None
         fmt = 'Extension {0!r} could not be loaded.'
         super().__init__(fmt.format(name), name=name)

@@ -570,31 +570,25 @@ class BotBase(GroupMixin):
 
     def _load_from_module_spec(self, spec, key):
         # precondition: key not in self.__extensions
-        def unload(e):
-            self._remove_module_references(lib.__name__)
-            self._call_module_finalizers(lib, key)
-            raise errors.ExtensionFailed(key, e) from e
-
         lib = importlib.util.module_from_spec(spec)
         try:
             spec.loader.exec_module(lib)
         except Exception as e:
-            unload(e)
+            raise errors.ExtensionFailed(key, e) from e
 
         try:
             setup = getattr(lib, 'setup')
         except AttributeError:
             raise errors.NoEntryPointError(key)
 
-        sys.modules[key] = lib
-
         try:
             setup(self)
         except Exception as e:
-            del sys.modules[key]
-            unload(e)
+            self._remove_module_references(lib.__name__)
+            self._call_module_finalizers(lib, key)
+            raised errors.ExtensionFailed(key, e) from e
         else:
-            self.__extensions[key] = lib
+            sys.modules[key] = self.__extensions[key] = lib
 
     def load_extension(self, name):
         """Loads an extension.
