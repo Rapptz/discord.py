@@ -81,9 +81,6 @@ class TeamMember:
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`
         The membership state of the member (e.g. invited or accepted)
-    permissions: List[:class:`str`]
-        The permissions granted to the user in the team.
-        Will always be `[*]`,
     user: :class:`User`
         The team member
     """
