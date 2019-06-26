@@ -55,13 +55,28 @@ class AppInfo:
         grant flow to join.
     rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
-    game_info: Optional[:class:GameInfo]
+    summary: Optional[:class:`str`]
         If this application is a game sold on Discord,
-        this field will be the information related to the game.
+        this field will be the summary field for the store page of its primary SKU
+    verify_key: Optional[:class:`str`]
+        The base64 encoded key for the GameSDK's GetTicket
+    guild_id: Optional[:class:`int`]
+        If this application is a game sold on Discord,
+        this field will be the guild to which it has been linked
+    primary_sku_id: Optional[:class:`int`]
+        If this application is a game sold on Discord,
+        this field will be the id of the "Game SKU" that is created, if exists
+    slug: Optional[:class:`str`]
+        If this application is a game sold on Discord,
+        this field will be the URL slug that links to the store page
+    cover_image: Optional[:class:`str`]
+        If this application is a game sold on Discord,
+        this field will be the hash of the image on store embeds
     """
     __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
                  'bot_public', 'bot_require_code_grant', 'owner', 'icon',
-                 'game_info')
+                 'summary', 'verify_key', 'team', 'guild_id', 'primary_sku_id',
+                  'slug', 'cover_image')
 
     def __init__(self, state, data):
         self._state = state
@@ -82,7 +97,7 @@ class AppInfo:
         self.verify_key = data['verify_key']
 
         guild_id = data.get('guild_id')
-        self.guild = self._state._get_guild(int(guild_id)) if guild_id else None
+        self.guild_id = int(guild_id) if guild_id else None
 
         primary_sku_id = data.get('primary_sku_id')
         self.primary_sku_id = int(primary_sku_id) if primary_sku_id else None
@@ -103,4 +118,8 @@ class AppInfo:
         """:class:`.Asset`: Retrieves the cover image on a store embed."""
         return Asset._from_cover_image(self._state, self)
 
-
+    @property
+    def guild(self):
+        """Optional[:class:`Guild`]: If this application is a game sold on Discord,
+        this field will be the guild to which it has been linked"""
+        return self._state._get_guild(int(guild_id))
