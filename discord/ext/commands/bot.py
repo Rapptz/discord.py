@@ -108,6 +108,7 @@ class BotBase(GroupMixin):
         self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
+        self._ignore_others = options.get('ignore_others', True)
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -807,7 +808,7 @@ class BotBase(GroupMixin):
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-        if self._skip_check(message.author.id, self.user.id):
+        if self._ignore_others and self._skip_check(message.author.id, self.user.id):
             return ctx
 
         prefix = await self.get_prefix(message)
@@ -891,7 +892,7 @@ class BotBase(GroupMixin):
         message: :class:`discord.Message`
             The message to process commands for.
         """
-        if message.author.bot:
+        if self._ignore_others and message.author.bot:
             return
 
         ctx = await self.get_context(message)
