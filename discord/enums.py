@@ -380,6 +380,9 @@ class ActivityType(Enum):
     listening = 2
     watching = 3
 
+    def __int__(self):
+        return self.value
+
 class HypeSquadHouse(Enum):
     bravery = 1
     brilliance = 2
