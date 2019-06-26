@@ -65,6 +65,11 @@ class Team:
         """:class:`.Asset`: Retrieves the team's icon asset."""
         return Asset._from_icon(self._state, self, 'team')
 
+    @property
+    def owner(self):
+        """Optional[:class:`User`]: The team's owner, if available from the cache."""
+        return self._state.get_user(self.owner_id)
+
 
 class TeamMember:
     """Represents a team member in a team.

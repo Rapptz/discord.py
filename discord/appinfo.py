@@ -78,42 +78,6 @@ class AppInfo:
         team = data.get('team')
         self.team = Team(state, team) if team else None
 
-        self.game_info = GameInfo(state, data) if data['summary'] else None
-
-    def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
-               'owner={0.owner!r}>'.format(self)
-
-    @property
-    def icon_url(self):
-        """:class:`.Asset`: Retrieves the application's icon asset."""
-        return Asset._from_icon(self._state, self, 'app')
-
-
-class GameInfo:
-
-    """Represents the game information if the
-    application is a game sold on Discord.
-
-    Attributes
-    -------------
-    summary: :class:`str`
-        The summary field for the store page of its primary SKU.
-    verify_key: :class:`str`
-        The base64 encoded key for the GameSDK's GetTicket.
-    guild: Optional[:class:`Guild`]
-        The guild to which it has been linked.
-    primary_sku_id: Optional[:class:`int`]
-        The id of the "Game SKU" that is created, if exists.
-    slug: Optional[:class:`str`]
-        The URL slug that links to the store page.
-    cover_image: Optional[:class:`str`]
-        The hash of the image on store embeds.
-    """
-
-    def __init__(self, state, data):
-        self._state = state
-
         self.summary = data['summary']
         self.verify_key = data['verify_key']
 
@@ -125,7 +89,18 @@ class GameInfo:
         self.slug = data.get('slug')
         self.cover_image = data.get('cover_image')
 
+    def __repr__(self):
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
+               'owner={0.owner!r}>'.format(self)
+
+    @property
+    def icon_url(self):
+        """:class:`.Asset`: Retrieves the application's icon asset."""
+        return Asset._from_icon(self._state, self, 'app')
+
     @property
     def cover_image_url(self):
         """:class:`.Asset`: Retrieves the cover image on a store embed."""
         return Asset._from_cover_image(self._state, self)
+
+
