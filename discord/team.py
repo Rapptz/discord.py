@@ -41,8 +41,8 @@ class Team:
         The team name
     icon: Optional[:class:`str`]
         The icon hash, if it exists.
-    owner: :class:`User`
-        The team's owner ID
+    owner_id: :class:`int`
+        The team's owner ID.
     members: List[:class:`TeamMember`]
         A list of the members in the team
     """
@@ -54,7 +54,7 @@ class Team:
         self.id = int(data['id'])
         self.name = data['name']
         self.icon = data['icon']
-        self.owner = self._state.get_user(int(data['owner_user_id']))
+        self.owner_id = int(data['owner_user_id'])
         self.members = [TeamMember(self, self._state, member) for member in data['members']]
 
     def __repr__(self):

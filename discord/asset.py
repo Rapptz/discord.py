@@ -95,11 +95,11 @@ class Asset:
         return cls(state, url)
 
     @classmethod
-    def _from_cover_image(cls, state, object):
-        if object.cover_image is None:
+    def _from_cover_image(cls, state, obj):
+        if obj.cover_image is None:
             return cls(state)
 
-        url = 'https://cdn.discordapp.com/app-assets/{0.id}/store/{0.cover_image}.jpg'.format(object)
+        url = 'https://cdn.discordapp.com/app-assets/{0.id}/store/{0.cover_image}.jpg'.format(obj)
         return cls(state, url)
 
     @classmethod
