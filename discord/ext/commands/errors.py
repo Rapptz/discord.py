@@ -532,7 +532,7 @@ class ExtensionNotFound(ExtensionError):
     original: :class:`NoneType`
         Always ``None`` for backwards compatibility.
     """
-    def __init__(self, name):
+    def __init__(self, name, original=None):
         self.original = None
         fmt = 'Extension {0!r} could not be loaded.'
         super().__init__(fmt.format(name), name=name)
