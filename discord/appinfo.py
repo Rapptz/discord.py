@@ -55,10 +55,10 @@ class AppInfo:
         grant flow to join.
     rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
-    summary: Optional[:class:`str`]
+    summary: :class:`str`
         If this application is a game sold on Discord,
         this field will be the summary field for the store page of its primary SKU
-    verify_key: Optional[:class:`str`]
+    verify_key: :class:`str`
         The base64 encoded key for the GameSDK's GetTicket
     guild_id: Optional[:class:`int`]
         If this application is a game sold on Discord,
@@ -96,11 +96,9 @@ class AppInfo:
         self.summary = data['summary']
         self.verify_key = data['verify_key']
 
-        guild_id = data.get('guild_id')
-        self.guild_id = int(guild_id) if guild_id else None
+        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
 
-        primary_sku_id = data.get('primary_sku_id')
-        self.primary_sku_id = int(primary_sku_id) if primary_sku_id else None
+        self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
         self.slug = data.get('slug')
         self.cover_image = data.get('cover_image')
 
@@ -122,4 +120,4 @@ class AppInfo:
     def guild(self):
         """Optional[:class:`Guild`]: If this application is a game sold on Discord,
         this field will be the guild to which it has been linked"""
-        return self._state._get_guild(int(guild_id))
+        return self._state._get_guild(int(self.uild_id))
