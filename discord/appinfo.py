@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from . import utils
 from .user import User
 from .asset import Asset
 from .team import Team
@@ -120,4 +121,4 @@ class AppInfo:
     def guild(self):
         """Optional[:class:`Guild`]: If this application is a game sold on Discord,
         this field will be the guild to which it has been linked"""
-        return self._state._get_guild(int(self.uild_id))
+        return self._state._get_guild(int(self.guild_id))

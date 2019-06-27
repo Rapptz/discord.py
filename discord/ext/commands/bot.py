@@ -108,7 +108,16 @@ class BotBase(GroupMixin):
         self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
-        self.owner_ids = options.get('owner_ids, {})
+        self.owner_ids = options.get('owner_ids', {})
+
+        if self.owner_id and self.owner_ids:
+            raise ValueError('Both owner_id and owner_ids are set.')
+        elif not isinstance(self.owner_id, int):
+            raise ValueError('owner_id is not an int.')
+        elif not isinstance(self.owner_ids, (set, list, tuple)):
+            raise ValueError('owner_ids is not a set, list or tuple.')
+        elif not all(isinstance(i, int) for i in self.owner_ids):
+            raise ValueError('owner_ids has to be an iterable of int.')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -301,7 +310,7 @@ class BotBase(GroupMixin):
 
         if self.owner_id:
             return user.id == self.owner_id
-        elif isinstance(self.owner_ids, (list, tuple, set)):
+        elif self.owner_ids:
             return user.id in self.owner_ids
         else:
             app = await self.application_info()
@@ -972,7 +981,7 @@ class Bot(BotBase, discord.Client):
         :meth:`~.Bot.application_info`.
     owner_ids: Optional[:class:`set`]
         The IDs that owns the bot. This is similar to `owner_id`.
-        If both `owner_id` and `owner_ids` are set, `owner_id` is preferred.
+        If both `owner_id` and `owner_ids` are set, ValueError would be raised.
     """
     pass
 

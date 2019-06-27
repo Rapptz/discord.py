@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from . import utils
 from .user import User
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
@@ -51,10 +52,10 @@ class Team:
     def __init__(self, state, data):
         self._state = state
 
-        self.id = int(data['id'])
+        self.id = utils._get_as_snowflake(data, 'id')
         self.name = data['name']
         self.icon = data['icon']
-        self.owner_id = int(data['owner_user_id'])
+        self.owner_id = utils._get_as_snowflake(data, 'owner_user_id')
         self.members = [TeamMember(self, self._state, member) for member in data['members']]
 
     def __repr__(self):
