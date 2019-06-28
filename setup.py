@@ -36,8 +36,8 @@ with open('README.rst') as f:
 extras_require = {
     'voice': ['PyNaCl==1.3.0'],
     'docs': [
-        'sphinx==2.1.2',
-        'sphinxcontrib_trio',
+        'sphinx==1.8.5',
+        'sphinxcontrib_trio==1.1.0',
         'sphinxcontrib-websupport',
     ]
 }
