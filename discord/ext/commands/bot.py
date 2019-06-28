@@ -586,7 +586,7 @@ class BotBase(GroupMixin):
         except Exception as e:
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, key)
-            raised errors.ExtensionFailed(key, e) from e
+            raise errors.ExtensionFailed(key, e) from e
         else:
             sys.modules[key] = self.__extensions[key] = lib
 
