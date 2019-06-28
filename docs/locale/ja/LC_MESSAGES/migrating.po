@@ -1,20 +1,19 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: discordpy-japanese\n"
+"Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 15:50+0900\n"
-"PO-Revision-Date: 2019-06-22 13:03\n"
-"Last-Translator: Episword (mistio100)\n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.7.0\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
-"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Project: discordpy\n"
 "X-Crowdin-Language: ja\n"
-"X-Crowdin-File: migrating.po\n"
+"X-Crowdin-File: migrating.pot\n"
 "Language: ja_JP\n"
 
 #: ../../migrating.rst:6
@@ -57,7 +56,8 @@ msgstr "Snowflakeのint型への変更"
 msgid "Before v1.0, all snowflakes (the ``id`` attribute) were strings. This has been changed to :class:`int`."
 msgstr "v1.0以前は、全てのsnowflake (``id`` 属性) が文字列として扱われていましたが、これは :class:`int` 型に変更されました。"
 
-#: ../../migrating.rst:34 ../../migrating.rst:254
+#: ../../migrating.rst:34
+#: ../../migrating.rst:254
 msgid "Quick example: ::"
 msgstr "簡単な例:"
 
@@ -77,101 +77,106 @@ msgstr "公式のAPIドキュメントでは、「Server」は「Guild」と呼�
 msgid "A list of changes is as follows:"
 msgstr "変更点の一覧"
 
-#: ../../migrating.rst:59 ../../migrating.rst:95 ../../migrating.rst:869
+#: ../../migrating.rst:59
+#: ../../migrating.rst:95
+#: ../../migrating.rst:869
 msgid "Before"
 msgstr "変更前"
 
-#: ../../migrating.rst:59 ../../migrating.rst:95 ../../migrating.rst:869
+#: ../../migrating.rst:59
+#: ../../migrating.rst:95
+#: ../../migrating.rst:869
 msgid "After"
 msgstr "変更後"
 
 #: ../../migrating.rst:61
 msgid "``Message.server``"
-msgstr "``Message.server``"
+msgstr ""
 
 #: ../../migrating.rst:61
 msgid ":attr:`Message.guild`"
-msgstr ":attr:`Message.guild`"
+msgstr ""
 
 #: ../../migrating.rst:63
 msgid "``Channel.server``"
-msgstr "``Channel.server``"
+msgstr ""
 
 #: ../../migrating.rst:63
 msgid ":attr:`.GuildChannel.guild`"
-msgstr ":attr:`.GuildChannel.guild`"
+msgstr ""
 
 #: ../../migrating.rst:65
 msgid "``Client.servers``"
-msgstr "``Client.servers``"
+msgstr ""
 
-#: ../../migrating.rst:65 ../../migrating.rst:233
+#: ../../migrating.rst:65
+#: ../../migrating.rst:233
 msgid ":attr:`Client.guilds`"
-msgstr ":attr:`Client.guilds`"
+msgstr ""
 
 #: ../../migrating.rst:67
 msgid "``Client.get_server``"
-msgstr "``Client.get_server``"
+msgstr ""
 
 #: ../../migrating.rst:67
 msgid ":meth:`Client.get_guild`"
-msgstr ":meth:`Client.get_guild`"
+msgstr ""
 
 #: ../../migrating.rst:69
 msgid "``Emoji.server``"
-msgstr "``Emoji.server``"
+msgstr ""
 
 #: ../../migrating.rst:69
 msgid ":attr:`Emoji.guild`"
-msgstr ":attr:`Emoji.guild`"
+msgstr ""
 
 #: ../../migrating.rst:71
 msgid "``Role.server``"
-msgstr "``Role.server``"
+msgstr ""
 
 #: ../../migrating.rst:71
 msgid ":attr:`Role.guild`"
-msgstr ":attr:`Role.guild`"
+msgstr ""
 
 #: ../../migrating.rst:73
 msgid "``Invite.server``"
-msgstr "``Invite.server``"
+msgstr ""
 
 #: ../../migrating.rst:73
 msgid ":attr:`Invite.guild`"
-msgstr ":attr:`Invite.guild`"
+msgstr ""
 
 #: ../../migrating.rst:75
 msgid "``Member.server``"
-msgstr "``Member.server``"
+msgstr ""
 
 #: ../../migrating.rst:75
 msgid ":attr:`Member.guild`"
-msgstr ":attr:`Member.guild`"
+msgstr ""
 
 #: ../../migrating.rst:77
 msgid "``Permissions.manage_server``"
-msgstr "``Permissions.manage_server``"
+msgstr ""
 
 #: ../../migrating.rst:77
 msgid ":attr:`Permissions.manage_guild`"
-msgstr ":attr:`Permissions.manage_guild`"
+msgstr ""
 
 #: ../../migrating.rst:79
 msgid "``VoiceClient.server``"
-msgstr "``VoiceClient.server``"
+msgstr ""
 
 #: ../../migrating.rst:79
 msgid ":attr:`VoiceClient.guild`"
-msgstr ":attr:`VoiceClient.guild`"
+msgstr ""
 
 #: ../../migrating.rst:81
 msgid "``Client.create_server``"
-msgstr "``Client.create_server``"
+msgstr ""
 
 #: ../../migrating.rst:81
 msgid ":meth:`Client.create_guild`"
-msgstr ":meth:`Client.create_guild`"
+msgstr ""
 
 #: ../../migrating.rst:87
 msgid "Models are Stateful"
@@ -187,23 +192,23 @@ msgstr "以下が、これによる変更点の一覧です。"
 
 #: ../../migrating.rst:97
 msgid "``Client.add_reaction``"
-msgstr "``Client.add_reaction``"
+msgstr ""
 
 #: ../../migrating.rst:97
 msgid ":meth:`Message.add_reaction`"
-msgstr ":meth:`Message.add_reaction`"
+msgstr ""
 
 #: ../../migrating.rst:99
 msgid "``Client.add_roles``"
-msgstr "``Client.add_roles``"
+msgstr ""
 
 #: ../../migrating.rst:99
 msgid ":meth:`Member.add_roles`"
-msgstr ":meth:`Member.add_roles`"
+msgstr ""
 
 #: ../../migrating.rst:101
 msgid "``Client.ban``"
-msgstr "``Client.ban``"
+msgstr ""
 
 #: ../../migrating.rst:101
 msgid ":meth:`Member.ban` or :meth:`Guild.ban`"
@@ -211,24 +216,26 @@ msgstr ":meth:`Member.ban` または :meth:`Guild.ban`"
 
 #: ../../migrating.rst:103
 msgid "``Client.change_nickname``"
-msgstr "``Client.change_nickname``"
+msgstr ""
 
-#: ../../migrating.rst:103 ../../migrating.rst:171 ../../migrating.rst:187
+#: ../../migrating.rst:103
+#: ../../migrating.rst:171
+#: ../../migrating.rst:187
 #: ../../migrating.rst:195
 msgid ":meth:`Member.edit`"
-msgstr ":meth:`Member.edit`"
+msgstr ""
 
 #: ../../migrating.rst:105
 msgid "``Client.clear_reactions``"
-msgstr "``Client.clear_reactions``"
+msgstr ""
 
 #: ../../migrating.rst:105
 msgid ":meth:`Message.clear_reactions`"
-msgstr ":meth:`Message.clear_reactions`"
+msgstr ""
 
 #: ../../migrating.rst:107
 msgid "``Client.create_channel``"
-msgstr "``Client.create_channel``"
+msgstr ""
 
 #: ../../migrating.rst:107
 msgid ":meth:`Guild.create_text_channel` and :meth:`Guild.create_voice_channel`"
@@ -236,39 +243,39 @@ msgstr ":meth:`Guild.create_text_channel` および :meth:`Guild.create_voice_ch
 
 #: ../../migrating.rst:109
 msgid "``Client.create_custom_emoji``"
-msgstr "``Client.create_custom_emoji``"
+msgstr ""
 
 #: ../../migrating.rst:109
 msgid ":meth:`Guild.create_custom_emoji`"
-msgstr ":meth:`Guild.create_custom_emoji`"
+msgstr ""
 
 #: ../../migrating.rst:111
 msgid "``Client.create_invite``"
-msgstr "``Client.create_invite``"
+msgstr ""
 
 #: ../../migrating.rst:111
 msgid ":meth:`abc.GuildChannel.create_invite`"
-msgstr ":meth:`abc.GuildChannel.create_invite`"
+msgstr ""
 
 #: ../../migrating.rst:113
 msgid "``Client.create_role``"
-msgstr "``Client.create_role``"
+msgstr ""
 
 #: ../../migrating.rst:113
 msgid ":meth:`Guild.create_role`"
-msgstr ":meth:`Guild.create_role`"
+msgstr ""
 
 #: ../../migrating.rst:115
 msgid "``Client.delete_channel``"
-msgstr "``Client.delete_channel``"
+msgstr ""
 
 #: ../../migrating.rst:115
 msgid ":meth:`abc.GuildChannel.delete`"
-msgstr ":meth:`abc.GuildChannel.delete`"
+msgstr ""
 
 #: ../../migrating.rst:117
 msgid "``Client.delete_channel_permissions``"
-msgstr "``Client.delete_channel_permissions``"
+msgstr ""
 
 #: ../../migrating.rst:117
 msgid ":meth:`abc.GuildChannel.set_permissions` with ``overwrite`` set to ``None``"
@@ -276,15 +283,15 @@ msgstr ":meth:`abc.GuildChannel.set_permissions` の ``overwrite`` を ``None`` 
 
 #: ../../migrating.rst:119
 msgid "``Client.delete_custom_emoji``"
-msgstr "``Client.delete_custom_emoji``"
+msgstr ""
 
 #: ../../migrating.rst:119
 msgid ":meth:`Emoji.delete`"
-msgstr ":meth:`Emoji.delete`"
+msgstr ""
 
 #: ../../migrating.rst:121
 msgid "``Client.delete_invite``"
-msgstr "``Client.delete_invite``"
+msgstr ""
 
 #: ../../migrating.rst:121
 msgid ":meth:`Invite.delete` or :meth:`Client.delete_invite`"
@@ -292,71 +299,72 @@ msgstr ":meth:`Invite.delete` または :meth:`Client.delete_invite`"
 
 #: ../../migrating.rst:123
 msgid "``Client.delete_message``"
-msgstr "``Client.delete_message``"
+msgstr ""
 
 #: ../../migrating.rst:123
 msgid ":meth:`Message.delete`"
-msgstr ":meth:`Message.delete`"
+msgstr ""
 
 #: ../../migrating.rst:125
 msgid "``Client.delete_messages``"
-msgstr "``Client.delete_messages``"
+msgstr ""
 
 #: ../../migrating.rst:125
 msgid ":meth:`TextChannel.delete_messages`"
-msgstr ":meth:`TextChannel.delete_messages`"
+msgstr ""
 
 #: ../../migrating.rst:127
 msgid "``Client.delete_role``"
-msgstr "``Client.delete_role``"
+msgstr ""
 
 #: ../../migrating.rst:127
 msgid ":meth:`Role.delete`"
-msgstr ":meth:`Role.delete`"
+msgstr ""
 
 #: ../../migrating.rst:129
 msgid "``Client.delete_server``"
-msgstr "``Client.delete_server``"
+msgstr ""
 
 #: ../../migrating.rst:129
 msgid ":meth:`Guild.delete`"
-msgstr ":meth:`Guild.delete`"
+msgstr ""
 
 #: ../../migrating.rst:131
 msgid "``Client.edit_channel``"
-msgstr "``Client.edit_channel``"
+msgstr ""
 
-#: ../../migrating.rst:131 ../../migrating.rst:169
+#: ../../migrating.rst:131
+#: ../../migrating.rst:169
 msgid ":meth:`TextChannel.edit` or :meth:`VoiceChannel.edit`"
 msgstr ":meth:`TextChannel.edit` または :meth:`VoiceChannel.edit`"
 
 #: ../../migrating.rst:133
 msgid "``Client.edit_channel_permissions``"
-msgstr "``Client.edit_channel_permissions``"
+msgstr ""
 
 #: ../../migrating.rst:133
 msgid ":meth:`abc.GuildChannel.set_permissions`"
-msgstr ":meth:`abc.GuildChannel.set_permissions`"
+msgstr ""
 
 #: ../../migrating.rst:135
 msgid "``Client.edit_custom_emoji``"
-msgstr "``Client.edit_custom_emoji``"
+msgstr ""
 
 #: ../../migrating.rst:135
 msgid ":meth:`Emoji.edit`"
-msgstr ":meth:`Emoji.edit`"
+msgstr ""
 
 #: ../../migrating.rst:137
 msgid "``Client.edit_message``"
-msgstr "``Client.edit_message``"
+msgstr ""
 
 #: ../../migrating.rst:137
 msgid ":meth:`Message.edit`"
-msgstr ":meth:`Message.edit`"
+msgstr ""
 
 #: ../../migrating.rst:139
 msgid "``Client.edit_profile``"
-msgstr "``Client.edit_profile``"
+msgstr ""
 
 #: ../../migrating.rst:139
 msgid ":meth:`ClientUser.edit` (you get this from :attr:`Client.user`)"
@@ -364,79 +372,82 @@ msgstr ":meth:`ClientUser.edit` ( :attr:`Client.user` から取得可能)"
 
 #: ../../migrating.rst:141
 msgid "``Client.edit_role``"
-msgstr "``Client.edit_role``"
+msgstr ""
 
-#: ../../migrating.rst:141 ../../migrating.rst:173
+#: ../../migrating.rst:141
+#: ../../migrating.rst:173
 msgid ":meth:`Role.edit`"
-msgstr ":meth:`Role.edit`"
+msgstr ""
 
 #: ../../migrating.rst:143
 msgid "``Client.edit_server``"
-msgstr "``Client.edit_server``"
+msgstr ""
 
 #: ../../migrating.rst:143
 msgid ":meth:`Guild.edit`"
-msgstr ":meth:`Guild.edit`"
+msgstr ""
 
 #: ../../migrating.rst:145
 msgid "``Client.estimate_pruned_members``"
-msgstr "``Client.estimate_pruned_members``"
+msgstr ""
 
 #: ../../migrating.rst:145
 msgid ":meth:`Guild.estimate_pruned_members`"
-msgstr ":meth:`Guild.estimate_pruned_members`"
+msgstr ""
 
-#: ../../migrating.rst:147 ../../migrating.rst:327
+#: ../../migrating.rst:147
+#: ../../migrating.rst:327
 msgid "``Client.get_all_emojis``"
-msgstr "``Client.get_all_emojis``"
+msgstr ""
 
 #: ../../migrating.rst:147
 msgid ":attr:`Client.emojis`"
-msgstr ":attr:`Client.emojis`"
+msgstr ""
 
 #: ../../migrating.rst:149
 msgid "``Client.get_bans``"
-msgstr "``Client.get_bans``"
+msgstr ""
 
 #: ../../migrating.rst:149
 msgid ":meth:`Guild.bans`"
-msgstr ":meth:`Guild.bans`"
+msgstr ""
 
 #: ../../migrating.rst:151
 msgid "``Client.get_invite``"
-msgstr "``Client.get_invite``"
+msgstr ""
 
 #: ../../migrating.rst:151
 msgid ":meth:`Client.fetch_invite`"
-msgstr ":meth:`Client.fetch_invite`"
+msgstr ""
 
 #: ../../migrating.rst:153
 msgid "``Client.get_message``"
-msgstr "``Client.get_message``"
+msgstr ""
 
 #: ../../migrating.rst:153
 msgid ":meth:`abc.Messageable.fetch_message`"
-msgstr ":meth:`abc.Messageable.fetch_message`"
+msgstr ""
 
 #: ../../migrating.rst:155
 msgid "``Client.get_reaction_users``"
-msgstr "``Client.get_reaction_users``"
+msgstr ""
 
-#: ../../migrating.rst:155 ../../migrating.rst:493
+#: ../../migrating.rst:155
+#: ../../migrating.rst:493
 msgid ":meth:`Reaction.users`"
-msgstr ":meth:`Reaction.users`"
+msgstr ""
 
 #: ../../migrating.rst:157
 msgid "``Client.get_user_info``"
-msgstr "``Client.get_user_info``"
+msgstr ""
 
 #: ../../migrating.rst:157
 msgid ":meth:`Client.fetch_user`"
-msgstr ":meth:`Client.fetch_user`"
+msgstr ""
 
 #: ../../migrating.rst:159
 msgid "``Client.invites_from``"
-msgstr "``Client.invites_from``"
+msgstr ""
 
 #: ../../migrating.rst:159
 msgid ":meth:`abc.GuildChannel.invites` or :meth:`Guild.invites`"
@@ -444,7 +455,7 @@ msgstr ":meth:`abc.GuildChannel.invites` または :meth:`Guild.invites`"
 
 #: ../../migrating.rst:161
 msgid "``Client.join_voice_channel``"
-msgstr "``Client.join_voice_channel``"
+msgstr ""
 
 #: ../../migrating.rst:161
 msgid ":meth:`VoiceChannel.connect` (see :ref:`migrating_1_0_voice`)"
@@ -452,7 +463,7 @@ msgstr ":meth:`VoiceChannel.connect` ( :ref:`migrating_1_0_voice` を参照)"
 
 #: ../../migrating.rst:163
 msgid "``Client.kick``"
-msgstr "``Client.kick``"
+msgstr ""
 
 #: ../../migrating.rst:163
 msgid ":meth:`Guild.kick` or :meth:`Member.kick`"
@@ -460,15 +471,15 @@ msgstr ":meth:`Guild.kick` または :meth:`Member.kick`"
 
 #: ../../migrating.rst:165
 msgid "``Client.leave_server``"
-msgstr "``Client.leave_server``"
+msgstr ""
 
 #: ../../migrating.rst:165
 msgid ":meth:`Guild.leave`"
-msgstr ":meth:`Guild.leave`"
+msgstr ""
 
 #: ../../migrating.rst:167
 msgid "``Client.logs_from``"
-msgstr "``Client.logs_from``"
+msgstr ""
 
 #: ../../migrating.rst:167
 msgid ":meth:`abc.Messageable.history` (see :ref:`migrating_1_0_async_iter`)"
@@ -476,83 +487,84 @@ msgstr ":meth:`abc.Messageable.history` ( :ref:`migrating_1_0_async_iter` を参
 
 #: ../../migrating.rst:169
 msgid "``Client.move_channel``"
-msgstr "``Client.move_channel``"
+msgstr ""
 
 #: ../../migrating.rst:171
 msgid "``Client.move_member``"
-msgstr "``Client.move_member``"
+msgstr ""
 
 #: ../../migrating.rst:173
 msgid "``Client.move_role``"
-msgstr "``Client.move_role``"
+msgstr ""
 
 #: ../../migrating.rst:175
 msgid "``Client.pin_message``"
-msgstr "``Client.pin_message``"
+msgstr ""
 
 #: ../../migrating.rst:175
 msgid ":meth:`Message.pin`"
-msgstr ":meth:`Message.pin`"
+msgstr ""
 
 #: ../../migrating.rst:177
 msgid "``Client.pins_from``"
-msgstr "``Client.pins_from``"
+msgstr ""
 
 #: ../../migrating.rst:177
 msgid ":meth:`abc.Messageable.pins`"
-msgstr ":meth:`abc.Messageable.pins`"
+msgstr ""
 
 #: ../../migrating.rst:179
 msgid "``Client.prune_members``"
-msgstr "``Client.prune_members``"
+msgstr ""
 
 #: ../../migrating.rst:179
 msgid ":meth:`Guild.prune_members`"
-msgstr ":meth:`Guild.prune_members`"
+msgstr ""
 
 #: ../../migrating.rst:181
 msgid "``Client.purge_from``"
-msgstr "``Client.purge_from``"
+msgstr ""
 
 #: ../../migrating.rst:181
 msgid ":meth:`TextChannel.purge`"
-msgstr ":meth:`TextChannel.purge`"
+msgstr ""
 
 #: ../../migrating.rst:183
 msgid "``Client.remove_reaction``"
-msgstr "``Client.remove_reaction``"
+msgstr ""
 
 #: ../../migrating.rst:183
 msgid ":meth:`Message.remove_reaction`"
-msgstr ":meth:`Message.remove_reaction`"
+msgstr ""
 
 #: ../../migrating.rst:185
 msgid "``Client.remove_roles``"
-msgstr "``Client.remove_roles``"
+msgstr ""
 
 #: ../../migrating.rst:185
 msgid ":meth:`Member.remove_roles`"
-msgstr ":meth:`Member.remove_roles`"
+msgstr ""
 
 #: ../../migrating.rst:187
 msgid "``Client.replace_roles``"
-msgstr "``Client.replace_roles``"
+msgstr ""
 
 #: ../../migrating.rst:189
 msgid "``Client.send_file``"
-msgstr "``Client.send_file``"
+msgstr ""
 
-#: ../../migrating.rst:189 ../../migrating.rst:191
+#: ../../migrating.rst:189
+#: ../../migrating.rst:191
 msgid ":meth:`abc.Messageable.send` (see :ref:`migrating_1_0_sending_messages`)"
 msgstr ":meth:`abc.Messageable.send` ( :ref:`migrating_1_0_sending_messages` を参照)"
 
 #: ../../migrating.rst:191
 msgid "``Client.send_message``"
-msgstr "``Client.send_message``"
+msgstr ""
 
 #: ../../migrating.rst:193
 msgid "``Client.send_typing``"
-msgstr "``Client.send_typing``"
+msgstr ""
 
 #: ../../migrating.rst:193
 msgid ":meth:`abc.Messageable.trigger_typing` (use :meth:`abc.Messageable.typing`)"
@@ -560,19 +572,19 @@ msgstr ":meth:`abc.Messageable.trigger_typing` (:meth:`abc.Messageable.typing` �
 
 #: ../../migrating.rst:195
 msgid "``Client.server_voice_state``"
-msgstr "``Client.server_voice_state``"
+msgstr ""
 
 #: ../../migrating.rst:197
 msgid "``Client.start_private_message``"
-msgstr "``Client.start_private_message``"
+msgstr ""
 
 #: ../../migrating.rst:197
 msgid ":meth:`User.create_dm`"
-msgstr ":meth:`User.create_dm`"
+msgstr ""
 
 #: ../../migrating.rst:199
 msgid "``Client.unban``"
-msgstr "``Client.unban``"
+msgstr ""
 
 #: ../../migrating.rst:199
 msgid ":meth:`Guild.unban` or :meth:`Member.unban`"
@@ -580,27 +592,28 @@ msgstr ":meth:`Guild.unban` または :meth:`Member.unban`"
 
 #: ../../migrating.rst:201
 msgid "``Client.unpin_message``"
-msgstr "``Client.unpin_message``"
+msgstr ""
 
 #: ../../migrating.rst:201
 msgid ":meth:`Message.unpin`"
-msgstr ":meth:`Message.unpin`"
+msgstr ""
 
 #: ../../migrating.rst:203
 msgid "``Client.wait_for_message``"
-msgstr "``Client.wait_for_message``"
+msgstr ""
 
-#: ../../migrating.rst:203 ../../migrating.rst:205
+#: ../../migrating.rst:203
+#: ../../migrating.rst:205
 msgid ":meth:`Client.wait_for` (see :ref:`migrating_1_0_wait_for`)"
 msgstr ":meth:`Client.wait_for` ( :ref:`migrating_1_0_wait_for` を参照)"
 
 #: ../../migrating.rst:205
 msgid "``Client.wait_for_reaction``"
-msgstr "``Client.wait_for_reaction``"
+msgstr ""
 
 #: ../../migrating.rst:207
 msgid "``Client.wait_until_login``"
-msgstr "``Client.wait_until_login``"
+msgstr ""
 
 #: ../../migrating.rst:207
 msgid "Removed"
@@ -608,7 +621,7 @@ msgstr "削除されました"
 
 #: ../../migrating.rst:209
 msgid "``Client.wait_until_ready``"
-msgstr "``Client.wait_until_ready``"
+msgstr ""
 
 #: ../../migrating.rst:209
 msgid "No change"
@@ -628,15 +641,15 @@ msgstr "プロパティの代わりに追加されたメソッドは以下のと
 
 #: ../../migrating.rst:219
 msgid ":meth:`Role.is_default`"
-msgstr ":meth:`Role.is_default`"
+msgstr ""
 
 #: ../../migrating.rst:220
 msgid ":meth:`Client.is_ready`"
-msgstr ":meth:`Client.is_ready`"
+msgstr ""
 
 #: ../../migrating.rst:221
 msgid ":meth:`Client.is_closed`"
-msgstr ":meth:`Client.is_closed`"
+msgstr ""
 
 #: ../../migrating.rst:224
 msgid "Dict Value Change"
@@ -664,7 +677,7 @@ msgstr ":attr:`Client.emojis` (v1.0にて追加)"
 
 #: ../../migrating.rst:236
 msgid ":attr:`Guild.channels`"
-msgstr ":attr:`Guild.channels`"
+msgstr ""
 
 #: ../../migrating.rst:237
 msgid ":attr:`Guild.text_channels` (new in v1.0)"
@@ -676,11 +689,11 @@ msgstr ":attr:`Guild.voice_channels` (v1.0にて追加)"
 
 #: ../../migrating.rst:239
 msgid ":attr:`Guild.emojis`"
-msgstr ":attr:`Guild.emojis`"
+msgstr ""
 
 #: ../../migrating.rst:240
 msgid ":attr:`Guild.members`"
-msgstr ":attr:`Guild.members`"
+msgstr ""
 
 #: ../../migrating.rst:243
 msgid "Voice State Changes"
@@ -800,7 +813,7 @@ msgstr "代わりに :attr:`Client.emojis` を使用してください。"
 
 #: ../../migrating.rst:331
 msgid "` ``Client.messages``"
-msgstr "` ``Client.messages``"
+msgstr ""
 
 #: ../../migrating.rst:333
 msgid "Use read-only :attr:`Client.cached_messages` instead."
@@ -816,7 +829,7 @@ msgstr "代わりに :meth:`Client.wait_for` を使用してください。"
 
 #: ../../migrating.rst:339
 msgid "``Channel.voice_members``"
-msgstr "``Channel.voice_members``"
+msgstr ""
 
 #: ../../migrating.rst:341
 msgid "Use :attr:`VoiceChannel.members` instead."
@@ -824,7 +837,7 @@ msgstr "代わりに :attr:`VoiceChannel.members` を使用してください。
 
 #: ../../migrating.rst:343
 msgid "``Channel.is_private``"
-msgstr "``Channel.is_private``"
+msgstr ""
 
 #: ../../migrating.rst:345
 msgid "Use ``isinstance`` instead with one of the :ref:`discord_api_abcs` instead."
@@ -836,7 +849,7 @@ msgstr "例を挙げると ``isinstance(channel, discord.abc.GuildChannel)`` で
 
 #: ../../migrating.rst:348
 msgid "``Client.accept_invite``"
-msgstr "``Client.accept_invite``"
+msgstr ""
 
 #: ../../migrating.rst:350
 msgid "There is no replacement for this one. This functionality is deprecated API wise."
@@ -852,7 +865,7 @@ msgstr "デフォルトチャンネルの概念は、Discordから削除され�
 
 #: ../../migrating.rst:357
 msgid "``Message.edited_timestamp``"
-msgstr "``Message.edited_timestamp``"
+msgstr ""
 
 #: ../../migrating.rst:359
 msgid "Use :attr:`Message.edited_at` instead."
@@ -860,7 +873,7 @@ msgstr "代わりに :attr:`Message.edited_at` を使用してください。"
 
 #: ../../migrating.rst:361
 msgid "``Message.timestamp``"
-msgstr "``Message.timestamp``"
+msgstr ""
 
 #: ../../migrating.rst:363
 msgid "Use :attr:`Message.created_at` instead."
@@ -868,7 +881,7 @@ msgstr "代わりに :attr:`Message.created_at` を使用してください。"
 
 #: ../../migrating.rst:365
 msgid "``Colour.to_tuple()``"
-msgstr "``Colour.to_tuple()``"
+msgstr ""
 
 #: ../../migrating.rst:367
 msgid "Use :meth:`Colour.to_rgb` instead."
@@ -876,7 +889,7 @@ msgstr "代わりに :meth:`Colour.to_rgb` を使用してください。"
 
 #: ../../migrating.rst:369
 msgid "``Permissions.view_audit_logs``"
-msgstr "``Permissions.view_audit_logs``"
+msgstr ""
 
 #: ../../migrating.rst:371
 msgid "Use :attr:`Permissions.view_audit_log` instead."
@@ -884,7 +897,7 @@ msgstr "代わりに :attr:`Permissions.view_audit_log` を使用してくださ
 
 #: ../../migrating.rst:373
 msgid "``Member.game``"
-msgstr "``Member.game``"
+msgstr ""
 
 #: ../../migrating.rst:375
 msgid "Use :attr:`Member.activities` instead."
@@ -892,7 +905,7 @@ msgstr "代わりに :attr:`Member.activities` 使用してください。"
 
 #: ../../migrating.rst:377
 msgid "``Guild.role_hierarchy`` / ``Server.role_hierarchy``"
-msgstr "``Guild.role_hierarchy`` / ``Server.role_hierarchy``"
+msgstr ""
 
 #: ../../migrating.rst:379
 msgid "Use :attr:`Guild.roles` instead. Note that while sorted, it is in the opposite order of what the old ``Guild.role_hierarchy`` used to be."
@@ -1022,7 +1035,8 @@ msgstr "メッセージの送信"
 msgid "One of the changes that were done was the merger of the previous ``Client.send_message`` and ``Client.send_file`` functionality into a single method, :meth:`~abc.Messageable.send`."
 msgstr "変更点の一つは、以前の ``Client.send_message`` と ``Client.send_file`` の機能を単一のメソッド :meth:`~abc.Messageable.send` に統合したことです。"
 
-#: ../../migrating.rst:423 ../../migrating.rst:1077
+#: ../../migrating.rst:423
+#: ../../migrating.rst:1077
 msgid "Basically: ::"
 msgstr "基本形"
 
@@ -1076,13 +1090,14 @@ msgstr ":class:`AsyncIterator` を返すのは以下のとおりです:"
 
 #: ../../migrating.rst:491
 msgid ":meth:`abc.Messageable.history`"
-msgstr ":meth:`abc.Messageable.history`"
+msgstr ""
 
 #: ../../migrating.rst:492
 msgid ":meth:`Guild.audit_logs`"
-msgstr ":meth:`Guild.audit_logs`"
+msgstr ""
 
-#: ../../migrating.rst:498 ../../migrating.rst:924
+#: ../../migrating.rst:498
+#: ../../migrating.rst:924
 msgid "Event Changes"
 msgstr "イベントの変更"
 
@@ -1094,97 +1109,106 @@ msgstr "多くのイベントに変更がありました。"
 msgid "Many events with ``server`` in the name were changed to use ``guild`` instead."
 msgstr "名前に ``server`` が含まれていたイベントのほとんどが、 ``guild`` を使った名前に変更されました。"
 
-#: ../../migrating.rst:504 ../../migrating.rst:568
+#: ../../migrating.rst:504
+#: ../../migrating.rst:568
 msgid "Before:"
 msgstr "変更前"
 
 #: ../../migrating.rst:506
 msgid "``on_server_join``"
-msgstr "``on_server_join``"
+msgstr ""
 
 #: ../../migrating.rst:507
 msgid "``on_server_remove``"
-msgstr "``on_server_remove``"
+msgstr ""
 
 #: ../../migrating.rst:508
 msgid "``on_server_update``"
-msgstr "``on_server_update``"
+msgstr ""
 
 #: ../../migrating.rst:509
 msgid "``on_server_role_create``"
-msgstr "``on_server_role_create``"
+msgstr ""
 
 #: ../../migrating.rst:510
 msgid "``on_server_role_delete``"
-msgstr "``on_server_role_delete``"
+msgstr ""
 
 #: ../../migrating.rst:511
 msgid "``on_server_role_update``"
-msgstr "``on_server_role_update``"
+msgstr ""
 
 #: ../../migrating.rst:512
 msgid "``on_server_emojis_update``"
-msgstr "``on_server_emojis_update``"
+msgstr ""
 
 #: ../../migrating.rst:513
 msgid "``on_server_available``"
-msgstr "``on_server_available``"
+msgstr ""
 
 #: ../../migrating.rst:514
 msgid "``on_server_unavailable``"
-msgstr "``on_server_unavailable``"
+msgstr ""
 
-#: ../../migrating.rst:516 ../../migrating.rst:574
+#: ../../migrating.rst:516
+#: ../../migrating.rst:574
 msgid "After:"
 msgstr "変更後"
 
 #: ../../migrating.rst:518
 msgid ":func:`on_guild_join`"
-msgstr ":func:`on_guild_join`"
+msgstr ""
 
 #: ../../migrating.rst:519
 msgid ":func:`on_guild_remove`"
-msgstr ":func:`on_guild_remove`"
+msgstr ""
 
 #: ../../migrating.rst:520
 msgid ":func:`on_guild_update`"
-msgstr ":func:`on_guild_update`"
+msgstr ""
 
 #: ../../migrating.rst:521
 msgid ":func:`on_guild_role_create`"
-msgstr ":func:`on_guild_role_create`"
+msgstr ""
 
 #: ../../migrating.rst:522
 msgid ":func:`on_guild_role_delete`"
-msgstr ":func:`on_guild_role_delete`"
+msgstr ""
 
 #: ../../migrating.rst:523
 msgid ":func:`on_guild_role_update`"
-msgstr ":func:`on_guild_role_update`"
+msgstr ""
 
 #: ../../migrating.rst:524
 msgid ":func:`on_guild_emojis_update`"
-msgstr ":func:`on_guild_emojis_update`"
+msgstr ""
 
 #: ../../migrating.rst:525
 msgid ":func:`on_guild_available`"
-msgstr ":func:`on_guild_available`"
+msgstr ""
 
 #: ../../migrating.rst:526
 msgid ":func:`on_guild_unavailable`"
-msgstr ":func:`on_guild_unavailable`"
+msgstr ""
 
 #: ../../migrating.rst:529
 msgid "The :func:`on_voice_state_update` event has received an argument change."
 msgstr ":func:`on_voice_state_update` イベントの引数が変更されました。"
 
-#: ../../migrating.rst:531 ../../migrating.rst:543 ../../migrating.rst:555
-#: ../../migrating.rst:615 ../../migrating.rst:928
+#: ../../migrating.rst:531
+#: ../../migrating.rst:543
+#: ../../migrating.rst:555
+#: ../../migrating.rst:615
+#: ../../migrating.rst:928
 msgid "Before: ::"
 msgstr "更新前"
 
-#: ../../migrating.rst:535 ../../migrating.rst:547 ../../migrating.rst:559
-#: ../../migrating.rst:627 ../../migrating.rst:934 ../../migrating.rst:1159
+#: ../../migrating.rst:535
+#: ../../migrating.rst:547
+#: ../../migrating.rst:559
+#: ../../migrating.rst:627
+#: ../../migrating.rst:934
+#: ../../migrating.rst:1159
 msgid "After: ::"
 msgstr "更新後"
 
@@ -1214,39 +1238,39 @@ msgstr "``on_channel_`` のようなイベントは、チャンネルタイプ�
 
 #: ../../migrating.rst:570
 msgid "``on_channel_delete``"
-msgstr "``on_channel_delete``"
+msgstr ""
 
 #: ../../migrating.rst:571
 msgid "``on_channel_create``"
-msgstr "``on_channel_create``"
+msgstr ""
 
 #: ../../migrating.rst:572
 msgid "``on_channel_update``"
-msgstr "``on_channel_update``"
+msgstr ""
 
 #: ../../migrating.rst:576
 msgid ":func:`on_guild_channel_delete`"
-msgstr ":func:`on_guild_channel_delete`"
+msgstr ""
 
 #: ../../migrating.rst:577
 msgid ":func:`on_guild_channel_create`"
-msgstr ":func:`on_guild_channel_create`"
+msgstr ""
 
 #: ../../migrating.rst:578
 msgid ":func:`on_guild_channel_update`"
-msgstr ":func:`on_guild_channel_update`"
+msgstr ""
 
 #: ../../migrating.rst:579
 msgid ":func:`on_private_channel_delete`"
-msgstr ":func:`on_private_channel_delete`"
+msgstr ""
 
 #: ../../migrating.rst:580
 msgid ":func:`on_private_channel_create`"
-msgstr ":func:`on_private_channel_create`"
+msgstr ""
 
 #: ../../migrating.rst:581
 msgid ":func:`on_private_channel_update`"
-msgstr ":func:`on_private_channel_update`"
+msgstr ""
 
 #: ../../migrating.rst:583
 msgid "The ``on_guild_channel_`` events correspond to :class:`abc.GuildChannel` being updated (i.e. :class:`TextChannel` and :class:`VoiceChannel`) and the ``on_private_channel_`` events correspond to :class:`abc.PrivateChannel` being updated (i.e. :class:`DMChannel` and :class:`GroupChannel`)."
@@ -1382,31 +1406,31 @@ msgstr "ユーザーにとって最も重要な変更点は、以下のヘルパ
 
 #: ../../migrating.rst:713
 msgid "``aiohttp.get``"
-msgstr "``aiohttp.get``"
+msgstr ""
 
 #: ../../migrating.rst:714
 msgid "``aiohttp.post``"
-msgstr "``aiohttp.post``"
+msgstr ""
 
 #: ../../migrating.rst:715
 msgid "``aiohttp.delete``"
-msgstr "``aiohttp.delete``"
+msgstr ""
 
 #: ../../migrating.rst:716
 msgid "``aiohttp.patch``"
-msgstr "``aiohttp.patch``"
+msgstr ""
 
 #: ../../migrating.rst:717
 msgid "``aiohttp.head``"
-msgstr "``aiohttp.head``"
+msgstr ""
 
 #: ../../migrating.rst:718
 msgid "``aiohttp.put``"
-msgstr "``aiohttp.put``"
+msgstr ""
 
 #: ../../migrating.rst:719
 msgid "``aiohttp.request``"
-msgstr "``aiohttp.request``"
+msgstr ""
 
 #: ../../migrating.rst:721
 msgid "It is recommended that you create a session instead: ::"
@@ -1582,27 +1606,28 @@ msgstr "以下が削除された関数のリストです。"
 
 #: ../../migrating.rst:871
 msgid "``Bot.say``"
-msgstr "``Bot.say``"
+msgstr ""
 
-#: ../../migrating.rst:871 ../../migrating.rst:873
+#: ../../migrating.rst:871
+#: ../../migrating.rst:873
 msgid ":meth:`.Context.send`"
-msgstr ":meth:`.Context.send`"
+msgstr ""
 
 #: ../../migrating.rst:873
 msgid "``Bot.upload``"
-msgstr "``Bot.upload``"
+msgstr ""
 
 #: ../../migrating.rst:875
 msgid "``Bot.whisper``"
-msgstr "``Bot.whisper``"
+msgstr ""
 
 #: ../../migrating.rst:875
 msgid "``ctx.author.send``"
-msgstr "``ctx.author.send``"
+msgstr ""
 
 #: ../../migrating.rst:877
 msgid "``Bot.type``"
-msgstr "``Bot.type``"
+msgstr ""
 
 #: ../../migrating.rst:877
 msgid ":meth:`.Context.typing` or :meth:`.Context.trigger_typing`"
@@ -1610,7 +1635,7 @@ msgstr ":meth:`.Context.typing` または :meth:`.Context.trigger_typing`"
 
 #: ../../migrating.rst:879
 msgid "``Bot.reply``"
-msgstr "``Bot.reply``"
+msgstr ""
 
 #: ../../migrating.rst:879
 msgid "No replacement."
@@ -1726,7 +1751,7 @@ msgstr "新しいインタフェースでは特殊なメソッドをオーバー
 
 #: ../../migrating.rst:958
 msgid ":meth:`.HelpCommand.send_bot_help`"
-msgstr ":meth:`.HelpCommand.send_bot_help`"
+msgstr ""
 
 #: ../../migrating.rst:959
 msgid "Called when the user requested for help with the entire bot."
@@ -1734,7 +1759,7 @@ msgstr "ユーザーがBot全体のヘルプを要求した際に呼び出され
 
 #: ../../migrating.rst:960
 msgid ":meth:`.HelpCommand.send_cog_help`"
-msgstr ":meth:`.HelpCommand.send_cog_help`"
+msgstr ""
 
 #: ../../migrating.rst:961
 msgid "Called when the user requested for help with a specific cog."
@@ -1742,7 +1767,7 @@ msgstr "ユーザーが特定のコグについてのヘルプを要求した際
 
 #: ../../migrating.rst:962
 msgid ":meth:`.HelpCommand.send_group_help`"
-msgstr ":meth:`.HelpCommand.send_group_help`"
+msgstr ""
 
 #: ../../migrating.rst:963
 msgid "Called when the user requested for help with a :class:`~.commands.Group`"
@@ -1750,7 +1775,7 @@ msgstr "ユーザーが :class:`~.commands.Group` についてのヘルプを要
 
 #: ../../migrating.rst:964
 msgid ":meth:`.HelpCommand.send_command_help`"
-msgstr ":meth:`.HelpCommand.send_command_help`"
+msgstr ""
 
 #: ../../migrating.rst:965
 msgid "Called when the user requested for help with a :class:`~.commands.Command`"
@@ -1758,7 +1783,7 @@ msgstr "ユーザーが :class:`~.commands.Command` についてのヘルプを�
 
 #: ../../migrating.rst:966
 msgid ":meth:`.HelpCommand.get_destination`"
-msgstr ":meth:`.HelpCommand.get_destination`"
+msgstr ""
 
 #: ../../migrating.rst:967
 msgid "Called to know where to send the help messages. Useful for deciding whether to DM or not."
@@ -1766,7 +1791,7 @@ msgstr "ヘルプメッセージの送信先を知るために呼び出されま
 
 #: ../../migrating.rst:968
 msgid ":meth:`.HelpCommand.command_not_found`"
-msgstr ":meth:`.HelpCommand.command_not_found`"
+msgstr ""
 
 #: ../../migrating.rst:969
 msgid "A function (or coroutine) that returns a presentable no command found string."
@@ -1774,7 +1799,7 @@ msgstr "表示可能なコマンドが見つからなかった旨の文字列を
 
 #: ../../migrating.rst:970
 msgid ":meth:`.HelpCommand.subcommand_not_found`"
-msgstr ":meth:`.HelpCommand.subcommand_not_found`"
+msgstr ""
 
 #: ../../migrating.rst:971
 msgid "A function (or coroutine) that returns a string when a subcommand is not found."
@@ -1782,7 +1807,7 @@ msgstr "表示可能なサブコマンドが見つからなかった旨の文字
 
 #: ../../migrating.rst:973
 msgid ":meth:`.HelpCommand.send_error_message`"
-msgstr ":meth:`.HelpCommand.send_error_message`"
+msgstr ""
 
 #: ../../migrating.rst:973
 msgid "A coroutine that gets passed the result of :meth:`.HelpCommand.command_not_found` and :meth:`.HelpCommand.subcommand_not_found`."
@@ -1794,7 +1819,7 @@ msgstr "デフォルトではメッセージの送信のみを行いますが、
 
 #: ../../migrating.rst:975
 msgid ":meth:`.HelpCommand.on_help_command_error`"
-msgstr ":meth:`.HelpCommand.on_help_command_error`"
+msgstr ""
 
 #: ../../migrating.rst:976
 msgid "The :ref:`error handler <ext_commands_error_handler>` for the help command if you want to add one."
@@ -1802,7 +1827,7 @@ msgstr "ヘルプコマンドの :ref:`エラーハンドラ <ext_commands_error
 
 #: ../../migrating.rst:978
 msgid ":meth:`.HelpCommand.prepare_help_command`"
-msgstr ":meth:`.HelpCommand.prepare_help_command`"
+msgstr ""
 
 #: ../../migrating.rst:978
 msgid "A coroutine that is called right before the help command processing is done."
@@ -1846,7 +1871,7 @@ msgstr "コグは将来的な校正のためのクラスである :class:`~.comm
 
 #: ../../migrating.rst:1014
 msgid ":meth:`.Cog.cog_unload`"
-msgstr ":meth:`.Cog.cog_unload`"
+msgstr ""
 
 #: ../../migrating.rst:1015
 msgid "This is called when a cog needs to do some cleanup, such as cancelling a task."
@@ -1854,7 +1879,7 @@ msgstr "これはタスクのキャンセルのような、コグに何らかの
 
 #: ../../migrating.rst:1016
 msgid ":meth:`.Cog.bot_check_once`"
-msgstr ":meth:`.Cog.bot_check_once`"
+msgstr ""
 
 #: ../../migrating.rst:1017
 msgid "This registers a :meth:`.Bot.check_once` check."
@@ -1862,7 +1887,7 @@ msgstr "これは :meth:`.Bot.check_once` チェックを登録します。"
 
 #: ../../migrating.rst:1018
 msgid ":meth:`.Cog.bot_check`"
-msgstr ":meth:`.Cog.bot_check`"
+msgstr ""
 
 #: ../../migrating.rst:1019
 msgid "This registers a regular :meth:`.Bot.check` check."
@@ -1870,7 +1895,7 @@ msgstr "これは普通の :meth:`.Bot.check` チェックを登録します。"
 
 #: ../../migrating.rst:1020
 msgid ":meth:`.Cog.cog_check`"
-msgstr ":meth:`.Cog.cog_check`"
+msgstr ""
 
 #: ../../migrating.rst:1021
 msgid "This registers a check that applies to every command in the cog."
@@ -1878,7 +1903,7 @@ msgstr "これはコグのすべてのコマンドに適用されるチェック
 
 #: ../../migrating.rst:1022
 msgid ":meth:`.Cog.cog_command_error`"
-msgstr ":meth:`.Cog.cog_command_error`"
+msgstr ""
 
 #: ../../migrating.rst:1023
 msgid "This is a special error handler that is called whenever an error happens inside the cog."

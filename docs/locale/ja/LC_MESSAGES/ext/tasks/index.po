@@ -1,11 +1,11 @@
 
 msgid ""
 msgstr ""
-"Project-Id-Version:  discordpy-japanese\n"
+"Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 09:35-0400\n"
-"PO-Revision-Date: 2019-06-22 13:03+0000\n"
-"Last-Translator: Episword (mistio100)\n"
+"POT-Creation-Date: 2019-06-28 07:15-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14+0000\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language: ja_JP\n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0\n"
@@ -49,11 +49,11 @@ msgstr "レシピ"
 
 #: ../../ext/tasks/index.rst:19
 msgid "A simple background task in a :class:`~discord.ext.commands.Cog`:"
-msgstr ":class:`~discord.ext.commands.Cog`: におけるシンプルなバックグラウンドタスク。"
+msgstr ":class:`~discord.ext.commands.Cog` におけるシンプルなバックグラウンドタスク:"
 
 #: ../../ext/tasks/index.rst:38
 msgid "Adding an exception to handle during reconnect:"
-msgstr ""
+msgstr "再接続中に処理する例外を追加します:"
 
 #: ../../ext/tasks/index.rst:61
 msgid "Looping a certain amount of times before exiting:"
@@ -82,9 +82,17 @@ msgid "The main interface to create this is through :func:`loop`."
 msgstr ""
 
 #: discord.ext.tasks.Loop.current_loop:1 of
+msgid "The current iteration of the loop."
+msgstr ""
+
+#: discord.ext.tasks.Loop.current_loop of
+msgid "type"
+msgstr ""
+
+#: discord.ext.tasks.Loop.current_loop:3 of
 #, fuzzy
-msgid ":class:`int` -- The current iteration of the loop."
-msgstr "ループの現在の反復回数です。"
+msgid ":class:`int`"
+msgstr ":class:`asyncio.Task`"
 
 #: discord.ext.tasks.Loop.start:1 of
 msgid "Starts the internal task in the event loop."
@@ -108,11 +116,12 @@ msgstr ""
 #: discord.ext.tasks.Loop.add_exception_type discord.ext.tasks.Loop.after_loop
 #: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
 #: discord.ext.tasks.Loop.start discord.ext.tasks.loop of
-msgid "raises"
-msgstr ""
+#, fuzzy
+msgid "Raises"
+msgstr "例外"
 
 #: discord.ext.tasks.Loop.start:6 of
-msgid ":exc:`RuntimeError` -- A task has already been launched and is running."
+msgid "A task has already been launched and is running."
 msgstr ""
 
 #: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.start
@@ -193,8 +202,8 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.add_exception_type:13 of
 msgid ""
-":exc:`TypeError` -- The exception passed is either not a class or not "
-"inherited from :class:`BaseException`."
+"The exception passed is either not a class or not inherited from "
+":class:`BaseException`."
 msgstr ""
 
 #: discord.ext.tasks.Loop.clear_exception_types:1 of
@@ -215,7 +224,7 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.remove_exception_type:7 of
 msgid ":class:`bool`"
-msgstr ":class:`bool`"
+msgstr ""
 
 #: discord.ext.tasks.Loop.get_task:1 of
 msgid ""
@@ -253,7 +262,7 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:11
 #: discord.ext.tasks.loop:22 of
-msgid ":exc:`TypeError` -- The function was not a coroutine."
+msgid "The function was not a coroutine."
 msgstr ""
 
 #: discord.ext.tasks.Loop.after_loop:1 of
@@ -297,7 +306,7 @@ msgid "The number of hours between every iteration."
 msgstr ""
 
 #: discord.ext.tasks.Loop.change_interval:17 discord.ext.tasks.loop:21 of
-msgid ":exc:`ValueError` -- An invalid value was given."
+msgid "An invalid value was given."
 msgstr ""
 
 #: discord.ext.tasks.loop:1 of
@@ -328,11 +337,23 @@ msgstr ""
 
 #: discord.ext.tasks.loop:25 of
 msgid ":class:`Loop`"
-msgstr ":class:`Loop`"
+msgstr ""
 
-#~ msgid "type"
-#~ msgstr "型"
+#~ msgid ":class:`int` -- The current iteration of the loop."
+#~ msgstr ""
 
-#~ msgid ":class:`int`"
-#~ msgstr ":class:`int`"
+#~ msgid ":exc:`RuntimeError` -- A task has already been launched and is running."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`TypeError` -- The exception passed "
+#~ "is either not a class or not "
+#~ "inherited from :class:`BaseException`."
+#~ msgstr ""
+
+#~ msgid ":exc:`TypeError` -- The function was not a coroutine."
+#~ msgstr ""
+
+#~ msgid ":exc:`ValueError` -- An invalid value was given."
+#~ msgstr ""
 

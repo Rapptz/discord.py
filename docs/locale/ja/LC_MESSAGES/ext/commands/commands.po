@@ -1,20 +1,19 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: discordpy-japanese\n"
+"Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 15:50+0900\n"
-"PO-Revision-Date: 2019-06-22 13:03\n"
-"Last-Translator: Episword (mistio100)\n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.7.0\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
-"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Project: discordpy\n"
 "X-Crowdin-Language: ja\n"
-"X-Crowdin-File: /ext/commands/commands.po\n"
+"X-Crowdin-File: /ext/commands/commands.pot\n"
 "Language: ja_JP\n"
 
 #: ../../ext/commands/commands.rst:6
@@ -143,7 +142,7 @@ msgstr "引用符で囲んだ場合、消えずに残るので注意してくだ
 
 #: ../../ext/commands/commands.rst:160
 msgid "By default, the keyword-only arguments are stripped of white space to make it easier to work with. This behaviour can be toggled by the :attr:`.Command.rest_is_raw` argument in the decorator."
-msgstr ""
+msgstr "通常、キーワード引数は利便性のために空白文字で分割されます。この動作はデコレータの引数として :attr:`.Command.rest_is_raw` を使うことで切り替えることが可能です。"
 
 #: ../../ext/commands/commands.rst:166
 msgid "Invocation Context"
@@ -263,7 +262,7 @@ msgstr "埋込み型の応用的なコンバーター"
 
 #: ../../ext/commands/commands.rst:299
 msgid "If we don't want to inherit from :class:`~ext.commands.Converter`, we can still provide a converter that has the advanced functionalities of an advanced converter and save us from specifying two types."
-msgstr ""
+msgstr ":class:`~ext.commands.Converter` を継承したくない場合のために、応用的なコンバータの高度な機能を備えたコンバータを提供しています。これを使用することで２つのクラスを作成する必要がなくなります。"
 
 #: ../../ext/commands/commands.rst:302
 msgid "For example, a common idiom would be to have a class and a converter for that class:"
@@ -283,7 +282,7 @@ msgstr ":ref:`discord_api_models` を使用して作業を行うのは、コマ�
 
 #: ../../ext/commands/commands.rst:360
 msgid "For example, to receive a :class:`Member` you can just pass it as a converter:"
-msgstr ""
+msgstr "例えば、 :class:`Member` を受け取るには、これをコンバーターとして渡すだけです。"
 
 #: ../../ext/commands/commands.rst:368
 msgid "When this command is executed, it attempts to convert the string given into a :class:`Member` and then passes it as a parameter for the function. This works by checking if the string is a mention, an ID, a nickname, a username + discriminator, or just a regular username. The default set of converters have been written to be as easy to use as possible."
@@ -293,19 +292,23 @@ msgstr "このコマンドが実行されると、与えられた文字列を :c
 msgid "A lot of discord models work out of the gate as a parameter:"
 msgstr "Discordモデルの多くがコンバーターとして動作します。"
 
-#: ../../ext/commands/commands.rst:374 ../../ext/commands/commands.rst:396
+#: ../../ext/commands/commands.rst:374
+#: ../../ext/commands/commands.rst:396
 msgid ":class:`Member`"
 msgstr ":class:`Member`"
 
-#: ../../ext/commands/commands.rst:375 ../../ext/commands/commands.rst:400
+#: ../../ext/commands/commands.rst:375
+#: ../../ext/commands/commands.rst:400
 msgid ":class:`User`"
 msgstr ":class:`User`"
 
-#: ../../ext/commands/commands.rst:376 ../../ext/commands/commands.rst:402
+#: ../../ext/commands/commands.rst:376
+#: ../../ext/commands/commands.rst:402
 msgid ":class:`TextChannel`"
 msgstr ":class:`TextChannel`"
 
-#: ../../ext/commands/commands.rst:377 ../../ext/commands/commands.rst:404
+#: ../../ext/commands/commands.rst:377
+#: ../../ext/commands/commands.rst:404
 #: ../../ext/commands/commands.rst:406
 msgid ":class:`VoiceChannel`"
 msgstr ":class:`VoiceChannel`"
@@ -314,31 +317,37 @@ msgstr ":class:`VoiceChannel`"
 msgid ":class:`CategoryChannel`"
 msgstr ":class:`CategoryChannel`"
 
-#: ../../ext/commands/commands.rst:379 ../../ext/commands/commands.rst:408
+#: ../../ext/commands/commands.rst:379
+#: ../../ext/commands/commands.rst:408
 msgid ":class:`Role`"
 msgstr ":class:`Role`"
 
 #: ../../ext/commands/commands.rst:380
 msgid ":class:`Message` (since v1.1)"
-msgstr ""
+msgstr ":class:`Message` (v1.1 から)"
 
-#: ../../ext/commands/commands.rst:381 ../../ext/commands/commands.rst:410
+#: ../../ext/commands/commands.rst:381
+#: ../../ext/commands/commands.rst:410
 msgid ":class:`Invite`"
 msgstr ":class:`Invite`"
 
-#: ../../ext/commands/commands.rst:382 ../../ext/commands/commands.rst:412
+#: ../../ext/commands/commands.rst:382
+#: ../../ext/commands/commands.rst:412
 msgid ":class:`Game`"
 msgstr ":class:`Game`"
 
-#: ../../ext/commands/commands.rst:383 ../../ext/commands/commands.rst:414
+#: ../../ext/commands/commands.rst:383
+#: ../../ext/commands/commands.rst:414
 msgid ":class:`Emoji`"
 msgstr ":class:`Emoji`"
 
-#: ../../ext/commands/commands.rst:384 ../../ext/commands/commands.rst:416
+#: ../../ext/commands/commands.rst:384
+#: ../../ext/commands/commands.rst:416
 msgid ":class:`PartialEmoji`"
 msgstr ":class:`PartialEmoji`"
 
-#: ../../ext/commands/commands.rst:385 ../../ext/commands/commands.rst:418
+#: ../../ext/commands/commands.rst:385
+#: ../../ext/commands/commands.rst:418
 msgid ":class:`Colour`"
 msgstr ":class:`Colour`"
 
@@ -364,11 +373,11 @@ msgstr ":class:`~ext.commands.MemberConverter`"
 
 #: ../../ext/commands/commands.rst:398
 msgid ":class:`Message`"
-msgstr ""
+msgstr ":class:`Message`"
 
 #: ../../ext/commands/commands.rst:398
 msgid ":class:`~ext.commands.MessageConverter`"
-msgstr ""
+msgstr ":class:`~ext.commands.MessageConverter`"
 
 #: ../../ext/commands/commands.rst:400
 msgid ":class:`~ext.commands.UserConverter`"
@@ -420,7 +429,7 @@ msgstr "特殊なコンバーター"
 
 #: ../../ext/commands/commands.rst:440
 msgid "The command extension also has support for certain converters to allow for more advanced and intricate use cases that go beyond the generic linear parsing. These converters allow you to introduce some more relaxed and dynamic grammar to your commands in an easy to use manner."
-msgstr ""
+msgstr "コマンド拡張機能は一般的な線形解析を超える、より高度で複雑なユースケースに対応するため、特殊なコンバータをサポートしています。これらのコンバータは、簡単な方法でコマンドに更に容易で動的な文法の導入を可能にします。"
 
 #: ../../ext/commands/commands.rst:445
 msgid "typing.Union"
@@ -446,7 +455,8 @@ msgstr "typing.Optional"
 msgid "A :data:`typing.Optional` is a special type hint that allows for \"back-referencing\" behaviour. If the converter fails to parse into the specified type, the parser will skip the parameter and then either ``None`` or the specified default will be passed into the parameter instead. The parser will then continue on to the next parameters and converters, if any."
 msgstr ":data:`typing.Optional` は「後方参照」のような動作をする特殊な型ヒントです。コンバーターが指定された型へのパースに失敗した場合、パーサーは代わりに ``None`` または指定されたデフォルト値をパラメータに渡したあと、そのパラメータをスキップします。次のパラメータまたはコンバータがあれば、そちらに進みます。"
 
-#: ../../ext/commands/commands.rst:473 ../../ext/commands/commands.rst:500
+#: ../../ext/commands/commands.rst:473
+#: ../../ext/commands/commands.rst:500
 msgid "Consider the following example:"
 msgstr "次の例をみてください:"
 
@@ -464,7 +474,7 @@ msgstr "Greedy"
 
 #: ../../ext/commands/commands.rst:496
 msgid "The :data:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert any further."
-msgstr ""
+msgstr ":data:`~ext.commands.Greedy` コンバータは引数にリストが適用される以外は :data:`typing.Optional` を一般化したものです。簡単に言うと、与えられた引数を変換ができなくなるまで指定の型に変換しようと試みます。"
 
 #: ../../ext/commands/commands.rst:509
 msgid "When invoked, it allows for any number of members to be passed in:"
@@ -516,7 +526,7 @@ msgstr "エラーハンドリング"
 
 #: ../../ext/commands/commands.rst:563
 msgid "When our commands fail to either parse we will, by default, receive a noisy error in ``stderr`` of our console that tells us that an error has happened and has been silently ignored."
-msgstr ""
+msgstr "コマンドの解析に失敗したとき、通常では煩わしいエラーはエラーの発生を伝えるためにコンソールの ``stderr`` で受け取られ、無視されていました。"
 
 #: ../../ext/commands/commands.rst:566
 msgid "In order to handle our errors, we must use something called an error handler. There is a global error handler, called :func:`on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is called for every error reached."

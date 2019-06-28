@@ -1,20 +1,19 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: discordpy-japanese\n"
+"Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 15:50+0900\n"
-"PO-Revision-Date: 2019-06-22 13:03\n"
-"Last-Translator: Episword (mistio100)\n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.7.0\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
-"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Project: discordpy\n"
 "X-Crowdin-Language: ja\n"
-"X-Crowdin-File: intro.po\n"
+"X-Crowdin-File: intro.pot\n"
 "Language: ja_JP\n"
 
 #: ../../intro.rst:6
@@ -31,7 +30,7 @@ msgstr "前提"
 
 #: ../../intro.rst:14
 msgid "discord.py works with Python 3.5.3 or higher. Support for earlier versions of Python is not provided. Python 2.7 or lower is not supported. Python 3.4 or lower is not supported due to one of the dependencies (:doc:`aiohttp <aio:index>`) not supporting Python 3.4."
-msgstr ""
+msgstr "discord.pyは3.5.3以降のバージョンのPythonで動作します。Python2.7のような旧バージョンはサポートされていません。Python3.4以下は依存関係にあるライブラリ (:doc:`aiohttp <aio:index>`) がサポートされていないため、サポートしていません。"
 
 #: ../../intro.rst:22
 msgid "Installing"
@@ -55,15 +54,15 @@ msgstr "Linux環境では、依存関係にある以下のライブラリが必�
 
 #: ../../intro.rst:39
 msgid "`libffi <https://github.com/libffi/libffi>`_"
-msgstr ""
+msgstr "`libffi <https://github.com/libffi/libffi>`_"
 
 #: ../../intro.rst:40
 msgid "`libnacl <https://github.com/saltstack/libnacl>`_"
-msgstr ""
+msgstr "`libnacl <https://github.com/saltstack/libnacl>`_"
 
 #: ../../intro.rst:41
 msgid "`python3-dev <https://packages.debian.org/python3-dev>`_"
-msgstr ""
+msgstr "`python3-dev <https://packages.debian.org/python3-dev>`_"
 
 #: ../../intro.rst:43
 msgid "For a Debian-based system, the following command will get these dependencies:"
@@ -83,7 +82,7 @@ msgstr "システムへのインストールをライブラリによって汚し
 
 #: ../../intro.rst:59
 msgid "A more in-depth tutorial is found on :doc:`py:tutorial/venv`."
-msgstr ""
+msgstr "より詳しいチュートリアルは :doc:`py:tutorial/venv` にあります。"
 
 #: ../../intro.rst:61
 msgid "However, for the quick and dirty:"

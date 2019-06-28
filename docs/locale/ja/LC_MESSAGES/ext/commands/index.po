@@ -1,20 +1,19 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: discordpy-japanese\n"
+"Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 15:50+0900\n"
-"PO-Revision-Date: 2019-06-22 13:03\n"
-"Last-Translator: Episword (mistio100)\n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.7.0\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
-"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Project: discordpy\n"
 "X-Crowdin-Language: ja\n"
-"X-Crowdin-File: /ext/commands/index.po\n"
+"X-Crowdin-File: /ext/commands/index.pot\n"
 "Language: ja_JP\n"
 
 #: ../../ext/commands/index.rst:4
@@ -23,5 +22,5 @@ msgstr "``discord.ext.commands`` -- ボットコマンドのフレームワー�
 
 #: ../../ext/commands/index.rst:6
 msgid "``discord.py`` offers a lower level aspect on interacting with Discord. Often times, the library is used for the creation of bots. However this task can be daunting and confusing to get correctly the first time. Many times there comes a repetition in creating a bot command framework that is extensible, flexible, and powerful. For this reason, ``discord.py`` comes with an extension library that handles this for you."
-msgstr "``discord.py``は、Discordと連携するための低レベルな機能を提供します。ときどき、このライブラリーはBotの作成に用いられています。しかしこの作業を正しくやるのは最初のときは気が重くややこしいものです。何度も繰り返し、拡張可能で柔軟、そしてパワフルなBotコマンドフレームワークを作成しています。この理由より、``discord.py``にはこれを扱う拡張ライブラリがついてきます。"
+msgstr "``discord.py`` は、Discordと連携するための低レベルな機能を提供します。ときどき、このライブラリーはBotの作成に用いられています。しかしこの作業を正しくやるのは最初のときは気が重くややこしいものです。何度も繰り返し、拡張可能で柔軟、そしてパワフルなBotコマンドフレームワークを作成しています。この理由より、 ``discord.py`` にはこれを扱う拡張ライブラリがついてきます。"
 
