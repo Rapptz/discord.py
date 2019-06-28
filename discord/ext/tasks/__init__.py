@@ -348,7 +348,7 @@ class Loop:
 
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
-    optional reconnect logic.
+    optional reconnect logic. The decorator returns a :class:`Loop`.
 
     Parameters
     ------------
@@ -375,11 +375,6 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
         An invalid value was given.
     TypeError
         The function was not a coroutine.
-
-    Returns
-    ---------
-    :class:`Loop`
-        The loop helper that handles the background task.
     """
     def decorator(func):
         return Loop(func, seconds=seconds, minutes=minutes, hours=hours,
