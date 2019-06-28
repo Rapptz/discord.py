@@ -35,7 +35,7 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    'sphinxcontrib.asyncio',
+    'sphinxcontrib_trio',
     'details',
     'exception_hierarchy'
 ]

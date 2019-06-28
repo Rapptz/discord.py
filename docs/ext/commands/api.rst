@@ -150,10 +150,10 @@ Context
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: discord.ext.commands.Context.history
+    .. automethod:: discord.ext.commands.Context.history
         :async-for:
 
-    .. autocomethod:: discord.ext.commands.Context.typing
+    .. automethod:: discord.ext.commands.Context.typing
         :async-with:
 
 .. _ext_commands_api_converters:

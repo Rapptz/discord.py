@@ -291,6 +291,17 @@ dl.field-list > dt {
   font-weight: bold;
 }
 
+/* remove flex from field lists */
+dl.field-list {
+  display: block;
+}
+
+/* internal references are forced to bold for some reason */
+a.reference.internal > strong {
+  font-weight: unset;
+  font-family: monospace;
+}
+
 div.danger, div.error {
   background-color: #ffe4e4;
   border: 1px solid #f66;

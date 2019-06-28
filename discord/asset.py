@@ -206,7 +206,12 @@ class Asset:
 
         Raises
         ------
-        Same as :meth:`read`.
+        DiscordException
+            There was no valid URL or internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
 
         Returns
         --------
