@@ -33,7 +33,6 @@ from .enums import TeamMembershipState, try_enum
 class Team:
     """Represents an application team for a bot provided by Discord.
 
-
     Attributes
     -------------
     id: :class:`int`
@@ -74,7 +73,6 @@ class Team:
 
 class TeamMember:
     """Represents a team member in a team.
-
 
     Attributes
     -------------

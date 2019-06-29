@@ -111,13 +111,10 @@ class BotBase(GroupMixin):
         self.owner_ids = options.get('owner_ids', {})
 
         if self.owner_id and self.owner_ids:
-            raise ValueError('Both owner_id and owner_ids are set.')
-        elif not isinstance(self.owner_id, int):
-            raise ValueError('owner_id is not an int.')
-        elif not isinstance(self.owner_ids, (set, list, tuple)):
-            raise ValueError('owner_ids is not a set, list or tuple.')
-        elif not all(isinstance(i, int) for i in self.owner_ids):
-            raise ValueError('owner_ids has to be an iterable of int.')
+            raise TypeError('Both owner_id and owner_ids are set.')
+
+        if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
+            raise TypeError('owner_ids must be a collection not {0.__class__!r}'.format(self.owner_ids))
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -295,7 +292,7 @@ class BotBase(GroupMixin):
         through the use of :meth:`~.Bot.application_info`.
 
         The function also checks if the application is team-owned if
-        :attr:`owner_id` is not set.
+        :attr:`owner_ids` is not set.
 
         Parameters
         -----------
@@ -315,8 +312,8 @@ class BotBase(GroupMixin):
         else:
             app = await self.application_info()
             if app.team:
-                self.owner_ids = {m.id for m in app.team.members}
-                return user.id in self.owner_ids
+                self.owner_ids = ids = {m.id for m in app.team.members}
+                return user.id in ids
             else:
                 self.owner_id = owner_id = app.owner.id
                 return user.id == owner_id
@@ -980,12 +977,15 @@ class Bot(BotBase, discord.Client):
         set at runtime. To remove the help command pass ``None``. For more
         information on implementing a help command, see :ref:`ext_commands_help_command`.
     owner_id: Optional[:class:`int`]
-        The ID that owns the bot. If this is not set and is then queried via
+        The user ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.
-    owner_ids: Optional[:class:`set`]
-        The IDs that owns the bot. This is similar to `owner_id`.
-        If both `owner_id` and `owner_ids` are set, ValueError would be raised.
+    owner_ids: Optional[Collection[:class:`int`]]
+        The user IDs that owns the bot. This is similar to `owner_id`.
+        If this is not set and the application is team based, then it is
+        fetched automatically using :meth:`~.Bot.application_info`.
+        For performance reasons it is recommended to use a :class:`set`
+        for the collection. You cannot set both `owner_id` and `owner_ids`.
     """
     pass
 

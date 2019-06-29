@@ -42,9 +42,6 @@ Client
 .. autoclass:: AppInfo
     :members:
 
-.. autoclass:: GameInfo
-    :members:
-
 .. autoclass:: Team
     :members:
 
@@ -1547,7 +1544,7 @@ of :class:`enum.Enum`.
 
 
 .. class:: TeamMembershipState
-    
+
     Represents the membership state of a team member retrieved through :func:Bot.application_info.
 
     .. attribue:: invited
