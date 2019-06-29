@@ -47,6 +47,7 @@ from .role import Role
 from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
 from .embeds import Embed
+from .object import Object
 
 class ListenerType(Enum):
     chunk = 0
@@ -260,15 +261,16 @@ class ConnectionState:
             yield self.receive_chunk(guild.id)
 
     def _get_guild_channel(self, data):
+        channel_id = int(data['channel_id'])
         try:
             guild = self._get_guild(int(data['guild_id']))
         except KeyError:
-            channel = self.get_channel(int(data['channel_id']))
+            channel = self.get_channel(channel_id)
             guild = None
         else:
-            channel = guild and guild.get_channel(int(data['channel_id']))
+            channel = guild and guild.get_channel(channel_id)
 
-        return channel, guild
+        return channel or Object(id=channel_id), guild
 
     async def request_offline_members(self, guilds):
         # get all the chunks
