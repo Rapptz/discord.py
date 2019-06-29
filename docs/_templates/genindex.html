@@ -1,0 +1,18 @@
+{%- extends "basic/genindex.html" %}
+
+{% block body %}
+  {{ super() }}
+  <!-- Inject some JavaScript to convert the index names into something useful. -->
+  <script>
+    let elements = document.querySelectorAll("table.indextable a");
+
+    // this is pretty finicky but it should work.
+    for(let el of elements) {
+      let key = el.getAttribute('href').split('#', 2)[1]
+      if(el.textContent.endsWith('method)') || el.textContent.indexOf('()') !== -1) {
+        key = key + '()'
+      }
+      el.textContent = key;
+    }
+  </script>
+{% endblock %}
