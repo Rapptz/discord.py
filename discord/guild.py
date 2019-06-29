@@ -1112,7 +1112,7 @@ class Guild(Hashable):
         fields['system_channel_flags'] = system_channel_flags.value
         await http.edit_guild(self.id, reason=reason, **fields)
 
-    def fetch_members(self, *, limit=1, after=None, oldest_first=None):
+    def fetch_members(self, *, limit=1, after=None):
         """|coro|
 
         Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
@@ -1121,7 +1121,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`members` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.3.0
 
         All parameters are optional.
 
@@ -1133,8 +1133,6 @@ class Guild(Hashable):
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
-        oldest_first: Optional[:class:`bool`]
-            Whether or not to reverse the members retrieved. If ``after`` is provided the result is reversed.
 
         Raises
         ------
@@ -1156,10 +1154,10 @@ class Guild(Hashable):
 
         Flattening into a list ::
 
-            members = await guild.fetch_members(limit=150, oldest_first=True).flatten()
+            members = await guild.fetch_members(limit=150).flatten()
             # members is now a list of Member...
         """
-        return MemberIterator(self, limit=limit, after=after, oldest_first=oldest_first)
+        return MemberIterator(self, limit=limit, after=after)
 
     async def fetch_channels(self):
         """|coro|

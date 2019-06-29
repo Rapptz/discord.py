@@ -589,15 +589,10 @@ class GuildIterator(_AsyncIterator):
         return data
 
 class MemberIterator(_AsyncIterator):
-    def __init__(self, guild, limit=1, after=None, oldest_first=None):
+    def __init__(self, guild, limit=1, after=None):
 
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
-
-        if oldest_first is None:
-            self.reverse = after is not None
-        else:
-            self.reverse = oldest_first
 
         self.guild = guild
         self.limit = limit
@@ -627,9 +622,7 @@ class MemberIterator(_AsyncIterator):
                 self.limit -= retrieve
                 self.after = Object(id=int(data[-1]['user']['id']))
 
-            data = reversed(data) if not self.reverse else data
-
-            for element in data:
+            for element in reversed(data):
                 await self.members.put(self.create_member(element))
 
     def create_member(self, data):
