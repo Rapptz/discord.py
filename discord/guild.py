@@ -253,6 +253,9 @@ class Guild(Hashable):
         The number goes from 0 to 3 inclusive.
     premium_subscription_count: :class:`int`
         How many users have currently "boosted" this guild.
+    preferred_locale: Optional[:class:`str`]
+        The preferred locale for the guild. Used when filtering Server Discovery
+        results to a specific language.
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -262,7 +265,8 @@ class Guild(Hashable):
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
                  'description', 'max_presences', 'max_members', 'premium_tier',
-                 'premium_subscription_count', '_system_channel_flags')
+                 'premium_subscription_count', '_system_channel_flags',
+                 'preferred_locale',)
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -383,6 +387,7 @@ class Guild(Hashable):
         self.premium_tier = guild.get('premium_tier', 0)
         self.premium_subscription_count = guild.get('premium_subscription_count', 0)
         self._system_channel_flags = guild.get('system_channel_flags', 0)
+        self.preferred_locale = guild.get('preferred_locale')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
