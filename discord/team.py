@@ -29,6 +29,10 @@ from .user import BaseUser
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
 
+__all__ = (
+    'Team',
+    'TeamMember',
+)
 
 class Team:
     """Represents an application team for a bot provided by Discord.
