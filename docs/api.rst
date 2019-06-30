@@ -39,19 +39,19 @@ Client
 .. autoclass:: AutoShardedClient
     :members:
 
-.. autoclass:: AppInfo
+.. autoclass:: AppInfo()
     :members:
 
-.. autoclass:: Team
+.. autoclass:: Team()
     :members:
 
-.. autoclass:: TeamMember
+.. autoclass:: TeamMember()
     :members:
 
 Voice
 ------
 
-.. autoclass:: VoiceClient
+.. autoclass:: VoiceClient()
     :members:
 
 .. autoclass:: AudioSource
