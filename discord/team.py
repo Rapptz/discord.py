@@ -107,7 +107,7 @@ class TeamMember(BaseUser):
         The avatar hash the team member has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
-    team: :class:`team`
+    team: :class:`Team`
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`
         The membership state of the member (e.g. invited or accepted)
