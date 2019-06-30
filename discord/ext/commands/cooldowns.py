@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 import enum
 import time
 
+from ...abc import PrivateChannel
+
 __all__ = (
     'BucketType',
     'Cooldown',
@@ -129,7 +131,11 @@ class CooldownMapping:
         elif bucket_type is BucketType.category:
             return (msg.channel.category or msg.channel).id
         elif bucket_type is BucketType.role:
-            return msg.author.top_role.id
+            # we return the channel id of a private-channel as there are only roles in guilds
+            # and that yields the same result as for a guild with only the @everyone role
+            # NOTE: PrivateChannel doesn't actually have an id attribute but we assume we are
+            # recieving a DMChannel or GroupChannel which inherit from PrivateChannel and do
+            return (msg.channel if isinstance(msg.channel, PrivateChannel) else msg.author.top_role).id
 
     def _verify_cache_integrity(self, current=None):
         # we want to delete all cache objects that haven't been used
