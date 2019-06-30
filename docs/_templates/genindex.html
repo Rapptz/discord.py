@@ -17,10 +17,11 @@
         key = key.substr(12); // discord.ext.
       }
 
-      if(el.textContent.endsWith('method)') || el.textContent.indexOf('()') !== -1) {
+      if(el.textContent.indexOf('()') !== -1) {
         key = key + '()'
       }
       el.textContent = key;
     }
+    document.querySelectorAll("td").forEach(el => el.style.width = 'auto');
   </script>
 {% endblock %}
