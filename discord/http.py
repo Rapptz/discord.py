@@ -832,3 +832,7 @@ class HTTPClient:
 
     def edit_settings(self, **payload):
         return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
+
+    def set_note(self, user_id, note):
+        payload = {'note' : note}
+        return self.request(Route('PUT', '/users/@me/notes/{user_id}', user_id=user_id), json=payload)

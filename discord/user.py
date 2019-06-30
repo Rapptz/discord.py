@@ -849,3 +849,28 @@ class User(BaseUser, discord.abc.Messageable):
                        mutual_guilds=mutual_guilds,
                        user=self,
                        connected_accounts=data['connected_accounts'])
+
+    async def set_note(self, note):
+        """|coro|
+
+        Sets the note.
+
+        .. note::
+
+            This only applies to non-bot accounts.
+
+        Parameters
+        -----------
+        note: :class:`str`
+            The note to set. Pass ``None`` to remove the note.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to set note.
+        HTTPException
+            Setting the note failed.
+
+        """
+        note = str(note) or ""
+        await self._state.http.set_note(self.id, note)
