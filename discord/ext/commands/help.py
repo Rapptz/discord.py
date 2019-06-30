@@ -73,9 +73,9 @@ class Paginator:
 
     Attributes
     -----------
-    prefix: Optional[:class:`str`]
+    prefix: :class:`str`
         The prefix inserted to every page. e.g. three backticks.
-    suffix: Optional[:class:`str`]
+    suffix: :class:`str`
         The suffix appended at the end of every page. e.g. three backticks.
     max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
