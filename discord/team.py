@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import utils
-from .user import User
+from .user import BaseUser
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
 
@@ -71,28 +71,52 @@ class Team:
         return self._state.get_user(self.owner_id)
 
 
-class TeamMember:
+class TeamMember(BaseUser):
     """Represents a team member in a team.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two team members are equal.
+
+        .. describe:: x != y
+
+            Checks if two team members are not equal.
+
+        .. describe:: hash(x)
+
+            Return the team member's hash.
+
+        .. describe:: str(x)
+
+            Returns the team member's name with discriminator.
 
     Attributes
     -------------
+    name: :class:`str`
+        The team member's username.
+    id: :class:`int`
+        The team member's unique ID.
+    discriminator: :class:`str`
+        The team member's discriminator. This is given when the username has conflicts.
+    avatar: Optional[:class:`str`]
+        The avatar hash the team member has. Could be None.
+    bot: :class:`bool`
+        Specifies if the user is a bot account.
     team: :class:`team`
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`
         The membership state of the member (e.g. invited or accepted)
-    user: :class:`User`
-        The team member
     """
-    __slots__ = ('_state', 'team', 'membership_state',
-                 'permissions', 'user')
+    __slots__ = BaseUser.__slots__ + ('team', 'membership_state', 'permissions')
 
     def __init__(self, team, state, data):
-        self._state = state
         self.team = team
-
         self.membership_state = try_enum(TeamMembershipState, data['membership_state'])
         self.permissions = data['permissions']
-        self.user = User(state=self._state, data=data['user'])
+        super().__init__(state=state, data=data['user'])
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.user.id} name={0.user.name!r}>'.format(self)
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r} ' \
+               'discriminator={0.discriminator!r} membership_state={0.membership_state!r}>'.format(self)
