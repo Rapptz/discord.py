@@ -67,9 +67,8 @@ class Team:
 
     @property
     def owner(self):
-        """Optional[:class:`User`]: The team's owner, if available from the cache."""
-        return self._state.get_user(self.owner_id)
-
+        """Optional[:class:`TeamMember`]: The team's owner."""
+        return utils.get(self.members, id=self.owner_id)
 
 class TeamMember(BaseUser):
     """Represents a team member in a team.
