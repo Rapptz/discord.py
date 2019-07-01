@@ -421,15 +421,15 @@ class Embed:
             self._fields = [field]
 
         return self
-   
+
     def insert_field_at(self, index, *, name, value, inline=True):
         """Inserts a field before a specified index to the embed.
-        
+
         This function returns the class instance to allow for fluent-style
         chaining.
-        
+
         .. versionadded:: 1.2.0
-        
+
         Parameters
         -----------
         index: :class:`int`
