@@ -872,5 +872,5 @@ class User(BaseUser, discord.abc.Messageable):
             Setting the note failed.
 
         """
-        note = str(note) or ""
+        note = "" if note is None else str(note)
         await self._state.http.set_note(self.id, note)
