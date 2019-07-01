@@ -30,6 +30,7 @@ from .webhook import *
 from .voice_client import VoiceClient as VoiceClient
 from .audit_logs import AuditLogChanges as AuditLogChanges, AuditLogEntry as AuditLogEntry, AuditLogDiff as AuditLogDiff
 from .raw_models import *
+from .team import *
 
 class VersionInfo(NamedTuple):
     major: int

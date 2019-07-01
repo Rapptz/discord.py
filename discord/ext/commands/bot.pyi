@@ -29,6 +29,7 @@ class BotBase(GroupMixin[_CT]):
     case_insensitive: bool
     description: str
     owner_id: Optional[int]
+    owner_ids: Optional[Set[int]]
     help_command: Optional[HelpCommand[_CT]]
 
     def __init__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,

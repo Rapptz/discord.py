@@ -170,6 +170,8 @@ class ActivityType(Enum):
     listening: int
     watching: int
 
+    def __int__(self) -> int: ...
+
 class HypeSquadHouse(Enum):
     bravery: int
     brilliance: int
@@ -178,6 +180,10 @@ class HypeSquadHouse(Enum):
 class PremiumType(Enum):
     nitro_classic: int
     nitro: int
+
+class TeamMembershipState(Enum):
+    invited: int
+    accepted: int
 
 _EnumType = TypeVar('_EnumType', bound=Enum)
 
