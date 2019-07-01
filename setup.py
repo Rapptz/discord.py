@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import re
 
 requirements = []
@@ -36,8 +36,8 @@ with open('README.rst') as f:
 extras_require = {
     'voice': ['PyNaCl==1.3.0'],
     'docs': [
-        'sphinx==1.7.4',
-        'sphinxcontrib-asyncio',
+        'sphinx==1.8.5',
+        'sphinxcontrib_trio==1.1.0',
         'sphinxcontrib-websupport',
     ],
     'typings': ['typing-extensions>=3.7.4']

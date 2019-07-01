@@ -490,7 +490,7 @@ class GuildChannel:
 
         Deletes the channel.
 
-        You must have :attr:`~.Permissions.manage_channels` permission to use this.
+        You must have :attr:`~Permissions.manage_channels` permission to use this.
 
         Parameters
         -----------
@@ -500,11 +500,11 @@ class GuildChannel:
 
         Raises
         -------
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have proper permissions to delete the channel.
-        :exc:`~discord.NotFound`
+        ~discord.NotFound
             The channel was not found or was already deleted.
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Deleting the channel failed.
         """
         await self._state.http.delete_channel(self.id, reason=reason)
@@ -527,7 +527,7 @@ class GuildChannel:
         If the ``overwrite`` parameter is ``None``, then the permission
         overwrites are deleted.
 
-        You must have the :attr:`~.Permissions.manage_roles` permission to use this.
+        You must have the :attr:`~Permissions.manage_roles` permission to use this.
 
         Examples
         ----------
@@ -552,8 +552,9 @@ class GuildChannel:
         -----------
         target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
             The member or role to overwrite permissions for.
-        overwrite: :class:`~discord.PermissionOverwrite`
-            The permissions to allow and deny to the target.
+        overwrite: Optional[:class:`~discord.PermissionOverwrite`]
+            The permissions to allow and deny to the target, or `None` to
+            delete the overwrite.
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
             Cannot be mixed with ``overwrite``.
@@ -562,13 +563,13 @@ class GuildChannel:
 
         Raises
         -------
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have permissions to edit channel specific permissions.
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Editing channel specific permissions failed.
-        :exc:`~discord.NotFound`
+        ~discord.NotFound
             The role or member being edited is not part of the guild.
-        :exc:`~discord.InvalidArgument`
+        ~discord.InvalidArgument
             The overwrite parameter invalid or the target type was not
             :class:`~discord.Role` or :class:`~discord.Member`.
         """
@@ -636,9 +637,9 @@ class GuildChannel:
 
         Raises
         -------
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have the proper permissions to create this channel.
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Creating the channel failed.
         """
         raise NotImplementedError
@@ -648,7 +649,7 @@ class GuildChannel:
 
         Creates an instant invite.
 
-        You must have the :attr:`~.Permissions.create_instant_invite` permission to
+        You must have the :attr:`~Permissions.create_instant_invite` permission to
         do this.
 
         Parameters
@@ -671,7 +672,7 @@ class GuildChannel:
 
         Raises
         -------
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Invite creation failed.
 
         Returns
@@ -688,13 +689,13 @@ class GuildChannel:
 
         Returns a list of all active instant invites from this channel.
 
-        You must have :attr:`~.Permissions.manage_guild` to get this information.
+        You must have :attr:`~Permissions.manage_guild` to get this information.
 
         Raises
         -------
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have proper permissions to get the information.
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             An error occurred while fetching the information.
 
         Returns
@@ -774,11 +775,11 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         --------
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Sending the message failed.
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have the proper permissions to send the message.
-        :exc:`~discord.InvalidArgument`
+        ~discord.InvalidArgument
             The ``files`` list is not of the appropriate size or
             you specified both ``file`` and ``files``.
 
@@ -871,11 +872,11 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         --------
-        :exc:`~discord.NotFound`
+        ~discord.NotFound
             The specified message was not found.
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have the permissions required to get a message.
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Retrieving the message failed.
 
         Returns
@@ -901,7 +902,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         -------
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             Retrieving the pinned messages failed.
 
         Returns
@@ -918,7 +919,7 @@ class Messageable(metaclass=abc.ABCMeta):
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
         """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
 
-        You must have :attr:`~.Permissions.read_message_history` permissions to use this.
+        You must have :attr:`~Permissions.read_message_history` permissions to use this.
 
         Examples
         ---------
@@ -960,9 +961,9 @@ class Messageable(metaclass=abc.ABCMeta):
 
         Raises
         ------
-        :exc:`~discord.Forbidden`
+        ~discord.Forbidden
             You do not have permissions to get channel message history.
-        :exc:`~discord.HTTPException`
+        ~discord.HTTPException
             The request to get message history failed.
 
         Yields
@@ -1008,11 +1009,11 @@ class Connectable(metaclass=abc.ABCMeta):
 
         Raises
         -------
-        :exc:`asyncio.TimeoutError`
+        asyncio.TimeoutError
             Could not connect to the voice channel in time.
-        :exc:`~discord.ClientException`
+        ~discord.ClientException
             You are already connected to a voice channel.
-        :exc:`~discord.opus.OpusNotLoaded`
+        ~discord.opus.OpusNotLoaded
             The opus library has not been loaded.
 
         Returns

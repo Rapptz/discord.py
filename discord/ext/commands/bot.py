@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import collections
 import inspect
-import importlib
+import importlib.util
 import sys
 import traceback
 import re
@@ -112,6 +112,13 @@ class BotBase(GroupMixin[_CT]):
         self._help_command = None
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
+        self.owner_ids = options.get('owner_ids', {})
+
+        if self.owner_id and self.owner_ids:
+            raise TypeError('Both owner_id and owner_ids are set.')
+
+        if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
+            raise TypeError('owner_ids must be a collection not {0.__class__!r}'.format(self.owner_ids))
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -288,6 +295,9 @@ class BotBase(GroupMixin[_CT]):
         If an :attr:`owner_id` is not set, it is fetched automatically
         through the use of :meth:`~.Bot.application_info`.
 
+        The function also checks if the application is team-owned if
+        :attr:`owner_ids` is not set.
+
         Parameters
         -----------
         user: :class:`.abc.User`
@@ -299,11 +309,18 @@ class BotBase(GroupMixin[_CT]):
             Whether the user is the owner.
         """
 
-        if self.owner_id is None:
+        if self.owner_id:
+            return user.id == self.owner_id
+        elif self.owner_ids:
+            return user.id in self.owner_ids
+        else:
             app = await self.application_info()
-            self.owner_id = owner_id = app.owner.id
-            return user.id == owner_id
-        return user.id == self.owner_id
+            if app.team:
+                self.owner_ids = ids = {m.id for m in app.team.members}
+                return user.id in ids
+            else:
+                self.owner_id = owner_id = app.owner.id
+                return user.id == owner_id
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
@@ -572,12 +589,17 @@ class BotBase(GroupMixin[_CT]):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    def _load_from_module_spec(self, lib, key):
+    def _load_from_module_spec(self, spec, key):
         # precondition: key not in self.__extensions
+        lib = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(lib)
+        except Exception as e:
+            raise errors.ExtensionFailed(key, e) from e
+
         try:
             setup = getattr(lib, 'setup')
         except AttributeError:
-            del sys.modules[key]
             raise errors.NoEntryPointError(key)
 
         try:
@@ -587,7 +609,7 @@ class BotBase(GroupMixin[_CT]):
             self._call_module_finalizers(lib, key)
             raise errors.ExtensionFailed(key, e) from e
         else:
-            self.__extensions[key] = lib
+            sys.modules[key] = self.__extensions[key] = lib
 
     def load_extension(self, name):
         """Loads an extension.
@@ -621,12 +643,11 @@ class BotBase(GroupMixin[_CT]):
         if name in self.__extensions:
             raise errors.ExtensionAlreadyLoaded(name)
 
-        try:
-            lib = importlib.import_module(name)
-        except ImportError as e:
-            raise errors.ExtensionNotFound(name, e) from e
-        else:
-            self._load_from_module_spec(lib, name)
+        spec = importlib.util.find_spec(name)
+        if spec is None:
+            raise errors.ExtensionNotFound(name)
+
+        self._load_from_module_spec(spec, name)
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -960,9 +981,15 @@ class Bot(BotBase[_CT], discord.Client):
         set at runtime. To remove the help command pass ``None``. For more
         information on implementing a help command, see :ref:`ext_commands_help_command`.
     owner_id: Optional[:class:`int`]
-        The ID that owns the bot. If this is not set and is then queried via
+        The user ID that owns the bot. If this is not set and is then queried via
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.
+    owner_ids: Optional[Collection[:class:`int`]]
+        The user IDs that owns the bot. This is similar to `owner_id`.
+        If this is not set and the application is team based, then it is
+        fetched automatically using :meth:`~.Bot.application_info`.
+        For performance reasons it is recommended to use a :class:`set`
+        for the collection. You cannot set both `owner_id` and `owner_ids`.
     """
     pass
 

@@ -39,13 +39,19 @@ Client
 .. autoclass:: AutoShardedClient
     :members:
 
-.. autoclass:: AppInfo
+.. autoclass:: AppInfo()
+    :members:
+
+.. autoclass:: Team()
+    :members:
+
+.. autoclass:: TeamMember()
     :members:
 
 Voice
 ------
 
-.. autoclass:: VoiceClient
+.. autoclass:: VoiceClient()
     :members:
 
 .. autoclass:: AudioSource
@@ -1537,6 +1543,18 @@ of :class:`enum.Enum`.
         Represents the Dark theme on Discord.
 
 
+.. class:: TeamMembershipState
+
+    Represents the membership state of a team member retrieved through :func:`Bot.application_info`.
+
+    .. attribute:: invited
+
+        Represents an invited member.
+
+    .. attribute:: accepted
+
+        Represents a member currently in the team.
+
 Async Iterator
 ----------------
 
@@ -1562,14 +1580,16 @@ Certain utilities make working with async iterators easier, detailed below.
             Iterates over the contents of the async iterator.
 
 
-    .. comethod:: next()
+    .. method:: next()
+        :async:
 
         |coro|
 
         Advances the iterator by one, if possible. If no more items are found
         then this raises :exc:`NoMoreItems`.
 
-    .. comethod:: get(**attrs)
+    .. method:: get(**attrs)
+        :async:
 
         |coro|
 
@@ -1579,7 +1599,8 @@ Certain utilities make working with async iterators easier, detailed below.
 
             msg = await channel.history().get(author__name='Dave')
 
-    .. comethod:: find(predicate)
+    .. method:: find(predicate)
+        :async:
 
         |coro|
 
@@ -1598,7 +1619,8 @@ Certain utilities make working with async iterators easier, detailed below.
         :param predicate: The predicate to use. Could be a |coroutine_link|_.
         :return: The first element that returns ``True`` for the predicate or ``None``.
 
-    .. comethod:: flatten()
+    .. method:: flatten()
+        :async:
 
         |coro|
 
@@ -2009,10 +2031,10 @@ module, others which are not.
     :members:
     :exclude-members: history, typing
 
-    .. autocomethod:: discord.abc.Messageable.history
+    .. automethod:: discord.abc.Messageable.history
         :async-for:
 
-    .. autocomethod:: discord.abc.Messageable.typing
+    .. automethod:: discord.abc.Messageable.typing
         :async-with:
 
 .. autoclass:: discord.abc.Connectable
@@ -2065,10 +2087,10 @@ User
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: history
+    .. automethod:: history
         :async-for:
 
-    .. autocomethod:: typing
+    .. automethod:: typing
         :async-with:
 
 Attachment
@@ -2096,7 +2118,7 @@ Reaction
     :members:
     :exclude-members: users
 
-    .. autocomethod:: users
+    .. automethod:: users
         :async-for:
 
 CallMessage
@@ -2118,7 +2140,7 @@ Guild
     :members:
     :exclude-members: audit_logs
 
-    .. autocomethod:: audit_logs
+    .. automethod:: audit_logs
         :async-for:
 
 Member
@@ -2129,10 +2151,10 @@ Member
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: history
+    .. automethod:: history
         :async-for:
 
-    .. autocomethod:: typing
+    .. automethod:: typing
         :async-with:
 
 Spotify
@@ -2173,10 +2195,10 @@ TextChannel
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: history
+    .. automethod:: history
         :async-for:
 
-    .. autocomethod:: typing
+    .. automethod:: typing
         :async-with:
 
 VoiceChannel
@@ -2201,10 +2223,10 @@ DMChannel
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: history
+    .. automethod:: history
         :async-for:
 
-    .. autocomethod:: typing
+    .. automethod:: typing
         :async-with:
 
 GroupChannel
@@ -2215,10 +2237,10 @@ GroupChannel
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: history
+    .. automethod:: history
         :async-for:
 
-    .. autocomethod:: typing
+    .. automethod:: typing
         :async-with:
 
 PartialInviteGuild

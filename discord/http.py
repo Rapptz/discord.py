@@ -374,6 +374,12 @@ class HTTPClient:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
+    def suppress_message_embeds(self, channel_id, message_id, *, suppress):
+        payload = { 'suppress': suppress }
+        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/suppress-embeds',
+                  channel_id=channel_id, message_id=message_id)
+        return self.request(r, json=payload)
+
     def add_reaction(self, channel_id, message_id, emoji):
         r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
@@ -621,6 +627,16 @@ class HTTPClient:
     def get_all_guild_channels(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
+    def get_members(self, guild_id, limit, after):
+        params = {
+            'limit': limit,
+        }
+        if after:
+            params['after'] = after
+
+        r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
+        return self.request(r, params=params)
+
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
@@ -711,6 +727,9 @@ class HTTPClient:
         return self.request(Route('DELETE', '/invite/{invite_id}', invite_id=invite_id), reason=reason)
 
     # Role management
+
+    def get_roles(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/roles', guild_id=guild_id))
 
     def edit_role(self, guild_id, role_id, *, reason=None, **fields):
         r = Route('PATCH', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)

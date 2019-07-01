@@ -11,6 +11,20 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p2p3:
+
+v1.2.3
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix an AttributeError when accessing :attr:`Member.premium_since` in :func:`on_member_update`. (:issue:`2213`)
+- Handle :exc:`asyncio.CancelledError` in :meth:`abc.Messageable.typing` context manager. (:issue:`2218`)
+- Raise the max encoder bitrate to 512kbps to account for nitro boosting. (:issue:`2232`)
+- Properly propagate exceptions in :meth:`Client.run`. (:issue:`2237`)
+- |commands| Ensure cooldowns are properly copied when used in cog level ``command_attrs``.
+
 .. _vp1p2p2:
 
 v1.2.2

@@ -23,7 +23,11 @@ p {
 
 div.document {
   margin: 10px auto 0 auto;
-  max-width: 940px; /* page width */
+  max-width: 1200px; /* page width */
+}
+
+div.body {
+  max-width: 960px;
 }
 
 div.documentwrapper {
@@ -32,7 +36,7 @@ div.documentwrapper {
 }
 
 div.bodywrapper {
-  margin: 0 0 0 220px; /* sidebar width */
+  margin: 0 0 0 240px; /* sidebar width */
 }
 
 div.body {
@@ -46,7 +50,7 @@ div.footer {
   font-size: 14px;
   margin: 20px auto 30px auto;
   text-align: right;
-  max-width: 880px;
+  max-width: 1200px; /* page width */
 }
 
 div.footer a {
@@ -64,7 +68,7 @@ div.sphinxsidebar {
   font-size: 14px;
   line-height: 1.5em;
   margin-left: -100%;
-  width: 220px; /* sidebar width */
+  width: 240px; /* sidebar width */
 }
 
 div.sphinxsidebarwrapper {
@@ -74,7 +78,7 @@ div.sphinxsidebarwrapper {
 
   /* sticky sidebar */
   position: fixed;
-  width: 220px; /* sidebar width */
+  width: 240px; /* sidebar width */
   height: 90%;
   overflow: hidden;
 }
@@ -289,6 +293,17 @@ a.toc-backref {
 /* bold and fix the Parameter, Raises, etc. */
 dl.field-list > dt {
   font-weight: bold;
+}
+
+/* remove flex from field lists */
+dl.field-list {
+  display: block;
+}
+
+/* internal references are forced to bold for some reason */
+a.reference.internal > strong {
+  font-weight: unset;
+  font-family: monospace;
 }
 
 div.danger, div.error {

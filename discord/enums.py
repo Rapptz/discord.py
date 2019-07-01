@@ -47,6 +47,7 @@ __all__ = (
     'PremiumType',
     'UserContentFilter',
     'FriendFlags',
+    'TeamMembershipState',
     'Theme',
 )
 
@@ -380,6 +381,9 @@ class ActivityType(Enum):
     listening = 2
     watching = 3
 
+    def __int__(self):
+        return self.value
+
 class HypeSquadHouse(Enum):
     bravery = 1
     brilliance = 2
@@ -388,6 +392,10 @@ class HypeSquadHouse(Enum):
 class PremiumType(Enum):
     nitro_classic = 1
     nitro = 2
+
+class TeamMembershipState(Enum):
+    invited = 1
+    accepted = 2
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

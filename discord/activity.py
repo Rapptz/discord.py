@@ -175,7 +175,7 @@ class Activity(_ActivityTag):
                 continue
 
             ret[attr] = value
-        ret['type'] = self.type.value
+        ret['type'] = int(self.type)
         return ret
 
     @property

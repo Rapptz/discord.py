@@ -76,9 +76,9 @@ class Paginator:
 
     Attributes
     -----------
-    prefix: Optional[:class:`str`]
+    prefix: :class:`str`
         The prefix inserted to every page. e.g. three backticks.
-    suffix: Optional[:class:`str`]
+    suffix: :class:`str`
         The suffix appended at the end of every page. e.g. three backticks.
     max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
@@ -86,7 +86,7 @@ class Paginator:
     def __init__(self, prefix='```', suffix='```', max_size=2000):
         self.prefix = prefix
         self.suffix = suffix
-        self.max_size = max_size - (0 if suffix is None else len(suffix))
+        self.max_size = max_size
         self.clear()
 
     def clear(self):
@@ -102,6 +102,10 @@ class Paginator:
     @property
     def _prefix_len(self):
         return len(self.prefix) if self.prefix else 0
+
+    @property
+    def _suffix_len(self):
+        return len(self.suffix) if self.suffix else 0
 
     def add_line(self, line='', *, empty=False):
         """Adds a line to the current page.
@@ -121,11 +125,11 @@ class Paginator:
         RuntimeError
             The line was too big for the current :attr:`max_size`.
         """
-        max_page_size = self.max_size - self._prefix_len - 2
+        max_page_size = self.max_size - self._prefix_len - self._suffix_len - 2
         if len(line) > max_page_size:
             raise RuntimeError('Line exceeds maximum page size %s' % (max_page_size))
 
-        if self._count + len(line) + 1 > self.max_size:
+        if self._count + len(line) + 1 > self.max_size - self._suffix_len:
             self.close_page()
 
         self._count += len(line) + 1
@@ -256,7 +260,7 @@ class HelpCommand(Generic[_CT]):
         mentioned in :issue:`2123`.
 
         This means that relying on the state of this class to be
-        the same between command invocations would not as expected.
+        the same between command invocations would not work as expected.
 
     Attributes
     ------------
