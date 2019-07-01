@@ -861,7 +861,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Parameters
         -----------
-        note: :class:`str`
+        note: Optional[:class:`str`]
             The note to set. Pass ``None`` to remove the note.
 
         Raises
