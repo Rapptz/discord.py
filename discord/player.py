@@ -199,7 +199,7 @@ class FFmpegPCMAudio(FFmpegAudio):
 
     def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
         args = []
-        subprocess_kwargs = {'stdin': None if not pipe else source, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -227,12 +227,11 @@ class FFmpegPCMAudio(FFmpegAudio):
 class FFmpegOpusAudio(FFmpegAudio):
     """TODO"""
 
-    def __init__(self, source, *, bitrate=None, probe=False, executable='ffmpeg',
+    def __init__(self, source, *, bitrate=None, codec=None, executable='ffmpeg',
                  pipe=False, stderr=None, before_options=None, options=None):
 
-        self.executable = executable
         args = []
-        subprocess_kwargs = {'stdin': None if not pipe else source, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -240,11 +239,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         args.append('-i')
         args.append('-' if pipe else source)
 
-        codec = 'libopus'
-        if probe:
-            probed_codec, probed_bitrate = self.probe(source)
-            if probed_codec in ('opus', 'libopus'):
-                codec = 'copy'
+        codec = 'copy' if codec in ('opus', 'libopus') else 'libopus'
 
         args.extend(('-map_metadata', '-1', '-f', 'opus', '-c:a', codec, '-ar', '48000',
                      '-ac', '2', '-loglevel', 'warning'))
@@ -264,39 +259,59 @@ class FFmpegOpusAudio(FFmpegAudio):
         super().__init__(source, executable=executable, args=args, **subprocess_kwargs)
         self._packet_iter = OggStream(self._stdout).iter_packets()
 
-    def probe(self, source, *, method='ffprobe'):
+    @classmethod
+    async def from_probe(cls, source, *, method='native', **kwargs):
         """TODO"""
 
-        if isinstance(method, str):
-            if self.executable == 'avconv':
-                self._probe_codec_avprobe = self._probe_codec_ffprobe
-                self._probe_codec_avconv = self._probe_codec_ffmpeg
+        executable = kwargs.get('executable')
+        codec, bitrate = await cls.probe(source, method=method, executable=executable)
+        return cls(source, bitrate=bitrate, codec=codec, **kwargs)
 
-            probefunc = getattr(self, '_probe_codec_' + method, None)
+    @classmethod
+    async def probe(cls, source, *, method=None, executable=None):
+        """TODO"""
+
+        method = method or 'native'
+        executable = executable or 'ffmpeg'
+        probefunc = fallback = None
+
+        if isinstance(method, str):
+            probefunc = getattr(cls, '_probe_codec_' + method, None)
             if probefunc is None:
-                raise AttributeError("Invalid probe method: %s" % method)
+                raise AttributeError("Invalid probe method '%s'" % method)
+
+            if probefunc is cls._probe_codec_native:
+                fallback = cls._probe_codec_fallback
 
         elif callable(method):
             probefunc = method
+            fallback = cls._probe_codec_fallback
         else:
             raise TypeError("Expected str or callable for parameter 'probe', " \
                             "not '{0.__class__.__name__}'" .format(method))
 
         codec = bitrate = None
+        loop = asyncio.get_event_loop()
         try:
-            codec, bitrate = probefunc(source)
+            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
         except:
-            log.exception("Failed to probe with %s, falling back to %s probe", method, self.executable)
+            if not fallback:
+                log.exception("Probe '%s' using '%s' failed", method, executable)
+                return
+
+            log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
-                codec, bitrate = self._probe_codec_ffmpeg(source)
+                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
             except:
-                log.exception("Fallback %s probe failed", self.executable)
+                log.exception("Fallback probe using '%s' failed", executable)
+        else:
+            log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
+        finally:
+            return codec, bitrate
 
-        log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
-        return codec, bitrate
-
-    def _probe_codec_ffprobe(self, source):
-        exe = 'ffprobe' if self.executable == 'ffmpeg' else 'avprobe'
+    @staticmethod
+    def _probe_codec_native(source, executable='ffmpeg'):
+        exe = executable[:2] + 'probe' if executable in ('ffmpeg', 'avconv') else executable
         args = [exe, '-v', 'quiet', '-print_format', 'json', '-show_streams', '-select_streams', 'a:0', source]
         output = subprocess.check_output(args)
 
@@ -305,10 +320,11 @@ class FFmpegOpusAudio(FFmpegAudio):
             streamdata = data['streams'][0]
             bitrate = int(streamdata.get('bit_rate', 0))
 
-            return streamdata.get('codec_name'), max(round(bitrate/1000, 0), 128)
+            return streamdata.get('codec_name'), max(round(bitrate/1000, 0), 512)
 
-    def _probe_codec_ffmpeg(self, source):
-        args = [self.executable, '-hide_banner', '-i',  source]
+    @staticmethod
+    def _probe_codec_fallback(source, executable='ffmpeg'):
+        args = [executable, '-hide_banner', '-i',  source]
         proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
         output = out.decode('utf8')
