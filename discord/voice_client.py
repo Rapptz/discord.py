@@ -111,7 +111,7 @@ class VoiceClient:
         self.timestamp = 0
         self._runner = None
         self._player = None
-        self.encoder = opus.Encoder()
+        self.encoder = None
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -356,7 +356,9 @@ class VoiceClient:
         ClientException
             Already playing audio or not connected.
         TypeError
-            source is not a :class:`AudioSource` or after is not a callable.
+            Source is not a :class:`AudioSource` or after is not a callable.
+        OpusNotLoaded
+            Source is not opus encoded and opus is not loaded.
         """
 
         if not self.is_connected():
@@ -367,6 +369,9 @@ class VoiceClient:
 
         if not isinstance(source, AudioSource):
             raise TypeError('source must an AudioSource not {0.__class__.__name__}'.format(source))
+
+        if not self.encoder and not source.is_opus():
+            self.encoder = opus.Encoder()
 
         self._player = AudioPlayer(source, self, after=after)
         self._player.start()
@@ -444,4 +449,4 @@ class VoiceClient:
         except BlockingIOError:
             log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
-        self.checked_add('timestamp', self.encoder.SAMPLES_PER_FRAME, 4294967295)
+        self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
