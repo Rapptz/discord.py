@@ -522,7 +522,7 @@ class AudioPlayer(threading.Thread):
 
     def _do_run(self):
         self.loops = 0
-        self._start = time.time()
+        self._start = time.perf_counter()
 
         # getattr lookup speed ups
         play_audio = self.client.send_audio_packet
@@ -541,7 +541,7 @@ class AudioPlayer(threading.Thread):
                 self._connected.wait()
                 # reset our internal data
                 self.loops = 0
-                self._start = time.time()
+                self._start = time.perf_counter()
 
             self.loops += 1
             data = self.source.read()
@@ -552,7 +552,7 @@ class AudioPlayer(threading.Thread):
 
             play_audio(data, encode=not self.source.is_opus())
             next_time = self._start + self.DELAY * self.loops
-            delay = max(0, self.DELAY + (next_time - time.time()))
+            delay = max(0, self.DELAY + (next_time - time.perf_counter()))
             time.sleep(delay)
 
     def run(self):
@@ -584,7 +584,7 @@ class AudioPlayer(threading.Thread):
 
     def resume(self, *, update_speaking=True):
         self.loops = 0
-        self._start = time.time()
+        self._start = time.perf_counter()
         self._resumed.set()
         if update_speaking:
             self._speak(True)
