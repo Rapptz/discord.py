@@ -113,7 +113,11 @@ class PCMAudio(AudioSource):
         return ret
 
 class FFmpegAudio(AudioSource):
-    """Represents an FFmpeg based AudioSource."""
+    """Represents an FFmpeg (or AVConv) based AudioSource.
+
+    User created AudioSources using FFmpeg differently from how :class:`FFmpegPCMAudio` and
+    :class:`FFmpegOpusAudio` work should subclass this.
+    """
 
     def __init__(self, source, *, executable='ffmpeg', args, **subprocess_kwargs):
         args = [executable, *args]
@@ -135,12 +139,6 @@ class FFmpegAudio(AudioSource):
         else:
             return process
 
-    def read(self):
-        raise NotImplementedError
-
-    def is_opus(self):
-        return NotImplementedError
-
     def cleanup(self):
         proc = self._process
         if proc is None:
@@ -160,7 +158,7 @@ class FFmpegAudio(AudioSource):
         else:
             log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
 
-        self._process = None
+        self._process = self._stdout = None
 
 class FFmpegPCMAudio(FFmpegAudio):
     """An audio source from FFmpeg (or AVConv).
@@ -186,10 +184,10 @@ class FFmpegPCMAudio(FFmpegAudio):
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
         Could also be an instance of ``subprocess.PIPE``.
-    options: Optional[:class:`str`]
-        Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
+    options: Optional[:class:`str`]
+        Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
 
     Raises
     --------
@@ -225,9 +223,65 @@ class FFmpegPCMAudio(FFmpegAudio):
         return False
 
 class FFmpegOpusAudio(FFmpegAudio):
-    """TODO"""
+    """An audio source from FFmpeg (or AVConv).
 
-    def __init__(self, source, *, bitrate=None, codec=None, executable='ffmpeg',
+    This launches a sub-process to a specific input file given.  However, rather than
+    producing PCM packets like :class:`FFmpegPCMAudio` does that need to be encoded to
+    opus, this class produces opus packets, skipping the encoding step done by the library.
+
+    Alternatively, instead of instantiating this class directly, you can use
+    :meth:`FFmpegOpusAudio.from_probe` to probe for bitrate and codec information.  This
+    can be used to opportunistically skip pointless re-encoding of existing opus audio data
+    for a boost in performance at the cost of a short initial delay to gather the information.
+    The same can be achieved by passing ``copy`` to the ``codec`` parameter, but only if you
+    know that the input source is opus encoded beforehand.
+
+    .. warning::
+
+        You must have the ffmpeg or avconv executable in your path environment
+        variable in order for this to work.
+
+    Parameters
+    ------------
+    source: Union[:class:`str`, :class:`io.BufferedIOBase`]
+        The input that ffmpeg will take and convert to PCM bytes.
+        If ``pipe`` is True then this is a file-like object that is
+        passed to the stdin of ffmpeg.
+    bitrate: :class:`int`
+        The bitrate in kbps to encode the output to.  Defaults to ``128``.
+    codec: Optional[:class:`str`]
+        The codec to use to encode the audio data.  Normally this would be
+        just ``libopus``, but is used by :meth:`FFmpegOpusAudio.from_probe` to
+        opportunistically skip pointlessly re-encoding opus audio data by passing
+        ``copy`` as the codec value.  Any values other than ``copy``, ``opus``, or
+        ``libopus`` will be considered ``libopus``.  Defaults to ``libopus``.
+
+        .. warning::
+
+            Do not provide this parameter unless you are certain that the audio input is
+            already opus encoded.  For typical use :meth:`FFmpegOpusAudio.from_probe`
+            should be used to determine the proper value for this parameter.
+
+    executable: :class:`str`
+        The executable name (and path) to use. Defaults to ``ffmpeg``.
+    pipe: :class:`bool`
+        If ``True``, denotes that ``source`` parameter will be passed
+        to the stdin of ffmpeg. Defaults to ``False``.
+    stderr: Optional[:term:`py:file object`]
+        A file-like object to pass to the Popen constructor.
+        Could also be an instance of ``subprocess.PIPE``.
+    before_options: Optional[:class:`str`]
+        Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
+    options: Optional[:class:`str`]
+        Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
+
+    Raises
+    --------
+    ClientException
+        The subprocess failed to be created.
+    """
+
+    def __init__(self, source, *, bitrate=128, codec=None, executable='ffmpeg',
                  pipe=False, stderr=None, before_options=None, options=None):
 
         args = []
@@ -241,15 +295,13 @@ class FFmpegOpusAudio(FFmpegAudio):
 
         codec = 'copy' if codec in ('opus', 'libopus') else 'libopus'
 
-        args.extend(('-map_metadata', '-1', '-f', 'opus', '-c:a', codec, '-ar', '48000',
-                     '-ac', '2', '-loglevel', 'warning'))
-
-        if bitrate is not None or probed_bitrate:
-            br = bitrate or probed_bitrate
-        else:
-            br = 128
-
-        args.extend(('-b:a', str(br)+'k'))
+        args.extend(('-map_metadata', '-1',
+                     '-f', 'opus',
+                     '-c:a', codec,
+                     '-ar', '48000',
+                     '-ac', '2',
+                     '-b:a', '%sk' % bitrate,
+                     '-loglevel', 'warning'))
 
         if isinstance(options, str):
             args.extend(shlex.split(options))
@@ -260,8 +312,36 @@ class FFmpegOpusAudio(FFmpegAudio):
         self._packet_iter = OggStream(self._stdout).iter_packets()
 
     @classmethod
-    async def from_probe(cls, source, *, method='native', **kwargs):
-        """TODO"""
+    async def from_probe(cls, source, *, method=None, **kwargs):
+        """A factory method that creates a :class:`FFmpegOpusAudio` after probing
+        the input source for audio codec and bitrate information.
+
+        Parameters
+        ------------
+        source:
+            Identical to the ``source`` parameter for the constructor.
+        method: Optional[Union[:class:`str`, Callable[:class:`str`, :class:`str`]]]
+            The probing method used to determine bitrate and codec information. As a string, valid
+            values are ``native`` to use ffprobe (or avprobe) and ``fallback`` to use ffmpeg
+            (or avconv).  As a callable, it must take two string arguments, ``source`` and
+            ``executable``.  Both parameters are the same values passed to this factory function.
+            ``executable`` will default to ``ffmpeg`` if not provided as a keyword argument.
+        kwargs:
+            The remaining parameters to be passed to the :class:`FFmpegOpusAudio` constructor,
+            excluding ``bitrate`` and ``codec``.
+
+        Raises
+        --------
+        AttributeError
+            Invalid probe method, must be ``'native'`` or ``'fallback'``.
+        TypeError
+            Invalid value for ``probe`` parameter, must be :class:`str` or a callable.
+
+        Returns
+        --------
+        :class:`FFmpegOpusAudio`
+            An instance of this class.
+        """
 
         executable = kwargs.get('executable')
         codec, bitrate = await cls.probe(source, method=method, executable=executable)
@@ -269,7 +349,29 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def probe(cls, source, *, method=None, executable=None):
-        """TODO"""
+        """Probes the input source for bitrate and codec information.
+
+        Parameters
+        ------------
+        source:
+            Identical to the ``source`` parameter for :class:`FFmpegOpusAudio`.
+        method:
+            Identical to the ``method`` parameter for :meth:`FFmpegOpusAudio.from_probe`.
+        executable:
+            Identical to the ``executable`` parameter for :class:`FFmpegOpusAudio`.
+
+        Raises
+        --------
+        AttributeError
+            Invalid probe method, must be ``'native'`` or ``'fallback'``.
+        TypeError
+            Invalid value for ``probe`` parameter, must be :class:`str` or a callable.
+
+        Returns
+        ---------
+        Tuple[Optional[:class:`str`], Optional[:class:`int`]]
+            A 2-tuple with the codec and bitrate of the input source.
+        """
 
         method = method or 'native'
         executable = executable or 'ffmpeg'
@@ -313,22 +415,26 @@ class FFmpegOpusAudio(FFmpegAudio):
     def _probe_codec_native(source, executable='ffmpeg'):
         exe = executable[:2] + 'probe' if executable in ('ffmpeg', 'avconv') else executable
         args = [exe, '-v', 'quiet', '-print_format', 'json', '-show_streams', '-select_streams', 'a:0', source]
-        output = subprocess.check_output(args)
+        output = subprocess.check_output(args, timeout=20)
+        codec = bitrate = None
 
         if output:
             data = json.loads(output)
             streamdata = data['streams'][0]
-            bitrate = int(streamdata.get('bit_rate', 0))
 
-            return streamdata.get('codec_name'), max(round(bitrate/1000, 0), 512)
+            codec = streamdata.get('codec_name')
+            bitrate = int(streamdata.get('bit_rate', 0))
+            bitrate = max(round(bitrate/1000, 0), 512)
+
+        return codec, bitrate
 
     @staticmethod
     def _probe_codec_fallback(source, executable='ffmpeg'):
         args = [executable, '-hide_banner', '-i',  source]
         proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, _ = proc.communicate()
+        out, _ = proc.communicate(timeout=20)
         output = out.decode('utf8')
-        codec = br = None
+        codec = bitrate = None
 
         codec_match = re.search(r"Stream #0.*?Audio: (\w+)", output)
         if codec_match:
@@ -336,9 +442,9 @@ class FFmpegOpusAudio(FFmpegAudio):
 
         br_match = re.search(r"(\d+) [kK]b/s", output)
         if br_match:
-            br = br_match.group(1)
+            bitrate = max(int(br_match.group(1)), 512)
 
-        return codec, br
+        return codec, bitrate
 
     def read(self):
         return next(self._packet_iter, b'')
