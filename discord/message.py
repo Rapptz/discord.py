@@ -354,6 +354,9 @@ class Message:
             except AttributeError:
                 pass
 
+    def _handle_edited_timestamp(self, value):
+        self._edited_timestamp = utils.parse_time(value)
+
     def _handle_pinned(self, value):
         self.pinned = value
 
