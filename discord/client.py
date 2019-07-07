@@ -976,7 +976,7 @@ class Client:
 
         .. note::
 
-            Using this, you will **not** receive :attr:`.Guild.channels`, :class:`.Guild.members`,
+            Using this, you will **not** receive :attr:`.Guild.channels`, :attr:`.Guild.members`,
             :attr:`.Member.activity` and :attr:`.Member.voice` per :class:`.Member`.
 
         .. note::
