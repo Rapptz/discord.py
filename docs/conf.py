@@ -143,10 +143,6 @@ html_experimental_html5_writer = True
 # a list of builtin themes.
 html_theme = 'basic'
 
-html_context = {
-  'ON_READTHEDOCS': bool(os.environ.get('READTHEDOCS'))
-}
-
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
