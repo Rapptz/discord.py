@@ -121,10 +121,10 @@ def load_opus(name):
     """Loads the libopus shared library for use with voice.
 
     If this function is not called then the library uses the function
-    :func:`ctypes.util.find_library` and then loads that one
-    if available.
+    :func:`ctypes.util.find_library` and then loads that one if available.
 
-    Not loading a library leads to voice not working.
+    Not loading a library and attempting to use PCM based AudioSources will
+    lead to voice not working.
 
     This function propagates the exceptions thrown.
 

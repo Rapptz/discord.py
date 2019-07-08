@@ -48,7 +48,7 @@ class OggPage:
             self.segtable = stream.read(self.segnum)
             bodylen = sum(struct.unpack('B'*self.segnum, self.segtable))
             self.data = stream.read(bodylen)
-        except:
+        except Exception:
             raise OggError('bad data stream') from None
 
     def iter_packets(self):

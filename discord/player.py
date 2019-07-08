@@ -148,8 +148,8 @@ class FFmpegAudio(AudioSource):
 
         try:
             proc.kill()
-        except:
-            pass
+        except Exception:
+            log.exception("Ignoring error attempting to kill ffmpeg process %s", proc.pid)
 
         if proc.poll() is None:
             log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
@@ -313,12 +313,38 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def from_probe(cls, source, *, method=None, **kwargs):
-        """A factory method that creates a :class:`FFmpegOpusAudio` after probing
+        """|coro|
+
+        A factory method that creates a :class:`FFmpegOpusAudio` after probing
         the input source for audio codec and bitrate information.
+
+        Examples
+        ----------
+
+        Use this function to create an :class:`FFmpegOpusAudio` instance instead of the constructor: ::
+
+            source = await discord.FFmpegOpusAudio.from_probe("song.webm")
+            voice_client.play(source)
+
+        If you are on Windows and don't have ffprobe installed, use the ``fallback`` method
+        to probe using ffmpeg instead: ::
+
+            source = await discord.FFmpegOpusAudio.from_probe("song.webm", method='fallback')
+            voice_client.play(source)
+
+        Using a custom method of determining codec and bitrate: ::
+
+            def custom_probe(source, executable):
+                # some analysis code here
+
+                return codec, bitrate
+
+            source = await discord.FFmpegOpusAudio.from_probe("song.webm", method=custom_probe)
+            voice_client.play(source)
 
         Parameters
         ------------
-        source:
+        source
             Identical to the ``source`` parameter for the constructor.
         method: Optional[Union[:class:`str`, Callable[:class:`str`, :class:`str`]]]
             The probing method used to determine bitrate and codec information. As a string, valid
@@ -326,7 +352,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             (or avconv).  As a callable, it must take two string arguments, ``source`` and
             ``executable``.  Both parameters are the same values passed to this factory function.
             ``executable`` will default to ``ffmpeg`` if not provided as a keyword argument.
-        kwargs:
+        kwargs
             The remaining parameters to be passed to the :class:`FFmpegOpusAudio` constructor,
             excluding ``bitrate`` and ``codec``.
 
@@ -349,15 +375,17 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def probe(cls, source, *, method=None, executable=None):
-        """Probes the input source for bitrate and codec information.
+        """|coro|
+
+        Probes the input source for bitrate and codec information.
 
         Parameters
         ------------
-        source:
+        source
             Identical to the ``source`` parameter for :class:`FFmpegOpusAudio`.
-        method:
+        method
             Identical to the ``method`` parameter for :meth:`FFmpegOpusAudio.from_probe`.
-        executable:
+        executable: :class:`str`
             Identical to the ``executable`` parameter for :class:`FFmpegOpusAudio`.
 
         Raises
@@ -396,7 +424,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         loop = asyncio.get_event_loop()
         try:
             codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
-        except:
+        except Exception:
             if not fallback:
                 log.exception("Probe '%s' using '%s' failed", method, executable)
                 return
@@ -404,8 +432,10 @@ class FFmpegOpusAudio(FFmpegAudio):
             log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
                 codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
-            except:
+            except Exception:
                 log.exception("Fallback probe using '%s' failed", executable)
+            else:
+                log.info("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
         else:
             log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
         finally:

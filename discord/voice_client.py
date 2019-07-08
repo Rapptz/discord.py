@@ -68,11 +68,10 @@ class VoiceClient:
 
     Warning
     --------
-    In order to play audio, you must have loaded the opus library
-    through :func:`opus.load_opus`.
-
-    If you don't do this then the library will not be able to
-    transmit audio.
+    In order to use PCM based AudioSources, you must have the opus library
+    installed on your system and loaded through :func:`opus.load_opus`.
+    Otherwise, your AudioSources must be opus encoded (e.g. using :class:`FFmpegOpusAudio`)
+    or the library will not be able to transmit audio.
 
     Attributes
     -----------
