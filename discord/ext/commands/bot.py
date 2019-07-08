@@ -605,7 +605,7 @@ class BotBase(GroupMixin):
             self._call_module_finalizers(lib, key)
             raise errors.ExtensionFailed(key, e) from e
         else:
-            sys.modules[key] = self.__extensions[key] = lib
+            self.__extensions[key] = lib
 
     def load_extension(self, name):
         """Loads an extension.
