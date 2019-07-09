@@ -285,7 +285,9 @@ class BotBase(GroupMixin):
         return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
-        """Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
+        """|coro|
+        
+        Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
 
         If an :attr:`owner_id` is not set, it is fetched automatically
