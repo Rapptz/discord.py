@@ -390,33 +390,33 @@ specify.
 Under the hood, these are implemented by the :ref:`ext_commands_adv_converters` interface. A table of the equivalent
 converter is given below:
 
-+-----------------------+-------------------------------------------------+
-|     Discord Class     |                    Converter                    |
-+-----------------------+-------------------------------------------------+
-| :class:`Member`       | :class:`~ext.commands.MemberConverter`          |
-+-----------------------+-------------------------------------------------+
-| :class:`Message`      | :class:`~ext.commands.MessageConverter`         |
-+-----------------------+-------------------------------------------------+
-| :class:`User`         | :class:`~ext.commands.UserConverter`            |
-+-----------------------+-------------------------------------------------+
-| :class:`TextChannel`  | :class:`~ext.commands.TextChannelConverter`     |
-+-----------------------+-------------------------------------------------+
-| :class:`VoiceChannel` | :class:`~ext.commands.VoiceChannelConverter`    |
-+-----------------------+-------------------------------------------------+
-| :class:`VoiceChannel` | :class:`~ext.commands.CategoryChannelConverter` |
-+-----------------------+-------------------------------------------------+
-| :class:`Role`         | :class:`~ext.commands.RoleConverter`            |
-+-----------------------+-------------------------------------------------+
-| :class:`Invite`       | :class:`~ext.commands.InviteConverter`          |
-+-----------------------+-------------------------------------------------+
-| :class:`Game`         | :class:`~ext.commands.GameConverter`            |
-+-----------------------+-------------------------------------------------+
-| :class:`Emoji`        | :class:`~ext.commands.EmojiConverter`           |
-+-----------------------+-------------------------------------------------+
-| :class:`PartialEmoji` | :class:`~ext.commands.PartialEmojiConverter`    |
-+-----------------------+-------------------------------------------------+
-| :class:`Colour`       | :class:`~ext.commands.ColourConverter`          |
-+-----------------------+-------------------------------------------------+
++--------------------------+-------------------------------------------------+
+|     Discord Class        |                    Converter                    |
++--------------------------+-------------------------------------------------+
+| :class:`Member`          | :class:`~ext.commands.MemberConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`Message`         | :class:`~ext.commands.MessageConverter`         |
++--------------------------+-------------------------------------------------+
+| :class:`User`            | :class:`~ext.commands.UserConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`TextChannel`     | :class:`~ext.commands.TextChannelConverter`     |
++--------------------------+-------------------------------------------------+
+| :class:`VoiceChannel`    | :class:`~ext.commands.VoiceChannelConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`CategoryChannel` | :class:`~ext.commands.CategoryChannelConverter` |
++--------------------------+-------------------------------------------------+
+| :class:`Role`            | :class:`~ext.commands.RoleConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`Invite`          | :class:`~ext.commands.InviteConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`Game`            | :class:`~ext.commands.GameConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`Emoji`           | :class:`~ext.commands.EmojiConverter`           |
++--------------------------+-------------------------------------------------+
+| :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`Colour`          | :class:`~ext.commands.ColourConverter`          |
++--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:
 
