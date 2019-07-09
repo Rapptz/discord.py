@@ -32,5 +32,6 @@ class MyClient(discord.Client):
             else:
                 await message.channel.send('Oops. It is actually {}.'.format(answer))
 
+
 client = MyClient()
 client.run('token')
