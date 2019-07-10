@@ -58,6 +58,8 @@ def _get_from_guilds(bot, getter, argument):
             return result
     return result
 
+_utils_get = discord.utils.get
+
 class Converter:
     """The base class of custom converters that require the :class:`.Context`
     to be passed to be useful.
@@ -124,7 +126,7 @@ class MemberConverter(IDConverter):
         else:
             user_id = int(match.group(1))
             if guild:
-                result = guild.get_member(user_id)
+                result = guild.get_member(user_id) or _utils_get(ctx.message.mentions, id=user_id)
             else:
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
@@ -152,7 +154,7 @@ class UserConverter(IDConverter):
 
         if match is not None:
             user_id = int(match.group(1))
-            result = ctx.bot.get_user(user_id)
+            result = ctx.bot.get_user(user_id) or _utils_get(ctx.message.mentions, id=user_id)
         else:
             arg = argument
             # check for discriminator if it exists
