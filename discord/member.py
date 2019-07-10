@@ -432,7 +432,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         administrator implication.
         """
 
-        if self.guild.owner == self:
+        if self.guild.owner_id == self.id:
             return Permissions.all()
 
         base = Permissions.none()

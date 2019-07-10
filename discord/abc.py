@@ -418,8 +418,7 @@ class GuildChannel:
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        o = self.guild.owner
-        if o is not None and member.id == o.id:
+        if self.guild.owner_id == member.id:
             return Permissions.all()
 
         default = self.guild.default_role
