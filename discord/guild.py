@@ -1095,7 +1095,7 @@ class Guild(Hashable):
                 fields['system_channel_id'] = system_channel.id
 
         if 'owner' in fields:
-            if self.owner != self.me:
+            if self.owner_id != self._state.self_id:
                 raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
 
             fields['owner_id'] = fields['owner'].id
