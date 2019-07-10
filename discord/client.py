@@ -155,24 +155,26 @@ class Client:
     guild_subscriptions: :class:`bool`
         Whether to dispatching of presence or typing events. Defaults to ``True``.
 
+        .. versionadded:: 1.3
+
         .. warning::
 
             If this is set to ``False`` then the following features will be disabled:
 
-                    - No user related updates (:func:`on_user_update` will not dispatch)
-                    - No presence related changes will be recorded (e.g. :attr:`Member.activities` or :attr:`Member.status`)
-                    - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
-                      This makes it difficult or impossible to do many things, for example:
+                - No user related updates (:func:`on_user_update` will not dispatch)
+                - No presence related changes will be recorded (e.g. :attr:`Member.activities` or :attr:`Member.status`)
+                - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
+                  This makes it difficult or impossible to do many things, for example:
 
-                        - Computing permissions
-                        - Querying members in a voice channel via :attr:`VoiceChannel.members` will be empty.
-                        - Most forms of receiving :class:`Member` will be
-                          receiving :class:`User` instead, except for message events.
-                        - :attr:`Guild.owner` will usually resolve to ``None``.
-                        - :meth:`Guild.get_member` will usually be unavailable.
-                        - Anything that involves using :class:`Member`.
-                        - :attr:`users` will not be as populated.
-                        - etc.
+                    - Computing permissions
+                    - Querying members in a voice channel via :attr:`VoiceChannel.members` will be empty.
+                    - Most forms of receiving :class:`Member` will be
+                      receiving :class:`User` instead, except for message events.
+                    - :attr:`Guild.owner` will usually resolve to ``None``.
+                    - :meth:`Guild.get_member` will usually be unavailable.
+                    - Anything that involves using :class:`Member`.
+                    - :attr:`users` will not be as populated.
+                    - etc.
 
             In short, this makes it so the only member you can reliably query is the
             message author. Useful for bots that do not require any state.
