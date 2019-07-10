@@ -193,6 +193,17 @@ class Member(discord.abc.Messageable, _BaseUser):
         return cls(data=data, guild=message.guild, state=message._state)
 
     @classmethod
+    def _try_upgrade(cls, *,  data, guild, state):
+        # A User object with a 'member' key
+        try:
+            member_data = data.pop('member')
+        except KeyError:
+            return state.store_user(member_data)
+        else:
+            member_data['user'] = data
+            return cls(data=member_data, guild=guild, state=state)
+
+    @classmethod
     def _from_presence_update(cls, *, data, guild, state):
         clone = cls(data=data, guild=guild, state=state)
         to_return = cls(data=data, guild=guild, state=state)
