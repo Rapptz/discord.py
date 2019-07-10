@@ -198,7 +198,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         try:
             member_data = data.pop('member')
         except KeyError:
-            return state.store_user(member_data)
+            return state.store_user(data)
         else:
             member_data['user'] = data
             return cls(data=member_data, guild=guild, state=state)
