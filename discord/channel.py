@@ -549,6 +549,24 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                     ret.append(member)
         return ret
 
+    @property
+    def voice_states(self):
+        """Returns a mapping of member IDs who have voice states in this channel.
+
+        .. versionadded:: 1.3.0
+
+        .. note::
+
+            This function is intentionally low level to replace :attr:`members`
+            when the member cache is unavailable.
+
+        Returns
+        --------
+        Mapping[:class:`int`, :class:`VoiceState`]
+            The mapping of member ID to a voice state.
+        """
+        return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
+
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
