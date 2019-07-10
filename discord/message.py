@@ -403,9 +403,12 @@ class Message:
         # ourselves to a more "partial" member object.
         author = self.author
         try:
+            # Update member reference
             if author.joined_at is None:
                 author.joined_at = utils.parse_time(member.get('joined_at'))
         except AttributeError:
+            # It's a user here
+            # TODO: consider adding to cache here
             self.author = Member._from_message(message=self, data=member)
 
     def _handle_mentions(self, mentions):

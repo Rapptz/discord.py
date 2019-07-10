@@ -189,11 +189,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     @classmethod
     def _from_message(cls, *, message, data):
         author = message.author
-        data['user'] = {
-            attr: getattr(author, attr)
-            for attr in author.__slots__
-            if attr[0] != '_'
-        }
+        data['user'] = author._to_minimal_user_json()
         return cls(data=data, guild=message.guild, state=message._state)
 
     @classmethod

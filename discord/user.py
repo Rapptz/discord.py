@@ -112,6 +112,15 @@ class BaseUser(_BaseUser):
 
         return self
 
+    def _to_minimal_user_json(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+            'avatar': self.avatar,
+            'discriminator': self.discriminator,
+            'bot': self.bot,
+        }
+
     @property
     def avatar_url(self):
         """Returns an :class:`Asset` for the avatar the user has.
