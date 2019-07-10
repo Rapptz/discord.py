@@ -70,6 +70,7 @@ class ConnectionState:
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
+        self.guild_subscriptions = options.get('guild_subscriptions', True)
         self._listeners = []
 
         activity = options.get('activity', None)
