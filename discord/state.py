@@ -71,6 +71,8 @@ class ConnectionState:
         self._fetch_offline = options.get('fetch_offline_members', True)
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_subscriptions = options.get('guild_subscriptions', True)
+        # Only disable cache if both fetch_offline and guild_subscriptions are off.
+        self._cache_members = not (self._fetch_offline or self.guild_subscriptions)
         self._listeners = []
 
         activity = options.get('activity', None)
@@ -584,7 +586,8 @@ class ConnectionState:
             return
 
         member = Member(guild=guild, data=data, state=self)
-        guild._add_member(member)
+        if self._cache_members:
+            guild._add_member(member)
         guild._member_count += 1
         self.dispatch('member_join', member)
 
