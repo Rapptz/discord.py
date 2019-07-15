@@ -162,7 +162,12 @@ class Client:
             If this is set to ``False`` then the following features will be disabled:
 
                 - No user related updates (:func:`on_user_update` will not dispatch)
-                - No presence related changes will be recorded (e.g. :attr:`Member.activities` or :attr:`Member.status`)
+                - All member related events will be disabled.
+                    - :func:`on_member_update`
+                    - :func:`on_member_join`
+                    - :func:`on_member_leave`
+
+                - Typing events will be disabled (:func:`on_typing_start`).
                 - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
                   This makes it difficult or impossible to do many things, for example:
 
