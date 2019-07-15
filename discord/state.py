@@ -51,6 +51,7 @@ from .object import Object
 
 class ListenerType(Enum):
     chunk = 0
+    query_members = 1
 
 Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
 log = logging.getLogger(__name__)
@@ -292,6 +293,32 @@ class ConnectionState:
                 await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
+
+    async def query_members(self, guild, query, limit, cache):
+        guild_id = guild.id
+        ws = self._get_websocket(guild_id)
+        if ws is None:
+            raise RuntimeError('Somehow do not have a websocket for this guild_id')
+
+        # Limits over 1000 cannot be supported since
+        # the main use case for this is guild_subscriptions being disabled
+        # and they don't receive GUILD_MEMBER events which make computing
+        # member_count impossible. The only way to fix it is by limiting
+        # the limit parameter to 1 to 1000.
+        future = self.receive_member_query(guild_id, query)
+        try:
+            # start the query operation
+            await ws.request_chunks(guild_id, query, limit)
+            members = await asyncio.wait_for(future, timeout=5.0, loop=self.loop)
+
+            if cache:
+                for member in members:
+                    guild._add_member(member)
+
+            return members
+        except asyncio.TimeoutError:
+            log.info('Timed out waiting for chunks with query %r and limit %d for guild_id %d', query, limit, guild_id)
+            raise
 
     async def _delay_ready(self):
         try:
@@ -792,15 +819,15 @@ class ConnectionState:
     def parse_guild_members_chunk(self, data):
         guild_id = int(data['guild_id'])
         guild = self._get_guild(guild_id)
-        members = data.get('members', [])
-        for member in members:
-            m = Member(guild=guild, data=member, state=self)
-            existing = guild.get_member(m.id)
-            if existing is None or existing.joined_at is None:
-                guild._add_member(m)
-
+        members = [Member(guild=guild, data=member, state=self) for member in data.get('members', [])]
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
+        if self._cache_members:
+            for member in members:
+                guild._add_member(member)
+
         self.process_listeners(ListenerType.chunk, guild, len(members))
+        names = [x.name.lower() for x in members]
+        self.process_listeners(ListenerType.query_members, (guild_id, names), members)
 
     def parse_guild_integrations_update(self, data):
         guild = self._get_guild(int(data['guild_id']))
@@ -927,6 +954,15 @@ class ConnectionState:
     def receive_chunk(self, guild_id):
         future = self.loop.create_future()
         listener = Listener(ListenerType.chunk, future, lambda s: s.id == guild_id)
+        self._listeners.append(listener)
+        return future
+
+    def receive_member_query(self, guild_id, query):
+        def predicate(args, *, guild_id=guild_id, query=query.lower()):
+            request_guild_id, names = args
+            return request_guild_id == guild_id and all(n.startswith(query) for n in names)
+        future = self.loop.create_future()
+        listener = Listener(ListenerType.query_members, future, predicate)
         self._listeners.append(listener)
         return future
 

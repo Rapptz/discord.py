@@ -1844,3 +1844,43 @@ class Guild(Hashable):
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
+
+    async def query_members(self, query, *, limit=5, cache=True):
+        """|coro|
+
+        Request members that belong to this guild whose username starts with
+        the query given.
+
+        This is a websocket operation and can be slow.
+
+        .. warning::
+
+            Most bots do not need to use this. It's mainly a helper
+            for bots who have disabled ``guild_subscriptions``.
+
+        .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        query: :class:`str`
+            The string that the username's start with. An empty string
+            requests all members.
+        limit: :class:`int`
+            The maximum number of members to send back. This must be
+            a number between 1 and 1000.
+        cache: :class:`bool`
+            Whether to cache the members internally. This makes operations
+            such as :meth:`get_member` work for those that matched.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            The query timed out waiting for the members.
+
+        Returns
+        --------
+        List[:class:`Member`]
+            The list of members that have matched the query.
+        """
+        limit = limit or 5
+        return await self._state.query_members(self, query=query, limit=limit, cache=cache)

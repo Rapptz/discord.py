@@ -323,10 +323,12 @@ async def async_all(gen, *, check=_isawaitable):
     return True
 
 async def sane_wait_for(futures, *, timeout, loop):
-    _, pending = await asyncio.wait(futures, timeout=timeout, loop=loop)
+    done, pending = await asyncio.wait(futures, timeout=timeout, return_when=asyncio.ALL_COMPLETED, loop=loop)
 
     if len(pending) != 0:
         raise asyncio.TimeoutError()
+
+    return done
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""

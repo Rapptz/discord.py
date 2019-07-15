@@ -517,6 +517,17 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         }
         await self.send_as_json(payload)
 
+    async def request_chunks(self, guild_id, query, limit):
+        payload = {
+            'op': self.REQUEST_MEMBERS,
+            'd': {
+                'guild_id': str(guild_id),
+                'query': query,
+                'limit': limit
+            }
+        }
+        await self.send_as_json(payload)
+
     async def voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
         payload = {
             'op': self.VOICE_STATE,
