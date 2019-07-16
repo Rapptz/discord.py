@@ -297,6 +297,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 },
                 'compress': True,
                 'large_threshold': 250,
+                'guild_subscriptions': self._connection.guild_subscriptions,
                 'v': 3
             }
         }
@@ -513,6 +514,17 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         payload = {
             'op': self.GUILD_SYNC,
             'd': list(guild_ids)
+        }
+        await self.send_as_json(payload)
+
+    async def request_chunks(self, guild_id, query, limit):
+        payload = {
+            'op': self.REQUEST_MEMBERS,
+            'd': {
+                'guild_id': str(guild_id),
+                'query': query,
+                'limit': limit
+            }
         }
         await self.send_as_json(payload)
 

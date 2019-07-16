@@ -189,12 +189,19 @@ class Member(discord.abc.Messageable, _BaseUser):
     @classmethod
     def _from_message(cls, *, message, data):
         author = message.author
-        data['user'] = {
-            attr: getattr(author, attr)
-            for attr in author.__slots__
-            if attr[0] != '_'
-        }
+        data['user'] = author._to_minimal_user_json()
         return cls(data=data, guild=message.guild, state=message._state)
+
+    @classmethod
+    def _try_upgrade(cls, *,  data, guild, state):
+        # A User object with a 'member' key
+        try:
+            member_data = data.pop('member')
+        except KeyError:
+            return state.store_user(data)
+        else:
+            member_data['user'] = data
+            return cls(data=member_data, guild=guild, state=state)
 
     @classmethod
     def _from_presence_update(cls, *, data, guild, state):
@@ -425,7 +432,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         administrator implication.
         """
 
-        if self.guild.owner == self:
+        if self.guild.owner_id == self.id:
             return Permissions.all()
 
         base = Permissions.none()

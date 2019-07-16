@@ -152,6 +152,37 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
+    guild_subscriptions: :class:`bool`
+        Whether to dispatching of presence or typing events. Defaults to ``True``.
+
+        .. versionadded:: 1.3
+
+        .. warning::
+
+            If this is set to ``False`` then the following features will be disabled:
+
+                - No user related updates (:func:`on_user_update` will not dispatch)
+                - All member related events will be disabled.
+                    - :func:`on_member_update`
+                    - :func:`on_member_join`
+                    - :func:`on_member_leave`
+
+                - Typing events will be disabled (:func:`on_typing_start`).
+                - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
+                  This makes it difficult or impossible to do many things, for example:
+
+                    - Computing permissions
+                    - Querying members in a voice channel via :attr:`VoiceChannel.members` will be empty.
+                    - Most forms of receiving :class:`Member` will be
+                      receiving :class:`User` instead, except for message events.
+                    - :attr:`Guild.owner` will usually resolve to ``None``.
+                    - :meth:`Guild.get_member` will usually be unavailable.
+                    - Anything that involves using :class:`Member`.
+                    - :attr:`users` will not be as populated.
+                    - etc.
+
+            In short, this makes it so the only member you can reliably query is the
+            message author. Useful for bots that do not require any state.
 
     Attributes
     -----------
