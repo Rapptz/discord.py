@@ -35,6 +35,7 @@ __all__ = (
     'Streaming',
     'Game',
     'Spotify',
+    'CustomStatus'
 )
 
 """If curious, this is the current schema for an activity.
@@ -582,6 +583,77 @@ class Spotify:
         """:class:`str`: The party ID of the listening party."""
         return self._party.get('id', '')
 
+class CustomStatus:
+    """Represents a custom status. This is a special case of :class:`Activity`.
+
+    .. versionadded:: 1.3
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two activities are equal.
+
+        .. describe:: x != y
+
+            Checks if two activities are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the activity's hash.
+
+        .. describe:: str(x)
+
+            Returns the string 'Custom Status'.
+    """
+
+    __slots__ = ('_status')
+
+    def __init__(self, **data):
+        self._state = data.pop('state', None)
+
+    @property
+    def type(self):
+        """Returns the activity's type. This is for compatibility with :class:`Activity`.
+
+        It always returns :attr:`ActivityType.custom_status`.
+        """
+        return ActivityType.custom_status
+
+    @property
+    def name(self):
+        """:class:`str`: The activity's name. This will always return "Custom Status"."""
+        return 'Custom Status'
+
+    @property
+    def state(self):
+        """:class:`str` : The custom status.
+
+        There is an alias for this named :meth:`status`."""
+        return self._state
+
+    @property
+    def status(self):
+        """:class:`str` : The custom status.
+
+        There is an alias for this named :meth:`state`."""
+        return self.state
+
+    def __eq__(self, other):
+        return (isinstance(other, CustomStatus) and other._state === self._state)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self._state)
+
+    def __str__(self):
+        return 'Custom Status'
+
+    def __repr__(self):
+        return '<CustomStatus state={0.state}>'.format(self)
+
 def create_activity(data):
     if not data:
         return None
@@ -597,4 +669,6 @@ def create_activity(data):
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
+    elif game_type is ActivityType.custom_status:
+        return CustomStatus(**data)
     return Activity(**data)

@@ -818,6 +818,10 @@ of :class:`enum.Enum`.
     .. attribute:: watching
 
         A "Watching" activity type.
+    .. attribute:: custom_status
+
+        A "Custom Status" activity type.
+        .. versionadded:: 1.3
 
 .. class:: HypeSquadHouse
 
@@ -2161,6 +2165,12 @@ Spotify
 ~~~~~~~~
 
 .. autoclass:: Spotify()
+    :members:
+
+CustomStatus
+~~~~~~~~
+
+.. autoclass:: CustomStatus()
     :members:
 
 VoiceState

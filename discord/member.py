@@ -144,7 +144,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     joined_at: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time. In certain cases, this can be ``None``.
-    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
+    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`CustomStatus`, :class:`Activity`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
         The guild that the member belongs to.
@@ -365,7 +365,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def activity(self):
-        """Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]: Returns the primary
+        """Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`CustomStatus`, :class:`Activity`]: Returns the primary
         activity the user is currently doing. Could be None if no activity is being done.
 
         .. note::
