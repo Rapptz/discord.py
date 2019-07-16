@@ -4,7 +4,7 @@ import datetime
 from .asset import Asset
 from .enums import ChannelType
 from .guild import Guild
-from .member import Member
+from .member import Member, VoiceState
 from .message import Message
 from .mixins import Hashable
 from .permissions import Permissions, PermissionOverwrite
@@ -61,6 +61,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def type(self) -> ChannelType: ...
     @property
     def members(self) -> List[Member]: ...
+    @property
+    def voice_states(self) -> Dict[int, VoiceState]: ...
     def permissions_for(self, member: Member) -> Permissions: ...
     async def edit(self, *, reason: Optional[str] = ..., name: str = ..., bitrate: int = ...,
                    user_limit: int = ..., position: int = ..., sync_permissions: bool = ...,
