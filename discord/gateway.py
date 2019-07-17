@@ -708,6 +708,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         state = self._connection
         state.ssrc = data['ssrc']
         state.voice_port = data['port']
+        state.endpoint_ip = data['ip']
 
         packet = bytearray(70)
         struct.pack_into('>I', packet, 0, state.ssrc)
