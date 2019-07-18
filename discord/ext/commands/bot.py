@@ -590,19 +590,23 @@ class BotBase(GroupMixin):
     def _load_from_module_spec(self, spec, key):
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
+        sys.modules[key] = lib
         try:
             spec.loader.exec_module(lib)
         except Exception as e:
+            del sys.modules[key]
             raise errors.ExtensionFailed(key, e) from e
 
         try:
             setup = getattr(lib, 'setup')
         except AttributeError:
+            del sys.modules[key]
             raise errors.NoEntryPointError(key)
 
         try:
             setup(self)
         except Exception as e:
+            del sys.modules[key]
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, key)
             raise errors.ExtensionFailed(key, e) from e
@@ -635,7 +639,7 @@ class BotBase(GroupMixin):
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
-            The extension setup function had an execution error.
+            The extension or its setup function had an execution error.
         """
 
         if name in self.__extensions:
