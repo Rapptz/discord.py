@@ -637,7 +637,7 @@ class BotBase(GroupMixin):
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
-            The extension setup function had an execution error.
+            The extension or its setup function had an execution error.
         """
 
         if name in self.__extensions:
