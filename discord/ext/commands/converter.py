@@ -226,7 +226,7 @@ class TextChannelConverter(IDConverter):
     async def convert(self, ctx, argument):
         bot = ctx.bot
 
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)(:?[^> ]*)?>$', argument)
         result = None
         guild = ctx.guild
 
@@ -264,7 +264,7 @@ class VoiceChannelConverter(IDConverter):
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)(:?[^> ]*)?>$', argument)
         result = None
         guild = ctx.guild
 
@@ -303,7 +303,7 @@ class CategoryChannelConverter(IDConverter):
     async def convert(self, ctx, argument):
         bot = ctx.bot
 
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)(:?[^> ]*)?>$', argument)
         result = None
         guild = ctx.guild
 
