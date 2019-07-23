@@ -397,8 +397,9 @@ class Webhook:
     ------------
     id: :class:`int`
         The webhook's ID
-    token: :class:`str`
-        The authentication token of the webhook.
+    token: Optional[:class:`str`]
+        The authentication token of the webhook. If this is ``None``
+        then the webhook cannot be used to make requests.
     guild_id: Optional[:class:`int`]
         The guild ID this webhook is for.
     channel_id: Optional[:class:`int`]
@@ -421,7 +422,7 @@ class Webhook:
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.name = data.get('name')
         self.avatar = data.get('avatar')
-        self.token = data['token']
+        self.token = data.get('token')
         self._state = state or _PartialWebhookState(adapter)
         self._adapter = adapter
         self._adapter._prepare(self)
@@ -591,7 +592,12 @@ class Webhook:
             This webhook does not exist.
         Forbidden
             You do not have permissions to delete this webhook.
+        InvalidArgument
+            This webhook does not have a token associated with it.
         """
+        if self.token is None:
+            raise InvalidArgument('This webhook does not have a token associated with it')
+
         return self._adapter.delete_webhook()
 
     def edit(self, **kwargs):
@@ -615,9 +621,12 @@ class Webhook:
             Editing the webhook failed.
         NotFound
             This webhook does not exist.
-        Forbidden
-            You do not have permissions to edit this webhook.
+        InvalidArgument
+            This webhook does not have a token associated with it.
         """
+        if self.token is None:
+            raise InvalidArgument('This webhook does not have a token associated with it')
+
         payload = {}
 
         try:
@@ -698,7 +707,8 @@ class Webhook:
             The authorization token for the webhook is incorrect.
         InvalidArgument
             You specified both ``embed`` and ``embeds`` or the length of
-            ``embeds`` was invalid.
+            ``embeds`` was invalid or there was no token associated with
+            this webhook.
 
         Returns
         ---------
@@ -707,7 +717,8 @@ class Webhook:
         """
 
         payload = {}
-
+        if self.token is None:
+            raise InvalidArgument('This webhook does not have a token associated with it')
         if files is not None and file is not None:
             raise InvalidArgument('Cannot mix file and files keyword arguments.')
         if embeds is not None and embed is not None:
