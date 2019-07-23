@@ -522,7 +522,18 @@ class Guild(Hashable):
         return as_list
 
     def get_channel(self, channel_id):
-        """Returns a :class:`abc.GuildChannel` with the given ID. If not found, returns None."""
+        """Returns a channel with the given ID.
+
+        Parameters
+        -----------
+        channel_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`.abc.GuildChannel`]
+            The returned channel or ``None`` if not found.
+        """
         return self._channels.get(channel_id)
 
     @property
@@ -562,7 +573,18 @@ class Guild(Hashable):
         return list(self._members.values())
 
     def get_member(self, user_id):
-        """Returns a :class:`Member` with the given ID. If not found, returns None."""
+        """Returns a member with the given ID.
+
+        Parameters
+        -----------
+        user_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Member`]
+            The member or ``None`` if not found.
+        """
         return self._members.get(user_id)
 
     @property
@@ -580,7 +602,18 @@ class Guild(Hashable):
         return sorted(self._roles.values())
 
     def get_role(self, role_id):
-        """Returns a :class:`Role` with the given ID. If not found, returns None."""
+        """Returns a role with the given ID.
+
+        Parameters
+        -----------
+        role_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Role`]
+            The role or ``None`` if not found.
+        """
         return self._roles.get(role_id)
 
     @utils.cached_slot_property('_default_role')
