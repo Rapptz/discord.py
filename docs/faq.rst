@@ -85,12 +85,12 @@ in the repository.
 Can I search messages in channels?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Unfortunately, Discord does not provide a channel search API for bots. There are some workarounds:
+Unfortunately, Discord does not expose a channel search API for bots. There are some workarounds:
 
 - Use :meth:`abc.Messageable.history` and check the :attr:`~Message.content` of each message.
-  This may be slow depending on the number of messages checked.
-- Listen for new messages that match your condition in :func:`on_message`.
+  This may be slow depending on the number of messages checked, as more messages require more HTTP calls.
 - Iterate through :attr:`Client.cached_messages`.
+  This has a limited number of messages and it is likely the message you want will not be cached here.
 
 .. warning::
 
@@ -129,27 +129,24 @@ You must fetch the channel directly and then call the appropriate method. Exampl
 How do I send a DM?
 ~~~~~~~~~~~~~~~~~~~
 
-Get the :class:`User` object and call :func:`User.send`. For example: ::
+Get the :class:`User` object and call :meth:`User.send`. For example: ::
 
 	user = client.get_user(381870129706958858)
 	await user.send('👀')
 
 If the user is not cached (:meth:`Client.get_user` returns ``None``), you can use :meth:`Client.fetch_user` instead.
 
-If you are responding to an event, such as :func:`on_message`, you already have the :class:`User` object. Example: ::
-
-    await message.author.send('hello!')
+If you are responding to an event, such as :func:`on_message`, you already have the :class:`User` object via :attr:`Message.author`..
+Use :meth:`User.send`.
 
 How do I get the ID of a sent message?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:meth:`abc.Messageable.send` returns the :class:`Message` that was sent: ::
-
-    m = await channel.send('hello')
-    # now use m.id
+:meth:`abc.Messageable.send` returns the :class:`Message` that was sent.
+The ID of a message can be accessed via :attr:`Message.id`.
 
 How do I upload an image?
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To upload something to Discord you have to use the :class:`File` object.
 
