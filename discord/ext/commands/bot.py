@@ -286,7 +286,7 @@ class BotBase(GroupMixin):
 
     async def is_owner(self, user):
         """|coro|
-        
+
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
 
@@ -729,7 +729,8 @@ class BotBase(GroupMixin):
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.
-            self._load_from_module_spec(lib, name)
+            lib.setup(self)
+            self.__extensions[name] = lib
 
             # revert sys.modules back to normal and raise back to caller
             sys.modules.update(modules)
