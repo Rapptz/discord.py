@@ -40,6 +40,7 @@ class Loop:
         self._is_being_cancelled = False
         self._has_failed = False
         self._stop_next_iteration = False
+        self._exception = None
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -81,8 +82,9 @@ class Loop:
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
-        except Exception:
+        except Exception as e:
             self._has_failed = True
+            self._exception = e
             log.exception('Internal background task failed.')
             raise
         finally:
@@ -91,6 +93,7 @@ class Loop:
             self._current_loop = 0
             self._stop_next_iteration = False
             self._has_failed = False
+            self._exception = None
 
     def __get__(self, obj, objtype):
         if obj is None:
@@ -254,6 +257,16 @@ class Loop:
         .. versionadded:: 1.2.0
         """
         return self._has_failed
+
+    def exception(self):
+        """Optional[:class:`Exception`]: The exception that the internal task failed with.
+
+        .. versionadded:: 1.3.0
+        """
+        if self._exception is not None:
+            return self._exception
+        if self._task is not None:
+            return self._task.exception()
 
     def before_loop(self, coro):
         """A decorator that registers a coroutine to be called before the loop starts running.
