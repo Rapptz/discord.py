@@ -117,6 +117,8 @@ class FFmpegAudio(AudioSource):
 
     User created AudioSources using FFmpeg differently from how :class:`FFmpegPCMAudio` and
     :class:`FFmpegOpusAudio` work should subclass this.
+
+    .. versionadded:: 1.3.0
     """
 
     def __init__(self, source, *, executable='ffmpeg', args, **subprocess_kwargs):
@@ -235,6 +237,8 @@ class FFmpegOpusAudio(FFmpegAudio):
     for a boost in performance at the cost of a short initial delay to gather the information.
     The same can be achieved by passing ``copy`` to the ``codec`` parameter, but only if you
     know that the input source is opus encoded beforehand.
+
+    .. versionadded:: 1.3.0
 
     .. warning::
 
