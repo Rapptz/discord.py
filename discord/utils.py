@@ -441,7 +441,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
                 return is_url
             return '\\' + groupdict['markdown']
 
-        regex = r'(?P<markdown>[_\\~|\*`])'
+        regex = r'(?P<markdown>[_\\~|\*`]|>(?:>>)?\s)'
         if ignore_links:
             regex = '(?:%s|%s)' % (url_regex, regex)
         return re.sub(regex, replacement, text)
