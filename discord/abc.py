@@ -725,8 +725,6 @@ class Messageable(metaclass=abc.ABCMeta):
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
-
-    This ABC must also implement :class:`~discord.abc.Snowflake`.
     """
 
     __slots__ = ()
