@@ -391,7 +391,10 @@ class GuildChannel:
         If there is no category then this is ``False``.
         """
         category = self.guild.get_channel(self.category_id)
-        return self._overwrites == category._overwrites
+        if category is not None:
+            return self._overwrites == category._overwrites
+        else:
+            return False
 
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`~discord.Member`.
