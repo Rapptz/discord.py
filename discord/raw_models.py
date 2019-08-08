@@ -89,16 +89,19 @@ class RawMessageUpdateEvent(_RawReprMixin):
     -----------
     message_id: :class:`int`
         The message ID that got updated.
+    channel_id: :class:`int`
+        The channel ID where the update took place.
     data: :class:`dict`
         The raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache.
     """
 
-    __slots__ = ('message_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'data', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
+        self.channel_id = int(data['channel_id'])
         self.data = data
         self.cached_message = None
 
