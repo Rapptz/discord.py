@@ -85,6 +85,9 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
 class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
 
+    .. versionchanged:: 1.3.0
+        The ``channel_id`` attribute was added.
+
     Attributes
     -----------
     message_id: :class:`int`

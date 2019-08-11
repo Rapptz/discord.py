@@ -1602,7 +1602,7 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.channel`` for a per-channel basis.
     - ``BucketType.member`` for a per-member basis.
     - ``BucketType.category`` for a per-category basis.
-    - ``BucketType.role`` for a per-role basis.
+    - ``BucketType.role`` for a per-role basis (added in v1.3.0).
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.
