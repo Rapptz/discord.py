@@ -63,7 +63,7 @@ class Route:
     @property
     def bucket(self):
         # the bucket is just method + path w/ major parameters
-        return '{0.method}:{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
+        return '{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
 
 class MaybeUnlock:
     def __init__(self, lock):
