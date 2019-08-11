@@ -112,6 +112,9 @@ class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
     :func:`on_raw_reaction_remove` event.
 
+    .. versionchanged:: 1.3.0
+        The ``event_type`` attribute was added.
+
     Attributes
     -----------
     message_id: :class:`int`
@@ -124,15 +127,20 @@ class RawReactionActionEvent(_RawReprMixin):
         The guild ID where the reaction got added or removed, if applicable.
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
+    event_type: :class:`str`
+        The event type that triggered this action. Can be
+        ``REACTION_ADD`` for reaction addition or
+        ``REACTION_REMOVE`` for reaction removal.
     """
 
     __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji')
 
-    def __init__(self, data, emoji):
+    def __init__(self, data, emoji, event_type):
         self.message_id = int(data['message_id'])
         self.channel_id = int(data['channel_id'])
         self.user_id = int(data['user_id'])
         self.emoji = emoji
+        self.event_type = event_type
 
         try:
             self.guild_id = int(data['guild_id'])
