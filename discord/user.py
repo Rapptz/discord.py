@@ -331,7 +331,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Parameters
         -----------
@@ -351,7 +351,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return list(self._relationships.values())
 
@@ -361,7 +361,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
@@ -371,7 +371,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
@@ -483,7 +483,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Parameters
         -----------
@@ -521,7 +521,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Parameters
         -------
@@ -698,7 +698,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return self._state.user.get_relationship(self.id)
 
@@ -709,7 +709,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -732,7 +732,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         r = self.relationship
         if r is None:
@@ -744,7 +744,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         r = self.relationship
         if r is None:
@@ -758,7 +758,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -777,7 +777,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -795,7 +795,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -813,7 +813,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -831,7 +831,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------

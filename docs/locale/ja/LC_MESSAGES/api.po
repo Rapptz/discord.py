@@ -6530,7 +6530,7 @@ msgstr "該当すれば :class:`Relationship` が返ります。"
 #: discord.User.mutual_friends:7 discord.User.profile:7
 #: discord.User.relationship:5 discord.User.remove_friend:7
 #: discord.User.send_friend_request:7 discord.User.unblock:7 of
-msgid "This only applies to non-bot accounts."
+msgid "This can only be used by non-bot accounts."
 msgstr ""
 
 #: discord.ClientUser.get_relationship:7 of

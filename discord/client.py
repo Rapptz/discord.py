@@ -1228,7 +1228,11 @@ class Client:
     async def fetch_user_profile(self, user_id):
         """|coro|
 
-        Gets an arbitrary user's profile. This can only be used by non-bot accounts.
+        Gets an arbitrary user's profile.
+
+        .. note::
+
+            This can only be used by non-bot accounts.
 
         Parameters
         ------------
