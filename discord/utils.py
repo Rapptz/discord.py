@@ -304,7 +304,7 @@ def to_json(obj):
 
 def _parse_ratelimit_header(request):
     now = parsedate_to_datetime(request.headers['Date'])
-    reset = datetime.datetime.fromtimestamp(int(request.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
+    reset = datetime.datetime.fromtimestamp(float(request.headers['X-Ratelimit-Reset']), datetime.timezone.utc)
     return (reset - now).total_seconds()
 
 async def maybe_coroutine(f, *args, **kwargs):
