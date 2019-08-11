@@ -1592,7 +1592,7 @@ def cooldown(rate, per, type=BucketType.default):
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
-    either on a per-guild, per-channel, per-user, or global basis.
+    either on a per-guild, per-channel, per-user, per-role or global basis.
     Denoted by the third argument of ``type`` which must be of enum
     type ``BucketType`` which could be either:
 
@@ -1602,6 +1602,7 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.channel`` for a per-channel basis.
     - ``BucketType.member`` for a per-member basis.
     - ``BucketType.category`` for a per-category basis.
+    - ``BucketType.role`` for a per-role basis.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.
