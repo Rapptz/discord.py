@@ -13,16 +13,14 @@ MAX_ASYNCIO_SECONDS = 3456000
 
 log = logging.getLogger(__name__)
 
-def _get_time_parameter(time, *, inst=isinstance, dt=datetime.time, utc=datetime.timezone.utc):
-    if inst(time, dt):
-        return [time if time.tzinfo is not None else time.replace(tzinfo=utc)]
-    if not inst(time, Sequence):
-        raise TypeError('time parameter must be datetime.time or a sequence of datetime.time')
-    if not time:
+def _get_times_parameter(times, *, inst=isinstance, dt=datetime.time, utc=datetime.timezone.utc):
+    if not inst(times, Sequence):
+        raise TypeError('time parameter must be a sequence of datetime.time')
+    if not times:
         raise ValueError('time parameter must not be an empty sequence.')
 
     ret = []
-    for index, t in enumerate(time):
+    for index, t in enumerate(times):
         if not inst(t, dt):
             raise TypeError('index %d of time sequence expected %r not %r' % (index, dt, type(t)))
         ret.append(t if t.tzinfo is not None else t.replace(tzinfo=utc))
@@ -33,7 +31,7 @@ class Loop:
 
     The main interface to create this is through :func:`loop`.
     """
-    def __init__(self, coro, seconds, hours, minutes, time, count, reconnect, loop):
+    def __init__(self, coro, seconds, hours, minutes, times, count, reconnect, loop):
         self.coro = coro
         self.reconnect = reconnect
         self.loop = loop or asyncio.get_event_loop()
@@ -62,7 +60,7 @@ class Loop:
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
 
-        self.change_interval(seconds=seconds, minutes=minutes, hours=hours, time=time)
+        self.change_interval(seconds=seconds, minutes=minutes, hours=hours, times=times)
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
@@ -82,7 +80,7 @@ class Loop:
         await self._call_loop_function('before_loop')
         try:
             # If a specific time is needed, wait before calling the function
-            if self._time is not None:
+            if self._times is not None:
                 await asyncio.sleep(self._get_next_sleep_time())
 
             while True:
@@ -349,11 +347,11 @@ class Loop:
         # microseconds in the calculations sometimes leads to the sleep time
         # being too small
         now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-        if self._time_index >= len(self._time):
+        if self._time_index >= len(self._times):
             self._time_index = 0
 
-        # note: self._time is sorted by earliest -> latest
-        current_time = self._time[self._time_index]
+        # note: self._times is sorted by earliest -> latest
+        current_time = self._times[self._time_index]
         if current_time >= now.timetz():
             as_dt = datetime.datetime.combine(now.date(), current_time)
         else:
@@ -365,15 +363,15 @@ class Loop:
         return max(delta, 0.0)
 
     def _prepare_index(self):
-        # pre-condition: self._time is set
+        # pre-condition: self._times is set
         # find the current index that we should be in
         now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).timetz()
-        for index, dt in enumerate(self._time):
+        for index, dt in enumerate(self._times):
             if dt >= now:
                 self._time_index = index
                 break
 
-    def change_interval(self, *, seconds=0, minutes=0, hours=0, time=None):
+    def change_interval(self, *, seconds=0, minutes=0, hours=0, times=None):
         """Changes the interval for the sleep time.
 
         .. note::
@@ -391,9 +389,8 @@ class Loop:
             The number of minutes between every iteration.
         hours: :class:`float`
             The number of hours between every iteration.
-        time: Union[Sequence[:class:`datetime.time`], :class:`datetime.time`]
-            The exact times to run this loop at. Either a list or a single
-            value of :class:`datetime.time` should be passed. Note that
+        times: Sequence[:class:`datetime.time`]
+            The exact times to run this loop at. Note that
             this cannot be mixed with the relative time parameters.
 
             .. versionadded:: 1.3.0
@@ -403,11 +400,11 @@ class Loop:
         ValueError
             An invalid value was given.
         TypeError
-            Mixing ``time`` parameter with relative time parameter or
-            passing an improper type for the ``time`` parameter.
+            Mixing ``times`` parameter with relative time parameter or
+            passing an improper type for the ``times`` parameter.
         """
 
-        if any((seconds, minutes, hours)) and time is not None:
+        if any((seconds, minutes, hours)) and times is not None:
             raise TypeError('Cannot mix relative time with explicit time.')
 
         self.seconds = seconds
@@ -415,7 +412,7 @@ class Loop:
         self.minutes = minutes
         self._time_index = 0
 
-        if time is None:
+        if times is None:
             sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
             if sleep >= MAX_ASYNCIO_SECONDS:
                 fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
@@ -425,13 +422,13 @@ class Loop:
                 raise ValueError('Total number of seconds cannot be less than zero.')
 
             self._sleep = sleep
-            self._time = None
+            self._times = None
         else:
             self._sleep = None
-            self._time = _get_time_parameter(time)
+            self._times = _get_times_parameter(times)
             self._prepare_index()
 
-def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True, loop=None):
+def loop(*, seconds=0, minutes=0, hours=0, count=None, times=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
@@ -446,9 +443,8 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True
     count: Optional[:class:`int`]
         The number of loops to do, ``None`` if it should be an
         infinite loop.
-    time: Union[Sequence[:class:`datetime.time`], :class:`datetime.time`]
-        The exact times to run this loop at. Either a list or a single
-        value of :class:`datetime.time` should be passed. Note that
+    times: Sequence[:class:`datetime.time`]
+        The exact times to run this loop at. Note that
         this cannot be mixed with the relative time parameters.
 
         .. versionadded:: 1.3.0
@@ -469,5 +465,5 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True
     """
     def decorator(func):
         return Loop(func, seconds=seconds, minutes=minutes, hours=hours,
-                          time=time, count=count, reconnect=reconnect, loop=loop)
+                          times=times, count=count, reconnect=reconnect, loop=loop)
     return decorator
