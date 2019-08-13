@@ -153,7 +153,7 @@ class Client:
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
     guild_subscriptions: :class:`bool`
-        Whether to dispatching of presence or typing events. Defaults to ``True``.
+        Whether or not to dispatch presence and typing events. Defaults to ``True``.
 
         .. versionadded:: 1.3
 
