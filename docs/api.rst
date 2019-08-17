@@ -760,6 +760,9 @@ of :class:`enum.Enum`.
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
 
+    .. versionchanged:: 1.3.0
+        The ``channel_follow_add`` attribute was added.
+
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
