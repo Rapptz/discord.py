@@ -1,0 +1,82 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: index.pot\n"
+"Language: ja_JP\n"
+
+#: ../../index.rst:7
+msgid "Welcome to discord.py"
+msgstr "discord.py へようこそ。"
+
+#: ../../index.rst:11
+msgid "discord.py is a modern, easy to use, feature-rich, and async ready API wrapper for Discord."
+msgstr "discord.py は機能豊富かつモダンで使いやすい、非同期処理にも対応したDiscord用のAPIラッパーです。"
+
+#: ../../index.rst:14
+msgid "**Features:**"
+msgstr "**特徴:**"
+
+#: ../../index.rst:16
+msgid "Modern Pythonic API using ``async``\\/``await`` syntax"
+msgstr "``async``\\/``await`` 構文を使ったモダンなPythonらしいAPI"
+
+#: ../../index.rst:17
+msgid "Sane rate limit handling that prevents 429s"
+msgstr "429エラー防止の為のレート制限"
+
+#: ../../index.rst:18
+msgid "Implements the entire Discord API"
+msgstr "Discord APIを完全にカバー"
+
+#: ../../index.rst:19
+msgid "Command extension to aid with bot creation"
+msgstr "Bot作成に便利なコマンド拡張"
+
+#: ../../index.rst:20
+msgid "Easy to use with an object oriented design"
+msgstr "オブジェクト指向設計で使いやすい"
+
+#: ../../index.rst:21
+msgid "Optimised for both speed and memory"
+msgstr "メモリと速度の両方を最適化"
+
+#: ../../index.rst:24
+msgid "Documentation Contents"
+msgstr "ドキュメントの目次"
+
+#: ../../index.rst:36
+msgid "Extensions"
+msgstr "拡張機能"
+
+#: ../../index.rst:46
+msgid "Additional Information"
+msgstr "追加情報"
+
+#: ../../index.rst:56
+msgid "If you still can't find what you're looking for, try in one of the following pages:"
+msgstr "探しているものが見つからない場合は、以下のページを試してください。"
+
+#: ../../index.rst:58
+msgid ":ref:`genindex`"
+msgstr ":ref:`genindex`"
+
+#: ../../index.rst:59
+msgid ":ref:`modindex`"
+msgstr ":ref:`modindex`"
+
+#: ../../index.rst:60
+msgid ":ref:`search`"
+msgstr ":ref:`search`"
+

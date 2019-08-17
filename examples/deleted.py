@@ -1,22 +1,21 @@
 import discord
 
-client = discord.Client()
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print('Connected!')
+        print('Username: {0.name}\nID: {0.id}'.format(self.user))
 
-@client.event
-async def on_ready():
-    print('Connected!')
-    print('Username: ' + client.user.name)
-    print('ID: ' + client.user.id)
+    async def on_message(self, message):
+        if message.content.startswith('!deleteme'):
+            msg = await message.channel.send('I will delete myself now...')
+            await msg.delete()
 
-@client.event
-async def on_message(message):
-    if message.content.startswith('!deleteme'):
-        msg = await client.send_message(message.channel, 'I will delete myself now...')
-        await client.delete_message(msg)
+            # this also works
+            await message.channel.send('Goodbye in 3 seconds...', delete_after=3.0)
 
-@client.event
-async def on_message_delete(message):
-    fmt = '{0.author.name} has deleted the message:\n{0.content}'
-    await client.send_message(message.channel, fmt.format(message))
+    async def on_message_delete(self, message):
+        fmt = '{0.author} has deleted the message: {0.content}'
+        await message.channel.send(fmt.format(message))
 
+client = MyClient()
 client.run('token')

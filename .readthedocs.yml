@@ -1,0 +1,18 @@
+version: 2
+formats: []
+
+build:
+  image: latest
+
+sphinx:
+  configuration: docs/conf.py
+  fail_on_warning: false
+  builder: html
+
+python:
+  version: 3.7
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

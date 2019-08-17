@@ -1,0 +1,136 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: discord.pot\n"
+"Language: ja_JP\n"
+
+#: ../../discord.rst:4
+msgid "Creating a Bot Account"
+msgstr "Botアカウント作成"
+
+#: ../../discord.rst:6
+msgid "In order to work with the library and the Discord API in general, we must first create a Discord Bot account."
+msgstr "ライブラリとDiscord APIを使用するには、BotのDiscordアカウントを用意する必要があります。"
+
+#: ../../discord.rst:8
+msgid "Creating a Bot account is a pretty straightforward process."
+msgstr "Botのアカウント作成はとても簡単です。"
+
+#: ../../discord.rst:10
+#: ../../discord.rst:64
+msgid "Make sure you're logged on to the `Discord website <https://discordapp.com>`_."
+msgstr "まずは `Discordのウェブサイト <https://discordapp.com>`_ にログインしてください。"
+
+#: ../../discord.rst:11
+#: ../../discord.rst:65
+msgid "Navigate to the `application page <https://discordapp.com/developers/applications>`_"
+msgstr "`アプリケーションページ <https://discordapp.com/developers/applications>`_ に移動します。"
+
+#: ../../discord.rst:12
+msgid "Click on the \"New Application\" button."
+msgstr "「New Application」ボタンをクリックします。"
+
+#: ../../discord.rst:17
+msgid "Give the application a name and click \"Create\"."
+msgstr "アプリケーションの名前を決めて、「Create」をクリックします。"
+
+#: ../../discord.rst:22
+msgid "Create a Bot User by navigating to the \"Bot\" tab and clicking \"Add Bot\"."
+msgstr "「Bot」タブへ移動し、「Add Bot」をクリックしてBotユーザーを作成します。"
+
+#: ../../discord.rst:24
+msgid "Click \"Yes, do it!\" to continue."
+msgstr "「Yes, do it!」をクリックして続行します。"
+
+#: ../../discord.rst:28
+msgid "Make sure that **Public Bot** is ticked if you want others to invite your bot."
+msgstr "他人にBotの招待を許可する場合には、 **Public Bot** にチェックを入れてください。"
+
+#: ../../discord.rst:30
+msgid "You should also make sure that **Require OAuth2 Code Grant** is unchecked unless you are developing a service that needs it. If you're unsure, then **leave it unchecked**."
+msgstr "また、必要なサービスを開発している場合を除いて、 **Require OAuth2 Code Grant** がオフになっていることを確認する必要があります。わからない場合は **チェックを外してください** 。"
+
+#: ../../discord.rst:36
+msgid "Copy the token using the \"Copy\" button."
+msgstr "「Copy」ボタンを使ってトークンをコピーします。"
+
+#: ../../discord.rst:38
+msgid "**This is not the Client Secret at the General Information page**"
+msgstr "**General InformationページのClient Secretではないので注意してください**"
+
+#: ../../discord.rst:42
+msgid "It should be worth noting that this token is essentially your bot's password. You should **never** share this to someone else. In doing so, someone can log in to your bot and do malicious things, such as leaving servers, ban all members inside a server, or pinging everyone maliciously."
+msgstr "このトークンは、あなたのBotのパスワードと同義であることを覚えておきましょう。誰か他の人とトークンを共有することは絶対に避けてください。トークンがあれば、誰かがあなたのBotにログインし、サーバーから退出したり、サーバー内のすべてのメンバーをBANしたり、すべての人にメンションを送るなどといった悪質な行為を行える様になってしまいます。"
+
+#: ../../discord.rst:47
+msgid "The possibilities are endless, so **do not share this token.**"
+msgstr "可能性は無限にあるので、絶対に **トークンを共有しないでください** 。"
+
+#: ../../discord.rst:49
+msgid "If you accidentally leaked your token, click the \"Regenerate\" button as soon as possible. This revokes your old token and re-generates a new one. Now you need to use the new token to login."
+msgstr "誤ってトークンを流出させてしまった場合、可能な限り速急に「Regenerate」ボタンをクリックしましょう。これによって古いトークンが無効になり、新しいトークンが再生成されます。今度からは新しいトークンを利用してログインを行う必要があります。"
+
+#: ../../discord.rst:53
+msgid "And that's it. You now have a bot account and you can login with that token."
+msgstr "以上です。 これでボットアカウントが作成され、そのトークンでログインできます。"
+
+#: ../../discord.rst:58
+msgid "Inviting Your Bot"
+msgstr "Botを招待する"
+
+#: ../../discord.rst:60
+msgid "So you've made a Bot User but it's not actually in any server."
+msgstr "Botのユーザーを作成しましたが、現時点ではどのサーバーにも参加していない状態です。"
+
+#: ../../discord.rst:62
+msgid "If you want to invite your bot you must create an invite URL for it."
+msgstr "Botを招待したい場合は、そのための招待URLを作成する必要があります。"
+
+#: ../../discord.rst:66
+msgid "Click on your bot's page."
+msgstr "Botのページを開きます。"
+
+#: ../../discord.rst:67
+msgid "Go to the \"OAuth2\" tab."
+msgstr "「OAuth2」タブへ移動します。"
+
+#: ../../discord.rst:72
+msgid "Tick the \"bot\" checkbox under \"scopes\"."
+msgstr "「scopes」下にある「bot」チェックボックスを選択してください。"
+
+#: ../../discord.rst:77
+msgid "Tick the permissions required for your bot to function under \"Bot Permissions\"."
+msgstr "「Bot Permissions」からBotの機能に必要な権限を選択してください。"
+
+#: ../../discord.rst:79
+msgid "Please be aware of the consequences of requiring your bot to have the \"Administrator\" permission."
+msgstr "Botに「管理者」権限を要求させることによる影響は認識しておきましょう。"
+
+#: ../../discord.rst:81
+msgid "Bot owners must have 2FA enabled for certain actions and permissions when added in servers that have Server-Wide 2FA enabled. Check the `2FA support page <https://support.discordapp.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ for more information."
+msgstr "二段階認証が有効になっているサーバーにBotが追加された場合、Botの所有者は特定の動作と権限のために二段階認証を有効化させなければいけません。詳細は `二段階認証のサポートページ <https://support.discordapp.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ を参照してください。"
+
+#: ../../discord.rst:86
+msgid "Now the resulting URL can be used to add your bot to a server. Copy and paste the URL into your browser, choose a server to invite the bot to, and click \"Authorize\"."
+msgstr "結果的に生成されたURLを使ってBotをサーバーに追加することができます。URLをコピーしてブラウザに貼り付け、Botを招待したいサーバーを選択した後、「認証」をクリックしてください。"
+
+#: ../../discord.rst:91
+msgid "The person adding the bot needs \"Manage Server\" permissions to do so."
+msgstr "Botを追加する人には「サーバー管理」権限が必要です。"
+
+#: ../../discord.rst:93
+msgid "If you want to generate this URL dynamically at run-time inside your bot and using the :class:`discord.Permissions` interface, you can use :func:`discord.utils.oauth_url`."
+msgstr "このURLを実行時に動的に生成したい場合は、 :class:`discord.Permissions` インターフェイスから :func:`discord.utils.oauth_url` を使用できます。"
+

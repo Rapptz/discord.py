@@ -1,23 +1,28 @@
 import discord
 import asyncio
 
-client = discord.Client()
+class MyClient(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-async def my_background_task():
-    await client.wait_until_ready()
-    counter = 0
-    channel = discord.Object(id='channel_id_here')
-    while not client.is_closed:
-        counter += 1
-        await client.send_message(channel, counter)
-        await asyncio.sleep(60) # task runs every 60 seconds
+        # create the background task and run it in the background
+        self.bg_task = self.loop.create_task(self.my_background_task())
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    async def on_ready(self):
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('------')
 
-client.loop.create_task(my_background_task())
+    async def my_background_task(self):
+        await self.wait_until_ready()
+        counter = 0
+        channel = self.get_channel(1234567) # channel ID goes here
+        while not self.is_closed():
+            counter += 1
+            await channel.send(counter)
+            await asyncio.sleep(60) # task runs every 60 seconds
+
+
+client = MyClient()
 client.run('token')

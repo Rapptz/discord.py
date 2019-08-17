@@ -1,0 +1,46 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: logging.pot\n"
+"Language: ja_JP\n"
+
+#: ../../logging.rst:5
+msgid "Setting Up Logging"
+msgstr "ログの設定"
+
+#: ../../logging.rst:7
+msgid "*discord.py* logs errors and debug information via the :mod:`logging` python module. It is strongly recommended that the logging module is configured, as no errors or warnings will be output if it is not set up. Configuration of the ``logging`` module can be as simple as::"
+msgstr "*discord.py* はPythonの :mod:`logging` モジュールを介してエラーやデバッグの情報を記録します。loggingモジュールが設定されていない場合は、エラーや警告が出力されないため、設定するとを強くおすすめします。loggingモジュールの設定は下記手順で簡単に実装が可能です。"
+
+#: ../../logging.rst:16
+msgid "Placed at the start of the application. This will output the logs from discord as well as other libraries that uses the ``logging`` module directly to the console."
+msgstr "アプリケーションの始めにこれを書き加えるだけです。これはdiscordからのログを ``logging`` モジュールを用いた他のライブラリ同様、コンソールに出力します。"
+
+#: ../../logging.rst:20
+msgid "The optional ``level`` argument specifies what level of events to log out and can any of ``CRITICAL``, ``ERROR``, ``WARNING``, ``INFO``, and ``DEBUG`` and if not specified defaults to ``WARNING``."
+msgstr "オプションである ``level`` の引数は出力するイベントのレベルを指定するためのもので、 ``CRITICAL``, ``ERROR``, ``WARNING``, ``INFO`` そして ``DEBUG`` を指定することが可能です。指定されていない場合はデフォルトである ``WARNING`` に設定されます。"
+
+#: ../../logging.rst:24
+msgid "More advance setups are possible with the :mod:`logging` module.  To for example write the logs to a file called ``discord.log`` instead of outputting them to to the console the following snippet can be used::"
+msgstr "また、 :mod:`logging` モジュールでは更に高度な設定が可能です。たとえば、コンソールへ出力するのではなく、 ``discord.log`` というファイルにログを出力するには、以下のスニペットが利用できます。"
+
+#: ../../logging.rst:37
+msgid "This is recommended, especially at verbose levels such as ``INFO``, and ``DEBUG`` as there are a lot of events logged and it would clog the stdout of your program."
+msgstr "特に、 ``INFO`` や ``DEBUG`` といった冗長なイベントレベルを設定している場合、プログラムの標準出力をつまらせてしまう原因になるため、ファイルへの出力が推奨されます。"
+
+#: ../../logging.rst:43
+msgid "For more information, check the documentation and tutorial of the :mod:`logging` module."
+msgstr "詳細は、:mod:`logging` モジュールのドキュメントを参照してください。"
+

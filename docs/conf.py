@@ -16,12 +16,11 @@ import sys
 import os
 import re
 
-on_rtd = os.getenv('READTHEDOCS') == 'True'
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.append(os.path.abspath('extensions'))
 
 # -- General configuration ------------------------------------------------
 
@@ -32,25 +31,34 @@ sys.path.insert(0, os.path.abspath('..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'builder',
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinxcontrib_trio',
+    'details',
+    'exception_hierarchy'
 ]
-
-if on_rtd:
-  extensions.append('sphinxcontrib.napoleon')
-else:
-  extensions.append('sphinx.ext.napoleon')
 
 autodoc_member_order = 'bysource'
 
 extlinks = {
-    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'issue '),
+    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
+}
+
+# Links used for cross-referencing stuff in other documentation
+intersphinx_mapping = {
+  'py': ('https://docs.python.org/3', None),
+  'aio': ('https://aiohttp.readthedocs.io/en/stable/', None),
+  'req': ('http://docs.python-requests.org/en/latest/', 'requests.inv')
 }
 
 rst_prolog = """
-.. |coro| replace:: This function is a |corourl|_.
-.. |corourl| replace:: *coroutine*
-.. _corourl: https://docs.python.org/3/library/asyncio-task.html#coroutine
+.. |coro| replace:: This function is a |coroutine_link|_.
+.. |maybecoro| replace:: This function *could be a* |coroutine_link|_.
+.. |coroutine_link| replace:: *coroutine*
+.. _coroutine_link: https://docs.python.org/3/library/asyncio-task.html#coroutine
 """
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,7 +75,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'discord.py'
-copyright = u'2015, Rapptz'
+copyright = u'2015-2019, Rapptz'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -88,6 +96,9 @@ release = version
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
 language = None
+
+locale_dirs = ['locale/']
+gettext_compact = False
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -115,7 +126,7 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'friendly'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -126,15 +137,16 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
+html_experimental_html5_writer = True
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'basic'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 # html_theme_options = {
-
 # }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -159,7 +171,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -219,7 +231,7 @@ html_theme = 'sphinx_rtd_theme'
 
 # The name of a javascript file (relative to the configuration directory) that
 # implements a search results scorer. If empty, the default will be used.
-#html_search_scorer = 'scorer.js'
+html_search_scorer = '_static/scorer.js'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'discord.pydoc'
@@ -304,3 +316,8 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+def setup(app):
+  app.add_javascript('custom.js')
+  if app.config.language == 'ja':
+    app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)

@@ -1,0 +1,383 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: faq.pot\n"
+"Language: ja_JP\n"
+
+#: ../../faq.rst:5
+msgid "Frequently Asked Questions"
+msgstr "よくある質問"
+
+#: ../../faq.rst:7
+msgid "This is a list of Frequently Asked Questions regarding using ``discord.py`` and its extension modules. Feel free to suggest a new question or submit one via pull requests."
+msgstr "これは ``discord.py`` 及び 拡張モジュールに対して、よくある質問をまとめたものです。気軽に質問やプルリクエストを提出してください。"
+
+#: ../../faq.rst:11
+msgid "Questions"
+msgstr "質問"
+
+#: ../../faq.rst:14
+msgid "Coroutines"
+msgstr "コルーチン"
+
+#: ../../faq.rst:16
+msgid "Questions regarding coroutines and asyncio belong here."
+msgstr "コルーチンとasyncioに関する質問。"
+
+#: ../../faq.rst:19
+msgid "What is a coroutine?"
+msgstr "コルーチンとはなんですか。"
+
+#: ../../faq.rst:21
+msgid "A |coroutine_link|_ is a function that must be invoked with ``await`` or ``yield from``. When Python encounters an ``await`` it stops the function's execution at that point and works on other things until it comes back to that point and finishes off its work. This allows for your program to be doing multiple things at the same time without using threads or complicated multiprocessing."
+msgstr "|coroutine_link|_ とは ``await`` または ``yield from`` から呼び出さなければならない関数です。 ``await`` にエンカウントした場合、そのポイントで関数の実行を停止し、他の作業を実行します。 これは作業が終了し、このポイントに戻ってくるまで続きます。 これにより、スレッドや複雑なマルチプロセッシングを用いずに複数の処理を並列実行することができます。"
+
+#: ../../faq.rst:26
+msgid "**If you forget to await a coroutine then the coroutine will not run. Never forget to await a coroutine.**"
+msgstr "**コルーチンにawaitを記述し忘れた場合、コルーチンは実行されません。awaitの記述を忘れないように注意してください。**"
+
+#: ../../faq.rst:29
+msgid "Where can I use ``await``\\?"
+msgstr "``await`` はどこで使用することができますか。"
+
+#: ../../faq.rst:31
+msgid "You can only use ``await`` inside ``async def`` functions and nowhere else."
+msgstr "``await`` は ``async def`` 関数の中でのみ使用できます。"
+
+#: ../../faq.rst:34
+msgid "What does \"blocking\" mean?"
+msgstr "「ブロッキング」とはなんですか。"
+
+#: ../../faq.rst:36
+msgid "In asynchronous programming a blocking call is essentially all the parts of the function that are not ``await``. Do not despair however, because not all forms of blocking are bad! Using blocking calls is inevitable, but you must work to make sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has not stopped the function's execution at that point to do other things."
+msgstr "非同期プログラミングにおけるブロッキングとは、関数内の ``await`` 修飾子がないコードすべてを指します。 しかし、全てのブロッキングが悪いというわけではありません。ブロッキングを使用することは避けられませんが、ブロックの発生は出来るだけ少なくする必要があります。長時間のブロックが発生すると、関数の実行が停止しないため、長時間Botがフリーズすることになることを覚えておきましょう。"
+
+#: ../../faq.rst:41
+msgid "If logging is enabled, this library will attempt to warn you that blocking is occurring with the message: ``Heartbeat blocked for more than N seconds.`` See :ref:`logging_setup` for details on enabling logging."
+msgstr "もしロギングを有効にしている場合、ライブラリはブロッキングが起きていることを次のメッセージで警告しようと試みます: ``Heartbeat blocked for more than N seconds.`` ロギングを有効にするには、:ref:`logging_setup`をご覧ください。"
+
+#: ../../faq.rst:45
+msgid "A common source of blocking for too long is something like :func:`time.sleep`. Don't do that. Use :func:`asyncio.sleep` instead. Similar to this example: ::"
+msgstr "長時間ブロックの原因として一般的なのは :func:`time.sleep` などです。 これは使用せず、下記の例のように :func:`asyncio.sleep` を使用してください。"
+
+#: ../../faq.rst:54
+msgid "Another common source of blocking for too long is using HTTP requests with the famous module :doc:`req:index`. While :doc:`req:index` is an amazing module for non-asynchronous programming, it is not a good choice for :mod:`asyncio` because certain requests can block the event loop too long. Instead, use the :doc:`aiohttp <aio:index>` library which is installed on the side with this library."
+msgstr "また、これだけでなく、有名なモジュール :doc:`req:index` のHTTPリクエストも長時間ブロックの原因になります。 :doc:`req:index` モジュールは非非同期プログラミングでは素晴らしいモジュールですが、特定のリクエストがイベントループを長時間ブロックする可能性があるため、 :mod:`asyncio` には適していません。 代わりにこのライブラリと一緒にインストールされた :doc:`aiohttp <aio:index>` を使用してください。"
+
+#: ../../faq.rst:59
+msgid "Consider the following example: ::"
+msgstr "次の例を見てみましょう。"
+
+#: ../../faq.rst:75
+msgid "General"
+msgstr "一般"
+
+#: ../../faq.rst:77
+msgid "General questions regarding library usage belong here."
+msgstr "ライブラリの使用に関する一般的な質問。"
+
+#: ../../faq.rst:80
+msgid "How do I set the \"Playing\" status?"
+msgstr "「プレイ中」状態の設定をするにはどうすればいいですか。"
+
+#: ../../faq.rst:82
+msgid "There is a method for this under :class:`Client` called :meth:`Client.change_presence`. The relevant aspect of this is its ``activity`` keyword argument which takes in an :class:`Activity` object."
+msgstr ":class:`Client` 下にプレイ中状態の設定を行うためのメソッド :meth:`Client.change_presence` が用意されています。 これの引数 ``activity`` に :class:`Activity` を渡します。"
+
+#: ../../faq.rst:85
+msgid "The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum. For memory optimisation purposes, some activities are offered in slimmed down versions:"
+msgstr "ステータスタイプ(プレイ中、再生中、配信中、視聴中)は列挙型の :class:`ActivityType` を指定することで設定が可能です。メモリの最適化のため、一部のアクティビティはスリム化したバージョンで提供しています。"
+
+#: ../../faq.rst:88
+msgid ":class:`Game`"
+msgstr ":class:`Game`"
+
+#: ../../faq.rst:89
+msgid ":class:`Streaming`"
+msgstr ":class:`Streaming`"
+
+#: ../../faq.rst:91
+msgid "Putting both of these pieces of info together, you get the following: ::"
+msgstr "これらの情報をまとめると以下のようになります: ::"
+
+#: ../../faq.rst:100
+msgid "How do I send a message to a specific channel?"
+msgstr "特定のチャンネルにメッセージを送るにはどうすればいいですか。"
+
+#: ../../faq.rst:102
+msgid "You must fetch the channel directly and then call the appropriate method. Example: ::"
+msgstr "チャンネルを直接取得してから、適切なメソッドの呼び出しを行う必要があります。以下がその例です。"
+
+#: ../../faq.rst:108
+msgid "How do I upload an image?"
+msgstr "画像をアップロードするにはどうすればいいですか。"
+
+#: ../../faq.rst:110
+msgid "To upload something to Discord you have to use the :class:`File` object."
+msgstr "Discordに何かをアップロードする際には :class:`File` オブジェクトを使用する必要があります。"
+
+#: ../../faq.rst:112
+msgid "A :class:`File` accepts two parameters, the file-like object (or file path) and the filename to pass to Discord when uploading."
+msgstr ":class:`File` は二つのパラメータがあり、ファイルライクなオブジェクト(または、そのファイルパス)と、ファイル名を渡すことができます。"
+
+#: ../../faq.rst:115
+msgid "If you want to upload an image it's as simple as: ::"
+msgstr "画像をアップロードするだけなら、以下のように簡単に行なえます。"
+
+#: ../../faq.rst:119
+msgid "If you have a file-like object you can do as follows: ::"
+msgstr "もし、ファイルライクなオブジェクトがあるなら、以下のような実装が可能です。"
+
+#: ../../faq.rst:124
+msgid "To upload multiple files, you can use the ``files`` keyword argument instead of ``file``\\: ::"
+msgstr "複数のファイルをアップロードするには、 ``file`` の代わりに ``files`` を使用しましょう。"
+
+#: ../../faq.rst:132
+msgid "If you want to upload something from a URL, you will have to use an HTTP request using :doc:`aiohttp <aio:index>` and then pass an :class:`io.BytesIO` instance to :class:`File` like so:"
+msgstr "URLから何かをアップロードする場合は、 :doc:`aiohttp <aio:index>` のHTTPリクエストを使用し、 :class:`io.BytesIO` インスタンスを :class:`File` にわたす必要があります。"
+
+#: ../../faq.rst:149
+msgid "How can I add a reaction to a message?"
+msgstr "メッセージにリアクションをつけるにはどうすればいいですか。"
+
+#: ../../faq.rst:151
+msgid "You use the :meth:`Message.add_reaction` method."
+msgstr ":meth:`Client.add_reaction` を使用してください。"
+
+#: ../../faq.rst:153
+msgid "If you want to use unicode emoji, you must pass a valid unicode code point in a string. In your code, you can write this in a few different ways:"
+msgstr "Unicodeの絵文字を使用する場合は、文字列内の有効なUnicodeのコードポイントを渡す必要があります。 例を挙げると、このようになります。"
+
+#: ../../faq.rst:155
+msgid "``'👍'``"
+msgstr "``'👍'``"
+
+#: ../../faq.rst:156
+msgid "``'\\U0001F44D'``"
+msgstr "``'\\U0001F44D'``"
+
+#: ../../faq.rst:157
+msgid "``'\\N{THUMBS UP SIGN}'``"
+msgstr "``'\\N{THUMBS UP SIGN}'``"
+
+#: ../../faq.rst:159
+#: ../../faq.rst:175
+#: ../../faq.rst:250
+#: ../../faq.rst:266
+#: ../../faq.rst:286
+msgid "Quick example: ::"
+msgstr "簡単な例。"
+
+#: ../../faq.rst:165
+msgid "In case you want to use emoji that come from a message, you already get their code points in the content without needing to do anything special. You **cannot** send ``':thumbsup:'`` style shorthands."
+msgstr "メッセージから来た絵文字を使用したい場合は、特になにをするでもなく、コンテンツのコードポイントをあなたは取得しています。また、 ``':thumbsup:'`` のような簡略化したものを送信することは **できません** 。"
+
+#: ../../faq.rst:168
+msgid "For custom emoji, you should pass an instance of :class:`Emoji`. You can also pass a ``'<:name:id>'`` string, but if you can use said emoji, you should be able to use :meth:`Client.get_emoji` to get an emoji via ID or use :func:`utils.find`/ :func:`utils.get` on :attr:`Client.emojis` or :attr:`Guild.emojis` collections."
+msgstr "カスタム絵文字については、:class:`Emoji`のインスタンスを渡すといいでしょう。``'<:名前:ID>'``形式の文字列も渡せますが、その絵文字が使えるなら、:meth:`Client.get_emoji`でIDから絵文字を取得したり、:attr:`Client.emojis` や :attr:`Guild.emojis`に対して:func:`utils.find`/ :func:`utils.get`を使ったりできるでしょう。"
+
+#: ../../faq.rst:172
+msgid "The name and ID of a custom emoji can be found with the client by prefixing ``:custom_emoji:`` with a backslash. For example, sending the message ``\\:python3:`` with the client will result in ``<:python3:232720527448342530>``."
+msgstr "カスタム絵文字の名前とIDをクライアント側で知るには、``:カスタム絵文字:``の頭にバックスラッシュ(円記号)をつけます。たとえば、メッセージ``\\:python3:``を送信すると、結果は``<:python3:232720527448342530>``になります。"
+
+#: ../../faq.rst:192
+msgid "How do I pass a coroutine to the player's \"after\" function?"
+msgstr "どうやってコルーチンをプレイヤーの後処理に渡すのですか。"
+
+#: ../../faq.rst:194
+msgid "The library's music player launches on a separate thread, ergo it does not execute inside a coroutine. This does not mean that it is not possible to call a coroutine in the ``after`` parameter. To do so you must pass a callable that wraps up a couple of aspects."
+msgstr "ライブラリの音楽プレーヤーは別のスレッドで起動するもので、コルーチン内で実行されるものではありません。しかし、 ``after`` にコルーチンが渡せないというわけではありません。コルーチンを渡すためには、いくつかの機能を包括した呼び出し可能コードで渡す必要があります。"
+
+#: ../../faq.rst:198
+msgid "The first gotcha that you must be aware of is that calling a coroutine is not a thread-safe operation. Since we are technically in another thread, we must take caution in calling thread-safe operations so things do not bug out. Luckily for us, :mod:`asyncio` comes with a :func:`asyncio.run_coroutine_threadsafe` function that allows us to call a coroutine from another thread."
+msgstr "コルーチンを呼び出すという動作はスレッドセーフなものではないということを最初に理解しておく必要があります。技術的に別スレッドなので、スレッドセーフに呼び出す際には注意が必要です。幸運にも、 :mod:`asyncio` には :func:`asyncio.run_coroutine_threadsafe` という関数があります。これを用いることで、別スレッドからコルーチンを呼び出すことが可能です。"
+
+#: ../../faq.rst:203
+msgid "However, this function returns a :class:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of this together we can do the following: ::"
+msgstr "しかし、この関数は :class:`concurrent.Future` を返すので、実際にはそこから結果を読み出す必要があります。これをすべてまとめると、次のことができます。"
+
+#: ../../faq.rst:218
+msgid "How do I run something in the background?"
+msgstr "バックグラウンドで何かを動かすにはどうすればいいですか。"
+
+#: ../../faq.rst:220
+msgid "`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_"
+msgstr "`background_task.pyの例を参照してください。 <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_"
+
+#: ../../faq.rst:223
+msgid "How do I get a specific model?"
+msgstr "特定のユーザー、役割、チャンネル、サーバを取得するにはどうすればいいですか。"
+
+#: ../../faq.rst:225
+msgid "There are multiple ways of doing this. If you have a specific model's ID then you can use one of the following functions:"
+msgstr "方法は複数ありますが、特定のモデルのIDがわかっていれば、以下の方法が使えます。"
+
+#: ../../faq.rst:228
+msgid ":meth:`Client.get_channel`"
+msgstr ":meth:`Client.get_channel`"
+
+#: ../../faq.rst:229
+msgid ":meth:`Client.get_guild`"
+msgstr ":meth:`Client.get_guild`"
+
+#: ../../faq.rst:230
+msgid ":meth:`Client.get_user`"
+msgstr ":meth:`Client.get_user`"
+
+#: ../../faq.rst:231
+msgid ":meth:`Client.get_emoji`"
+msgstr ":meth:`Client.get_emoji`"
+
+#: ../../faq.rst:232
+msgid ":meth:`Guild.get_member`"
+msgstr ":meth:`Guild.get_member`"
+
+#: ../../faq.rst:233
+msgid ":meth:`Guild.get_channel`"
+msgstr ":meth:`Guild.get_channel`"
+
+#: ../../faq.rst:234
+msgid ":meth:`Guild.get_role`"
+msgstr ":meth:`Guild.get_role`"
+
+#: ../../faq.rst:236
+msgid "The following use an HTTP request:"
+msgstr "以下の例ではHTTPリクエストを使用します。"
+
+#: ../../faq.rst:238
+msgid ":meth:`abc.Messageable.fetch_message`"
+msgstr ":meth:`abc.Messageable.fetch_message`"
+
+#: ../../faq.rst:239
+msgid ":meth:`Client.fetch_user`"
+msgstr ":meth:`Client.fetch_user`"
+
+#: ../../faq.rst:240
+msgid ":meth:`Client.fetch_guilds`"
+msgstr ":meth:`Client.fetch_guilds`"
+
+#: ../../faq.rst:241
+msgid ":meth:`Client.fetch_guild`"
+msgstr ":meth:`Client.fetch_guild`"
+
+#: ../../faq.rst:242
+msgid ":meth:`Guild.fetch_emoji`"
+msgstr ":meth:`Guild.fetch_emoji`"
+
+#: ../../faq.rst:243
+msgid ":meth:`Guild.fetch_emojis`"
+msgstr ":meth:`Guild.fetch_emojis`"
+
+#: ../../faq.rst:244
+msgid ":meth:`Guild.fetch_member`"
+msgstr ":meth:`Guild.fetch_member`"
+
+#: ../../faq.rst:247
+msgid "If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding specific models."
+msgstr "上記の関数を使えない状況の場合、 :func:`utils.find` または :func:`utils.get` が役に立つでしょう。"
+
+#: ../../faq.rst:261
+msgid "How do I make a web request?"
+msgstr "Webリクエストはどうやって作ればよいですか。"
+
+#: ../../faq.rst:263
+msgid "To make a request, you should use a non-blocking library. This library already uses and requires a 3rd party library for making requests, ``aiohttp``."
+msgstr "リクエストを送るには、ノンブロッキングのライブラリを使わなければなりません。このライブラリは、リクエストを作成するのにサードパーティー製の ``aiohttp`` を必要とします。"
+
+#: ../../faq.rst:273
+msgid "See `aiohttp's full documentation <http://aiohttp.readthedocs.io/en/stable/>`_ for more information."
+msgstr "詳細は `aiohttpの完全なドキュメント <http://aiohttp.readthedocs.io/en/stable/>`_ を参照してください。"
+
+#: ../../faq.rst:276
+msgid "How do I use a local image file for an embed image?"
+msgstr "Embedの画像にローカルの画像を使用するにはどうすればいいですか。"
+
+#: ../../faq.rst:278
+msgid "Discord special-cases uploading an image attachment and using it within an embed so that it will not display separately, but instead in the embed's thumbnail, image, footer or author icon."
+msgstr "特殊なケースとして、画像が別々に表示されないようDiscordにembedを用いてアップロードする際、画像は代わりにembedのサムネイルや画像、フッター、製作者アイコンに表示されます。"
+
+#: ../../faq.rst:281
+msgid "To do so, upload the image normally with :meth:`abc.Messageable.send`, and set the embed's image URL to ``attachment://image.png``, where ``image.png`` is the filename of the image you will send."
+msgstr "これを行うには、通常通り :meth:`abc.Messageable.send` を用いて画像をアップロードし、Embedの画像URLに ``attachment://image.png`` を設定します。このとき ``image.png`` は送信したい画像のファイル名にです。"
+
+#: ../../faq.rst:295
+msgid "Due to a Discord limitation, filenames may not include underscores."
+msgstr "Discord側の制限により、ファイル名にアンダースコアが含まれていない場合があります。"
+
+#: ../../faq.rst:298
+msgid "Is there an event for invites or audit log entries being created?"
+msgstr "招待、または監査ログのエントリが作成されるイベントはありますか。"
+
+#: ../../faq.rst:300
+msgid "Since Discord does not dispatch this information in the gateway, the library cannot provide this information. This is currently a Discord limitation."
+msgstr "Discordはゲートウェイでこの情報をディスパッチしないため、ライブラリによってこの情報を提供することはできません。これは現在、Discord側の制限です。"
+
+#: ../../faq.rst:304
+msgid "Commands Extension"
+msgstr "コマンド拡張"
+
+#: ../../faq.rst:306
+msgid "Questions regarding ``discord.ext.commands`` belong here."
+msgstr "``discord.ext.commands`` に関する質問。"
+
+#: ../../faq.rst:309
+msgid "Why does ``on_message`` make my commands stop working?"
+msgstr "``on_message`` を使うとコマンドが動作しなくなります。どうしてですか。"
+
+#: ../../faq.rst:311
+msgid "Overriding the default provided ``on_message`` forbids any extra commands from running. To fix this, add a ``bot.process_commands(message)`` line at the end of your ``on_message``. For example: ::"
+msgstr "デフォルトで提供されている ``on_message`` をオーバーライドすると、コマンドが実行されなくなります。これを修正するには ``on_message`` の最後に ``bot.process_commands(message)`` を追加してみてください。"
+
+#: ../../faq.rst:321
+msgid "Why do my arguments require quotes?"
+msgstr "コマンドの引数にクォーテーションが必要なのはなぜですか。"
+
+#: ../../faq.rst:323
+msgid "In a simple command defined as: ::"
+msgstr "次の簡単なコマンドを見てみましょう。"
+
+#: ../../faq.rst:329
+msgid "Calling it via ``?echo a b c`` will only fetch the first argument and disregard the rest. To fix this you should either call it via ``?echo \"a b c\"`` or change the signature to have \"consume rest\" behaviour. Example: ::"
+msgstr "このコマンドを ``?echo a b c`` のように実行したとき、コマンドに渡されるのは最初の引数だけです。その後の引数はすべて無視されます。これを正常に動かすためには ``?echo \"a b c\"`` のようにしてコマンドを実行するか、コマンドの引数を下記の例のようにしてみましょう"
+
+#: ../../faq.rst:336
+msgid "This will allow you to use ``?echo a b c`` without needing the quotes."
+msgstr "これにより、クォーテーションなしで ``?echo a b c`` を使用することができます。"
+
+#: ../../faq.rst:339
+msgid "How do I get the original ``message``\\?"
+msgstr "元の ``message`` を取得するにはどうすればよいですか。"
+
+#: ../../faq.rst:341
+msgid "The :class:`~ext.commands.Context` contains an attribute, :attr:`~.Context.message` to get the original message."
+msgstr ":class:`~ext.commands.Context` は元のメッセージを取得するための属性である :attr:`~.Context.message` を持っています。"
+
+#: ../../faq.rst:344
+#: ../../faq.rst:356
+msgid "Example: ::"
+msgstr "例:"
+
+#: ../../faq.rst:351
+msgid "How do I make a subcommand?"
+msgstr "サブコマンドを作るにはどうすればいいですか。"
+
+#: ../../faq.rst:353
+msgid "Use the ``group`` decorator. This will transform the callback into a ``Group`` which will allow you to add commands into the group operating as \"subcommands\". These groups can be arbitrarily nested as well."
+msgstr "``group`` デコレータを使います。これにより、コールバックが ``Group`` に変換され、groupに「サブコマンド」として動作するコマンドを追加できます。これらのグループは、ネストすることもできます。"
+
+#: ../../faq.rst:367
+msgid "This could then be used as ``?git push origin master``."
+msgstr "これは ``?git push origin master`` のように使うことができます。"
+

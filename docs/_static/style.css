@@ -1,0 +1,577 @@
+/* this stuff uses a couple of themes as a base with some custom stuff added
+
+In particular thanks to:
+
+- Alabaster for being a good base
+  - Which thanks Flask + KR theme
+- Sphinx Readable Theme
+  - Which also proved to be a great base
+*/
+
+@import url('basic.css');
+
+body {
+  font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin-bottom: 8px;
+}
+
+div.document {
+  margin: 10px auto 0 auto;
+  max-width: 1200px; /* page width */
+}
+
+div.body {
+  max-width: 960px;
+}
+
+div.documentwrapper {
+  float: left;
+  width: 100%;
+}
+
+div.bodywrapper {
+  margin: 0 0 0 240px; /* sidebar width */
+}
+
+div.body {
+  background-color: #ffffff;
+  color: #3e4349;
+  padding: 0 30px 30px 30px;
+}
+
+div.footer {
+  color: #555;
+  font-size: 14px;
+  margin: 20px auto 30px auto;
+  text-align: right;
+  max-width: 1200px; /* page width */
+}
+
+div.footer a {
+  color: #444;
+  text-decoration: underline;
+}
+
+div.related {
+  padding: 10px 10px;
+  width: auto;
+}
+
+div.sphinxsidebar {
+  float: left;
+  font-size: 14px;
+  line-height: 1.5em;
+  margin-left: -100%;
+  width: 240px; /* sidebar width */
+}
+
+div.sphinxsidebarwrapper {
+  font-size: 14px;
+  line-height: 1.5em;
+  padding: 10px 0 10px 10px;
+
+  /* sticky sidebar */
+  position: fixed;
+  width: 240px; /* sidebar width */
+  height: 90%;
+  overflow: hidden;
+}
+
+/* show scrollbar on hover */
+div.sphinxsidebarwrapper:hover {
+  overflow: auto;
+}
+
+div.sphinxsidebar h3,
+div.sphinxsidebar h4 {
+  color: #333;
+  font-size: 24px;
+  font-weight: normal;
+  margin: 0 0 5px 0;
+  padding: 0;
+}
+
+div.sphinxsidebar h4 {
+  font-size: 1.1em;
+}
+
+div.sphinxsidebar h3 a {
+  color: #333;
+}
+
+div.sphinxsidebar p {
+  color: #888;
+}
+
+div.sphinxsidebar p.searchtip {
+  line-height: 1.4em;
+}
+
+div.sphinxsidebar ul {
+  color: #000;
+  margin: 10px 0 20px;
+  padding: 0;
+}
+
+div.sphinxsidebar a {
+  color: #444;
+}
+
+div.sphinxsidebar input {
+  border: 1px solid #ccc;
+  font-family: sans-serif;
+  font-size: 1em;
+  margin-top: 10px;
+}
+
+/* -- body styles --------------------------------------------------------- */
+
+a {
+  color: #2591c4;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #0b3a44;
+  text-decoration: underline;
+}
+
+hr {
+  border: 1px solid #b1b4b6;
+}
+
+div.body h1,
+div.body h2,
+div.body h3,
+div.body h4,
+div.body h5,
+div.body h6 { font-weight: normal; }
+
+div.body h1,
+div.body h2,
+div.body h3,
+div.body h4 { color: #212224; }
+div.body h5 { color: #000; }
+div.body h6 { color: #777; }
+
+div.body h1 { margin: 0 0 10px 0; }
+div.body h2,
+div.body h3 { margin: 10px 0px 10px 0px; }
+div.body h4,
+div.body h5,
+div.body h6 { margin: 20px 0px 10px 0px; }
+
+div.body h1 { padding: 0 0 10px 0; }
+div.body h2,
+div.body h3 { padding: 10px 0 10px 0; }
+div.body h4 { padding: 10px 0 10px 0; }
+div.body h5,
+div.body h6 { padding: 10px 0 0 0; }
+
+div.body h1,
+div.body h2,
+div.body h3 { border-bottom: 1px solid #ddd; }
+div.body h4 { border-bottom: 1px solid #e5e5e5; }
+
+div.body h1 { font-size: 230%; }
+div.body h2 { font-size: 180%; }
+div.body h3 { font-size: 130%; }
+div.body h4 { font-size: 110%; }
+div.body h5 { font-size: 105%; }
+div.body h6 { font-size: 100%; }
+
+a.headerlink {
+  color: #3e4349;
+  font-size: 0.8em;
+  padding: 0 4px 0 4px;
+  text-decoration: none;
+}
+
+a.headerlink:hover {
+  background-color: #3e4349;
+  color: #fff;
+}
+
+div.body ul {
+  list-style: disc;
+  margin: 1em 0;
+  padding-left: 1.3em;
+}
+
+div.body ul ul, div.body ol ul {
+  margin: .2em 0;
+  padding-left: 1.2em;
+}
+
+div.body ul li {
+  padding: 2px 0;
+}
+
+div.body ul.search li {
+  padding: 5px 0 5px 20px;
+}
+
+div.body ol {
+  counter-reset: li;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+div.body ol ol {
+  margin: .2em 0;
+}
+
+div.body ol > li {
+  list-style: none;
+  margin: 0 0 0 1.9em;
+  padding: 2px 1px;
+  position: relative;
+}
+
+div.body ol > li:before {
+  content: counter(li) ".";
+  counter-increment: li;
+  top: -2px;
+  left: -1.9em;
+  width: 1.9em;
+  padding: 4px 0;
+  position: absolute;
+  text-align: left;
+}
+
+div.body p,
+div.body dd,
+div.body li {
+  line-height: 1.4em;
+}
+
+/* weird margins */
+li > p {
+  margin: 2px;
+}
+
+li > blockquote {
+  margin: 10px;
+}
+
+div.admonition p.admonition-title + p {
+  display: inline;
+}
+
+div.highlight {
+  background-color: #fff;
+}
+
+div.important, div.note, div.hint, div.tip {
+  background-color: #eee;
+  border: 1px solid #ccc;
+}
+
+div.attention, div.warning, div.caution, div.seealso {
+  background-color: #fef9e9;
+  border: 1px solid #fbe091;
+}
+
+/* no disgusting background in the FAQ */
+div.topic {
+  background-color: transparent;
+  border: none;
+}
+
+/* don't link-ify the FAQ page */
+a.toc-backref {
+  text-decoration: none;
+  color: #3e4349;
+}
+
+/* bold and fix the Parameter, Raises, etc. */
+dl.field-list > dt {
+  font-weight: bold;
+}
+
+/* remove flex from field lists */
+dl.field-list {
+  display: block;
+}
+
+/* internal references are forced to bold for some reason */
+a.reference.internal > strong {
+  font-weight: unset;
+  font-family: monospace;
+}
+
+div.danger, div.error {
+  background-color: #ffe4e4;
+  border: 1px solid #f66;
+}
+
+div.admonition {
+  padding: 10px;
+}
+
+p.admonition-title {
+  display: inline;
+}
+
+p.admonition-title:after {
+  content: ':';
+}
+
+/* helpful admonitions */
+div.helpful {
+  background-color: #e4f2ff;
+  border: 1px solid #66b3ff;
+}
+
+div.helpful > p.admonition-title {
+  display: block;
+}
+
+div.helpful > p.admonition-title:after {
+  content: unset;
+}
+
+/* exception hierarchy */
+
+.exception-hierarchy-content dd,
+.exception-hierarchy-content dl {
+  margin: 0px 2px;
+}
+
+.exception-hierarchy-content {
+  margin-left: 0.5em;
+}
+
+.exception-hierarchy-content ul {
+  list-style: '»' !important;
+}
+
+pre {
+  background-color: #f5f5f5;
+  border: 1px solid #C6C9CB;
+  color: #222;
+  font-size: 0.75em;
+  line-height: 1.5em;
+  margin: 1.5em 0 1.5em 0;
+  padding: 10px;
+}
+
+pre, tt, code {
+  font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+  font-size: 0.9em;
+}
+
+tt, code {
+  background-color: #ecf0f3;
+}
+
+tt.descname, code.descname {
+  font-size: 0.95em;
+}
+
+tt.xref, a tt, code.xref, a code {
+  font-weight: normal;
+}
+
+span.pre {
+  padding: 0 2px;
+}
+
+dl.class {
+  margin-bottom: 50px;
+}
+
+dl.describe > dt,
+dl.function > dt,
+dl.attribute > dt,
+dl.classmethod > dt,
+dl.method > dt,
+dl.class > dt,
+dl.exception > dt {
+  background-color: #f5f5f5;
+  padding: 1px 10px;
+}
+
+dd {
+  margin-top: 10px;
+}
+
+
+.container.operations {
+  padding: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.container.operations::before {
+  content: 'Supported Operations';
+  color: #212224;
+  display: block;
+  padding-bottom: 5px;
+}
+
+.container.operations > dl.describe > dt {
+  background-color: #f8f8f8;
+}
+
+table.docutils {
+  width: 100%;
+}
+
+table.docutils.footnote {
+  width: auto;
+}
+
+table.docutils thead,
+table.docutils tfoot {
+  background: #f5f5f5;
+}
+
+table.docutils thead tr th {
+  color: #000;
+  font-weight: normal;
+  padding: 7px 5px;
+  vertical-align: middle;
+}
+
+table.docutils tbody tr th,
+table.docutils tbody tr td {
+  border-bottom: 0;
+  border-top: solid 1px #ddd;
+  padding: 7px 5px;
+  vertical-align: top;
+}
+table.docutils tbody tr:last-child th,
+table.docutils tbody tr:last-child td {
+  border-bottom: solid 1px #ddd;
+}
+
+table.docutils thead tr td p,
+table.docutils tfoot tr td p,
+table.docutils tbody tr td p,
+table.docutils thead tr td ul,
+table.docutils tfoot tr td ul,
+table.docutils tbody tr td ul,
+table.docutils thead tr td ol,
+table.docutils tfoot tr td ol,
+table.docutils tbody tr td ol {
+  margin: 0 0 .5em;
+}
+table.docutils thead tr td p.last,
+table.docutils tfoot tr td p.last,
+table.docutils tbody tr td p.last,
+table.docutils thead tr td ul.last,
+table.docutils tfoot tr td ul.last,
+table.docutils tbody tr td ul.last,
+table.docutils thead tr td ol.last,
+table.docutils tfoot tr td ol.last,
+table.docutils tbody tr td ol.last {
+  margin-bottom: 0;
+}
+
+.viewcode-back {
+  font-family: Arial, sans-serif;
+}
+
+div.viewcode-block:target {
+  background-color: #fef9e9;
+  border-top: 1px solid #fbe091;
+  border-bottom: 1px solid #fbe091;
+}
+
+/* hide the welcome text */
+div#welcome-to-discord-py > h1 {
+  display: none;
+}
+
+.active {
+  background-color: #dbdbdb;
+  border-left: 5px solid #dbdbdb;
+}
+
+div.code-block-caption {
+  font-size: medium;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 870px) {
+
+  div.document {
+    width: auto;
+    margin: 0;
+  }
+
+  div.documentwrapper {
+    float: none;
+  }
+
+  div.bodywrapper {
+    margin: 0;
+  }
+
+  div.body {
+    min-height: 0;
+    padding: 0 20px 30px 20px;
+  }
+
+  div.footer {
+    background-color: #333;
+    color: #888;
+    margin: 0;
+    padding: 10px 20px 20px;
+    text-align: left;
+    width: auto;
+  }
+
+  div.footer a {
+    color: #bbb;
+  }
+
+  div.footer a:hover {
+    color: #fff;
+  }
+
+  div.sphinxsidebar {
+    background-color: #333;
+    color: #fff;
+    float: none;
+    margin: 0;
+    padding: 10px 20px;
+    width: auto;
+  }
+
+  /* sticky sidebar */
+  div.sphinxsidebarwrapper {
+    position: relative;
+  }
+
+  div.sphinxsidebar h3,
+  div.sphinxsidebar h4,
+  div.sphinxsidebar p,
+  div.sphinxsidebar h3 a {
+    color: #fff;
+  }
+
+  div.sphinxsidebar ul {
+    color: #999;
+  }
+
+  div.sphinxsidebar a {
+    color: #aaa;
+  }
+
+  div.sphinxsidebar a:hover {
+    color: #fff;
+  }
+
+  .active {
+    background-color: transparent;
+    border-left: none;
+  }
+}
