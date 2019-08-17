@@ -576,15 +576,18 @@ class Message:
 
     @property
     def crossposted(self):
+        """:class:`bool`: A boolean indicating if the message is crossposted."""
         return self._has_flag(MessageFlags.crossposted)
 
     @property
     def is_crosspost(self):
+        """:class:`bool`: A boolean indicating if the message is a crosspost."""
         return self._has_flag(MessageFlags.is_crosspost)
 
     @property
-    def supress_embeds(self):
-        return self._has_flag(MessageFlags.supress_embeds)
+    def suppress_embeds(self):
+        """:class:`bool`: A boolean indicating if the message has embeds suppressed."""
+        return self._has_flag(MessageFlags.suppress_embeds)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
