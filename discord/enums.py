@@ -31,6 +31,7 @@ __all__ = (
     'Enum',
     'ChannelType',
     'MessageType',
+    'MessageFlags',
     'VoiceRegion',
     'SpeakingState',
     'VerificationLevel',
@@ -171,6 +172,11 @@ class MessageType(Enum):
     premium_guild_tier_1       = 9
     premium_guild_tier_2       = 10
     premium_guild_tier_3       = 11
+
+class MessageFlags(Enum):
+    crossposted    = 1
+    is_crosspost   = 2
+    supress_embeds = 4
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'

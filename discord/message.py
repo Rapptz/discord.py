@@ -33,7 +33,7 @@ from . import utils
 from .reaction import Reaction
 from .emoji import Emoji, PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, try_enum
+from .enums import MessageType, MessageFlags, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
@@ -262,7 +262,7 @@ class Message:
                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
                  'application', 'activity')
 
@@ -284,7 +284,7 @@ class Message:
         self.content = data['content']
         self.nonce = data.get('nonce')
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
@@ -292,6 +292,10 @@ class Message:
 
     def __repr__(self):
         return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r}>'.format(self)
+
+    def _has_flag(self, o):
+        v = o.value
+        return (self.flags & v) == v
 
     def _try_patch(self, data, key, transform=None):
         try:
@@ -455,6 +459,9 @@ class Message:
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
+    def _handle_flags(self, value):
+        self.flags = value
+
     @utils.cached_slot_property('_cs_guild')
     def guild(self):
         """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
@@ -566,6 +573,18 @@ class Message:
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
         return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+
+    @property
+    def crossposted(self):
+        return self._has_flag(MessageFlags.crossposted)
+
+    @property
+    def is_crosspost(self):
+        return self._has_flag(MessageFlags.is_crosspost)
+
+    @property
+    def supress_embeds(self):
+        return self._has_flag(MessageFlags.supress_embeds)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
