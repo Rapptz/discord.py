@@ -176,7 +176,7 @@ class MessageType(Enum):
 class MessageFlags(Enum):
     crossposted    = 1
     is_crosspost   = 2
-    supress_embeds = 4
+    suppress_embeds = 4
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'

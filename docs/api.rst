@@ -804,6 +804,22 @@ of :class:`enum.Enum`.
         The system message denoting that a member has "nitro boosted" a guild
         and it achieved level 3.
 
+.. class:: MessageFlags
+
+    Specifies the flags on a :class:`Message`.
+
+    .. attribute:: crossposted
+
+        Denotes if the message has been published to subscribed channels (via Channel Following).
+
+    .. attribute:: is_crosspost
+
+        Denotes if the message originated from a message in another channel (via Channel Following).
+
+    .. attribute:: suppress_embeds
+
+        Denotes if the message has embeds suppressed.
+
 .. class:: ActivityType
 
     Specifies the type of :class:`Activity`. This is used to check how to
