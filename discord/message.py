@@ -669,6 +669,9 @@ class Message:
         if self.type is MessageType.premium_guild_tier_3:
             return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 3!**'.format(self)
 
+        if self.type is MessageType.channel_follow_add:
+            return '{0.author.name} has added {0.content} to this channel'.format(self)
+
     async def delete(self, *, delay=None):
         """|coro|
 
