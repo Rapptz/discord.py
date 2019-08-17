@@ -803,6 +803,9 @@ of :class:`enum.Enum`.
 
         The system message denoting that a member has "nitro boosted" a guild
         and it achieved level 3.
+    .. attribute:: channel_follow_add
+
+        The system message denoting that an announcement channel has been followed.
 
 .. class:: ActivityType
 
