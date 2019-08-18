@@ -283,6 +283,7 @@ class Message:
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
+        self.flags = 0
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
@@ -958,3 +959,28 @@ class Message:
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
+
+    async def crosspost(self):
+        """|coro|
+
+        Publishes this message to your announcement channel.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        The user must not be a bot user.
+
+        Raises
+        -------
+        HTTPException
+            Crossposting failed.
+        ClientException
+            You must not be a bot user.
+        Forbidden
+            You do not have the proper permissions to publish this message.
+        """
+
+        state = self._state
+        if state.is_bot:
+            raise ClientException('Must not be a bot account to crosspost messages.')
+        await state.http.crosspost_message(self.channel.id, self.id)
+        self.flags |= 1 << 0
