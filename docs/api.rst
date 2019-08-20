@@ -482,7 +482,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This is called when one or more of the following things change:
 
     - status
-    - game playing
+    - activity
     - nickname
     - roles
 
