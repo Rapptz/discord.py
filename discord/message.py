@@ -967,7 +967,8 @@ class Message:
 
         You need the :attr:`~Permissions.manage_messages` permission to use this.
 
-        The user must not be a bot user.
+        .. note::
+            This can only be used by non-bot accounts.
 
         Raises
         -------
