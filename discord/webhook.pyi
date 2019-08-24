@@ -51,7 +51,7 @@ _T = TypeVar('_T', bound=Webhook)
 
 class Webhook:
     id: int
-    token: str
+    token: Optional[str]
     channel_id: Optional[int]
     guild_id: Optional[int]
     name: Optional[str]

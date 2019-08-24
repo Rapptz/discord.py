@@ -14,6 +14,7 @@ class BucketType(Enum):
     channel: int
     member: int
     category: int
+    role: int
 
 class Cooldown:
     rate: int

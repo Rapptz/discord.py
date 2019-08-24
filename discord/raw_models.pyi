@@ -3,7 +3,7 @@ from .http import _MessageDict, _PartialEmojiDict
 from .message import Message
 
 from typing import Any, Optional, Dict, Set, List
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, Literal
 
 class _BaseBulkMessageDeleteDict(TypedDict, total=False):
     guild_id: str
@@ -46,6 +46,7 @@ class RawBulkMessageDeleteEvent:
 
 class RawMessageUpdateEvent:
     message_id: int
+    channel_id: int
     data: _MessageDict
     cached_message: Optional[Message]
 
@@ -56,6 +57,7 @@ class RawReactionActionEvent:
     channel_id: int
     user_id: int
     emoji: PartialEmoji
+    event_type: Literal['REACTION_ADD', 'REACTION_REMOVE']
     guild_id: Optional[int]
 
     def __init__(self, data: _ReactionActionDict, emoji: PartialEmoji) -> None: ...
