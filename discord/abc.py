@@ -51,6 +51,9 @@ class Snowflake(metaclass=abc.ABCMeta):
     Almost all :ref:`Discord models <discord_api_models>` meet this
     abstract base class.
 
+    If you want to create a snowflake on your own, consider using
+    :class:`Object`.
+
     Attributes
     -----------
     id: :class:`int`
@@ -725,8 +728,6 @@ class Messageable(metaclass=abc.ABCMeta):
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
-
-    This ABC must also implement :class:`~discord.abc.Snowflake`.
     """
 
     __slots__ = ()

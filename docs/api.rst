@@ -60,7 +60,13 @@ Voice
 .. autoclass:: PCMAudio
     :members:
 
+.. autoclass:: FFmpegAudio
+    :members:
+
 .. autoclass:: FFmpegPCMAudio
+    :members:
+
+.. autoclass:: FFmpegOpusAudio
     :members:
 
 .. autoclass:: PCMVolumeTransformer

@@ -165,7 +165,7 @@ class Client:
                 - All member related events will be disabled.
                     - :func:`on_member_update`
                     - :func:`on_member_join`
-                    - :func:`on_member_leave`
+                    - :func:`on_member_remove`
 
                 - Typing events will be disabled (:func:`on_typing_start`).
                 - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
@@ -658,31 +658,62 @@ class Client:
         return list(self._connection._users.values())
 
     def get_channel(self, id):
-        """Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]: Returns a channel with the
-        given ID.
+        """Returns a channel with the given ID.
 
-        If not found, returns ``None``.
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]
+            The returned channel or ``None`` if not found.
         """
         return self._connection.get_channel(id)
 
     def get_guild(self, id):
-        """Optional[:class:`.Guild`]: Returns a guild with the given ID.
+        """Returns a guild with the given ID.
 
-        If not found, returns ``None``.
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`.Guild`]
+            The guild or ``None`` if not found.
         """
         return self._connection._get_guild(id)
 
     def get_user(self, id):
-        """Optional[:class:`~discord.User`]: Returns a user with the given ID.
+        """Returns a user with the given ID.
 
-        If not found, returns ``None``.
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`~discord.User`]
+            The user or ``None`` if not found.
         """
         return self._connection.get_user(id)
 
     def get_emoji(self, id):
-        """Optional[:class:`.Emoji`]: Returns an emoji with the given ID.
+        """Returns an emoji with the given ID.
 
-        If not found, returns ``None``.
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`.Emoji`]
+            The custom emoji or ``None`` if not found.
         """
         return self._connection.get_emoji(id)
 
@@ -976,7 +1007,7 @@ class Client:
 
         .. note::
 
-            Using this, you will **not** receive :attr:`.Guild.channels`, :class:`.Guild.members`,
+            Using this, you will **not** receive :attr:`.Guild.channels`, :attr:`.Guild.members`,
             :attr:`.Member.activity` and :attr:`.Member.voice` per :class:`.Member`.
 
         .. note::
@@ -1197,7 +1228,11 @@ class Client:
     async def fetch_user_profile(self, user_id):
         """|coro|
 
-        Gets an arbitrary user's profile. This can only be used by non-bot accounts.
+        Gets an arbitrary user's profile.
+
+        .. note::
+
+            This can only be used by non-bot accounts.
 
         Parameters
         ------------

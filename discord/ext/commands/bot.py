@@ -289,7 +289,9 @@ class BotBase(GroupMixin[_CT]):
         return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user):
-        """Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
+        """|coro|
+
+        Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
 
         If an :attr:`owner_id` is not set, it is fetched automatically
@@ -592,19 +594,23 @@ class BotBase(GroupMixin[_CT]):
     def _load_from_module_spec(self, spec, key):
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
+        sys.modules[key] = lib
         try:
             spec.loader.exec_module(lib)
         except Exception as e:
+            del sys.modules[key]
             raise errors.ExtensionFailed(key, e) from e
 
         try:
             setup = getattr(lib, 'setup')
         except AttributeError:
+            del sys.modules[key]
             raise errors.NoEntryPointError(key)
 
         try:
             setup(self)
         except Exception as e:
+            del sys.modules[key]
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, key)
             raise errors.ExtensionFailed(key, e) from e
@@ -637,7 +643,7 @@ class BotBase(GroupMixin[_CT]):
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
-            The extension setup function had an execution error.
+            The extension or its setup function had an execution error.
         """
 
         if name in self.__extensions:
@@ -727,7 +733,8 @@ class BotBase(GroupMixin[_CT]):
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.
-            self._load_from_module_spec(lib, name)
+            lib.setup(self)
+            self.__extensions[name] = lib
 
             # revert sys.modules back to normal and raise back to caller
             sys.modules.update(modules)
