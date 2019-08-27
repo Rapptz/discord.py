@@ -443,7 +443,7 @@ class HTTPClient:
     def pins_from(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
-    def crosspost_message(self, channel_id, message_id):
+    def publish_message(self, channel_id, message_id):
         return self.request(Route('POST', '/channels/{channel_id}/messages/{message_id}/crosspost',
                                   channel_id=channel_id, message_id=message_id))
 

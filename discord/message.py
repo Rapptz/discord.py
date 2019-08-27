@@ -960,7 +960,7 @@ class Message:
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
 
-    async def crosspost(self):
+    async def publish(self):
         """|coro|
 
         Publishes this message to your announcement channel.
@@ -968,12 +968,13 @@ class Message:
         You need the :attr:`~Permissions.manage_messages` permission to use this.
 
         .. note::
+
             This can only be used by non-bot accounts.
 
         Raises
         -------
         HTTPException
-            Crossposting failed.
+            Publishing failed.
         ClientException
             You must not be a bot user.
         Forbidden
@@ -982,6 +983,6 @@ class Message:
 
         state = self._state
         if state.is_bot:
-            raise ClientException('Must not be a bot account to crosspost messages.')
-        await state.http.crosspost_message(self.channel.id, self.id)
         self.flags |= 1 << 0
+            raise ClientException('Must not be a bot account to publish messages.')
+        await state.http.publish_message(self.channel.id, self.id)
