@@ -27,6 +27,7 @@ class MessageType(Enum):
     premium_guild_tier_1: int
     premium_guild_tier_2: int
     premium_guild_tier_3: int
+    channel_follow_add: int
 
 class VoiceRegion(Enum):
     us_west: str
