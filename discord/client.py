@@ -430,7 +430,7 @@ class Client:
         """
 
         log.info('logging in using static token')
-        await self.http.static_login(token, bot=bot)
+        await self.http.static_login(token.strip(), bot=bot)
         self._connection.is_bot = bot
 
     async def logout(self):
