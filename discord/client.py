@@ -122,8 +122,10 @@ class Client:
     -----------
     max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
-        This defaults to 5000. Passing in ``None`` or a value less than 100
-        will use the default instead of the passed in value.
+        This defaults to 1000. Passing in ``None`` disables the message cache.
+
+        .. versionchanged:: 1.3
+            Allow disabling the message cache and change the default size to 1000.
     loop: Optional[:class:`asyncio.AbstractEventLoop`]
         The :class:`asyncio.AbstractEventLoop` to use for asynchronous operations.
         Defaults to ``None``, in which case the default event loop is used via
@@ -274,7 +276,7 @@ class Client:
 
         .. versionadded:: 1.1.0
         """
-        return utils.SequenceProxy(self._connection._messages)
+        return utils.SequenceProxy(self._connection._messages or [])
 
     @property
     def private_channels(self):
