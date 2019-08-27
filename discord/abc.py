@@ -396,7 +396,7 @@ class GuildChannel:
         .. versionadded:: 1.3
         """
         category = self.guild.get_channel(self.category_id)
-        return category and category._overwrites == self._overwrites
+        return bool(category and category._overwrites == self._overwrites)
 
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`~discord.Member`.
