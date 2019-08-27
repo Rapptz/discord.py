@@ -392,6 +392,8 @@ class GuildChannel:
         category it belongs to.
 
         If there is no category then this is ``False``.
+
+        .. versionadded:: 1.3
         """
         category = self.guild.get_channel(self.category_id)
         return category and category._overwrites == self._overwrites
