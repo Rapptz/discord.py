@@ -567,6 +567,13 @@ class Message:
         guild_id = getattr(self.guild, 'id', '@me')
         return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
+    def is_system(self):
+        """:class:`bool`: Whether the message is a system message.
+
+        ..versionadded:: 1.3
+        """
+        return self.type is not MessageType.default
+
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
         r"""A property that returns the content that is rendered
