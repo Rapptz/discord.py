@@ -482,7 +482,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This is called when one or more of the following things change:
 
     - status
-    - game playing
+    - activity
     - nickname
     - roles
 
@@ -760,6 +760,9 @@ of :class:`enum.Enum`.
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
 
+    .. versionchanged:: 1.3.0
+        The ``channel_follow_add`` attribute was added.
+
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
@@ -803,6 +806,9 @@ of :class:`enum.Enum`.
 
         The system message denoting that a member has "nitro boosted" a guild
         and it achieved level 3.
+    .. attribute:: channel_follow_add
+
+        The system message denoting that an announcement channel has been followed.
 
 .. class:: ActivityType
 
