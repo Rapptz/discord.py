@@ -86,7 +86,7 @@ class HTTPClient:
     SUCCESS_LOG = '{method} {url} has received {text}'
     REQUEST_LOG = '{method} {url} with {json} has returned {status}'
 
-    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
+    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None, unsync_clock=True):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
         self.__session = None # filled in static_login
@@ -97,6 +97,7 @@ class HTTPClient:
         self.bot_token = False
         self.proxy = proxy
         self.proxy_auth = proxy_auth
+        self.use_clock = not unsync_clock
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
@@ -166,7 +167,7 @@ class HTTPClient:
                     remaining = r.headers.get('X-Ratelimit-Remaining')
                     if remaining == '0' and r.status != 429:
                         # we've depleted our current bucket
-                        delta = utils._parse_ratelimit_header(r)
+                        delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
                         log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                         maybe_lock.defer()
                         self.loop.call_later(delta, lock.release)

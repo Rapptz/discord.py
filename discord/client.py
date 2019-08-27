@@ -185,6 +185,14 @@ class Client:
 
             In short, this makes it so the only member you can reliably query is the
             message author. Useful for bots that do not require any state.
+    assume_unsync_clock: :class:`bool`
+        Whether to assume the system clock is unsynced. This applies to the ratelimit handling
+        code. If this is set to ``True``, the default, then the library uses the time to reset
+        a rate limit bucket given by Discord. If this is ``False`` then your system clock is
+        used to calculate how long to sleep for. If this is set to ``False`` it is recommended to
+        sync your system clock to Google's NTP server.
+
+        .. versionadded:: 1.3
 
     Attributes
     -----------
@@ -203,7 +211,8 @@ class Client:
         connector = options.pop('connector', None)
         proxy = options.pop('proxy', None)
         proxy_auth = options.pop('proxy_auth', None)
-        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
+        unsync_clock = options.pop('assume_unsync_clock', True)
+        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
 
         self._handlers = {
             'ready': self._handle_ready
