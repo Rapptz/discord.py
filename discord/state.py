@@ -61,7 +61,10 @@ class ConnectionState:
     def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
-        self.max_messages = max(options.get('max_messages', 5000), 100)
+        self.max_messages = options.get('max_messages', 1000)
+        if self.max_messages is not None and self.max_messages <= 0:
+            self.max_messages = 1000
+
         self.dispatch = dispatch
         self.chunker = chunker
         self.syncer = syncer
@@ -112,7 +115,7 @@ class ConnectionState:
         self._private_channels = OrderedDict()
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
-        self._messages = deque(maxlen=self.max_messages)
+        self._messages = self.max_messages and deque(maxlen=self.max_messages)
 
     def process_listeners(self, listener_type, argument, result):
         removed = []
@@ -253,7 +256,7 @@ class ConnectionState:
             self._private_channels_by_user.pop(channel.recipient.id, None)
 
     def _get_message(self, msg_id):
-        return utils.find(lambda m: m.id == msg_id, reversed(self._messages))
+        return utils.find(lambda m: m.id == msg_id, reversed(self._messages)) if self._messages else None
 
     def _add_guild_from_data(self, guild):
         guild = Guild(data=guild, state=self)
@@ -398,7 +401,8 @@ class ConnectionState:
         channel, _ = self._get_guild_channel(data)
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
-        self._messages.append(message)
+        if self._messages is not None:
+            self._messages.append(message)
         if channel and channel.__class__ is TextChannel:
             channel.last_message_id = message.id
 
@@ -407,13 +411,16 @@ class ConnectionState:
         found = self._get_message(raw.message_id)
         raw.cached_message = found
         self.dispatch('raw_message_delete', raw)
-        if found is not None:
+        if self._messages is not None and found is not None:
             self.dispatch('message_delete', found)
             self._messages.remove(found)
 
     def parse_message_delete_bulk(self, data):
         raw = RawBulkMessageDeleteEvent(data)
-        found_messages = [message for message in self._messages if message.id in raw.message_ids]
+        if self._messages:
+            found_messages = [message for message in self._messages if message.id in raw.message_ids]
+        else:
+            found_messages = []
         raw.cached_messages = found_messages
         self.dispatch('raw_bulk_message_delete', raw)
         if found_messages:
@@ -751,7 +758,8 @@ class ConnectionState:
             return
 
         # do a cleanup of the messages cache
-        self._messages = deque((msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages)
+        if self._messages is not None:
+            self._messages = deque((msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages)
 
         self._remove_guild(guild)
         self.dispatch('guild_remove', guild)

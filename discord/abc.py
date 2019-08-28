@@ -386,6 +386,18 @@ class GuildChannel:
         """
         return self.guild.get_channel(self.category_id)
 
+    @property
+    def permissions_synced(self):
+        """:class:`bool`: Whether or not the permissions for this channel are synced with the
+        category it belongs to.
+
+        If there is no category then this is ``False``.
+
+        .. versionadded:: 1.3
+        """
+        category = self.guild.get_channel(self.category_id)
+        return bool(category and category._overwrites == self._overwrites)
+
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`~discord.Member`.
 

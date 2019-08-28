@@ -122,8 +122,10 @@ class Client:
     -----------
     max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
-        This defaults to 5000. Passing in ``None`` or a value less than 100
-        will use the default instead of the passed in value.
+        This defaults to 1000. Passing in ``None`` disables the message cache.
+
+        .. versionchanged:: 1.3
+            Allow disabling the message cache and change the default size to 1000.
     loop: Optional[:class:`asyncio.AbstractEventLoop`]
         The :class:`asyncio.AbstractEventLoop` to use for asynchronous operations.
         Defaults to ``None``, in which case the default event loop is used via
@@ -183,6 +185,14 @@ class Client:
 
             In short, this makes it so the only member you can reliably query is the
             message author. Useful for bots that do not require any state.
+    assume_unsync_clock: :class:`bool`
+        Whether to assume the system clock is unsynced. This applies to the ratelimit handling
+        code. If this is set to ``True``, the default, then the library uses the time to reset
+        a rate limit bucket given by Discord. If this is ``False`` then your system clock is
+        used to calculate how long to sleep for. If this is set to ``False`` it is recommended to
+        sync your system clock to Google's NTP server.
+
+        .. versionadded:: 1.3
 
     Attributes
     -----------
@@ -201,7 +211,8 @@ class Client:
         connector = options.pop('connector', None)
         proxy = options.pop('proxy', None)
         proxy_auth = options.pop('proxy_auth', None)
-        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, loop=self.loop)
+        unsync_clock = options.pop('assume_unsync_clock', True)
+        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
 
         self._handlers = {
             'ready': self._handle_ready
@@ -274,7 +285,7 @@ class Client:
 
         .. versionadded:: 1.1.0
         """
-        return utils.SequenceProxy(self._connection._messages)
+        return utils.SequenceProxy(self._connection._messages or [])
 
     @property
     def private_channels(self):
@@ -428,7 +439,7 @@ class Client:
         """
 
         log.info('logging in using static token')
-        await self.http.static_login(token, bot=bot)
+        await self.http.static_login(token.strip(), bot=bot)
         self._connection.is_bot = bot
 
     async def logout(self):
