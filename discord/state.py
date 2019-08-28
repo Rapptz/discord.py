@@ -401,7 +401,7 @@ class ConnectionState:
         channel, _ = self._get_guild_channel(data)
         message = Message(channel=channel, data=data, state=self)
         self.dispatch('message', message)
-        if self._messages:
+        if self._messages is not None:
             self._messages.append(message)
         if channel and channel.__class__ is TextChannel:
             channel.last_message_id = message.id
@@ -411,7 +411,7 @@ class ConnectionState:
         found = self._get_message(raw.message_id)
         raw.cached_message = found
         self.dispatch('raw_message_delete', raw)
-        if self._messages and found is not None:
+        if self._messages is not None and found is not None:
             self.dispatch('message_delete', found)
             self._messages.remove(found)
 

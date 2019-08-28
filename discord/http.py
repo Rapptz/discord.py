@@ -63,7 +63,7 @@ class Route:
     @property
     def bucket(self):
         # the bucket is just method + path w/ major parameters
-        return '{0.method}:{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
+        return '{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
 
 class MaybeUnlock:
     def __init__(self, lock):
@@ -86,7 +86,7 @@ class HTTPClient:
     SUCCESS_LOG = '{method} {url} has received {text}'
     REQUEST_LOG = '{method} {url} with {json} has returned {status}'
 
-    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None):
+    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None, unsync_clock=True):
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
         self.__session = None # filled in static_login
@@ -97,6 +97,7 @@ class HTTPClient:
         self.bot_token = False
         self.proxy = proxy
         self.proxy_auth = proxy_auth
+        self.use_clock = not unsync_clock
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
@@ -105,7 +106,7 @@ class HTTPClient:
         if self.__session.closed:
             self.__session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
 
-    async def request(self, route, *, files=None, header_bypass_delay=None, **kwargs):
+    async def request(self, route, *, files=None, **kwargs):
         bucket = route.bucket
         method = route.method
         url = route.url
@@ -119,6 +120,7 @@ class HTTPClient:
         # header creation
         headers = {
             'User-Agent': self.user_agent,
+            'X-Ratelimit-Precision': 'millisecond',
         }
 
         if self.token is not None:
@@ -165,11 +167,7 @@ class HTTPClient:
                     remaining = r.headers.get('X-Ratelimit-Remaining')
                     if remaining == '0' and r.status != 429:
                         # we've depleted our current bucket
-                        if header_bypass_delay is None:
-                            delta = utils._parse_ratelimit_header(r)
-                        else:
-                            delta = header_bypass_delay
-
+                        delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
                         log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                         maybe_lock.defer()
                         self.loop.call_later(delta, lock.release)
@@ -383,17 +381,17 @@ class HTTPClient:
     def add_reaction(self, channel_id, message_id, emoji):
         r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
-        return self.request(r, header_bypass_delay=0.25)
+        return self.request(r)
 
     def remove_reaction(self, channel_id, message_id, emoji, member_id):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
                   channel_id=channel_id, message_id=message_id, member_id=member_id, emoji=emoji)
-        return self.request(r, header_bypass_delay=0.25)
+        return self.request(r)
 
     def remove_own_reaction(self, channel_id, message_id, emoji):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
-        return self.request(r, header_bypass_delay=0.25)
+        return self.request(r)
 
     def get_reaction_users(self, channel_id, message_id, emoji, limit, after=None):
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',

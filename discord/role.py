@@ -73,12 +73,8 @@ class Role(Hashable):
         The ID for the role.
     name: :class:`str`
         The name of the role.
-    permissions: :class:`Permissions`
-        Represents the role's permissions.
     guild: :class:`Guild`
         The guild the role belongs to.
-    colour: :class:`Colour`
-        Represents the role colour. An alias exists under ``color``.
     hoist: :class:`bool`
          Indicates if the role will be displayed separately from other members.
     position: :class:`int`
@@ -91,7 +87,7 @@ class Role(Hashable):
         Indicates if the role can be mentioned by users.
     """
 
-    __slots__ = ('id', 'name', 'permissions', 'color', 'colour', 'position',
+    __slots__ = ('id', 'name', '_permissions', '_colour', 'position',
                  'managed', 'mentionable', 'hoist', 'guild', '_state')
 
     def __init__(self, *, guild, state, data):
@@ -144,17 +140,28 @@ class Role(Hashable):
 
     def _update(self, data):
         self.name = data['name']
-        self.permissions = Permissions(data.get('permissions', 0))
+        self._permissions = data.get('permissions', 0)
         self.position = data.get('position', 0)
-        self.colour = Colour(data.get('color', 0))
+        self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)
         self.managed = data.get('managed', False)
         self.mentionable = data.get('mentionable', False)
-        self.color = self.colour
 
     def is_default(self):
         """Checks if the role is the default role."""
         return self.guild.id == self.id
+
+    @property
+    def permissions(self):
+        """:class:`Permissions`: Returns the role's permissions."""
+        return Permissions(self._permissions)
+
+    @property
+    def colour(self):
+        """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
+        return Colour(self._colour)
+
+    color = colour
 
     @property
     def created_at(self):
