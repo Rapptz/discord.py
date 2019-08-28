@@ -5,15 +5,12 @@ from .colour import Colour
 from .guild import Guild
 
 import datetime
-from typing import Any, List, Optional
+from typing import Any, List, Optional, overload
 
 class Role(Hashable):
     id: int
     name: str
-    permissions: Permissions
     guild: Guild
-    colour: Colour
-    color: Colour
     hoist: bool
     position: int
     managed: bool
@@ -25,12 +22,23 @@ class Role(Hashable):
     def __ge__(self, other: Any) -> bool: ...
     def is_default(self) -> bool: ...
     @property
+    def permissions(self) -> Permissions: ...
+    @property
+    def colour(self) -> Colour: ...
+    @property
+    def color(self) -> Colour: ...
+    @property
     def created_at(self) -> datetime.datetime: ...
     @property
     def mention(self) -> str: ...
     @property
     def members(self) -> List[Member]: ...
+    @overload
     async def edit(self, *, name: str = ..., permissions: Permissions = ..., colour: Colour = ...,
+                   hoist: bool = ..., mentionable: bool = ..., position: int = ...,
+                   reason: Optional[str] = ...) -> None: ...
+    @overload
+    async def edit(self, *, name: str = ..., permissions: Permissions = ..., color: Colour = ...,
                    hoist: bool = ..., mentionable: bool = ..., position: int = ...,
                    reason: Optional[str] = ...) -> None: ...
     async def delete(self, *, reason: Optional[str] = ...) -> None: ...

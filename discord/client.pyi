@@ -42,13 +42,14 @@ class Client:
     shard_count: Optional[int]
     activity: Union[Activity, Game, Streaming, Spotify]
 
-    def __init__(self, *, loop: Optional[asyncio.AbstractEventLoop] = ...,
-                 shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
+    def __init__(self, *, max_messages: Optional[int] = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
-                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                 proxy_auth: Optional[aiohttp.BasicAuth] = ...,
+                 shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
                  fetch_offline_members: bool = ..., status: Optional[Status] = ...,
                  activity: Optional[Union[Activity, Game, Streaming]] = ...,
-                 heartbeat_timeout: float = ..., guild_subscriptions: bool = ..., **options: Any) -> None: ...
+                 heartbeat_timeout: float = ..., guild_subscriptions: bool = ...,
+                 assume_unsync_clock: bool = ...) -> None: ...
     @property
     def latency(self) -> float: ...
     # NOTE: user is actually Optional[ClientUser] because it's None when logged out, but the vast
