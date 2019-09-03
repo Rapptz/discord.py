@@ -259,11 +259,11 @@ class Loop:
         Returns
         ---------
         :class:`bool`
-            Whether it was successfully removed.
+            Whether all exceptions were successfully removed.
         """
         old_length = len(self._valid_exception)
         self._valid_exception = tuple(x for x in self._valid_exception if x not in exceptions)
-        return len(self._valid_exception) != old_length
+        return len(self._valid_exception) == old_length + len(exceptions)
 
     def get_task(self):
         """Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running."""
