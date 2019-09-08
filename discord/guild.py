@@ -1012,7 +1012,8 @@ class Guild(Hashable):
             The new description of the guild. This is only available to guilds that
             contain `VERIFIED` in :attr:`Guild.features`.
         icon: :class:`bytes`
-            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported.
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported 
+            and GIF for guilds with ``ANIMATED_ICON`` feature.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
