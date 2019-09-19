@@ -54,7 +54,7 @@ class Reaction:
 
     Attributes
     -----------
-    emoji: Union[:class:`Emoji`, :class:`str`]
+    emoji: Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]
         The reaction emoji. May be a custom emoji, or a unicode emoji.
     count: :class:`int`
         Number of times this reaction was made
