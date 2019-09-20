@@ -249,6 +249,15 @@ class Emoji:
         """:class:`Guild`: The guild this emoji belongs to."""
         return self._state._get_guild(self.guild_id)
 
+    def is_usable(self):
+        """:class:`bool`: Whether the bot can use this emoji."""
+        if not self.available:
+            return False
+        if not self._roles:
+            return True
+        emoji_roles, my_roles = self._roles, self.guild.me._roles
+        return any(my_roles.has(role_id) for role_id in emoji_roles)
+
     async def delete(self, *, reason=None):
         """|coro|
 
