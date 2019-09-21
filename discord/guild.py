@@ -293,7 +293,6 @@ class Guild(Hashable):
         return self._voice_states.get(user_id)
 
     def _add_member(self, member):
-        print('dd membering')
         self._members[member.id] = member
 
     def _remove_member(self, member):
