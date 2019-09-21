@@ -241,7 +241,7 @@ class Guild(Hashable):
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``COMMERCE``: Guild can sell things using store channels.
-        - ``LURKABLE``: Users can lurk in this guild via Server Discovery.
+        - ``PUBLIC``: Users can lurk in this guild via Server Discovery.
         - ``NEWS``: Guild can create news channels.
         - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
