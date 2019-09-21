@@ -297,7 +297,7 @@ class ConnectionState:
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
-    async def query_members(self, guild, query, limit, cache):
+    async def query_members(self, guild, query, limit, cache, presences):
         guild_id = guild.id
         ws = self._get_websocket(guild_id)
         if ws is None:
@@ -311,7 +311,7 @@ class ConnectionState:
         future = self.receive_member_query(guild_id, query)
         try:
             # start the query operation
-            await ws.request_chunks(guild_id, query, limit)
+            await ws.request_chunks(guild_id, query, limit, presences)
             members = await asyncio.wait_for(future, timeout=5.0, loop=self.loop)
 
             if cache:
@@ -827,11 +827,21 @@ class ConnectionState:
     def parse_guild_members_chunk(self, data):
         guild_id = int(data['guild_id'])
         guild = self._get_guild(guild_id)
+        presences = data.get('presences', [])
+
         members = [Member(guild=guild, data=member, state=self) for member in data.get('members', [])]
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         if self._cache_members:
             for member in members:
                 guild._add_member(member)
+
+        if presences:
+            member_dict = {str(member.id): member for member in members}
+            for presence in presences:
+                user = presence['user']
+                member_id = user['id']
+                member = member_dict.get(member_id)
+                member._presence_update(presence, user)
 
         self.process_listeners(ListenerType.chunk, guild, len(members))
         names = [x.name.lower() for x in members]

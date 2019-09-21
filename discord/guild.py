@@ -293,6 +293,7 @@ class Guild(Hashable):
         return self._voice_states.get(user_id)
 
     def _add_member(self, member):
+        print('dd membering')
         self._members[member.id] = member
 
     def _remove_member(self, member):
@@ -1879,7 +1880,7 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
-    async def query_members(self, query, *, limit=5, cache=True):
+    async def query_members(self, query, *, limit=5, presences=False, cache=True):
         """|coro|
 
         Request members that belong to this guild whose username starts with
@@ -1902,6 +1903,9 @@ class Guild(Hashable):
         limit: :class:`int`
             The maximum number of members to send back. This must be
             a number between 1 and 1000.
+        presences: :class:`bool`
+            Whether to request for presences to be provided. This defaults
+            to ``False``.
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
@@ -1917,4 +1921,4 @@ class Guild(Hashable):
             The list of members that have matched the query.
         """
         limit = limit or 5
-        return await self._state.query_members(self, query=query, limit=limit, cache=cache)
+        return await self._state.query_members(self, query=query, limit=limit, cache=cache, presences=presences)
