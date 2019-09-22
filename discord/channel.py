@@ -141,7 +141,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @property
     def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this channel."""
-        return 'https://discordapp.com/channels/{0.guild.id}/{0.id}'.format(self)
+        return "https://discordapp.com/channels/{0.guild.id}/{0.id}".format(self)
 
     @property
     def _sorting_bucket(self):
