@@ -1081,6 +1081,11 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     def type(self):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.group
+    
+    @property
+    def jump_url(self):
+        """:class:`str`: Returns a URL that allows the client to jump to this channel."""
+        return "https://discordapp.com/channels/@me/{0.id}".format(self)
 
     @property
     def icon_url(self):
