@@ -137,6 +137,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def type(self):
         """:class:`ChannelType`: The channel's Discord type."""
         return try_enum(ChannelType, self._type)
+    
+    @property
+    def jump_url(self):
+        """:class:`str`: Returns a URL that allows the client to jump to this channel."""
+        return 'https://discordapp.com/channels/{0.guild.id}/{0.id}'.format(self)
 
     @property
     def _sorting_bucket(self):
@@ -957,6 +962,11 @@ class DMChannel(discord.abc.Messageable, Hashable):
     def type(self):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.private
+    
+    @property
+    def jump_url(self):
+        """:class:`str`: Returns a URL that allows the client to jump to this channel."""
+        return "https://discordapp.com/channels/@me/{0.id}".format(self)
 
     @property
     def created_at(self):
