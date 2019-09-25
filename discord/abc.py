@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import abc
+import io
 import copy
 import asyncio
 from collections import namedtuple
@@ -36,6 +37,7 @@ from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
 from .file import File
+from .message import Attachment
 from .voice_client import VoiceClient
 from . import utils
 
@@ -758,9 +760,18 @@ class Messageable(metaclass=abc.ABCMeta):
         be provided.
 
         To upload a single file, the ``file`` parameter should be used with a
-        single :class:`~discord.File` object. To upload multiple files, the ``files``
-        parameter should be used with a :class:`list` of :class:`~discord.File` objects.
+        single :class:`~discord.File` or :class:`~discord.Attachment` object. To
+        upload multiple files, the ``files`` parameter should be used with
+        a :class:`list` of :class:`~discord.File` or :class:`~discord.Attachment` objects.
         **Specifying both parameters will lead to an exception**.
+
+        .. note::
+            When using :class:`~discord.Attachment`, filename is always the attachment's name,
+            and the spoiler status is the same as the attachment's.
+
+        .. versionchanged:: 1.3
+            :class:`~discord.Attachment` can be used instead of :class:`~discord.File`
+            when uploading attachment(s).
 
         If the ``embed`` parameter is provided, it must be of type :class:`~discord.Embed` and
         it must be a rich embed type.
@@ -773,9 +784,9 @@ class Messageable(metaclass=abc.ABCMeta):
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`~discord.Embed`
             The rich embed for the content.
-        file: :class:`~discord.File`
+        file: Union[:class:`~discord.File`, :class:`~discord.Attachment`]
             The file to upload.
-        files: List[:class:`~discord.File`]
+        files: List[Union[:class:`~discord.File`, :class:`~discord.Attachment`]]
             A list of files to upload. Must be a maximum of 10.
         nonce: :class:`int`
             The nonce to use for sending this message. If the message was successfully sent,
@@ -792,8 +803,9 @@ class Messageable(metaclass=abc.ABCMeta):
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
         ~discord.InvalidArgument
-            The ``files`` list is not of the appropriate size or
-            you specified both ``file`` and ``files``.
+            The ``files`` list is not of the appropriate size, you specified
+            both ``file`` and ``files``, or the passed :class:`Attachment` was
+            not readable.
 
         Returns
         ---------
@@ -811,8 +823,15 @@ class Messageable(metaclass=abc.ABCMeta):
             raise InvalidArgument('cannot pass both file and files parameter to send()')
 
         if file is not None:
-            if not isinstance(file, File):
-                raise InvalidArgument('file parameter must be File')
+            if isinstance(file, Attachment):
+                try:
+                    attachment_bytes = await file.read()
+                except HTTPException:
+                    raise InvalidArgument('cannot fetch the attachment')
+                else:
+                    file = File(io.BytesIO(attachment_bytes), file.filename, spoiler=file.is_spoiler())
+            elif not isinstance(file, File):
+                raise InvalidArgument('file parameter must be File or Attachment')
 
             try:
                 data = await state.http.send_files(channel.id, files=[file],
@@ -823,14 +842,31 @@ class Messageable(metaclass=abc.ABCMeta):
         elif files is not None:
             if len(files) > 10:
                 raise InvalidArgument('files parameter must be a list of up to 10 elements')
-            elif not all(isinstance(file, File) for file in files):
-                raise InvalidArgument('files parameter must be a list of File')
+            elif:
+                processed_files = []
+                for maybe_file in files:
+                    if isinstance(maybe_file, File):
+                        processed_files.append(maybe_file)
+                    elif isinstance(maybe_file, Attachment):
+                        try:
+                            attachment_bytes = await maybe_file.read()
+                        except HTTPException:
+                            raise InvalidArgument('cannot fetch the attachment')
+                        else:
+                            processed_files.append(File(
+                                io.BytesIO(attachment_bytes),
+                                maybe_file.filename,
+                                spoiler=maybe_file.is_spoiler()))
+                    else:
+                        raise InvalidArgument('files parameter must be a list of File')
+
+                del files
 
             try:
-                data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
+                data = await state.http.send_files(channel.id, files=processed_files, content=content, tts=tts,
                                                    embed=embed, nonce=nonce)
             finally:
-                for f in files:
+                for f in processed_files:
                     f.close()
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
