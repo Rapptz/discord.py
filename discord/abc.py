@@ -842,7 +842,7 @@ class Messageable(metaclass=abc.ABCMeta):
         elif files is not None:
             if len(files) > 10:
                 raise InvalidArgument('files parameter must be a list of up to 10 elements')
-            elif:
+            else:
                 processed_files = []
                 for maybe_file in files:
                     if isinstance(maybe_file, File):
