@@ -148,6 +148,8 @@ class Command(_BaseCommand):
     parent: Optional[:class:`Command`]
         The parent command that this command belongs to. ``None`` if there
         isn't one.
+    cog: Optional[:class:`Cog`]
+        The cog that this command belongs to. ``None`` if there isn't one.
     checks: List[Callable[..., :class:`bool`]]
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
