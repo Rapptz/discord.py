@@ -76,27 +76,11 @@ General
 
 General questions regarding library usage belong here.
 
-Are there any usage examples?
+Where can I find usage examples?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Example code can be found in the `examples/ <https://github.com/Rapptz/discord.py/tree/master/examples>`_ folder
 in the repository.
-
-Can I search messages in channels?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Unfortunately, Discord does not expose a channel search API for bots. There are some workarounds:
-
-- Use :meth:`abc.Messageable.history` and check the :attr:`~Message.content` of each message.
-  This may be slow depending on the number of messages checked, as more messages require more HTTP calls.
-- Iterate through :attr:`Client.cached_messages`.
-  This has a limited number of messages and it is likely the message you want will not be cached here.
-
-.. warning::
-
-    Do not use :meth:`abc.Messageable.history` to get message counts such as how many images were sent in a channel
-    in the past 30 days. Doing so would create a lot of HTTP calls and potentially get your bot banned.
-    The only effective way to achieve this would be to save every message as it comes in and search through that dataset.
 
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -129,21 +113,23 @@ You must fetch the channel directly and then call the appropriate method. Exampl
 How do I send a DM?
 ~~~~~~~~~~~~~~~~~~~
 
-Get the :class:`User` object and call :meth:`User.send`. For example: ::
+Get the :class:`User` or :class:`Member` object and call :meth:`abc.Messageable.send`. For example: ::
 
-	user = client.get_user(381870129706958858)
-	await user.send('👀')
+    user = client.get_user(381870129706958858)
+    await user.send('👀')
 
-If the user is not cached (:meth:`Client.get_user` returns ``None``), you can use :meth:`Client.fetch_user` instead.
+If you are responding to an event, such as :func:`on_message`, you already have the :class:`User` object via :attr:`Message.author`: ::
 
-If you are responding to an event, such as :func:`on_message`, you already have the :class:`User` object via :attr:`Message.author`..
-Use :meth:`User.send`.
+    await message.author.send('👋')
 
 How do I get the ID of a sent message?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :meth:`abc.Messageable.send` returns the :class:`Message` that was sent.
-The ID of a message can be accessed via :attr:`Message.id`.
+The ID of a message can be accessed via :attr:`Message.id`: ::
+
+    message = await channel.send('hmm…')
+    message_id = message.id
 
 How do I upload an image?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
