@@ -249,6 +249,10 @@ class Emoji:
         """:class:`Guild`: The guild this emoji belongs to."""
         return self._state._get_guild(self.guild_id)
 
+    def use(self):
+        """:class:`str`: Returns the emoji in a usable state."""
+        return "<:{0.name}:{0.id}>".format(self) if not self.animated else "<a:{0.name}:{0.id}>".format(self)
+
     def is_usable(self):
         """:class:`bool`: Whether the bot can use this emoji."""
         if not self.available:
