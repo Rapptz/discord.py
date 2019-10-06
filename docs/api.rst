@@ -308,6 +308,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         - For performance reasons, the embed server does not do this in a "consistent" manner.
 
+    - The message's embeds were suppressed or unsuppressed.
     - A call message has received an update to its participants or ending time.
 
     :param before: The previous version of the message.
