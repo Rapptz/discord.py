@@ -293,9 +293,6 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/channels/{channel_id}', channel_id=channel_id), json=payload)
 
-    def convert_group(self, channel_id):
-        return self.request(Route('POST', '/channels/{channel_id}/convert', channel_id=channel_id))
-
     # Message management
 
     def start_private_message(self, user_id):
