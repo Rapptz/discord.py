@@ -455,6 +455,43 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
+    async def follow(self, channel):
+        """
+        Follows a channel using a webhook.
+
+        You can only follow news channels.
+
+        .. note::
+
+            The webhook returned will not provide a token to do webhook
+            actions, as Discord does not provide it.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        channel: :class:`TextChannel`
+            The news channel you would like to follow.
+
+        Raises
+        -------
+        HTTPException
+            Following the channel failed.
+        Forbidden
+            You do not have the permissions to create a webhook.
+
+        Returns
+        --------
+        :class:`Webhook`
+            The created webhook.
+        """
+
+        if not channel.is_news():
+            raise ClientException('The channel must be a news channel.')
+
+        data = await self._state.http.follow_webhook(channel.id, webhook_channel_id=self.id)
+        return Webhook.as_follower(data, channel=channel, user=self._state.user)
+
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
 
