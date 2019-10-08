@@ -500,6 +500,25 @@ class Webhook:
         return cls(m.groupdict(), adapter=adapter)
 
     @classmethod
+    def _as_follower(cls, data, *, channel, user):
+        name = "{} #{}".format(channel.guild, channel)
+        feed = {
+            'id': data['webhook_id'],
+            'name': name,
+            'channel_id': channel.id,
+            'guild_id': channel.guild.id,
+            'user': {
+                'username': user.name,
+                'discriminator': user.discriminator,
+                'id': user.id,
+                'avatar': user.avatar
+            }
+        }
+
+        session = channel._state.http._HTTPClient__session
+        return cls(feed, adapter=AsyncWebhookAdapter(session=session))
+
+    @classmethod
     def from_state(cls, data, state):
         session = state.http._HTTPClient__session
         return cls(data, adapter=AsyncWebhookAdapter(session=session), state=state)
