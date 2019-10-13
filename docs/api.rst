@@ -572,9 +572,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param guild: The guild who got their emojis updated.
     :type guild: :class:`Guild`
     :param before: A list of emojis before the update.
-    :type before: List[:class:`Emoji`]
+    :type before: Sequence[:class:`Emoji`]
     :param after: A list of emojis after the update.
-    :type after: List[:class:`Emoji`]
+    :type after: Sequence[:class:`Emoji`]
 
 .. function:: on_guild_available(guild)
               on_guild_unavailable(guild)
