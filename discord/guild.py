@@ -245,6 +245,7 @@ class Guild(Hashable):
         - ``NEWS``: Guild can create news channels.
         - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
+        - ``MEMBER_LIST_DISABLED``: Member list is disabled.
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
