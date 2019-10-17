@@ -386,7 +386,7 @@ class Guild(Hashable):
         self.max_presences = guild.get('max_presences')
         self.max_members = guild.get('max_members')
         self.premium_tier = guild.get('premium_tier', 0)
-        self.premium_subscription_count = guild.get('premium_subscription_count', 0)
+        self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
 
