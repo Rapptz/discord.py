@@ -261,7 +261,7 @@ class Guild(Hashable):
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'unavailable', 'banner', 'region', '_state',
-                 '_default_role', '_roles', '_member_count', '_large',
+                 '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
@@ -617,10 +617,10 @@ class Guild(Hashable):
         """
         return self._roles.get(role_id)
 
-    @utils.cached_slot_property('_default_role')
+    @property
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_default(), self._roles.values())
+        return self.get_role(self.id)
 
     @property
     def owner(self):
