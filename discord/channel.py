@@ -79,8 +79,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
-    category_id: :class:`int`
-        The category channel ID this channel belongs to.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
     topic: Optional[:class:`str`]
         The channel's topic. None if it doesn't exist.
     position: :class:`int`
@@ -484,8 +484,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
-    category_id: :class:`int`
-        The category channel ID this channel belongs to.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
