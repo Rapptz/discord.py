@@ -455,11 +455,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
-    async def follow(self, channel):
+    async def follow(self, *, destination):
         """
         Follows a channel using a webhook.
 
-        You can only follow news channels.
+        Only news channels can be followed.
 
         .. note::
 
@@ -470,8 +470,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -----------
-        channel: :class:`TextChannel`
-            The news channel you would like to follow.
+        destination: :class:`TextChannel`
+            The channel you would like to follow from.
 
         Raises
         -------
@@ -486,11 +486,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The created webhook.
         """
 
-        if not channel.is_news():
+        if not self.is_news():
             raise ClientException('The channel must be a news channel.')
 
-        data = await self._state.http.follow_webhook(channel.id, webhook_channel_id=self.id)
-        return Webhook.as_follower(data, channel=channel, user=self._state.user)
+        data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id)
+        return Webhook.as_follower(data, channel=destination, user=self._state.user)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.
