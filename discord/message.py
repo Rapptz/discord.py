@@ -570,7 +570,7 @@ class Message:
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
 
-        ..versionadded:: 1.3
+        .. versionadded:: 1.3
         """
         return self.type is not MessageType.default
 

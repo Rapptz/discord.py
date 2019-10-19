@@ -122,6 +122,8 @@ class FFmpegAudio(AudioSource):
     """
 
     def __init__(self, source, *, executable='ffmpeg', args, **subprocess_kwargs):
+        self._process = self._stdout = None
+
         args = [executable, *args]
         kwargs = {'stdout': subprocess.PIPE}
         kwargs.update(subprocess_kwargs)

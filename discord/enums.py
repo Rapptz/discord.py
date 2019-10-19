@@ -191,6 +191,7 @@ class VoiceRegion(Enum):
     japan         = 'japan'
     southafrica   = 'southafrica'
     india         = 'india'
+    europe        = 'europe'
     vip_us_east   = 'vip-us-east'
     vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
