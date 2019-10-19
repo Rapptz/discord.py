@@ -835,7 +835,7 @@ class Messageable(metaclass=abc.ABCMeta):
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
 
-        ret = state.create_message(channel=channel, data=data)
+        ret = state.add_message(channel=channel, data=data)
         if delete_after is not None:
             await ret.delete(delay=delete_after)
         return ret

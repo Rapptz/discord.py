@@ -399,10 +399,8 @@ class ConnectionState:
 
     def parse_message_create(self, data):
         channel, _ = self._get_guild_channel(data)
-        message = Message(channel=channel, data=data, state=self)
+        message = self.update_message(channel=channel, data=data)
         self.dispatch('message', message)
-        if self._messages is not None:
-            self._messages.append(message)
         if channel and channel.__class__ is TextChannel:
             channel.last_message_id = message.id
 
@@ -955,6 +953,18 @@ class ConnectionState:
             channel = guild.get_channel(id)
             if channel is not None:
                 return channel
+
+    def update_message(self, *, channel, data):
+        message = self._get_message(data['id'])
+        if message:
+            message._update(data)
+        return message or self.add_message(channel=channel, data=data)
+
+    def add_message(self, *, channel, data):
+        message = self.create_message(channel=channel, data=data)
+        if self._messages is not None:
+            self._messages.append(message)
+        return message
 
     def create_message(self, *, channel, data):
         return Message(state=self, channel=channel, data=data)
