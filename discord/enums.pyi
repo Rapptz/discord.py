@@ -47,6 +47,7 @@ class VoiceRegion(Enum):
     japan: str
     southafrica: str
     india: str
+    europe: str
     vip_us_east: str
     vip_us_west: str
     vip_amsterdam: str

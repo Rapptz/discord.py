@@ -1,6 +1,6 @@
 from .member import Member
 from .message import Message
-from .emoji import Emoji
+from .emoji import Emoji, PartialEmoji
 from .iterators import ReactionIterator
 from .abc import Snowflake
 
@@ -17,7 +17,7 @@ class _UserProtocol(Protocol):
     id: int
 
 class Reaction:
-    emoji: Union[Emoji, str]
+    emoji: Union[Emoji, PartialEmoji, str]
     count: int
     me: bool
     message: Message

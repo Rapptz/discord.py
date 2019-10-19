@@ -19,6 +19,7 @@ class VoiceState:
     mute: bool
     self_mute: bool
     self_deaf: bool
+    self_stream: bool
     self_video: bool
     afk: bool
     channel: Optional[Union[GroupChannel, VoiceChannel]]

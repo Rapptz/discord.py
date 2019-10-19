@@ -38,7 +38,8 @@ class Command(_BaseCommand, Generic[_CT]):
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
                  aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
                  rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
-                 checks: List[_CheckType] = ..., cooldown: Cooldown = ..., parent: _BaseCommand = ...) -> None: ...
+                 checks: List[_CheckType] = ..., cooldown: Cooldown = ..., parent: _BaseCommand = ...,
+                 cog: Optional[Cog[_CT]] = ...) -> None: ...
     def update(self, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
                usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
                rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
