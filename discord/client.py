@@ -94,6 +94,7 @@ def _cleanup_loop(loop):
             loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         log.info('Closing the event loop.')
+        loop.stop()
         loop.close()
 
 class _ClientEventTask(asyncio.Task):
