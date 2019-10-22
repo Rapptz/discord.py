@@ -350,7 +350,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
             pass
         else:
             if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
-                converter = getattr(converters, converter.__name__ + 'Converter')
+                converter = getattr(converters, converter.__name__ + 'Converter', converter)
 
         try:
             if inspect.isclass(converter):

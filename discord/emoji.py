@@ -281,7 +281,7 @@ class Emoji:
 
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    async def edit(self, *, name, roles=None, reason=None):
+    async def edit(self, *, name=None, roles=None, reason=None):
         r"""|coro|
 
         Edits the custom emoji.
@@ -306,6 +306,7 @@ class Emoji:
             An error occurred editing the emoji.
         """
 
+        name = name or self.name
         if roles:
             roles = [role.id for role in roles]
         await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)
