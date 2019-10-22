@@ -42,7 +42,7 @@ class SystemChannelFlags:
 
 class Guild(Hashable):
     name: str
-    emojis: Tuple[Emoji]
+    emojis: Tuple[Emoji, ...]
     region: VoiceRegion
     afk_timeout: int
     afk_channel: Optional[VoiceChannel]
