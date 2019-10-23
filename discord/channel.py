@@ -878,8 +878,19 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
-            :class:`PermissionOverwrite` to apply to the channel.
-
+            :class:`PermissionOverwrite` to apply to the channel.    
+            .. versionadded:: 1.3
+       
+        Example
+        ----------
+        
+        Disallowing sending messages for a user: ::
+            
+            member = channel.guild.get_member(422181415598161921)
+            overwrite = PermissionOverwrite({"send_messages": False})
+            overwrites = {member: overwrite}
+            await channel.edit(overwrites=overwrites)
+         
         Raises
         ------
         InvalidArgument
