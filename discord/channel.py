@@ -887,7 +887,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         Disallowing sending messages for a user: ::
             
             member = channel.guild.get_member(422181415598161921)
-            overwrite = PermissionOverwrite({"send_messages": False})
+            overwrite = PermissionOverwrite(send_messages=False)
             overwrites = {member: overwrite}
             await channel.edit(overwrites=overwrites)
          
