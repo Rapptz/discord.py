@@ -33,7 +33,7 @@ from .enums import ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
 from .asset import Asset
-from .errors import ClientException, NoMoreItems
+from .errors import ClientException, NoMoreItems, InvalidArgument
 from .webhook import Webhook
 
 __all__ = (
@@ -489,8 +489,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if not self.is_news():
             raise ClientException('The channel must be a news channel.')
 
+        if not isinstance(destination, TextChannel):
+            raise InvalidArgument('Expected TextChannel received {0.__name__}'.format(type(destination)))
+
         data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id)
-        return Webhook.as_follower(data, channel=destination, user=self._state.user)
+        return Webhook._as_follower(data, channel=destination, user=self._state.user)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild voice channel.

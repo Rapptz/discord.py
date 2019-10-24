@@ -496,7 +496,7 @@ class Webhook:
         return cls(m.groupdict(), adapter=adapter)
 
     @classmethod
-    def as_follower(cls, data, *, channel, user):
+    def _as_follower(cls, data, *, channel, user):
         name = "{} #{}".format(channel.guild, channel)
         feed = {
             'id': data['webhook_id'],
