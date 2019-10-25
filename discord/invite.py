@@ -56,8 +56,9 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
 
     Attributes
     -----------
-    name: :class:`str`
-        The partial channel's name.
+    name: Optional[:class:`str`]
+        The partial channel's name. Can be None if the partial channel is a Group Channel without
+        a specified name.
     id: :class:`int`
         The partial channel's ID.
     type: :class:`ChannelType`
@@ -67,7 +68,7 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
     __slots__ = ()
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     @property
     def mention(self):
@@ -228,8 +229,8 @@ class Invite(Hashable):
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
-    guild: Union[:class:`Guild`, :class:`PartialInviteGuild`]
-        The guild the invite is for.
+    guild: Optional[Union[:class:`Guild`, :class:`PartialInviteGuild`]]
+        The guild the invite is for. Can be None if the invite is for a GroupChannel.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
     created_at: :class:`datetime.datetime`
@@ -275,17 +276,24 @@ class Invite(Hashable):
 
     @classmethod
     def from_incomplete(cls, *, state, data):
-        guild_id = int(data['guild']['id'])
+        if data.get('guild'):
+            guild_id = int(data['guild']['id'])
+            guild = state._get_guild(guild_id)
+        else:
+            guild = None
         channel_id = int(data['channel']['id'])
-        guild = state._get_guild(guild_id)
         if guild is not None:
             channel = guild.get_channel(channel_id)
-        else:
+        elif data.get('guild'):
             channel_data = data['channel']
             guild_data = data['guild']
             channel_type = try_enum(ChannelType, channel_data['type'])
             channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
             guild = PartialInviteGuild(state, guild_data, guild_id)
+        else:
+            channel_data = data['channel']
+            channel_type = try_enum(ChannelType, channel_data['type'])
+            channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
         data['guild'] = guild
         data['channel'] = channel
         return cls(state=state, data=data)
