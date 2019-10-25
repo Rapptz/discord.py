@@ -955,7 +955,16 @@ class ConnectionState:
             channel = guild.get_channel(id)
             if channel is not None:
                 return channel
+    
+    def get_role(self, id):
+        if id is None:
+            return None
 
+        for guild in self.guilds:
+            role = guild.get_role(id)
+            if role is not None:
+                return role
+    
     def create_message(self, *, channel, data):
         return Message(state=self, channel=channel, data=data)
 
