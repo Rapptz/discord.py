@@ -728,6 +728,21 @@ class Client:
         """
         return self._connection.get_emoji(id)
 
+    def get_role(self, id):
+        """Returns a role with the given ID.
+        
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID to search for.
+            
+        Returns
+        --------
+        Optional[:class:`discord.Role`]
+            The returned role or ``None`` if not found.
+        """
+        return self._connection.get_role(id)
+    
     def get_all_channels(self):
         """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
 
