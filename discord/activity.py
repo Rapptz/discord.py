@@ -35,6 +35,7 @@ __all__ = (
     'Streaming',
     'Game',
     'Spotify',
+    'CustomStatus',
 )
 
 """If curious, this is the current schema for an activity.
@@ -88,12 +89,13 @@ class _ActivityTag:
 class Activity(_ActivityTag):
     """Represents an activity in Discord.
 
-    This could be an activity such as streaming, playing, listening
-    or watching.
+    This could be an activity such as streaming, playing, listening,
+    watching, or custom status.
 
     For memory optimisation purposes, some activities are offered in slimmed
     down versions:
 
+    - :class:`CustomStatus`
     - :class:`Game`
     - :class:`Streaming`
 
@@ -136,7 +138,7 @@ class Activity(_ActivityTag):
     """
 
     __slots__ = ('state', 'details', 'timestamps', 'assets', 'party',
-                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
+                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id', '_created_at')
 
     def __init__(self, **kwargs):
         self.state = kwargs.pop('state', None)
@@ -151,6 +153,7 @@ class Activity(_ActivityTag):
         self.sync_id = kwargs.pop('sync_id', None)
         self.session_id = kwargs.pop('session_id', None)
         self.type = try_enum(ActivityType, kwargs.pop('type', -1))
+        self._created_at = kwargs.pop('created_at', None)
 
     def __repr__(self):
         attrs = (
@@ -219,6 +222,7 @@ class Activity(_ActivityTag):
             return None
         else:
             return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
+
     @property
     def large_image_text(self):
         """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
@@ -228,6 +232,14 @@ class Activity(_ActivityTag):
     def small_image_text(self):
         """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
         return self.assets.get('small_text', None)
+
+    @property
+    def created_at(self):
+        """Optional[:class:`datetime.datetime`]: Returns the activity's creation time in UTC."""
+        try:
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
+        except TypeError:
+            return None
 
 
 class Game(_ActivityTag):
@@ -582,6 +594,82 @@ class Spotify:
         """:class:`str`: The party ID of the listening party."""
         return self._party.get('id', '')
 
+class CustomStatus(_ActivityTag):
+    """A slimmed down version of :class:`Activity` that represents a user's custom status.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two custom statuses are equal.
+
+        .. describe:: x != y
+
+            Checks if two custom statuses are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the custom status' hash.
+
+        .. describe:: str(x)
+
+            Returns the custom status' name.
+
+    .. versionadded:: 1.3
+
+    .. note::
+
+        Custom statuses can only be set by non-bot accounts.
+
+    Attributes
+    -----------
+    message: Optional[:class:`str`]
+        The custom status' user-defined message.
+    """
+
+    __slots__ = ('message', '_emoji', '_created_at')
+
+    def __init__(self, **data):
+        self.message = data.pop('state', None)
+        self._emoji = data.pop('emoji', None)
+        self._created_at = data.pop('created_at')
+
+    @property
+    def type(self):
+        """Returns the custom status' type. This is for compatibility with :class:`Activity`.
+
+        It always returns :attr:`ActivityType.custom_status`.
+        """
+        return ActivityType.custom_status
+
+    @property
+    def emoji(self):
+        """Optional[:class:`PartialEmoji`]: The emoji set for the custom status."""
+        if self._emoji:
+            # this is a hack because >circular imports<
+            from .emoji import PartialEmoji
+
+            self._emoji['animated'] = self._emoji.pop('animated', False)
+            return PartialEmoji(**self._emoji)
+        return None
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: Returns the custom status' creation time in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
+
+    def __repr__(self):
+        return '<CustomStatus emoji={0.emoji!r} message={0.message!r} created_at={0.created_at!r}>'.format(self)
+
+    def __eq__(self, other):
+        return isinstance(other, CustomStatus) and hash(other) == hash(self)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.message, self.emoji, self.created_at))
+
 def create_activity(data):
     if not data:
         return None
@@ -597,4 +685,6 @@ def create_activity(data):
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
+    elif game_type is ActivityType.custom_status:
+        return CustomStatus(**data)
     return Activity(**data)

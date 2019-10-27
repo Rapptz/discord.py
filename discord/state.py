@@ -82,7 +82,7 @@ class ConnectionState:
         activity = options.get('activity', None)
         if activity:
             if not isinstance(activity, _ActivityTag):
-                raise TypeError('activity parameter must be one of Game, Streaming, or Activity.')
+                raise TypeError('activity parameter must be one of Game, Streaming, Activity, or CustomStatus.')
 
             activity = activity.to_dict()
 

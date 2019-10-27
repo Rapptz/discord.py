@@ -490,7 +490,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     async def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
         if activity is not None:
             if not isinstance(activity, _ActivityTag):
-                raise InvalidArgument('activity must be one of Game, Streaming, or Activity.')
+                raise InvalidArgument('activity must be one of Game, Streaming, Activity, or CustomStatus.')
             activity = activity.to_dict()
 
         if status == 'idle':
