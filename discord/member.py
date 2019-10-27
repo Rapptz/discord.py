@@ -59,7 +59,7 @@ class VoiceState:
         Indicates if the user is currently broadcasting video.
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: :class:`VoiceChannel`
+    channel: Optional[:class:`VoiceChannel`]
         The voice channel that the user is currently connected to. None if the user
         is not currently in a voice channel.
     """
