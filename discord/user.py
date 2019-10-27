@@ -300,7 +300,7 @@ class ClientUser(BaseUser):
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
-    premium_type: :class:`PremiumType`
+    premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
     """
     __slots__ = BaseUser.__slots__ + \
