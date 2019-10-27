@@ -222,6 +222,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     raise NotFound(r, response)
                 else:
                     raise HTTPException(r, response)
+        # no more retries
+        raise HTTPException(r, response)
 
     async def handle_execution_response(self, response, *, wait):
         data = await response
@@ -308,6 +310,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
                 raise NotFound(r, response)
             else:
                 raise HTTPException(r, response)
+        # no more retries
+        raise HTTPException(r, response)
 
     def handle_execution_response(self, response, *, wait):
         if not wait:

@@ -560,7 +560,7 @@ This command can be invoked any of the following ways:
 Error Handling
 ----------------
 
-When our commands fail to either parse we will, by default, receive a noisy error in ``stderr`` of our console that tells us
+When our commands fail to parse we will, by default, receive a noisy error in ``stderr`` of our console that tells us
 that an error has happened and has been silently ignored.
 
 In order to handle our errors, we must use something called an error handler. There is a global error handler, called
