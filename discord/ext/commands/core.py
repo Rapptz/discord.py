@@ -278,6 +278,40 @@ class Command(_BaseCommand):
             if value.annotation is converters.Greedy:
                 raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
+    def add_check(self, func):
+        """Adds a check to the command.
+
+        This is the non-decorator interface to :func:`.check`.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        func
+            The function that will be used as a check.
+        """
+
+        self.checks.append(func)
+
+    def remove_check(self, func):
+        """Removes a check from the command.
+
+        This function is idempotent and will not raise an exception
+        if the function is not in the command's checks.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        func
+            The function to remove from the checks.
+        """
+
+        try:
+            self.checks.remove(func)
+        except ValueError:
+            pass
+
     def update(self, **kwargs):
         """Updates :class:`Command` instance with updated attribute.
 
