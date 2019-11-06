@@ -133,7 +133,7 @@ class Permissions:
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to True."""
-        return cls(0b01111111111101111111111111111111)
+        return cls(0b01111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls):
@@ -397,7 +397,14 @@ class Permissions:
     def external_emojis(self, value):
         self._set(18, value)
 
-    # 1 unused
+    @property
+    def view_server_insights(self):
+        """:class:`bool`: Returns ``True`` if a user can view the guild's insights."""
+        return self._bit(19)
+
+    @view_server_insights.setter
+    def view_server_insights(self, value):
+        self._set(19, value)
 
     @property
     def connect(self):
