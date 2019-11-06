@@ -77,7 +77,7 @@ class OggStream:
         head = self.stream.read(4)
         if head == b'OggS':
             return OggPage(self.stream)
-        elif len(head)==0:
+        elif not head:
             return None
         else:
             raise OggError('invalid header magic')
