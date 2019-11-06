@@ -398,12 +398,12 @@ class Permissions:
         self._set(18, value)
 
     @property
-    def view_server_insights(self):
+    def view_guild_insights(self):
         """:class:`bool`: Returns ``True`` if a user can view the guild's insights."""
         return self._bit(19)
 
-    @view_server_insights.setter
-    def view_server_insights(self, value):
+    @view_guild_insights.setter
+    def view_guild_insights(self, value):
         self._set(19, value)
 
     @property
