@@ -154,7 +154,7 @@ class Permissions:
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to ``True``."""
-        return cls(0b01111100000000000000000010111111)
+        return cls(0b01111100000010000000000010111111)
 
     @classmethod
     def text(cls):
