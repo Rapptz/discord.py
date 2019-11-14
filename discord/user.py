@@ -181,7 +181,7 @@ class BaseUser(_BaseUser):
     @property
     def default_avatar_url(self):
         """:class:`Asset`: Returns a URL for a user's default avatar."""
-        return Asset(self._state, 'embed/avatars/{}.png'.format(self.default_avatar.value))
+        return Asset(self._state, '/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):
