@@ -122,7 +122,7 @@ class PartialEmoji:
             return Asset(self._state)
 
         _format = 'gif' if self.animated else 'png'
-        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
 class Emoji:
@@ -229,7 +229,7 @@ class Emoji:
     def url(self):
         """:class:`Asset`: Returns the asset of the emoji."""
         _format = 'gif' if self.animated else 'png'
-        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
     @property
