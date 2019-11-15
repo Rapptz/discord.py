@@ -283,6 +283,8 @@ class Command(_BaseCommand):
 
         This is the non-decorator interface to :func:`.check`.
 
+        .. versionadded:: 1.3.0
+
         Parameters
         -----------
         func
@@ -296,6 +298,8 @@ class Command(_BaseCommand):
 
         This function is idempotent and will not raise an exception
         if the function is not in the command's checks.
+
+        .. versionadded:: 1.3.0
 
         Parameters
         -----------
