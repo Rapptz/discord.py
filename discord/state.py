@@ -441,9 +441,9 @@ class ConnectionState:
             self.dispatch('raw_message_edit', raw)
 
     def parse_message_reaction_add(self, data):
-        emoji_data = data['emoji']
-        emoji_id = utils._get_as_snowflake(emoji_data, 'id')
-        emoji = PartialEmoji.with_state(self, animated=emoji_data['animated'], id=emoji_id, name=emoji_data['name'])
+        emoji = data['emoji']
+        emoji_id = utils._get_as_snowflake(emoji, 'id')
+        emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
         raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD')
         self.dispatch('raw_reaction_add', raw)
 
@@ -467,9 +467,9 @@ class ConnectionState:
             self.dispatch('reaction_clear', message, old_reactions)
 
     def parse_message_reaction_remove(self, data):
-        emoji_data = data['emoji']
-        emoji_id = utils._get_as_snowflake(emoji_data, 'id')
-        emoji = PartialEmoji.with_state(self, animated=emoji_data['animated'], id=emoji_id, name=emoji_data['name'])
+        emoji = data['emoji']
+        emoji_id = utils._get_as_snowflake(emoji, 'id')
+        emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
         raw = RawReactionActionEvent(data, emoji, 'REACTION_REMOVE')
         self.dispatch('raw_reaction_remove', raw)
 
@@ -932,7 +932,7 @@ class ConnectionState:
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji(animated=data['animated'], id=emoji_id, name=data['name'])
+            return PartialEmoji(animated=data.get('animated', False), id=emoji_id, name=data['name'])
 
     def _upgrade_partial_emoji(self, emoji):
         emoji_id = emoji.id
