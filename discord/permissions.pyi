@@ -23,6 +23,7 @@ class Permissions:
     read_message_history: bool
     mention_everyone: bool
     external_emojis: bool
+    view_guild_insights: bool
     connect: bool
     speak: bool
     mute_members: bool
@@ -66,10 +67,10 @@ class Permissions:
                stream: bool = ..., read_messages: bool = ..., send_messages: bool = ..., send_tts_messages: bool = ...,
                manage_messages: bool = ..., embed_links: bool = ..., attach_files: bool = ...,
                read_message_history: bool = ..., mention_everyone: bool = ..., external_emojis: bool = ...,
-               connect: bool = ..., speak: bool = ..., mute_members: bool = ..., deafen_members: bool = ...,
-               move_members: bool = ..., use_voice_activation: bool = ..., change_nickname: bool = ...,
-               manage_nicknames: bool = ..., manage_roles: bool = ..., manage_webhooks: bool = ...,
-               manage_emojis: bool = ...) -> None: ...
+               view_guild_insights: bool = ..., connect: bool = ..., speak: bool = ..., mute_members: bool = ...,
+               deafen_members: bool = ..., move_members: bool = ..., use_voice_activation: bool = ...,
+               change_nickname: bool = ..., manage_nicknames: bool = ..., manage_roles: bool = ...,
+               manage_webhooks: bool = ..., manage_emojis: bool = ...) -> None: ...
     def handle_overwrite(self, allow: int, deny: int) -> None: ...
 
 _PO = TypeVar('_PO', bound=PermissionOverwrite)
@@ -96,6 +97,7 @@ class PermissionOverwrite:
     read_message_history: Optional[bool]
     mention_everyone: Optional[bool]
     external_emojis: Optional[bool]
+    view_guild_insights: Optional[bool]
     connect: Optional[bool]
     speak: Optional[bool]
     mute_members: Optional[bool]
@@ -117,7 +119,8 @@ class PermissionOverwrite:
                  send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
                  embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
                  read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
-                 external_emojis: Optional[bool] = ..., connect: Optional[bool] = ..., speak: Optional[bool] = ...,
+                 external_emojis: Optional[bool] = ..., view_guild_insights: Optional[bool] = ...,
+                 connect: Optional[bool] = ..., speak: Optional[bool] = ...,
                  mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
                  move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
                  change_nickname: Optional[bool] = ..., manage_nicknames: Optional[bool] = ...,
@@ -137,7 +140,8 @@ class PermissionOverwrite:
                send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
                embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
                read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
-               external_emojis: Optional[bool] = ..., connect: Optional[bool] = ..., speak: Optional[bool] = ...,
+               external_emojis: Optional[bool] = ..., view_guild_insights: Optional[bool] = ...,
+               connect: Optional[bool] = ..., speak: Optional[bool] = ...,
                mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
                move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
                change_nickname: Optional[bool] = ..., manage_nicknames: Optional[bool] = ...,
