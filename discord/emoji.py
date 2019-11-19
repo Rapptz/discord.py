@@ -56,9 +56,10 @@ class PartialEmoji:
 
     Attributes
     -----------
-    name: :class:`str`
+    name: Optional[:class:`str`]
         The custom emoji name, if applicable, or the unicode codepoint
-        of the non-custom emoji.
+        of the non-custom emoji. This can be ``None`` if the emoji
+        got deleted (e.g. removing a reaction with a deleted emoji).
     animated: :class:`bool`
         Whether the emoji is animated or not.
     id: Optional[:class:`int`]
