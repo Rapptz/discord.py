@@ -33,6 +33,7 @@ import logging
 import math
 import weakref
 import inspect
+import gc
 
 from .guild import Guild
 from .activity import _ActivityTag
@@ -116,6 +117,11 @@ class ConnectionState:
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
         self._messages = self.max_messages and deque(maxlen=self.max_messages)
+
+        # In cases of large deallocations the GC should be called explicitly
+        # To free the memory more immediately, especially true when it comes
+        # to reconnect loops which cause mass allocations and deallocations.
+        gc.collect()
 
     def process_listeners(self, listener_type, argument, result):
         removed = []
@@ -209,6 +215,10 @@ class ConnectionState:
             self._emojis.pop(emoji.id, None)
 
         del guild
+
+        # Much like clear(), if we have a massive deallocation
+        # then it's better to explicitly call the GC
+        gc.collect()
 
     @property
     def emojis(self):
