@@ -500,6 +500,25 @@ class Webhook:
         return cls(m.groupdict(), adapter=adapter)
 
     @classmethod
+    def _as_follower(cls, data, *, channel, user):
+        name = "{} #{}".format(channel.guild, channel)
+        feed = {
+            'id': data['webhook_id'],
+            'name': name,
+            'channel_id': channel.id,
+            'guild_id': channel.guild.id,
+            'user': {
+                'username': user.name,
+                'discriminator': user.discriminator,
+                'id': user.id,
+                'avatar': user.avatar
+            }
+        }
+
+        session = channel._state.http._HTTPClient__session
+        return cls(feed, adapter=AsyncWebhookAdapter(session=session))
+
+    @classmethod
     def from_state(cls, data, state):
         session = state.http._HTTPClient__session
         return cls(data, adapter=AsyncWebhookAdapter(session=session), state=state)
@@ -567,7 +586,7 @@ class Webhook:
         """
         if self.avatar is None:
             # Default is always blurple apparently
-            return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/0.png')
+            return Asset(self._state, '/embed/avatars/0.png')
 
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
@@ -577,7 +596,7 @@ class Webhook:
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
         return Asset(self._state, url)
 
     def delete(self):

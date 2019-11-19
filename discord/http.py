@@ -564,6 +564,12 @@ class HTTPClient:
     def get_webhook(self, webhook_id):
         return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
 
+    def follow_webhook(self, channel_id, webhook_channel_id):
+        payload = {
+            'webhook_channel_id': str(webhook_channel_id)
+        }
+        return self.request(Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload)
+
     # Guild management
 
     def get_guilds(self, limit, before=None, after=None):

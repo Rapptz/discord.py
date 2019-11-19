@@ -350,7 +350,7 @@ class GuildChannel:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
-        can be either a :class:`~discord.Role` or a :class:`~discord.Member` and the key is the
+        can be either a :class:`~discord.Role` or a :class:`~discord.Member` and the value is the
         overwrite as a :class:`~discord.PermissionOverwrite`.
 
         Returns

@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import datetime
 
+from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
 from .utils import _get_as_snowflake
@@ -205,7 +206,7 @@ class Activity(_ActivityTag):
         except KeyError:
             return None
         else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, large_image)
+            return Asset.BASE + '/app-assets/{0}/{1}.png'.format(self.application_id, large_image)
 
     @property
     def small_image_url(self):
@@ -218,7 +219,7 @@ class Activity(_ActivityTag):
         except KeyError:
             return None
         else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
+            return Asset.BASE + '/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
     @property
     def large_image_text(self):
         """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""

@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p2p5:
+
+v1.2.5
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix a bug that caused crashes due to missing ``animated`` field in Emoji structures in reactions.
+
 .. _vp1p2p4:
 
 v1.2.4

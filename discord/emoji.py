@@ -56,9 +56,10 @@ class PartialEmoji:
 
     Attributes
     -----------
-    name: :class:`str`
+    name: Optional[:class:`str`]
         The custom emoji name, if applicable, or the unicode codepoint
-        of the non-custom emoji.
+        of the non-custom emoji. This can be ``None`` if the emoji
+        got deleted (e.g. removing a reaction with a deleted emoji).
     animated: :class:`bool`
         Whether the emoji is animated or not.
     id: Optional[:class:`int`]
@@ -122,7 +123,7 @@ class PartialEmoji:
             return Asset(self._state)
 
         _format = 'gif' if self.animated else 'png'
-        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
 class Emoji:
@@ -229,7 +230,7 @@ class Emoji:
     def url(self):
         """:class:`Asset`: Returns the asset of the emoji."""
         _format = 'gif' if self.animated else 'png'
-        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
     @property
