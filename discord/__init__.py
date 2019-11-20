@@ -23,7 +23,8 @@ import logging
 from .client import Client
 from .appinfo import AppInfo
 from .user import User, ClientUser, Profile
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .activity import *
 from .channel import *
 from .guild import Guild, SystemChannelFlags

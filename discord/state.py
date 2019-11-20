@@ -38,7 +38,8 @@ import gc
 from .guild import Guild
 from .activity import _ActivityTag
 from .user import User, ClientUser
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .message import Message
 from .relationship import Relationship
 from .channel import *
