@@ -227,15 +227,30 @@ class AuditLogEntry:
         self.reason = data.get('reason')
         self.extra = data.get('options')
 
-        if self.extra:
+        if isinstance(self.action, enums.AuditLogAction) and self.extra:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
                 self.extra = type('_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()})()
-            elif self.action is enums.AuditLogAction.message_delete:
+            elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.message_delete:
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
+                }
+                self.extra = type('_AuditLogProxy', (), elems)()
+            elif self.action is enums.AuditLogAction.member_disconnect:
+                # The member disconnect action has a dict with some information
+                elems = {
+                    'count': int(self.extra['count']),
+                }
+                self.extra = type('_AuditLogProxy', (), elems)()
+            elif self.action.name.endswith('pin'):
+                # the pin actions have a dict with some information
+                channel_id = int(self.extra['channel_id'])
+                message_id = int(self.extra['message_id'])
+                elems = {
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    'message_id': message_id
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
