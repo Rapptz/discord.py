@@ -338,7 +338,8 @@ class VoiceClient:
         or an error occurred.
 
         If an error happens while the audio player is running, the exception is
-        caught and the audio player is then stopped.
+        caught and the audio player is then stopped.  If no after callback is
+        passed, any caught exception will be displayed as if it were raised.
 
         Parameters
         -----------
@@ -346,9 +347,8 @@ class VoiceClient:
             The audio source we're reading from.
         after: Callable[[:class:`Exception`], Any]
             The finalizer that is called after the stream is exhausted.
-            All exceptions it throws are silently discarded. This function
-            must have a single parameter, ``error``, that denotes an
-            optional exception that was raised during playing.
+            This function must have a single parameter, ``error``, that 
+            denotes an optional exception that was raised during playing.
 
         Raises
         -------
