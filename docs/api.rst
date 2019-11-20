@@ -1500,13 +1500,22 @@ of :class:`enum.Enum`.
 
         A guild integration was created.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the integration ID of the integration which was created.
+
         .. attribute:: integration_update
 
         A guild integration was updated.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the integration ID of the integration which was updated.
+
         .. attribute:: integration_delete
 
         A guild integration was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the integration ID of the integration which was deleted.
 
 .. class:: AuditLogActionCategory
 
