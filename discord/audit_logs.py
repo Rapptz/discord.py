@@ -250,7 +250,7 @@ class AuditLogEntry:
                     })
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.endswith('pin'):
-                # the pin actions have a dict wit some information
+                # the pin actions have a dict with some information
                 channel_id = int(self.extra['channel_id'])
                 message_id = int(self.extra['message_id'])
                 elems = {
