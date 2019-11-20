@@ -15,7 +15,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2019 Rapptz'
-__version__ = '1.3.0a'
+__version__ = '1.2.5'
 
 from collections import namedtuple
 import logging
