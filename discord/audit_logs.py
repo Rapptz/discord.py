@@ -238,6 +238,16 @@ class AuditLogEntry:
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
+            elif self.action.name.endswith('pin'):
+                # the pin actions have a dict wiht some information
+                channel_id = int(self.extra['channel_id'])
+                message_id = int(self.extra['message_id'])
+                elems = {
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    'message_id': message_id
+                }
+                self.extra = type('_AuditLogProxy', (), elems)()
+
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])

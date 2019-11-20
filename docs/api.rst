@@ -1254,6 +1254,29 @@ of :class:`enum.Enum`.
 
         - :attr:`~AuditLogDiff.roles`
 
+    .. attribute:: member_move
+
+        A member's voice channel has beenn updated. This triggers when a
+        member is moved to a different voice channel.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` which was moved.
+
+    .. attribute:: member_disconnect
+
+        A member's voice state has changed. This triggers when a
+        member is force disconnected from voice.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` which was force disconnected.
+
+    .. attribute:: bot_add
+
+        A bot was added to the guild.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` which was added to the guild.
+
     .. attribute:: role_create
 
         A new role was created.
@@ -1422,8 +1445,7 @@ of :class:`enum.Enum`.
     .. attribute:: message_delete
 
         A message was deleted by a moderator. Note that this
-        only triggers if the message was deleted by either bulk delete
-        or deletion by someone other than the author.
+        only triggers if the message was deleted by someone other than the author.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member` or :class:`User` who had their message deleted.
@@ -1434,6 +1456,52 @@ of :class:`enum.Enum`.
         - ``count``: An integer specifying how many messages were deleted.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message got deleted.
 
+        .. attribute:: message_bulk_delete
+
+        Messages were bulk deleted by a moderator.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``count``: An integer specifying how many messages were deleted.
+
+        .. attribute:: message_pin
+
+        A message was pinned in a channel.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who had their message pinned.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was pinned.
+        - ``message_id``: the ID of the message which was pinned.
+
+        .. attribute:: message_unpin
+
+        A message was unpinned in a channel.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who had their message unpinned.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was unpinned.
+        - ``message_id``: the ID of the message which was unpinned.
+
+        .. attribute:: integration_create
+
+        A guild integration was created.
+
+        .. attribute:: integration_update
+
+        A guild integration was updated.
+
+        .. attribute:: integration_delete
+
+        A guild integration was deleted.
 
 .. class:: AuditLogActionCategory
 
