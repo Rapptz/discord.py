@@ -1256,7 +1256,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: member_move
 
-        A member's voice channel has beenn updated. This triggers when a
+        A member's voice channel has been updated. This triggers when a
         member is moved to a different voice channel.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
