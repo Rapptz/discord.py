@@ -842,7 +842,9 @@ class ConnectionState:
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         if self._cache_members:
             for member in members:
-                guild._add_member(member)
+                existing = guild.get_member(member.id)
+                if existing is None or existing.joined_at is None:
+                    guild._add_member(member)
 
         self.process_listeners(ListenerType.chunk, guild, len(members))
         names = [x.name.lower() for x in members]
