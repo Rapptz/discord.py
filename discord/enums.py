@@ -298,6 +298,9 @@ class AuditLogAction(Enum):
     unban                    = 23
     member_update            = 24
     member_role_update       = 25
+    member_move              = 26
+    member_disconnect        = 27
+    bot_add                  = 28
     role_create              = 30
     role_update              = 31
     role_delete              = 32
@@ -311,6 +314,12 @@ class AuditLogAction(Enum):
     emoji_update             = 61
     emoji_delete             = 62
     message_delete           = 72
+    message_bulk_delete      = 73
+    message_pin              = 74
+    message_unpin            = 75
+    integration_create       = 80
+    integration_update       = 81
+    integration_delete       = 82
 
     @property
     def category(self):
@@ -328,6 +337,9 @@ class AuditLogAction(Enum):
             AuditLogAction.unban:              None,
             AuditLogAction.member_update:      AuditLogActionCategory.update,
             AuditLogAction.member_role_update: AuditLogActionCategory.update,
+            AuditLogAction.member_move:        None,
+            AuditLogAction.member_move:        None,
+            AuditLogAction.bot_add:            None,
             AuditLogAction.role_create:        AuditLogActionCategory.create,
             AuditLogAction.role_update:        AuditLogActionCategory.update,
             AuditLogAction.role_delete:        AuditLogActionCategory.delete,
@@ -341,6 +353,9 @@ class AuditLogAction(Enum):
             AuditLogAction.emoji_update:       AuditLogActionCategory.update,
             AuditLogAction.emoji_delete:       AuditLogActionCategory.delete,
             AuditLogAction.message_delete:     AuditLogActionCategory.delete,
+            AuditLogAction.integration_create: AuditLogActionCategory.create,
+            AuditLogAction.integration_update: AuditLogActionCategoty.update,
+            AuditLogAction.integration_delete: AuditLogActionCategory.delete,
         }
         return lookup[self]
 
@@ -365,6 +380,8 @@ class AuditLogAction(Enum):
             return 'emoji'
         elif v < 80:
             return 'message'
+        elif v < 90:
+            return 'integration'
 
 class UserFlags(Enum):
     staff = 1

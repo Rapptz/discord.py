@@ -227,7 +227,7 @@ class AuditLogEntry:
         self.reason = data.get('reason')
         self.extra = data.get('options')
 
-        if self.extra:
+        if isinstance(self.action, enums.AuditLogAction) and self.extra:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
                 self.extra = type('_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()})()
