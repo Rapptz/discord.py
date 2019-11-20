@@ -238,8 +238,19 @@ class AuditLogEntry:
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
+            elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.member_disconnect:
+                # The member move and disconnect actions have a dict with some information
+                elems = {
+                    'count': int(self.extra['count']),
+                }
+                if self.action is enums.AuditLogAction.member_move:
+                    channel_id = int(self.extra['channel_id'])
+                    elems.update({
+                        'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    })
+                self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.endswith('pin'):
-                # the pin actions have a dict wiht some information
+                # the pin actions have a dict wit some information
                 channel_id = int(self.extra['channel_id'])
                 message_id = int(self.extra['message_id'])
                 elems = {
@@ -247,7 +258,6 @@ class AuditLogEntry:
                     'message_id': message_id
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
-
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])

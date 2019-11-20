@@ -338,7 +338,7 @@ class AuditLogAction(Enum):
             AuditLogAction.member_update:      AuditLogActionCategory.update,
             AuditLogAction.member_role_update: AuditLogActionCategory.update,
             AuditLogAction.member_move:        None,
-            AuditLogAction.member_move:        None,
+            AuditLogAction.member_disconnect:  None,
             AuditLogAction.bot_add:            None,
             AuditLogAction.role_create:        AuditLogActionCategory.create,
             AuditLogAction.role_update:        AuditLogActionCategory.update,

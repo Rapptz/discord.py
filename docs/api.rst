@@ -1259,16 +1259,21 @@ of :class:`enum.Enum`.
         A member's voice channel has beenn updated. This triggers when a
         member is moved to a different voice channel.
 
-        When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` which was moved.
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID of which the members were moved to.
+        - ``count``: An integer specifying how many members were moved.
 
     .. attribute:: member_disconnect
 
         A member's voice state has changed. This triggers when a
         member is force disconnected from voice.
 
-        When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` which was force disconnected.
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``count``: An integer specifying how many members were disconnected.
 
     .. attribute:: bot_add
 
