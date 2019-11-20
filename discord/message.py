@@ -707,7 +707,7 @@ class Message:
         """
         if delay is not None:
             async def delete():
-                await asyncio.sleep(delay, loop=self._state.loop)
+                await asyncio.sleep(delay)
                 try:
                     await self._state.http.delete_message(self.channel.id, self.id)
                 except HTTPException:

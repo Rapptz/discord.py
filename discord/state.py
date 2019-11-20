@@ -304,7 +304,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -323,7 +323,7 @@ class ConnectionState:
         try:
             # start the query operation
             await ws.request_chunks(guild_id, query, limit)
-            members = await asyncio.wait_for(future, timeout=5.0, loop=self.loop)
+            members = await asyncio.wait_for(future, timeout=5.0)
 
             if cache:
                 for member in members:
@@ -344,7 +344,7 @@ class ConnectionState:
                     # this snippet of code is basically waiting 2 seconds
                     # until the last GUILD_CREATE was sent
                     launch.set()
-                    await asyncio.sleep(2, loop=self.loop)
+                    await asyncio.sleep(2)
 
             guilds = next(zip(*self._ready_state.guilds), [])
             if self._fetch_offline:
@@ -694,7 +694,7 @@ class ConnectionState:
         await self.chunker(guild)
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks), loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks))
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -1006,7 +1006,7 @@ class AutoShardedConnectionState(ConnectionState):
         # wait for the chunks
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -1016,7 +1016,7 @@ class AutoShardedConnectionState(ConnectionState):
             # this snippet of code is basically waiting 2 seconds
             # until the last GUILD_CREATE was sent
             launch.set()
-            await asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
+            await asyncio.sleep(2.0 * self.shard_count)
 
         if self._fetch_offline:
             guilds = sorted(self._ready_state.guilds, key=lambda g: g[0].shard_id)

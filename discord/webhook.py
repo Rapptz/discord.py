@@ -201,7 +201,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 remaining = r.headers.get('X-Ratelimit-Remaining')
                 if remaining == '0' and r.status != 429:
                     delta = utils._parse_ratelimit_header(r)
-                    await asyncio.sleep(delta, loop=self.loop)
+                    await asyncio.sleep(delta)
 
                 if 300 > r.status >= 200:
                     return response
@@ -209,11 +209,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 # we are being rate limited
                 if r.status == 429:
                     retry_after = response['retry_after'] / 1000.0
-                    await asyncio.sleep(retry_after, loop=self.loop)
+                    await asyncio.sleep(retry_after)
                     continue
 
                 if r.status in (500, 502):
-                    await asyncio.sleep(1 + tries * 2, loop=self.loop)
+                    await asyncio.sleep(1 + tries * 2)
                     continue
 
                 if r.status == 403:

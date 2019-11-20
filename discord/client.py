@@ -223,7 +223,7 @@ class Client:
 
         self._connection.shard_count = self.shard_count
         self._closed = False
-        self._ready = asyncio.Event(loop=self.loop)
+        self._ready = asyncio.Event()
         self._connection._get_websocket = lambda g: self.ws
 
         if VoiceClient.warn_nacl:
@@ -457,7 +457,7 @@ class Client:
 
     async def _connect(self):
         coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
-        self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+        self.ws = await asyncio.wait_for(coro, timeout=180.0)
         while True:
             try:
                 await self.ws.poll_event()
@@ -466,7 +466,7 @@ class Client:
                 self.dispatch('disconnect')
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
                                                     sequence=self.ws.sequence, resume=True)
-                self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+                self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     async def connect(self, *, reconnect=True):
         """|coro|
@@ -528,7 +528,7 @@ class Client:
 
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in %.2fs", retry)
-                await asyncio.sleep(retry, loop=self.loop)
+                await asyncio.sleep(retry)
 
     async def close(self):
         """|coro|
@@ -866,7 +866,7 @@ class Client:
             self._listeners[ev] = listeners
 
         listeners.append((future, check))
-        return asyncio.wait_for(future, timeout, loop=self.loop)
+        return asyncio.wait_for(future, timeout)
 
     # event registration
 
