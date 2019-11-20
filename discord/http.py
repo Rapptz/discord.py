@@ -113,7 +113,7 @@ class HTTPClient:
 
         lock = self._locks.get(bucket)
         if lock is None:
-            lock = asyncio.Lock(loop=self.loop)
+            lock = asyncio.Lock()
             if bucket is not None:
                 self._locks[bucket] = lock
 
