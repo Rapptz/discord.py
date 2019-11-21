@@ -779,8 +779,8 @@ class Message:
         except KeyError:
             pass
         else:
-            if suppress is not None:
-                fields['flags'] = 4
+            if suppress:
+                fields['flags'] = self.flags.value + 4
 
         delete_after = fields.pop('delete_after', None)
 
