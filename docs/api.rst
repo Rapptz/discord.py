@@ -1465,6 +1465,9 @@ of :class:`enum.Enum`.
 
         Messages were bulk deleted by a moderator.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+		the :class:`TextChannel` or :class:`Object` with the ID of the channel that was purged.
+
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with one attribute:
 

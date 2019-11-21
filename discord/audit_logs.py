@@ -231,23 +231,18 @@ class AuditLogEntry:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
                 self.extra = type('_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()})()
-            elif self.action is enums.AuditLogAction.message_delete:
+            elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.message_delete:
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
-            elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.member_disconnect:
-                # The member move and disconnect actions have a dict with some information
+            elif self.action is enums.AuditLogAction.member_disconnect:
+                # The member disconnect action has a dict with some information
                 elems = {
                     'count': int(self.extra['count']),
                 }
-                if self.action is enums.AuditLogAction.member_move:
-                    channel_id = int(self.extra['channel_id'])
-                    elems.update({
-                        'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
-                    })
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.endswith('pin'):
                 # the pin actions have a dict with some information
