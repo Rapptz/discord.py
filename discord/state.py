@@ -477,6 +477,23 @@ class ConnectionState:
             message.reactions.clear()
             self.dispatch('reaction_clear', message, old_reactions)
 
+    def parse_message_reaction_remove_emoji(self, data):
+        emoji = data['emoji']
+        emoji_id = utils._get_as_snowflake(emoji, 'id')
+        emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
+        raw = RawReactionClearEmojiEvent(data, emoji)
+        self.dispatch('raw_reaction_clear_emoji', raw)
+
+        message = self._get_message(raw.message_id)
+        if message is not None:
+            old_reactions = message.reactions.copy()
+            new_reactions = []
+            for r in old_reactions:
+                if r.emoji != raw.emoji:
+                    new_reactions.append(r)
+            message.reactions = new_reactions
+            self.dispatch('reaction_clear_emoji', message, old_reactions, new_reactions)
+
     def parse_message_reaction_remove(self, data):
         emoji = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji, 'id')

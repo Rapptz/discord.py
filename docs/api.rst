@@ -400,6 +400,27 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEvent`
 
+.. function:: on_reaction_clear_emoji(message, before, after)
+
+	Called when a message has a specific emoji reaction removed from it. Similar to :func:`on_message_edit`,
+    if the message is not found in the internal message cache, then this event
+    will not be called.
+
+	:param message: The message that had the specific emoji reaction cleared.
+	:type message: :class:`Message`
+	:param before: The reactions list before the specific emoji reaction was cleared.
+	:type before: List[:class:`Reaction`]
+	:param after: The reactions list after the specific emoji reaction was cleared.
+	:type after: List[:class:`Reaction`]
+
+.. function:: on_raw_reaction_clear_emoji(payload)
+
+    Called when a message has a specific emoji reaction removed. Unlike :func:`on_reaction_clear_emoji`,
+    this is called regardless of the state of the internal message cache.
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawReactionClearEmojiEvent`
+
 .. function:: on_private_channel_delete(channel)
               on_private_channel_create(channel)
 
