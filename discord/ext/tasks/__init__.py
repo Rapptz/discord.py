@@ -58,6 +58,7 @@ class Loop:
         self._has_failed = False
         self._stop_next_iteration = False
         self._exception = None
+        self._last_run = None
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -86,6 +87,7 @@ class Loop:
                 await asyncio.sleep(self._get_next_sleep_time())
 
             while True:
+                self._last_run = datetime.datetime.utcnow()
                 try:
                     await self.coro(*args, **kwargs)
                 except self._valid_exception as exc:
@@ -126,6 +128,12 @@ class Loop:
     def current_loop(self):
         """:class:`int`: The current iteration of the loop."""
         return self._current_loop
+    
+    @property
+    def last_run(self):
+        """Optional[:class:`datetime.datetime`:] When the last run was as a naive datetime in UTC.
+        Could be ``None`` if the task has never run."""
+        return self._last_run
 
     def start(self, *args, **kwargs):
         r"""Starts the internal task in the event loop.
