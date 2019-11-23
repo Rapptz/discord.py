@@ -1893,19 +1893,33 @@ class Guild(Hashable):
             Most bots do not need to use this. It's mainly a helper
             for bots who have disabled ``guild_subscriptions``.
 
+        Examples
+        ---------
+
+        Querying for all members in the guild: ::
+
+            all_members = await guild.query_members('', limit=0)
+            # returns all members in the guild as a list.
+
+        Querying using a username: ::
+
+            member = await guild.query_member('Danny')
+            # returns 5 members in the guild named 'Danny' as a list.
+
         .. versionadded:: 1.3
 
         Parameters
         -----------
         query: :class:`str`
             The string that the username's start with. An empty string
-            requests all members.
+            requests all members, if ``limit`` is also ``0``.
         limit: :class:`int`
             The maximum number of members to send back. This must be
-            a number between 1 and 1000.
+            a number between 0 and 1000. Defaults to ``5``.
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
-            such as :meth:`get_member` work for those that matched.
+            such as :meth:`get_member` work for those that matched. Defaults
+            to ``True``.
 
         Raises
         -------
