@@ -464,7 +464,7 @@ class ConnectionState:
             emoji = self._upgrade_partial_emoji(emoji)
             reaction = message._add_reaction(data, emoji, raw.user_id)
             if raw.member:
-                user = Member(data=data, guild=message.channel.guild, state=self)
+                user = Member(data=data, guild=message.guild, state=self)
             else:
                 user = self._get_reaction_user(message.channel, raw.user_id)
 
