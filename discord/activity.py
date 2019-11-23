@@ -84,7 +84,15 @@ t.ActivityFlags = {
 """
 
 class _ActivityTag:
-    __slots__ = ()
+    __slots__ = ('_created_at',)
+
+    def __init__(self, **kwargs):
+        self._created_at = kwargs.pop('created_at')
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started doing this activity in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
 class Activity(_ActivityTag):
     """Represents an activity in Discord.
@@ -136,10 +144,11 @@ class Activity(_ActivityTag):
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
     """
 
-    __slots__ = ('state', 'details', 'timestamps', 'assets', 'party',
+    __slots__ = ('state', 'details', '_created_at', 'timestamps', 'assets', 'party',
                  'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.state = kwargs.pop('state', None)
         self.details = kwargs.pop('details', None)
         self.timestamps = kwargs.pop('timestamps', {})
@@ -272,6 +281,7 @@ class Game(_ActivityTag):
     __slots__ = ('name', '_end', '_start')
 
     def __init__(self, name, **extra):
+        super().__init__(**extra)
         self.name = name
 
         try:
@@ -381,6 +391,7 @@ class Streaming(_ActivityTag):
     __slots__ = ('name', 'url', 'details', 'assets')
 
     def __init__(self, *, name, url, **extra):
+        super().__init__(**extra)
         self.name = name
         self.url = url
         self.details = extra.pop('details', None)
@@ -458,7 +469,8 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id')
+    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id',
+                 '_created_at')
 
     def __init__(self, **data):
         self._state = data.pop('state', None)
@@ -468,6 +480,7 @@ class Spotify:
         self._party = data.pop('party', {})
         self._sync_id = data.pop('sync_id')
         self._session_id = data.pop('session_id')
+        self._created_at = data.pop('created_at')
 
     @property
     def type(self):
@@ -476,6 +489,11 @@ class Spotify:
         It always returns :attr:`ActivityType.listening`.
         """
         return ActivityType.listening
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started listening in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def colour(self):
