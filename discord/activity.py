@@ -381,24 +381,29 @@ class Streaming(_ActivityTag):
 
     Attributes
     -----------
-    name: :class:`str`
+    platform: :class:`str`
+        Where the user is streaming from (ie. YouTube, Twitch).
+    name: Optional[:class:`str`]
         The stream's name.
-    url: :class:`str`
-        The stream's URL. Currently only twitch.tv URLs are supported. Anything else is silently
-        discarded.
     details: Optional[:class:`str`]
-        If provided, typically the game the streamer is playing.
+        Same as :attr:`name`
+    game: Optional[:class:`str`]
+        The game being streamed.
+    url: :class:`str`
+        The stream's URL.
     assets: :class:`dict`
         A dictionary comprising of similar keys than those in :attr:`Activity.assets`.
     """
 
-    __slots__ = ('name', 'url', 'details', 'assets')
+    __slots__ = ('platform', 'name', 'game', 'url', 'details', 'assets')
 
     def __init__(self, *, name, url, **extra):
         super().__init__(**extra)
-        self.name = name
+        self.platform = name
+        self.name = extra.pop('details', None)
+        self.game = extra.pop('state', None)
         self.url = url
-        self.details = extra.pop('details', None)
+        self.details = extra.pop('details', self.name) # compatibility
         self.assets = extra.pop('assets', {})
 
     @property
