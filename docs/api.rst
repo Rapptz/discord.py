@@ -1662,6 +1662,18 @@ of :class:`enum.Enum`.
 
         Represents a member currently in the team.
 
+.. class:: WebhookType
+
+	Represents the type of webhook that can be received.
+
+	.. attribute:: incoming
+
+		Represents a webhook that can post messages to channels with a token.
+
+	.. attribute:: channel_follower
+
+		Represents a webhook that is internally managed by Discord, used for following channels.
+
 Async Iterator
 ----------------
 

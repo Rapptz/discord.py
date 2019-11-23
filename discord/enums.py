@@ -49,6 +49,7 @@ __all__ = (
     'FriendFlags',
     'TeamMembershipState',
     'Theme',
+    'WebhookType',
 )
 
 def _create_value_cls(name):
@@ -418,6 +419,10 @@ class PremiumType(Enum):
 class TeamMembershipState(Enum):
     invited = 1
     accepted = 2
+
+class WebhookType(Enum):
+    incoming = 1
+    channel_follower = 2
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

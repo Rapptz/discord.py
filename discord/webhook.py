@@ -33,6 +33,7 @@ import aiohttp
 
 from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
+from .enums import try_enum, WebhookType
 from .user import BaseUser, User
 from .asset import Asset
 
@@ -401,6 +402,8 @@ class Webhook:
     ------------
     id: :class:`int`
         The webhook's ID
+    type: :class:`WebhookType`
+        The type of the webhook.
     token: Optional[:class:`str`]
         The authentication token of the webhook. If this is ``None``
         then the webhook cannot be used to make requests.
@@ -417,11 +420,12 @@ class Webhook:
         The default avatar of the webhook.
     """
 
-    __slots__ = ('id', 'guild_id', 'channel_id', 'user', 'name', 'avatar',
-                 'token', '_state', '_adapter')
+    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name', 
+                 'avatar', 'token', '_state', '_adapter')
 
     def __init__(self, data, *, adapter, state=None):
         self.id = int(data['id'])
+        self.type = try_enum(WebhookType, int(data['type']))
         self.channel_id = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.name = data.get('name')
@@ -470,6 +474,7 @@ class Webhook:
 
         data = {
             'id': id,
+            'type': 1,
             'token': token
         }
 
@@ -497,13 +502,16 @@ class Webhook:
         m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
-        return cls(m.groupdict(), adapter=adapter)
+        data = m.groupdict()
+        data['type'] = 1
+        return cls(data, adapter=adapter)
 
     @classmethod
     def _as_follower(cls, data, *, channel, user):
         name = "{} #{}".format(channel.guild, channel)
         feed = {
             'id': data['webhook_id'],
+            'type': 2,
             'name': name,
             'channel_id': channel.id,
             'guild_id': channel.guild.id,
