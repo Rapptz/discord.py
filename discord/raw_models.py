@@ -127,7 +127,7 @@ class RawReactionActionEvent(_RawReprMixin):
         The guild ID where the reaction got added or removed, if applicable.
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
-    member: Optional[:class:`dict`]
+    user: Optional[:class:`dict`]
         The member who added the reaction. 
 
         .. note::
@@ -155,7 +155,7 @@ class RawReactionActionEvent(_RawReprMixin):
         except KeyError:
             self.guild_id = None
 
-        self.member = data.get('member', None)
+        self.user = data.get('member')
 
 class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.
