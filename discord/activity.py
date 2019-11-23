@@ -136,12 +136,13 @@ class Activity(_ActivityTag):
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
     """
 
-    __slots__ = ('state', 'details', 'timestamps', 'assets', 'party',
+    __slots__ = ('state', 'details', '_created_at', 'timestamps', 'assets', 'party',
                  'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
 
     def __init__(self, **kwargs):
         self.state = kwargs.pop('state', None)
         self.details = kwargs.pop('details', None)
+        self._created_at = kwargs.pop('created_at')
         self.timestamps = kwargs.pop('timestamps', {})
         self.assets = kwargs.pop('assets', {})
         self.party = kwargs.pop('party', {})
@@ -178,6 +179,11 @@ class Activity(_ActivityTag):
             ret[attr] = value
         ret['type'] = int(self.type)
         return ret
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started doing this activity in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def start(self):
@@ -269,10 +275,12 @@ class Game(_ActivityTag):
         The game's name.
     """
 
-    __slots__ = ('name', '_end', '_start')
+    __slots__ = ('name', '_end', '_start', '_created_at')
 
     def __init__(self, name, **extra):
         self.name = name
+
+        self._created_at = extra['created_at']
 
         try:
             timestamps = extra['timestamps']
@@ -298,6 +306,11 @@ class Game(_ActivityTag):
         It always returns :attr:`ActivityType.playing`.
         """
         return ActivityType.playing
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started playing this game in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def start(self):
@@ -378,13 +391,14 @@ class Streaming(_ActivityTag):
         A dictionary comprising of similar keys than those in :attr:`Activity.assets`.
     """
 
-    __slots__ = ('name', 'url', 'details', 'assets')
+    __slots__ = ('name', 'url', 'details', 'assets', '_created_at')
 
     def __init__(self, *, name, url, **extra):
         self.name = name
         self.url = url
         self.details = extra.pop('details', None)
         self.assets = extra.pop('assets', {})
+        self._created_at = extra.pop('created_at')
 
     @property
     def type(self):
@@ -399,6 +413,11 @@ class Streaming(_ActivityTag):
 
     def __repr__(self):
         return '<Streaming name={0.name!r}>'.format(self)
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started streaming in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def twitch_name(self):
@@ -458,7 +477,8 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id')
+    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id',
+                 '_created_at')
 
     def __init__(self, **data):
         self._state = data.pop('state', None)
@@ -468,6 +488,7 @@ class Spotify:
         self._party = data.pop('party', {})
         self._sync_id = data.pop('sync_id')
         self._session_id = data.pop('session_id')
+        self._created_at = data.pop('created_at')
 
     @property
     def type(self):
@@ -476,6 +497,11 @@ class Spotify:
         It always returns :attr:`ActivityType.listening`.
         """
         return ActivityType.listening
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started listening in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def colour(self):
