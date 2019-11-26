@@ -1461,7 +1461,7 @@ of :class:`enum.Enum`.
         - ``count``: An integer specifying how many messages were deleted.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message got deleted.
 
-        .. attribute:: message_bulk_delete
+    .. attribute:: message_bulk_delete
 
         Messages were bulk deleted by a moderator.
 
