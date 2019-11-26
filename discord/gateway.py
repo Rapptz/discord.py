@@ -744,7 +744,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def poll_event(self):
         try:
-            msg = await asyncio.wait_for(self.recv(), timeout=30.0, loop=self.loop)
+            msg = await asyncio.wait_for(self.recv(), timeout=30.0)
             await self.received_message(json.loads(msg))
         except websockets.exceptions.ConnectionClosed as exc:
             raise ConnectionClosed(exc, shard_id=None) from exc
