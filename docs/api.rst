@@ -1473,7 +1473,7 @@ of :class:`enum.Enum`.
 
         - ``count``: An integer specifying how many messages were deleted.
 
-        .. attribute:: message_pin
+    .. attribute:: message_pin
 
         A message was pinned in a channel.
 
@@ -1486,7 +1486,7 @@ of :class:`enum.Enum`.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was pinned.
         - ``message_id``: the ID of the message which was pinned.
 
-        .. attribute:: message_unpin
+    .. attribute:: message_unpin
 
         A message was unpinned in a channel.
 
@@ -1499,21 +1499,21 @@ of :class:`enum.Enum`.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was unpinned.
         - ``message_id``: the ID of the message which was unpinned.
 
-        .. attribute:: integration_create
+    .. attribute:: integration_create
 
         A guild integration was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Object` with the integration ID of the integration which was created.
 
-        .. attribute:: integration_update
+    .. attribute:: integration_update
 
         A guild integration was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Object` with the integration ID of the integration which was updated.
 
-        .. attribute:: integration_delete
+    .. attribute:: integration_delete
 
         A guild integration was deleted.
 
