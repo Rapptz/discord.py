@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .member import Member
+
 class _RawReprMixin:
     def __repr__(self):
         value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
@@ -127,7 +129,7 @@ class RawReactionActionEvent(_RawReprMixin):
         The guild ID where the reaction got added or removed, if applicable.
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
-    user: Optional[:class:`dict`]
+    member: Optional[:class:`Member`]
         The member who added the reaction. 
 
         .. note::
@@ -143,7 +145,7 @@ class RawReactionActionEvent(_RawReprMixin):
     __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
                  'event_type', 'member')
 
-    def __init__(self, data, emoji, event_type):
+    def __init__(self, data, emoji, event_type, *, state):
         self.message_id = int(data['message_id'])
         self.channel_id = int(data['channel_id'])
         self.user_id = int(data['user_id'])
@@ -154,8 +156,14 @@ class RawReactionActionEvent(_RawReprMixin):
             self.guild_id = int(data['guild_id'])
         except KeyError:
             self.guild_id = None
+        
+        member_data = data.get('member')
+        guild = state._get_guild(self.guild_id)
 
-        self.user = data.get('member')
+        if guild and member_data:
+            self.member = Member(data=member_data, guild=guild, state=state)
+        else: 
+            self.member = None
 
 class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.

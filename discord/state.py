@@ -455,7 +455,7 @@ class ConnectionState:
         emoji = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji, 'id')
         emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
-        raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD')
+        raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD', state=self)
         self.dispatch('raw_reaction_add', raw)
 
         # rich interface here
@@ -463,10 +463,7 @@ class ConnectionState:
         if message is not None:
             emoji = self._upgrade_partial_emoji(emoji)
             reaction = message._add_reaction(data, emoji, raw.user_id)
-            if raw.member:
-                user = Member(data=raw.member, guild=message.guild, state=self)
-            else:
-                user = self._get_reaction_user(message.channel, raw.user_id)
+            user = raw.member or self._get_reaction_user(message.channel, raw.user_id)
 
             if user:
                 self.dispatch('reaction_add', reaction, user)
