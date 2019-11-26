@@ -48,13 +48,13 @@ _all_quotes = set(_quotes.keys()) | set(_quotes.values())
 
 class Separator:
     """An argument qualifier, which acts as the delimiter for arguments.
-    
+
     .. code-block:: python3
-    
+
         @bot.command(qualifier=Separator(','))
         async def foo(ctx, *c):
             await ctx.send(', '.join(c))
-        
+
         # ?foo a b, c, d, e
 
         @bot.command(qualifier=Separator('|', strip_ws=False))
@@ -221,7 +221,7 @@ class StringView:
                 r = ''.join(result)
                 if self.separator.strip_ws:
                     r = r.strip()
-                return r 
+                return r
 
             # currently we accept strings in the format of "hello world"
             # to embed a quote inside the string you must escape it: "a \"world\""
