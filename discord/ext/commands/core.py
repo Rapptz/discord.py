@@ -53,6 +53,7 @@ from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
+from .view import Separator, Encapsulator
 
 
 if TYPE_CHECKING:
@@ -269,13 +270,16 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         which calls converters. If ``False`` then cooldown processing is done
         first and then the converters are called second. Defaults to ``False``.
     extras: :class:`dict`
-        A dict of user provided extras to attach to the Command. 
-        
+        A dict of user provided extras to attach to the Command.
+
         .. note::
             This object may be copied by the library.
 
 
         .. versionadded:: 2.0
+    qualifier: Union[:class:`Separator`, :class:`Encapsulator`]
+        The qualifier for how arguments should be delimited. By default, it is
+        :class:`Separator`.
     """
     __original_kwargs__: Dict[str, Any]
 
@@ -344,7 +348,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             cooldown = func.__commands_cooldown__
         except AttributeError:
             cooldown = kwargs.get('cooldown')
-        
+
         if cooldown is None:
             buckets = CooldownMapping(cooldown, BucketType.default)
         elif isinstance(cooldown, CooldownMapping):
@@ -384,6 +388,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
+        self.qualifier = kwargs.pop('qualifier', Separator())
 
     @property
     def callback(self) -> Union[
@@ -705,6 +710,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         view = ctx.view
         iterator = iter(self.params.items())
+        qual = ctx.command.qualifier
+        if isinstance(qual, Separator):
+            view.separator = qual
+        elif isinstance(qual, Encapsulator):
+            view.available_quotes = {qual.start: qual.end}
 
         if self.cog is not None:
             # we have 'self' as the first parameter so just advance
@@ -1028,6 +1038,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return ''
 
         result = []
+        result_params = []
         for name, param in params.items():
             greedy = isinstance(param.annotation, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
@@ -1068,6 +1079,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 result.append(f'[{name}]')
             else:
                 result.append(f'<{name}>')
+
+        result.append(self.qualifier.key.join(result_params))
 
         return ' '.join(result)
 
@@ -1431,7 +1444,10 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         view = ctx.view
         previous = view.index
         view.skip_ws()
+        sep = view.separator
+        view.separator = None
         trigger = view.get_word()
+        view.separator = sep
 
         if trigger:
             ctx.subcommand_passed = trigger
@@ -1465,7 +1481,10 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         view = ctx.view
         previous = view.index
         view.skip_ws()
+        sep = view.separator
+        view.separator = None
         trigger = view.get_word()
+        view.separator = sep
 
         if trigger:
             ctx.subcommand_passed = trigger

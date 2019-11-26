@@ -46,12 +46,73 @@ _quotes = {
 }
 _all_quotes = set(_quotes.keys()) | set(_quotes.values())
 
+class Separator:
+    """An argument qualifier, which acts as the delimiter for arguments.
+    
+    .. code-block:: python3
+    
+        @bot.command(qualifier=Separator(',')
+        async def foo(ctx, *c):
+            await ctx.send(', '.join(c))
+        
+        # ?foo a b, c, d, e
+
+        @bot.command(qualifier=Separator('|', strip_ws=False)
+        async def bar(ctx, *c):
+            await ctx.send(','.join(c))
+
+        # ?bar a b test | c | e | f
+
+    Attributes
+    -----------
+    key: :class:`str`
+        The key that separates each argument. By default, it is ``' '``.
+    strip_ws: :class:`bool`
+        Whether or not to strip whitespace from the arguments. By default,
+        it is ``True``.
+    """
+    def __init__(self, key=' ', *, strip_ws=True):
+        self.key = key
+        self.strip_ws = strip_ws
+
+class Encapsulator:
+    """An argument qualifier, which acts as a drop-in replacement for quotes.
+
+    .. code-block:: python3
+
+        @bot.command(qualifier=Encapsulator('-')
+        async def foo(ctx, *c):
+            await ctx.send(', '.join(c))
+
+        # ?foo -a b c- b
+
+        @bot.command(qualifier=Encapsulator('(', ')')
+        async def bar(ctx, *c):
+            await ctx.send(', '.join(c))
+
+        # ?bar a b (c d e) f g
+
+    Attributes
+    -----------
+    start: :class:`str`
+        The starting key that represents the first quote character.
+    end: Optional[:class:`str`]
+        The ending key that represents the last quote character. If ``None``\,
+        it will be set as the same key as ``start``.
+    """
+    def __init__(self, start, end=None):
+        self.start = start
+        self.end = end or start
+
+
 class StringView:
     def __init__(self, buffer):
         self.index = 0
         self.buffer = buffer
         self.end = len(buffer)
         self.previous = 0
+        self.available_quotes = _quotes
+        self.separator = Separator()
 
     @property
     def current(self):
@@ -61,6 +122,9 @@ class StringView:
     def eof(self):
         return self.index >= self.end
 
+    def is_separator(self, c):
+        return c == self.separator.key
+
     def undo(self):
         self.index = self.previous
 
@@ -69,7 +133,7 @@ class StringView:
         while not self.eof:
             try:
                 current = self.buffer[self.index + pos]
-                if not current.isspace():
+                if not self.is_separator(current):
                     break
                 pos += 1
             except IndexError:
@@ -114,7 +178,7 @@ class StringView:
         while not self.eof:
             try:
                 current = self.buffer[self.index + pos]
-                if current.isspace():
+                if self.is_separator(current):
                     break
                 pos += 1
             except IndexError:
@@ -129,7 +193,7 @@ class StringView:
         if current is None:
             return None
 
-        close_quote = _quotes.get(current)
+        close_quote = self.available_quotes.get(current)
         is_quoted = bool(close_quote)
         if is_quoted:
             result = []
@@ -144,10 +208,16 @@ class StringView:
                 if is_quoted:
                     # unexpected EOF
                     raise ExpectedClosingQuoteError(close_quote)
-                return ''.join(result)
+
+                r = ''.join(result)
+                if self.separator.strip_ws:
+                    r = r.strip()
+                return r 
 
             # currently we accept strings in the format of "hello world"
             # to embed a quote inside the string you must escape it: "a \"world\""
+            # separator characters (either a white space character or
+            # a custom separator string) can also be escaped : hello\ world
             if current == '\\':
                 next_char = self.get()
                 if not next_char:
@@ -158,8 +228,8 @@ class StringView:
                     # if we aren't then we just let it through
                     return ''.join(result)
 
-                if next_char in _escaped_quotes:
-                    # escaped quote
+                if next_char == '"' or self.is_separator(next_char):
+                    # escaped separator or quote
                     result.append(next_char)
                 else:
                     # different escape character, ignore it
@@ -167,23 +237,27 @@ class StringView:
                     result.append(current)
                 continue
 
-            if not is_quoted and current in _all_quotes:
+            if not is_quoted and current in self.available_quotes:
                 # we aren't quoted
                 raise UnexpectedQuoteError(current)
 
             # closing quote
             if is_quoted and current == close_quote:
                 next_char = self.get()
-                valid_eof = not next_char or next_char.isspace()
+                valid_eof = not next_char or self.is_separator(next_char)
                 if not valid_eof:
                     raise InvalidEndOfQuotedStringError(next_char)
 
                 # we're quoted so it's okay
                 return ''.join(result)
 
-            if current.isspace() and not is_quoted:
+            if self.is_separator(current) and not is_quoted:
                 # end of word found
-                return ''.join(result)
+                r = ''.join(result)
+                if self.separator.strip_ws:
+                    r = r.strip()
+
+                return r
 
             result.append(current)
 
