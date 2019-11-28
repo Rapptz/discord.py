@@ -84,7 +84,15 @@ t.ActivityFlags = {
 """
 
 class _ActivityTag:
-    __slots__ = ()
+    __slots__ = ('_created_at',)
+
+    def __init__(self, **kwargs):
+        self._created_at = kwargs.pop('created_at')
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: When the user started doing this activity in UTC."""
+        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
 class Activity(_ActivityTag):
     """Represents an activity in Discord.
@@ -140,9 +148,9 @@ class Activity(_ActivityTag):
                  'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.state = kwargs.pop('state', None)
         self.details = kwargs.pop('details', None)
-        self._created_at = kwargs.pop('created_at')
         self.timestamps = kwargs.pop('timestamps', {})
         self.assets = kwargs.pop('assets', {})
         self.party = kwargs.pop('party', {})
@@ -179,11 +187,6 @@ class Activity(_ActivityTag):
             ret[attr] = value
         ret['type'] = int(self.type)
         return ret
-
-    @property
-    def created_at(self):
-        """:class:`datetime.datetime`: When the user started doing this activity in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def start(self):
@@ -275,12 +278,11 @@ class Game(_ActivityTag):
         The game's name.
     """
 
-    __slots__ = ('name', '_end', '_start', '_created_at')
+    __slots__ = ('name', '_end', '_start')
 
     def __init__(self, name, **extra):
+        super().__init__(**extra)
         self.name = name
-
-        self._created_at = extra['created_at']
 
         try:
             timestamps = extra['timestamps']
@@ -306,11 +308,6 @@ class Game(_ActivityTag):
         It always returns :attr:`ActivityType.playing`.
         """
         return ActivityType.playing
-
-    @property
-    def created_at(self):
-        """:class:`datetime.datetime`: When the user started playing this game in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def start(self):
@@ -391,14 +388,14 @@ class Streaming(_ActivityTag):
         A dictionary comprising of similar keys than those in :attr:`Activity.assets`.
     """
 
-    __slots__ = ('name', 'url', 'details', 'assets', '_created_at')
+    __slots__ = ('name', 'url', 'details', 'assets')
 
     def __init__(self, *, name, url, **extra):
+        super().__init__(**extra)
         self.name = name
         self.url = url
         self.details = extra.pop('details', None)
         self.assets = extra.pop('assets', {})
-        self._created_at = extra.pop('created_at')
 
     @property
     def type(self):
@@ -413,11 +410,6 @@ class Streaming(_ActivityTag):
 
     def __repr__(self):
         return '<Streaming name={0.name!r}>'.format(self)
-
-    @property
-    def created_at(self):
-        """:class:`datetime.datetime`: When the user started streaming in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def twitch_name(self):
