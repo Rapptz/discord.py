@@ -455,7 +455,14 @@ class ConnectionState:
         emoji = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji, 'id')
         emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
-        raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD', state=self)
+        raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD')
+
+        member_data = data.get('member')
+        if member_data:
+            guild = self._get_guild(raw.guild_id)
+            raw.member = Member(data=member_data, guild=guild, state=self)
+        else:
+            raw.member = None
         self.dispatch('raw_reaction_add', raw)
 
         # rich interface here

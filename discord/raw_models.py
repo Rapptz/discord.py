@@ -145,25 +145,18 @@ class RawReactionActionEvent(_RawReprMixin):
     __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
                  'event_type', 'member')
 
-    def __init__(self, data, emoji, event_type, *, state):
+    def __init__(self, data, emoji, event_type):
         self.message_id = int(data['message_id'])
         self.channel_id = int(data['channel_id'])
         self.user_id = int(data['user_id'])
         self.emoji = emoji
         self.event_type = event_type
+        self.member = None
 
         try:
             self.guild_id = int(data['guild_id'])
         except KeyError:
             self.guild_id = None
-        
-        member_data = data.get('member')
-        guild = state._get_guild(self.guild_id)
-
-        if guild and member_data:
-            self.member = Member(data=member_data, guild=guild, state=state)
-        else: 
-            self.member = None
 
 class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.
