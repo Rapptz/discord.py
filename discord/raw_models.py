@@ -24,8 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .member import Member
-
 class _RawReprMixin:
     def __repr__(self):
         value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
