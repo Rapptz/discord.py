@@ -1574,7 +1574,7 @@ def has_guild_permissions(**perms):
     return check(predicate)
 
 def bot_has_guild_permissions(**perms):
-    """Similar to :func:`.bot_has_permissions`, but opetates on guild wide
+    """Similar to :func:`.bot_has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions."""
     def predicate(ctx):
         guild = ctx.guild
