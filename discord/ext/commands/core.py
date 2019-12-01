@@ -56,6 +56,8 @@ __all__ = (
     'guild_only',
     'is_owner',
     'is_nsfw',
+    'has_guild_permissions',
+    'bot_has_guild_permissions'
 )
 
 def wrap_callback(coro):
@@ -1496,6 +1498,9 @@ def bot_has_any_role(*items):
 def has_permissions(**perms):
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
+    
+    Note that this check operates on the current channel permissions, not the
+    guild wide permissions.
 
     The permissions passed in must be exactly like the properties shown under
     :class:`.discord.Permissions`.
@@ -1551,6 +1556,37 @@ def bot_has_permissions(**perms):
 
         raise BotMissingPermissions(missing)
 
+    return check(predicate)
+
+def has_guild_permissions(**perms):
+    """Similar to :func:`.has_permissions`, but operates on guild wide
+    permissions instead of the current channel permissions."""
+    def predicate(ctx):
+        guild = ctx.guild
+        permissions = ctx.author.guild_permissions if guild else ctx.author.permissions_in(ctx.channel)
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+        
+        if not missing:
+            return True
+        
+        raise MissingPermissions(missing)
+    
+    return check(predicate)
+
+def bot_has_guild_permissions(**perms):
+    """Similar to :func:`.bot_has_permissions`, but opetates on guild wide
+    permissions instead of the current channel permissions."""
+    def predicate(ctx):
+        guild = ctx.guild
+        me = ctx.me if guild else ctx.bot.user
+        permissions = me.guild_permissions if guild else me.permissions_in(ctx.channel)
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+        
+        if not missing:
+            return True
+        
+        raise BotMissingPermissions(missing)
+    
     return check(predicate)
 
 def dm_only():
