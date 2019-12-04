@@ -1560,7 +1560,9 @@ def bot_has_permissions(**perms):
 
 def has_guild_permissions(**perms):
     """Similar to :func:`.has_permissions`, but operates on guild wide
-    permissions instead of the current channel permissions."""
+    permissions instead of the current channel permissions.
+    
+    .. versionadded:: 1.3.0"""
     def predicate(ctx):
         guild = ctx.guild
         permissions = ctx.author.guild_permissions if guild else ctx.author.permissions_in(ctx.channel)
@@ -1575,7 +1577,9 @@ def has_guild_permissions(**perms):
 
 def bot_has_guild_permissions(**perms):
     """Similar to :func:`.bot_has_permissions`, but operates on guild wide
-    permissions instead of the current channel permissions."""
+    permissions instead of the current channel permissions.
+    
+    .. versionadded:: 1.3.0"""
     def predicate(ctx):
         guild = ctx.guild
         me = ctx.me if guild else ctx.bot.user
