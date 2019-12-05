@@ -87,12 +87,16 @@ class _ActivityTag:
     __slots__ = ('_created_at',)
 
     def __init__(self, **kwargs):
-        self._created_at = kwargs.pop('created_at')
+        self._created_at = kwargs.pop('created_at', None)
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: When the user started doing this activity in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
+        """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC.
+
+        .. versionadded:: 1.3.0
+        """
+        if self._created_at is not None:
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
 class Activity(_ActivityTag):
     """Represents an activity in Discord.
@@ -480,7 +484,7 @@ class Spotify:
         self._party = data.pop('party', {})
         self._sync_id = data.pop('sync_id')
         self._session_id = data.pop('session_id')
-        self._created_at = data.pop('created_at')
+        self._created_at = data.pop('created_at', None)
 
     @property
     def type(self):
@@ -492,8 +496,12 @@ class Spotify:
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: When the user started listening in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
+        """Optional[:class:`datetime.datetime`]: When the user started listening in UTC.
+
+        .. versionadded:: 1.3.0
+        """
+        if self._created_at is not None:
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def colour(self):
