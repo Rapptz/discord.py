@@ -111,7 +111,7 @@ class VoiceClient:
         self._runner = None
         self._player = None
         self.encoder = None
-        self.lite_nonce = 0
+        self._lite_nonce = 0
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -337,12 +337,8 @@ class VoiceClient:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
         nonce = bytearray(24)
 
-        # Upper limit of unsigned 4 byte int
-        if self.lite_nonce >= 0xffffffff:
-            self.lite_nonce = 0
-
-        nonce[:4] = struct.pack('>I', self.lite_nonce)
-        self.lite_nonce += 1
+        nonce[:4] = struct.pack('>I', self._lite_nonce)
+        self.checked_add('_lite_nonce', 1, 4294967295)
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
