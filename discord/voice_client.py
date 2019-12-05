@@ -338,7 +338,7 @@ class VoiceClient:
         nonce = bytearray(24)
 
         # Upper limit of unsigned 4 byte int
-        if self.lite_nonce >= 0xff_ff_ff_ff:
+        if self.lite_nonce >= 0xffffffff:
             self.lite_nonce = 0
 
         nonce[:4] = struct.pack('>I', self.lite_nonce)

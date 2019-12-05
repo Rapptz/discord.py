@@ -727,7 +727,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         log.debug('detected ip: %s port: %s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
-        modes = list(set(self._connection.supported_modes).intersection(data['modes']))
+        modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         log.debug('received supported encryption modes: %s', ", ".join(modes))
 
         mode = modes[0]
