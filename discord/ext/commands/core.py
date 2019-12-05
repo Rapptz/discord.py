@@ -1562,10 +1562,16 @@ def has_guild_permissions(**perms):
     """Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
     
-    .. versionadded:: 1.3.0"""
+    If this check is called in a DM context, it will raise an
+    exception, :exc:`.NoPrivateMessage`.
+   
+    .. versionadded:: 1.3.0
+    """
     def predicate(ctx):
-        guild = ctx.guild
-        permissions = ctx.author.guild_permissions if guild else ctx.author.permissions_in(ctx.channel)
+        if not ctx.guild:
+            raise NoPrivateMessage
+            
+        permissions = ctx.author.guild_permissions
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
         
         if not missing:
@@ -1576,14 +1582,16 @@ def has_guild_permissions(**perms):
     return check(predicate)
 
 def bot_has_guild_permissions(**perms):
-    """Similar to :func:`.bot_has_permissions`, but operates on guild wide
-    permissions instead of the current channel permissions.
+    """Similar to :func:`.has_guild_permissions`, but checks the bot
+    members guild permissions.
     
-    .. versionadded:: 1.3.0"""
+    .. versionadded:: 1.3.0
+    """
     def predicate(ctx):
-        guild = ctx.guild
-        me = ctx.me if guild else ctx.bot.user
-        permissions = me.guild_permissions if guild else me.permissions_in(ctx.channel)
+        if not ctx.guild:
+            raise NoPrivateMessage
+        
+        permissions = ctx.me.guild_permissions
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
         
         if not missing:
