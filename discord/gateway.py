@@ -721,9 +721,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         ip_end = recv.index(0, ip_start)
         state.ip = recv[ip_start:ip_end].decode('ascii')
 
-        # the port is a little endian unsigned short in the last two bytes
-        # yes, this is different endianness from everything else
-        state.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
+        state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
         log.debug('detected ip: %s port: %s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
@@ -744,7 +742,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def poll_event(self):
         try:
-            msg = await asyncio.wait_for(self.recv(), timeout=30.0, loop=self.loop)
+            msg = await asyncio.wait_for(self.recv(), timeout=30.0)
             await self.received_message(json.loads(msg))
         except websockets.exceptions.ConnectionClosed as exc:
             raise ConnectionClosed(exc, shard_id=None) from exc

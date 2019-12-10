@@ -840,7 +840,7 @@ class DefaultHelpCommand(HelpCommand):
         The number of characters the paginator must accumulate before getting DM'd to the
         user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     indent: :class:`int`
-        How much to intend the commands from a heading. Defaults to ``2``.
+        How much to indent the commands from a heading. Defaults to ``2``.
     commands_heading: :class:`str`
         The command list's heading string used when the help command is invoked with a category name.
         Useful for i18n. Defaults to ``"Commands:"``
