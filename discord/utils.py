@@ -180,7 +180,7 @@ def find(predicate, seq):
     """A helper to return the first element found in the sequence
     that meets the predicate. For example: ::
 
-        member = find(lambda m: m.name == 'Mighty', channel.guild.members)
+        member = discord.utils.find(lambda m: m.name == 'Mighty', channel.guild.members)
 
     would find the first :class:`~discord.Member` whose name is 'Mighty' and return it.
     If an entry is not found, then ``None`` is returned.
