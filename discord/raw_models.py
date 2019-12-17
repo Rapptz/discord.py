@@ -128,12 +128,10 @@ class RawReactionActionEvent(_RawReprMixin):
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
     member: Optional[:class:`Member`]
-        The member who added the reaction. 
+        The member who added the reaction. Only available if `event_type` is `REACTION_ADD`.
 
-        .. note::
+        .. versionadded:: 1.3
 
-            This is only available for :func:`on_raw_reaction_add`, and when the reaction 
-            is added in a guild.
     event_type: :class:`str`
         The event type that triggered this action. Can be
         ``REACTION_ADD`` for reaction addition or
