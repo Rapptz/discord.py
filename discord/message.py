@@ -780,7 +780,8 @@ class Message:
             pass
         else:
             if suppress:
-                fields['flags'] = self.flags.value + 4
+                self.flags._set_flag(4, True)
+                fields['flags'] = self.flags.value
 
         delete_after = fields.pop('delete_after', None)
 

@@ -135,12 +135,12 @@ class SystemChannelFlags:
 
     @_flag_descriptor
     def join_notifications(self):
-        """:class:`bool`: Returns True if the system channel is used for member join notifications."""
+        """:class:`bool`: Returns ``True`` if the system channel is used for member join notifications."""
         return 1
 
     @_flag_descriptor
     def premium_subscriptions(self):
-        """:class:`bool`: Returns True if the system channel is used for Nitro boosting notifications."""
+        """:class:`bool`: Returns ``True`` if the system channel is used for Nitro boosting notifications."""
         return 2
 
 
@@ -206,27 +206,32 @@ class MessageFlags:
                 yield (name, self._has_flag(value.flag))
 
     def _has_flag(self, o):
-        return (self.value & o) != o
+        return (self.value & o) == o
 
     def _set_flag(self, o, toggle):
         if toggle is True:
-            self.value &= ~o
-        elif toggle is False:
             self.value |= o
+        elif toggle is False:
+            self.value &= o
         else:
             raise TypeError('Value to set for MessageFlags must be a bool.')
 
     @_flag_descriptor
     def crossposted(self):
-        """:class:`bool`: Returns True if the message is the original crossposted message."""
+        """:class:`bool`: Returns ``True`` if the message is the original crossposted message."""
         return 1
 
     @_flag_descriptor
     def is_crossposted(self):
-        """:class:`bool`: Returns True if the message was crossposted from another guild."""
+        """:class:`bool`: Returns ``True`` if the message was crossposted from another channel."""
         return 2
 
     @_flag_descriptor
     def suppress_embeds(self):
-        """:class:`bool`: Returns True if the message's embeds have been suppressed."""
+        """:class:`bool`: Returns ``True`` if the message's embeds have been suppressed."""
         return 4
+    
+    @_flag_descriptor
+    def source_message_deleted(self):
+        """:class:`bool`: Returns ``True`` if the source message for this crosspost has been deleted."""
+        return 8
