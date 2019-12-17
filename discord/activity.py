@@ -403,7 +403,7 @@ class Streaming(_ActivityTag):
         self.name = extra.pop('details', None)
         self.game = extra.pop('state', None)
         self.url = url
-        self.details = self.name # compatibility
+        self.details = extra.pop('details', self.name) # compatibility
         self.assets = extra.pop('assets', {})
 
     @property
