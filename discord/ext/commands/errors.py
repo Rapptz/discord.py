@@ -42,8 +42,10 @@ __all__ = (
     'CommandOnCooldown',
     'NotOwner',
     'MissingRole',
+    'HavingRole',
     'BotMissingRole',
     'MissingAnyRole',
+    'HavingAnyRole',
     'BotMissingAnyRole',
     'MissingPermissions',
     'BotMissingPermissions',
@@ -237,6 +239,22 @@ class MissingRole(CheckFailure):
         message = 'Role {0!r} is required to run this command.'.format(missing_role)
         super().__init__(message)
 
+class HavingRole(CheckFailure):
+    """Exception raised when the command invoker has a role that is prohibited to run a command
+
+    This inherits from :exc: `CheckFailure`
+
+    Atrributes
+    -----------
+    having_role: Union[:class:`str`, :class:`int`]
+        The prohibited role that command invoker is having
+        This is the parameter passed to :func:`~.commands.not_role`.
+    """
+    def __init__(self, having_role):
+        self.having_role = having_role
+        message = 'Role {0!r} is prohibited to run this command.'.format(having_role)
+        super().__init__(message)
+
 class BotMissingRole(CheckFailure):
     """Exception raised when the bot's member lacks a role to run a command.
 
@@ -280,6 +298,31 @@ class MissingAnyRole(CheckFailure):
             fmt = ' or '.join(missing)
 
         message = "You are missing at least one of the required roles: {}".format(fmt)
+        super().__init__(message)
+
+class HavingAnyRole(CheckFailure):
+    """Exception raised when the command invoker has any of
+    the roles prohibited to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    Attributes
+    -----------
+    having_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the invoker is prohibited to have.
+        These are the parameters passed to :func:`~.commands.not_any_role`.
+    """
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
+
+        missing = ["'{}'".format(role) for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = "You are having at least one of the prohibited roles: {}".format(fmt)
         super().__init__(message)
 
 
