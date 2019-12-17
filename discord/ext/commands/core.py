@@ -500,10 +500,10 @@ class Command(_BaseCommand):
             previous = view.index
 
             view.skip_ws()
-            argument = view.get_quoted_word()
             try:
+                argument = view.get_quoted_word()
                 value = await self.do_conversion(ctx, converter, argument, param)
-            except CommandError:
+            except (CommandError, ArgumentParsingError):
                 view.index = previous
                 break
             else:
@@ -516,10 +516,10 @@ class Command(_BaseCommand):
     async def _transform_greedy_var_pos(self, ctx, param, converter):
         view = ctx.view
         previous = view.index
-        argument = view.get_quoted_word()
         try:
+            argument = view.get_quoted_word()
             value = await self.do_conversion(ctx, converter, argument, param)
-        except CommandError:
+        except (CommandError, ArgumentParsingError):
             view.index = previous
             raise RuntimeError() from None # break loop
         else:
@@ -1498,7 +1498,7 @@ def bot_has_any_role(*items):
 def has_permissions(**perms):
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
-    
+
     Note that this check operates on the current channel permissions, not the
     guild wide permissions.
 
@@ -1561,44 +1561,44 @@ def bot_has_permissions(**perms):
 def has_guild_permissions(**perms):
     """Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
-    
+
     If this check is called in a DM context, it will raise an
     exception, :exc:`.NoPrivateMessage`.
-   
+
     .. versionadded:: 1.3.0
     """
     def predicate(ctx):
         if not ctx.guild:
             raise NoPrivateMessage
-            
+
         permissions = ctx.author.guild_permissions
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
-        
+
         if not missing:
             return True
-        
+
         raise MissingPermissions(missing)
-    
+
     return check(predicate)
 
 def bot_has_guild_permissions(**perms):
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
-    
+
     .. versionadded:: 1.3.0
     """
     def predicate(ctx):
         if not ctx.guild:
             raise NoPrivateMessage
-        
+
         permissions = ctx.me.guild_permissions
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
-        
+
         if not missing:
             return True
-        
+
         raise BotMissingPermissions(missing)
-    
+
     return check(predicate)
 
 def dm_only():
