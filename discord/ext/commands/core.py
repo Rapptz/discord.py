@@ -1399,6 +1399,25 @@ def has_role(item):
 
     return check(predicate)
 
+def not_role(item):
+    """
+    Add description here
+    """
+
+    def predicate(ctx):
+        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+            raise NoPrivateMessage()
+
+        if isinstance(item, int):
+            role = discord.utils.get(ctx.author.roles, id=item)
+        else:
+            role = discord.utils.get(ctx.author.roles, name=item)
+        if role is None:
+            return True
+        raise HavingRole(item)
+
+    return check(predicate)
+
 def has_any_role(*items):
     r"""A :func:`.check` that is added that checks if the member invoking the
     command has **any** of the roles specified. This means that if they have
@@ -1438,6 +1457,23 @@ def has_any_role(*items):
         if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
         raise MissingAnyRole(items)
+
+    return check(predicate)
+
+def not_any_role(*items):
+    """
+    Add description here
+    """
+    def predicate(ctx):
+        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+            raise NoPrivateMessage()
+
+        getter = functools.partial(discord.utils.get, ctx.author.roles)
+        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+            raise HavingAnyRole(items)
+        else:
+            return True
+
 
     return check(predicate)
 
