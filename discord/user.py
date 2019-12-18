@@ -114,7 +114,7 @@ class BaseUser(_BaseUser):
 
     def _to_minimal_user_json(self):
         return {
-            'name': self.name,
+            'username': self.name,
             'id': self.id,
             'avatar': self.avatar,
             'discriminator': self.discriminator,

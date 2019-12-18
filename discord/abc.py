@@ -259,6 +259,28 @@ class GuildChannel:
                 options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
         else:
             await self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
+        
+        overwrites = options.get('overwrites', None)
+        if overwrites:
+            perms = []
+            for target, perm in overwrites.items():
+                if not isinstance(perm, PermissionOverwrite):
+                    raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+
+                allow, deny = perm.pair()
+                payload = {
+                    'allow': allow.value,
+                    'deny': deny.value,
+                    'id': target.id
+                }
+
+                if isinstance(target, Role):
+                    payload['type'] = 'role'
+                else:
+                    payload['type'] = 'member'
+
+                perms.append(payload)
+            options['permission_overwrites'] = perms
 
         if options:
             data = await self._state.http.edit_channel(self.id, reason=reason, **options)

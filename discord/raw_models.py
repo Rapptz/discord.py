@@ -127,13 +127,19 @@ class RawReactionActionEvent(_RawReprMixin):
         The guild ID where the reaction got added or removed, if applicable.
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
+    member: Optional[:class:`Member`]
+        The member who added the reaction. Only available if `event_type` is `REACTION_ADD`.
+
+        .. versionadded:: 1.3
+
     event_type: :class:`str`
         The event type that triggered this action. Can be
         ``REACTION_ADD`` for reaction addition or
         ``REACTION_REMOVE`` for reaction removal.
     """
 
-    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji')
+    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
+                 'event_type', 'member')
 
     def __init__(self, data, emoji, event_type):
         self.message_id = int(data['message_id'])
@@ -141,6 +147,7 @@ class RawReactionActionEvent(_RawReprMixin):
         self.user_id = int(data['user_id'])
         self.emoji = emoji
         self.event_type = event_type
+        self.member = None
 
         try:
             self.guild_id = int(data['guild_id'])

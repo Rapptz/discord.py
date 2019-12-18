@@ -31,7 +31,8 @@ import io
 
 from . import utils
 from .reaction import Reaction
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
@@ -695,7 +696,7 @@ class Message:
         -----------
         delay: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
-            before deleting the message.
+            before deleting the message. If the deletion fails then it is silently ignored.
 
         Raises
         ------
@@ -706,7 +707,7 @@ class Message:
         """
         if delay is not None:
             async def delete():
-                await asyncio.sleep(delay, loop=self._state.loop)
+                await asyncio.sleep(delay)
                 try:
                     await self._state.http.delete_message(self.channel.id, self.id)
                 except HTTPException:

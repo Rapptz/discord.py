@@ -101,8 +101,8 @@ class VoiceClient:
         self._connected = threading.Event()
 
         self._handshaking = False
-        self._handshake_check = asyncio.Lock(loop=self.loop)
-        self._handshake_complete = asyncio.Event(loop=self.loop)
+        self._handshake_check = asyncio.Lock()
+        self._handshake_complete = asyncio.Event()
 
         self.mode = None
         self._connections = 0
@@ -111,9 +111,11 @@ class VoiceClient:
         self._runner = None
         self._player = None
         self.encoder = None
+        self._lite_nonce = 0
 
     warn_nacl = not has_nacl
     supported_modes = (
+        'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
         'xsalsa20_poly1305',
     )
@@ -149,7 +151,7 @@ class VoiceClient:
         await ws.voice_state(guild_id, channel_id)
 
         try:
-            await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout, loop=self.loop)
+            await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout)
         except asyncio.TimeoutError:
             await self.terminate_handshake(remove=True)
             raise
@@ -225,7 +227,7 @@ class VoiceClient:
         except (ConnectionClosed, asyncio.TimeoutError):
             if reconnect and _tries < 5:
                 log.exception('Failed to connect to voice... Retrying...')
-                await asyncio.sleep(1 + _tries * 2.0, loop=self.loop)
+                await asyncio.sleep(1 + _tries * 2.0)
                 await self.terminate_handshake()
                 await self.connect(reconnect=reconnect, _tries=_tries + 1)
             else:
@@ -257,7 +259,7 @@ class VoiceClient:
                 retry = backoff.delay()
                 log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 self._connected.clear()
-                await asyncio.sleep(retry, loop=self.loop)
+                await asyncio.sleep(retry)
                 await self.terminate_handshake()
                 try:
                     await self.connect(reconnect=True)
@@ -331,6 +333,16 @@ class VoiceClient:
 
         return header + box.encrypt(bytes(data), nonce).ciphertext + nonce
 
+    def _encrypt_xsalsa20_poly1305_lite(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+        nonce = bytearray(24)
+
+        nonce[:4] = struct.pack('>I', self._lite_nonce)
+        self.checked_add('_lite_nonce', 1, 4294967295)
+
+        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
+
+
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
 
@@ -338,7 +350,8 @@ class VoiceClient:
         or an error occurred.
 
         If an error happens while the audio player is running, the exception is
-        caught and the audio player is then stopped.
+        caught and the audio player is then stopped.  If no after callback is
+        passed, any caught exception will be displayed as if it were raised.
 
         Parameters
         -----------
@@ -346,9 +359,8 @@ class VoiceClient:
             The audio source we're reading from.
         after: Callable[[:class:`Exception`], Any]
             The finalizer that is called after the stream is exhausted.
-            All exceptions it throws are silently discarded. This function
-            must have a single parameter, ``error``, that denotes an
-            optional exception that was raised during playing.
+            This function must have a single parameter, ``error``, that 
+            denotes an optional exception that was raised during playing.
 
         Raises
         -------

@@ -215,11 +215,17 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             A value of `0` disables slowmode. The maximum value possible is `21600`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
+        overwrites: :class:`dict`
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.
+
+            .. versionadded:: 1.3.0
 
         Raises
         ------
         InvalidArgument
-            If position is less than 0 or greater than the number of channels.
+            If position is less than 0 or greater than the number of channels, or if 
+            the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
         HTTPException
@@ -654,9 +660,16 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
+        overwrites: :class:`dict`
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.
+
+            .. versionadded:: 1.3.0
 
         Raises
         ------
+        InvalidArgument
+            If the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
         HTTPException
@@ -933,11 +946,17 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
+        overwrites: :class:`dict`
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.    
+
+            .. versionadded:: 1.3
 
         Raises
         ------
         InvalidArgument
-            If position is less than 0 or greater than the number of channels.
+            If position is less than 0 or greater than the number of channels, or if 
+            the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
         HTTPException

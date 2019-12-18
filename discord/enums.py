@@ -49,6 +49,7 @@ __all__ = (
     'FriendFlags',
     'TeamMembershipState',
     'Theme',
+    'WebhookType',
 )
 
 def _create_value_cls(name):
@@ -298,6 +299,9 @@ class AuditLogAction(Enum):
     unban                    = 23
     member_update            = 24
     member_role_update       = 25
+    member_move              = 26
+    member_disconnect        = 27
+    bot_add                  = 28
     role_create              = 30
     role_update              = 31
     role_delete              = 32
@@ -311,36 +315,51 @@ class AuditLogAction(Enum):
     emoji_update             = 61
     emoji_delete             = 62
     message_delete           = 72
+    message_bulk_delete      = 73
+    message_pin              = 74
+    message_unpin            = 75
+    integration_create       = 80
+    integration_update       = 81
+    integration_delete       = 82
 
     @property
     def category(self):
         lookup = {
-            AuditLogAction.guild_update:       AuditLogActionCategory.update,
-            AuditLogAction.channel_create:     AuditLogActionCategory.create,
-            AuditLogAction.channel_update:     AuditLogActionCategory.update,
-            AuditLogAction.channel_delete:     AuditLogActionCategory.delete,
-            AuditLogAction.overwrite_create:   AuditLogActionCategory.create,
-            AuditLogAction.overwrite_update:   AuditLogActionCategory.update,
-            AuditLogAction.overwrite_delete:   AuditLogActionCategory.delete,
-            AuditLogAction.kick:               None,
-            AuditLogAction.member_prune:       None,
-            AuditLogAction.ban:                None,
-            AuditLogAction.unban:              None,
-            AuditLogAction.member_update:      AuditLogActionCategory.update,
-            AuditLogAction.member_role_update: AuditLogActionCategory.update,
-            AuditLogAction.role_create:        AuditLogActionCategory.create,
-            AuditLogAction.role_update:        AuditLogActionCategory.update,
-            AuditLogAction.role_delete:        AuditLogActionCategory.delete,
-            AuditLogAction.invite_create:      AuditLogActionCategory.create,
-            AuditLogAction.invite_update:      AuditLogActionCategory.update,
-            AuditLogAction.invite_delete:      AuditLogActionCategory.delete,
-            AuditLogAction.webhook_create:     AuditLogActionCategory.create,
-            AuditLogAction.webhook_update:     AuditLogActionCategory.update,
-            AuditLogAction.webhook_delete:     AuditLogActionCategory.delete,
-            AuditLogAction.emoji_create:       AuditLogActionCategory.create,
-            AuditLogAction.emoji_update:       AuditLogActionCategory.update,
-            AuditLogAction.emoji_delete:       AuditLogActionCategory.delete,
-            AuditLogAction.message_delete:     AuditLogActionCategory.delete,
+            AuditLogAction.guild_update:        AuditLogActionCategory.update,
+            AuditLogAction.channel_create:      AuditLogActionCategory.create,
+            AuditLogAction.channel_update:      AuditLogActionCategory.update,
+            AuditLogAction.channel_delete:      AuditLogActionCategory.delete,
+            AuditLogAction.overwrite_create:    AuditLogActionCategory.create,
+            AuditLogAction.overwrite_update:    AuditLogActionCategory.update,
+            AuditLogAction.overwrite_delete:    AuditLogActionCategory.delete,
+            AuditLogAction.kick:                None,
+            AuditLogAction.member_prune:        None,
+            AuditLogAction.ban:                 None,
+            AuditLogAction.unban:               None,
+            AuditLogAction.member_update:       AuditLogActionCategory.update,
+            AuditLogAction.member_role_update:  AuditLogActionCategory.update,
+            AuditLogAction.member_move:         None,
+            AuditLogAction.member_disconnect:   None,
+            AuditLogAction.bot_add:             None,
+            AuditLogAction.role_create:         AuditLogActionCategory.create,
+            AuditLogAction.role_update:         AuditLogActionCategory.update,
+            AuditLogAction.role_delete:         AuditLogActionCategory.delete,
+            AuditLogAction.invite_create:       AuditLogActionCategory.create,
+            AuditLogAction.invite_update:       AuditLogActionCategory.update,
+            AuditLogAction.invite_delete:       AuditLogActionCategory.delete,
+            AuditLogAction.webhook_create:      AuditLogActionCategory.create,
+            AuditLogAction.webhook_update:      AuditLogActionCategory.update,
+            AuditLogAction.webhook_delete:      AuditLogActionCategory.delete,
+            AuditLogAction.emoji_create:        AuditLogActionCategory.create,
+            AuditLogAction.emoji_update:        AuditLogActionCategory.update,
+            AuditLogAction.emoji_delete:        AuditLogActionCategory.delete,
+            AuditLogAction.message_delete:      AuditLogActionCategory.delete,
+            AuditLogAction.message_bulk_delete: AuditLogActionCategory.delete,
+            AuditLogAction.message_pin:         None,
+            AuditLogAction.message_unpin:       None,
+            AuditLogAction.integration_create:  AuditLogActionCategory.create,
+            AuditLogAction.integration_update:  AuditLogActionCategoty.update,
+            AuditLogAction.integration_delete:  AuditLogActionCategory.delete,
         }
         return lookup[self]
 
@@ -365,6 +384,8 @@ class AuditLogAction(Enum):
             return 'emoji'
         elif v < 80:
             return 'message'
+        elif v < 90:
+            return 'integration'
 
 class UserFlags(Enum):
     staff = 1
@@ -398,6 +419,10 @@ class PremiumType(Enum):
 class TeamMembershipState(Enum):
     invited = 1
     accepted = 2
+
+class WebhookType(Enum):
+    incoming = 1
+    channel_follower = 2
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

@@ -245,7 +245,7 @@ class Guild(Hashable):
         - ``NEWS``: Guild can create news channels.
         - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
-        - ``MEMBER_LIST_DISABLED``: Member list is disabled.
+        - ``PUBLIC_DISABLED``: Guild cannot be public.
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
@@ -1013,7 +1013,7 @@ class Guild(Hashable):
             The new description of the guild. This is only available to guilds that
             contain `VERIFIED` in :attr:`Guild.features`.
         icon: :class:`bytes`
-            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported 
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
             and GIF for guilds with ``ANIMATED_ICON`` feature.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`

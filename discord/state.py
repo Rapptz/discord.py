@@ -38,7 +38,8 @@ import gc
 from .guild import Guild
 from .activity import _ActivityTag
 from .user import User, ClientUser
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .message import Message
 from .relationship import Relationship
 from .channel import *
@@ -303,7 +304,7 @@ class ConnectionState:
         # wait for the chunks
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -322,7 +323,7 @@ class ConnectionState:
         try:
             # start the query operation
             await ws.request_chunks(guild_id, query, limit)
-            members = await asyncio.wait_for(future, timeout=5.0, loop=self.loop)
+            members = await asyncio.wait_for(future, timeout=5.0)
 
             if cache:
                 for member in members:
@@ -343,7 +344,7 @@ class ConnectionState:
                     # this snippet of code is basically waiting 2 seconds
                     # until the last GUILD_CREATE was sent
                     launch.set()
-                    await asyncio.sleep(2, loop=self.loop)
+                    await asyncio.sleep(2)
 
             guilds = next(zip(*self._ready_state.guilds), [])
             if self._fetch_offline:
@@ -455,6 +456,13 @@ class ConnectionState:
         emoji_id = utils._get_as_snowflake(emoji, 'id')
         emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
         raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD')
+
+        member_data = data.get('member')
+        if member_data:
+            guild = self._get_guild(raw.guild_id)
+            raw.member = Member(data=member_data, guild=guild, state=self)
+        else:
+            raw.member = None
         self.dispatch('raw_reaction_add', raw)
 
         # rich interface here
@@ -462,7 +470,8 @@ class ConnectionState:
         if message is not None:
             emoji = self._upgrade_partial_emoji(emoji)
             reaction = message._add_reaction(data, emoji, raw.user_id)
-            user = self._get_reaction_user(message.channel, raw.user_id)
+            user = raw.member or self._get_reaction_user(message.channel, raw.user_id)
+
             if user:
                 self.dispatch('reaction_add', reaction, user)
 
@@ -693,7 +702,7 @@ class ConnectionState:
         await self.chunker(guild)
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks), loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks))
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -841,7 +850,9 @@ class ConnectionState:
         log.info('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
         if self._cache_members:
             for member in members:
-                guild._add_member(member)
+                existing = guild.get_member(member.id)
+                if existing is None or existing.joined_at is None:
+                    guild._add_member(member)
 
         self.process_listeners(ListenerType.chunk, guild, len(members))
         names = [x.name.lower() for x in members]
@@ -1003,7 +1014,7 @@ class AutoShardedConnectionState(ConnectionState):
         # wait for the chunks
         if chunks:
             try:
-                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0, loop=self.loop)
+                await utils.sane_wait_for(chunks, timeout=len(chunks) * 30.0)
             except asyncio.TimeoutError:
                 log.info('Somehow timed out waiting for chunks.')
 
@@ -1013,7 +1024,7 @@ class AutoShardedConnectionState(ConnectionState):
             # this snippet of code is basically waiting 2 seconds
             # until the last GUILD_CREATE was sent
             launch.set()
-            await asyncio.sleep(2.0 * self.shard_count, loop=self.loop)
+            await asyncio.sleep(2.0 * self.shard_count)
 
         if self._fetch_offline:
             guilds = sorted(self._ready_state.guilds, key=lambda g: g[0].shard_id)

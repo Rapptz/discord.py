@@ -110,7 +110,7 @@ Doing something during cancellation:
         def __init__(self, bot):
             self.bot= bot
             self._batch = []
-            self.lock = asyncio.Lock(loop=bot.loop)
+            self.lock = asyncio.Lock()
             self.bulker.start()
 
         async def do_bulk(self):
