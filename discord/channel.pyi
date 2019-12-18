@@ -15,6 +15,8 @@ from .webhook import Webhook
 
 from typing import Any, Optional, Union, List, Tuple, Dict, Iterable, Callable, Type
 
+_OverwritesDict = Dict[Union[Role, Member], PermissionOverwrite]
+
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     id: int
     name: str
@@ -37,7 +39,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def last_message(self) -> Optional[Message]: ...
     async def edit(self, *, reason: Optional[str] = ..., name: str = ..., topic: str = ..., position: int = ...,
                    nsfw: bool = ..., sync_permissions: bool = ..., category: Optional[CategoryChannel] = ...,
-                   slowmode_delay: int = ...) -> None: ...
+                   slowmode_delay: int = ..., overwrites: _OverwritesDict = ...) -> None: ...
     async def delete_messages(self, messages: Iterable[Message]) -> None: ...
     async def purge(self, *, limit: Optional[int] = ..., check: Optional[Callable[[Message], bool]] = ...,
                     before: Optional[Union[datetime.datetime, Message]] = ...,
@@ -67,7 +69,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def permissions_for(self, member: Member) -> Permissions: ...
     async def edit(self, *, reason: Optional[str] = ..., name: str = ..., bitrate: int = ...,
                    user_limit: int = ..., position: int = ..., sync_permissions: bool = ...,
-                   category: Optional[CategoryChannel] = ...) -> None: ...
+                   category: Optional[CategoryChannel] = ..., overwrites: _OverwritesDict = ...) -> None: ...
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
     id: int
@@ -109,7 +111,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     def permissions_for(self, member: Member) -> Permissions: ...
     def is_nsfw(self) -> bool: ...
     async def edit(self, *, reason: Optional[str] = ..., name: str = ..., position: int = ...,
-                   nsfw: bool = ..., sync_permissions: bool = ..., category: Optional[CategoryChannel] = ...) -> None: ...
+                   nsfw: bool = ..., sync_permissions: bool = ..., category: Optional[CategoryChannel] = ...,
+                   overwrites: _OverwritesDict = ...) -> None: ...
 
 class DMChannel(discord.abc.Messageable, Hashable):
     id: int

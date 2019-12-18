@@ -6,7 +6,9 @@ from .colour import Colour
 from .enums import ActivityType
 from .http import _ActivityDict, _TimestampsDict, _ActivityAssetsDict, _ActivityPartyDict, _SpotifyActivityDict
 
-class _ActivityTag: ...
+class _ActivityTag:
+    @property
+    def created_at(self) -> datetime.datetime: ...
 
 class Activity(_ActivityTag):
     application_id: int
@@ -61,9 +63,11 @@ class Game(_ActivityTag):
     def __hash__(self) -> int: ...
 
 class Streaming(_ActivityTag):
-    name: str
-    url: str
+    platform: str
+    name: Optional[str]
     details: Optional[str]
+    game: Optional[str]
+    url: str
     assets: _ActivityAssetsDict
 
     def __init__(self, *, name: str, url: str, details: Optional[str] = ..., assets: _ActivityAssetsDict = ...) -> None: ...
@@ -79,6 +83,8 @@ class Streaming(_ActivityTag):
 class Spotify:
     @property
     def type(self) -> ActivityType: ...
+    @property
+    def created_at(self) -> datetime.datetime: ...
     @property
     def colour(self) -> Colour: ...
     @property

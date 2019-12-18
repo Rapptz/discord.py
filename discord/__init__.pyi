@@ -3,7 +3,8 @@ from typing_extensions import Final
 from .client import Client as Client
 from .appinfo import AppInfo as AppInfo
 from .user import User as User, ClientUser as ClientUser, Profile as Profile
-from .emoji import Emoji as Emoji, PartialEmoji as PartialEmoji
+from .emoji import Emoji as Emoji
+from .partial_emoji import PartialEmoji as PartialEmoji
 from .activity import *
 from .channel import *
 from .guild import Guild as Guild, SystemChannelFlags as SystemChannelFlags

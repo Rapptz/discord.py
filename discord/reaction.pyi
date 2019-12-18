@@ -1,6 +1,7 @@
 from .member import Member
 from .message import Message
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .iterators import ReactionIterator
 from .abc import Snowflake
 

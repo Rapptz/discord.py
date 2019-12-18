@@ -1,4 +1,5 @@
-import websockets  # type: ignore
+import websockets
+import websockets.typing
 import asyncio
 import threading
 from .client import Client
@@ -6,7 +7,7 @@ from .voice_client import VoiceClient
 from .activity import _ActivityTag
 from .enums import Status, SpeakingState
 
-from typing import Any, Optional, Union, Iterable, NamedTuple, Callable, Dict, ClassVar, TypeVar, Type
+from typing import Any, Optional, Union, Iterable, NamedTuple, Callable, Dict, ClassVar, TypeVar, Type, AsyncIterable
 from typing_extensions import TypedDict
 
 class KeepAlivePayloadDict(TypedDict):
@@ -35,7 +36,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler): ...
 
 _T = TypeVar('_T', bound=DiscordWebSocket)
 
-class DiscordWebSocket(websockets.client.WebSocketClientProtocol):  # type: ignore
+class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     DISPATCH: ClassVar[int] = ...
     HEARTBEAT: ClassVar[int] = ...
     IDENTIFY: ClassVar[int] = ...
@@ -65,7 +66,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):  # type: igno
     @property
     def latency(self) -> float: ...
     async def poll_event(self) -> None: ...
-    async def send(self, data: Union[str, bytes]) -> None: ...
+    async def send(self, message: Union[websockets.typing.Data, Iterable[websockets.typing.Data],
+                                        AsyncIterable[websockets.typing.Data]]) -> None: ...
     async def send_as_json(self, data: Any) -> None: ...
     async def change_presence(self, *, activity: Optional[_ActivityTag] = ..., status: Optional[str] = ...,
                               afk: bool = ..., since: float = ...) -> None: ...
@@ -78,7 +80,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):  # type: igno
 
 _VT = TypeVar('_VT', bound=DiscordVoiceWebSocket)
 
-class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):  # type: ignore
+class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     IDENTIFY: ClassVar[int] = ...
     SELECT_PROTOCOL: ClassVar[int] = ...
     READY: ClassVar[int] = ...

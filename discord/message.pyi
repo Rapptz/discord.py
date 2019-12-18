@@ -8,7 +8,8 @@ from .member import Member
 from .user import User
 from .embeds import Embed
 from .reaction import Reaction
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .calls import CallMessage
 from .role import Role
 

@@ -1,5 +1,6 @@
 from enum import Enum as Enum
 from typing import Union, TypeVar, Type, overload
+from typing_extensions import Literal
 
 # Technically, these enumerations do not inherit from enum.Enum, but because type checking
 # does something special for enum.Enum and discord.enums.Enum is a drop-in replacement for
@@ -135,6 +136,9 @@ class AuditLogAction(Enum):
     unban: int
     member_update: int
     member_role_update: int
+    member_move: int
+    member_disconnect: int
+    bot_add: int
     role_create: int
     role_update: int
     role_delete: int
@@ -148,12 +152,19 @@ class AuditLogAction(Enum):
     emoji_update: int
     emoji_delete: int
     message_delete: int
+    message_bulk_delete: int
+    message_pin: int
+    message_unpin: int
+    integration_create: int
+    integration_update: int
+    integration_delete: int
 
     @property
     def category(self) -> AuditLogActionCategory: ...
 
     @property
-    def target_type(self) -> str: ...
+    def target_type(self) -> Literal['all', 'guild', 'channel', 'user', 'role', 'invite', 'webhook',
+                                     'emoji', 'message', 'integration']: ...
 
 class UserFlags(Enum):
     staff: int
@@ -186,6 +197,10 @@ class PremiumType(Enum):
 class TeamMembershipState(Enum):
     invited: int
     accepted: int
+
+class WebhookType(Enum):
+    incoming: int
+    channel_follower: int
 
 _EnumType = TypeVar('_EnumType', bound=Enum)
 

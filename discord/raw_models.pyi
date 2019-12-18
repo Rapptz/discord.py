@@ -1,6 +1,7 @@
-from .emoji import PartialEmoji
+from .partial_emoji import PartialEmoji
 from .http import _MessageDict, _PartialEmojiDict
 from .message import Message
+from .member import Member
 
 from typing import Any, Optional, Dict, Set, List
 from typing_extensions import TypedDict, Literal
@@ -28,7 +29,9 @@ class _BaseReactionClearDict(TypedDict):
 class _ReactionClearDict(_BaseReactionClearDict, total=False):
     guild_id: int
 
-class RawMessageDeleteEvent:
+class _RawReprMixin: ...
+
+class RawMessageDeleteEvent(_RawReprMixin):
     message_id: int
     channel_id: int
     guild_id: Optional[int]
@@ -36,7 +39,7 @@ class RawMessageDeleteEvent:
 
     def __init__(self, data: _MessageDict) -> None: ...
 
-class RawBulkMessageDeleteEvent:
+class RawBulkMessageDeleteEvent(_RawReprMixin):
     message_ids: Set[int]
     channel_id: int
     guild_id: Optional[int]
@@ -44,7 +47,7 @@ class RawBulkMessageDeleteEvent:
 
     def __init__(self, data: _BulkMessageDeleteDict) -> None: ...
 
-class RawMessageUpdateEvent:
+class RawMessageUpdateEvent(_RawReprMixin):
     message_id: int
     channel_id: int
     data: _MessageDict
@@ -52,17 +55,18 @@ class RawMessageUpdateEvent:
 
     def __init__(self, data: _MessageDict) -> None: ...
 
-class RawReactionActionEvent:
+class RawReactionActionEvent(_RawReprMixin):
     message_id: int
     channel_id: int
     user_id: int
     emoji: PartialEmoji
+    member: Optional[Member]
     event_type: Literal['REACTION_ADD', 'REACTION_REMOVE']
     guild_id: Optional[int]
 
     def __init__(self, data: _ReactionActionDict, emoji: PartialEmoji) -> None: ...
 
-class RawReactionClearEvent:
+class RawReactionClearEvent(_RawReprMixin):
     message_id: int
     channel_id: int
     guild_id: Optional[int]

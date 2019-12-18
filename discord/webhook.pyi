@@ -12,6 +12,7 @@ from .http import _WebhookDict
 from .state import ConnectionState
 from .user import User
 from .asset import Asset
+from .enums import WebhookType
 
 from typing import Any, Optional, Union, Dict, List, Tuple, Coroutine, ClassVar, BinaryIO, TypeVar, Type, Iterable, overload
 from typing_extensions import Literal
@@ -51,6 +52,7 @@ _T = TypeVar('_T', bound=Webhook)
 
 class Webhook:
     id: int
+    type: WebhookType
     token: Optional[str]
     channel_id: Optional[int]
     guild_id: Optional[int]
