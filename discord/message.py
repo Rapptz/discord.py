@@ -779,9 +779,9 @@ class Message:
         except KeyError:
             pass
         else:
-            if suppress:
-                self.flags._set_flag(4, True)
-                fields['flags'] = self.flags.value
+             flags = MessageFlags._from_value(self.flags.value)
+             flags.suppress_embeds = suppress
+             fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
 

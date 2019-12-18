@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 __all__ = (
     'SystemChannelFlags',
-    'MessageFlags'
+    'MessageFlags',
 )
 
 class _flag_descriptor:
@@ -117,7 +117,7 @@ class SystemChannelFlags:
             if isinstance(value, _flag_descriptor):
                 yield (name, self._has_flag(value.flag))
 
-    # For some reason the flags in the Discord API are "inverted"
+    # For some reason the flags for system channels are "inverted"
     # ergo, if they're set then it means "suppress" (off in the GUI toggle)
     # Since this is counter-intuitive from an API perspective and annoying
     # these will be inverted automatically
@@ -176,7 +176,7 @@ class MessageFlags:
     __slots__ = ('value',)
 
     def __init__(self, **kwargs):
-        self.value = self.ALL_OFF_VALUE
+        self.value = 0
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError('%r is not a valid flag name.' % key)
