@@ -396,6 +396,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 self.sequence = None
                 self.session_id = None
                 log.info('Shard ID %s session has been invalidated.', self.shard_id)
+                await asyncio.sleep(5.0)
                 await self.identify()
                 return
 
