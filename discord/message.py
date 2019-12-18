@@ -696,7 +696,7 @@ class Message:
         -----------
         delay: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
-            before deleting the message.
+            before deleting the message. If the deletion fails then it is silently ignored.
 
         Raises
         ------
