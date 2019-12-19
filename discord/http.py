@@ -91,7 +91,7 @@ class HTTPClient:
         self.connector = connector
         self.__session = None # filled in static_login
         self._locks = weakref.WeakValueDictionary()
-        self._global_over = asyncio.Event(loop=self.loop)
+        self._global_over = asyncio.Event()
         self._global_over.set()
         self.token = None
         self.bot_token = False
@@ -104,7 +104,7 @@ class HTTPClient:
 
     def recreate(self):
         if self.__session.closed:
-            self.__session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
+            self.__session = aiohttp.ClientSession(connector=self.connector)
 
     async def request(self, route, *, files=None, **kwargs):
         bucket = route.bucket
@@ -113,7 +113,7 @@ class HTTPClient:
 
         lock = self._locks.get(bucket)
         if lock is None:
-            lock = asyncio.Lock(loop=self.loop)
+            lock = asyncio.Lock()
             if bucket is not None:
                 self._locks[bucket] = lock
 
@@ -195,7 +195,7 @@ class HTTPClient:
                             log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                             self._global_over.clear()
 
-                        await asyncio.sleep(retry_after, loop=self.loop)
+                        await asyncio.sleep(retry_after)
                         log.debug('Done sleeping for the rate limit. Retrying...')
 
                         # release the global lock now that the
@@ -208,7 +208,7 @@ class HTTPClient:
 
                     # we've received a 500 or 502, unconditional retry
                     if r.status in {500, 502}:
-                        await asyncio.sleep(1 + tries * 2, loop=self.loop)
+                        await asyncio.sleep(1 + tries * 2)
                         continue
 
                     # the usual error cases
@@ -248,7 +248,7 @@ class HTTPClient:
 
     async def static_login(self, token, *, bot):
         # Necessary to get aiohttp to stop complaining about session creation
-        self.__session = aiohttp.ClientSession(connector=self.connector, loop=self.loop)
+        self.__session = aiohttp.ClientSession(connector=self.connector)
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
@@ -563,6 +563,12 @@ class HTTPClient:
 
     def get_webhook(self, webhook_id):
         return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
+
+    def follow_webhook(self, channel_id, webhook_channel_id):
+        payload = {
+            'webhook_channel_id': str(webhook_channel_id)
+        }
+        return self.request(Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload)
 
     # Guild management
 

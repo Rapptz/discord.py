@@ -241,10 +241,11 @@ class Guild(Hashable):
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``COMMERCE``: Guild can sell things using store channels.
-        - ``LURKABLE``: Users can lurk in this guild via Server Discovery.
+        - ``PUBLIC``: Users can lurk in this guild via Server Discovery.
         - ``NEWS``: Guild can create news channels.
         - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
+        - ``PUBLIC_DISABLED``: Guild cannot be public.
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
@@ -260,7 +261,7 @@ class Guild(Hashable):
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
                  'name', 'id', 'unavailable', 'banner', 'region', '_state',
-                 '_default_role', '_roles', '_member_count', '_large',
+                 '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
@@ -385,7 +386,7 @@ class Guild(Hashable):
         self.max_presences = guild.get('max_presences')
         self.max_members = guild.get('max_members')
         self.premium_tier = guild.get('premium_tier', 0)
-        self.premium_subscription_count = guild.get('premium_subscription_count', 0)
+        self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
 
@@ -616,10 +617,10 @@ class Guild(Hashable):
         """
         return self._roles.get(role_id)
 
-    @utils.cached_slot_property('_default_role')
+    @property
     def default_role(self):
         """Gets the @everyone role that all members have by default."""
-        return utils.find(lambda r: r.is_default(), self._roles.values())
+        return self.get_role(self.id)
 
     @property
     def owner(self):
@@ -1012,7 +1013,7 @@ class Guild(Hashable):
             The new description of the guild. This is only available to guilds that
             contain `VERIFIED` in :attr:`Guild.features`.
         icon: :class:`bytes`
-            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported 
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
             and GIF for guilds with ``ANIMATED_ICON`` feature.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`

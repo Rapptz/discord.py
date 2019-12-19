@@ -256,6 +256,8 @@ class Invite(Hashable):
                  'temporary', 'max_uses', 'inviter', 'channel', '_state',
                  'approximate_member_count', 'approximate_presence_count' )
 
+    BASE = 'https://discord.gg'
+
     def __init__(self, *, state, data):
         self._state = state
         self.max_age = data.get('max_age')
@@ -309,7 +311,7 @@ class Invite(Hashable):
     @property
     def url(self):
         """:class:`str`: A property that retrieves the invite URL."""
-        return 'http://discord.gg/' + self.code
+        return self.BASE + '/' + self.code
 
     async def delete(self, *, reason=None):
         """|coro|

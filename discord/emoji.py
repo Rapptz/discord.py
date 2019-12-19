@@ -26,106 +26,10 @@ DEALINGS IN THE SOFTWARE.
 
 from .asset import Asset
 from . import utils
+from .partial_emoji import _EmojiTag
 from .user import User
 
-class PartialEmoji:
-    """Represents a "partial" emoji.
-
-    This model will be given in two scenarios:
-
-    - "Raw" data events such as :func:`on_raw_reaction_add`
-    - Custom emoji that the bot cannot see from e.g. :attr:`Message.reactions`
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two emoji are the same.
-
-        .. describe:: x != y
-
-            Checks if two emoji are not the same.
-
-        .. describe:: hash(x)
-
-            Return the emoji's hash.
-
-        .. describe:: str(x)
-
-            Returns the emoji rendered for discord.
-
-    Attributes
-    -----------
-    name: :class:`str`
-        The custom emoji name, if applicable, or the unicode codepoint
-        of the non-custom emoji.
-    animated: :class:`bool`
-        Whether the emoji is animated or not.
-    id: Optional[:class:`int`]
-        The ID of the custom emoji, if applicable.
-    """
-
-    __slots__ = ('animated', 'name', 'id', '_state')
-
-    def __init__(self, *, animated, name, id=None):
-        self.animated = animated
-        self.name = name
-        self.id = id
-        self._state = None
-
-    @classmethod
-    def with_state(cls, state, *, animated, name, id=None):
-        self = cls(animated=animated, name=name, id=id)
-        self._state = state
-        return self
-
-    def __str__(self):
-        if self.id is None:
-            return self.name
-        if self.animated:
-            return '<a:%s:%s>' % (self.name, self.id)
-        return '<:%s:%s>' % (self.name, self.id)
-
-    def __repr__(self):
-        return '<{0.__class__.__name__} animated={0.animated} name={0.name!r} id={0.id}>'.format(self)
-
-    def __eq__(self, other):
-        if self.is_unicode_emoji():
-            return isinstance(other, PartialEmoji) and self.name == other.name
-
-        if isinstance(other, (PartialEmoji, Emoji)):
-            return self.id == other.id
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((self.id, self.name))
-
-    def is_custom_emoji(self):
-        """Checks if this is a custom non-Unicode emoji."""
-        return self.id is not None
-
-    def is_unicode_emoji(self):
-        """Checks if this is a Unicode emoji."""
-        return self.id is None
-
-    def _as_reaction(self):
-        if self.id is None:
-            return self.name
-        return '%s:%s' % (self.name, self.id)
-
-    @property
-    def url(self):
-        """:class:`Asset`:Returns an asset of the emoji, if it is custom."""
-        if self.is_unicode_emoji():
-            return Asset(self._state)
-
-        _format = 'gif' if self.animated else 'png'
-        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
-        return Asset(self._state, url)
-
-class Emoji:
+class Emoji(_EmojiTag):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
@@ -212,7 +116,7 @@ class Emoji:
         return '<Emoji id={0.id} name={0.name!r} animated={0.animated} managed={0.managed}>'.format(self)
 
     def __eq__(self, other):
-        return isinstance(other, (PartialEmoji, Emoji)) and self.id == other.id
+        return isinstance(other, _EmojiTag) and self.id == other.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -229,7 +133,7 @@ class Emoji:
     def url(self):
         """:class:`Asset`: Returns the asset of the emoji."""
         _format = 'gif' if self.animated else 'png'
-        url = "https://cdn.discordapp.com/emojis/{0.id}.{1}".format(self, _format)
+        url = "/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
     @property
@@ -281,7 +185,7 @@ class Emoji:
 
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    async def edit(self, *, name, roles=None, reason=None):
+    async def edit(self, *, name=None, roles=None, reason=None):
         r"""|coro|
 
         Edits the custom emoji.
@@ -306,6 +210,7 @@ class Emoji:
             An error occurred editing the emoji.
         """
 
+        name = name or self.name
         if roles:
             roles = [role.id for role in roles]
         await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)

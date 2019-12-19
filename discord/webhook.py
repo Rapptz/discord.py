@@ -33,6 +33,7 @@ import aiohttp
 
 from . import utils
 from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
+from .enums import try_enum, WebhookType
 from .user import BaseUser, User
 from .asset import Asset
 
@@ -201,7 +202,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 remaining = r.headers.get('X-Ratelimit-Remaining')
                 if remaining == '0' and r.status != 429:
                     delta = utils._parse_ratelimit_header(r)
-                    await asyncio.sleep(delta, loop=self.loop)
+                    await asyncio.sleep(delta)
 
                 if 300 > r.status >= 200:
                     return response
@@ -209,11 +210,11 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 # we are being rate limited
                 if r.status == 429:
                     retry_after = response['retry_after'] / 1000.0
-                    await asyncio.sleep(retry_after, loop=self.loop)
+                    await asyncio.sleep(retry_after)
                     continue
 
                 if r.status in (500, 502):
-                    await asyncio.sleep(1 + tries * 2, loop=self.loop)
+                    await asyncio.sleep(1 + tries * 2)
                     continue
 
                 if r.status == 403:
@@ -222,6 +223,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     raise NotFound(r, response)
                 else:
                     raise HTTPException(r, response)
+        # no more retries
+        raise HTTPException(r, response)
 
     async def handle_execution_response(self, response, *, wait):
         data = await response
@@ -308,6 +311,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
                 raise NotFound(r, response)
             else:
                 raise HTTPException(r, response)
+        # no more retries
+        raise HTTPException(r, response)
 
     def handle_execution_response(self, response, *, wait):
         if not wait:
@@ -397,6 +402,8 @@ class Webhook:
     ------------
     id: :class:`int`
         The webhook's ID
+    type: :class:`WebhookType`
+        The type of the webhook.
     token: Optional[:class:`str`]
         The authentication token of the webhook. If this is ``None``
         then the webhook cannot be used to make requests.
@@ -413,11 +420,12 @@ class Webhook:
         The default avatar of the webhook.
     """
 
-    __slots__ = ('id', 'guild_id', 'channel_id', 'user', 'name', 'avatar',
-                 'token', '_state', '_adapter')
+    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name', 
+                 'avatar', 'token', '_state', '_adapter')
 
     def __init__(self, data, *, adapter, state=None):
         self.id = int(data['id'])
+        self.type = try_enum(WebhookType, int(data['type']))
         self.channel_id = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.name = data.get('name')
@@ -466,6 +474,7 @@ class Webhook:
 
         data = {
             'id': id,
+            'type': 1,
             'token': token
         }
 
@@ -493,7 +502,29 @@ class Webhook:
         m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
-        return cls(m.groupdict(), adapter=adapter)
+        data = m.groupdict()
+        data['type'] = 1
+        return cls(data, adapter=adapter)
+
+    @classmethod
+    def _as_follower(cls, data, *, channel, user):
+        name = "{} #{}".format(channel.guild, channel)
+        feed = {
+            'id': data['webhook_id'],
+            'type': 2,
+            'name': name,
+            'channel_id': channel.id,
+            'guild_id': channel.guild.id,
+            'user': {
+                'username': user.name,
+                'discriminator': user.discriminator,
+                'id': user.id,
+                'avatar': user.avatar
+            }
+        }
+
+        session = channel._state.http._HTTPClient__session
+        return cls(feed, adapter=AsyncWebhookAdapter(session=session))
 
     @classmethod
     def from_state(cls, data, state):
@@ -563,7 +594,7 @@ class Webhook:
         """
         if self.avatar is None:
             # Default is always blurple apparently
-            return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/0.png')
+            return Asset(self._state, '/embed/avatars/0.png')
 
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 1024")
@@ -573,7 +604,7 @@ class Webhook:
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        url = 'https://cdn.discordapp.com/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
         return Asset(self._state, url)
 
     def delete(self):

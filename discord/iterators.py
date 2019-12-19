@@ -132,7 +132,7 @@ class ReactionIterator(_AsyncIterator):
         self.emoji = emoji
         self.guild = message.guild
         self.channel_id = message.channel.id
-        self.users = asyncio.Queue(loop=state.loop)
+        self.users = asyncio.Queue()
 
     async def next(self):
         if self.users.empty():
@@ -228,7 +228,7 @@ class HistoryIterator(_AsyncIterator):
 
         self.state = self.messageable._state
         self.logs_from = self.state.http.logs_from
-        self.messages = asyncio.Queue(loop=self.state.loop)
+        self.messages = asyncio.Queue()
 
         if self.around:
             if self.limit is None:
@@ -378,7 +378,7 @@ class AuditLogIterator(_AsyncIterator):
 
         self._filter = None  # entry dict -> bool
 
-        self.entries = asyncio.Queue(loop=self.loop)
+        self.entries = asyncio.Queue()
 
 
         if self.reverse:
@@ -503,7 +503,7 @@ class GuildIterator(_AsyncIterator):
 
         self.state = self.bot._connection
         self.get_guilds = self.bot.http.get_guilds
-        self.guilds = asyncio.Queue(loop=self.state.loop)
+        self.guilds = asyncio.Queue()
 
         if self.before and self.after:
             self._retrieve_guilds = self._retrieve_guilds_before_strategy
@@ -600,7 +600,7 @@ class MemberIterator(_AsyncIterator):
 
         self.state = self.guild._state
         self.get_members = self.state.http.get_members
-        self.members = asyncio.Queue(loop=self.state.loop)
+        self.members = asyncio.Queue()
 
     async def next(self):
         if self.members.empty():

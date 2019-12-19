@@ -5696,7 +5696,7 @@ msgstr ""
 msgid ""
 "This is returned as a dictionary where the key contains the target which "
 "can be either a :class:`~discord.Role` or a :class:`~discord.Member` and "
-"the key is the overwrite as a :class:`~discord.PermissionOverwrite`."
+"the value is the overwrite as a :class:`~discord.PermissionOverwrite`."
 msgstr ""
 
 #: discord.CategoryChannel.overwrites:7 discord.TextChannel.overwrites:7

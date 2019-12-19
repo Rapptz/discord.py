@@ -308,6 +308,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         - For performance reasons, the embed server does not do this in a "consistent" manner.
 
+    - The message's embeds were suppressed or unsuppressed.
     - A call message has received an update to its participants or ending time.
 
     :param before: The previous version of the message.
@@ -571,9 +572,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param guild: The guild who got their emojis updated.
     :type guild: :class:`Guild`
     :param before: A list of emojis before the update.
-    :type before: List[:class:`Emoji`]
+    :type before: Sequence[:class:`Emoji`]
     :param after: A list of emojis after the update.
-    :type after: List[:class:`Emoji`]
+    :type after: Sequence[:class:`Emoji`]
 
 .. function:: on_guild_available(guild)
               on_guild_unavailable(guild)
@@ -848,6 +849,12 @@ of :class:`enum.Enum`.
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
+    
+    .. versionchanged:: 1.2
+        The ``india`` region was added.
+    
+    .. versionchanged:: 1.3
+        The ``europe`` region was added.
 
     .. attribute:: amsterdam
 
@@ -861,6 +868,9 @@ of :class:`enum.Enum`.
     .. attribute:: eu_west
 
         The EU West region.
+    .. attribute:: europe
+    
+        The Europe region.
     .. attribute:: frankfurt
 
         The Frankfurt region.
@@ -1244,6 +1254,34 @@ of :class:`enum.Enum`.
 
         - :attr:`~AuditLogDiff.roles`
 
+    .. attribute:: member_move
+
+        A member's voice channel has been updated. This triggers when a
+        member is moved to a different voice channel.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the members were moved.
+        - ``count``: An integer specifying how many members were moved.
+
+    .. attribute:: member_disconnect
+
+        A member's voice state has changed. This triggers when a
+        member is force disconnected from voice.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``count``: An integer specifying how many members were disconnected.
+
+    .. attribute:: bot_add
+
+        A bot was added to the guild.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` which was added to the guild.
+
     .. attribute:: role_create
 
         A new role was created.
@@ -1412,8 +1450,7 @@ of :class:`enum.Enum`.
     .. attribute:: message_delete
 
         A message was deleted by a moderator. Note that this
-        only triggers if the message was deleted by either bulk delete
-        or deletion by someone other than the author.
+        only triggers if the message was deleted by someone other than the author.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member` or :class:`User` who had their message deleted.
@@ -1424,6 +1461,64 @@ of :class:`enum.Enum`.
         - ``count``: An integer specifying how many messages were deleted.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message got deleted.
 
+    .. attribute:: message_bulk_delete
+
+        Messages were bulk deleted by a moderator.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+		the :class:`TextChannel` or :class:`Object` with the ID of the channel that was purged.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``count``: An integer specifying how many messages were deleted.
+
+    .. attribute:: message_pin
+
+        A message was pinned in a channel.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who had their message pinned.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was pinned.
+        - ``message_id``: the ID of the message which was pinned.
+
+    .. attribute:: message_unpin
+
+        A message was unpinned in a channel.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Member` or :class:`User` who had their message unpinned.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with two attributes:
+
+        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was unpinned.
+        - ``message_id``: the ID of the message which was unpinned.
+
+    .. attribute:: integration_create
+
+        A guild integration was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the integration ID of the integration which was created.
+
+    .. attribute:: integration_update
+
+        A guild integration was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the integration ID of the integration which was updated.
+
+    .. attribute:: integration_delete
+
+        A guild integration was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Object` with the integration ID of the integration which was deleted.
 
 .. class:: AuditLogActionCategory
 
@@ -1566,6 +1661,18 @@ of :class:`enum.Enum`.
     .. attribute:: accepted
 
         Represents a member currently in the team.
+
+.. class:: WebhookType
+
+	Represents the type of webhook that can be received.
+
+	.. attribute:: incoming
+
+		Represents a webhook that can post messages to channels with a token.
+
+	.. attribute:: channel_follower
+
+		Represents a webhook that is internally managed by Discord, used for following channels.
 
 Async Iterator
 ----------------

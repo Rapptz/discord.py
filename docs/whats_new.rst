@@ -11,6 +11,31 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p2p5:
+
+v1.2.5
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix a bug that caused crashes due to missing ``animated`` field in Emoji structures in reactions.
+
+.. _vp1p2p4:
+
+v1.2.4
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix a regression when :attr:`Message.channel` would be ``None``.
+- Fix a regression where :attr:`Message.edited_at` would not update during edits.
+- Fix a crash that would trigger during message updates (:issue:`2265`, :issue:`2287`).
+- Fix a bug when :meth:`VoiceChannel.connect` would not return (:issue:`2274`, :issue:`2372`, :issue:`2373`, :issue:`2377`).
+- Fix a crash relating to token-less webhooks (:issue:`2364`).
+- Fix issue where :attr:`Guild.premium_subscription_count` would be ``None`` due to a Discord bug. (:issue:`2331`, :issue:`2376`).
+
 .. _vp1p2p3:
 
 v1.2.3

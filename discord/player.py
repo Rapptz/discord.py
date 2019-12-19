@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import threading
+import traceback
 import subprocess
 import audioop
 import asyncio
@@ -32,6 +33,7 @@ import logging
 import shlex
 import time
 import json
+import sys
 import re
 
 from .errors import ClientException
@@ -602,11 +604,20 @@ class AudioPlayer(threading.Thread):
             self._call_after()
 
     def _call_after(self):
+        error = self._current_error
+
         if self.after is not None:
             try:
-                self.after(self._current_error)
-            except Exception:
+                self.after(error)
+            except Exception as exc:
                 log.exception('Calling the after function failed.')
+                exc.__context__ = error
+                traceback.print_exception(type(exc), exc, exc.__traceback__)
+        elif error:
+            msg = 'Exception in voice thread {}'.format(self.name)
+            log.exception(msg, exc_info=error)
+            print(msg, file=sys.stderr)
+            traceback.print_exception(type(error), error, error.__traceback__)
 
     def stop(self):
         self._end.set()

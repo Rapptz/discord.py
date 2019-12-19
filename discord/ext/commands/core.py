@@ -56,6 +56,8 @@ __all__ = (
     'guild_only',
     'is_owner',
     'is_nsfw',
+    'has_guild_permissions',
+    'bot_has_guild_permissions'
 )
 
 def wrap_callback(coro):
@@ -148,6 +150,8 @@ class Command(_BaseCommand):
     parent: Optional[:class:`Command`]
         The parent command that this command belongs to. ``None`` if there
         isn't one.
+    cog: Optional[:class:`Cog`]
+        The cog that this command belongs to. ``None`` if there isn't one.
     checks: List[Callable[..., :class:`bool`]]
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
@@ -276,6 +280,40 @@ class Command(_BaseCommand):
             if value.annotation is converters.Greedy:
                 raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
+    def add_check(self, func):
+        """Adds a check to the command.
+
+        This is the non-decorator interface to :func:`.check`.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        func
+            The function that will be used as a check.
+        """
+
+        self.checks.append(func)
+
+    def remove_check(self, func):
+        """Removes a check from the command.
+
+        This function is idempotent and will not raise an exception
+        if the function is not in the command's checks.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        func
+            The function to remove from the checks.
+        """
+
+        try:
+            self.checks.remove(func)
+        except ValueError:
+            pass
+
     def update(self, **kwargs):
         """Updates :class:`Command` instance with updated attribute.
 
@@ -345,7 +383,7 @@ class Command(_BaseCommand):
             pass
         else:
             if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
-                converter = getattr(converters, converter.__name__ + 'Converter')
+                converter = getattr(converters, converter.__name__ + 'Converter', converter)
 
         try:
             if inspect.isclass(converter):
@@ -462,10 +500,10 @@ class Command(_BaseCommand):
             previous = view.index
 
             view.skip_ws()
-            argument = view.get_quoted_word()
             try:
+                argument = view.get_quoted_word()
                 value = await self.do_conversion(ctx, converter, argument, param)
-            except CommandError:
+            except (CommandError, ArgumentParsingError):
                 view.index = previous
                 break
             else:
@@ -478,10 +516,10 @@ class Command(_BaseCommand):
     async def _transform_greedy_var_pos(self, ctx, param, converter):
         view = ctx.view
         previous = view.index
-        argument = view.get_quoted_word()
         try:
+            argument = view.get_quoted_word()
             value = await self.do_conversion(ctx, converter, argument, param)
-        except CommandError:
+        except (CommandError, ArgumentParsingError):
             view.index = previous
             raise RuntimeError() from None # break loop
         else:
@@ -1269,9 +1307,26 @@ def check(predicate):
     will be propagated while those subclassed will be sent to
     :func:`.on_command_error`.
 
+    A special attribute named ``predicate`` is bound to the value
+    returned by this decorator to retrieve the predicate passed to the
+    decorator. This allows the following introspection and chaining to be done:
+
+    .. code-block:: python3
+
+        def owner_or_permissions(**perms):
+            original = commands.has_permissions(**perms).predicate
+            def extended_check(ctx):
+                if ctx.guild is None:
+                    return False
+                return ctx.guild.owner_id == ctx.author.id or original(ctx)
+            return commands.check(extended_check)
+
     .. note::
 
         These functions can either be regular functions or coroutines.
+
+    .. versionchanged:: 1.3.0
+        The ``predicate`` attribute was added.
 
     Examples
     ---------
@@ -1318,6 +1373,8 @@ def check(predicate):
             func.__commands_checks__.append(predicate)
 
         return func
+
+    decorator.predicate = predicate
     return decorator
 
 def has_role(item):
@@ -1335,6 +1392,10 @@ def has_role(item):
     This check raises one of two special exceptions, :exc:`.MissingRole` if the user
     is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1371,6 +1432,10 @@ def has_any_role(*items):
     This check raises one of two special exceptions, :exc:`.MissingAnyRole` if the user
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1411,6 +1476,10 @@ def bot_has_role(item):
     is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
     .. versionchanged:: 1.1.0
 
         Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
@@ -1440,6 +1509,10 @@ def bot_has_any_role(*items):
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
     .. versionchanged:: 1.1.0
 
         Raise :exc:`.BotMissingAnyRole` or :exc:`.NoPrivateMessage`
@@ -1461,11 +1534,18 @@ def has_permissions(**perms):
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
+    Note that this check operates on the current channel permissions, not the
+    guild wide permissions.
+
     The permissions passed in must be exactly like the properties shown under
     :class:`.discord.Permissions`.
 
     This check raises a special exception, :exc:`.MissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     Parameters
     ------------
@@ -1502,12 +1582,67 @@ def bot_has_permissions(**perms):
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
     """
     def predicate(ctx):
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
         permissions = ctx.channel.permissions_for(me)
 
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+
+        if not missing:
+            return True
+
+        raise BotMissingPermissions(missing)
+
+    return check(predicate)
+
+def has_guild_permissions(**perms):
+    """Similar to :func:`.has_permissions`, but operates on guild wide
+    permissions instead of the current channel permissions.
+
+    If this check is called in a DM context, it will raise an
+    exception, :exc:`.NoPrivateMessage`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionadded:: 1.3.0
+    """
+    def predicate(ctx):
+        if not ctx.guild:
+            raise NoPrivateMessage
+
+        permissions = ctx.author.guild_permissions
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+
+        if not missing:
+            return True
+
+        raise MissingPermissions(missing)
+
+    return check(predicate)
+
+def bot_has_guild_permissions(**perms):
+    """Similar to :func:`.has_guild_permissions`, but checks the bot
+    members guild permissions.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionadded:: 1.3.0
+    """
+    def predicate(ctx):
+        if not ctx.guild:
+            raise NoPrivateMessage
+
+        permissions = ctx.me.guild_permissions
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
 
         if not missing:
@@ -1524,6 +1659,10 @@ def dm_only():
 
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionadded:: 1.1.0
     """
@@ -1542,6 +1681,10 @@ def guild_only():
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
     """
 
     def predicate(ctx):
@@ -1559,6 +1702,10 @@ def is_owner():
 
     This check raises a special exception, :exc:`.NotOwner` that is derived
     from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function **is** a coroutine.
     """
 
     async def predicate(ctx):
@@ -1573,6 +1720,10 @@ def is_nsfw():
 
     This check raises a special exception, :exc:`.NSFWChannelRequired`
     that is derived from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
