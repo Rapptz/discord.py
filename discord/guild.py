@@ -257,6 +257,8 @@ class Guild(Hashable):
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
+    discovery_splash: :class:`str`
+        The guild's discovery splash.
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -267,7 +269,7 @@ class Guild(Hashable):
                  '_voice_states', '_system_channel_id', 'default_notifications',
                  'description', 'max_presences', 'max_members', 'premium_tier',
                  'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale',)
+                 'preferred_locale', 'discovery_splash', '_rules_channel_id')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -389,6 +391,8 @@ class Guild(Hashable):
         self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
+        self.discovery_splash = guild.get('discovery_splash')
+        self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -550,6 +554,18 @@ class Guild(Hashable):
     def system_channel_flags(self):
         """:class:`SystemChannelFlags`: Returns the guild's system channel settings."""
         return SystemChannelFlags._from_value(self._system_channel_flags)
+
+    @property
+    def rules_channel(self):
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for the rules.
+        Must be a discoverable guild.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 1.3.0
+        """
+        channel_id = self._rules_channel_id
+        return channel_id and self._channels.get(channel_id)
 
     @property
     def emoji_limit(self):
@@ -726,6 +742,41 @@ class Guild(Hashable):
             The resulting CDN asset.
         """
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+
+    @property
+    def discovery_splash_url(self):
+        """:class:`Asset`: Returns the guild's discovery splash asset.
+        
+        .. versionadded:: 1.3.0
+        """
+        return self.discovery_splash_url_as()
+
+    def discovery_splash_url_as(self, *, format='webp', size=2048):
+        """Returns an :class:`Asset` for the guild's discovery splash.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
+        size must be a power of 2 between 16 and 4096.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        format: :class:`str`
+            The format to attempt to convert the splash to.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_guild_image(self._state, self.id, self.discovery_splash, 'discovery-splashes', format=format, size=size)
 
     @property
     def member_count(self):
