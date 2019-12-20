@@ -400,7 +400,7 @@ class Streaming(_ActivityTag):
     def __init__(self, *, name, url, **extra):
         super().__init__(**extra)
         self.platform = name
-        self.name = extra.pop('details', None)
+        self.name = extra.pop('details', name)
         self.game = extra.pop('state', None)
         self.url = url
         self.details = extra.pop('details', self.name) # compatibility
