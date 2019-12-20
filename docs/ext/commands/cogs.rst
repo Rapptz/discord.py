@@ -49,6 +49,7 @@ A couple of technical notes to take into consideration:
 
 - All listeners must be explicitly marked via decorator, :meth:`~.commands.Cog.listener`.
 - The name of the cog is automatically derived from the class name but can be overridden. See :ref:`ext_commands_cogs_meta_options`.
+- :meth:`~.commands.Cog.listener` can be used without ``()`` if you aren't passing it a name.
 - All commands must now take a ``self`` parameter to allow usage of instance attributes that can be used to maintain state.
 
 Cog Registration

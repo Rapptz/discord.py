@@ -61,6 +61,14 @@ the name to something other than the function would be as simple as doing this:
     async def _list(ctx, arg):
         pass
 
+If no options are passed to :meth:`.Bot.command` or :func:`~ext.commands.command`, these methods may be used without ``()``:
+
+.. code-block:: python3
+
+    @bot.command
+    async def test(ctx, arg):
+        pass
+
 Parameters
 ------------
 
@@ -634,7 +642,8 @@ want to split it into its own decorator. To do that we can just add another leve
         await ctx.send(eval(code))
 
 
-Since an owner check is so common, the library provides it for you (:func:`~ext.commands.is_owner`):
+Since an owner check is so common, the library provides it for you (:func:`~ext.commands.is_owner`, which can be used
+both with and without ``()``):
 
 .. code-block:: python3
 
@@ -706,6 +715,7 @@ If you want a more robust error system, you can derive from the exception and ra
 .. note::
 
     Since having a ``guild_only`` decorator is pretty common, it comes built-in via :func:`~ext.commands.guild_only`.
+	It can be used both with and without ``()``.
 
 Global Checks
 ++++++++++++++

@@ -1115,27 +1115,37 @@ class GroupMixin:
 
         return obj
 
-    def command(self, *args, **kwargs):
+    def command(self, name=None, *args, **kwargs):
         """A shortcut decorator that invokes :func:`.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
-            result = command(*args, **kwargs)(func)
+            result = command(name, *args, **kwargs)(func)
             self.add_command(result)
             return result
 
+        if callable(name):
+            func = name
+            name = None
+            return decorator(func)
+
         return decorator
 
-    def group(self, *args, **kwargs):
+    def group(self, name=None, *args, **kwargs):
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
-            result = group(*args, **kwargs)(func)
+            result = group(name, *args, **kwargs)(func)
             self.add_command(result)
             return result
+
+        if callable(name):
+            func = name
+            name = None
+            return decorator(func)
 
         return decorator
 
@@ -1277,6 +1287,11 @@ def command(name=None, cls=None, **attrs):
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
         return cls(func, name=name, **attrs)
+
+    if callable(name):
+        func = name
+        name = None
+        return decorator(func)
 
     return decorator
 
@@ -1652,7 +1667,7 @@ def bot_has_guild_permissions(**perms):
 
     return check(predicate)
 
-def dm_only():
+def dm_only(func=None):
     """A :func:`.check` that indicates this command must only be used in a
     DM context. Only private messages are allowed when
     using the command.
@@ -1672,9 +1687,14 @@ def dm_only():
             raise PrivateMessageOnly()
         return True
 
-    return check(predicate)
+    decorator = check(predicate)
 
-def guild_only():
+    if callable(func):
+        return decorator(func)
+
+    return decorator
+
+def guild_only(func=None):
     """A :func:`.check` that indicates this command must only be used in a
     guild context only. Basically, no private messages are allowed when
     using the command.
@@ -1692,9 +1712,14 @@ def guild_only():
             raise NoPrivateMessage()
         return True
 
-    return check(predicate)
+    decorator = check(predicate)
 
-def is_owner():
+    if callable(func):
+        return decorator(func)
+
+    return decorator
+
+def is_owner(func=None):
     """A :func:`.check` that checks if the person invoking this command is the
     owner of the bot.
 
@@ -1713,9 +1738,14 @@ def is_owner():
             raise NotOwner('You do not own this bot.')
         return True
 
-    return check(predicate)
+    decorator = check(predicate)
 
-def is_nsfw():
+    if callable(func):
+        return decorator(func)
+
+    return decorator
+
+def is_nsfw(func=None):
     """A :func:`.check` that checks if the channel is a NSFW channel.
 
     This check raises a special exception, :exc:`.NSFWChannelRequired`
@@ -1735,7 +1765,13 @@ def is_nsfw():
         if ctx.guild is None or (isinstance(ch, discord.TextChannel) and ch.is_nsfw()):
             return True
         raise NSFWChannelRequired(ch)
-    return check(pred)
+
+    decorator = check(pred)
+
+    if callable(func):
+        return decorator(func)
+
+    return decorator
 
 def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`.Command`

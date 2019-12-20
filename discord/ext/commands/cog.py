@@ -248,7 +248,7 @@ class Cog(metaclass=CogMeta):
             the name.
         """
 
-        if name is not None and not isinstance(name, str):
+        if name is not None and not callable(name) and not isinstance(name, str):
             raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
 
         def decorator(func):
@@ -268,6 +268,12 @@ class Cog(metaclass=CogMeta):
             # to pick it up but the metaclass unfurls the function and
             # thus the assignments need to be on the actual function
             return func
+
+        if callable(name):
+            func = name
+            name = None
+            return decorator(func)
+
         return decorator
 
     @_cog_special_method
