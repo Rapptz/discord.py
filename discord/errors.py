@@ -24,48 +24,58 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+
 class DiscordException(Exception):
     """Base exception class for discord.py
 
     Ideally speaking, this could be caught to handle any exceptions thrown from this library.
     """
+
     pass
+
 
 class ClientException(DiscordException):
     """Exception that's thrown when an operation in the :class:`Client` fails.
 
     These are usually for exceptions that happened due to user input.
     """
+
     pass
+
 
 class NoMoreItems(DiscordException):
     """Exception that is thrown when an async iteration operation has no more
     items."""
+
     pass
+
 
 class GatewayNotFound(DiscordException):
     """An exception that is usually thrown when the gateway hub
     for the :class:`Client` websocket is not found."""
+
     def __init__(self):
-        message = 'The gateway to connect to discord was not found.'
+        message = "The gateway to connect to discord was not found."
         super(GatewayNotFound, self).__init__(message)
 
-def flatten_error_dict(d, key=''):
+
+def flatten_error_dict(d, key=""):
     items = []
     for k, v in d.items():
-        new_key = key + '.' + k if key else k
+        new_key = key + "." + k if key else k
 
         if isinstance(v, dict):
             try:
-                _errors = v['_errors']
+                _errors = v["_errors"]
             except KeyError:
                 items.extend(flatten_error_dict(v, new_key).items())
             else:
-                items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
+                items.append((new_key, " ".join(x.get("message", "") for x in _errors)))
         else:
             items.append((new_key, v))
 
     return dict(items)
+
 
 class HTTPException(DiscordException):
     """Exception that's thrown when an HTTP request operation fails.
@@ -89,37 +99,41 @@ class HTTPException(DiscordException):
         self.response = response
         self.status = response.status
         if isinstance(message, dict):
-            self.code = message.get('code', 0)
-            base = message.get('message', '')
-            errors = message.get('errors')
+            self.code = message.get("code", 0)
+            base = message.get("message", "")
+            errors = message.get("errors")
             if errors:
                 errors = flatten_error_dict(errors)
-                helpful = '\n'.join('In %s: %s' % t for t in errors.items())
-                self.text = base + '\n' + helpful
+                helpful = "\n".join("In %s: %s" % t for t in errors.items())
+                self.text = base + "\n" + helpful
             else:
                 self.text = base
         else:
             self.text = message
             self.code = 0
 
-        fmt = '{0.status} {0.reason} (error code: {1})'
+        fmt = "{0.status} {0.reason} (error code: {1})"
         if len(self.text):
-            fmt = fmt + ': {2}'
+            fmt = fmt + ": {2}"
 
         super().__init__(fmt.format(self.response, self.code, self.text))
+
 
 class Forbidden(HTTPException):
     """Exception that's thrown for when status code 403 occurs.
 
     Subclass of :exc:`HTTPException`
     """
+
     pass
+
 
 class NotFound(HTTPException):
     """Exception that's thrown for when status code 404 occurs.
 
     Subclass of :exc:`HTTPException`
     """
+
     pass
 
 
@@ -127,7 +141,9 @@ class InvalidData(ClientException):
     """Exception that's raised when the library encounters unknown
     or invalid data from Discord.
     """
+
     pass
+
 
 class InvalidArgument(ClientException):
     """Exception that's thrown when an argument to a function
@@ -137,14 +153,18 @@ class InvalidArgument(ClientException):
     ``TypeError`` except inherited from :exc:`ClientException` and thus
     :exc:`DiscordException`.
     """
+
     pass
+
 
 class LoginFailure(ClientException):
     """Exception that's thrown when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
     """
+
     pass
+
 
 class ConnectionClosed(ClientException):
     """Exception that's thrown when the gateway connection is
@@ -159,6 +179,7 @@ class ConnectionClosed(ClientException):
     shard_id: Optional[:class:`int`]
         The shard ID that got closed if applicable.
     """
+
     def __init__(self, original, *, shard_id):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users

@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import discord.abc
 import discord.utils
 
+
 class Context(discord.abc.Messageable):
     r"""Represents the context in which a command is being invoked under.
 
@@ -73,17 +74,17 @@ class Context(discord.abc.Messageable):
     """
 
     def __init__(self, **attrs):
-        self.message = attrs.pop('message', None)
-        self.bot = attrs.pop('bot', None)
-        self.args = attrs.pop('args', [])
-        self.kwargs = attrs.pop('kwargs', {})
-        self.prefix = attrs.pop('prefix')
-        self.command = attrs.pop('command', None)
-        self.view = attrs.pop('view', None)
-        self.invoked_with = attrs.pop('invoked_with', None)
-        self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
-        self.subcommand_passed = attrs.pop('subcommand_passed', None)
-        self.command_failed = attrs.pop('command_failed', False)
+        self.message = attrs.pop("message", None)
+        self.bot = attrs.pop("bot", None)
+        self.args = attrs.pop("args", [])
+        self.kwargs = attrs.pop("kwargs", {})
+        self.prefix = attrs.pop("prefix")
+        self.command = attrs.pop("command", None)
+        self.view = attrs.pop("view", None)
+        self.invoked_with = attrs.pop("invoked_with", None)
+        self.invoked_subcommand = attrs.pop("invoked_subcommand", None)
+        self.subcommand_passed = attrs.pop("subcommand_passed", None)
+        self.command_failed = attrs.pop("command_failed", False)
         self._state = self.message._state
 
     async def invoke(self, *args, **kwargs):
@@ -120,7 +121,7 @@ class Context(discord.abc.Messageable):
         try:
             command = args[0]
         except IndexError:
-            raise TypeError('Missing command to invoke.') from None
+            raise TypeError("Missing command to invoke.") from None
 
         arguments = []
         if command.cog is not None:
@@ -160,7 +161,7 @@ class Context(discord.abc.Messageable):
         cmd = self.command
         view = self.view
         if cmd is None:
-            raise ValueError('This context is not valid.')
+            raise ValueError("This context is not valid.")
 
         # some state to revert to when we're done
         index, previous = view.index, view.previous
@@ -172,7 +173,7 @@ class Context(discord.abc.Messageable):
             to_call = cmd.root_parent or cmd
             view.index = len(self.prefix)
             view.previous = 0
-            view.get_word() # advance to get the root command
+            view.get_word()  # advance to get the root command
         else:
             to_call = cmd
 
@@ -288,7 +289,7 @@ class Context(discord.abc.Messageable):
 
         await cmd.prepare_help_command(self, entity.qualified_name)
 
-        if hasattr(entity, '__cog_commands__'):
+        if hasattr(entity, "__cog_commands__"):
             return await cmd.send_cog_help(entity)
         elif isinstance(entity, Group):
             return await cmd.send_group_help(entity)

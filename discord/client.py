@@ -58,6 +58,7 @@ from .appinfo import AppInfo
 
 log = logging.getLogger(__name__)
 
+
 def _cancel_tasks(loop):
     try:
         task_retriever = asyncio.Task.all_tasks
@@ -70,22 +71,25 @@ def _cancel_tasks(loop):
     if not tasks:
         return
 
-    log.info('Cleaning up after %d tasks.', len(tasks))
+    log.info("Cleaning up after %d tasks.", len(tasks))
     for task in tasks:
         task.cancel()
 
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-    log.info('All tasks finished cancelling.')
+    log.info("All tasks finished cancelling.")
 
     for task in tasks:
         if task.cancelled():
             continue
         if task.exception() is not None:
-            loop.call_exception_handler({
-                'message': 'Unhandled exception during Client.run shutdown.',
-                'exception': task.exception(),
-                'task': task
-            })
+            loop.call_exception_handler(
+                {
+                    "message": "Unhandled exception during Client.run shutdown.",
+                    "exception": task.exception(),
+                    "task": task,
+                }
+            )
+
 
 def _cleanup_loop(loop):
     try:
@@ -93,8 +97,9 @@ def _cleanup_loop(loop):
         if sys.version_info >= (3, 6):
             loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
-        log.info('Closing the event loop.')
+        log.info("Closing the event loop.")
         loop.close()
+
 
 class _ClientEventTask(asyncio.Task):
     def __init__(self, original_coro, event_name, coro, *, loop):
@@ -104,13 +109,14 @@ class _ClientEventTask(asyncio.Task):
 
     def __repr__(self):
         info = [
-            ('state', self._state.lower()),
-            ('event', self.__event_name),
-            ('coro', repr(self.__original_coro)),
+            ("state", self._state.lower()),
+            ("event", self.__event_name),
+            ("coro", repr(self.__original_coro)),
         ]
         if self._exception is not None:
-            info.append(('exception', repr(self._exception)))
-        return '<ClientEventTask {}>'.format(' '.join('%s=%s' % t for t in info))
+            info.append(("exception", repr(self._exception)))
+        return "<ClientEventTask {}>".format(" ".join("%s=%s" % t for t in info))
+
 
 class Client:
     r"""Represents a client connection that connects to Discord.
@@ -201,25 +207,37 @@ class Client:
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the client uses for HTTP requests and websocket operations.
     """
+
     def __init__(self, *, loop=None, **options):
         self.ws = None
         self.loop = asyncio.get_event_loop() if loop is None else loop
         self._listeners = {}
-        self.shard_id = options.get('shard_id')
-        self.shard_count = options.get('shard_count')
+        self.shard_id = options.get("shard_id")
+        self.shard_count = options.get("shard_count")
 
-        connector = options.pop('connector', None)
-        proxy = options.pop('proxy', None)
-        proxy_auth = options.pop('proxy_auth', None)
-        unsync_clock = options.pop('assume_unsync_clock', True)
-        self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
+        connector = options.pop("connector", None)
+        proxy = options.pop("proxy", None)
+        proxy_auth = options.pop("proxy_auth", None)
+        unsync_clock = options.pop("assume_unsync_clock", True)
+        self.http = HTTPClient(
+            connector,
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            unsync_clock=unsync_clock,
+            loop=self.loop,
+        )
 
-        self._handlers = {
-            'ready': self._handle_ready
-        }
+        self._handlers = {"ready": self._handle_ready}
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
-                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
+        self._connection = ConnectionState(
+            dispatch=self.dispatch,
+            chunker=self._chunker,
+            handlers=self._handlers,
+            syncer=self._syncer,
+            http=self.http,
+            loop=self.loop,
+            **options
+        )
 
         self._connection.shard_count = self.shard_count
         self._closed = False
@@ -241,14 +259,7 @@ class Client:
         except AttributeError:
             guild_id = [s.id for s in guild]
 
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
+        payload = {"op": 8, "d": {"guild_id": guild_id, "query": "", "limit": 0}}
 
         await self.ws.send_as_json(payload)
 
@@ -262,7 +273,7 @@ class Client:
         This could be referred to as the Discord WebSocket protocol latency.
         """
         ws = self.ws
-        return float('nan') if not ws else ws.latency
+        return float("nan") if not ws else ws.latency
 
     @property
     def user(self):
@@ -321,11 +332,13 @@ class Client:
     def _schedule_event(self, coro, event_name, *args, **kwargs):
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
         # Schedules the task
-        return _ClientEventTask(original_coro=coro, event_name=event_name, coro=wrapped, loop=self.loop)
+        return _ClientEventTask(
+            original_coro=coro, event_name=event_name, coro=wrapped, loop=self.loop
+        )
 
     def dispatch(self, event, *args, **kwargs):
-        log.debug('Dispatching event %s', event)
-        method = 'on_' + event
+        log.debug("Dispatching event %s", event)
+        method = "on_" + event
 
         listeners = self._listeners.get(event)
         if listeners:
@@ -372,7 +385,7 @@ class Client:
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
         """
-        print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
+        print("Ignoring exception in {}".format(event_method), file=sys.stderr)
         traceback.print_exc()
 
     async def request_offline_members(self, *guilds):
@@ -399,7 +412,7 @@ class Client:
             If any guild is unavailable or not large in the collection.
         """
         if any(not g.large or g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
+            raise InvalidArgument("An unavailable or non-large guild was passed.")
 
         await self._connection.request_offline_members(guilds)
 
@@ -438,7 +451,7 @@ class Client:
             passing status code.
         """
 
-        log.info('logging in using static token')
+        log.info("logging in using static token")
         await self.http.static_login(token.strip(), bot=bot)
         self._connection.is_bot = bot
 
@@ -462,10 +475,15 @@ class Client:
             try:
                 await self.ws.poll_event()
             except ResumeWebSocket:
-                log.info('Got a request to RESUME the websocket.')
-                self.dispatch('disconnect')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
-                                                    sequence=self.ws.sequence, resume=True)
+                log.info("Got a request to RESUME the websocket.")
+                self.dispatch("disconnect")
+                coro = DiscordWebSocket.from_client(
+                    self,
+                    shard_id=self.shard_id,
+                    session=self.ws.session_id,
+                    sequence=self.ws.sequence,
+                    resume=True,
+                )
                 self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     async def connect(self, *, reconnect=True):
@@ -497,16 +515,18 @@ class Client:
         while not self.is_closed():
             try:
                 await self._connect()
-            except (OSError,
-                    HTTPException,
-                    GatewayNotFound,
-                    ConnectionClosed,
-                    aiohttp.ClientError,
-                    asyncio.TimeoutError,
-                    websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as exc:
+            except (
+                OSError,
+                HTTPException,
+                GatewayNotFound,
+                ConnectionClosed,
+                aiohttp.ClientError,
+                asyncio.TimeoutError,
+                websockets.InvalidHandshake,
+                websockets.WebSocketProtocolError,
+            ) as exc:
 
-                self.dispatch('disconnect')
+                self.dispatch("disconnect")
                 if not reconnect:
                     await self.close()
                     if isinstance(exc, ConnectionClosed) and exc.code == 1000:
@@ -575,8 +595,8 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
-        bot = kwargs.pop('bot', True)
-        reconnect = kwargs.pop('reconnect', True)
+        bot = kwargs.pop("bot", True)
+        reconnect = kwargs.pop("reconnect", True)
 
         if kwargs:
             raise TypeError("unexpected keyword argument(s) %s" % list(kwargs.keys()))
@@ -630,10 +650,10 @@ class Client:
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            log.info('Received signal to terminate bot and event loop.')
+            log.info("Received signal to terminate bot and event loop.")
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            log.info('Cleaning up tasks.')
+            log.info("Cleaning up tasks.")
             _cleanup_loop(loop)
 
         if not future.cancelled():
@@ -659,7 +679,7 @@ class Client:
         elif isinstance(value, _ActivityTag):
             self._connection._activity = value.to_dict()
         else:
-            raise TypeError('activity must be one of Game, Streaming, or Activity.')
+            raise TypeError("activity must be one of Game, Streaming, or Activity.")
 
     # helpers/getters
 
@@ -854,8 +874,10 @@ class Client:
 
         future = self.loop.create_future()
         if check is None:
+
             def _check(*args):
                 return True
+
             check = _check
 
         ev = event.lower()
@@ -893,10 +915,10 @@ class Client:
         """
 
         if not asyncio.iscoroutinefunction(coro):
-            raise TypeError('event registered must be a coroutine function')
+            raise TypeError("event registered must be a coroutine function")
 
         setattr(self, coro.__name__, coro)
-        log.debug('%s has successfully been registered as an event', coro.__name__)
+        log.debug("%s has successfully been registered as an event", coro.__name__)
         return coro
 
     async def change_presence(self, *, activity=None, status=None, afk=False):
@@ -935,10 +957,10 @@ class Client:
         """
 
         if status is None:
-            status = 'online'
+            status = "online"
             status_enum = Status.online
         elif status is Status.offline:
-            status = 'invisible'
+            status = "invisible"
             status_enum = Status.offline
         else:
             status_enum = status
@@ -1200,8 +1222,8 @@ class Client:
             The bot's application information.
         """
         data = await self.http.application_info()
-        if 'rpc_origins' not in data:
-            data['rpc_origins'] = None
+        if "rpc_origins" not in data:
+            data["rpc_origins"] = None
         return AppInfo(self._connection, data)
 
     async def fetch_user(self, user_id):
@@ -1267,16 +1289,20 @@ class Client:
         data = await self.http.get_user_profile(user_id)
 
         def transform(d):
-            return state._get_guild(int(d['id']))
+            return state._get_guild(int(d["id"]))
 
-        since = data.get('premium_since')
-        mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
-        user = data['user']
-        return Profile(flags=user.get('flags', 0),
-                       premium_since=utils.parse_time(since),
-                       mutual_guilds=mutual_guilds,
-                       user=User(data=user, state=state),
-                       connected_accounts=data['connected_accounts'])
+        since = data.get("premium_since")
+        mutual_guilds = list(
+            filter(None, map(transform, data.get("mutual_guilds", [])))
+        )
+        user = data["user"]
+        return Profile(
+            flags=user.get("flags", 0),
+            premium_since=utils.parse_time(since),
+            mutual_guilds=mutual_guilds,
+            user=User(data=user, state=state),
+            connected_accounts=data["connected_accounts"],
+        )
 
     async def fetch_channel(self, channel_id):
         """|coro|
@@ -1307,14 +1333,16 @@ class Client:
         """
         data = await self.http.get_channel(channel_id)
 
-        factory, ch_type = _channel_factory(data['type'])
+        factory, ch_type = _channel_factory(data["type"])
         if factory is None:
-            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+            raise InvalidData(
+                "Unknown channel type {type} for channel ID {id}.".format_map(data)
+            )
 
         if ch_type in (ChannelType.group, ChannelType.private):
             channel = factory(me=self.user, data=data, state=self._connection)
         else:
-            guild_id = int(data['guild_id'])
+            guild_id = int(data["guild_id"])
             guild = self.get_guild(guild_id) or Object(id=guild_id)
             channel = factory(guild=guild, state=self._connection, data=data)
 

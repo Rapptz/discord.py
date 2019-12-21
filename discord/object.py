@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from . import utils
 from .mixins import Hashable
 
+
 class Object(Hashable):
     """Represents a generic Discord object.
 
@@ -65,7 +66,7 @@ class Object(Hashable):
         self.id = id
 
     def __repr__(self):
-        return '<Object id=%r>' % self.id
+        return "<Object id=%r>" % self.id
 
     @property
     def created_at(self):

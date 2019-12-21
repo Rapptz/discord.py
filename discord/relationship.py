@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .enums import RelationshipType, try_enum
 
+
 class Relationship:
     """Represents a relationship in Discord.
 
@@ -40,15 +41,15 @@ class Relationship:
         The type of relationship you have.
     """
 
-    __slots__ = ('type', 'user', '_state')
+    __slots__ = ("type", "user", "_state")
 
     def __init__(self, *, state, data):
         self._state = state
-        self.type = try_enum(RelationshipType, data['type'])
-        self.user = state.store_user(data['user'])
+        self.type = try_enum(RelationshipType, data["type"])
+        self.user = state.store_user(data["user"])
 
     def __repr__(self):
-        return '<Relationship user={0.user!r} type={0.type!r}>'.format(self)
+        return "<Relationship user={0.user!r} type={0.type!r}>".format(self)
 
     async def delete(self):
         """|coro|

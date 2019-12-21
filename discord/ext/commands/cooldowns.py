@@ -29,23 +29,21 @@ import time
 
 from ...abc import PrivateChannel
 
-__all__ = (
-    'BucketType',
-    'Cooldown',
-    'CooldownMapping',
-)
+__all__ = ("BucketType", "Cooldown", "CooldownMapping")
+
 
 class BucketType(Enum):
-    default  = 0
-    user     = 1
-    guild    = 2
-    channel  = 3
-    member   = 4
+    default = 0
+    user = 1
+    guild = 2
+    channel = 3
+    member = 4
     category = 5
-    role     = 6
+    role = 6
+
 
 class Cooldown:
-    __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
+    __slots__ = ("rate", "per", "type", "_window", "_tokens", "_last")
 
     def __init__(self, rate, per, type):
         self.rate = int(rate)
@@ -56,7 +54,7 @@ class Cooldown:
         self._last = 0.0
 
         if not isinstance(self.type, BucketType):
-            raise TypeError('Cooldown type must be a BucketType')
+            raise TypeError("Cooldown type must be a BucketType")
 
     def get_tokens(self, current=None):
         if not current:
@@ -98,7 +96,10 @@ class Cooldown:
         return Cooldown(self.rate, self.per, self.type)
 
     def __repr__(self):
-        return '<Cooldown rate: {0.rate} per: {0.per} window: {0._window} tokens: {0._tokens}>'.format(self)
+        return "<Cooldown rate: {0.rate} per: {0.per} window: {0._window} tokens: {0._tokens}>".format(
+            self
+        )
+
 
 class CooldownMapping:
     def __init__(self, original):
@@ -135,7 +136,11 @@ class CooldownMapping:
             # and that yields the same result as for a guild with only the @everyone role
             # NOTE: PrivateChannel doesn't actually have an id attribute but we assume we are
             # recieving a DMChannel or GroupChannel which inherit from PrivateChannel and do
-            return (msg.channel if isinstance(msg.channel, PrivateChannel) else msg.author.top_role).id
+            return (
+                msg.channel
+                if isinstance(msg.channel, PrivateChannel)
+                else msg.author.top_role
+            ).id
 
     def _verify_cache_integrity(self, current=None):
         # we want to delete all cache objects that haven't been used

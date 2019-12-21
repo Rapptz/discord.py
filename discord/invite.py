@@ -30,7 +30,8 @@ from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
 
-class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
+
+class PartialInviteChannel(namedtuple("PartialInviteChannel", "id name type")):
     """Represents a "partial" invite channel.
 
     This model will be given when the user is not part of the
@@ -72,12 +73,13 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
     @property
     def mention(self):
         """:class:`str`: The string that allows you to mention the channel."""
-        return '<#%s>' % self.id
+        return "<#%s>" % self.id
 
     @property
     def created_at(self):
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
+
 
 class PartialInviteGuild:
     """Represents a "partial" invite guild.
@@ -123,26 +125,39 @@ class PartialInviteGuild:
         The partial guild's description.
     """
 
-    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash',
-                 'verification_level', 'description')
+    __slots__ = (
+        "_state",
+        "features",
+        "icon",
+        "banner",
+        "id",
+        "name",
+        "splash",
+        "verification_level",
+        "description",
+    )
 
     def __init__(self, state, data, id):
         self._state = state
         self.id = id
-        self.name = data['name']
-        self.features = data.get('features', [])
-        self.icon = data.get('icon')
-        self.banner = data.get('banner')
-        self.splash = data.get('splash')
-        self.verification_level = try_enum(VerificationLevel, data.get('verification_level'))
-        self.description = data.get('description')
+        self.name = data["name"]
+        self.features = data.get("features", [])
+        self.icon = data.get("icon")
+        self.banner = data.get("banner")
+        self.splash = data.get("splash")
+        self.verification_level = try_enum(
+            VerificationLevel, data.get("verification_level")
+        )
+        self.description = data.get("description")
 
     def __str__(self):
         return self.name
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} features={0.features} ' \
-               'description={0.description!r}>'.format(self)
+        return (
+            "<{0.__class__.__name__} id={0.id} name={0.name!r} features={0.features} "
+            "description={0.description!r}>".format(self)
+        )
 
     @property
     def created_at(self):
@@ -154,27 +169,34 @@ class PartialInviteGuild:
         """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
-    def icon_url_as(self, *, format='webp', size=1024):
+    def icon_url_as(self, *, format="webp", size=1024):
         """The same operation as :meth:`Guild.icon_url_as`."""
-        return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
+        return Asset._from_guild_image(
+            self._state, self.id, self.icon, "icons", format=format, size=size
+        )
 
     @property
     def banner_url(self):
         """:class:`Asset`: Returns the guild's banner asset."""
         return self.banner_url_as()
 
-    def banner_url_as(self, *, format='webp', size=2048):
+    def banner_url_as(self, *, format="webp", size=2048):
         """The same operation as :meth:`Guild.banner_url_as`."""
-        return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
+        return Asset._from_guild_image(
+            self._state, self.id, self.banner, "banners", format=format, size=size
+        )
 
     @property
     def splash_url(self):
         """:class:`Asset`: Returns the guild's invite splash asset."""
         return self.splash_url_as()
 
-    def splash_url_as(self, *, format='webp', size=2048):
+    def splash_url_as(self, *, format="webp", size=2048):
         """The same operation as :meth:`Guild.splash_url_as`."""
-        return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+        return Asset._from_guild_image(
+            self._state, self.id, self.splash, "splashes", format=format, size=size
+        )
+
 
 class Invite(Hashable):
     r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
@@ -252,53 +274,71 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
-    __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                 'temporary', 'max_uses', 'inviter', 'channel', '_state',
-                 'approximate_member_count', 'approximate_presence_count' )
+    __slots__ = (
+        "max_age",
+        "code",
+        "guild",
+        "revoked",
+        "created_at",
+        "uses",
+        "temporary",
+        "max_uses",
+        "inviter",
+        "channel",
+        "_state",
+        "approximate_member_count",
+        "approximate_presence_count",
+    )
 
-    BASE = 'https://discord.gg'
+    BASE = "https://discord.gg"
 
     def __init__(self, *, state, data):
         self._state = state
-        self.max_age = data.get('max_age')
-        self.code = data.get('code')
-        self.guild = data.get('guild')
-        self.revoked = data.get('revoked')
-        self.created_at = parse_time(data.get('created_at'))
-        self.temporary = data.get('temporary')
-        self.uses = data.get('uses')
-        self.max_uses = data.get('max_uses')
-        self.approximate_presence_count = data.get('approximate_presence_count')
-        self.approximate_member_count = data.get('approximate_member_count')
+        self.max_age = data.get("max_age")
+        self.code = data.get("code")
+        self.guild = data.get("guild")
+        self.revoked = data.get("revoked")
+        self.created_at = parse_time(data.get("created_at"))
+        self.temporary = data.get("temporary")
+        self.uses = data.get("uses")
+        self.max_uses = data.get("max_uses")
+        self.approximate_presence_count = data.get("approximate_presence_count")
+        self.approximate_member_count = data.get("approximate_member_count")
 
-        inviter_data = data.get('inviter')
-        self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
-        self.channel = data.get('channel')
+        inviter_data = data.get("inviter")
+        self.inviter = (
+            None if inviter_data is None else self._state.store_user(inviter_data)
+        )
+        self.channel = data.get("channel")
 
     @classmethod
     def from_incomplete(cls, *, state, data):
-        guild_id = int(data['guild']['id'])
-        channel_id = int(data['channel']['id'])
+        guild_id = int(data["guild"]["id"])
+        channel_id = int(data["channel"]["id"])
         guild = state._get_guild(guild_id)
         if guild is not None:
             channel = guild.get_channel(channel_id)
         else:
-            channel_data = data['channel']
-            guild_data = data['guild']
-            channel_type = try_enum(ChannelType, channel_data['type'])
-            channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
+            channel_data = data["channel"]
+            guild_data = data["guild"]
+            channel_type = try_enum(ChannelType, channel_data["type"])
+            channel = PartialInviteChannel(
+                id=channel_id, name=channel_data["name"], type=channel_type
+            )
             guild = PartialInviteGuild(state, guild_data, guild_id)
-        data['guild'] = guild
-        data['channel'] = channel
+        data["guild"] = guild
+        data["channel"] = channel
         return cls(state=state, data=data)
 
     def __str__(self):
         return self.url
 
     def __repr__(self):
-        return '<Invite code={0.code!r} guild={0.guild!r} ' \
-                'online={0.approximate_presence_count} ' \
-                'members={0.approximate_member_count}>'.format(self)
+        return (
+            "<Invite code={0.code!r} guild={0.guild!r} "
+            "online={0.approximate_presence_count} "
+            "members={0.approximate_member_count}>".format(self)
+        )
 
     def __hash__(self):
         return hash(self.code)
@@ -311,7 +351,7 @@ class Invite(Hashable):
     @property
     def url(self):
         """:class:`str`: A property that retrieves the invite URL."""
-        return self.BASE + '/' + self.code
+        return self.BASE + "/" + self.code
 
     async def delete(self, *, reason=None):
         """|coro|

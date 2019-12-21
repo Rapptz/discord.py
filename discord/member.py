@@ -37,6 +37,7 @@ from .enums import Status, try_enum
 from .colour import Colour
 from .object import Object
 
+
 class VoiceState:
     """Represents a Discord user's voice state.
 
@@ -64,30 +65,44 @@ class VoiceState:
         is not currently in a voice channel.
     """
 
-    __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel')
+    __slots__ = (
+        "session_id",
+        "deaf",
+        "mute",
+        "self_mute",
+        "self_stream",
+        "self_video",
+        "self_deaf",
+        "afk",
+        "channel",
+    )
 
     def __init__(self, *, data, channel=None):
-        self.session_id = data.get('session_id')
+        self.session_id = data.get("session_id")
         self._update(data, channel)
 
     def _update(self, data, channel):
-        self.self_mute = data.get('self_mute', False)
-        self.self_deaf = data.get('self_deaf', False)
-        self.self_stream = data.get('self_stream', False)
-        self.self_video = data.get('self_video', False)
-        self.afk = data.get('suppress', False)
-        self.mute = data.get('mute', False)
-        self.deaf = data.get('deaf', False)
+        self.self_mute = data.get("self_mute", False)
+        self.self_deaf = data.get("self_deaf", False)
+        self.self_stream = data.get("self_stream", False)
+        self.self_video = data.get("self_video", False)
+        self.afk = data.get("suppress", False)
+        self.mute = data.get("mute", False)
+        self.deaf = data.get("deaf", False)
         self.channel = channel
 
     def __repr__(self):
-        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} channel={0.channel!r}>'.format(self)
+        return "<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} channel={0.channel!r}>".format(
+            self
+        )
+
 
 def flatten_user(cls):
-    for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
+    for attr, value in itertools.chain(
+        BaseUser.__dict__.items(), User.__dict__.items()
+    ):
         # ignore private/special methods
-        if attr.startswith('_'):
+        if attr.startswith("_"):
             continue
 
         # don't override what we already have
@@ -96,9 +111,11 @@ def flatten_user(cls):
 
         # if it's a slotted attribute or a property, redirect it
         # slotted members are implemented as member_descriptors in Type.__dict__
-        if not hasattr(value, '__annotations__'):
-            getter = attrgetter('_user.' + attr)
-            setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
+        if not hasattr(value, "__annotations__"):
+            getter = attrgetter("_user." + attr)
+            setattr(
+                cls, attr, property(getter, doc="Equivalent to :attr:`User.%s`" % attr)
+            )
         else:
             # Technically, this can also use attrgetter
             # However I'm not sure how I feel about "functions" returning properties
@@ -117,7 +134,9 @@ def flatten_user(cls):
 
     return cls
 
+
 _BaseUser = discord.abc.User
+
 
 @flatten_user
 class Member(discord.abc.Messageable, _BaseUser):
@@ -161,27 +180,37 @@ class Member(discord.abc.Messageable, _BaseUser):
         Nitro boost on the guild, if available. This could be ``None``.
     """
 
-    __slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status', 'activities', 'guild', 'nick', '_user', '_state')
+    __slots__ = (
+        "_roles",
+        "joined_at",
+        "premium_since",
+        "_client_status",
+        "activities",
+        "guild",
+        "nick",
+        "_user",
+        "_state",
+    )
 
     def __init__(self, *, data, guild, state):
         self._state = state
-        self._user = state.store_user(data['user'])
+        self._user = state.store_user(data["user"])
         self.guild = guild
-        self.joined_at = utils.parse_time(data.get('joined_at'))
-        self.premium_since = utils.parse_time(data.get('premium_since'))
+        self.joined_at = utils.parse_time(data.get("joined_at"))
+        self.premium_since = utils.parse_time(data.get("premium_since"))
         self._update_roles(data)
-        self._client_status = {
-            None: 'offline'
-        }
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
-        self.nick = data.get('nick', None)
+        self._client_status = {None: "offline"}
+        self.activities = tuple(map(create_activity, data.get("activities", [])))
+        self.nick = data.get("nick", None)
 
     def __str__(self):
         return str(self._user)
 
     def __repr__(self):
-        return '<Member id={1.id} name={1.name!r} discriminator={1.discriminator!r}' \
-               ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
+        return (
+            "<Member id={1.id} name={1.name!r} discriminator={1.discriminator!r}"
+            " bot={1.bot} nick={0.nick!r} guild={0.guild!r}>".format(self, self._user)
+        )
 
     def __eq__(self, other):
         return isinstance(other, _BaseUser) and other.id == self.id
@@ -195,18 +224,18 @@ class Member(discord.abc.Messageable, _BaseUser):
     @classmethod
     def _from_message(cls, *, message, data):
         author = message.author
-        data['user'] = author._to_minimal_user_json()
+        data["user"] = author._to_minimal_user_json()
         return cls(data=data, guild=message.guild, state=message._state)
 
     @classmethod
-    def _try_upgrade(cls, *,  data, guild, state):
+    def _try_upgrade(cls, *, data, guild, state):
         # A User object with a 'member' key
         try:
-            member_data = data.pop('member')
+            member_data = data.pop("member")
         except KeyError:
             return state.store_user(data)
         else:
-            member_data['user'] = data
+            member_data["user"] = data
             return cls(data=member_data, guild=guild, state=state)
 
     @classmethod
@@ -214,15 +243,14 @@ class Member(discord.abc.Messageable, _BaseUser):
         clone = cls(data=data, guild=guild, state=state)
         to_return = cls(data=data, guild=guild, state=state)
         to_return._client_status = {
-            key: value
-            for key, value in data.get('client_status', {}).items()
+            key: value for key, value in data.get("client_status", {}).items()
         }
-        to_return._client_status[None] = data['status']
+        to_return._client_status[None] = data["status"]
         return to_return, clone
 
     @classmethod
     def _copy(cls, member):
-        self = cls.__new__(cls) # to bypass __init__
+        self = cls.__new__(cls)  # to bypass __init__
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
@@ -243,32 +271,31 @@ class Member(discord.abc.Messageable, _BaseUser):
         return ch
 
     def _update_roles(self, data):
-        self._roles = utils.SnowflakeList(map(int, data['roles']))
+        self._roles = utils.SnowflakeList(map(int, data["roles"]))
 
     def _update(self, data):
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
         try:
-            self.nick = data['nick']
+            self.nick = data["nick"]
         except KeyError:
             pass
 
-        self.premium_since = utils.parse_time(data.get('premium_since'))
+        self.premium_since = utils.parse_time(data.get("premium_since"))
         self._update_roles(data)
 
     def _presence_update(self, data, user):
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = tuple(map(create_activity, data.get("activities", [])))
         self._client_status = {
-            key: value
-            for key, value in data.get('client_status', {}).items()
+            key: value for key, value in data.get("client_status", {}).items()
         }
-        self._client_status[None] = data['status']
+        self._client_status[None] = data["status"]
 
         if len(user) > 1:
             u = self._user
             original = (u.name, u.avatar, u.discriminator)
             # These keys seem to always be available
-            modified = (user['username'], user['avatar'], user['discriminator'])
+            modified = (user["username"], user["avatar"], user["discriminator"])
             if original != modified:
                 to_return = User._copy(self._user)
                 u.name, u.avatar, u.discriminator = modified
@@ -289,21 +316,21 @@ class Member(discord.abc.Messageable, _BaseUser):
     @property
     def mobile_status(self):
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.get('mobile', 'offline'))
+        return try_enum(Status, self._client_status.get("mobile", "offline"))
 
     @property
     def desktop_status(self):
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.get('desktop', 'offline'))
+        return try_enum(Status, self._client_status.get("desktop", "offline"))
 
     @property
     def web_status(self):
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.get('web', 'offline'))
+        return try_enum(Status, self._client_status.get("web", "offline"))
 
     def is_on_mobile(self):
         """A helper function that determines if a member is active on a mobile device."""
-        return 'mobile' in self._client_status
+        return "mobile" in self._client_status
 
     @property
     def colour(self):
@@ -314,7 +341,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         There is an alias for this named :meth:`color`.
         """
 
-        roles = self.roles[1:] # remove @everyone
+        roles = self.roles[1:]  # remove @everyone
 
         # highest order of the colour is the one that gets rendered.
         # if the highest is the default colour then the next one with a colour
@@ -356,8 +383,8 @@ class Member(discord.abc.Messageable, _BaseUser):
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention the member."""
         if self.nick:
-            return '<@!%s>' % self.id
-        return '<@%s>' % self.id
+            return "<@!%s>" % self.id
+        return "<@%s>" % self.id
 
     @property
     def display_name(self):
@@ -530,38 +557,38 @@ class Member(discord.abc.Messageable, _BaseUser):
         payload = {}
 
         try:
-            nick = fields['nick']
+            nick = fields["nick"]
         except KeyError:
             # nick not present so...
             pass
         else:
-            nick = nick if nick else ''
+            nick = nick if nick else ""
             if self._state.self_id == self.id:
                 await http.change_my_nickname(guild_id, nick, reason=reason)
             else:
-                payload['nick'] = nick
+                payload["nick"] = nick
 
-        deafen = fields.get('deafen')
+        deafen = fields.get("deafen")
         if deafen is not None:
-            payload['deaf'] = deafen
+            payload["deaf"] = deafen
 
-        mute = fields.get('mute')
+        mute = fields.get("mute")
         if mute is not None:
-            payload['mute'] = mute
+            payload["mute"] = mute
 
         try:
-            vc = fields['voice_channel']
+            vc = fields["voice_channel"]
         except KeyError:
             pass
         else:
-            payload['channel_id'] = vc and vc.id
+            payload["channel_id"] = vc and vc.id
 
         try:
-            roles = fields['roles']
+            roles = fields["roles"]
         except KeyError:
             pass
         else:
-            payload['roles'] = tuple(r.id for r in roles)
+            payload["roles"] = tuple(r.id for r in roles)
 
         await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
@@ -619,7 +646,9 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
 
         if not atomic:
-            new_roles = utils._unique(Object(id=r.id) for s in (self.roles[1:], roles) for r in s)
+            new_roles = utils._unique(
+                Object(id=r.id) for s in (self.roles[1:], roles) for r in s
+            )
             await self.edit(roles=new_roles, reason=reason)
         else:
             req = self._state.http.add_role
@@ -657,7 +686,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
 
         if not atomic:
-            new_roles = [Object(id=r.id) for r in self.roles[1:]] # remove @everyone
+            new_roles = [Object(id=r.id) for r in self.roles[1:]]  # remove @everyone
             for role in roles:
                 try:
                     new_roles.remove(Object(id=role.id))

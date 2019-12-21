@@ -11,11 +11,11 @@ A basic wrapper for the Discord API.
 
 """
 
-__title__ = 'discord'
-__author__ = 'Rapptz'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2015-2019 Rapptz'
-__version__ = '1.3.0a'
+__title__ = "discord"
+__author__ = "Rapptz"
+__license__ = "MIT"
+__copyright__ = "Copyright 2015-2019 Rapptz"
+__version__ = "1.3.0a"
 
 from collections import namedtuple
 import logging
@@ -54,15 +54,17 @@ from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 from .raw_models import *
 from .team import *
 
-VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
+VersionInfo = namedtuple("VersionInfo", "major minor micro releaselevel serial")
 
-version_info = VersionInfo(major=1, minor=3, micro=0, releaselevel='alpha', serial=0)
+version_info = VersionInfo(major=1, minor=3, micro=0, releaselevel="alpha", serial=0)
 
 try:
     from logging import NullHandler
 except ImportError:
+
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
+
 
 logging.getLogger(__name__).addHandler(NullHandler())

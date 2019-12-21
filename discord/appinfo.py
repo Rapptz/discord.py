@@ -74,43 +74,60 @@ class AppInfo:
         If this application is a game sold on Discord,
         this field will be the hash of the image on store embeds
     """
-    __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
-                 'bot_public', 'bot_require_code_grant', 'owner', 'icon',
-                 'summary', 'verify_key', 'team', 'guild_id', 'primary_sku_id',
-                  'slug', 'cover_image')
+
+    __slots__ = (
+        "_state",
+        "description",
+        "id",
+        "name",
+        "rpc_origins",
+        "bot_public",
+        "bot_require_code_grant",
+        "owner",
+        "icon",
+        "summary",
+        "verify_key",
+        "team",
+        "guild_id",
+        "primary_sku_id",
+        "slug",
+        "cover_image",
+    )
 
     def __init__(self, state, data):
         self._state = state
 
-        self.id = int(data['id'])
-        self.name = data['name']
-        self.description = data['description']
-        self.icon = data['icon']
-        self.rpc_origins = data['rpc_origins']
-        self.bot_public = data['bot_public']
-        self.bot_require_code_grant = data['bot_require_code_grant']
-        self.owner = User(state=self._state, data=data['owner'])
+        self.id = int(data["id"])
+        self.name = data["name"]
+        self.description = data["description"]
+        self.icon = data["icon"]
+        self.rpc_origins = data["rpc_origins"]
+        self.bot_public = data["bot_public"]
+        self.bot_require_code_grant = data["bot_require_code_grant"]
+        self.owner = User(state=self._state, data=data["owner"])
 
-        team = data.get('team')
+        team = data.get("team")
         self.team = Team(state, team) if team else None
 
-        self.summary = data['summary']
-        self.verify_key = data['verify_key']
+        self.summary = data["summary"]
+        self.verify_key = data["verify_key"]
 
-        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self.guild_id = utils._get_as_snowflake(data, "guild_id")
 
-        self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
-        self.slug = data.get('slug')
-        self.cover_image = data.get('cover_image')
+        self.primary_sku_id = utils._get_as_snowflake(data, "primary_sku_id")
+        self.slug = data.get("slug")
+        self.cover_image = data.get("cover_image")
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
-               'owner={0.owner!r}>'.format(self)
+        return (
+            "<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} "
+            "owner={0.owner!r}>".format(self)
+        )
 
     @property
     def icon_url(self):
         """:class:`.Asset`: Retrieves the application's icon asset."""
-        return Asset._from_icon(self._state, self, 'app')
+        return Asset._from_icon(self._state, self, "app")
 
     @property
     def cover_image_url(self):

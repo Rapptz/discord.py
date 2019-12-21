@@ -30,6 +30,7 @@ from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time
 
+
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.
 
@@ -87,27 +88,37 @@ class Role(Hashable):
         Indicates if the role can be mentioned by users.
     """
 
-    __slots__ = ('id', 'name', '_permissions', '_colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', '_state')
+    __slots__ = (
+        "id",
+        "name",
+        "_permissions",
+        "_colour",
+        "position",
+        "managed",
+        "mentionable",
+        "hoist",
+        "guild",
+        "_state",
+    )
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
         self._state = state
-        self.id = int(data['id'])
+        self.id = int(data["id"])
         self._update(data)
 
     def __str__(self):
         return self.name
 
     def __repr__(self):
-        return '<Role id={0.id} name={0.name!r}>'.format(self)
+        return "<Role id={0.id} name={0.name!r}>".format(self)
 
     def __lt__(self, other):
         if not isinstance(other, Role) or not isinstance(self, Role):
             return NotImplemented
 
         if self.guild != other.guild:
-            raise RuntimeError('cannot compare roles from two different guilds.')
+            raise RuntimeError("cannot compare roles from two different guilds.")
 
         # the @everyone role is always the lowest role in hierarchy
         guild_id = self.guild.id
@@ -139,13 +150,13 @@ class Role(Hashable):
         return not r
 
     def _update(self, data):
-        self.name = data['name']
-        self._permissions = data.get('permissions', 0)
-        self.position = data.get('position', 0)
-        self._colour = data.get('color', 0)
-        self.hoist = data.get('hoist', False)
-        self.managed = data.get('managed', False)
-        self.mentionable = data.get('mentionable', False)
+        self.name = data["name"]
+        self._permissions = data.get("permissions", 0)
+        self.position = data.get("position", 0)
+        self._colour = data.get("color", 0)
+        self.hoist = data.get("hoist", False)
+        self.managed = data.get("managed", False)
+        self.mentionable = data.get("mentionable", False)
 
     def is_default(self):
         """Checks if the role is the default role."""
@@ -171,7 +182,7 @@ class Role(Hashable):
     @property
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention a role."""
-        return '<@&%s>' % self.id
+        return "<@&%s>" % self.id
 
     @property
     def members(self):
@@ -195,8 +206,14 @@ class Role(Hashable):
 
         http = self._state.http
 
-        change_range = range(min(self.position, position), max(self.position, position) + 1)
-        roles = [r.id for r in self.guild.roles[1:] if r.position in change_range and r.id != self.id]
+        change_range = range(
+            min(self.position, position), max(self.position, position) + 1
+        )
+        roles = [
+            r.id
+            for r in self.guild.roles[1:]
+            if r.position in change_range and r.id != self.id
+        ]
 
         if self.position > position:
             roles.insert(0, self.id)
@@ -245,25 +262,27 @@ class Role(Hashable):
             role was asked to be moved.
         """
 
-        position = fields.get('position')
+        position = fields.get("position")
         if position is not None:
             await self._move(position, reason=reason)
             self.position = position
 
         try:
-            colour = fields['colour']
+            colour = fields["colour"]
         except KeyError:
-            colour = fields.get('color', self.colour)
+            colour = fields.get("color", self.colour)
 
         payload = {
-            'name': fields.get('name', self.name),
-            'permissions': fields.get('permissions', self.permissions).value,
-            'color': colour.value,
-            'hoist': fields.get('hoist', self.hoist),
-            'mentionable': fields.get('mentionable', self.mentionable)
+            "name": fields.get("name", self.name),
+            "permissions": fields.get("permissions", self.permissions).value,
+            "color": colour.value,
+            "hoist": fields.get("hoist", self.hoist),
+            "mentionable": fields.get("mentionable", self.mentionable),
         }
 
-        data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
+        data = await self._state.http.edit_role(
+            self.guild.id, self.id, reason=reason, **payload
+        )
         self._update(data)
 
     async def delete(self, *, reason=None):

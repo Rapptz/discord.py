@@ -39,6 +39,7 @@ from .enums import Status
 
 log = logging.getLogger(__name__)
 
+
 class Shard:
     def __init__(self, ws, client):
         self.ws = ws
@@ -46,7 +47,7 @@ class Shard:
         self._dispatch = client.dispatch
         self.loop = self._client.loop
         self._current = self.loop.create_future()
-        self._current.set_result(None) # we just need an already done future
+        self._current.set_result(None)  # we just need an already done future
         self._pending = asyncio.Event()
         self._pending_task = None
 
@@ -68,7 +69,9 @@ class Shard:
             pass
 
     def launch_pending_reads(self):
-        self._pending_task = asyncio.ensure_future(self._pending_reads(), loop=self.loop)
+        self._pending_task = asyncio.ensure_future(
+            self._pending_reads(), loop=self.loop
+        )
 
     def wait(self):
         return self._pending_task
@@ -77,10 +80,15 @@ class Shard:
         try:
             await self.ws.poll_event()
         except ResumeWebSocket:
-            log.info('Got a request to RESUME the websocket at Shard ID %s.', self.id)
-            coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
-                                                session=self.ws.session_id, sequence=self.ws.sequence)
-            self._dispatch('disconnect')
+            log.info("Got a request to RESUME the websocket at Shard ID %s.", self.id)
+            coro = DiscordWebSocket.from_client(
+                self._client,
+                resume=True,
+                shard_id=self.id,
+                session=self.ws.session_id,
+                sequence=self.ws.sequence,
+            )
+            self._dispatch("disconnect")
             self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     def get_future(self):
@@ -88,6 +96,7 @@ class Shard:
             self._current = asyncio.ensure_future(self.poll(), loop=self.loop)
 
         return self._current
+
 
 class AutoShardedClient(Client):
     """A client similar to :class:`Client` except it handles the complications
@@ -115,20 +124,29 @@ class AutoShardedClient(Client):
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
+
     def __init__(self, *args, loop=None, **kwargs):
-        kwargs.pop('shard_id', None)
-        self.shard_ids = kwargs.pop('shard_ids', None)
+        kwargs.pop("shard_id", None)
+        self.shard_ids = kwargs.pop("shard_ids", None)
         super().__init__(*args, loop=loop, **kwargs)
 
         if self.shard_ids is not None:
             if self.shard_count is None:
-                raise ClientException('When passing manual shard_ids, you must provide a shard_count.')
+                raise ClientException(
+                    "When passing manual shard_ids, you must provide a shard_count."
+                )
             elif not isinstance(self.shard_ids, (list, tuple)):
-                raise ClientException('shard_ids parameter must be a list or a tuple.')
+                raise ClientException("shard_ids parameter must be a list or a tuple.")
 
-        self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
-                                                      handlers=self._handlers, syncer=self._syncer,
-                                                      http=self.http, loop=self.loop, **kwargs)
+        self._connection = AutoShardedConnectionState(
+            dispatch=self.dispatch,
+            chunker=self._chunker,
+            handlers=self._handlers,
+            syncer=self._syncer,
+            http=self.http,
+            loop=self.loop,
+            **kwargs
+        )
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
@@ -147,14 +165,7 @@ class AutoShardedClient(Client):
         except AttributeError:
             guild_id = [s.id for s in guild]
 
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
+        payload = {"op": 8, "d": {"guild_id": guild_id, "query": "", "limit": 0}}
 
         ws = self.shards[shard_id].ws
         await ws.send_as_json(payload)
@@ -168,7 +179,7 @@ class AutoShardedClient(Client):
         :attr:`latencies` property. Returns ``nan`` if there are no shards ready.
         """
         if not self.shards:
-            return float('nan')
+            return float("nan")
         return sum(latency for _, latency in self.latencies) / len(self.shards)
 
     @property
@@ -203,19 +214,25 @@ class AutoShardedClient(Client):
             If any guild is unavailable or not large in the collection.
         """
         if any(not g.large or g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
+            raise InvalidArgument("An unavailable or non-large guild was passed.")
 
         _guilds = sorted(guilds, key=lambda g: g.shard_id)
-        for shard_id, sub_guilds in itertools.groupby(_guilds, key=lambda g: g.shard_id):
+        for shard_id, sub_guilds in itertools.groupby(
+            _guilds, key=lambda g: g.shard_id
+        ):
             sub_guilds = list(sub_guilds)
-            await self._connection.request_offline_members(sub_guilds, shard_id=shard_id)
+            await self._connection.request_offline_members(
+                sub_guilds, shard_id=shard_id
+            )
 
     async def launch_shard(self, gateway, shard_id):
         try:
-            coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
+            coro = websockets.connect(
+                gateway, loop=self.loop, klass=DiscordWebSocket, compression=None
+            )
             ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
-            log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
+            log.info("Failed to connect for shard_id: %s. Retrying...", shard_id)
             await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 
@@ -233,7 +250,9 @@ class AutoShardedClient(Client):
             await asyncio.wait_for(ws.poll_event(), timeout=180.0)
             await asyncio.wait_for(ws.identify(), timeout=180.0)
         except asyncio.TimeoutError:
-            log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
+            log.info(
+                "Timed out when connecting for shard_id: %s. Retrying...", shard_id
+            )
             await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 
@@ -289,13 +308,18 @@ class AutoShardedClient(Client):
             except Exception:
                 pass
 
-        to_close = [asyncio.ensure_future(shard.ws.close(), loop=self.loop) for shard in self.shards.values()]
+        to_close = [
+            asyncio.ensure_future(shard.ws.close(), loop=self.loop)
+            for shard in self.shards.values()
+        ]
         if to_close:
             await asyncio.wait(to_close)
 
         await self.http.close()
 
-    async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
+    async def change_presence(
+        self, *, activity=None, status=None, afk=False, shard_id=None
+    ):
         """|coro|
 
         Changes the client's presence.
@@ -332,10 +356,10 @@ class AutoShardedClient(Client):
         """
 
         if status is None:
-            status = 'online'
+            status = "online"
             status_enum = Status.online
         elif status is Status.offline:
-            status = 'invisible'
+            status = "invisible"
             status_enum = Status.offline
         else:
             status_enum = status
@@ -343,7 +367,9 @@ class AutoShardedClient(Client):
 
         if shard_id is None:
             for shard in self.shards.values():
-                await shard.ws.change_presence(activity=activity, status=status, afk=afk)
+                await shard.ws.change_presence(
+                    activity=activity, status=status, afk=afk
+                )
 
             guilds = self._connection.guilds
         else:

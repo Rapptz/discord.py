@@ -24,10 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-__all__ = (
-    'SystemChannelFlags',
-    'MessageFlags',
-)
+__all__ = ("SystemChannelFlags", "MessageFlags")
+
 
 class flag_value:
     def __init__(self, func):
@@ -39,6 +37,7 @@ class flag_value:
 
     def __set__(self, instance, value):
         instance._set_flag(self.flag, value)
+
 
 def fill_with_flags(*, inverted=False):
     def decorator(cls):
@@ -55,17 +54,19 @@ def fill_with_flags(*, inverted=False):
             cls.DEFAULT_VALUE = 0
 
         return cls
+
     return decorator
+
 
 # n.b. flags must inherit from this and use the decorator above
 class BaseFlags:
-    __slots__ = ('value',)
+    __slots__ = ("value",)
 
     def __init__(self, **kwargs):
         self.value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError("%r is not a valid flag name." % key)
             setattr(self, key, value)
 
     @classmethod
@@ -84,7 +85,7 @@ class BaseFlags:
         return hash(self.value)
 
     def __repr__(self):
-        return '<%s value=%s>' % (self.__class__.__name__, self.value)
+        return "<%s value=%s>" % (self.__class__.__name__, self.value)
 
     def __iter__(self):
         for name, value in self.__class__.__dict__.items():
@@ -100,7 +101,10 @@ class BaseFlags:
         elif toggle is False:
             self.value &= ~o
         else:
-            raise TypeError('Value to set for %s must be a bool.' % self.__class__.__name__)
+            raise TypeError(
+                "Value to set for %s must be a bool." % self.__class__.__name__
+            )
+
 
 @fill_with_flags(inverted=True)
 class SystemChannelFlags(BaseFlags):
@@ -152,7 +156,7 @@ class SystemChannelFlags(BaseFlags):
         elif toggle is False:
             self.value |= o
         else:
-            raise TypeError('Value to set for SystemChannelFlags must be a bool.')
+            raise TypeError("Value to set for SystemChannelFlags must be a bool.")
 
     @flag_value
     def join_notifications(self):

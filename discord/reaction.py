@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .iterators import ReactionIterator
 
+
 class Reaction:
     """Represents a reaction to a message.
 
@@ -63,13 +64,14 @@ class Reaction:
     message: :class:`Message`
         Message this reaction is for.
     """
-    __slots__ = ('message', 'count', 'emoji', 'me')
+
+    __slots__ = ("message", "count", "emoji", "me")
 
     def __init__(self, *, message, data, emoji=None):
         self.message = message
-        self.emoji = emoji or message._state.get_reaction_emoji(data['emoji'])
-        self.count = data.get('count', 1)
-        self.me = data.get('me')
+        self.emoji = emoji or message._state.get_reaction_emoji(data["emoji"])
+        self.count = data.get("count", 1)
+        self.me = data.get("me")
 
     @property
     def custom_emoji(self):
@@ -91,7 +93,7 @@ class Reaction:
         return str(self.emoji)
 
     def __repr__(self):
-        return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
+        return "<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>".format(self)
 
     async def remove(self, user):
         """|coro|
@@ -167,7 +169,7 @@ class Reaction:
         """
 
         if self.custom_emoji:
-            emoji = '{0.name}:{0.id}'.format(self.emoji)
+            emoji = "{0.name}:{0.id}".format(self.emoji)
         else:
             emoji = self.emoji
 

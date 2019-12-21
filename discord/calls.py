@@ -30,6 +30,7 @@ from . import utils
 from .enums import VoiceRegion, try_enum
 from .member import VoiceState
 
+
 class CallMessage:
     """Represents a group call message from Discord.
 
@@ -48,8 +49,8 @@ class CallMessage:
 
     def __init__(self, message, **kwargs):
         self.message = message
-        self.ended_timestamp = utils.parse_time(kwargs.get('ended_timestamp'))
-        self.participants = kwargs.get('participants')
+        self.ended_timestamp = utils.parse_time(kwargs.get("ended_timestamp"))
+        self.participants = kwargs.get("participants")
 
     @property
     def call_ended(self):
@@ -78,6 +79,7 @@ class CallMessage:
         else:
             return self.ended_timestamp - self.message.created_at
 
+
 class GroupCall:
     """Represents the actual group call from Discord.
 
@@ -96,26 +98,26 @@ class GroupCall:
     """
 
     def __init__(self, **kwargs):
-        self.call = kwargs.get('call')
-        self.unavailable = kwargs.get('unavailable')
+        self.call = kwargs.get("call")
+        self.unavailable = kwargs.get("unavailable")
         self._voice_states = {}
 
-        for state in kwargs.get('voice_states', []):
+        for state in kwargs.get("voice_states", []):
             self._update_voice_state(state)
 
         self._update(**kwargs)
 
     def _update(self, **kwargs):
-        self.region = try_enum(VoiceRegion, kwargs.get('region'))
+        self.region = try_enum(VoiceRegion, kwargs.get("region"))
         lookup = {u.id: u for u in self.call.channel.recipients}
         me = self.call.channel.me
         lookup[me.id] = me
-        self.ringing = list(filter(None, map(lookup.get, kwargs.get('ringing', []))))
+        self.ringing = list(filter(None, map(lookup.get, kwargs.get("ringing", []))))
 
     def _update_voice_state(self, data):
-        user_id = int(data['user_id'])
+        user_id = int(data["user_id"])
         # left the voice channel?
-        if data['channel_id'] is None:
+        if data["channel_id"] is None:
             self._voice_states.pop(user_id, None)
         else:
             self._voice_states[user_id] = VoiceState(data=data, channel=self.channel)
@@ -123,7 +125,9 @@ class GroupCall:
     @property
     def connected(self):
         """List[:class:`User`]: A property that returns all users that are currently in this call."""
-        ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
+        ret = [
+            u for u in self.channel.recipients if self.voice_state_for(u) is not None
+        ]
         me = self.channel.me
         if self.voice_state_for(me) is not None:
             ret.append(me)

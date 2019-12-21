@@ -29,6 +29,7 @@ from . import utils
 from .partial_emoji import _EmojiTag
 from .user import User
 
+
 class Emoji(_EmojiTag):
     """Represents a custom emoji.
 
@@ -78,8 +79,19 @@ class Emoji(_EmojiTag):
         The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and
         having the :attr:`~Permissions.manage_emojis` permission.
     """
-    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
-                 '_state', 'user', 'available')
+
+    __slots__ = (
+        "require_colons",
+        "animated",
+        "managed",
+        "id",
+        "name",
+        "_roles",
+        "guild_id",
+        "_state",
+        "user",
+        "available",
+    )
 
     def __init__(self, *, guild, state, data):
         self.guild_id = guild.id
@@ -87,19 +99,19 @@ class Emoji(_EmojiTag):
         self._from_data(data)
 
     def _from_data(self, emoji):
-        self.require_colons = emoji['require_colons']
-        self.managed = emoji['managed']
-        self.id = int(emoji['id'])
-        self.name = emoji['name']
-        self.animated = emoji.get('animated', False)
-        self.available = emoji.get('available', True)
-        self._roles = utils.SnowflakeList(map(int, emoji.get('roles', [])))
-        user = emoji.get('user')
+        self.require_colons = emoji["require_colons"]
+        self.managed = emoji["managed"]
+        self.id = int(emoji["id"])
+        self.name = emoji["name"]
+        self.animated = emoji.get("animated", False)
+        self.available = emoji.get("available", True)
+        self._roles = utils.SnowflakeList(map(int, emoji.get("roles", [])))
+        user = emoji.get("user")
         self.user = User(state=self._state, data=user) if user else None
 
     def _iterator(self):
         for attr in self.__slots__:
-            if attr[0] != '_':
+            if attr[0] != "_":
                 value = getattr(self, attr, None)
                 if value is not None:
                     yield (attr, value)
@@ -109,11 +121,13 @@ class Emoji(_EmojiTag):
 
     def __str__(self):
         if self.animated:
-            return '<a:{0.name}:{0.id}>'.format(self)
+            return "<a:{0.name}:{0.id}>".format(self)
         return "<:{0.name}:{0.id}>".format(self)
 
     def __repr__(self):
-        return '<Emoji id={0.id} name={0.name!r} animated={0.animated} managed={0.managed}>'.format(self)
+        return "<Emoji id={0.id} name={0.name!r} animated={0.animated} managed={0.managed}>".format(
+            self
+        )
 
     def __eq__(self, other):
         return isinstance(other, _EmojiTag) and self.id == other.id
@@ -132,7 +146,7 @@ class Emoji(_EmojiTag):
     @property
     def url(self):
         """:class:`Asset`: Returns the asset of the emoji."""
-        _format = 'gif' if self.animated else 'png'
+        _format = "gif" if self.animated else "png"
         url = "/emojis/{0.id}.{1}".format(self, _format)
         return Asset(self._state, url)
 
@@ -183,7 +197,9 @@ class Emoji(_EmojiTag):
             An error occurred deleting the emoji.
         """
 
-        await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
+        await self._state.http.delete_custom_emoji(
+            self.guild.id, self.id, reason=reason
+        )
 
     async def edit(self, *, name=None, roles=None, reason=None):
         r"""|coro|
@@ -213,4 +229,6 @@ class Emoji(_EmojiTag):
         name = name or self.name
         if roles:
             roles = [role.id for role in roles]
-        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)
+        await self._state.http.edit_custom_emoji(
+            self.guild.id, self.id, name=name, roles=roles, reason=reason
+        )
