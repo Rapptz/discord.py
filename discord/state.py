@@ -51,6 +51,7 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
+from .flags import Intents
 from .embeds import Embed
 from .object import Object
 from .invite import Invite
@@ -109,8 +110,15 @@ class ConnectionState:
             else:
                 status = str(status)
 
+        intents = options.get('intents', None)
+        if intents is not None:
+            if not isinstance(intents, Intents):
+                raise TypeError('intents parameter must be Intent not %r' % type(intents))
+            intents = intents.value
+
         self._activity = activity
         self._status = status
+        self._intents = intents
 
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
