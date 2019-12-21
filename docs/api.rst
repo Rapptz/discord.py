@@ -709,6 +709,12 @@ Profile
     .. attribute:: hypesquad_houses
 
         A list of :class:`HypeSquadHouse` that the user is in.
+    .. attribute:: team_user
+
+        A boolean indicating if the user is in part of a team.
+    .. attribute:: system
+
+        A boolean indicating if the user is officially part of the Discord urgent message system.
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this
@@ -849,10 +855,10 @@ of :class:`enum.Enum`.
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
-    
+
     .. versionchanged:: 1.2
         The ``india`` region was added.
-    
+
     .. versionchanged:: 1.3
         The ``europe`` region was added.
 
@@ -869,7 +875,7 @@ of :class:`enum.Enum`.
 
         The EU West region.
     .. attribute:: europe
-    
+
         The Europe region.
     .. attribute:: frankfurt
 

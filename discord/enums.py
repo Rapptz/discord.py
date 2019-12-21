@@ -396,6 +396,8 @@ class UserFlags(Enum):
     hypesquad_brilliance = 128
     hypesquad_balance = 256
     early_supporter = 512
+    team_user = 1024
+    system = 4096
 
 class ActivityType(Enum):
     unknown = -1
