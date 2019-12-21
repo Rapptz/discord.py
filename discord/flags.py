@@ -215,3 +215,11 @@ class MessageFlags(BaseFlags):
     def source_message_deleted(self):
         """:class:`bool`: Returns ``True`` if the source message for this crosspost has been deleted."""
         return 8
+
+    @flag_value
+    def urgent(self):
+        """:class:`bool`: Returns ``True`` if the source message is an urgent message.
+
+        An urgent message is one sent by Discord Trust and Safety.
+        """
+        return 16
