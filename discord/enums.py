@@ -358,7 +358,7 @@ class AuditLogAction(Enum):
             AuditLogAction.message_pin:         None,
             AuditLogAction.message_unpin:       None,
             AuditLogAction.integration_create:  AuditLogActionCategory.create,
-            AuditLogAction.integration_update:  AuditLogActionCategoty.update,
+            AuditLogAction.integration_update:  AuditLogActionCategory.update,
             AuditLogAction.integration_delete:  AuditLogActionCategory.delete,
         }
         return lookup[self]
