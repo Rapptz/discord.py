@@ -51,13 +51,13 @@ class Separator:
     
     .. code-block:: python3
     
-        @bot.command(qualifier=Separator(',')
+        @bot.command(qualifier=Separator(','))
         async def foo(ctx, *c):
             await ctx.send(', '.join(c))
         
         # ?foo a b, c, d, e
 
-        @bot.command(qualifier=Separator('|', strip_ws=False)
+        @bot.command(qualifier=Separator('|', strip_ws=False))
         async def bar(ctx, *c):
             await ctx.send(','.join(c))
 
@@ -80,13 +80,13 @@ class Encapsulator:
 
     .. code-block:: python3
 
-        @bot.command(qualifier=Encapsulator('-')
+        @bot.command(qualifier=Encapsulator('-'))
         async def foo(ctx, *c):
             await ctx.send(', '.join(c))
 
         # ?foo -a b c- b
 
-        @bot.command(qualifier=Encapsulator('(', ')')
+        @bot.command(qualifier=Encapsulator('(', ')'))
         async def bar(ctx, *c):
             await ctx.send(', '.join(c))
 
