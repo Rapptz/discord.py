@@ -65,13 +65,13 @@ class Separator:
 
     Attributes
     -----------
-    key: :class:`str`
-        The key that separates each argument. By default, it is ``' '``.
+    key: Optional[:class:`str`]
+        The key that separates each argument. By default, it is a space.
     strip_ws: :class:`bool`
         Whether or not to strip whitespace from the arguments. By default,
         it is ``True``.
     """
-    def __init__(self, key=' ', *, strip_ws=True):
+    def __init__(self, key=None, *, strip_ws=True):
         self.key = key
         self.strip_ws = strip_ws
 
@@ -103,6 +103,10 @@ class Encapsulator:
     def __init__(self, start, end=None):
         self.start = start
         self.end = end or start
+        self._all_keys = [self.start, self.end]
+
+    def __contains__(self, item):
+        return item in self._all_keys
 
 
 class StringView:
@@ -111,8 +115,8 @@ class StringView:
         self.buffer = buffer
         self.end = len(buffer)
         self.previous = 0
-        self.available_quotes = _quotes
         self.separator = Separator()
+        self.encapsulator = None
 
     @property
     def current(self):
@@ -123,7 +127,7 @@ class StringView:
         return self.index >= self.end
 
     def is_separator(self, c):
-        return c == self.separator.key
+        return c.isspace() if self.separator.key is None else c == self.separator.key
 
     def undo(self):
         self.index = self.previous
@@ -193,7 +197,12 @@ class StringView:
         if current is None:
             return None
 
-        close_quote = self.available_quotes.get(current)
+        close_quote = None
+        if self.encapsulator is None:
+            close_quote = _quotes.get(current)
+        elif current == self.encapsulator.start:
+            close_quote = self.encapsulator.end
+
         is_quoted = bool(close_quote)
         if is_quoted:
             result = []
@@ -228,7 +237,7 @@ class StringView:
                     # if we aren't then we just let it through
                     return ''.join(result)
 
-                if next_char == '"' or self.is_separator(next_char):
+                if next_char in _escaped_quotes:
                     # escaped separator or quote
                     result.append(next_char)
                 else:
@@ -237,7 +246,8 @@ class StringView:
                     result.append(current)
                 continue
 
-            if not is_quoted and current in self.available_quotes:
+            allowed_quotes = self.encapsulator or _all_quotes
+            if not is_quoted and current in _quotes:
                 # we aren't quoted
                 raise UnexpectedQuoteError(current)
 
