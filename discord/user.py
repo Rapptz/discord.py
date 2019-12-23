@@ -71,6 +71,14 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
         flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
         return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
 
+    @property
+    def team_user(self):
+        return self._has_flag(UserFlags.team_user)
+
+    @property
+    def system(self):
+        return self._has_flag(UserFlags.system)
+
 class Settings:
     """Represents the client user's settings.
 
@@ -271,7 +279,7 @@ class Settings:
 _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_state')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -295,6 +303,7 @@ class BaseUser(_BaseUser):
         self.discriminator = data['discriminator']
         self.avatar = data['avatar']
         self.bot = data.get('bot', False)
+        self.system = data.get('system', False)
 
     @classmethod
     def _copy(cls, user):
@@ -309,9 +318,18 @@ class BaseUser(_BaseUser):
 
         return self
 
+    def _to_minimal_user_json(self):
+        return {
+            'username': self.name,
+            'id': self.id,
+            'avatar': self.avatar,
+            'discriminator': self.discriminator,
+            'bot': self.bot,
+        }
+
     @property
     def avatar_url(self):
-        """Returns a :class:`Asset`: for the avatar the user has.
+        """Returns an :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -322,18 +340,18 @@ class BaseUser(_BaseUser):
         return self.avatar_url_as(format=None, size=1024)
 
     def is_avatar_animated(self):
-        """:class:`bool`: Returns True if the user has an animated avatar."""
+        """Indicates if the user has an animated avatar."""
         return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns a :class:`Asset`: for the avatar the user has.
+        """Returns an :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
         'gif' is only valid for animated avatars. The size must be a power of 2
-        between 16 and 1024.
+        between 16 and 4096.
 
         Parameters
         -----------
@@ -363,28 +381,35 @@ class BaseUser(_BaseUser):
 
     @property
     def default_avatar(self):
-        """Returns the default avatar for a given user. This is calculated by the user's discriminator"""
+        """:class:`DefaultAvatar`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
         return try_enum(DefaultAvatar, int(self.discriminator) % len(DefaultAvatar))
 
     @property
     def default_avatar_url(self):
-        """Returns a URL for a user's default avatar."""
-        return Asset(self._state, 'https://cdn.discordapp.com/embed/avatars/{}.png'.format(self.default_avatar.value))
+        """:class:`Asset`: Returns a URL for a user's default avatar."""
+        return Asset(self._state, '/embed/avatars/{}.png'.format(self.default_avatar.value))
 
     @property
     def colour(self):
-        """A property that returns a :class:`Colour` denoting the rendered colour
+        """:class:`Colour`: A property that returns a colour denoting the rendered colour
         for the user. This always returns :meth:`Colour.default`.
 
-        There is an alias for this under ``color``.
+        There is an alias for this named :meth:`color`.
         """
         return Colour.default()
 
-    color = colour
+    @property
+    def color(self):
+        """:class:`Colour`: A property that returns a color denoting the rendered color
+        for the user. This always returns :meth:`Colour.default`.
+
+        There is an alias for this named :meth:`colour`.
+        """
+        return self.colour
 
     @property
     def mention(self):
-        """Returns a string that allows you to mention the given user."""
+        """:class:`str`: Returns a string that allows you to mention the given user."""
         return '<@{0.id}>'.format(self)
 
     def permissions_in(self, channel):
@@ -405,14 +430,14 @@ class BaseUser(_BaseUser):
 
     @property
     def created_at(self):
-        """Returns the user's creation time in UTC.
+        """:class:`datetime.datetime`: Returns the user's creation time in UTC.
 
-        This is when the user's discord account was created."""
+        This is when the user's Discord account was created."""
         return snowflake_time(self.id)
 
     @property
     def display_name(self):
-        """Returns the user's display name.
+        """:class:`str`: Returns the user's display name.
 
         For regular users this is just their username, but
         if they have a guild specific nickname then that
@@ -471,6 +496,8 @@ class ClientUser(BaseUser):
         The avatar hash the user has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     verified: :class:`bool`
         Specifies if the user is a verified account.
     email: Optional[:class:`str`]
@@ -481,12 +508,13 @@ class ClientUser(BaseUser):
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
-    premium_type: :class:`PremiumType`
+    premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
     settings: :class:`Settings`
         The user's settings for the official Discord clients.
     """
-    __slots__ = ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
+    __slots__ = BaseUser.__slots__ + \
+                ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
                  'premium', 'premium_type', '_relationships', '__weakref__',
                  'settings')
 
@@ -515,7 +543,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Parameters
         -----------
@@ -525,37 +553,37 @@ class ClientUser(BaseUser):
         Returns
         --------
         Optional[:class:`Relationship`]
-            The relationship if available or ``None``
+            The relationship if available or ``None``.
         """
         return self._relationships.get(user_id)
 
     @property
     def relationships(self):
-        """Returns a :class:`list` of :class:`Relationship` that the user has.
+        """List[:class:`User`]: Returns all the relationships that the user has.
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return list(self._relationships.values())
 
     @property
     def friends(self):
-        r"""Returns a :class:`list` of :class:`User`\s that the user is friends with.
+        r"""List[:class:`User`]: Returns all the users that the user is friends with.
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self):
-        r"""Returns a :class:`list` of :class:`User`\s that the user has blocked.
+        r"""List[:class:`User`]: Returns all the users that the user has blocked.
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return [r.user for r in self._relationships.values() if r.type is RelationshipType.blocked]
 
@@ -567,14 +595,14 @@ class ClientUser(BaseUser):
         If a bot account is used then a password field is optional,
         otherwise it is required.
 
-        Note
-        -----
-        To upload an avatar, a :term:`py:bytes-like object` must be passed in that
-        represents the image being uploaded. If this is done through a file
-        then the file must be opened via ``open('some_filename', 'rb')`` and
-        the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
+        .. note::
 
-        The only image formats supported for uploading is JPEG and PNG.
+            To upload an avatar, a :term:`py:bytes-like object` must be passed in that
+            represents the image being uploaded. If this is done through a file
+            then the file must be opened via ``open('some_filename', 'rb')`` and
+            the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
+
+            The only image formats supported for uploading is JPEG and PNG.
 
         Parameters
         -----------
@@ -667,7 +695,7 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Parameters
         -----------
@@ -705,11 +733,66 @@ class ClientUser(BaseUser):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         .. note::
 
             This method is an API call. For general usage, consider :attr:`settings` instead.
+
+        Parameters
+        -------
+        afk_timeout: :class:`int`
+            How long (in seconds) the user needs to be AFK until Discord
+            sends push notifications to your mobile device.
+        animate_emojis: :class:`bool`
+            Whether or not to animate emojis in the chat.
+        convert_emoticons: :class:`bool`
+            Whether or not to automatically convert emoticons into emojis.
+            e.g. :-) -> 😃
+        default_guilds_restricted: :class:`bool`
+            Whether or not to automatically disable DMs between you and
+            members of new guilds you join.
+        detect_platform_accounts: :class:`bool`
+            Whether or not to automatically detect accounts from services
+            like Steam and Blizzard when you open the Discord client.        developer_mode: :class:`bool`
+            Whether or not to enable developer mode.
+        disable_games_tab: :class:`bool`
+            Whether or not to disable the showing of the Games tab.
+        enable_tts_command: :class:`bool`
+            Whether or not to allow tts messages to be played/sent.
+        explicit_content_filter: :class:`UserContentFilter`
+            The filter for explicit content in all messages.
+        friend_source_flags: :class:`FriendFlags`
+            Who can add you as a friend.
+        gif_auto_play: :class:`bool`
+            Whether or not to automatically play gifs that are in the chat.
+        guild_positions: List[:class:`abc.Snowflake`]
+            A list of guilds in order of the guild/guild icons that are on
+            the left hand side of the UI.
+        inline_attachment_media: :class:`bool`
+            Whether or not to display attachments when they are uploaded in chat.
+        inline_embed_media: :class:`bool`
+            Whether or not to display videos and images from links posted in chat.
+        locale: :class:`str`
+            The :rfc:`3066` language identifier of the locale to use for the language
+            of the Discord client.
+        message_display_compact: :class:`bool`
+            Whether or not to use the compact Discord display mode.
+        render_embeds: :class:`bool`
+            Whether or not to render embeds that are sent in the chat.
+        render_reactions: :class:`bool`
+            Whether or not to render reactions that are added to messages.
+        restricted_guilds: List[:class:`abc.Snowflake`]
+            A list of guilds that you will not receive DMs from.
+        show_current_game: :class:`bool`
+            Whether or not to display the game that you are currently playing.
+        status: :class:`Status`
+            The clients status that is shown to others.
+        theme: :class:`Theme`
+            The theme of the Discord UI.
+        timezone_offset: :class:`int`
+            The timezone offset to use.
+
 
         Raises
         -------
@@ -777,9 +860,11 @@ class User(BaseUser, discord.abc.Messageable):
         The avatar hash the user has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
-    __slots__ = ('__weakref__',)
+    __slots__ = BaseUser.__slots__ + ('__weakref__',)
 
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
@@ -790,7 +875,7 @@ class User(BaseUser, discord.abc.Messageable):
 
     @property
     def dm_channel(self):
-        """Returns the :class:`DMChannel` associated with this user if it exists.
+        """Optional[:class:`DMChannel`]: Returns the channel associated with this user if it exists.
 
         If this returns ``None``, you can create a DM channel by calling the
         :meth:`create_dm` coroutine function.
@@ -817,7 +902,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         return self._state.user.get_relationship(self.id)
 
@@ -828,7 +913,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -847,11 +932,11 @@ class User(BaseUser, discord.abc.Messageable):
         return [User(state=state, data=friend) for friend in mutuals]
 
     def is_friend(self):
-        """:class:`bool`: Checks if the user is your friend.
+        """Checks if the user is your friend.
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         r = self.relationship
         if r is None:
@@ -859,11 +944,11 @@ class User(BaseUser, discord.abc.Messageable):
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """:class:`bool`: Checks if the user is blocked.
+        """Checks if the user is blocked.
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
         """
         r = self.relationship
         if r is None:
@@ -877,7 +962,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -896,7 +981,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -914,7 +999,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -932,7 +1017,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------
@@ -950,7 +1035,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This only applies to non-bot accounts.
+            This can only be used by non-bot accounts.
 
         Raises
         -------

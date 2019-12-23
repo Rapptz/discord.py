@@ -1,5 +1,8 @@
 .. currentmodule:: discord
 
+.. |commands| replace:: [:ref:`ext.commands <discord_ext_commands>`]
+.. |tasks| replace:: [:ref:`ext.tasks <discord_ext_tasks>`]
+
 .. _whats_new:
 
 Changelog
@@ -7,6 +10,121 @@ Changelog
 
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
+
+.. _vp1p2p5:
+
+v1.2.5
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix a bug that caused crashes due to missing ``animated`` field in Emoji structures in reactions.
+
+.. _vp1p2p4:
+
+v1.2.4
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix a regression when :attr:`Message.channel` would be ``None``.
+- Fix a regression where :attr:`Message.edited_at` would not update during edits.
+- Fix a crash that would trigger during message updates (:issue:`2265`, :issue:`2287`).
+- Fix a bug when :meth:`VoiceChannel.connect` would not return (:issue:`2274`, :issue:`2372`, :issue:`2373`, :issue:`2377`).
+- Fix a crash relating to token-less webhooks (:issue:`2364`).
+- Fix issue where :attr:`Guild.premium_subscription_count` would be ``None`` due to a Discord bug. (:issue:`2331`, :issue:`2376`).
+
+.. _vp1p2p3:
+
+v1.2.3
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix an AttributeError when accessing :attr:`Member.premium_since` in :func:`on_member_update`. (:issue:`2213`)
+- Handle :exc:`asyncio.CancelledError` in :meth:`abc.Messageable.typing` context manager. (:issue:`2218`)
+- Raise the max encoder bitrate to 512kbps to account for nitro boosting. (:issue:`2232`)
+- Properly propagate exceptions in :meth:`Client.run`. (:issue:`2237`)
+- |commands| Ensure cooldowns are properly copied when used in cog level ``command_attrs``.
+
+.. _vp1p2p2:
+
+v1.2.2
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Audit log related attribute access have been fixed to not error out when they shouldn't have.
+
+.. _vp1p2p1:
+
+v1.2.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- :attr:`User.avatar_url` and related attributes no longer raise an error.
+- More compatibility shims with the ``enum.Enum`` code.
+
+.. _vp1p2p0:
+
+v1.2.0
+--------
+
+This update mainly brings performance improvements and various nitro boosting attributes (referred to in the API as "premium guilds").
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add :attr:`Guild.premium_tier` to query the guild's current nitro boost level.
+- Add :attr:`Guild.emoji_limit`, :attr:`Guild.bitrate_limit`, :attr:`Guild.filesize_limit` to query the new limits of a guild when taking into consideration boosting.
+- Add :attr:`Guild.premium_subscription_count` to query how many members are boosting a guild.
+- Add :attr:`Member.premium_since` to query since when a member has boosted a guild.
+- Add :attr:`Guild.premium_subscribers` to query all the members currently boosting the guild.
+- Add :attr:`Guild.system_channel_flags` to query the settings for a guild's :attr:`Guild.system_channel`.
+    - This includes a new type named :class:`SystemChannelFlags`
+- Add :attr:`Emoji.available` to query if an emoji can be used (within the guild or otherwise).
+- Add support for animated icons in :meth:`Guild.icon_url_as` and :attr:`Guild.icon_url`.
+- Add :meth:`Guild.is_icon_animated`.
+- Add support for the various new :class:`MessageType` involving nitro boosting.
+- Add :attr:`VoiceRegion.india`. (:issue:`2145`)
+- Add :meth:`Embed.insert_field_at`. (:issue:`2178`)
+- Add a ``type`` attribute for all channels to their appropriate :class:`ChannelType`. (:issue:`2185`)
+- Add :meth:`Client.fetch_channel` to fetch a channel by ID via HTTP. (:issue:`2169`)
+- Add :meth:`Guild.fetch_channels` to fetch all channels via HTTP. (:issue:`2169`)
+- |tasks| Add :meth:`Loop.stop <.ext.tasks.Loop.stop>` to gracefully stop a task rather than cancelling.
+- |tasks| Add :meth:`Loop.failed <.ext.tasks.Loop.failed>` to query if a task had failed somehow.
+- |tasks| Add :meth:`Loop.change_interval <.ext.tasks.Loop.change_interval>` to change the sleep interval at runtime (:issue:`2158`, :issue:`2162`)
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix internal error when using :meth:`Guild.prune_members`.
+- |commands| Fix :attr:`.Command.invoked_subcommand` being invalid in many cases.
+- |tasks| Reset iteration count when the loop terminates and is restarted.
+- |tasks| The decorator interface now works as expected when stacking (:issue:`2154`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Improve performance of all Enum related code significantly.
+    - This was done by replacing the ``enum.Enum`` code with an API compatible one.
+    - This should not be a breaking change for most users due to duck-typing.
+- Improve performance of message creation by about 1.5x.
+- Improve performance of message editing by about 1.5-4x depending on payload size.
+- Improve performance of attribute access on :class:`Member` about by 2x.
+- Improve performance of :func:`utils.get` by around 4-6x depending on usage.
+- Improve performance of event parsing lookup by around 2.5x.
+- Keyword arguments in :meth:`Client.start` and :meth:`Client.run` are now validated (:issue:`953`, :issue:`2170`)
+- The Discord error code is now shown in the exception message for :exc:`HTTPException`.
+- Internal tasks launched by the library will now have their own custom ``__repr__``.
+- All public facing types should now have a proper and more detailed ``__repr__``.
+- |tasks| Errors are now logged via the standard :mod:`py:logging` module.
 
 .. _vp1p1p1:
 

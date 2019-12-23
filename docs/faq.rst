@@ -18,7 +18,7 @@ Questions regarding coroutines and asyncio belong here.
 What is a coroutine?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-A coroutine is a function that must be invoked with ``await`` or ``yield from``. When Python encounters an ``await`` it stops
+A |coroutine_link|_ is a function that must be invoked with ``await`` or ``yield from``. When Python encounters an ``await`` it stops
 the function's execution at that point and works on other things until it comes back to that point and finishes off its work.
 This allows for your program to be doing multiple things at the same time without using threads or complicated
 multiprocessing.
@@ -51,9 +51,10 @@ instead. Similar to this example: ::
     # good
     await asyncio.sleep(10)
 
-Another common source of blocking for too long is using HTTP requests with the famous module ``requests``. While ``requests``
-is an amazing module for non-asynchronous programming, it is not a good choice for :mod:`asyncio` because certain requests can
-block the event loop too long. Instead, use the ``aiohttp`` library which is installed on the side with this library.
+Another common source of blocking for too long is using HTTP requests with the famous module :doc:`req:index`.
+While :doc:`req:index` is an amazing module for non-asynchronous programming, it is not a good choice for
+:mod:`asyncio` because certain requests can block the event loop too long. Instead, use the :doc:`aiohttp <aio:index>` library which
+is installed on the side with this library.
 
 Consider the following example: ::
 
@@ -74,6 +75,12 @@ General
 ---------
 
 General questions regarding library usage belong here.
+
+Where can I find usage examples?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Example code can be found in the `examples folder <https://github.com/Rapptz/discord.py/tree/master/examples>`_
+in the repository.
 
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,8 +110,29 @@ You must fetch the channel directly and then call the appropriate method. Exampl
     channel = client.get_channel(12324234183172)
     await channel.send('hello')
 
+How do I send a DM?
+~~~~~~~~~~~~~~~~~~~
+
+Get the :class:`User` or :class:`Member` object and call :meth:`abc.Messageable.send`. For example: ::
+
+    user = client.get_user(381870129706958858)
+    await user.send('👀')
+
+If you are responding to an event, such as :func:`on_message`, you already have the :class:`User` object via :attr:`Message.author`: ::
+
+    await message.author.send('👋')
+
+How do I get the ID of a sent message?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:meth:`abc.Messageable.send` returns the :class:`Message` that was sent.
+The ID of a message can be accessed via :attr:`Message.id`: ::
+
+    message = await channel.send('hmm…')
+    message_id = message.id
+
 How do I upload an image?
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To upload something to Discord you have to use the :class:`File` object.
 
@@ -128,7 +156,7 @@ To upload multiple files, you can use the ``files`` keyword argument instead of 
     ]
     await channel.send(files=my_files)
 
-If you want to upload something from a URL, you will have to use an HTTP request using ``aiohttp``
+If you want to upload something from a URL, you will have to use an HTTP request using :doc:`aiohttp <aio:index>`
 and then pass an :class:`io.BytesIO` instance to :class:`File` like so:
 
 .. code-block:: python3

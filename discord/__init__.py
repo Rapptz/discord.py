@@ -15,7 +15,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2019 Rapptz'
-__version__ = '1.2.0a'
+__version__ = '1.3.0a'
 
 from collections import namedtuple
 import logging
@@ -23,10 +23,12 @@ import logging
 from .client import Client
 from .appinfo import AppInfo
 from .user import User, ClientUser, Profile, Settings
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .activity import *
 from .channel import *
 from .guild import Guild
+from .flags import SystemChannelFlags, MessageFlags
 from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message, Attachment
@@ -50,10 +52,11 @@ from .webhook import *
 from .voice_client import VoiceClient
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 from .raw_models import *
+from .team import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=1, minor=2, micro=0, releaselevel='alpha', serial=0)
+version_info = VersionInfo(major=1, minor=3, micro=0, releaselevel='alpha', serial=0)
 
 try:
     from logging import NullHandler

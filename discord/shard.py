@@ -47,7 +47,7 @@ class Shard:
         self.loop = self._client.loop
         self._current = self.loop.create_future()
         self._current.set_result(None) # we just need an already done future
-        self._pending = asyncio.Event(loop=self.loop)
+        self._pending = asyncio.Event()
         self._pending_task = None
 
     @property
@@ -81,7 +81,7 @@ class Shard:
             coro = DiscordWebSocket.from_client(self._client, resume=True, shard_id=self.id,
                                                 session=self.ws.session_id, sequence=self.ws.sequence)
             self._dispatch('disconnect')
-            self.ws = await asyncio.wait_for(coro, timeout=180.0, loop=self.loop)
+            self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     def get_future(self):
         if self._current.done():
@@ -102,11 +102,11 @@ class AutoShardedClient(Client):
     It is recommended to use this client only if you have surpassed at least
     1000 guilds.
 
-    If no :attr:`shard_count` is provided, then the library will use the
+    If no :attr:`.shard_count` is provided, then the library will use the
     Bot Gateway endpoint call to figure out how many shards to use.
 
     If a ``shard_ids`` parameter is given, then those shard IDs will be used
-    to launch the internal shards. Note that :attr:`shard_count` must be provided
+    to launch the internal shards. Note that :attr:`.shard_count` must be provided
     if this is used. By default, when omitted, the client will launch shards from
     0 to ``shard_count - 1``.
 
@@ -163,7 +163,7 @@ class AutoShardedClient(Client):
     def latency(self):
         """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
 
-        This operates similarly to :meth:`.Client.latency` except it uses the average
+        This operates similarly to :meth:`Client.latency` except it uses the average
         latency of every shard's latency. To get a list of shard latency, check the
         :attr:`latencies` property. Returns ``nan`` if there are no shards ready.
         """
@@ -213,14 +213,15 @@ class AutoShardedClient(Client):
     async def launch_shard(self, gateway, shard_id):
         try:
             coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
-            ws = await asyncio.wait_for(coro, loop=self.loop, timeout=180.0)
+            ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
-            await asyncio.sleep(5.0, loop=self.loop)
+            await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 
         ws.token = self.http.token
         ws._connection = self._connection
+        ws._discord_parsers = self._connection.parsers
         ws._dispatch = self.dispatch
         ws.gateway = gateway
         ws.shard_id = shard_id
@@ -229,17 +230,17 @@ class AutoShardedClient(Client):
 
         try:
             # OP HELLO
-            await asyncio.wait_for(ws.poll_event(), loop=self.loop, timeout=180.0)
-            await asyncio.wait_for(ws.identify(), loop=self.loop, timeout=180.0)
+            await asyncio.wait_for(ws.poll_event(), timeout=180.0)
+            await asyncio.wait_for(ws.identify(), timeout=180.0)
         except asyncio.TimeoutError:
             log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
-            await asyncio.sleep(5.0, loop=self.loop)
+            await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 
         # keep reading the shard while others connect
         self.shards[shard_id] = ret = Shard(ws, self)
         ret.launch_pending_reads()
-        await asyncio.sleep(5.0, loop=self.loop)
+        await asyncio.sleep(5.0)
 
     async def launch_shards(self):
         if self.shard_count is None:
@@ -260,14 +261,14 @@ class AutoShardedClient(Client):
             shards_to_wait_for.append(shard.wait())
 
         # wait for all pending tasks to finish
-        await utils.sane_wait_for(shards_to_wait_for, timeout=300.0, loop=self.loop)
+        await utils.sane_wait_for(shards_to_wait_for, timeout=300.0)
 
     async def _connect(self):
         await self.launch_shards()
 
         while True:
             pollers = [shard.get_future() for shard in self.shards.values()]
-            done, _ = await asyncio.wait(pollers, loop=self.loop, return_when=asyncio.FIRST_COMPLETED)
+            done, _ = await asyncio.wait(pollers, return_when=asyncio.FIRST_COMPLETED)
             for f in done:
                 # we wanna re-raise to the main Client.connect handler if applicable
                 f.result()
@@ -275,7 +276,7 @@ class AutoShardedClient(Client):
     async def close(self):
         """|coro|
 
-        Closes the connection to discord.
+        Closes the connection to Discord.
         """
         if self.is_closed():
             return
@@ -288,9 +289,9 @@ class AutoShardedClient(Client):
             except Exception:
                 pass
 
-        to_close = [shard.ws.close() for shard in self.shards.values()]
+        to_close = [asyncio.ensure_future(shard.ws.close(), loop=self.loop) for shard in self.shards.values()]
         if to_close:
-            await asyncio.wait(to_close, loop=self.loop)
+            await asyncio.wait(to_close)
 
         await self.http.close()
 
@@ -313,7 +314,7 @@ class AutoShardedClient(Client):
         activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
-            Indicates what status to change to. If None, then
+            Indicates what status to change to. If ``None``, then
             :attr:`Status.online` is used.
         afk: :class:`bool`
             Indicates if you are going AFK. This allows the discord

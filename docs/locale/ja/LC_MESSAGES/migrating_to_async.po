@@ -1,20 +1,20 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: discordpy-japanese\n"
+"Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-23 10:19+0900\n"
-"PO-Revision-Date: 2019-05-04 06:10\n"
-"Last-Translator: Episword (mistio100)\n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: crowdin.com\n"
-"X-Crowdin-Project: discordpy-japanese\n"
+"X-Crowdin-Project: discordpy\n"
 "X-Crowdin-Language: ja\n"
-"X-Crowdin-File: migrating_to_async.po\n"
+"X-Crowdin-File: migrating_to_async.pot\n"
+"Language: ja_JP\n"
 
 #: ../../migrating_to_async.rst:8
 msgid "Migrating to v0.10.0"
@@ -25,8 +25,8 @@ msgid "v0.10.0 is one of the biggest breaking changes in the library due to mass
 msgstr "v0.10.0は、ライブラリの根本的動作が大幅に変更された、ライブラリの中でも大きな更新の一つです。"
 
 #: ../../migrating_to_async.rst:13
-msgid "The biggest major change is that the library has dropped support to all versions prior to Python 3.4.2. This was made to support ``asyncio``, in which more detail can be seen :issue:`in the corresponding issue <50>`. To reiterate this, the implication is that **python version 2.7 and 3.3 are no longer supported**."
-msgstr "最大の大きな変更点はPython 3.4.2以前のすべてのバージョンのサポートが打ち切られたことです。これは ``asyncio`` をサポートするためで、対応する :issue:`in the corresponding issue <50>` で詳細が見られます。繰り返しになりますが、 **Python 2.7及びPython3.3は、既にサポートされていません** 。"
+msgid "The biggest major change is that the library has dropped support to all versions prior to Python 3.4.2. This was made to support :mod:`asyncio`, in which more detail can be seen :issue:`in the corresponding issue <50>`. To reiterate this, the implication is that **python version 2.7 and 3.3 are no longer supported**."
+msgstr "最大の大きな変更点はPython 3.4.2以前のすべてのバージョンのサポートが打ち切られたことです。これは :mod:`asyncio` をサポートするためで、対応する :issue:`in the corresponding issue <50>` で詳細が見られます。繰り返しになりますが、 **Python 2.7及びPython3.3は、既にサポートされていません** 。"
 
 #: ../../migrating_to_async.rst:18
 msgid "Below are all the other major changes from v0.9.0 to v0.10.0."
@@ -40,13 +40,17 @@ msgstr "イベント登録"
 msgid "All events before were registered using :meth:`Client.event`. While this is still possible, the events must be decorated with ``@asyncio.coroutine``."
 msgstr "以前まではすべてのイベントが :meth:`Client.event` を使用して登録されていました。このやり方はまだ可能ですが、 ``@asyncio.coroutine`` で修飾が必要です。"
 
-#: ../../migrating_to_async.rst:26 ../../migrating_to_async.rst:71
-#: ../../migrating_to_async.rst:105 ../../migrating_to_async.rst:166
+#: ../../migrating_to_async.rst:26
+#: ../../migrating_to_async.rst:71
+#: ../../migrating_to_async.rst:105
+#: ../../migrating_to_async.rst:166
 msgid "Before:"
 msgstr "更新前:"
 
-#: ../../migrating_to_async.rst:34 ../../migrating_to_async.rst:83
-#: ../../migrating_to_async.rst:111 ../../migrating_to_async.rst:174
+#: ../../migrating_to_async.rst:34
+#: ../../migrating_to_async.rst:83
+#: ../../migrating_to_async.rst:111
+#: ../../migrating_to_async.rst:174
 #: ../../migrating_to_async.rst:284
 msgid "After:"
 msgstr "更新後:"
@@ -80,8 +84,8 @@ msgid "Coroutines"
 msgstr "コルーチン"
 
 #: ../../migrating_to_async.rst:100
-msgid "The biggest change that the library went through is that almost every function in :class:`Client` was changed to be a `coroutine <https://docs.python.org/3/library/asyncio-task.html>`_. Functions that are marked as a coroutine in the documentation must be awaited from or yielded from in order for the computation to be done. For example..."
-msgstr "ライブラリの最大の変更点は :class:`Client` を使用していたほとんどの関数が `コルーチン <https://docs.python.org/3/library/asyncio-task.html>`_ へと変更されたことです。ドキュメントのコルーチンとして定義された関数は、処理の終了を待機します。例えば、"
+msgid "The biggest change that the library went through is that almost every function in :class:`Client` was changed to be a `coroutine <py:library/asyncio-task.html>`_. Functions that are marked as a coroutine in the documentation must be awaited from or yielded from in order for the computation to be done. For example..."
+msgstr "ライブラリの最大の変更点は :class:`Client` を使用していたほとんどの関数が `コルーチン <py:library/asyncio-task.html>`_ へと変更されたことです。ドキュメントのコルーチンとして定義された関数は、処理の終了を待機します。例えば、"
 
 #: ../../migrating_to_async.rst:120
 msgid "In order for you to ``yield from`` or ``await`` a coroutine then your function must be decorated with ``@asyncio.coroutine`` or ``async def``."
@@ -132,8 +136,8 @@ msgid "Enumerations"
 msgstr "列挙型"
 
 #: ../../migrating_to_async.rst:161
-msgid "Due to dropping support for versions lower than Python 3.4.2, the library can now use `enumerations <https://docs.python.org/3/library/enum.html>`_ in places where it makes sense."
-msgstr "Python 3.4.2以前のバージョンのサポートを打ち切ったため、ライブラリは理にかなった場所での `列挙型 <https://docs.python.org/3/library/enum.html>`_ の使用が可能になりました。"
+msgid "Due to dropping support for versions lower than Python 3.4.2, the library can now use :doc:`py:library/enum` in places where it makes sense."
+msgstr "Python 3.4.2以前のバージョンのサポートを打ち切ったため、ライブラリは理にかなった場所での :doc:`py:library/enum` の使用が可能になりました。"
 
 #: ../../migrating_to_async.rst:164
 msgid "The common places where this was changed was in the server region, member status, and channel type."
@@ -155,12 +159,14 @@ msgstr "定数値を返す関数呼び出しの多くは、書式化した文字
 msgid "The following functions were changed into properties:"
 msgstr "以下はプロパティに変更された関数です。"
 
-#: ../../migrating_to_async.rst:194 ../../migrating_to_async.rst:223
+#: ../../migrating_to_async.rst:194
+#: ../../migrating_to_async.rst:223
 #: ../../migrating_to_async.rst:238
 msgid "Before"
 msgstr "変更前"
 
-#: ../../migrating_to_async.rst:194 ../../migrating_to_async.rst:223
+#: ../../migrating_to_async.rst:194
+#: ../../migrating_to_async.rst:223
 #: ../../migrating_to_async.rst:238
 msgid "After"
 msgstr "変更後"
@@ -281,7 +287,8 @@ msgstr "いくつかの関数名が変更されました。"
 msgid "``Client.set_channel_permissions``"
 msgstr "``Client.set_channel_permissions``"
 
-#: ../../migrating_to_async.rst:240 ../../migrating_to_async.rst:263
+#: ../../migrating_to_async.rst:240
+#: ../../migrating_to_async.rst:263
 msgid ":meth:`Client.edit_channel_permissions`"
 msgstr ":meth:`Client.edit_channel_permissions`"
 

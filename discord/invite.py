@@ -71,12 +71,12 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
 
     @property
     def mention(self):
-        """:class:`str` : The string that allows you to mention the channel."""
+        """:class:`str`: The string that allows you to mention the channel."""
         return '<#%s>' % self.id
 
     @property
     def created_at(self):
-        """Returns the channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
 
 class PartialInviteGuild:
@@ -146,7 +146,7 @@ class PartialInviteGuild:
 
     @property
     def created_at(self):
-        """Returns the guild's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
@@ -155,7 +155,7 @@ class PartialInviteGuild:
         return self.icon_url_as()
 
     def icon_url_as(self, *, format='webp', size=1024):
-        """:class:`Asset`: The same operation as :meth:`Guild.icon_url_as`."""
+        """The same operation as :meth:`Guild.icon_url_as`."""
         return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
 
     @property
@@ -164,7 +164,7 @@ class PartialInviteGuild:
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """:class:`Asset`: The same operation as :meth:`Guild.banner_url_as`."""
+        """The same operation as :meth:`Guild.banner_url_as`."""
         return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
@@ -173,7 +173,7 @@ class PartialInviteGuild:
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """:class:`Asset`: The same operation as :meth:`Guild.splash_url_as`."""
+        """The same operation as :meth:`Guild.splash_url_as`."""
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
 class Invite(Hashable):
@@ -232,11 +232,11 @@ class Invite(Hashable):
         The guild the invite is for.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
-    created_at: `datetime.datetime`
+    created_at: :class:`datetime.datetime`
         A datetime object denoting the time the invite was created.
     temporary: :class:`bool`
         Indicates that the invite grants temporary membership.
-        If True, members who joined via this invite will be kicked upon disconnect.
+        If ``True``, members who joined via this invite will be kicked upon disconnect.
     uses: :class:`int`
         How many times the invite has been used.
     max_uses: :class:`int`
@@ -255,6 +255,8 @@ class Invite(Hashable):
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
                  'temporary', 'max_uses', 'inviter', 'channel', '_state',
                  'approximate_member_count', 'approximate_presence_count' )
+
+    BASE = 'https://discord.gg'
 
     def __init__(self, *, state, data):
         self._state = state
@@ -294,20 +296,22 @@ class Invite(Hashable):
         return self.url
 
     def __repr__(self):
-        return '<Invite code={0.code!r}>'.format(self)
+        return '<Invite code={0.code!r} guild={0.guild!r} ' \
+                'online={0.approximate_presence_count} ' \
+                'members={0.approximate_member_count}>'.format(self)
 
     def __hash__(self):
         return hash(self.code)
 
     @property
     def id(self):
-        """Returns the proper code portion of the invite."""
+        """:class:`str`: Returns the proper code portion of the invite."""
         return self.code
 
     @property
     def url(self):
-        """A property that retrieves the invite URL."""
-        return 'http://discord.gg/' + self.code
+        """:class:`str`: A property that retrieves the invite URL."""
+        return self.BASE + '/' + self.code
 
     async def delete(self, *, reason=None):
         """|coro|

@@ -93,7 +93,8 @@ class AuditLogDiff:
         return iter(self.__dict__.items())
 
     def __repr__(self):
-        return '<AuditLogDiff attrs={0!r}>'.format(tuple(self.__dict__))
+        values = ' '.join('%s=%r' % item for item in self.__dict__.items())
+        return '<AuditLogDiff %s>' % values
 
 class AuditLogChanges:
     TRANSFORMERS = {
@@ -164,6 +165,9 @@ class AuditLogChanges:
             self.after.color = self.after.colour
             self.before.color = self.before.colour
 
+    def __repr__(self):
+        return '<AuditLogChanges before=%r after=%r>' % (self.before, self.after)
+
     def _handle_role(self, first, second, entry, elem):
         if not hasattr(first, 'roles'):
             setattr(first, 'roles', [])
@@ -223,15 +227,30 @@ class AuditLogEntry:
         self.reason = data.get('reason')
         self.extra = data.get('options')
 
-        if self.extra:
+        if isinstance(self.action, enums.AuditLogAction) and self.extra:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
                 self.extra = type('_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()})()
-            elif self.action is enums.AuditLogAction.message_delete:
+            elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.message_delete:
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
+                }
+                self.extra = type('_AuditLogProxy', (), elems)()
+            elif self.action is enums.AuditLogAction.member_disconnect:
+                # The member disconnect action has a dict with some information
+                elems = {
+                    'count': int(self.extra['count']),
+                }
+                self.extra = type('_AuditLogProxy', (), elems)()
+            elif self.action.name.endswith('pin'):
+                # the pin actions have a dict with some information
+                channel_id = int(self.extra['channel_id'])
+                message_id = int(self.extra['message_id'])
+                elems = {
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    'message_id': message_id
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
@@ -265,7 +284,7 @@ class AuditLogEntry:
 
     @utils.cached_property
     def created_at(self):
-        """Returns the entry's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the entry's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @utils.cached_property

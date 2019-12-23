@@ -24,7 +24,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-class RawMessageDeleteEvent:
+class _RawReprMixin:
+    def __repr__(self):
+        value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
+        return '<%s %s>' % (self.__class__.__name__, value)
+
+class RawMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_message_delete` event.
 
     Attributes
@@ -50,7 +55,7 @@ class RawMessageDeleteEvent:
         except KeyError:
             self.guild_id = None
 
-class RawBulkMessageDeleteEvent:
+class RawBulkMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_bulk_message_delete` event.
 
     Attributes
@@ -77,30 +82,38 @@ class RawBulkMessageDeleteEvent:
         except KeyError:
             self.guild_id = None
 
-class RawMessageUpdateEvent:
+class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
+
+    .. versionchanged:: 1.3.0
+        The ``channel_id`` attribute was added.
 
     Attributes
     -----------
     message_id: :class:`int`
         The message ID that got updated.
+    channel_id: :class:`int`
+        The channel ID where the update took place.
     data: :class:`dict`
-        The raw data given by the
-        `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`
+        The raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache.
     """
 
-    __slots__ = ('message_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'data', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
+        self.channel_id = int(data['channel_id'])
         self.data = data
         self.cached_message = None
 
-class RawReactionActionEvent:
+class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
     :func:`on_raw_reaction_remove` event.
+
+    .. versionchanged:: 1.3.0
+        The ``event_type`` attribute was added.
 
     Attributes
     -----------
@@ -114,22 +127,34 @@ class RawReactionActionEvent:
         The guild ID where the reaction got added or removed, if applicable.
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
+    member: Optional[:class:`Member`]
+        The member who added the reaction. Only available if `event_type` is `REACTION_ADD`.
+
+        .. versionadded:: 1.3
+
+    event_type: :class:`str`
+        The event type that triggered this action. Can be
+        ``REACTION_ADD`` for reaction addition or
+        ``REACTION_REMOVE`` for reaction removal.
     """
 
-    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji')
+    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
+                 'event_type', 'member')
 
-    def __init__(self, data, emoji):
+    def __init__(self, data, emoji, event_type):
         self.message_id = int(data['message_id'])
         self.channel_id = int(data['channel_id'])
         self.user_id = int(data['user_id'])
         self.emoji = emoji
+        self.event_type = event_type
+        self.member = None
 
         try:
             self.guild_id = int(data['guild_id'])
         except KeyError:
             self.guild_id = None
 
-class RawReactionClearEvent:
+class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.
 
     Attributes

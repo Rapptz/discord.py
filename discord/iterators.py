@@ -132,7 +132,7 @@ class ReactionIterator(_AsyncIterator):
         self.emoji = emoji
         self.guild = message.guild
         self.channel_id = message.channel.id
-        self.users = asyncio.Queue(loop=state.loop)
+        self.users = asyncio.Queue()
 
     async def next(self):
         if self.users.empty():
@@ -191,16 +191,16 @@ class HistoryIterator(_AsyncIterator):
         Messageable class to retrieve message history from.
     limit: :class:`int`
         Maximum number of messages to retrieve
-    before: :class:`abc.Snowflake`
+    before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Message before which all messages must be.
-    after: :class:`abc.Snowflake`
+    after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Message after which all messages must be.
-    around: :class:`abc.Snowflake`
+    around: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Message around which all messages must be. Limit max 101. Note that if
         limit is an even number, this will return at most limit+1 messages.
-    oldest_first: :class:`bool`
-        If set to true, return messages in oldest->newest order. Defaults to
-        True if ``after`` is specified, otherwise False.
+    oldest_first: Optional[:class:`bool`]
+        If set to ``True``, return messages in oldest->newest order. Defaults to
+        True if ``after`` is specified, otherwise ``False``.
     """
 
     def __init__(self, messageable, limit,
@@ -228,7 +228,7 @@ class HistoryIterator(_AsyncIterator):
 
         self.state = self.messageable._state
         self.logs_from = self.state.http.logs_from
-        self.messages = asyncio.Queue(loop=self.state.loop)
+        self.messages = asyncio.Queue()
 
         if self.around:
             if self.limit is None:
@@ -378,7 +378,7 @@ class AuditLogIterator(_AsyncIterator):
 
         self._filter = None  # entry dict -> bool
 
-        self.entries = asyncio.Queue(loop=self.loop)
+        self.entries = asyncio.Queue()
 
 
         if self.reverse:
@@ -482,9 +482,9 @@ class GuildIterator(_AsyncIterator):
         The client to retrieve the guilds from.
     limit: :class:`int`
         Maximum number of guilds to retrieve.
-    before: :class:`Snowflake`
+    before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Object before which all guilds must be.
-    after: :class:`Snowflake`
+    after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
         Object after which all guilds must be.
     """
     def __init__(self, bot, limit, before=None, after=None):
@@ -503,7 +503,7 @@ class GuildIterator(_AsyncIterator):
 
         self.state = self.bot._connection
         self.get_guilds = self.bot.http.get_guilds
-        self.guilds = asyncio.Queue(loop=self.state.loop)
+        self.guilds = asyncio.Queue()
 
         if self.before and self.after:
             self._retrieve_guilds = self._retrieve_guilds_before_strategy
@@ -587,3 +587,44 @@ class GuildIterator(_AsyncIterator):
                 self.limit -= retrieve
             self.after = Object(id=int(data[0]['id']))
         return data
+
+class MemberIterator(_AsyncIterator):
+    def __init__(self, guild, limit=1, after=None):
+
+        if isinstance(after, datetime.datetime):
+            after = Object(id=time_snowflake(after, high=True))
+
+        self.guild = guild
+        self.limit = limit
+        self.after = after or OLDEST_OBJECT
+
+        self.state = self.guild._state
+        self.get_members = self.state.http.get_members
+        self.members = asyncio.Queue()
+
+    async def next(self):
+        if self.members.empty():
+            await self.fill_members()
+
+        try:
+            return self.members.get_nowait()
+        except asyncio.QueueEmpty:
+            raise NoMoreItems()
+
+    async def fill_members(self):
+        if self.limit > 0:
+            retrieve = self.limit if self.limit <= 1000 else 1000
+
+            after = self.after.id if self.after else None
+            data = await self.get_members(self.guild.id, retrieve, after)
+
+            if data:
+                self.limit -= retrieve
+                self.after = Object(id=int(data[-1]['user']['id']))
+
+            for element in reversed(data):
+                await self.members.put(self.create_member(element))
+
+    def create_member(self, data):
+        from .member import Member
+        return Member(data=data, guild=self.guild, state=self.state)

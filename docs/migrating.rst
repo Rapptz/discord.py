@@ -268,7 +268,7 @@ User and Member Type Split
 
 In v1.0 to save memory, :class:`User` and :class:`Member` are no longer inherited. Instead, they are "flattened"
 by having equivalent properties that map out to the functional underlying :class:`User`. Thus, there is no functional
-change in how they are used. However this breaks ``isinstance`` checks and thus is something to keep in mind.
+change in how they are used. However this breaks :func:`isinstance` checks and thus is something to keep in mind.
 
 These memory savings were accomplished by having a global :class:`User` cache, and as a positive consequence you
 can now easily fetch a :class:`User` by their ID by using the new :meth:`Client.get_user`. You can also get a list
@@ -289,7 +289,7 @@ In order to save memory the channels have been split into 4 different types:
 - :class:`DMChannel` for DM channels with members.
 - :class:`GroupChannel` for Group DM channels with members.
 
-With this split came the removal of the ``is_private`` attribute. You should now use ``isinstance``.
+With this split came the removal of the ``is_private`` attribute. You should now use :func:`isinstance`.
 
 The types are split into two different :ref:`discord_api_abcs`:
 
@@ -382,8 +382,8 @@ They will be enumerated here.
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
-- :attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` objects.
-- :attr:`Message.attachments` is now a list of :class:`Attachment` instead of ``dict`` object.
+- :attr:`Message.embeds` is now a list of :class:`Embed` instead of :class:`dict` objects.
+- :attr:`Message.attachments` is now a list of :class:`Attachment` instead of :class:`dict` object.
 - :attr:`Guild.roles` is now sorted through hierarchy. The first element is always the ``@everyone`` role.
 
 **Added**
@@ -701,12 +701,12 @@ when reached instead of setting the return to ``None``. For example:
 Upgraded Dependencies
 -----------------------
 
-Following v1.0 of the library, we've updated our requirements to ``aiohttp`` v2.0 or higher.
+Following v1.0 of the library, we've updated our requirements to :doc:`aiohttp <aio:index>` v2.0 or higher.
 
 Since this is a backwards incompatible change, it is recommended that you see the
-`changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ and the
-`migrating <http://aiohttp.readthedocs.io/en/stable/migration.html>`_ pages for details on the breaking changes in
-``aiohttp``.
+`changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_
+and the :doc:`aio:migration_to_2xx` pages for details on the breaking changes in
+:doc:`aiohttp <aio:index>`.
 
 Of the most significant for common users is the removal of helper functions such as:
 
@@ -899,9 +899,9 @@ Command instances have gained new attributes and properties:
 
 For :class:`~ext.commands.Group` and :class:`~ext.commands.Bot` the following changed:
 
-- Changed :attr:`~.GroupMixin.commands` to be a ``set`` without aliases.
+- Changed :attr:`~.GroupMixin.commands` to be a :class:`set` without aliases.
 
-    - Use :attr:`~.GroupMixin.all_commands` to get the old ``dict`` with all commands.
+    - Use :attr:`~.GroupMixin.all_commands` to get the old :class:`dict` with all commands.
 
 Check Changes
 ~~~~~~~~~~~~~~~
@@ -949,7 +949,7 @@ and commands.
 HelpFormatter and Help Command Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`~.commands.HelpFormatter` class has been removed. It has been replaced with a :class:`~.commands.HelpCommand` class. This class now stores all the command handling and processing of the help command.
+The ``HelpFormatter`` class has been removed. It has been replaced with a :class:`~.commands.HelpCommand` class. This class now stores all the command handling and processing of the help command.
 
 The help command is now stored in the :attr:`.Bot.help_command` attribute. As an added extension, you can disable the help command completely by assigning the attribute to ``None`` or passing it at ``__init__`` as ``help_command=None``.
 
