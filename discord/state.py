@@ -322,7 +322,7 @@ class ConnectionState:
         future = self.receive_member_query(guild_id, query)
         try:
             # start the query operation
-            await ws.request_chunks(guild_id, query, limit)
+            await ws.request_chunks(guild_id, query, limit, presences)
             members = await asyncio.wait_for(future, timeout=5.0)
 
             if cache:
