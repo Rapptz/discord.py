@@ -39,6 +39,8 @@ from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
+from .utils import escape_mentions
+
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -557,7 +559,8 @@ class Message:
             return transformations.get(obj.group(0), '')
 
         pattern = re.compile('|'.join(transformations.keys()))
-        return pattern.sub(repl2, result)
+        replaced = pattern.sub(repl2, result)
+        return escape_mentions(replaced)
 
     @property
     def created_at(self):
