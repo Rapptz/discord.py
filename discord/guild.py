@@ -1591,6 +1591,68 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
+    async def edit_role_positions(self, *, positions=None, reason=None):
+        """|coro|
+        
+        Changes the positions of a set of :class:`Role` for the guild.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        do this.
+
+        Example:
+
+        .. code-block:: python3
+
+            positions = {
+                bots_role: 1, # penultimate role
+                tester_role: 2,
+                admin_role: 6
+            }
+
+            await guild.edit_role_positions(positions=positions)
+
+        Parameters
+        -----------
+        positions
+            A :class:`dict` of :class:`Role` to :class:`int` to change the positions
+            of each given role.
+        reason: Optional[:class:`str`]
+            The reason for creating this channel. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to move the roles.
+        HTTPException
+            Moving the roles failed.
+        InvalidArgument
+            An invalid keyword argument was given.
+
+        Returns
+        --------
+        List[:class:`Role`]
+            A list of all the roles in the guild.
+        """
+        if positions is None:
+            positions = {}
+        elif not isinstance(positions, dict):
+            raise InvalidArgument('positions parameter expects a dict.')
+
+        role_positions = []
+        for role, position in positions.items():
+
+            payload = {
+                'id': role.id, 
+                'position': position
+            }
+
+            role_positions.append(payload)
+
+        data = await self._state.http.move_role_position(self.id, role_positions, reason=reason)
+        roles = [Role(guild=self, data=d, state=self._state) for d in data]
+
+        return roles
+
     async def kick(self, user, *, reason=None):
         """|coro|
 
