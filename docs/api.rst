@@ -860,7 +860,7 @@ of :class:`enum.Enum`.
         The ``india`` region was added.
 
     .. versionchanged:: 1.3
-        The ``europe`` region was added.
+        The ``europe`` and ``dubai`` regions were added.
 
     .. attribute:: amsterdam
 
@@ -868,6 +868,9 @@ of :class:`enum.Enum`.
     .. attribute:: brazil
 
         The Brazil region.
+    .. attribute:: dubai
+
+        The Dubai region.
     .. attribute:: eu_central
 
         The EU Central region.
