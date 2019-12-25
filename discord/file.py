@@ -69,7 +69,7 @@ class File:
             self._owner = False
 
         elif isinstance(fp, aiohttp.StreamReader):
-            err = fp._exception
+            err = fp.exception()
             if err is not None:
                 raise ValueError('aiohttp.StreamReader cannot be read due to an exception') from err
 
