@@ -28,10 +28,13 @@ import inspect
 import copy
 from ._types import _BaseCommand
 
-__all__ = ('CogMeta', 'Cog')
+__all__ = (
+    'CogMeta',
+    'Cog',
+)
 
 class CogMeta(type):
-    """A　metaclass for defining a cog.
+    """A metaclass for defining a cog.
 
     Note that you should probably not use this directly. It is exposed
     purely for documentation purposes along with making custom metaclasses to intermix

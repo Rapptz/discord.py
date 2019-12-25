@@ -129,7 +129,7 @@ at all:
 
 .. image:: /images/commands/variable3.png
 
-Since the ``args`` variable is a `tuple <https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range>`_,
+Since the ``args`` variable is a :class:`py:tuple`,
 you can do anything you would usually do with one.
 
 Keyword-Only Arguments
@@ -224,7 +224,7 @@ This works with any callable, such as a function that would convert a string to 
 bool
 ^^^^^^
 
-Unlike the other basic converters, the :class:`bool` converter is treated slightly different. Instead of casting directly to the :class:`bool` type, which would result in any non-empty argument returning ``True``, it instead evaluates the argument as ``True`` or ``False`` based on it's given content:
+Unlike the other basic converters, the :class:`bool` converter is treated slightly different. Instead of casting directly to the :class:`bool` type, which would result in any non-empty argument returning ``True``, it instead evaluates the argument as ``True`` or ``False`` based on its given content:
 
 .. code-block:: python3
 
@@ -357,7 +357,7 @@ Discord Converters
 Working with :ref:`discord_api_models` is a fairly common thing when defining commands, as a result the library makes
 working with them easy.
 
-For example, to receive a :class:`Member`, you can just pass it as a converter:
+For example, to receive a :class:`Member` you can just pass it as a converter:
 
 .. code-block:: python3
 
@@ -377,6 +377,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`VoiceChannel`
 - :class:`CategoryChannel`
 - :class:`Role`
+- :class:`Message` (since v1.1)
 - :class:`Invite`
 - :class:`Game`
 - :class:`Emoji`
@@ -389,31 +390,33 @@ specify.
 Under the hood, these are implemented by the :ref:`ext_commands_adv_converters` interface. A table of the equivalent
 converter is given below:
 
-+-----------------------+-------------------------------------------------+
-|     Discord Class     |                    Converter                    |
-+-----------------------+-------------------------------------------------+
-| :class:`Member`       | :class:`~ext.commands.MemberConverter`          |
-+-----------------------+-------------------------------------------------+
-| :class:`User`         | :class:`~ext.commands.UserConverter`            |
-+-----------------------+-------------------------------------------------+
-| :class:`TextChannel`  | :class:`~ext.commands.TextChannelConverter`     |
-+-----------------------+-------------------------------------------------+
-| :class:`VoiceChannel` | :class:`~ext.commands.VoiceChannelConverter`    |
-+-----------------------+-------------------------------------------------+
-| :class:`VoiceChannel` | :class:`~ext.commands.CategoryChannelConverter` |
-+-----------------------+-------------------------------------------------+
-| :class:`Role`         | :class:`~ext.commands.RoleConverter`            |
-+-----------------------+-------------------------------------------------+
-| :class:`Invite`       | :class:`~ext.commands.InviteConverter`          |
-+-----------------------+-------------------------------------------------+
-| :class:`Game`         | :class:`~ext.commands.GameConverter`            |
-+-----------------------+-------------------------------------------------+
-| :class:`Emoji`        | :class:`~ext.commands.EmojiConverter`           |
-+-----------------------+-------------------------------------------------+
-| :class:`PartialEmoji` | :class:`~ext.commands.PartialEmojiConverter`    |
-+-----------------------+-------------------------------------------------+
-| :class:`Colour`       | :class:`~ext.commands.ColourConverter`          |
-+-----------------------+-------------------------------------------------+
++--------------------------+-------------------------------------------------+
+|     Discord Class        |                    Converter                    |
++--------------------------+-------------------------------------------------+
+| :class:`Member`          | :class:`~ext.commands.MemberConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`Message`         | :class:`~ext.commands.MessageConverter`         |
++--------------------------+-------------------------------------------------+
+| :class:`User`            | :class:`~ext.commands.UserConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`TextChannel`     | :class:`~ext.commands.TextChannelConverter`     |
++--------------------------+-------------------------------------------------+
+| :class:`VoiceChannel`    | :class:`~ext.commands.VoiceChannelConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`CategoryChannel` | :class:`~ext.commands.CategoryChannelConverter` |
++--------------------------+-------------------------------------------------+
+| :class:`Role`            | :class:`~ext.commands.RoleConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`Invite`          | :class:`~ext.commands.InviteConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`Game`            | :class:`~ext.commands.GameConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`Emoji`           | :class:`~ext.commands.EmojiConverter`           |
++--------------------------+-------------------------------------------------+
+| :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`Colour`          | :class:`~ext.commands.ColourConverter`          |
++--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:
 
@@ -557,7 +560,7 @@ This command can be invoked any of the following ways:
 Error Handling
 ----------------
 
-When our commands fail to either parse we will, by default, receive a noisy error in ``stderr`` of our console that tells us
+When our commands fail to parse we will, by default, receive a noisy error in ``stderr`` of our console that tells us
 that an error has happened and has been silently ignored.
 
 In order to handle our errors, we must use something called an error handler. There is a global error handler, called
@@ -651,6 +654,7 @@ When multiple checks are specified, **all** of them must be ``True``:
         return commands.check(predicate)
 
     @bot.command()
+    @commands.is_owner()
     @is_in_guild(41771983423143937)
     async def secretguilddata(ctx):
         """super secret stuff"""
@@ -665,6 +669,7 @@ raise a custom :exc:`~ext.commands.CommandError` derived exception, then it will
 .. code-block:: python3
 
     @bot.command()
+    @commands.is_owner()
     @is_in_guild(41771983423143937)
     async def secretguilddata(ctx):
         """super secret stuff"""

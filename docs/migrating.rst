@@ -206,8 +206,6 @@ A list of these changes is enumerated below.
 +---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.wait_until_login``           | Removed                                                                      |
 +---------------------------------------+------------------------------------------------------------------------------+
-| ``Client.messages``                   | Removed                                                                      |
-+---------------------------------------+------------------------------------------------------------------------------+
 | ``Client.wait_until_ready``           | No change                                                                    |
 +---------------------------------------+------------------------------------------------------------------------------+
 
@@ -270,7 +268,7 @@ User and Member Type Split
 
 In v1.0 to save memory, :class:`User` and :class:`Member` are no longer inherited. Instead, they are "flattened"
 by having equivalent properties that map out to the functional underlying :class:`User`. Thus, there is no functional
-change in how they are used. However this breaks ``isinstance`` checks and thus is something to keep in mind.
+change in how they are used. However this breaks :func:`isinstance` checks and thus is something to keep in mind.
 
 These memory savings were accomplished by having a global :class:`User` cache, and as a positive consequence you
 can now easily fetch a :class:`User` by their ID by using the new :meth:`Client.get_user`. You can also get a list
@@ -291,7 +289,7 @@ In order to save memory the channels have been split into 4 different types:
 - :class:`DMChannel` for DM channels with members.
 - :class:`GroupChannel` for Group DM channels with members.
 
-With this split came the removal of the ``is_private`` attribute. You should now use ``isinstance``.
+With this split came the removal of the ``is_private`` attribute. You should now use :func:`isinstance`.
 
 The types are split into two different :ref:`discord_api_abcs`:
 
@@ -329,6 +327,10 @@ They will be enumerated here.
 - ``Client.get_all_emojis``
 
     - Use :attr:`Client.emojis` instead.
+
+` ``Client.messages``
+
+    - Use read-only :attr:`Client.cached_messages` instead.
 
 - ``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone.
 
@@ -380,8 +382,8 @@ They will be enumerated here.
 **Changed**
 
 - :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
-- :attr:`Message.embeds` is now a list of :class:`Embed` instead of ``dict`` objects.
-- :attr:`Message.attachments` is now a list of :class:`Attachment` instead of ``dict`` object.
+- :attr:`Message.embeds` is now a list of :class:`Embed` instead of :class:`dict` objects.
+- :attr:`Message.attachments` is now a list of :class:`Attachment` instead of :class:`dict` object.
 - :attr:`Guild.roles` is now sorted through hierarchy. The first element is always the ``@everyone`` role.
 
 **Added**
@@ -699,12 +701,12 @@ when reached instead of setting the return to ``None``. For example:
 Upgraded Dependencies
 -----------------------
 
-Following v1.0 of the library, we've updated our requirements to ``aiohttp`` v2.0 or higher.
+Following v1.0 of the library, we've updated our requirements to :doc:`aiohttp <aio:index>` v2.0 or higher.
 
 Since this is a backwards incompatible change, it is recommended that you see the
-`changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ and the
-`migrating <http://aiohttp.readthedocs.io/en/stable/migration.html>`_ pages for details on the breaking changes in
-``aiohttp``.
+`changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_
+and the :doc:`aio:migration_to_2xx` pages for details on the breaking changes in
+:doc:`aiohttp <aio:index>`.
 
 Of the most significant for common users is the removal of helper functions such as:
 
@@ -801,21 +803,25 @@ will either DM the user in a DM context or send a message in the channel it was 
 functionality. The old helpers have been removed in favour of the new :class:`abc.Messageable` interface. See
 :ref:`migrating_1_0_removed_helpers` for more information.
 
-Since the :class:`~ext.commands.Context` is now by default passed, several shortcuts have been added:
+Since the :class:`~ext.commands.Context` is now passed by default, several shortcuts have been added:
 
 **New Shortcuts**
 
-- :attr:`~ext.commands.Context.author` is a shortcut for ``ctx.message.author``.
-- :attr:`~ext.commands.Context.guild` is a shortcut for ``ctx.message.guild``.
-- :attr:`~ext.commands.Context.channel` is a shortcut for ``ctx.message.channel``.
-- :attr:`~ext.commands.Context.me` is a shortcut for ``ctx.message.guild.me`` or ``ctx.bot.user``.
-- :attr:`~ext.commands.Context.voice_client` is a shortcut for ``ctx.message.guild.voice_client``.
+- :attr:`ctx.author <ext.commands.Context.author>` is a shortcut for ``ctx.message.author``.
+- :attr:`ctx.guild <ext.commands.Context.guild>` is a shortcut for ``ctx.message.guild``.
+- :attr:`ctx.channel <ext.commands.Context.channel>` is a shortcut for ``ctx.message.channel``.
+- :attr:`ctx.me <ext.commands.Context.me>` is a shortcut for ``ctx.message.guild.me`` or ``ctx.bot.user``.
+- :attr:`ctx.voice_client <ext.commands.Context.voice_client>` is a shortcut for ``ctx.message.guild.voice_client``.
 
 **New Functionality**
 
-- :meth:`~.Context.reinvoke` to invoke a command again.
+- :meth:`.Context.reinvoke` to invoke a command again.
 
     - This is useful for bypassing cooldowns.
+- :attr:`.Context.valid` to check if a context can be invoked with :meth:`.Bot.invoke`.
+- :meth:`.Context.send_help` to show the help command for an entity using the new :class:`~.ext.commands.HelpCommand` system.
+
+    - This is useful if you want to show the user help if they misused a command.
 
 Subclassing Context
 ++++++++++++++++++++
@@ -893,9 +899,9 @@ Command instances have gained new attributes and properties:
 
 For :class:`~ext.commands.Group` and :class:`~ext.commands.Bot` the following changed:
 
-- Changed :attr:`~.GroupMixin.commands` to be a ``set`` without aliases.
+- Changed :attr:`~.GroupMixin.commands` to be a :class:`set` without aliases.
 
-    - Use :attr:`~.GroupMixin.all_commands` to get the old ``dict`` with all commands.
+    - Use :attr:`~.GroupMixin.all_commands` to get the old :class:`dict` with all commands.
 
 Check Changes
 ~~~~~~~~~~~~~~~
@@ -943,7 +949,7 @@ and commands.
 HelpFormatter and Help Command Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`~.commands.HelpFormatter` class has been removed. It has been replaced with a :class:`~.commands.HelpCommand` class. This class now stores all the command handling and processing of the help command.
+The ``HelpFormatter`` class has been removed. It has been replaced with a :class:`~.commands.HelpCommand` class. This class now stores all the command handling and processing of the help command.
 
 The help command is now stored in the :attr:`.Bot.help_command` attribute. As an added extension, you can disable the help command completely by assigning the attribute to ``None`` or passing it at ``__init__`` as ``help_command=None``.
 

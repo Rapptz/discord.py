@@ -26,11 +26,17 @@ DEALINGS IN THE SOFTWARE.
 
 import datetime
 
+from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
 from .utils import _get_as_snowflake
 
-__all__ = ['Activity', 'Streaming', 'Game', 'Spotify']
+__all__ = (
+    'Activity',
+    'Streaming',
+    'Game',
+    'Spotify',
+)
 
 """If curious, this is the current schema for an activity.
 
@@ -78,7 +84,19 @@ t.ActivityFlags = {
 """
 
 class _ActivityTag:
-    __slots__ = ()
+    __slots__ = ('_created_at',)
+
+    def __init__(self, **kwargs):
+        self._created_at = kwargs.pop('created_at', None)
+
+    @property
+    def created_at(self):
+        """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC.
+
+        .. versionadded:: 1.3.0
+        """
+        if self._created_at is not None:
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
 class Activity(_ActivityTag):
     """Represents an activity in Discord.
@@ -130,10 +148,11 @@ class Activity(_ActivityTag):
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
     """
 
-    __slots__ = ('state', 'details', 'timestamps', 'assets', 'party',
+    __slots__ = ('state', 'details', '_created_at', 'timestamps', 'assets', 'party',
                  'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.state = kwargs.pop('state', None)
         self.details = kwargs.pop('details', None)
         self.timestamps = kwargs.pop('timestamps', {})
@@ -147,6 +166,18 @@ class Activity(_ActivityTag):
         self.session_id = kwargs.pop('session_id', None)
         self.type = try_enum(ActivityType, kwargs.pop('type', -1))
 
+    def __repr__(self):
+        attrs = (
+            'type',
+            'name',
+            'url',
+            'details',
+            'application_id',
+            'session_id',
+        )
+        mapped = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in attrs)
+        return '<Activity %s>' % mapped
+
     def to_dict(self):
         ret = {}
         for attr in self.__slots__:
@@ -158,7 +189,7 @@ class Activity(_ActivityTag):
                 continue
 
             ret[attr] = value
-        ret['type'] = self.type.value
+        ret['type'] = int(self.type)
         return ret
 
     @property
@@ -188,7 +219,7 @@ class Activity(_ActivityTag):
         except KeyError:
             return None
         else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, large_image)
+            return Asset.BASE + '/app-assets/{0}/{1}.png'.format(self.application_id, large_image)
 
     @property
     def small_image_url(self):
@@ -201,7 +232,7 @@ class Activity(_ActivityTag):
         except KeyError:
             return None
         else:
-            return 'https://cdn.discordapp.com/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
+            return Asset.BASE + '/app-assets/{0}/{1}.png'.format(self.application_id, small_image)
     @property
     def large_image_text(self):
         """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
@@ -254,6 +285,7 @@ class Game(_ActivityTag):
     __slots__ = ('name', '_end', '_start')
 
     def __init__(self, name, **extra):
+        super().__init__(**extra)
         self.name = name
 
         try:
@@ -349,23 +381,29 @@ class Streaming(_ActivityTag):
 
     Attributes
     -----------
-    name: :class:`str`
+    platform: :class:`str`
+        Where the user is streaming from (ie. YouTube, Twitch).
+    name: Optional[:class:`str`]
         The stream's name.
-    url: :class:`str`
-        The stream's URL. Currently only twitch.tv URLs are supported. Anything else is silently
-        discarded.
     details: Optional[:class:`str`]
-        If provided, typically the game the streamer is playing.
+        Same as :attr:`name`
+    game: Optional[:class:`str`]
+        The game being streamed.
+    url: :class:`str`
+        The stream's URL.
     assets: :class:`dict`
         A dictionary comprising of similar keys than those in :attr:`Activity.assets`.
     """
 
-    __slots__ = ('name', 'url', 'details', 'assets')
+    __slots__ = ('platform', 'name', 'game', 'url', 'details', 'assets')
 
     def __init__(self, *, name, url, **extra):
-        self.name = name
+        super().__init__(**extra)
+        self.platform = name
+        self.name = extra.pop('details', name)
+        self.game = extra.pop('state', None)
         self.url = url
-        self.details = extra.pop('details', None)
+        self.details = extra.pop('details', self.name) # compatibility
         self.assets = extra.pop('assets', {})
 
     @property
@@ -440,7 +478,8 @@ class Spotify:
             Returns the string 'Spotify'.
     """
 
-    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id')
+    __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id',
+                 '_created_at')
 
     def __init__(self, **data):
         self._state = data.pop('state', None)
@@ -450,6 +489,7 @@ class Spotify:
         self._party = data.pop('party', {})
         self._sync_id = data.pop('sync_id')
         self._session_id = data.pop('session_id')
+        self._created_at = data.pop('created_at', None)
 
     @property
     def type(self):
@@ -458,6 +498,15 @@ class Spotify:
         It always returns :attr:`ActivityType.listening`.
         """
         return ActivityType.listening
+
+    @property
+    def created_at(self):
+        """Optional[:class:`datetime.datetime`]: When the user started listening in UTC.
+
+        .. versionadded:: 1.3.0
+        """
+        if self._created_at is not None:
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
     def colour(self):
@@ -492,7 +541,8 @@ class Spotify:
         return 'Spotify'
 
     def __eq__(self, other):
-        return isinstance(other, Spotify) and other._session_id == self._session_id
+        return (isinstance(other, Spotify) and other._session_id == self._session_id
+                and other._sync_id == self._sync_id and other.start == self.start)
 
     def __ne__(self, other):
         return not self.__eq__(other)

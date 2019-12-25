@@ -44,8 +44,13 @@ from .errors import ConnectionClosed, InvalidArgument
 
 log = logging.getLogger(__name__)
 
-__all__ = ['DiscordWebSocket', 'KeepAliveHandler', 'VoiceKeepAliveHandler',
-           'DiscordVoiceWebSocket', 'ResumeWebSocket']
+__all__ = (
+    'DiscordWebSocket',
+    'KeepAliveHandler',
+    'VoiceKeepAliveHandler',
+    'DiscordVoiceWebSocket',
+    'ResumeWebSocket',
+)
 
 class ResumeWebSocket(Exception):
     """Signals to initialise via RESUME opcode instead of IDENTIFY."""
@@ -222,6 +227,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         # dynamically add attributes needed
         ws.token = client.http.token
         ws._connection = client._connection
+        ws._discord_parsers = client._connection.parsers
         ws._dispatch = client.dispatch
         ws.gateway = gateway
         ws.shard_id = shard_id
@@ -263,7 +269,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             properties. The data parameter is the 'd' key in the JSON message.
         result
             A function that takes the same data parameter and executes to send
-            the result to the future. If None, returns the data.
+            the result to the future. If ``None``, returns the data.
 
         Returns
         --------
@@ -291,6 +297,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 },
                 'compress': True,
                 'large_threshold': 250,
+                'guild_subscriptions': self._connection.guild_subscriptions,
                 'v': 3
             }
         }
@@ -382,13 +389,14 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
             if op == self.INVALIDATE_SESSION:
                 if data is True:
-                    await asyncio.sleep(5.0, loop=self.loop)
+                    await asyncio.sleep(5.0)
                     await self.close()
                     raise ResumeWebSocket(self.shard_id)
 
                 self.sequence = None
                 self.session_id = None
                 log.info('Shard ID %s session has been invalidated.', self.shard_id)
+                await asyncio.sleep(5.0)
                 await self.identify()
                 return
 
@@ -409,11 +417,9 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
                      self.shard_id, self.session_id, ', '.join(trace))
 
-        parser = 'parse_' + event.lower()
-
         try:
-            func = getattr(self._connection, parser)
-        except AttributeError:
+            func = self._discord_parsers[event]
+        except KeyError:
             log.warning('Unknown event %s.', event)
         else:
             func(data)
@@ -509,6 +515,17 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         payload = {
             'op': self.GUILD_SYNC,
             'd': list(guild_ids)
+        }
+        await self.send_as_json(payload)
+
+    async def request_chunks(self, guild_id, query, limit):
+        payload = {
+            'op': self.REQUEST_MEMBERS,
+            'd': {
+                'guild_id': str(guild_id),
+                'query': query,
+                'limit': limit
+            }
         }
         await self.send_as_json(payload)
 
@@ -692,6 +709,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         state = self._connection
         state.ssrc = data['ssrc']
         state.voice_port = data['port']
+        state.endpoint_ip = data['ip']
 
         packet = bytearray(70)
         struct.pack_into('>I', packet, 0, state.ssrc)
@@ -704,9 +722,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         ip_end = recv.index(0, ip_start)
         state.ip = recv[ip_start:ip_end].decode('ascii')
 
-        # the port is a little endian unsigned short in the last two bytes
-        # yes, this is different endianness from everything else
-        state.port = struct.unpack_from('<H', recv, len(recv) - 2)[0]
+        state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
         log.debug('detected ip: %s port: %s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
@@ -727,7 +743,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def poll_event(self):
         try:
-            msg = await asyncio.wait_for(self.recv(), timeout=30.0, loop=self.loop)
+            msg = await asyncio.wait_for(self.recv(), timeout=30.0)
             await self.received_message(json.loads(msg))
         except websockets.exceptions.ConnectionClosed as exc:
             raise ConnectionClosed(exc, shard_id=None) from exc

@@ -28,6 +28,7 @@ import asyncio
 import functools
 import inspect
 import typing
+import datetime
 
 import discord
 
@@ -37,10 +38,27 @@ from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
 
-__all__ = ['Command', 'Group', 'GroupMixin', 'command', 'group',
-           'has_role', 'has_permissions', 'has_any_role', 'check',
-           'bot_has_role', 'bot_has_permissions', 'bot_has_any_role',
-           'cooldown', 'dm_only', 'guild_only', 'is_owner', 'is_nsfw']
+__all__ = (
+    'Command',
+    'Group',
+    'GroupMixin',
+    'command',
+    'group',
+    'has_role',
+    'has_permissions',
+    'has_any_role',
+    'check',
+    'bot_has_role',
+    'bot_has_permissions',
+    'bot_has_any_role',
+    'cooldown',
+    'dm_only',
+    'guild_only',
+    'is_owner',
+    'is_nsfw',
+    'has_guild_permissions',
+    'bot_has_guild_permissions'
+)
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -129,10 +147,12 @@ class Command(_BaseCommand):
         If the command is invoked while it is disabled, then
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
-    parent: Optional[command]
+    parent: Optional[:class:`Command`]
         The parent command that this command belongs to. ``None`` if there
         isn't one.
-    checks
+    cog: Optional[:class:`Cog`]
+        The cog that this command belongs to. ``None`` if there isn't one.
+    checks: List[Callable[..., :class:`bool`]]
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
         is necessary to be thrown to signal failure, then one inherited from
@@ -151,6 +171,8 @@ class Command(_BaseCommand):
         regular matter rather than passing the rest completely raw. If ``True``
         then the keyword-only argument will pass in the rest of the arguments
         in a completely raw matter. Defaults to ``False``.
+    invoked_subcommand: Optional[:class:`Command`]
+        The subcommand that was invoked, if any.
     ignore_extra: :class:`bool`
         If ``True``\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
@@ -258,6 +280,40 @@ class Command(_BaseCommand):
             if value.annotation is converters.Greedy:
                 raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
+    def add_check(self, func):
+        """Adds a check to the command.
+
+        This is the non-decorator interface to :func:`.check`.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        func
+            The function that will be used as a check.
+        """
+
+        self.checks.append(func)
+
+    def remove_check(self, func):
+        """Removes a check from the command.
+
+        This function is idempotent and will not raise an exception
+        if the function is not in the command's checks.
+
+        .. versionadded:: 1.3.0
+
+        Parameters
+        -----------
+        func
+            The function to remove from the checks.
+        """
+
+        try:
+            self.checks.remove(func)
+        except ValueError:
+            pass
+
     def update(self, **kwargs):
         """Updates :class:`Command` instance with updated attribute.
 
@@ -272,7 +328,7 @@ class Command(_BaseCommand):
         other._after_invoke = self._after_invoke
         if self.checks != other.checks:
             other.checks = self.checks.copy()
-        if self._buckets != other._buckets:
+        if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
         try:
             other.on_error = self.on_error
@@ -281,14 +337,15 @@ class Command(_BaseCommand):
         return other
 
     def copy(self):
-        """Creates a copy of this :class:`Command`."""
+        """Creates a copy of this command."""
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         return self._ensure_assignment_on_copy(ret)
 
     def _update_copy(self, kwargs):
         if kwargs:
-            copy = self.__class__(self.callback, **kwargs)
-            copy.update(**self.__original_kwargs__)
+            kw = kwargs.copy()
+            kw.update(self.__original_kwargs__)
+            copy = self.__class__(self.callback, **kw)
             return self._ensure_assignment_on_copy(copy)
         else:
             return self.copy()
@@ -325,8 +382,8 @@ class Command(_BaseCommand):
         except AttributeError:
             pass
         else:
-            if module.startswith('discord.') and not module.endswith('converter'):
-                converter = getattr(converters, converter.__name__ + 'Converter')
+            if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
+                converter = getattr(converters, converter.__name__ + 'Converter', converter)
 
         try:
             if inspect.isclass(converter):
@@ -443,10 +500,10 @@ class Command(_BaseCommand):
             previous = view.index
 
             view.skip_ws()
-            argument = view.get_quoted_word()
             try:
+                argument = view.get_quoted_word()
                 value = await self.do_conversion(ctx, converter, argument, param)
-            except CommandError:
+            except (CommandError, ArgumentParsingError):
                 view.index = previous
                 break
             else:
@@ -459,10 +516,10 @@ class Command(_BaseCommand):
     async def _transform_greedy_var_pos(self, ctx, param, converter):
         view = ctx.view
         previous = view.index
-        argument = view.get_quoted_word()
         try:
+            argument = view.get_quoted_word()
             value = await self.do_conversion(ctx, converter, argument, param)
-        except CommandError:
+        except (CommandError, ArgumentParsingError):
             view.index = previous
             raise RuntimeError() from None # break loop
         else:
@@ -489,7 +546,7 @@ class Command(_BaseCommand):
 
     @property
     def full_parent_name(self):
-        """Retrieves the fully qualified parent command name.
+        """:class:`str`: Retrieves the fully qualified parent command name.
 
         This the base command name required to execute it. For example,
         in ``?one two three`` the parent name would be ``one two``.
@@ -503,13 +560,14 @@ class Command(_BaseCommand):
         return ' '.join(reversed(entries))
 
     @property
-    def root_parent(self):
-        """Retrieves the root parent of this command.
+    def parents(self):
+        """:class:`Command`: Retrieves the parents of this command.
 
-        If the command has no parents then it returns ``None``.
+        If the command has no parents then it returns an empty :class:`list`.
 
-        For example in commands ``?a b c test``, the root parent is
-        ``a``.
+        For example in commands ``?a b c test``, the parents are ``[c, b, a]``.
+
+        .. versionadded:: 1.1.0
         """
         entries = []
         command = self
@@ -517,14 +575,23 @@ class Command(_BaseCommand):
             command = command.parent
             entries.append(command)
 
-        if len(entries) == 0:
-            return None
+        return entries
 
-        return entries[-1]
+    @property
+    def root_parent(self):
+        """Retrieves the root parent of this command.
+
+        If the command has no parents then it returns ``None``.
+
+        For example in commands ``?a b c test``, the root parent is ``a``.
+        """
+        if not self.parent:
+            return None
+        return self.parents[-1]
 
     @property
     def qualified_name(self):
-        """Retrieves the fully qualified command name.
+        """:class:`str`: Retrieves the fully qualified command name.
 
         This is the full parent name with the command name as well.
         For example, in ``?one two three`` the qualified name would be
@@ -638,8 +705,9 @@ class Command(_BaseCommand):
 
     def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
-            bucket = self._buckets.get_bucket(ctx.message)
-            retry_after = bucket.update_rate_limit()
+            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            bucket = self._buckets.get_bucket(ctx.message, current)
+            retry_after = bucket.update_rate_limit(current)
             if retry_after:
                 raise CommandOnCooldown(bucket, retry_after)
 
@@ -661,7 +729,7 @@ class Command(_BaseCommand):
 
         Parameters
         -----------
-        ctx: :class:`.Context.`
+        ctx: :class:`.Context`
             The invocation context to use when checking the commands cooldown status.
 
         Returns
@@ -794,12 +862,12 @@ class Command(_BaseCommand):
 
     @property
     def cog_name(self):
-        """The name of the cog this command belongs to. None otherwise."""
+        """:class:`str`: The name of the cog this command belongs to. None otherwise."""
         return type(self.cog).__cog_name__ if self.cog is not None else None
 
     @property
     def short_doc(self):
-        """Gets the "short" documentation of a command.
+        """:class:`str`: Gets the "short" documentation of a command.
 
         By default, this is the :attr:`brief` attribute.
         If that lookup leads to an empty string then the first line of the
@@ -824,7 +892,7 @@ class Command(_BaseCommand):
 
     @property
     def signature(self):
-        """Returns a POSIX-like signature useful for help command output."""
+        """:class:`str`: Returns a POSIX-like signature useful for help command output."""
         if self.usage is not None:
             return self.usage
 
@@ -944,7 +1012,7 @@ class GroupMixin:
 
         Parameters
         -----------
-        command
+        command: :class:`Command`
             The command to add.
 
         Raises
@@ -1080,7 +1148,7 @@ class Group(GroupMixin, Command):
 
     Attributes
     -----------
-    invoke_without_command: :class:`bool`
+    invoke_without_command: Optional[:class:`bool`]
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -1089,7 +1157,7 @@ class Group(GroupMixin, Command):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
-    case_insensitive: :class:`bool`
+    case_insensitive: Optional[:class:`bool`]
         Indicates if the group's commands should be case insensitive.
         Defaults to ``False``.
     """
@@ -1105,6 +1173,7 @@ class Group(GroupMixin, Command):
         return ret
 
     async def invoke(self, ctx):
+        ctx.invoked_subcommand = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
             await self.prepare(ctx)
@@ -1132,6 +1201,7 @@ class Group(GroupMixin, Command):
             await super().invoke(ctx)
 
     async def reinvoke(self, ctx, *, call_hooks=False):
+        ctx.invoked_subcommand = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
             ctx.command = self
@@ -1213,10 +1283,15 @@ def command(name=None, cls=None, **attrs):
 def group(name=None, **attrs):
     """A decorator that transforms a function into a :class:`.Group`.
 
-    This is similar to the :func:`.command` decorator but creates a
-    :class:`.Group` instead of a :class:`.Command`.
+    This is similar to the :func:`.command` decorator but the ``cls``
+    parameter is set to :class:`Group` by default.
+
+    .. versionchanged:: 1.1.0
+        The ``cls`` parameter can now be passed.
     """
-    return command(name=name, cls=Group, **attrs)
+
+    attrs.setdefault('cls', Group)
+    return command(name=name, **attrs)
 
 def check(predicate):
     r"""A decorator that adds a check to the :class:`.Command` or its
@@ -1232,9 +1307,26 @@ def check(predicate):
     will be propagated while those subclassed will be sent to
     :func:`.on_command_error`.
 
+    A special attribute named ``predicate`` is bound to the value
+    returned by this decorator to retrieve the predicate passed to the
+    decorator. This allows the following introspection and chaining to be done:
+
+    .. code-block:: python3
+
+        def owner_or_permissions(**perms):
+            original = commands.has_permissions(**perms).predicate
+            def extended_check(ctx):
+                if ctx.guild is None:
+                    return False
+                return ctx.guild.owner_id == ctx.author.id or original(ctx)
+            return commands.check(extended_check)
+
     .. note::
 
         These functions can either be regular functions or coroutines.
+
+    .. versionchanged:: 1.3.0
+        The ``predicate`` attribute was added.
 
     Examples
     ---------
@@ -1267,7 +1359,7 @@ def check(predicate):
 
     Parameters
     -----------
-    predicate: Callable[:class:`Context`, :class:`bool`]
+    predicate: Callable[[:class:`Context`], :class:`bool`]
         The predicate to check if the command should be invoked.
     """
 
@@ -1281,6 +1373,8 @@ def check(predicate):
             func.__commands_checks__.append(predicate)
 
         return func
+
+    decorator.predicate = predicate
     return decorator
 
 def has_role(item):
@@ -1295,6 +1389,19 @@ def has_role(item):
     If the message is invoked in a private message context then the check will
     return ``False``.
 
+    This check raises one of two special exceptions, :exc:`.MissingRole` if the user
+    is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionchanged:: 1.1.0
+
+        Raise :exc:`.MissingRole` or :exc:`.NoPrivateMessage`
+        instead of generic :exc:`.CheckFailure`
+
     Parameters
     -----------
     item: Union[:class:`int`, :class:`str`]
@@ -1303,13 +1410,15 @@ def has_role(item):
 
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
-            return False
+            raise NoPrivateMessage()
 
         if isinstance(item, int):
             role = discord.utils.get(ctx.author.roles, id=item)
         else:
             role = discord.utils.get(ctx.author.roles, name=item)
-        return role is not None
+        if role is None:
+            raise MissingRole(item)
+        return True
 
     return check(predicate)
 
@@ -1319,6 +1428,19 @@ def has_any_role(*items):
     one out of the three roles specified, then this check will return `True`.
 
     Similar to :func:`.has_role`\, the names or IDs passed in must be exact.
+
+    This check raises one of two special exceptions, :exc:`.MissingAnyRole` if the user
+    is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionchanged:: 1.1.0
+
+        Raise :exc:`.MissingAnyRole` or :exc:`.NoPrivateMessage`
+        instead of generic :exc:`.CheckFailure`
 
     Parameters
     -----------
@@ -1337,21 +1459,93 @@ def has_any_role(*items):
     """
     def predicate(ctx):
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
-            return False
+            raise NoPrivateMessage()
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
-        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
+        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+            return True
+        raise MissingAnyRole(items)
+
+    return check(predicate)
+
+def bot_has_role(item):
+    """Similar to :func:`.has_role` except checks if the bot itself has the
+    role.
+
+    This check raises one of two special exceptions, :exc:`.BotMissingRole` if the bot
+    is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionchanged:: 1.1.0
+
+        Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
+        instead of generic :exc:`.CheckFailure`
+    """
+
+    def predicate(ctx):
+        ch = ctx.channel
+        if not isinstance(ch, discord.abc.GuildChannel):
+            raise NoPrivateMessage()
+
+        me = ch.guild.me
+        if isinstance(item, int):
+            role = discord.utils.get(me.roles, id=item)
+        else:
+            role = discord.utils.get(me.roles, name=item)
+        if role is None:
+            raise BotMissingRole(item)
+        return True
+    return check(predicate)
+
+def bot_has_any_role(*items):
+    """Similar to :func:`.has_any_role` except checks if the bot itself has
+    any of the roles listed.
+
+    This check raises one of two special exceptions, :exc:`.BotMissingAnyRole` if the bot
+    is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
+    Both inherit from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionchanged:: 1.1.0
+
+        Raise :exc:`.BotMissingAnyRole` or :exc:`.NoPrivateMessage`
+        instead of generic checkfailure
+    """
+    def predicate(ctx):
+        ch = ctx.channel
+        if not isinstance(ch, discord.abc.GuildChannel):
+            raise NoPrivateMessage()
+
+        me = ch.guild.me
+        getter = functools.partial(discord.utils.get, me.roles)
+        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+            return True
+        raise BotMissingAnyRole(items)
     return check(predicate)
 
 def has_permissions(**perms):
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
+    Note that this check operates on the current channel permissions, not the
+    guild wide permissions.
+
     The permissions passed in must be exactly like the properties shown under
     :class:`.discord.Permissions`.
 
     This check raises a special exception, :exc:`.MissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     Parameters
     ------------
@@ -1382,42 +1576,16 @@ def has_permissions(**perms):
 
     return check(predicate)
 
-def bot_has_role(item):
-    """Similar to :func:`.has_role` except checks if the bot itself has the
-    role.
-    """
-
-    def predicate(ctx):
-        ch = ctx.channel
-        if not isinstance(ch, discord.abc.GuildChannel):
-            return False
-        me = ch.guild.me
-        if isinstance(item, int):
-            role = discord.utils.get(me.roles, id=item)
-        else:
-            role = discord.utils.get(me.roles, name=item)
-        return role is not None
-    return check(predicate)
-
-def bot_has_any_role(*items):
-    """Similar to :func:`.has_any_role` except checks if the bot itself has
-    any of the roles listed.
-    """
-    def predicate(ctx):
-        ch = ctx.channel
-        if not isinstance(ch, discord.abc.GuildChannel):
-            return False
-        me = ch.guild.me
-        getter = functools.partial(discord.utils.get, me.roles)
-        return any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items)
-    return check(predicate)
-
 def bot_has_permissions(**perms):
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1433,20 +1601,75 @@ def bot_has_permissions(**perms):
 
     return check(predicate)
 
+def has_guild_permissions(**perms):
+    """Similar to :func:`.has_permissions`, but operates on guild wide
+    permissions instead of the current channel permissions.
+
+    If this check is called in a DM context, it will raise an
+    exception, :exc:`.NoPrivateMessage`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionadded:: 1.3.0
+    """
+    def predicate(ctx):
+        if not ctx.guild:
+            raise NoPrivateMessage
+
+        permissions = ctx.author.guild_permissions
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+
+        if not missing:
+            return True
+
+        raise MissingPermissions(missing)
+
+    return check(predicate)
+
+def bot_has_guild_permissions(**perms):
+    """Similar to :func:`.has_guild_permissions`, but checks the bot
+    members guild permissions.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionadded:: 1.3.0
+    """
+    def predicate(ctx):
+        if not ctx.guild:
+            raise NoPrivateMessage
+
+        permissions = ctx.me.guild_permissions
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm, None) != value]
+
+        if not missing:
+            return True
+
+        raise BotMissingPermissions(missing)
+
+    return check(predicate)
+
 def dm_only():
     """A :func:`.check` that indicates this command must only be used in a
-    DM context only. Only private messages are allowed when
+    DM context. Only private messages are allowed when
     using the command.
 
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionadded:: 1.1.0
     """
 
     def predicate(ctx):
         if ctx.guild is not None:
-            raise PrivateMessageOnly('This command can only be used in private messages.')
+            raise PrivateMessageOnly()
         return True
 
     return check(predicate)
@@ -1458,11 +1681,15 @@ def guild_only():
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
     that is inherited from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
     """
 
     def predicate(ctx):
         if ctx.guild is None:
-            raise NoPrivateMessage('This command cannot be used in private messages.')
+            raise NoPrivateMessage()
         return True
 
     return check(predicate)
@@ -1475,6 +1702,10 @@ def is_owner():
 
     This check raises a special exception, :exc:`.NotOwner` that is derived
     from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function **is** a coroutine.
     """
 
     async def predicate(ctx):
@@ -1485,9 +1716,25 @@ def is_owner():
     return check(predicate)
 
 def is_nsfw():
-    """A :func:`.check` that checks if the channel is a NSFW channel."""
+    """A :func:`.check` that checks if the channel is a NSFW channel.
+
+    This check raises a special exception, :exc:`.NSFWChannelRequired`
+    that is derived from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function is **not** a coroutine.
+
+    .. versionchanged:: 1.1.0
+
+        Raise :exc:`.NSFWChannelRequired` instead of generic :exc:`.CheckFailure`.
+        DM channels will also now pass this check.
+    """
     def pred(ctx):
-        return isinstance(ctx.channel, discord.TextChannel) and ctx.channel.is_nsfw()
+        ch = ctx.channel
+        if ctx.guild is None or (isinstance(ch, discord.TextChannel) and ch.is_nsfw()):
+            return True
+        raise NSFWChannelRequired(ch)
     return check(pred)
 
 def cooldown(rate, per, type=BucketType.default):
@@ -1496,7 +1743,7 @@ def cooldown(rate, per, type=BucketType.default):
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
-    either on a per-guild, per-channel, per-user, or global basis.
+    either on a per-guild, per-channel, per-user, per-role or global basis.
     Denoted by the third argument of ``type`` which must be of enum
     type ``BucketType`` which could be either:
 
@@ -1506,6 +1753,7 @@ def cooldown(rate, per, type=BucketType.default):
     - ``BucketType.channel`` for a per-channel basis.
     - ``BucketType.member`` for a per-member basis.
     - ``BucketType.category`` for a per-category basis.
+    - ``BucketType.role`` for a per-role basis (added in v1.3.0).
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.

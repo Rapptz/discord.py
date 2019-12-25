@@ -11,7 +11,7 @@ v0.10.0 is one of the biggest breaking changes in the library due to massive
 fundamental changes in how the library operates.
 
 The biggest major change is that the library has dropped support to all versions prior to
-Python 3.4.2. This was made to support ``asyncio``, in which more detail can be seen
+Python 3.4.2. This was made to support :mod:`asyncio`, in which more detail can be seen
 :issue:`in the corresponding issue <50>`. To reiterate this, the implication is that
 **python version 2.7 and 3.3 are no longer supported**.
 
@@ -98,7 +98,7 @@ Coroutines
 -----------
 
 The biggest change that the library went through is that almost every function in :class:`Client`
-was changed to be a `coroutine <https://docs.python.org/3/library/asyncio-task.html>`_. Functions
+was changed to be a `coroutine <py:library/asyncio-task.html>`_. Functions
 that are marked as a coroutine in the documentation must be awaited from or yielded from in order
 for the computation to be done. For example...
 
@@ -159,7 +159,7 @@ Enumerations
 ------------
 
 Due to dropping support for versions lower than Python 3.4.2, the library can now use
-`enumerations <https://docs.python.org/3/library/enum.html>`_ in places where it makes sense.
+:doc:`py:library/enum` in places where it makes sense.
 
 The common places where this was changed was in the server region, member status, and channel type.
 

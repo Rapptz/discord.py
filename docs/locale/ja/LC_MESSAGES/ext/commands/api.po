@@ -1,13 +1,11 @@
-# Translators:
-# Episword <mistio100@gmail.com>, 2018
-# cod <cod.sushi@gmail.com>, 2019
+
 msgid ""
 msgstr ""
-"Project-Id-Version:  discordpy-japanese\n"
+"Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-08 17:55-0400\n"
-"PO-Revision-Date: 2019-03-16 10:14+0000\n"
-"Last-Translator: mistio100 <mistio100@gmail.com>\n"
+"POT-Creation-Date: 2019-06-28 07:15-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14+0000\n"
+"Last-Translator: Danny Y (rapptz)\n"
 "Language: ja_JP\n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0\n"
@@ -43,13 +41,13 @@ msgstr ""
 "このクラスは :class:`discord.Client` のサブクラスのため、 :class:`discord.Client` "
 "でできることと同じことをこのBotで行うことができます。"
 
-#: discord.ext.commands.Bot:10 of
+#: discord.ext.commands.Bot:7 of
 msgid ""
 "This class also subclasses :class:`.GroupMixin` to provide the "
 "functionality to manage commands."
 msgstr "また、 :class:`.GroupMixin` も継承しており、コマンド管理の機能も使用可能です。"
 
-#: discord.ext.commands.Bot:15 of
+#: discord.ext.commands.Bot:12 of
 msgid ""
 "The command prefix is what the message content must contain initially to "
 "have a command invoked. This prefix could either be a string to indicate "
@@ -62,7 +60,7 @@ msgstr ""
 " :class:`discord.Message` "
 "を二つ目の引数として受け取り、接頭詞を返す呼び出し可能な関数を渡すことができます。これは「動的な」接頭詞の実装を容易にするためです。"
 
-#: discord.ext.commands.Bot:23 of
+#: discord.ext.commands.Bot:20 of
 msgid ""
 "An empty string as the prefix always matches, enabling prefix-less "
 "command invocation. While this may be useful in DMs it should be avoided "
@@ -70,7 +68,7 @@ msgid ""
 "command invocations."
 msgstr "接頭詞に空文字列を渡せば、接頭詞なしでコマンドの呼び出しができます。これはDM上では有用ですが、サーバーでは意図せずコマンドを呼び出してしまうことに繋がるため、避けるべきです。"
 
-#: discord.ext.commands.Bot:28 of
+#: discord.ext.commands.Bot:25 of
 msgid ""
 "The command prefix could also be an iterable of strings indicating that "
 "multiple checks for the prefix should be used and the first one to match "
@@ -81,7 +79,7 @@ msgstr ""
 "接頭詞は複数設定することもできます。複数の接頭詞がイテラブルで渡された場合、メッセージと最初に一致するものが接頭詞として使用されます。この接頭詞は"
 " :attr:`.Context.prefix` で取得することができます。また、空のイテラブルオブジェクトは使用できません。"
 
-#: discord.ext.commands.Bot:36 of
+#: discord.ext.commands.Bot:33 of
 msgid ""
 "When passing multiple prefixes be careful to not pass a prefix that "
 "matches a longer prefix occurring later in the sequence.  For example, if"
@@ -90,63 +88,169 @@ msgid ""
 "with ``!?``. This is especially important when passing an empty string, "
 "it should always be last as no prefix after it will be matched."
 msgstr ""
+"複数の接頭辞を渡すとき、後の接頭辞にマッチする接頭辞を、それよりも前に渡さないよう注意してください。たとえば、接頭辞が``('!', "
+"'!?')``のとき、``!?``の接頭辞は、その前のものが``!?``で始まるメッセージにマッチするため、どのメッセージにも反応しません。これは空文字列を渡すときは特に重要で、その後の接頭辞は無視されるため、空文字列は最後に置かないといけません。"
 
-#: discord.ext.commands.Bot:46 of
+#: discord.ext.commands.Bot:43 of
 msgid ""
-":class:`bool` -- Whether the commands should be case insensitive. "
-"Defaults to ``False``. This attribute does not carry over to groups. You "
-"must set it to every group if you require group commands to be case "
-"insensitive as well."
-msgstr ""
-":class:`bool` -- 接頭詞で大文字と小文字を区別するかどうか。デフォルトでは ``False`` "
-"です。グループコマンドでも大文字と小文字の区別が必要な場合、すべてのグループで設定が必要になります。"
-
-#: discord.ext.commands.Bot:52 of
-msgid ":class:`str` -- The content prefixed into the default help message."
-msgstr ":class:`str` -- この内容が、デフォルトのヘルプメッセージの先頭に表示されます。"
-
-#: discord.ext.commands.Bot:56 of
-msgid ""
-":class:`bool` -- If ``True``, the bot will only listen to commands "
-"invoked by itself rather than ignoring itself. If ``False`` (the default)"
-" then the bot will ignore itself. This cannot be changed once "
-"initialised."
-msgstr ""
-":class:`bool` -- ``True`` の場合、Botは自分自身を無視するのではなく、自分自身が呼び出したコマンドのみリッスンします。"
-" ``False`` (デフォルト)なら自分自身を無視します。初期化後には変更できません。"
-
-#: discord.ext.commands.Bot:62 of
-msgid ""
-"Optional[:class:`.HelpCommand`] -- The help command implementation to "
-"use. This can be dynamically set at runtime. To remove the help command "
-"pass ``None``. For more information on implementing a help command, see "
-":ref:`ext_commands_help_command`."
+"Whether the commands should be case insensitive. Defaults to ``False``. "
+"This attribute does not carry over to groups. You must set it to every "
+"group if you require group commands to be case insensitive as well."
 msgstr ""
 
-#: discord.ext.commands.Bot:68 of
+#: discord.ext.commands.BadUnionArgument discord.ext.commands.Bot
+#: discord.ext.commands.Bot.activity discord.ext.commands.Bot.cached_messages
+#: discord.ext.commands.Bot.cogs discord.ext.commands.Bot.commands
+#: discord.ext.commands.Bot.emojis discord.ext.commands.Bot.extensions
+#: discord.ext.commands.Bot.guilds discord.ext.commands.Bot.latency
+#: discord.ext.commands.Bot.private_channels discord.ext.commands.Bot.user
+#: discord.ext.commands.Bot.users discord.ext.commands.Bot.voice_clients
+#: discord.ext.commands.BotMissingAnyRole
+#: discord.ext.commands.BotMissingPermissions
+#: discord.ext.commands.BotMissingRole discord.ext.commands.Cog.description
+#: discord.ext.commands.Cog.qualified_name discord.ext.commands.CogMeta
+#: discord.ext.commands.Command discord.ext.commands.Command.cog_name
+#: discord.ext.commands.Command.full_parent_name
+#: discord.ext.commands.Command.parents
+#: discord.ext.commands.Command.qualified_name
+#: discord.ext.commands.Command.short_doc
+#: discord.ext.commands.Command.signature
+#: discord.ext.commands.CommandOnCooldown discord.ext.commands.Context
+#: discord.ext.commands.Context.voice_client
+#: discord.ext.commands.ConversionError discord.ext.commands.DefaultHelpCommand
+#: discord.ext.commands.ExpectedClosingQuoteError
+#: discord.ext.commands.ExtensionError discord.ext.commands.ExtensionFailed
+#: discord.ext.commands.ExtensionNotFound discord.ext.commands.Group
+#: discord.ext.commands.Group.cog_name discord.ext.commands.Group.commands
+#: discord.ext.commands.Group.full_parent_name
+#: discord.ext.commands.Group.parents discord.ext.commands.Group.qualified_name
+#: discord.ext.commands.Group.short_doc discord.ext.commands.Group.signature
+#: discord.ext.commands.GroupMixin discord.ext.commands.GroupMixin.commands
+#: discord.ext.commands.HelpCommand
+#: discord.ext.commands.InvalidEndOfQuotedStringError
+#: discord.ext.commands.MinimalHelpCommand discord.ext.commands.MissingAnyRole
+#: discord.ext.commands.MissingPermissions
+#: discord.ext.commands.MissingRequiredArgument
+#: discord.ext.commands.MissingRole discord.ext.commands.Paginator
+#: discord.ext.commands.UnexpectedQuoteError discord.ext.commands.clean_content
+#: of
+msgid "type"
+msgstr ""
+
+#: discord.ext.commands.Bot:47 discord.ext.commands.Bot:61
+#: discord.ext.commands.Bot.is_owner:11 discord.ext.commands.Command:50
+#: discord.ext.commands.Command:81 discord.ext.commands.Command:92
+#: discord.ext.commands.Command:107 discord.ext.commands.Command:115
+#: discord.ext.commands.Command.can_run:12
+#: discord.ext.commands.Command.is_on_cooldown:7
+#: discord.ext.commands.Context:75 discord.ext.commands.DefaultHelpCommand:18
+#: discord.ext.commands.Group.can_run:12
+#: discord.ext.commands.Group.is_on_cooldown:7
+#: discord.ext.commands.GroupMixin:15 discord.ext.commands.HelpCommand:24
+#: discord.ext.commands.HelpCommand:31
+#: discord.ext.commands.MinimalHelpCommand:9
+#: discord.ext.commands.clean_content:10 discord.ext.commands.clean_content:16
+#: discord.ext.commands.clean_content:22 of
+msgid ":class:`bool`"
+msgstr ""
+
+#: discord.ext.commands.Bot:51 of
+#, fuzzy
+msgid "The content prefixed into the default help message."
+msgstr ":class:`str` -- この属性に入力されたテキストは、デフォルトのヘルプメッセージの先頭に表示されます。"
+
+#: discord.ext.commands.Bot:53 discord.ext.commands.Cog.description:3
+#: discord.ext.commands.Cog.qualified_name:3 discord.ext.commands.CogMeta:37
+#: discord.ext.commands.Command:10 discord.ext.commands.Command:22
+#: discord.ext.commands.Command:29 discord.ext.commands.Command:35
+#: discord.ext.commands.Command:74 discord.ext.commands.Command.cog_name:3
+#: discord.ext.commands.Command.full_parent_name:6
+#: discord.ext.commands.Command.qualified_name:7
+#: discord.ext.commands.Command.short_doc:7
+#: discord.ext.commands.Command.signature:3 discord.ext.commands.Context:41
+#: discord.ext.commands.Context:53 discord.ext.commands.DefaultHelpCommand:49
+#: discord.ext.commands.DefaultHelpCommand:56
+#: discord.ext.commands.ExpectedClosingQuoteError:9
+#: discord.ext.commands.ExtensionError:9 discord.ext.commands.ExtensionFailed:9
+#: discord.ext.commands.ExtensionNotFound:9
+#: discord.ext.commands.Group.cog_name:3
+#: discord.ext.commands.Group.full_parent_name:6
+#: discord.ext.commands.Group.qualified_name:7
+#: discord.ext.commands.Group.short_doc:7
+#: discord.ext.commands.Group.signature:3
+#: discord.ext.commands.HelpCommand.command_not_found:13
+#: discord.ext.commands.HelpCommand.get_command_signature:7
+#: discord.ext.commands.HelpCommand.invoked_with:10
+#: discord.ext.commands.HelpCommand.subcommand_not_found:20
+#: discord.ext.commands.InvalidEndOfQuotedStringError:10
+#: discord.ext.commands.MinimalHelpCommand:16
+#: discord.ext.commands.MinimalHelpCommand:23
+#: discord.ext.commands.MinimalHelpCommand:48
+#: discord.ext.commands.MinimalHelpCommand.get_command_signature:7
+#: discord.ext.commands.UnexpectedQuoteError:9 of
+msgid ":class:`str`"
+msgstr ""
+
+#: discord.ext.commands.Bot:57 of
+#, fuzzy
 msgid ""
-"Optional[:class:`int`] -- The ID that owns the bot. If this is not set "
-"and is then queried via :meth:`.is_owner` then it is fetched "
-"automatically using :meth:`~.Bot.application_info`."
+"If ``True``, the bot will only listen to commands invoked by itself "
+"rather than ignoring itself. If ``False`` (the default) then the bot will"
+" ignore itself. This cannot be changed once initialised."
+msgstr ""
+":class:`bool` -- ``True`` の場合、Botは自分自身を無視せず、自分自身を呼び出したコマンドのみをトリガーとします。 "
+"``False`` (デフォルト)なら自分自身を無視します。初期化後には変更できません。"
+
+#: discord.ext.commands.Bot:65 of
+#, fuzzy
+msgid ""
+"The help command implementation to use. This can be dynamically set at "
+"runtime. To remove the help command pass ``None``. For more information "
+"on implementing a help command, see :ref:`ext_commands_help_command`."
+msgstr ""
+"Optional[:class:`.HelpCommand`] -- "
+"ヘルプコマンドの実装。これは、実行時に動的に設定できます。ヘルプコマンドを削除するには、``None`` "
+"を入力してください。ヘルプコマンドの実装の詳細については、 :ref:'ext_commands_help_command' を参照してください。"
+
+#: discord.ext.commands.Bot:69 of
+msgid "Optional[:class:`.HelpCommand`]"
+msgstr ""
+
+#: discord.ext.commands.Bot:73 of
+#, fuzzy
+msgid ""
+"The ID that owns the bot. If this is not set and is then queried via "
+":meth:`.is_owner` then it is fetched automatically using "
+":meth:`~.Bot.application_info`."
+msgstr ""
+"Optional[:class:`int`] -- Botを管理するユーザーのID。 設定されていない場合、 :meth:`.is_owner` "
+"を介して参照されたとき、 :meth:`~.Bot.application_info` を用いて自動的に取得されます。"
+
+#: discord.ext.commands.Bot:77 discord.ext.commands.DefaultHelpCommand:36
+#: discord.ext.commands.MinimalHelpCommand:41 of
+msgid "Optional[:class:`int`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.activity:1 of
-msgid ""
-"Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]] -- "
-"The activity being used upon logging in."
+msgid "The activity being used upon logging in."
 msgstr ""
-"Optional[Union[:class:`Activity`, :class:`Game`, :class:`Streaming`]] -- "
-"ログイン時のアクティビティ。"
+
+#: discord.ext.commands.Bot.activity:4 of
+#, fuzzy
+msgid "Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]]"
+msgstr ""
+"Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]] "
+"-- ログイン時のアクティビティ。"
 
 #: discord.ext.commands.Bot.add_check:1 of
 msgid "Adds a global check to the bot."
-msgstr ""
+msgstr "ボットにグローバルチェックを追加します。"
 
 #: discord.ext.commands.Bot.add_check:3 of
 msgid ""
 "This is the non-decorator interface to :meth:`.check` and "
 ":meth:`.check_once`."
-msgstr ""
+msgstr "これは:meth:`.check`と:meth:`.check_once`のデコレータでない実装です。"
 
 #: ../../ext/commands/api.rst discord.ext.commands.Bot.add_check
 #: discord.ext.commands.Bot.add_cog discord.ext.commands.Bot.add_command
@@ -211,11 +315,13 @@ msgstr ""
 #: discord.ext.commands.HelpCommand.subcommand_not_found
 #: discord.ext.commands.InviteConverter.convert
 #: discord.ext.commands.MemberConverter.convert
+#: discord.ext.commands.MessageConverter.convert
 #: discord.ext.commands.MinimalHelpCommand.add_aliases_formatting
 #: discord.ext.commands.MinimalHelpCommand.add_bot_commands_formatting
 #: discord.ext.commands.MinimalHelpCommand.add_command_formatting
 #: discord.ext.commands.MinimalHelpCommand.add_subcommand_formatting
 #: discord.ext.commands.MinimalHelpCommand.get_command_signature
+#: discord.ext.commands.NSFWChannelRequired
 #: discord.ext.commands.Paginator.add_line
 #: discord.ext.commands.PartialEmojiConverter.convert
 #: discord.ext.commands.RoleConverter.convert
@@ -231,13 +337,13 @@ msgstr "パラメータ"
 
 #: discord.ext.commands.Bot.add_check:6 of
 msgid "The function that was used as a global check."
-msgstr ""
+msgstr "グローバルチェックとして使用される関数。"
 
 #: discord.ext.commands.Bot.add_check:7 of
 msgid ""
-"If the function should only be called once per :meth:`.Command.invoke` "
+"If the function should only be called once per :meth:`Command.invoke` "
 "call."
-msgstr ""
+msgstr "その関数が :meth:`Command.invoke` の呼び出し時に、一度だけ呼び出されるべきかどうか。"
 
 #: discord.ext.commands.Bot.add_cog:1 of
 msgid "Adds a \"cog\" to the bot."
@@ -245,11 +351,11 @@ msgstr "botに「コグ」を追加します。"
 
 #: discord.ext.commands.Bot.add_cog:3 of
 msgid "A cog is a class that has its own event listeners and commands."
-msgstr ""
+msgstr "コグは、イベントリスナーとコマンドを持つクラスです。"
 
 #: discord.ext.commands.Bot.add_cog:5 of
 msgid "The cog to register to the bot."
-msgstr ""
+msgstr "ボットに登録するコグ。"
 
 #: discord.ext.commands.Bot.add_cog discord.ext.commands.Bot.add_command
 #: discord.ext.commands.Bot.after_invoke
@@ -257,16 +363,17 @@ msgstr ""
 #: discord.ext.commands.Bot.before_invoke
 #: discord.ext.commands.Bot.change_presence discord.ext.commands.Bot.connect
 #: discord.ext.commands.Bot.create_guild discord.ext.commands.Bot.delete_invite
-#: discord.ext.commands.Bot.event discord.ext.commands.Bot.fetch_guild
-#: discord.ext.commands.Bot.fetch_guilds discord.ext.commands.Bot.fetch_invite
-#: discord.ext.commands.Bot.fetch_user
+#: discord.ext.commands.Bot.event discord.ext.commands.Bot.fetch_channel
+#: discord.ext.commands.Bot.fetch_guild discord.ext.commands.Bot.fetch_guilds
+#: discord.ext.commands.Bot.fetch_invite discord.ext.commands.Bot.fetch_user
 #: discord.ext.commands.Bot.fetch_user_profile
 #: discord.ext.commands.Bot.fetch_webhook discord.ext.commands.Bot.fetch_widget
 #: discord.ext.commands.Bot.listen discord.ext.commands.Bot.load_extension
 #: discord.ext.commands.Bot.login discord.ext.commands.Bot.reload_extension
 #: discord.ext.commands.Bot.request_offline_members
-#: discord.ext.commands.Bot.unload_extension discord.ext.commands.Bot.wait_for
-#: discord.ext.commands.Cog.listener discord.ext.commands.Command.after_invoke
+#: discord.ext.commands.Bot.start discord.ext.commands.Bot.unload_extension
+#: discord.ext.commands.Bot.wait_for discord.ext.commands.Cog.listener
+#: discord.ext.commands.Command.after_invoke
 #: discord.ext.commands.Command.before_invoke
 #: discord.ext.commands.Command.can_run discord.ext.commands.Command.error
 #: discord.ext.commands.Context.fetch_message
@@ -276,16 +383,19 @@ msgstr ""
 #: discord.ext.commands.Group.before_invoke discord.ext.commands.Group.can_run
 #: discord.ext.commands.Group.error discord.ext.commands.GroupMixin.add_command
 #: discord.ext.commands.Paginator.add_line discord.ext.commands.command of
-msgid "raises"
+#, fuzzy
+msgid "Raises"
 msgstr "例外"
 
 #: discord.ext.commands.Bot.add_cog:8 of
-msgid ":exc:`TypeError` -- The cog does not inherit from :class:`.Cog`."
-msgstr ""
+#, fuzzy
+msgid "The cog does not inherit from :class:`.Cog`."
+msgstr ":exc:`TypeError -- コグが :class:`.Cog` を継承していない。"
 
 #: discord.ext.commands.Bot.add_cog:9 of
-msgid ":exc:`CommandError` -- An error happened during loading."
-msgstr ""
+#, fuzzy
+msgid "An error happened during loading."
+msgstr ":exc:`CommandError` -- 読み込み中にエラーが発生した。"
 
 #: discord.ext.commands.Bot.add_command:1
 #: discord.ext.commands.Group.add_command:1
@@ -293,7 +403,7 @@ msgstr ""
 msgid ""
 "Adds a :class:`.Command` or its subclasses into the internal list of "
 "commands."
-msgstr ""
+msgstr ":class:`.Command`やそのサブクラスを内部のコマンドリストに追加します。"
 
 #: discord.ext.commands.Bot.add_command:4
 #: discord.ext.commands.Group.add_command:4
@@ -302,6 +412,8 @@ msgid ""
 "This is usually not called, instead the :meth:`~.GroupMixin.command` or "
 ":meth:`~.GroupMixin.group` shortcut decorators are used instead."
 msgstr ""
+"これは通常、呼び出されません。代わりに :meth:`~.GroupMixin.command` か "
+":meth:`~.GroupMixin.group` のショートカットデコレータが使われます。"
 
 #: discord.ext.commands.Bot.add_command:7
 #: discord.ext.commands.Group.add_command:7
@@ -309,37 +421,37 @@ msgstr ""
 msgid "The command to add."
 msgstr "追加するコマンド。"
 
-#: discord.ext.commands.Bot.add_command:9
-#: discord.ext.commands.Group.add_command:9
-#: discord.ext.commands.GroupMixin.add_command:9 of
-msgid ":exc:`.ClientException` -- If the command is already registered."
-msgstr ""
-
 #: discord.ext.commands.Bot.add_command:10
 #: discord.ext.commands.Group.add_command:10
 #: discord.ext.commands.GroupMixin.add_command:10 of
-msgid ""
-":exc:`TypeError` -- If the command passed is not a subclass of "
-":class:`.Command`."
-msgstr ""
+#, fuzzy
+msgid "If the command is already registered."
+msgstr ":exc:`.ClientException` -- コマンドがすでに登録されている。"
+
+#: discord.ext.commands.Bot.add_command:11
+#: discord.ext.commands.Group.add_command:11
+#: discord.ext.commands.GroupMixin.add_command:11 of
+#, fuzzy
+msgid "If the command passed is not a subclass of :class:`.Command`."
+msgstr ":exc:`TypeError` -- 渡されたコマンドが:class:`.Command`のサブコマンドではないという例外"
 
 #: discord.ext.commands.Bot.add_listener:1 of
 msgid "The non decorator alternative to :meth:`.listen`."
-msgstr ""
+msgstr ":meth:`.listen`の代替の非デコレータ"
 
 #: discord.ext.commands.Bot.add_listener:3 of
 msgid "The function to call."
-msgstr ""
+msgstr "呼び出される関数"
 
 #: discord.ext.commands.Bot.add_listener:5 of
 msgid "The name of the event to listen for. Defaults to ``func.__name__``."
-msgstr ""
+msgstr "待機するイベントの名前。デフォルトでは ``func.__name__`` です。"
 
 #: discord.ext.commands.Bot.add_listener:9
 #: discord.ext.commands.Bot.change_presence:10
 #: discord.ext.commands.Bot.check:16 discord.ext.commands.Bot.check_once:20
 #: discord.ext.commands.Bot.event:8 discord.ext.commands.Bot.listen:8
-#: discord.ext.commands.has_any_role:11 discord.ext.commands.has_permissions:13
+#: discord.ext.commands.has_any_role:20 discord.ext.commands.has_permissions:13
 #: discord.ext.commands.when_mentioned_or:6 of
 msgid "Example"
 msgstr "例"
@@ -380,21 +492,23 @@ msgstr ""
 msgid "The coroutine to register as the post-invoke hook."
 msgstr ""
 
-#: discord.ext.commands.Bot.after_invoke:19
-#: discord.ext.commands.Bot.before_invoke:18 discord.ext.commands.Bot.event:15
+#: discord.ext.commands.Bot.after_invoke:20
+#: discord.ext.commands.Bot.before_invoke:19 discord.ext.commands.Bot.event:15
 #: discord.ext.commands.Command.after_invoke:14
 #: discord.ext.commands.Command.before_invoke:14
 #: discord.ext.commands.Command.error:10
 #: discord.ext.commands.Group.after_invoke:14
 #: discord.ext.commands.Group.before_invoke:14
 #: discord.ext.commands.Group.error:10 of
-msgid ":exc:`TypeError` -- The coroutine passed is not actually a coroutine."
-msgstr ""
+#, fuzzy
+msgid "The coroutine passed is not actually a coroutine."
+msgstr ":exc:`TypeError` -- 渡されたコルーチンが実際はコルーチンではない。"
 
 #: discord.ext.commands.Bot.application_info:1
 #: discord.ext.commands.Bot.change_presence:1
 #: discord.ext.commands.Bot.connect:1 discord.ext.commands.Bot.create_guild:1
 #: discord.ext.commands.Bot.delete_invite:1
+#: discord.ext.commands.Bot.fetch_channel:1
 #: discord.ext.commands.Bot.fetch_guild:1
 #: discord.ext.commands.Bot.fetch_guilds:1
 #: discord.ext.commands.Bot.fetch_invite:1
@@ -434,6 +548,7 @@ msgstr ""
 #: discord.ext.commands.HelpCommand.send_group_help:1
 #: discord.ext.commands.InviteConverter.convert:1
 #: discord.ext.commands.MemberConverter.convert:1
+#: discord.ext.commands.MessageConverter.convert:1
 #: discord.ext.commands.PartialEmojiConverter.convert:1
 #: discord.ext.commands.RoleConverter.convert:1
 #: discord.ext.commands.TextChannelConverter.convert:1
@@ -444,25 +559,28 @@ msgid "|coro|"
 msgstr "|coro|"
 
 #: discord.ext.commands.Bot.application_info:3 of
-msgid "Retrieve's the bot's application information."
+msgid "Retrieves the bot's application information."
 msgstr "Botのアプリケーション情報を取得します。"
 
 #: discord.ext.commands.Bot.application_info:5 of
-msgid ":exc:`HTTPException` -- Retrieving the information failed somehow."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
+#, fuzzy
+msgid "Retrieving the information failed somehow."
+msgstr ":exc:`.HTTPException` -- 何らかの要因で情報の取得に失敗した。"
 
 #: discord.ext.commands.Bot.application_info
-#: discord.ext.commands.Bot.create_guild discord.ext.commands.Bot.fetch_guild
-#: discord.ext.commands.Bot.fetch_invite discord.ext.commands.Bot.fetch_user
+#: discord.ext.commands.Bot.create_guild discord.ext.commands.Bot.fetch_channel
+#: discord.ext.commands.Bot.fetch_guild discord.ext.commands.Bot.fetch_invite
+#: discord.ext.commands.Bot.fetch_user
 #: discord.ext.commands.Bot.fetch_user_profile
 #: discord.ext.commands.Bot.fetch_webhook discord.ext.commands.Bot.fetch_widget
 #: discord.ext.commands.Bot.get_command discord.ext.commands.Bot.get_context
-#: discord.ext.commands.Bot.get_prefix discord.ext.commands.Bot.remove_command
-#: discord.ext.commands.Bot.wait_for discord.ext.commands.Command.can_run
+#: discord.ext.commands.Bot.get_prefix discord.ext.commands.Bot.is_owner
+#: discord.ext.commands.Bot.remove_command discord.ext.commands.Bot.wait_for
+#: discord.ext.commands.Command.can_run
 #: discord.ext.commands.Command.is_on_cooldown
-#: discord.ext.commands.Context.fetch_message discord.ext.commands.Context.send
-#: discord.ext.commands.Context.send_help discord.ext.commands.Group.can_run
-#: discord.ext.commands.Group.get_command
+#: discord.ext.commands.Context.fetch_message discord.ext.commands.Context.pins
+#: discord.ext.commands.Context.send discord.ext.commands.Context.send_help
+#: discord.ext.commands.Group.can_run discord.ext.commands.Group.get_command
 #: discord.ext.commands.Group.is_on_cooldown
 #: discord.ext.commands.Group.remove_command
 #: discord.ext.commands.GroupMixin.get_command
@@ -479,21 +597,23 @@ msgid "Returns"
 msgstr "戻り値"
 
 #: discord.ext.commands.Bot.application_info:7 of
-msgid "A namedtuple representing the application info."
-msgstr "アプリケーション情報を表す名前付きタプル。"
+msgid "The bot's application information."
+msgstr "Botのアプリケーション情報。"
 
 #: discord.ext.commands.Bot.application_info
-#: discord.ext.commands.Bot.create_guild discord.ext.commands.Bot.fetch_guild
-#: discord.ext.commands.Bot.fetch_invite discord.ext.commands.Bot.fetch_user
+#: discord.ext.commands.Bot.create_guild discord.ext.commands.Bot.fetch_channel
+#: discord.ext.commands.Bot.fetch_guild discord.ext.commands.Bot.fetch_invite
+#: discord.ext.commands.Bot.fetch_user
 #: discord.ext.commands.Bot.fetch_user_profile
 #: discord.ext.commands.Bot.fetch_webhook discord.ext.commands.Bot.fetch_widget
 #: discord.ext.commands.Bot.get_command discord.ext.commands.Bot.get_context
-#: discord.ext.commands.Bot.get_prefix discord.ext.commands.Bot.remove_command
-#: discord.ext.commands.Bot.wait_for discord.ext.commands.Command.can_run
+#: discord.ext.commands.Bot.get_prefix discord.ext.commands.Bot.is_owner
+#: discord.ext.commands.Bot.remove_command discord.ext.commands.Bot.wait_for
+#: discord.ext.commands.Command.can_run
 #: discord.ext.commands.Command.is_on_cooldown
-#: discord.ext.commands.Context.fetch_message discord.ext.commands.Context.send
-#: discord.ext.commands.Context.send_help discord.ext.commands.Group.can_run
-#: discord.ext.commands.Group.get_command
+#: discord.ext.commands.Context.fetch_message discord.ext.commands.Context.pins
+#: discord.ext.commands.Context.send discord.ext.commands.Context.send_help
+#: discord.ext.commands.Group.can_run discord.ext.commands.Group.get_command
 #: discord.ext.commands.Group.is_on_cooldown
 #: discord.ext.commands.Group.remove_command
 #: discord.ext.commands.GroupMixin.get_command
@@ -510,8 +630,8 @@ msgid "Return type"
 msgstr "戻り値の型"
 
 #: discord.ext.commands.Bot.application_info:8 of
-msgid ":class:`AppInfo`"
-msgstr ":class:`AppInfo`"
+msgid ":class:`.AppInfo`"
+msgstr ":class:`.AppInfo`"
 
 #: discord.ext.commands.Bot.before_invoke:1
 #: discord.ext.commands.Command.before_invoke:1
@@ -548,43 +668,54 @@ msgstr ""
 msgid "The coroutine to register as the pre-invoke hook."
 msgstr ""
 
+#: discord.ext.commands.Bot.cached_messages:1 of
+#, fuzzy
+msgid "Read-only list of messages the connected client has cached."
+msgstr "Sequence[:class:`.Message`] -- 接続されたクライアントにキャッシュされたメッセージの、読み取り専用リスト。"
+
+#: discord.ext.commands.Bot.cached_messages:5 of
+msgid "Sequence[:class:`.Message`]"
+msgstr ""
+
 #: discord.ext.commands.Bot.change_presence:3 of
 msgid "Changes the client's presence."
-msgstr "クライアントのプレゼンスを変更します。"
+msgstr "クライアントのステータスを変更します。"
 
 #: discord.ext.commands.Bot.change_presence:5 of
 msgid ""
-"The activity parameter is a :class:`Activity` object (not a string) that "
-"represents the activity being done currently. This could also be the "
-"slimmed down versions, :class:`Game` and :class:`Streaming`."
+"The activity parameter is a :class:`.Activity` object (not a string) that"
+" represents the activity being done currently. This could also be the "
+"slimmed down versions, :class:`.Game` and :class:`.Streaming`."
 msgstr ""
+"activityパラメータは、現在のアクティビティを示す :class:`.Activity` "
+"オブジェクトです(これはstringではありません)。スリム化された :class:`.Game` や :class:`.Streaming` "
+"でも可能です。"
 
 #: discord.ext.commands.Bot.change_presence:16 of
 msgid "The activity being done. ``None`` if no currently active activity is done."
-msgstr "実行中のアクティビティ。何も実行していない場合は ``None`` です。"
+msgstr "実行中のアクティビティ。何も実行していない場合は ``None`` を返します。"
 
 #: discord.ext.commands.Bot.change_presence:18 of
 msgid ""
-"Indicates what status to change to. If None, then :attr:`Status.online` "
-"is used."
-msgstr "変更したいステータスを表します。Noneの場合は :attr:`Status.online` が使用されます。"
+"Indicates what status to change to. If ``None``, then "
+":attr:`.Status.online` is used."
+msgstr "変更するステータスを示します。 ``None`` の場合、 :attr:`.Status.online` が使用されます。"
 
 #: discord.ext.commands.Bot.change_presence:21 of
 msgid ""
 "Indicates if you are going AFK. This allows the discord client to know "
 "how to handle push notifications better for you in case you are actually "
 "idle and not lying."
-msgstr ""
+msgstr "ステータスを退席中に変更するかどうかを返します。これによって、実際にアイドル状態に移行した場合において、Discordクライアントにプッシュ通知をより適切に処理させることができます。"
 
 #: discord.ext.commands.Bot.change_presence:26 of
-msgid ""
-":exc:`InvalidArgument` -- If the ``activity`` parameter is not the proper"
-" type."
-msgstr ":exc:`InvalidArgument` -- ``activity`` に渡された値が適切な型でない。"
+#, fuzzy
+msgid "If the ``activity`` parameter is not the proper type."
+msgstr ":exc:`.InvalidArgument` -- ``activity`` に渡された値が適切な型でない。"
 
 #: discord.ext.commands.Bot.check:1 of
 msgid "A decorator that adds a global check to the bot."
-msgstr ""
+msgstr "Botにグローバルチェックを追加するデコレーター"
 
 #: discord.ext.commands.Bot.check:3 of
 msgid ""
@@ -592,10 +723,12 @@ msgid ""
 "command basis except it is run before any command checks have been "
 "verified and applies to every command the bot has."
 msgstr ""
+"このグローバルチェックは、 :func:`.check` "
+"がコマンドごとに適用されるのと似ていますが、コマンドチェックが検証され、かつBotが持つすべてのコマンドが適用される前に実行される点で異なります。"
 
 #: discord.ext.commands.Bot.check:9 discord.ext.commands.Bot.check_once:13 of
 msgid "This function can either be a regular function or a coroutine."
-msgstr ""
+msgstr "この関数は、通常の関数かコルーチン、どちらでも成り得ます。"
 
 #: discord.ext.commands.Bot.check:11 discord.ext.commands.Bot.check_once:15 of
 msgid ""
@@ -603,16 +736,18 @@ msgid ""
 "type :class:`.Context` and can only raise exceptions inherited from "
 ":exc:`.CommandError`."
 msgstr ""
+":func:`.check` コマンドと同様、 :class:`.Context` 型の単一のパラメータを取り、 "
+":exc:`.CommandError` から継承された例外のみを投げることができます。"
 
 #: discord.ext.commands.Bot.check_once:1 of
 msgid "A decorator that adds a \"call once\" global check to the bot."
-msgstr ""
+msgstr "Botに「一度だけ実行される」グローバルチェックを追加するデコレーター"
 
 #: discord.ext.commands.Bot.check_once:3 of
 msgid ""
 "Unlike regular global checks, this one is called only once per "
-":meth:`.Command.invoke` call."
-msgstr ""
+":meth:`Command.invoke` call."
+msgstr "通常のグローバルチェックと違って、これは :meth:`Command.invoke` が呼ばれる毎に一度だけ実行されます。"
 
 #: discord.ext.commands.Bot.check_once:6 of
 msgid ""
@@ -620,22 +755,29 @@ msgid ""
 ":meth:`.Command.can_run` is called. This type of check bypasses that and "
 "ensures that it's called only once, even inside the default help command."
 msgstr ""
+"通常のグローバルチェックは、コマンドが呼び出されるか :meth:`.Command.can_run` "
+"が呼び出されるたび、実行されます。しかしこのグローバルチェックはそれを迂回し、デフォルトのhelpコマンドの中であっても、たった一度だけ呼ばれます。"
 
 #: discord.ext.commands.Bot.clear:1 of
 msgid "Clears the internal state of the bot."
-msgstr ""
+msgstr "Botの内部状態をクリアします。"
 
 #: discord.ext.commands.Bot.clear:3 of
 msgid ""
 "After this, the bot can be considered \"re-opened\", i.e. "
-":meth:`.is_closed` and :meth:`.is_ready` both return ``False`` along with"
-" the bot's internal cache cleared."
+":meth:`is_closed` and :meth:`is_ready` both return ``False`` along with "
+"the bot's internal cache cleared."
 msgstr ""
+"これが実行されると、Botは「再実行」されたと見なされます。また、これにより :meth:`is_closed` や "
+":meth:`is_ready` は ``False`` を返し、内部のキャッシュもクリアされます。"
 
 #: discord.ext.commands.Bot.cogs:1 of
-msgid ""
-"Mapping[:class:`str`, :class:`Cog`] -- A read-only mapping of cog name to"
-" cog."
+#, fuzzy
+msgid "A read-only mapping of cog name to cog."
+msgstr "Mapping[:class:`str`, :class:`Cog`] -- コグ名から、コグへの読み取り専用マッピング。"
+
+#: discord.ext.commands.Bot.cogs:3 of
+msgid "Mapping[:class:`str`, :class:`Cog`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.command:1 discord.ext.commands.Group.command:1
@@ -644,21 +786,28 @@ msgid ""
 "A shortcut decorator that invokes :func:`.command` and adds it to the "
 "internal command list via :meth:`~.GroupMixin.add_command`."
 msgstr ""
+":func:`.command` を呼び出し、 :meth:`~.GroupMixin.add_command` "
+"を介して内部コマンドリストに追加するショートカットデコレータ。"
 
 #: discord.ext.commands.Bot.commands:1 discord.ext.commands.Group.commands:1
 #: discord.ext.commands.GroupMixin.commands:1 of
-msgid ""
-"Set[:class:`.Command`] -- A unique set of commands without aliases that "
-"are registered."
-msgstr ""
+#, fuzzy
+msgid "A unique set of commands without aliases that are registered."
+msgstr "Set[:class:`.Command`] -- 登録済みの別名がない固有のコマンドセット。"
+
+#: discord.ext.commands.Bot.commands:3 discord.ext.commands.Group.commands:3
+#: discord.ext.commands.GroupMixin.commands:3 of
+#, fuzzy
+msgid "Set[:class:`.Command`]"
+msgstr ":class:`Command` またはサブクラス"
 
 #: discord.ext.commands.Bot.connect:3 of
 msgid ""
 "Creates a websocket connection and lets the websocket listen to messages "
-"from discord. This is a loop that runs the entire event system and "
+"from Discord. This is a loop that runs the entire event system and "
 "miscellaneous aspects of the library. Control is not resumed until the "
 "WebSocket connection is terminated."
-msgstr ""
+msgstr "WebSocket接続を作成し、Discordからのメッセージをリッスンできるようにします。これはイベントシステム全体とライブラリの様々な機能を実行するループです。WebSocket接続が終了するまで、プログラムは再開されません。"
 
 #: discord.ext.commands.Bot.connect:8 of
 msgid ""
@@ -667,49 +816,53 @@ msgid ""
 "state will not be handled (such as invalid sharding payloads or bad "
 "tokens)."
 msgstr ""
+"インターネットの障害やDiscord側の特定の障害が発生した際、再接続を試みるかどうかを表します。不正な状態へ移行する可能性がある特定の切断(無効なシャーディングpayloadや不正なトークンなど)"
+" は処理されません。"
 
 #: discord.ext.commands.Bot.connect:14 of
+#, fuzzy
 msgid ""
-":exc:`GatewayNotFound` -- If the gateway to connect to discord is not "
-"found. Usually if this is thrown then there is a discord API outage."
+"If the gateway to connect to Discord is not found. Usually if this     is"
+" thrown then there is a Discord API outage."
 msgstr ""
+":exc:`.GatewayNotFound` -- "
+"Discordに接続するためのゲートウェイが見つからない。通常、これが発生した場合はDiscordAPIのエラーが考えられます。"
 
-#: discord.ext.commands.Bot.connect:16 of
-msgid ":exc:`ConnectionClosed` -- The websocket connection has been terminated."
-msgstr ""
+#: discord.ext.commands.Bot.connect:15 of
+#, fuzzy
+msgid "The websocket connection has been terminated."
+msgstr ":exc:`.ConnectionClosed` -- WebSocket接続は既に終了した。"
 
 #: discord.ext.commands.Bot.create_guild:3 of
-msgid "Creates a :class:`Guild`."
-msgstr ""
+msgid "Creates a :class:`.Guild`."
+msgstr ":class:`.Guild` を作成します。"
 
 #: discord.ext.commands.Bot.create_guild:5 of
 msgid "Bot accounts in more than 10 guilds are not allowed to create guilds."
-msgstr ""
+msgstr "10以上のギルドに参加しているBotアカウントは、ギルドの作成ができません。"
 
 #: discord.ext.commands.Bot.create_guild:7 of
 msgid "The name of the guild."
-msgstr ""
+msgstr "ギルドの名前。"
 
 #: discord.ext.commands.Bot.create_guild:9 of
 msgid ""
 "The region for the voice communication server. Defaults to "
-":attr:`VoiceRegion.us_west`."
-msgstr ""
+":attr:`.VoiceRegion.us_west`."
+msgstr "音声通話に利用されるサーバーの地域。デフォルト値は  :attr:`.VoiceRegion.us_west` 。"
 
 #: discord.ext.commands.Bot.create_guild:12 of
 msgid ""
 "The :term:`py:bytes-like object` representing the icon. See "
-":meth:`~ClientUser.edit` for more details on what is expected."
+":meth:`.ClientUser.edit` for more details on what is expected."
 msgstr ""
 
 #: discord.ext.commands.Bot.create_guild:16 of
-msgid ":exc:`HTTPException` -- Guild creation failed."
+msgid "Guild creation failed."
 msgstr ""
 
 #: discord.ext.commands.Bot.create_guild:17 of
-msgid ""
-":exc:`InvalidArgument` -- Invalid icon image format given. Must be PNG or"
-" JPG."
+msgid "Invalid icon image format given. Must be PNG or JPG."
 msgstr ""
 
 #: discord.ext.commands.Bot.create_guild:19 of
@@ -717,202 +870,283 @@ msgid "The guild created. This is not the same guild that is added to cache."
 msgstr ""
 
 #: discord.ext.commands.Bot.create_guild:21
-#: discord.ext.commands.Bot.fetch_guild:12 of
-msgid ":class:`Guild`"
-msgstr ""
+#: discord.ext.commands.Bot.fetch_guild:21 of
+msgid ":class:`.Guild`"
+msgstr ":class:`.Guild`"
 
 #: discord.ext.commands.Bot.delete_invite:3 of
-msgid "Revokes an :class:`Invite`, URL, or ID to an invite."
+msgid "Revokes an :class:`.Invite`, URL, or ID to an invite."
 msgstr ""
 
 #: discord.ext.commands.Bot.delete_invite:5 of
 msgid ""
-"You must have the :attr:`~Permissions.manage_channels` permission in the "
-"associated guild to do this."
-msgstr ""
+"You must have the :attr:`~.Permissions.manage_channels` permission in the"
+" associated guild to do this."
+msgstr "これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.manage_channels` 権限が必要です。"
 
 #: discord.ext.commands.Bot.delete_invite:8 of
 msgid "The invite to revoke."
-msgstr ""
+msgstr "取り消す招待。"
 
 #: discord.ext.commands.Bot.delete_invite:11 of
-msgid ":exc:`Forbidden` -- You do not have permissions to revoke invites."
-msgstr ""
+#, fuzzy
+msgid "You do not have permissions to revoke invites."
+msgstr ":exc:`.Forbidden` -- 招待を取り消す権限が無い。"
 
 #: discord.ext.commands.Bot.delete_invite:12 of
-msgid ":exc:`NotFound` -- The invite is invalid or expired."
-msgstr ""
+#, fuzzy
+msgid "The invite is invalid or expired."
+msgstr ":exc:`.NotFound` -- 招待が無効、あるいは期限切れになっている。"
 
 #: discord.ext.commands.Bot.delete_invite:13 of
-msgid ":exc:`HTTPException` -- Revoking the invite failed."
-msgstr ""
+#, fuzzy
+msgid "Revoking the invite failed."
+msgstr ":exc:`.HTTPException` -- 招待の取り消しに失敗した。"
 
 #: discord.ext.commands.Bot.emojis:1 of
-msgid "List[:class:`Emoji`] -- The emojis that the connected client has."
-msgstr ""
+#, fuzzy
+msgid "The emojis that the connected client has."
+msgstr "List[:class:`.Emoji`] -- 接続したクライアントがアクセスできる絵文字。"
+
+#: discord.ext.commands.Bot.emojis:3 of
+#, fuzzy
+msgid "List[:class:`.Emoji`]"
+msgstr ":class:`.Guild`"
 
 #: discord.ext.commands.Bot.event:1 of
 msgid "A decorator that registers an event to listen to."
-msgstr ""
+msgstr "リッスンするイベントを登録するデコレータ。"
 
 #: discord.ext.commands.Bot.event:3 of
 msgid ""
 "You can find more info about the events on the :ref:`documentation below "
 "<discord-api-events>`."
-msgstr ""
+msgstr "イベントの詳細については :ref:`以下のドキュメント <discord-api-events>` を参照してください。"
 
 #: discord.ext.commands.Bot.event:5 of
-msgid "The events must be a |corourl|_, if not, :exc:`TypeError` is raised."
-msgstr ""
+msgid ""
+"The events must be a :ref:`coroutine <coroutine>`, if not, "
+":exc:`TypeError` is raised."
+msgstr "イベントは :ref:`コルーチン <coroutine>` でなければいけません。違う場合は :exc:`TypeError` が発生します。"
 
 #: discord.ext.commands.Bot.extensions:1 of
+msgid "A read-only mapping of extension name to extension."
+msgstr ""
+
+#: discord.ext.commands.Bot.extensions:3 of
+msgid "Mapping[:class:`str`, :class:`py:types.ModuleType`]"
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:3 of
 msgid ""
-"Mapping[:class:`str`, :class:`py:types.ModuleType`] -- A read-only "
-"mapping of extension name to extension."
+"Retrieves a :class:`.abc.GuildChannel` or :class:`.abc.PrivateChannel` "
+"with the specified ID."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:7 of
+msgid ""
+"This method is an API call. For general usage, consider "
+":meth:`get_channel` instead."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:11 of
+msgid "An unknown channel type was received from Discord."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:12 of
+msgid "Retrieving the channel failed."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:13 of
+msgid "Invalid Channel ID."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:14 of
+msgid "You do not have permission to fetch this channel."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:16 of
+msgid "The channel from the ID."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_channel:17 of
+msgid "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_guild:3 of
-msgid "Retreives a :class:`Guild` from an ID."
+msgid "Retrieves a :class:`.Guild` from an ID."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guild:5 of
+#: discord.ext.commands.Bot.fetch_guild:7 of
+msgid ""
+"Using this, you will **not** receive :attr:`.Guild.channels`, "
+":class:`.Guild.members`, :attr:`.Member.activity` and "
+":attr:`.Member.voice` per :class:`.Member`."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_guild:12 of
+msgid ""
+"This method is an API call. For general usage, consider :meth:`get_guild`"
+" instead."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_guild:14 of
 msgid "The guild's ID to fetch from."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guild:8 of
-msgid ":exc:`Forbidden` -- You do not have access to the guild."
+#: discord.ext.commands.Bot.fetch_guild:17 of
+#, fuzzy
+msgid "You do not have access to the guild."
+msgstr "ギルドの名前。"
+
+#: discord.ext.commands.Bot.fetch_guild:18 of
+msgid "Getting the guild failed."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guild:9 of
-#, fuzzy
-msgid ":exc:`HTTPException` -- Getting the guild failed."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
-
-#: discord.ext.commands.Bot.fetch_guild:11 of
+#: discord.ext.commands.Bot.fetch_guild:20 of
 msgid "The guild from the ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_guilds:3 of
-msgid "Retreives an :class:`AsyncIterator` that enables receiving your guilds."
+msgid "Retrieves an :class:`.AsyncIterator` that enables receiving your guilds."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guilds:5
+#: discord.ext.commands.Bot.fetch_guilds:7 of
+msgid ""
+"Using this, you will only receive :attr:`.Guild.owner`, "
+":attr:`.Guild.icon`, :attr:`.Guild.id`, and :attr:`.Guild.name` per "
+":class:`.Guild`."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_guilds:12 of
+msgid ""
+"This method is an API call. For general usage, consider :attr:`guilds` "
+"instead."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_guilds:15
+#: discord.ext.commands.Bot.wait_for:22 discord.ext.commands.Context.history:6
+#: discord.ext.commands.check:19 of
+msgid "Examples"
+msgstr "例"
+
+#: discord.ext.commands.Bot.fetch_guilds:16
+#: discord.ext.commands.Context.history:7 of
+msgid "Usage ::"
+msgstr "使い方 ::"
+
+#: discord.ext.commands.Bot.fetch_guilds:21 of
+msgid "Flattening into a list ::"
+msgstr "リストへフラット化 ::"
+
+#: discord.ext.commands.Bot.fetch_guilds:26
 #: discord.ext.commands.Context.history:19 of
 msgid "All parameters are optional."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guilds:7 of
+#: discord.ext.commands.Bot.fetch_guilds:28 of
 msgid ""
 "The number of guilds to retrieve. If ``None``, it retrieves every guild "
 "you have access to. Note, however, that this would make it a slow "
 "operation. Defaults to 100."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guilds:12 of
+#: discord.ext.commands.Bot.fetch_guilds:33 of
 msgid ""
 "Retrieves guilds before this date or object. If a date is provided it "
 "must be a timezone-naive datetime representing UTC time."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guilds:15 of
+#: discord.ext.commands.Bot.fetch_guilds:36 of
 msgid ""
 "Retrieve guilds after this date or object. If a date is provided it must "
 "be a timezone-naive datetime representing UTC time."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_guilds:19 of
-#, fuzzy
-msgid ":exc:`HTTPException` -- Getting the guilds failed."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
+#: discord.ext.commands.Bot.fetch_guilds:40 of
+msgid "Getting the guilds failed."
+msgstr ""
 
 #: discord.ext.commands.Bot.fetch_guilds discord.ext.commands.Context.history
 #: of
 msgid "Yields"
-msgstr ""
+msgstr "Yieldする値"
 
-#: discord.ext.commands.Bot.fetch_guilds:21 of
-msgid ":class:`Guild` -- The guild with the guild data parsed."
-msgstr ""
-
-#: discord.ext.commands.Bot.fetch_guilds:24
-#: discord.ext.commands.Bot.wait_for:22 discord.ext.commands.Context.history:6
-#: discord.ext.commands.check:19 of
-msgid "Examples"
-msgstr ""
-
-#: discord.ext.commands.Bot.fetch_guilds:25
-#: discord.ext.commands.Context.history:7 of
-msgid "Usage ::"
-msgstr ""
-
-#: discord.ext.commands.Bot.fetch_guilds:30 of
-msgid "Flattening into a list ::"
-msgstr ""
+#: discord.ext.commands.Bot.fetch_guilds:42 of
+msgid ":class:`.Guild` -- The guild with the guild data parsed."
+msgstr ":class:`.Guild` -- データを解析したGuild。"
 
 #: discord.ext.commands.Bot.fetch_invite:3 of
-msgid "Gets an :class:`Invite` from a discord.gg URL or ID."
+msgid "Gets an :class:`.Invite` from a discord.gg URL or ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_invite:7 of
 msgid ""
 "If the invite is for a guild you have not joined, the guild and channel "
-"attributes of the returned :class:`Invite` will be "
-":class:`PartialInviteGuild` and :class:`PartialInviteChannel` "
+"attributes of the returned :class:`.Invite` will be "
+":class:`.PartialInviteGuild` and :class:`PartialInviteChannel` "
 "respectively."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_invite:11 of
-msgid "The discord invite ID or URL (must be a discord.gg URL)."
+msgid "The Discord invite ID or URL (must be a discord.gg URL)."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_invite:13 of
 msgid ""
 "Whether to include count information in the invite. This fills the "
-":attr:`Invite.approximate_member_count` and "
-":attr:`Invite.approximate_presence_count` fields."
+":attr:`.Invite.approximate_member_count` and "
+":attr:`.Invite.approximate_presence_count` fields."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_invite:18 of
-msgid ":exc:`NotFound` -- The invite has expired or is invalid."
+msgid "The invite has expired or is invalid."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_invite:19 of
-msgid ":exc:`HTTPException` -- Getting the invite failed."
-msgstr ""
+#, fuzzy
+msgid "Getting the invite failed."
+msgstr ":exc:`.HTTPException` -- 招待の取り消しに失敗した。"
 
 #: discord.ext.commands.Bot.fetch_invite:21 of
 msgid "The invite from the URL/ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_invite:22 of
-msgid ":class:`Invite`"
+msgid ":class:`.Invite`"
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user:3 of
 msgid ""
-"Retrieves a :class:`User` based on their ID. This can only be used by bot"
-" accounts. You do not have to share any guilds with the user to get this "
-"information, however many operations do require that you do."
+"Retrieves a :class:`~discord.User` based on their ID. This can only be "
+"used by bot accounts. You do not have to share any guilds with the user "
+"to get this information, however many operations do require that you do."
 msgstr ""
 
-#: discord.ext.commands.Bot.fetch_user:8 of
-msgid "The user's ID to fetch from."
-msgstr ""
-
-#: discord.ext.commands.Bot.fetch_user:11 of
-msgid ":exc:`NotFound` -- A user with this ID does not exist."
+#: discord.ext.commands.Bot.fetch_user:10 of
+msgid ""
+"This method is an API call. For general usage, consider :meth:`get_user` "
+"instead."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user:12 of
-msgid ":exc:`HTTPException` -- Fetching the user failed."
-msgstr ""
-
-#: discord.ext.commands.Bot.fetch_user:14 of
-msgid "The user you requested."
+msgid "The user's ID to fetch from."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user:15 of
-msgid ":class:`User`"
+msgid "A user with this ID does not exist."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_user:16 of
+msgid "Fetching the user failed."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_user:18 of
+msgid "The user you requested."
+msgstr ""
+
+#: discord.ext.commands.Bot.fetch_user:19 of
+msgid ":class:`~discord.User`"
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user_profile:3 of
@@ -926,11 +1160,11 @@ msgid "The ID of the user to fetch their profile for."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user_profile:8 of
-msgid ":exc:`Forbidden` -- Not allowed to fetch profiles."
+msgid "Not allowed to fetch profiles."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user_profile:9 of
-msgid ":exc:`HTTPException` -- Fetching the profile failed."
+msgid "Fetching the profile failed."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user_profile:11 of
@@ -938,23 +1172,23 @@ msgid "The profile of the user."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_user_profile:12 of
-msgid ":class:`Profile`"
+msgid ":class:`.Profile`"
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_webhook:3 of
-msgid "Retrieves a :class:`Webhook` with the specified ID."
+msgid "Retrieves a :class:`.Webhook` with the specified ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_webhook:5 of
-msgid ":exc:`HTTPException` -- Retrieving the webhook failed."
+msgid "Retrieving the webhook failed."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_webhook:6 of
-msgid ":exc:`NotFound` -- Invalid webhook ID."
+msgid "Invalid webhook ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_webhook:7 of
-msgid ":exc:`Forbidden` -- You do not have permission to fetch this webhook."
+msgid "You do not have permission to fetch this webhook."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_webhook:9 of
@@ -962,11 +1196,11 @@ msgid "The webhook you requested."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_webhook:10 of
-msgid ":class:`Webhook`"
+msgid ":class:`.Webhook`"
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_widget:3 of
-msgid "Gets a :class:`Widget` from a guild ID."
+msgid "Gets a :class:`.Widget` from a guild ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_widget:7 of
@@ -978,26 +1212,25 @@ msgid "The ID of the guild."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_widget:12 of
-msgid ":exc:`Forbidden` -- The widget for this guild is disabled."
+msgid "The widget for this guild is disabled."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_widget:13 of
-#, fuzzy
-msgid ":exc:`HTTPException` -- Retrieving the widget failed."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
+msgid "Retrieving the widget failed."
+msgstr ""
 
 #: discord.ext.commands.Bot.fetch_widget:15 of
 msgid "The guild's widget."
 msgstr ""
 
 #: discord.ext.commands.Bot.fetch_widget:16 of
-msgid ":class:`Widget`"
+msgid ":class:`.Widget`"
 msgstr ""
 
 #: discord.ext.commands.Bot.get_all_channels:1 of
 msgid ""
-"A generator that retrieves every :class:`abc.GuildChannel` the client can"
-" 'access'."
+"A generator that retrieves every :class:`.abc.GuildChannel` the client "
+"can 'access'."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_all_channels:3
@@ -1007,23 +1240,24 @@ msgstr ""
 
 #: discord.ext.commands.Bot.get_all_channels:11 of
 msgid ""
-"Just because you receive a :class:`abc.GuildChannel` does not mean that "
+"Just because you receive a :class:`.abc.GuildChannel` does not mean that "
 "you can communicate in said channel. "
-":meth:`abc.GuildChannel.permissions_for` should be used for that."
+":meth:`.abc.GuildChannel.permissions_for` should be used for that."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_all_members:1 of
-msgid "Returns a generator with every :class:`Member` the client can see."
+msgid "Returns a generator with every :class:`.Member` the client can see."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_channel:1 of
 msgid ""
-"Returns a :class:`abc.GuildChannel` or :class:`abc.PrivateChannel` with "
-"the following ID."
+"Optional[Union[:class:`.abc.GuildChannel`, "
+":class:`.abc.PrivateChannel`]]: Returns a channel with the given ID."
 msgstr ""
 
-#: discord.ext.commands.Bot.get_channel:3 of
-msgid "If not found, returns None."
+#: discord.ext.commands.Bot.get_channel:4 discord.ext.commands.Bot.get_emoji:3
+#: discord.ext.commands.Bot.get_guild:3 discord.ext.commands.Bot.get_user:3 of
+msgid "If not found, returns ``None``."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_cog:1 of
@@ -1078,7 +1312,7 @@ msgstr ""
 #: discord.ext.commands.Group.get_command:14
 #: discord.ext.commands.GroupMixin.get_command:14 of
 msgid ":class:`Command` or subclass"
-msgstr ""
+msgstr ":class:`Command` またはサブクラス"
 
 #: discord.ext.commands.Bot.get_context:3 of
 msgid "Returns the invocation context from the message."
@@ -1120,11 +1354,11 @@ msgid ":class:`.Context`"
 msgstr ""
 
 #: discord.ext.commands.Bot.get_emoji:1 of
-msgid "Returns a :class:`Emoji` with the given ID. If not found, returns None."
+msgid "Optional[:class:`.Emoji`]: Returns an emoji with the given ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_guild:1 of
-msgid "Returns a :class:`Guild` with the given ID. If not found, returns None."
+msgid "Optional[:class:`.Guild`]: Returns a guild with the given ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_prefix:3 of
@@ -1146,7 +1380,7 @@ msgid "Union[List[:class:`str`], :class:`str`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.get_user:1 of
-msgid "Returns a :class:`User` with the given ID. If not found, returns None."
+msgid "Optional[:class:`~discord.User`]: Returns a user with the given ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.group:1 discord.ext.commands.Group.group:1
@@ -1157,10 +1391,13 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Bot.guilds:1 of
-msgid ""
-"List[:class:`Guild`] -- The guilds that the connected client is a member "
-"of."
+msgid "The guilds that the connected client is a member of."
 msgstr ""
+
+#: discord.ext.commands.Bot.guilds:3 of
+#, fuzzy
+msgid "List[:class:`.Guild`]"
+msgstr ":class:`.Guild`"
 
 #: discord.ext.commands.Bot.invoke:3 of
 msgid ""
@@ -1173,11 +1410,13 @@ msgid "The invocation context to invoke."
 msgstr ""
 
 #: discord.ext.commands.Bot.is_closed:1 of
-msgid ":class:`bool`: Indicates if the websocket connection is closed."
+msgid "Indicates if the websocket connection is closed."
 msgstr ""
 
 #: discord.ext.commands.Bot.is_owner:1 of
-msgid "Checks if a :class:`.User` or :class:`.Member` is the owner of this bot."
+msgid ""
+"Checks if a :class:`~discord.User` or :class:`~discord.Member` is the "
+"owner of this bot."
 msgstr ""
 
 #: discord.ext.commands.Bot.is_owner:4 of
@@ -1190,19 +1429,27 @@ msgstr ""
 msgid "The user to check for."
 msgstr ""
 
+#: discord.ext.commands.Bot.is_owner:10 of
+msgid "Whether the user is the owner."
+msgstr ""
+
 #: discord.ext.commands.Bot.is_ready:1 of
-msgid ":class:`bool`: Specifies if the client's internal cache is ready for use."
+msgid "Specifies if the client's internal cache is ready for use."
 msgstr ""
 
 #: discord.ext.commands.Bot.latency:1 of
-msgid ""
-":class:`float` -- Measures latency between a HEARTBEAT and a "
-"HEARTBEAT_ACK in seconds."
+msgid "Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."
 msgstr ""
 
 #: discord.ext.commands.Bot.latency:3 of
 msgid "This could be referred to as the Discord WebSocket protocol latency."
 msgstr ""
+
+#: discord.ext.commands.Bot.latency:5 discord.ext.commands.CommandOnCooldown:16
+#: of
+#, fuzzy
+msgid ":class:`float`"
+msgstr ":class:`.AppInfo`"
 
 #: discord.ext.commands.Bot.listen:1 of
 msgid ""
@@ -1212,7 +1459,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Bot.listen:5 of
-msgid "The functions being listened to must be a coroutine."
+msgid "The functions being listened to must be a :ref:`coroutine <coroutine>`."
 msgstr ""
 
 #: discord.ext.commands.Bot.listen:21 of
@@ -1220,8 +1467,9 @@ msgid "Would print one and two in an unspecified order."
 msgstr ""
 
 #: discord.ext.commands.Bot.listen:23 of
-msgid ":exc:`TypeError` -- The function being listened to is not a coroutine."
-msgstr ""
+#, fuzzy
+msgid "The function being listened to is not a coroutine."
+msgstr ":exc:`TypeError` -- 渡された関数がコルーチンでない。"
 
 #: discord.ext.commands.Bot.load_extension:1 of
 msgid "Loads an extension."
@@ -1249,23 +1497,21 @@ msgstr ""
 
 #: discord.ext.commands.Bot.load_extension:15
 #: discord.ext.commands.Bot.reload_extension:14 of
-msgid ":exc:`ExtensionNotFound` -- The extension could not be imported."
+msgid "The extension could not be imported."
 msgstr ""
 
 #: discord.ext.commands.Bot.load_extension:16 of
-msgid ":exc:`ExtensionAlreadyLoaded` -- The extension is already loaded."
+msgid "The extension is already loaded."
 msgstr ""
 
 #: discord.ext.commands.Bot.load_extension:17
 #: discord.ext.commands.Bot.reload_extension:15 of
-msgid ":exc:`NoEntryPointError` -- The extension does not have a setup function."
+msgid "The extension does not have a setup function."
 msgstr ""
 
 #: discord.ext.commands.Bot.load_extension:18
 #: discord.ext.commands.Bot.reload_extension:16 of
-msgid ""
-":exc:`ExtensionFailed` -- The extension setup function had an execution "
-"error."
+msgid "The extension setup function had an execution error."
 msgstr ""
 
 #: discord.ext.commands.Bot.login:3 of
@@ -1297,17 +1543,24 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Bot.login:21 of
-msgid ":exc:`LoginFailure` -- The wrong credentials are passed."
+msgid "The wrong credentials are passed."
 msgstr ""
 
 #: discord.ext.commands.Bot.login:22 of
 msgid ""
-":exc:`HTTPException` -- An unknown HTTP related error occurred, usually "
-"when it isn't 200 or the known incorrect credentials passing status code."
+"An unknown HTTP related error occurred,     usually when it isn't 200 or "
+"the known incorrect credentials     passing status code."
 msgstr ""
 
 #: discord.ext.commands.Bot.logout:3 of
 msgid "Logs out of Discord and closes all connections."
+msgstr ""
+
+#: discord.ext.commands.Bot.logout:7 of
+msgid ""
+"This is just an alias to :meth:`close`. If you want to do extraneous "
+"cleanup when subclassing, it is suggested to override :meth:`close` "
+"instead."
 msgstr ""
 
 #: discord.ext.commands.Bot.on_command_error:3 of
@@ -1316,8 +1569,8 @@ msgstr ""
 
 #: discord.ext.commands.Bot.on_command_error:5 of
 msgid ""
-"By default this prints to ``sys.stderr`` however it could be overridden "
-"to have a different implementation."
+"By default this prints to :data:`sys.stderr` however it could be "
+"overridden to have a different implementation."
 msgstr ""
 
 #: discord.ext.commands.Bot.on_command_error:8 of
@@ -1330,21 +1583,23 @@ msgstr ""
 
 #: discord.ext.commands.Bot.on_error:5 of
 msgid ""
-"By default this prints to ``sys.stderr`` however it could be overridden "
-"to have a different implementation. Check :func:`discord.on_error` for "
-"more details."
+"By default this prints to :data:`sys.stderr` however it could be "
+"overridden to have a different implementation. Check "
+":func:`~discord.on_error` for more details."
 msgstr ""
 
 #: discord.ext.commands.Bot.private_channels:1 of
-msgid ""
-"List[:class:`abc.PrivateChannel`] -- The private channels that the "
-"connected client is participating on."
+msgid "The private channels that the connected client is participating on."
 msgstr ""
 
 #: discord.ext.commands.Bot.private_channels:5 of
 msgid ""
 "This returns only up to 128 most recent private channels due to an "
 "internal working on how Discord deals with private channels."
+msgstr ""
+
+#: discord.ext.commands.Bot.private_channels:8 of
+msgid "List[:class:`.abc.PrivateChannel`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.process_commands:3 of
@@ -1399,7 +1654,7 @@ msgstr ""
 
 #: discord.ext.commands.Bot.reload_extension:13
 #: discord.ext.commands.Bot.unload_extension:16 of
-msgid ":exc:`ExtensionNotLoaded` -- The extension was not loaded."
+msgid "The extension was not loaded."
 msgstr ""
 
 #: discord.ext.commands.Bot.remove_check:1 of
@@ -1484,13 +1739,13 @@ msgstr ""
 
 #: discord.ext.commands.Bot.remove_listener:4 of
 msgid "The name of the event we want to remove. Defaults to ``func.__name__``."
-msgstr ""
+msgstr "削除したいイベントの名前。デフォルトでは ``func.__name__`` です。"
 
 #: discord.ext.commands.Bot.request_offline_members:3 of
 msgid ""
 "Requests previously offline members from the guild to be filled up into "
-"the :attr:`Guild.members` cache. This function is usually not called. It "
-"should only be used if you have the ``fetch_offline_members`` parameter "
+"the :attr:`.Guild.members` cache. This function is usually not called. It"
+" should only be used if you have the ``fetch_offline_members`` parameter "
 "set to ``False``."
 msgstr ""
 
@@ -1499,7 +1754,7 @@ msgid ""
 "When the client logs on and connects to the websocket, Discord does not "
 "provide the library with offline members if the number of members in the "
 "guild is larger than 250. You can check if a guild is large if "
-":attr:`Guild.large` is ``True``."
+":attr:`.Guild.large` is ``True``."
 msgstr ""
 
 #: discord.ext.commands.Bot.request_offline_members:13 of
@@ -1507,15 +1762,13 @@ msgid "An argument list of guilds to request offline members for."
 msgstr ""
 
 #: discord.ext.commands.Bot.request_offline_members:16 of
-msgid ""
-":exc:`InvalidArgument` -- If any guild is unavailable or not large in the"
-" collection."
+msgid "If any guild is unavailable or not large in the collection."
 msgstr ""
 
 #: discord.ext.commands.Bot.run:1 of
 msgid ""
-"A blocking call that abstracts away the `event loop`_ initialisation from"
-" you."
+"A blocking call that abstracts away the event loop initialisation from "
+"you."
 msgstr ""
 
 #: discord.ext.commands.Bot.run:4 of
@@ -1540,6 +1793,10 @@ msgstr ""
 msgid "A shorthand coroutine for :meth:`login` + :meth:`connect`."
 msgstr ""
 
+#: discord.ext.commands.Bot.start:5 of
+msgid "An unexpected keyword argument was received."
+msgstr ""
+
 #: discord.ext.commands.Bot.unload_extension:1 of
 msgid "Unloads an extension."
 msgstr ""
@@ -1555,7 +1812,7 @@ msgid ""
 "The extension can provide an optional global function, ``teardown``, to "
 "do miscellaneous clean-up if necessary. This function takes a single "
 "parameter, the ``bot``, similar to ``setup`` from "
-":func:`~.Bot.load_extension`."
+":meth:`~.Bot.load_extension`."
 msgstr ""
 
 #: discord.ext.commands.Bot.unload_extension:11 of
@@ -1566,17 +1823,27 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Bot.user:1 of
-msgid ""
-"Optional[:class:`ClientUser`] -- Represents the connected client. None if"
-" not logged in."
+msgid "Represents the connected client. None if not logged in."
+msgstr ""
+
+#: discord.ext.commands.Bot.user:3 of
+msgid "Optional[:class:`.ClientUser`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.users:1 of
-msgid "Returns a :class:`list` of all the :class:`User` the bot can see."
+msgid "Returns a list of all the users the bot can see."
+msgstr ""
+
+#: discord.ext.commands.Bot.users:3 of
+msgid "List[:class:`~discord.User`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.voice_clients:1 of
-msgid "List[:class:`VoiceClient`] -- Represents a list of voice connections."
+msgid "Represents a list of voice connections."
+msgstr ""
+
+#: discord.ext.commands.Bot.voice_clients:3 of
+msgid "List[:class:`.VoiceClient`]"
 msgstr ""
 
 #: discord.ext.commands.Bot.wait_for:3 of
@@ -1636,9 +1903,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Bot.wait_for:65 of
-msgid ""
-":exc:`asyncio.TimeoutError` -- If a timeout is provided and it was "
-"reached."
+msgid "If a timeout is provided and it was reached."
 msgstr ""
 
 #: discord.ext.commands.Bot.wait_for:67 of
@@ -1691,7 +1956,7 @@ msgstr ""
 
 #: ../../ext/commands/api.rst:27
 msgid "Event Reference"
-msgstr ""
+msgstr "イベントリファレンス"
 
 #: ../../ext/commands/api.rst:29
 msgid ""
@@ -1714,7 +1979,7 @@ msgstr ""
 #: ../../ext/commands/api.rst:62 discord.ext.commands.Cog.cog_after_invoke:7
 #: discord.ext.commands.Cog.cog_before_invoke:7
 #: discord.ext.commands.HelpCommand.on_help_command_error:11
-#: discord.ext.commands.HelpCommand.prepare_help_command:20 of
+#: discord.ext.commands.HelpCommand.prepare_help_command:15 of
 msgid "The invocation context."
 msgstr ""
 
@@ -1747,7 +2012,7 @@ msgstr ""
 
 #: ../../ext/commands/api.rst:68
 msgid "Command"
-msgstr ""
+msgstr "コマンド"
 
 #: discord.ext.commands.command:1 of
 msgid ""
@@ -1789,9 +2054,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.command:21 of
-msgid ""
-":exc:`TypeError` -- If the function is not a coroutine or is already a "
-"command."
+msgid "If the function is not a coroutine or is already a command."
 msgstr ""
 
 #: discord.ext.commands.group:1 of
@@ -1800,8 +2063,12 @@ msgstr ""
 
 #: discord.ext.commands.group:3 of
 msgid ""
-"This is similar to the :func:`.command` decorator but creates a "
-":class:`.Group` instead of a :class:`.Command`."
+"This is similar to the :func:`.command` decorator but the ``cls`` "
+"parameter is set to :class:`Group` by default."
+msgstr ""
+
+#: discord.ext.commands.group:6 of
+msgid "The ``cls`` parameter can now be passed."
 msgstr ""
 
 #: discord.ext.commands.Command:1 of
@@ -1815,48 +2082,62 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Command:8 of
-msgid ":class:`str` -- The name of the command."
-msgstr ""
+#, fuzzy
+msgid "The name of the command."
+msgstr "ギルドの名前。"
 
-#: discord.ext.commands.Command:12 of
-msgid ""
-":ref:`coroutine <coroutine>` -- The coroutine that is executed when the "
-"command is called."
-msgstr ""
+#: discord.ext.commands.Command:14 of
+#, fuzzy
+msgid "The coroutine that is executed when the command is called."
+msgstr "呼び出そうとしたコマンドが無効化されていた際に発生する例外。"
 
 #: discord.ext.commands.Command:16 of
-msgid ":class:`str` -- The long help text for the command."
+msgid ":ref:`coroutine <coroutine>`"
 msgstr ""
 
 #: discord.ext.commands.Command:20 of
+msgid "The long help text for the command."
+msgstr ""
+
+#: discord.ext.commands.Command:26 of
 msgid ""
-":class:`str` -- The short help text for the command. If this is not "
-"specified then the first line of the long help text is used instead."
-msgstr ""
-
-#: discord.ext.commands.Command:25 of
-msgid ":class:`str` -- A replacement for arguments in the default help text."
-msgstr ""
-
-#: discord.ext.commands.Command:29 of
-msgid ":class:`list` -- The list of aliases the command can be invoked under."
+"The short help text for the command. If this is not specified then the "
+"first line of the long help text is used instead."
 msgstr ""
 
 #: discord.ext.commands.Command:33 of
-msgid ""
-":class:`bool` -- A boolean that indicates if the command is currently "
-"enabled. If the command is invoked while it is disabled, then "
-":exc:`.DisabledCommand` is raised to the :func:`.on_command_error` event."
-" Defaults to ``True``."
+msgid "A replacement for arguments in the default help text."
 msgstr ""
 
-#: discord.ext.commands.Command:40 of
-msgid ""
-"*Optional[command]* -- The parent command that this command belongs to. "
-"``None`` if there isn't one."
+#: discord.ext.commands.Command:39 of
+msgid "The list of aliases the command can be invoked under."
 msgstr ""
+
+#: discord.ext.commands.BotMissingPermissions:10
+#: discord.ext.commands.Command:41 discord.ext.commands.Context:27
+#: discord.ext.commands.MissingPermissions:10 of
+#, fuzzy
+msgid ":class:`list`"
+msgstr ":class:`.Guild`"
 
 #: discord.ext.commands.Command:45 of
+msgid ""
+"A boolean that indicates if the command is currently enabled. If the "
+"command is invoked while it is disabled, then :exc:`.DisabledCommand` is "
+"raised to the :func:`.on_command_error` event. Defaults to ``True``."
+msgstr ""
+
+#: discord.ext.commands.Command:54 of
+msgid ""
+"The parent command that this command belongs to. ``None`` if there isn't "
+"one."
+msgstr ""
+
+#: discord.ext.commands.Command:57 discord.ext.commands.Command:98 of
+msgid "Optional[:class:`Command`]"
+msgstr ""
+
+#: discord.ext.commands.Command:61 of
 msgid ""
 "A list of predicates that verifies if the command could be executed with "
 "the given :class:`.Context` as the sole parameter. If an exception is "
@@ -1866,41 +2147,48 @@ msgid ""
 " event."
 msgstr ""
 
-#: discord.ext.commands.Command:54 of
-msgid ":class:`str` -- The message prefixed into the default help command."
-msgstr ""
-
-#: discord.ext.commands.Command:58 of
-msgid ""
-":class:`bool` -- If ``True``\\, the default help command does not show "
-"this in the help output."
-msgstr ""
-
-#: discord.ext.commands.Command:63 of
-msgid ""
-":class:`bool` -- If ``False`` and a keyword-only argument is provided "
-"then the keyword only argument is stripped and handled as if it was a "
-"regular argument that handles :exc:`.MissingRequiredArgument` and default"
-" values in a regular matter rather than passing the rest completely raw. "
-"If ``True`` then the keyword-only argument will pass in the rest of the "
-"arguments in a completely raw matter. Defaults to ``False``."
+#: discord.ext.commands.Command:68 of
+msgid "List[Callable[..., :class:`bool`]]"
 msgstr ""
 
 #: discord.ext.commands.Command:72 of
+#, fuzzy
+msgid "The message prefixed into the default help command."
+msgstr ":class:`str` -- この属性に入力されたテキストは、デフォルトのヘルプメッセージの先頭に表示されます。"
+
+#: discord.ext.commands.Command:78 of
 msgid ""
-":class:`bool` -- If ``True``\\, ignores extraneous strings passed to a "
-"command if all its requirements are met (e.g. ``?foo a b c`` when only "
-"expecting ``a`` and ``b``). Otherwise :func:`.on_command_error` and local"
-" error handlers are called with :exc:`.TooManyArguments`. Defaults to "
-"``True``."
+"If ``True``\\, the default help command does not show this in the help "
+"output."
 msgstr ""
 
-#: discord.ext.commands.Command:79 of
+#: discord.ext.commands.Command:85 of
 msgid ""
-":class:`bool` -- If ``True``\\, cooldown processing is done after "
-"argument parsing, which calls converters. If ``False`` then cooldown "
-"processing is done first and then the converters are called second. "
-"Defaults to ``False``."
+"If ``False`` and a keyword-only argument is provided then the keyword "
+"only argument is stripped and handled as if it was a regular argument "
+"that handles :exc:`.MissingRequiredArgument` and default values in a "
+"regular matter rather than passing the rest completely raw. If ``True`` "
+"then the keyword-only argument will pass in the rest of the arguments in "
+"a completely raw matter. Defaults to ``False``."
+msgstr ""
+
+#: discord.ext.commands.Command:96 of
+msgid "The subcommand that was invoked, if any."
+msgstr ""
+
+#: discord.ext.commands.Command:102 of
+msgid ""
+"If ``True``\\, ignores extraneous strings passed to a command if all its "
+"requirements are met (e.g. ``?foo a b c`` when only expecting ``a`` and "
+"``b``). Otherwise :func:`.on_command_error` and local error handlers are "
+"called with :exc:`.TooManyArguments`. Defaults to ``True``."
+msgstr ""
+
+#: discord.ext.commands.Command:111 of
+msgid ""
+"If ``True``\\, cooldown processing is done after argument parsing, which "
+"calls converters. If ``False`` then cooldown processing is done first and"
+" then the converters are called second. Defaults to ``False``."
 msgstr ""
 
 #: discord.ext.commands.Command.update:1 discord.ext.commands.Group.update:1 of
@@ -1915,7 +2203,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Command.copy:1 of
-msgid "Creates a copy of this :class:`Command`."
+msgid "Creates a copy of this command."
 msgstr ""
 
 #: discord.ext.commands.Command.clean_params:1
@@ -1941,6 +2229,27 @@ msgid ""
 "This the base command name required to execute it. For example, in ``?one"
 " two three`` the parent name would be ``one two``."
 msgstr ""
+
+#: discord.ext.commands.Command.parents:1 discord.ext.commands.Group.parents:1
+#: of
+msgid "Retrieves the parents of this command."
+msgstr ""
+
+#: discord.ext.commands.Command.parents:3 discord.ext.commands.Group.parents:3
+#: of
+msgid "If the command has no parents then it returns an empty :class:`list`."
+msgstr ""
+
+#: discord.ext.commands.Command.parents:5 discord.ext.commands.Group.parents:5
+#: of
+msgid "For example in commands ``?a b c test``, the parents are ``[c, b, a]``."
+msgstr ""
+
+#: discord.ext.commands.Command.parents:9 discord.ext.commands.Group.parents:9
+#: of
+#, fuzzy
+msgid ":class:`Command`"
+msgstr ":class:`Command` またはサブクラス"
 
 #: discord.ext.commands.Command.root_parent:1
 #: discord.ext.commands.Group.root_parent:1 of
@@ -1983,14 +2292,6 @@ msgstr ""
 #: discord.ext.commands.Group.is_on_cooldown:6 of
 msgid "A boolean indicating if the command is on cooldown."
 msgstr ""
-
-#: discord.ext.commands.Command.can_run:13
-#: discord.ext.commands.Command.is_on_cooldown:7
-#: discord.ext.commands.Group.can_run:13
-#: discord.ext.commands.Group.is_on_cooldown:7 of
-#, fuzzy
-msgid ":class:`bool`"
-msgstr ":class:`AppInfo`"
 
 #: discord.ext.commands.Command.reset_cooldown:1
 #: discord.ext.commands.Group.reset_cooldown:1 of
@@ -2065,12 +2366,12 @@ msgstr ""
 #: discord.ext.commands.Command.can_run:9 discord.ext.commands.Group.can_run:9
 #: of
 msgid ""
-":class:`CommandError` -- Any command error that was raised during a check"
-" call will be propagated by this function."
+"Any command error that was raised during a check call will be propagated"
+"     by this function."
 msgstr ""
 
-#: discord.ext.commands.Command.can_run:12
-#: discord.ext.commands.Group.can_run:12 of
+#: discord.ext.commands.Command.can_run:11
+#: discord.ext.commands.Group.can_run:11 of
 msgid "A boolean indicating if the command can be invoked."
 msgstr ""
 
@@ -2088,19 +2389,24 @@ msgstr ""
 
 #: discord.ext.commands.Group:9 of
 msgid ""
-":class:`bool` -- Indicates if the group callback should begin parsing and"
-" invocation only if no subcommand was found. Useful for making it an "
-"error handling function to tell the user that no subcommand was found or "
-"to have different functionality in case no subcommand was found. If this "
-"is ``False``, then the group callback will always be invoked first. This "
+"Indicates if the group callback should begin parsing and invocation only "
+"if no subcommand was found. Useful for making it an error handling "
+"function to tell the user that no subcommand was found or to have "
+"different functionality in case no subcommand was found. If this is "
+"``False``, then the group callback will always be invoked first. This "
 "means that the checks and the parsing dictated by its parameters will be "
 "executed. Defaults to ``False``."
 msgstr ""
 
-#: discord.ext.commands.Group:20 of
+#: discord.ext.commands.DefaultHelpCommand:29 discord.ext.commands.Group:18
+#: discord.ext.commands.Group:25 discord.ext.commands.MinimalHelpCommand:34 of
+msgid "Optional[:class:`bool`]"
+msgstr ""
+
+#: discord.ext.commands.Group:22 of
 msgid ""
-":class:`bool` -- Indicates if the group's commands should be case "
-"insensitive. Defaults to ``False``."
+"Indicates if the group's commands should be case insensitive. Defaults to"
+" ``False``."
 msgstr ""
 
 #: discord.ext.commands.Group.copy:1 of
@@ -2114,20 +2420,22 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.GroupMixin:6 of
-msgid ""
-":class:`dict` -- A mapping of command name to :class:`.Command` or "
-"subclass objects."
+msgid "A mapping of command name to :class:`.Command` or subclass objects."
 msgstr ""
 
-#: discord.ext.commands.GroupMixin:11 of
-msgid ""
-":class:`bool` -- Whether the commands should be case insensitive. "
-"Defaults to ``False``."
+#: discord.ext.commands.CogMeta:57 discord.ext.commands.Context:35
+#: discord.ext.commands.GroupMixin:9 discord.ext.commands.HelpCommand:40 of
+#, fuzzy
+msgid ":class:`dict`"
+msgstr ":class:`.Guild`"
+
+#: discord.ext.commands.GroupMixin:13 of
+msgid "Whether the commands should be case insensitive. Defaults to ``False``."
 msgstr ""
 
 #: ../../ext/commands/api.rst:87
 msgid "Cogs"
-msgstr ""
+msgstr "コグ"
 
 #: discord.ext.commands.Cog:1 of
 msgid "The base class that all cogs must inherit from."
@@ -2157,13 +2465,11 @@ msgid "This does not include subcommands."
 msgstr ""
 
 #: discord.ext.commands.Cog.qualified_name:1 of
-msgid ":class:`str` -- Returns the cog's specified name, not the class name."
+msgid "Returns the cog's specified name, not the class name."
 msgstr ""
 
 #: discord.ext.commands.Cog.description:1 of
-msgid ""
-":class:`str` -- Returns the cog's description, typically the cleaned "
-"docstring."
+msgid "Returns the cog's description, typically the cleaned docstring."
 msgstr ""
 
 #: discord.ext.commands.Cog.walk_commands:1 of
@@ -2194,8 +2500,8 @@ msgstr ""
 
 #: discord.ext.commands.Cog.listener:9 of
 msgid ""
-":exc:`TypeError` -- The function is not a coroutine function or a string "
-"was not passed as the name."
+"The function is not a coroutine function or a string was not passed as"
+"     the name."
 msgstr ""
 
 #: discord.ext.commands.Cog.cog_unload:1 of
@@ -2256,19 +2562,6 @@ msgstr ""
 msgid "The error that happened."
 msgstr ""
 
-#: discord.ext.commands.Cog.cog_after_invoke:1 of
-msgid "A special method that acts as a cog local post-invoke hook."
-msgstr ""
-
-#: discord.ext.commands.Cog.cog_after_invoke:3 of
-msgid "This is similar to :meth:`.Command.after_invoke`."
-msgstr ""
-
-#: discord.ext.commands.Cog.cog_after_invoke:5
-#: discord.ext.commands.Cog.cog_before_invoke:5 of
-msgid "This **must** be a coroutine."
-msgstr ""
-
 #: discord.ext.commands.Cog.cog_before_invoke:1 of
 msgid "A special method that acts as a cog local pre-invoke hook."
 msgstr ""
@@ -2277,8 +2570,21 @@ msgstr ""
 msgid "This is similar to :meth:`.Command.before_invoke`."
 msgstr ""
 
+#: discord.ext.commands.Cog.cog_after_invoke:5
+#: discord.ext.commands.Cog.cog_before_invoke:5 of
+msgid "This **must** be a coroutine."
+msgstr ""
+
+#: discord.ext.commands.Cog.cog_after_invoke:1 of
+msgid "A special method that acts as a cog local post-invoke hook."
+msgstr ""
+
+#: discord.ext.commands.Cog.cog_after_invoke:3 of
+msgid "This is similar to :meth:`.Command.after_invoke`."
+msgstr ""
+
 #: discord.ext.commands.CogMeta:1 of
-msgid "A　metaclass for defining a cog."
+msgid "A metaclass for defining a cog."
 msgstr ""
 
 #: discord.ext.commands.CogMeta:3 of
@@ -2304,17 +2610,17 @@ msgstr ""
 
 #: discord.ext.commands.CogMeta:35 of
 msgid ""
-":class:`str` -- The cog name. By default, it is the name of the class "
-"with no modification."
+"The cog name. By default, it is the name of the class with no "
+"modification."
 msgstr ""
 
-#: discord.ext.commands.CogMeta:39 of
+#: discord.ext.commands.CogMeta:41 of
 msgid ""
-":class:`dict` -- A list of attributes to apply to every command inside "
-"this cog. The dictionary is passed into the :class:`Command` (or its "
-"subclass) options at ``__init__``. If you specify attributes inside the "
-"command attribute in the class, it will override the one specified inside"
-" this attribute. For example:"
+"A list of attributes to apply to every command inside this cog. The "
+"dictionary is passed into the :class:`Command` (or its subclass) options "
+"at ``__init__``. If you specify attributes inside the command attribute "
+"in the class, it will override the one specified inside this attribute. "
+"For example:"
 msgstr ""
 
 #: ../../ext/commands/api.rst:98
@@ -2327,30 +2633,45 @@ msgstr ""
 
 #: discord.ext.commands.HelpCommand:5 of
 msgid ""
-"Optional[:class:`Context`] -- The context that invoked this help "
-"formatter. This is generally set after the help command assigned, "
-":func:`command_callback`\\, has been called."
+"Internally instances of this class are deep copied every time the command"
+" itself is invoked to prevent a race condition mentioned in "
+":issue:`2123`."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand:10 of
+#: discord.ext.commands.HelpCommand:9 of
 msgid ""
-":class:`bool` -- Specifies if hidden commands should be shown in the "
-"output. Defaults to ``False``."
+"This means that relying on the state of this class to be the same between"
+" command invocations would not work as expected."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand:15 of
+#: discord.ext.commands.HelpCommand:14 of
 msgid ""
-":class:`bool` -- Specifies if commands should have their "
-":attr:`.Command.checks` called and verified. Defaults to ``True``."
+"The context that invoked this help formatter. This is generally set after"
+" the help command assigned, :func:`command_callback`\\, has been called."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand:20 of
+#: discord.ext.commands.HelpCommand:17 of
+msgid "Optional[:class:`Context`]"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand:21 of
 msgid ""
-":class:`dict` -- A dictionary of options to pass in for the construction "
-"of the help command. This allows you to change the command behaviour "
-"without actually changing the implementation of the command. The "
-"attributes will be the same as the ones passed in the :class:`.Command` "
-"constructor."
+"Specifies if hidden commands should be shown in the output. Defaults to "
+"``False``."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand:28 of
+msgid ""
+"Specifies if commands should have their :attr:`.Command.checks` called "
+"and verified. Defaults to ``True``."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand:35 of
+msgid ""
+"A dictionary of options to pass in for the construction of the help "
+"command. This allows you to change the command behaviour without actually"
+" changing the implementation of the command. The attributes will be the "
+"same as the ones passed in the :class:`.Command` constructor."
 msgstr ""
 
 #: discord.ext.commands.HelpCommand.get_bot_mapping:1 of
@@ -2381,14 +2702,6 @@ msgstr ""
 msgid "The command name that triggered this invocation."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.command_not_found:13
-#: discord.ext.commands.HelpCommand.get_command_signature:7
-#: discord.ext.commands.HelpCommand.invoked_with:10
-#: discord.ext.commands.HelpCommand.subcommand_not_found:20
-#: discord.ext.commands.MinimalHelpCommand.get_command_signature:7 of
-msgid ":class:`str`"
-msgstr ""
-
 #: discord.ext.commands.HelpCommand.get_command_signature:1
 #: discord.ext.commands.MinimalHelpCommand.get_command_signature:1 of
 msgid "Retrieves the signature portion of the help page."
@@ -2410,6 +2723,29 @@ msgstr ""
 
 #: discord.ext.commands.HelpCommand.remove_mentions:3 of
 msgid "This includes ``@everyone``, ``@here``, member mentions and role mentions."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.cog:1 of
+msgid "A property for retrieving or setting the cog for the help command."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.cog:3 of
+msgid ""
+"When a cog is set for the help command, it is as-if the help command "
+"belongs to that cog. All cog special methods will apply to the help "
+"command and it will be automatically unset on unload."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.cog:7 of
+msgid "To unbind the cog from the help command, you can set it to ``None``."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.cog:9 of
+msgid "The cog that is currently set for the help command."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.cog:10 of
+msgid "Optional[:class:`Cog`]"
 msgstr ""
 
 #: discord.ext.commands.HelpCommand.command_not_found:1
@@ -2479,6 +2815,39 @@ msgstr ""
 msgid "The string to use when the command did not have the subcommand requested."
 msgstr ""
 
+#: discord.ext.commands.HelpCommand.filter_commands:3 of
+msgid "Returns a filtered list of commands and optionally sorts them."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.filter_commands:5 of
+msgid ""
+"This takes into account the :attr:`verify_checks` and :attr:`show_hidden`"
+" attributes."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.filter_commands:8 of
+msgid "An iterable of commands that are getting filtered."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.filter_commands:10 of
+msgid "Whether to sort the result."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.filter_commands:12 of
+msgid ""
+"An optional key function to pass to :func:`py:sorted` that takes a "
+":class:`Command` as its sole parameter. If ``sort`` is passed as ``True``"
+" then this will default as the command name."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.filter_commands:17 of
+msgid "A list of commands that passed the filter."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.filter_commands:18 of
+msgid "List[:class:`Command`]"
+msgstr ""
+
 #: discord.ext.commands.HelpCommand.get_max_size:1 of
 msgid "Returns the largest name length of the specified command list."
 msgstr ""
@@ -2491,7 +2860,10 @@ msgstr ""
 msgid "The maximum width of the commands."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.get_max_size:7 of
+#: discord.ext.commands.DefaultHelpCommand:12
+#: discord.ext.commands.DefaultHelpCommand:42
+#: discord.ext.commands.HelpCommand.get_max_size:7
+#: discord.ext.commands.Paginator:25 of
 msgid ":class:`int`"
 msgstr ""
 
@@ -2499,8 +2871,8 @@ msgstr ""
 #: discord.ext.commands.HelpCommand.get_destination:1
 #: discord.ext.commands.MinimalHelpCommand.get_destination:1 of
 msgid ""
-"Returns the :class:`abc.Messageable` where the help command will be "
-"output."
+"Returns the :class:`~discord.abc.Messageable` where the help command will"
+" be output."
 msgstr ""
 
 #: discord.ext.commands.DefaultHelpCommand.get_destination:3
@@ -2520,27 +2892,184 @@ msgstr ""
 msgid "By default this returns the context's channel."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.cog:1 of
-msgid "A property for retrieving or setting the cog for the help command."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.cog:3 of
+#: discord.ext.commands.HelpCommand.send_error_message:3 of
 msgid ""
-"When a cog is set for the help command, it is as-if the help command "
-"belongs to that cog. All cog special methods will apply to the help "
-"command and it will be automatically unset on unload."
+"Handles the implementation when an error happens in the help command. For"
+" example, the result of :meth:`command_not_found` or "
+":meth:`command_has_no_subcommand_found` will be passed here."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.cog:7 of
-msgid "To unbind the cog from the help command, you can set it to ``None``."
+#: discord.ext.commands.HelpCommand.send_error_message:9 of
+msgid ""
+"By default, this sends the error message to the destination specified by "
+":meth:`get_destination`."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.cog:9 of
-msgid "The cog that is currently set for the help command."
+#: discord.ext.commands.HelpCommand.send_bot_help:15
+#: discord.ext.commands.HelpCommand.send_cog_help:15
+#: discord.ext.commands.HelpCommand.send_command_help:14
+#: discord.ext.commands.HelpCommand.send_error_message:14
+#: discord.ext.commands.HelpCommand.send_group_help:15 of
+msgid "You can access the invocation context with :attr:`HelpCommand.context`."
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.cog:10 of
-msgid "Optional[:class:`Cog`]"
+#: discord.ext.commands.HelpCommand.send_error_message:16 of
+msgid ""
+"The error message to display to the user. Note that this has had mentions"
+" removed to prevent abuse."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.on_help_command_error:3 of
+msgid ""
+"The help command's error handler, as specified by "
+":ref:`ext_commands_error_handler`."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.on_help_command_error:5 of
+msgid ""
+"Useful to override if you need some specific behaviour when the error "
+"handler is called."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.on_help_command_error:8 of
+msgid ""
+"By default this method does nothing and just propagates to the default "
+"error handlers."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_bot_help:3 of
+msgid ""
+"Handles the implementation of the bot command page in the help command. "
+"This function is called when the help command is called with no "
+"arguments."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_bot_help:6
+#: discord.ext.commands.HelpCommand.send_cog_help:6
+#: discord.ext.commands.HelpCommand.send_command_help:5
+#: discord.ext.commands.HelpCommand.send_group_help:6 of
+msgid ""
+"It should be noted that this method does not return anything -- rather "
+"the actual message sending should be done inside this method. Well "
+"behaved subclasses should use :meth:`get_destination` to know where to "
+"send, as this is a customisation point for other users."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_bot_help:17 of
+msgid ""
+"Also, the commands in the mapping are not filtered. To do the filtering "
+"you will have to call :meth:`filter_commands` yourself."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_bot_help:20 of
+msgid ""
+"A mapping of cogs to commands that have been requested by the user for "
+"help. The key of the mapping is the :class:`~.commands.Cog` that the "
+"command belongs to, or ``None`` if there isn't one, and the value is a "
+"list of commands that belongs to that cog."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_cog_help:3 of
+msgid ""
+"Handles the implementation of the cog page in the help command. This "
+"function is called when the help command is called with a cog as the "
+"argument."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_cog_help:17 of
+msgid ""
+"To get the commands that belong to this cog see :meth:`Cog.get_commands`."
+" The commands returned not filtered. To do the filtering you will have to"
+" call :meth:`filter_commands` yourself."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_cog_help:21 of
+msgid "The cog that was requested for help."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_group_help:3 of
+msgid ""
+"Handles the implementation of the group page in the help command. This "
+"function is called when the help command is called with a group as the "
+"argument."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_group_help:17 of
+msgid ""
+"To get the commands that belong to this group without aliases see "
+":attr:`Group.commands`. The commands returned not filtered. To do the "
+"filtering you will have to call :meth:`filter_commands` yourself."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_group_help:21 of
+msgid "The group that was requested for help."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:3 of
+msgid "Handles the implementation of the single command page in the help command."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:16 of
+msgid "Showing Help"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:19 of
+msgid ""
+"There are certain attributes and methods that are helpful for a help "
+"command to show such as the following:"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:22 of
+msgid ":attr:`Command.help`"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:23 of
+msgid ":attr:`Command.brief`"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:24 of
+msgid ":attr:`Command.short_doc`"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:25 of
+msgid ":attr:`Command.description`"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:26 of
+msgid ":meth:`get_command_signature`"
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:28 of
+msgid ""
+"There are more than just these attributes but feel free to play around "
+"with these to help you get started to get the output that you want."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.send_command_help:31 of
+msgid "The command that was requested for help."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.prepare_help_command:3 of
+msgid ""
+"A low level method that can be used to prepare the help command before it"
+" does anything. For example, if you need to prepare some state in your "
+"subclass before the command does its processing then this would be the "
+"place to do it."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.prepare_help_command:8
+#: discord.ext.commands.MinimalHelpCommand.get_ending_note:3 of
+msgid "The default implementation does nothing."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.prepare_help_command:12 of
+msgid ""
+"This is called *inside* the help command callback body. So all the usual "
+"rules that happen inside apply here as well."
+msgstr ""
+
+#: discord.ext.commands.HelpCommand.prepare_help_command:17 of
+msgid "The argument passed to the help command."
 msgstr ""
 
 #: discord.ext.commands.HelpCommand.command_callback:3 of
@@ -2593,224 +3122,6 @@ msgstr ""
 msgid ":meth:`prepare_help_command`"
 msgstr ""
 
-#: discord.ext.commands.HelpCommand.filter_commands:3 of
-msgid "Returns a filtered list of commands and optionally sorts them."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.filter_commands:5 of
-msgid ""
-"This takes into account the :attr:`verify_checks` and :attr:`show_hidden`"
-" attributes."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.filter_commands:8 of
-msgid "An iterable of commands that are getting filtered."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.filter_commands:10 of
-msgid "Whether to sort the result."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.filter_commands:12 of
-msgid ""
-"An optional key function to pass to :func:`py:sorted` that takes a "
-":class:`Command` as its sole parameter. If ``sort`` is passed as ``True``"
-" then this will default as the command name."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.filter_commands:17 of
-msgid "A list of commands that passed the filter."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.filter_commands:18 of
-msgid "List[:class:`Command`]"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.on_help_command_error:3 of
-msgid ""
-"The help command's error handler, as specified by "
-":ref:`ext_commands_error_handler`."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.on_help_command_error:5 of
-msgid ""
-"Useful to override if you need some specific behaviour when the error "
-"handler is called."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.on_help_command_error:8 of
-msgid ""
-"By default this method does nothing and just propagates to the default "
-"error handlers."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.prepare_help_command:3 of
-msgid ""
-"A low level method that can be used to prepare the help command before it"
-" does anything. For example, if you need to prepare some state in your "
-"subclass before the command does its processing then this would be the "
-"place to do it."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.prepare_help_command:8 of
-msgid "The default implementation sets :attr:`context`."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.prepare_help_command:12 of
-msgid ""
-"If you override this method, be sure to call ``super()`` so the help "
-"command can be set up."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.prepare_help_command:17 of
-msgid ""
-"This is called *inside* the help command callback body. So all the usual "
-"rules that happen inside apply here as well."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.prepare_help_command:22 of
-msgid "The argument passed to the help command."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_bot_help:3 of
-msgid ""
-"Handles the implementation of the bot command page in the help command. "
-"This function is called when the help command is called with no "
-"arguments."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_bot_help:6
-#: discord.ext.commands.HelpCommand.send_cog_help:6
-#: discord.ext.commands.HelpCommand.send_command_help:5
-#: discord.ext.commands.HelpCommand.send_group_help:6 of
-msgid ""
-"It should be noted that this method does not return anything -- rather "
-"the actual message sending should be done inside this method. Well "
-"behaved subclasses should use :meth:`get_destination` to know where to "
-"send, as this is a customisation point for other users."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_bot_help:15
-#: discord.ext.commands.HelpCommand.send_cog_help:15
-#: discord.ext.commands.HelpCommand.send_command_help:14
-#: discord.ext.commands.HelpCommand.send_error_message:14
-#: discord.ext.commands.HelpCommand.send_group_help:15 of
-msgid "You can access the invocation context with :attr:`HelpCommand.context`."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_bot_help:17 of
-msgid ""
-"Also, the commands in the mapping are not filtered. To do the filtering "
-"you will have to call :meth:`filter_commands` yourself."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_bot_help:20 of
-msgid ""
-"A mapping of cogs to commands that have been requested by the user for "
-"help. The key of the mapping is the :class:`~.commands.Cog` that the "
-"command belongs to, or ``None`` if there isn't one, and the value is a "
-"list of commands that belongs to that cog."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_cog_help:3 of
-msgid ""
-"Handles the implementation of the cog page in the help command. This "
-"function is called when the help command is called with a cog as the "
-"argument."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_cog_help:17 of
-msgid ""
-"To get the commands that belong to this cog see :meth:`Cog.get_commands`."
-" The commands returned not filtered. To do the filtering you will have to"
-" call :meth:`filter_commands` yourself."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_cog_help:21 of
-msgid "The cog that was requested for help."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:3 of
-msgid "Handles the implementation of the single command page in the help command."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:16 of
-msgid "Showing Help"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:19 of
-msgid ""
-"There are certain attributes and methods that are helpful for a help "
-"command to show such as the following:"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:22 of
-msgid ":attr:`Command.help`"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:23 of
-msgid ":attr:`Command.brief`"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:24 of
-msgid ":attr:`Command.short_doc`"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:25 of
-msgid ":attr:`Command.description`"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:26 of
-msgid ":meth:`get_command_signature`"
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:28 of
-msgid ""
-"There are more than just these attributes but feel free to play around "
-"with these to help you get started to get the output that you want."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_command_help:31 of
-msgid "The command that was requested for help."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_error_message:3 of
-msgid ""
-"Handles the implementation when an error happens in the help command. For"
-" example, the result of :meth:`command_not_found` or "
-":meth:`command_has_no_subcommand_found` will be passed here."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_error_message:9 of
-msgid ""
-"By default, this sends the error message to the destination specified by "
-":meth:`get_destination`."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_error_message:16 of
-msgid ""
-"The error message to display to the user. Note that this has had mentions"
-" removed to prevent abuse."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_group_help:3 of
-msgid ""
-"Handles the implementation of the group page in the help command. This "
-"function is called when the help command is called with a group as the "
-"argument."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_group_help:17 of
-msgid ""
-"To get the commands that belong to this group without aliases see "
-":attr:`Group.commands`. The commands returned not filtered. To do the "
-"filtering you will have to call :meth:`filter_commands` yourself."
-msgstr ""
-
-#: discord.ext.commands.HelpCommand.send_group_help:21 of
-msgid "The group that was requested for help."
-msgstr ""
-
 #: discord.ext.commands.DefaultHelpCommand:1 of
 msgid "The implementation of the default help command."
 msgstr ""
@@ -2825,70 +3136,61 @@ msgid "It extends it with the following attributes."
 msgstr ""
 
 #: discord.ext.commands.DefaultHelpCommand:9 of
-msgid ""
-":class:`int` -- The maximum number of characters that fit in a line. "
-"Defaults to 80."
-msgstr ":class:`int` -- 1行に収める最大の文字数を指定します。デフォルトでは80です。"
+msgid "The maximum number of characters that fit in a line. Defaults to 80."
+msgstr ""
 
-#: discord.ext.commands.DefaultHelpCommand:14
+#: discord.ext.commands.DefaultHelpCommand:16
 #: discord.ext.commands.MinimalHelpCommand:7 of
 msgid ""
-":class:`bool` -- Whether to sort the commands in the output "
-"alphabetically. Defaults to ``True``."
+"Whether to sort the commands in the output alphabetically. Defaults to "
+"``True``."
 msgstr ""
 
-#: discord.ext.commands.DefaultHelpCommand:18
-#: discord.ext.commands.MinimalHelpCommand:21 of
+#: discord.ext.commands.DefaultHelpCommand:22
+#: discord.ext.commands.MinimalHelpCommand:27 of
 msgid ""
-"Optional[:class:`bool`] -- A tribool that indicates if the help command "
-"should DM the user instead of sending it to the channel it received it "
-"from. If the boolean is set to ``True``, then all help output is DM'd. If"
-" ``False``, none of the help output is DM'd. If ``None``, then the bot "
-"will only DM when the help message becomes too long (dictated by more "
-"than :attr:`dm_help_threshold` characters). Defaults to ``False``."
+"A tribool that indicates if the help command should DM the user instead "
+"of sending it to the channel it received it from. If the boolean is set "
+"to ``True``, then all help output is DM'd. If ``False``, none of the help"
+" output is DM'd. If ``None``, then the bot will only DM when the help "
+"message becomes too long (dictated by more than :attr:`dm_help_threshold`"
+" characters). Defaults to ``False``."
 msgstr ""
 
-#: discord.ext.commands.DefaultHelpCommand:27
-#: discord.ext.commands.MinimalHelpCommand:30 of
+#: discord.ext.commands.DefaultHelpCommand:33
+#: discord.ext.commands.MinimalHelpCommand:38 of
 msgid ""
-"Optional[:class:`int`] -- The number of characters the paginator must "
-"accumulate before getting DM'd to the user if :attr:`dm_help` is set to "
-"``None``. Defaults to 1000."
+"The number of characters the paginator must accumulate before getting "
+"DM'd to the user if :attr:`dm_help` is set to ``None``. Defaults to 1000."
 msgstr ""
 
-#: discord.ext.commands.DefaultHelpCommand:32 of
-msgid ""
-":class:`int` -- How much to intend the commands from a heading. Defaults "
-"to ``2``."
+#: discord.ext.commands.DefaultHelpCommand:40 of
+msgid "How much to intend the commands from a heading. Defaults to ``2``."
 msgstr ""
 
-#: discord.ext.commands.DefaultHelpCommand:36 of
+#: discord.ext.commands.DefaultHelpCommand:46 of
 msgid ""
-":class:`str` -- The command list's heading string used when the help "
-"command is invoked with a category name. Useful for i18n. Defaults to "
-"``\"Commands:\"``"
+"The command list's heading string used when the help command is invoked "
+"with a category name. Useful for i18n. Defaults to ``\"Commands:\"``"
 msgstr ""
-":class:`str` -- help "
-"コマンドがカテゴリ名を伴って起動された際に、コマンドの表題として表示される文字列を示します。Botを翻訳する際に使うことができます。デフォルトでは"
-" ``\"Commands:\"`` です。"
 
-#: discord.ext.commands.DefaultHelpCommand:41
-#: discord.ext.commands.MinimalHelpCommand:35 of
+#: discord.ext.commands.DefaultHelpCommand:53
+#: discord.ext.commands.MinimalHelpCommand:45 of
 msgid ""
-":class:`str` -- The string used when there is a command which does not "
-"belong to any category(cog). Useful for i18n. Defaults to ``\"No "
-"Category\"``"
+"The string used when there is a command which does not belong to any "
+"category(cog). Useful for i18n. Defaults to ``\"No Category\"``"
 msgstr ""
-":class:`str` -- help "
-"コマンドが起動された際に、いずれのカテゴリ(cog)にも属さないコマンドの表題として表示される文字列を示します。Botを翻訳する際に使うことができます。デフォルトでは"
-" ``\"No Category\"`` です。"
 
-#: discord.ext.commands.DefaultHelpCommand:46
-#: discord.ext.commands.MinimalHelpCommand:40 of
-msgid ""
-":class:`Paginator` -- The paginator used to paginate the help command "
-"output."
+#: discord.ext.commands.DefaultHelpCommand:60
+#: discord.ext.commands.MinimalHelpCommand:52 of
+msgid "The paginator used to paginate the help command output."
 msgstr ""
+
+#: discord.ext.commands.DefaultHelpCommand:62
+#: discord.ext.commands.MinimalHelpCommand:54 of
+#, fuzzy
+msgid ":class:`Paginator`"
+msgstr ":class:`.AppInfo`"
 
 #: discord.ext.commands.DefaultHelpCommand.shorten_text:1 of
 msgid "Shortens text to fit into the :attr:`width`."
@@ -2932,6 +3234,13 @@ msgid ""
 ":meth:`get_max_size` on the commands parameter."
 msgstr ""
 
+#: discord.ext.commands.DefaultHelpCommand.send_pages:1
+#: discord.ext.commands.MinimalHelpCommand.send_pages:1 of
+msgid ""
+"A helper utility to send the page output from :attr:`paginator` to the "
+"destination."
+msgstr ""
+
 #: discord.ext.commands.DefaultHelpCommand.add_command_formatting:1 of
 msgid ""
 "A utility function to format the non-indented block of commands and "
@@ -2943,28 +3252,20 @@ msgstr ""
 msgid "The command to format."
 msgstr ""
 
-#: discord.ext.commands.DefaultHelpCommand.send_pages:1
-#: discord.ext.commands.MinimalHelpCommand.send_pages:1 of
-msgid ""
-"A helper utility to send the page output from :attr:`paginator` to the "
-"destination."
-msgstr ""
-
 #: discord.ext.commands.MinimalHelpCommand:1 of
 msgid "An implementation of a help command with minimal output."
 msgstr ""
 
-#: discord.ext.commands.MinimalHelpCommand:11 of
+#: discord.ext.commands.MinimalHelpCommand:13 of
 msgid ""
-":class:`str` -- The command list's heading string used when the help "
-"command is invoked with a category name. Useful for i18n. Defaults to "
-"``\"Commands\"``"
+"The command list's heading string used when the help command is invoked "
+"with a category name. Useful for i18n. Defaults to ``\"Commands\"``"
 msgstr ""
 
-#: discord.ext.commands.MinimalHelpCommand:16 of
+#: discord.ext.commands.MinimalHelpCommand:20 of
 msgid ""
-":class:`str` -- The alias list's heading string used to list the aliases "
-"of the command. Useful for i18n. Defaults to ``\"Aliases:\"``."
+"The alias list's heading string used to list the aliases of the command. "
+"Useful for i18n. Defaults to ``\"Aliases:\"``."
 msgstr ""
 
 #: discord.ext.commands.MinimalHelpCommand.get_opening_note:1 of
@@ -2981,10 +3282,6 @@ msgstr ""
 msgid ""
 "Return the help command's ending note. This is mainly useful to override "
 "for i18n purposes."
-msgstr ""
-
-#: discord.ext.commands.MinimalHelpCommand.get_ending_note:3 of
-msgid "The default implementation does nothing."
 msgstr ""
 
 #: discord.ext.commands.MinimalHelpCommand.add_bot_commands_formatting:1 of
@@ -3057,19 +3354,20 @@ msgid "Returns the total number of characters in the paginator."
 msgstr ""
 
 #: discord.ext.commands.Paginator:11 of
-msgid ""
-"Optional[:class:`str`] -- The prefix inserted to every page. e.g. three "
-"backticks."
+msgid "The prefix inserted to every page. e.g. three backticks."
 msgstr ""
 
-#: discord.ext.commands.Paginator:15 of
-msgid ""
-"Optional[:class:`str`] -- The suffix appended at the end of every page. "
-"e.g. three backticks."
-msgstr ""
-
+#: discord.ext.commands.Context:68 discord.ext.commands.Paginator:13
 #: discord.ext.commands.Paginator:19 of
-msgid ":class:`int` -- The maximum amount of codepoints allowed in a page."
+msgid "Optional[:class:`str`]"
+msgstr ""
+
+#: discord.ext.commands.Paginator:17 of
+msgid "The suffix appended at the end of every page. e.g. three backticks."
+msgstr ""
+
+#: discord.ext.commands.Paginator:23 of
+msgid "The maximum amount of codepoints allowed in a page."
 msgstr ""
 
 #: discord.ext.commands.Paginator.clear:1 of
@@ -3093,9 +3391,7 @@ msgid "Indicates if another empty line should be added."
 msgstr ""
 
 #: discord.ext.commands.Paginator.add_line:11 of
-msgid ""
-":exc:`RuntimeError` -- The line was too big for the current "
-":attr:`max_size`."
+msgid "The line was too big for the current :attr:`max_size`."
 msgstr ""
 
 #: discord.ext.commands.Paginator.close_page:1 of
@@ -3173,6 +3469,19 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.has_role:12 of
+msgid ""
+"This check raises one of two special exceptions, :exc:`.MissingRole` if "
+"the user is missing a role, or :exc:`.NoPrivateMessage` if it is used in "
+"a private message. Both inherit from :exc:`.CheckFailure`."
+msgstr ""
+
+#: discord.ext.commands.has_role:18 of
+msgid ""
+"Raise :exc:`.MissingRole` or :exc:`.NoPrivateMessage` instead of generic "
+":exc:`.CheckFailure`"
+msgstr ""
+
+#: discord.ext.commands.has_role:21 of
 msgid "The name or ID of the role to check."
 msgstr ""
 
@@ -3210,11 +3519,37 @@ msgid "Similar to :func:`.has_role`\\, the names or IDs passed in must be exact.
 msgstr ""
 
 #: discord.ext.commands.has_any_role:7 of
+msgid ""
+"This check raises one of two special exceptions, :exc:`.MissingAnyRole` "
+"if the user is missing all roles, or :exc:`.NoPrivateMessage` if it is "
+"used in a private message. Both inherit from :exc:`.CheckFailure`."
+msgstr ""
+
+#: discord.ext.commands.has_any_role:13 of
+msgid ""
+"Raise :exc:`.MissingAnyRole` or :exc:`.NoPrivateMessage` instead of "
+"generic :exc:`.CheckFailure`"
+msgstr ""
+
+#: discord.ext.commands.has_any_role:16 of
 msgid "An argument list of names or IDs to check that the member has roles wise."
 msgstr ""
 
 #: discord.ext.commands.bot_has_role:1 of
 msgid "Similar to :func:`.has_role` except checks if the bot itself has the role."
+msgstr ""
+
+#: discord.ext.commands.bot_has_role:4 of
+msgid ""
+"This check raises one of two special exceptions, :exc:`.BotMissingRole` "
+"if the bot is missing the role, or :exc:`.NoPrivateMessage` if it is used"
+" in a private message. Both inherit from :exc:`.CheckFailure`."
+msgstr ""
+
+#: discord.ext.commands.bot_has_role:10 of
+msgid ""
+"Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage` instead of "
+"generic :exc:`.CheckFailure`"
 msgstr ""
 
 #: discord.ext.commands.bot_has_permissions:1 of
@@ -3233,6 +3568,20 @@ msgstr ""
 msgid ""
 "Similar to :func:`.has_any_role` except checks if the bot itself has any "
 "of the roles listed."
+msgstr ""
+
+#: discord.ext.commands.bot_has_any_role:4 of
+msgid ""
+"This check raises one of two special exceptions, "
+":exc:`.BotMissingAnyRole` if the bot is missing all roles, or "
+":exc:`.NoPrivateMessage` if it is used in a private message. Both inherit"
+" from :exc:`.CheckFailure`."
+msgstr ""
+
+#: discord.ext.commands.bot_has_any_role:10 of
+msgid ""
+"Raise :exc:`.BotMissingAnyRole` or :exc:`.NoPrivateMessage` instead of "
+"generic checkfailure"
 msgstr ""
 
 #: discord.ext.commands.cooldown:1 of
@@ -3307,6 +3656,18 @@ msgid ""
 "inherited from :exc:`.CheckFailure`."
 msgstr ""
 
+#: discord.ext.commands.dm_only:1 of
+msgid ""
+"A :func:`.check` that indicates this command must only be used in a DM "
+"context. Only private messages are allowed when using the command."
+msgstr ""
+
+#: discord.ext.commands.dm_only:5 of
+msgid ""
+"This check raises a special exception, :exc:`.PrivateMessageOnly` that is"
+" inherited from :exc:`.CheckFailure`."
+msgstr ""
+
 #: discord.ext.commands.is_owner:1 of
 msgid ""
 "A :func:`.check` that checks if the person invoking this command is the "
@@ -3327,7 +3688,19 @@ msgstr ""
 msgid "A :func:`.check` that checks if the channel is a NSFW channel."
 msgstr ""
 
-#: ../../ext/commands/api.rst:144
+#: discord.ext.commands.is_nsfw:3 of
+msgid ""
+"This check raises a special exception, :exc:`.NSFWChannelRequired` that "
+"is derived from :exc:`.CheckFailure`."
+msgstr ""
+
+#: discord.ext.commands.is_nsfw:8 of
+msgid ""
+"Raise :exc:`.NSFWChannelRequired` instead of generic "
+":exc:`.CheckFailure`. DM channels will also now pass this check."
+msgstr ""
+
+#: ../../ext/commands/api.rst:146
 msgid "Context"
 msgstr ""
 
@@ -3343,80 +3716,90 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.Context:7 of
-msgid "This class implements the :class:`abc.Messageable` ABC."
+msgid "This class implements the :class:`~discord.abc.Messageable` ABC."
 msgstr ""
 
 #: discord.ext.commands.Context:11 of
-msgid ""
-":class:`.Message` -- The message that triggered the command being "
-"executed."
+msgid "The message that triggered the command being executed."
 msgstr ""
 
-#: discord.ext.commands.Context:15 of
-msgid ":class:`.Bot` -- The bot that contains the command being executed."
+#: discord.ext.commands.Context:13 of
+#, fuzzy
+msgid ":class:`.Message`"
+msgstr ":class:`.Guild`"
+
+#: discord.ext.commands.Context:17 of
+msgid "The bot that contains the command being executed."
 msgstr ""
 
 #: discord.ext.commands.Context:19 of
-msgid ""
-":class:`list` -- The list of transformed arguments that were passed into "
-"the command. If this is accessed during the :func:`on_command_error` "
-"event then this list could be incomplete."
-msgstr ""
+#, fuzzy
+msgid ":class:`.Bot`"
+msgstr ":class:`.AppInfo`"
 
-#: discord.ext.commands.Context:25 of
+#: discord.ext.commands.Context:23 of
 msgid ""
-":class:`dict` -- A dictionary of transformed arguments that were passed "
-"into the command. Similar to :attr:`args`\\, if this is accessed in the "
-":func:`on_command_error` event then this dict could be incomplete."
+"The list of transformed arguments that were passed into the command. If "
+"this is accessed during the :func:`on_command_error` event then this list"
+" could be incomplete."
 msgstr ""
 
 #: discord.ext.commands.Context:31 of
-msgid ":class:`str` -- The prefix that was used to invoke the command."
+msgid ""
+"A dictionary of transformed arguments that were passed into the command. "
+"Similar to :attr:`args`\\, if this is accessed in the "
+":func:`on_command_error` event then this dict could be incomplete."
 msgstr ""
 
-#: discord.ext.commands.Context:35 of
+#: discord.ext.commands.Context:39 of
+msgid "The prefix that was used to invoke the command."
+msgstr ""
+
+#: discord.ext.commands.Context:45 of
 msgid ""
 "The command (i.e. :class:`.Command` or its subclasses) that is being "
 "invoked currently."
 msgstr ""
 
-#: discord.ext.commands.Context:40 of
+#: discord.ext.commands.Context:50 of
 msgid ""
-":class:`str` -- The command name that triggered this invocation. Useful "
-"for finding out which alias called the command."
+"The command name that triggered this invocation. Useful for finding out "
+"which alias called the command."
 msgstr ""
 
-#: discord.ext.commands.Context:45 of
+#: discord.ext.commands.Context:57 of
 msgid ""
 "The subcommand (i.e. :class:`.Command` or its subclasses) that was "
-"invoked. If no valid subcommand was invoked then this is equal to `None`."
+"invoked. If no valid subcommand was invoked then this is equal to "
+"``None``."
 msgstr ""
 
-#: discord.ext.commands.Context:51 of
+#: discord.ext.commands.Context:63 of
 msgid ""
-"Optional[:class:`str`] -- The string that was attempted to call a "
-"subcommand. This does not have to point to a valid registered subcommand "
-"and could just point to a nonsense string. If nothing was passed to "
-"attempt a call to a subcommand then this is set to `None`."
+"The string that was attempted to call a subcommand. This does not have to"
+" point to a valid registered subcommand and could just point to a "
+"nonsense string. If nothing was passed to attempt a call to a subcommand "
+"then this is set to ``None``."
 msgstr ""
 
-#: discord.ext.commands.Context:58 of
+#: discord.ext.commands.Context:72 of
 msgid ""
-":class:`bool` -- A boolean that indicates if the command failed to be "
-"parsed, checked, or invoked."
+"A boolean that indicates if the command failed to be parsed, checked, or "
+"invoked."
 msgstr ""
 
 #: discord.ext.commands.Context.history:1 of
 msgid ""
-"Return an :class:`.AsyncIterator` that enables receiving the "
+"Returns an :class:`~discord.AsyncIterator` that enables receiving the "
 "destination's message history."
 msgstr ""
 
 #: discord.ext.commands.Context.history:3 of
+#, fuzzy
 msgid ""
-"You must have :attr:`~.Permissions.read_message_history` permissions to "
+"You must have :attr:`~Permissions.read_message_history` permissions to "
 "use this."
-msgstr ""
+msgstr "これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.manage_channels` 権限が必要です。"
 
 #: discord.ext.commands.Context.history:14 of
 msgid "Flattening into a list: ::"
@@ -3450,22 +3833,20 @@ msgstr ""
 
 #: discord.ext.commands.Context.history:36 of
 msgid ""
-"If set to true, return messages in oldest->newest order. Defaults to True"
-" if ``after`` is specified, otherwise False."
+"If set to ``True``, return messages in oldest->newest order. Defaults to "
+"``True`` if ``after`` is specified, otherwise ``False``."
 msgstr ""
 
 #: discord.ext.commands.Context.history:40 of
-msgid ""
-":exc:`.Forbidden` -- You do not have permissions to get channel message "
-"history."
+msgid "You do not have permissions to get channel message history."
 msgstr ""
 
 #: discord.ext.commands.Context.history:41 of
-msgid ":exc:`.HTTPException` -- The request to get message history failed."
+msgid "The request to get message history failed."
 msgstr ""
 
 #: discord.ext.commands.Context.history:43 of
-msgid ":class:`.Message` -- The message with the message data parsed."
+msgid ":class:`~discord.Message` -- The message with the message data parsed."
 msgstr ""
 
 #: discord.ext.commands.Context.typing:1 of
@@ -3488,70 +3869,6 @@ msgstr ""
 msgid "Example Usage: ::"
 msgstr ""
 
-#: discord.ext.commands.Context.valid:1 of
-msgid "Checks if the invocation context is valid to be invoked with."
-msgstr ""
-
-#: discord.ext.commands.Context.cog:1 of
-msgid ""
-"Returns the cog associated with this context's command. None if it does "
-"not exist."
-msgstr ""
-
-#: discord.ext.commands.Context.guild:1 of
-msgid ""
-"Returns the guild associated with this context's command. None if not "
-"available."
-msgstr ""
-
-#: discord.ext.commands.Context.channel:1 of
-msgid ""
-"Returns the channel associated with this context's command. Shorthand for"
-" :attr:`.Message.channel`."
-msgstr ""
-
-#: discord.ext.commands.Context.author:1 of
-msgid ""
-"Returns the author associated with this context's command. Shorthand for "
-":attr:`.Message.author`"
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:3 of
-msgid "Retrieves a single :class:`.Message` from the destination."
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:5 of
-msgid "This can only be used by bot accounts."
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:7 of
-msgid "The message ID to look for."
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:10 of
-msgid ":exc:`.NotFound` -- The specified message was not found."
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:11 of
-msgid ""
-":exc:`.Forbidden` -- You do not have the permissions required to get a "
-"message."
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:12 of
-#, fuzzy
-msgid ":exc:`.HTTPException` -- Retrieving the message failed."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
-
-#: discord.ext.commands.Context.fetch_message:14 of
-msgid "The message asked for."
-msgstr ""
-
-#: discord.ext.commands.Context.fetch_message:15
-#: discord.ext.commands.Context.send:40 of
-msgid ":class:`.Message`"
-msgstr ""
-
 #: discord.ext.commands.Context.invoke:3 of
 msgid "Calls a command with the arguments given."
 msgstr ""
@@ -3562,34 +3879,34 @@ msgid ""
 ":class:`.Command` holds internally."
 msgstr ""
 
-#: discord.ext.commands.Context.invoke:8 of
-msgid "You do not pass in the context as it is done for you."
-msgstr ""
-
 #: discord.ext.commands.Context.invoke:10 of
-msgid "The first parameter passed **must** be the command being invoked."
-msgstr ""
-
-#: discord.ext.commands.Context.invoke:12 of
-msgid "A command or subclass of a command that is going to be called."
+msgid ""
+"This does not handle converters, checks, cooldowns, pre-invoke, or after-"
+"invoke hooks in any matter. It calls the internal callback directly as-if"
+" it was a regular function."
 msgstr ""
 
 #: discord.ext.commands.Context.invoke:14 of
+msgid ""
+"You must take care in passing the proper arguments when using this "
+"function."
+msgstr ""
+
+#: discord.ext.commands.Context.invoke:19 of
+msgid "The first parameter passed **must** be the command being invoked."
+msgstr ""
+
+#: discord.ext.commands.Context.invoke:21 of
+msgid "A command or subclass of a command that is going to be called."
+msgstr ""
+
+#: discord.ext.commands.Context.invoke:23 of
 msgid "The arguments to to use."
 msgstr ""
 
-#: discord.ext.commands.Context.invoke:15 of
+#: discord.ext.commands.Context.invoke:24 of
 msgid "The keyword arguments to use."
 msgstr ""
-
-#: discord.ext.commands.Context.pins:3 of
-msgid "Returns a :class:`list` of :class:`.Message` that are currently pinned."
-msgstr ""
-
-#: discord.ext.commands.Context.pins:5 of
-#, fuzzy
-msgid ":exc:`.HTTPException` -- Retrieving the pinned messages failed."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
 
 #: discord.ext.commands.Context.reinvoke:3 of
 msgid "Calls the command again."
@@ -3620,83 +3937,46 @@ msgid ""
 "where we left off."
 msgstr ""
 
-#: discord.ext.commands.Context.send:3 of
-msgid "Sends a message to the destination with the content given."
+#: discord.ext.commands.Context.valid:1 of
+msgid "Checks if the invocation context is valid to be invoked with."
 msgstr ""
 
-#: discord.ext.commands.Context.send:5 of
+#: discord.ext.commands.Context.cog:1 of
 msgid ""
-"The content must be a type that can convert to a string through "
-"``str(content)``. If the content is set to ``None`` (the default), then "
-"the ``embed`` parameter must be provided."
+"Returns the cog associated with this context's command. None if it does "
+"not exist."
 msgstr ""
 
-#: discord.ext.commands.Context.send:9 of
+#: discord.ext.commands.Context.guild:1 of
 msgid ""
-"To upload a single file, the ``file`` parameter should be used with a "
-"single :class:`.File` object. To upload multiple files, the ``files`` "
-"parameter should be used with a :class:`list` of :class:`.File` objects. "
-"**Specifying both parameters will lead to an exception**."
+"Returns the guild associated with this context's command. None if not "
+"available."
 msgstr ""
 
-#: discord.ext.commands.Context.send:14 of
+#: discord.ext.commands.Context.channel:1 of
 msgid ""
-"If the ``embed`` parameter is provided, it must be of type "
-":class:`.Embed` and it must be a rich embed type."
+"Returns the channel associated with this context's command. Shorthand for"
+" :attr:`.Message.channel`."
 msgstr ""
 
-#: discord.ext.commands.Context.send:17 of
-msgid "The content of the message to send."
-msgstr ""
-
-#: discord.ext.commands.Context.send:18 of
-msgid "Indicates if the message should be sent using text-to-speech."
-msgstr ""
-
-#: discord.ext.commands.Context.send:20 of
-msgid "The rich embed for the content."
-msgstr ""
-
-#: discord.ext.commands.Context.send:22 of
-msgid "The file to upload."
-msgstr ""
-
-#: discord.ext.commands.Context.send:24 of
-msgid "A list of files to upload. Must be a maximum of 10."
-msgstr ""
-
-#: discord.ext.commands.Context.send:26 of
+#: discord.ext.commands.Context.author:1 of
 msgid ""
-"The nonce to use for sending this message. If the message was "
-"successfully sent, then the message will have a nonce with this value."
+"Returns the author associated with this context's command. Shorthand for "
+":attr:`.Message.author`"
 msgstr ""
 
-#: discord.ext.commands.Context.send:29 of
+#: discord.ext.commands.Context.me:1 of
 msgid ""
-"If provided, the number of seconds to wait in the background before "
-"deleting the message we just sent. If the deletion fails, then it is "
-"silently ignored."
+"Similar to :attr:`.Guild.me` except it may return the "
+":class:`.ClientUser` in private message contexts."
 msgstr ""
 
-#: discord.ext.commands.Context.send:34 of
-#, fuzzy
-msgid ":exc:`.HTTPException` -- Sending the message failed."
-msgstr ":exc:`HTTPException` -- 何らかの要因で情報の取得に失敗した。"
-
-#: discord.ext.commands.Context.send:35 of
-msgid ""
-":exc:`.Forbidden` -- You do not have the proper permissions to send the "
-"message."
+#: discord.ext.commands.Context.voice_client:1 of
+msgid "A shortcut to :attr:`.Guild.voice_client`\\, if applicable."
 msgstr ""
 
-#: discord.ext.commands.Context.send:36 of
-msgid ""
-":exc:`.InvalidArgument` -- The ``files`` list is not of the appropriate "
-"size or you specified both ``file`` and ``files``."
-msgstr ""
-
-#: discord.ext.commands.Context.send:39 of
-msgid "The message that was sent."
+#: discord.ext.commands.Context.voice_client:3 of
+msgid "Optional[:class:`.VoiceClient`]"
 msgstr ""
 
 #: discord.ext.commands.Context.send_help:3 of
@@ -3730,6 +4010,139 @@ msgstr ""
 msgid "The result of the help command, if any."
 msgstr ""
 
+#: discord.ext.commands.Context.fetch_message:3 of
+msgid "Retrieves a single :class:`~discord.Message` from the destination."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:5 of
+msgid "This can only be used by bot accounts."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:7 of
+msgid "The message ID to look for."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:10 of
+msgid "The specified message was not found."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:11 of
+msgid "You do not have the permissions required to get a message."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:12 of
+msgid "Retrieving the message failed."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:14 of
+msgid "The message asked for."
+msgstr ""
+
+#: discord.ext.commands.Context.fetch_message:15
+#: discord.ext.commands.Context.send:40 of
+msgid ":class:`~discord.Message`"
+msgstr ""
+
+#: discord.ext.commands.Context.pins:3 of
+msgid "Retrieves all messages that are currently pinned in the channel."
+msgstr ""
+
+#: discord.ext.commands.Context.pins:7 of
+msgid ""
+"Due to a limitation with the Discord API, the :class:`.Message` objects "
+"returned by this method do not contain complete "
+":attr:`.Message.reactions` data."
+msgstr ""
+
+#: discord.ext.commands.Context.pins:11 of
+msgid "Retrieving the pinned messages failed."
+msgstr ""
+
+#: discord.ext.commands.Context.pins:13 of
+msgid "The messages that are currently pinned."
+msgstr ""
+
+#: discord.ext.commands.Context.pins:14 of
+msgid "List[:class:`~discord.Message`]"
+msgstr ""
+
+#: discord.ext.commands.Context.send:3 of
+msgid "Sends a message to the destination with the content given."
+msgstr ""
+
+#: discord.ext.commands.Context.send:5 of
+msgid ""
+"The content must be a type that can convert to a string through "
+"``str(content)``. If the content is set to ``None`` (the default), then "
+"the ``embed`` parameter must be provided."
+msgstr ""
+
+#: discord.ext.commands.Context.send:9 of
+msgid ""
+"To upload a single file, the ``file`` parameter should be used with a "
+"single :class:`~discord.File` object. To upload multiple files, the "
+"``files`` parameter should be used with a :class:`list` of "
+":class:`~discord.File` objects. **Specifying both parameters will lead to"
+" an exception**."
+msgstr ""
+
+#: discord.ext.commands.Context.send:14 of
+msgid ""
+"If the ``embed`` parameter is provided, it must be of type "
+":class:`~discord.Embed` and it must be a rich embed type."
+msgstr ""
+
+#: discord.ext.commands.Context.send:17 of
+msgid "The content of the message to send."
+msgstr ""
+
+#: discord.ext.commands.Context.send:19 of
+msgid "Indicates if the message should be sent using text-to-speech."
+msgstr ""
+
+#: discord.ext.commands.Context.send:21 of
+msgid "The rich embed for the content."
+msgstr ""
+
+#: discord.ext.commands.Context.send:23 of
+msgid "The file to upload."
+msgstr ""
+
+#: discord.ext.commands.Context.send:25 of
+msgid "A list of files to upload. Must be a maximum of 10."
+msgstr ""
+
+#: discord.ext.commands.Context.send:27 of
+msgid ""
+"The nonce to use for sending this message. If the message was "
+"successfully sent, then the message will have a nonce with this value."
+msgstr ""
+
+#: discord.ext.commands.Context.send:30 of
+msgid ""
+"If provided, the number of seconds to wait in the background before "
+"deleting the message we just sent. If the deletion fails, then it is "
+"silently ignored."
+msgstr ""
+
+#: discord.ext.commands.Context.send:35 of
+msgid "Sending the message failed."
+msgstr ""
+
+#: discord.ext.commands.Context.send:36 of
+msgid "You do not have the proper permissions to send the message."
+msgstr ""
+
+#: discord.ext.commands.Context.send:37 of
+msgid ""
+"The ``files`` list is not of the appropriate size or     you specified "
+"both ``file`` and ``files``."
+msgstr ""
+
+#: discord.ext.commands.Context.send:39 of
+msgid "The message that was sent."
+msgstr ""
+
 #: discord.ext.commands.Context.trigger_typing:3 of
 msgid "Triggers a *typing* indicator to the destination."
 msgstr ""
@@ -3740,19 +4153,7 @@ msgid ""
 "sent."
 msgstr ""
 
-#: discord.ext.commands.Context.me:1 of
-msgid ""
-"Similar to :attr:`.Guild.me` except it may return the "
-":class:`.ClientUser` in private message contexts."
-msgstr ""
-
-#: discord.ext.commands.Context.voice_client:1 of
-msgid ""
-"Optional[:class:`.VoiceClient`] -- A shortcut to "
-":attr:`.Guild.voice_client`\\, if applicable."
-msgstr ""
-
-#: ../../ext/commands/api.rst:160
+#: ../../ext/commands/api.rst:162
 msgid "Converters"
 msgstr ""
 
@@ -3772,7 +4173,7 @@ msgstr ""
 msgid ""
 "Classes that derive from this should override the "
 ":meth:`~.Converter.convert` method to do its conversion logic. This "
-"method must be a coroutine."
+"method must be a :ref:`coroutine <coroutine>`."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:3
@@ -3782,6 +4183,7 @@ msgstr ""
 #: discord.ext.commands.GameConverter.convert:3
 #: discord.ext.commands.InviteConverter.convert:3
 #: discord.ext.commands.MemberConverter.convert:3
+#: discord.ext.commands.MessageConverter.convert:3
 #: discord.ext.commands.PartialEmojiConverter.convert:3
 #: discord.ext.commands.RoleConverter.convert:3
 #: discord.ext.commands.TextChannelConverter.convert:3
@@ -3798,6 +4200,7 @@ msgstr ""
 #: discord.ext.commands.GameConverter.convert:5
 #: discord.ext.commands.InviteConverter.convert:5
 #: discord.ext.commands.MemberConverter.convert:5
+#: discord.ext.commands.MessageConverter.convert:5
 #: discord.ext.commands.PartialEmojiConverter.convert:5
 #: discord.ext.commands.RoleConverter.convert:5
 #: discord.ext.commands.TextChannelConverter.convert:5
@@ -3817,6 +4220,7 @@ msgstr ""
 #: discord.ext.commands.GameConverter.convert:9
 #: discord.ext.commands.InviteConverter.convert:9
 #: discord.ext.commands.MemberConverter.convert:9
+#: discord.ext.commands.MessageConverter.convert:9
 #: discord.ext.commands.PartialEmojiConverter.convert:9
 #: discord.ext.commands.RoleConverter.convert:9
 #: discord.ext.commands.TextChannelConverter.convert:9
@@ -3833,6 +4237,7 @@ msgstr ""
 #: discord.ext.commands.GameConverter.convert:11
 #: discord.ext.commands.InviteConverter.convert:11
 #: discord.ext.commands.MemberConverter.convert:11
+#: discord.ext.commands.MessageConverter.convert:11
 #: discord.ext.commands.PartialEmojiConverter.convert:11
 #: discord.ext.commands.RoleConverter.convert:11
 #: discord.ext.commands.TextChannelConverter.convert:11
@@ -3843,7 +4248,7 @@ msgid "The argument that is being converted."
 msgstr ""
 
 #: discord.ext.commands.MemberConverter:1 of
-msgid "Converts to a :class:`Member`."
+msgid "Converts to a :class:`~discord.Member`."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter:3
@@ -3857,7 +4262,7 @@ msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter:6
 #: discord.ext.commands.EmojiConverter:6 discord.ext.commands.MemberConverter:6
-#: discord.ext.commands.RoleConverter:6
+#: discord.ext.commands.MessageConverter:5 discord.ext.commands.RoleConverter:6
 #: discord.ext.commands.TextChannelConverter:6
 #: discord.ext.commands.UserConverter:5
 #: discord.ext.commands.VoiceChannelConverter:6 of
@@ -3901,27 +4306,45 @@ msgid "Lookup by nickname"
 msgstr ""
 
 #: discord.ext.commands.UserConverter:1 of
-msgid "Converts to a :class:`User`."
+msgid "Converts to a :class:`~discord.User`."
 msgstr ""
 
 #: discord.ext.commands.UserConverter:3 of
 msgid "All lookups are via the global user cache."
 msgstr ""
 
+#: discord.ext.commands.MessageConverter:1 of
+msgid "Converts to a :class:`discord.Message`."
+msgstr ""
+
+#: discord.ext.commands.MessageConverter:7 of
+msgid ""
+"Lookup by \"{channel ID}-{message ID}\" (retrieved by shift-clicking on "
+"\"Copy ID\")"
+msgstr ""
+
+#: discord.ext.commands.MessageConverter:8 of
+msgid "Lookup by message ID (the message **must** be in the context channel)"
+msgstr ""
+
+#: discord.ext.commands.MessageConverter:9 of
+msgid "Lookup by message URL"
+msgstr ""
+
 #: discord.ext.commands.TextChannelConverter:1 of
-msgid "Converts to a :class:`TextChannel`."
+msgid "Converts to a :class:`~discord.TextChannel`."
 msgstr ""
 
 #: discord.ext.commands.VoiceChannelConverter:1 of
-msgid "Converts to a :class:`VoiceChannel`."
+msgid "Converts to a :class:`~discord.VoiceChannel`."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter:1 of
-msgid "Converts to a :class:`CategoryChannel`."
+msgid "Converts to a :class:`~discord.CategoryChannel`."
 msgstr ""
 
 #: discord.ext.commands.InviteConverter:1 of
-msgid "Converts to a :class:`Invite`."
+msgid "Converts to a :class:`~discord.Invite`."
 msgstr ""
 
 #: discord.ext.commands.InviteConverter:3 of
@@ -3929,15 +4352,15 @@ msgid "This is done via an HTTP request using :meth:`.Bot.fetch_invite`."
 msgstr ""
 
 #: discord.ext.commands.RoleConverter:1 of
-msgid "Converts to a :class:`Role`."
+msgid "Converts to a :class:`~discord.Role`."
 msgstr ""
 
 #: discord.ext.commands.GameConverter:1 of
-msgid "Converts to :class:`Game`."
+msgid "Converts to :class:`~discord.Game`."
 msgstr ""
 
 #: discord.ext.commands.ColourConverter:1 of
-msgid "Converts to a :class:`Colour`."
+msgid "Converts to a :class:`~discord.Colour`."
 msgstr ""
 
 #: discord.ext.commands.ColourConverter:3 of
@@ -3965,7 +4388,7 @@ msgid "The ``_`` in the name can be optionally replaced with spaces."
 msgstr ""
 
 #: discord.ext.commands.EmojiConverter:1 of
-msgid "Converts to a :class:`Emoji`."
+msgid "Converts to a :class:`~discord.Emoji`."
 msgstr ""
 
 #: discord.ext.commands.EmojiConverter:3 of
@@ -3979,7 +4402,7 @@ msgid "Lookup by extracting ID from the emoji."
 msgstr ""
 
 #: discord.ext.commands.PartialEmojiConverter:1 of
-msgid "Converts to a :class:`PartialEmoji`."
+msgid "Converts to a :class:`~discord.PartialEmoji`."
 msgstr ""
 
 #: discord.ext.commands.PartialEmojiConverter:3 of
@@ -3991,49 +4414,49 @@ msgid "Converts the argument to mention scrubbed version of said content."
 msgstr ""
 
 #: discord.ext.commands.clean_content:4 of
-msgid "This behaves similarly to :attr:`.Message.clean_content`."
+msgid "This behaves similarly to :attr:`~discord.Message.clean_content`."
 msgstr ""
 
 #: discord.ext.commands.clean_content:8 of
-msgid ":class:`bool` -- Whether to clean channel mentions."
+msgid "Whether to clean channel mentions."
 msgstr ""
 
-#: discord.ext.commands.clean_content:12 of
-msgid ":class:`bool` -- Whether to use nicknames when transforming mentions."
+#: discord.ext.commands.clean_content:14 of
+msgid "Whether to use nicknames when transforming mentions."
 msgstr ""
 
-#: discord.ext.commands.clean_content:16 of
-msgid ":class:`bool` -- Whether to also escape special markdown characters."
+#: discord.ext.commands.clean_content:20 of
+msgid "Whether to also escape special markdown characters."
 msgstr ""
 
-#: ../../ext/commands/api.rst:203
+#: ../../ext/commands/api.rst:208
 msgid ""
 "A special converter that greedily consumes arguments until it can't. As a"
 " consequence of this behaviour, most input errors are silently discarded,"
 " since it is used as an indicator of when to stop parsing."
 msgstr ""
 
-#: ../../ext/commands/api.rst:207
+#: ../../ext/commands/api.rst:212
 msgid ""
 "When a parser error is met the greedy converter stops converting, undoes "
 "the internal string parsing routine, and continues parsing regularly."
 msgstr ""
 
-#: ../../ext/commands/api.rst:210
+#: ../../ext/commands/api.rst:215
 msgid "For example, in the following code:"
 msgstr ""
 
-#: ../../ext/commands/api.rst:218
+#: ../../ext/commands/api.rst:223
 msgid ""
 "An invocation of ``[p]test 1 2 3 4 5 6 hello`` would pass ``numbers`` "
 "with ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\\."
 msgstr ""
 
-#: ../../ext/commands/api.rst:221
+#: ../../ext/commands/api.rst:226
 msgid "For more information, check :ref:`ext_commands_special_converters`."
 msgstr ""
 
-#: ../../ext/commands/api.rst:226
+#: ../../ext/commands/api.rst:231
 msgid "Exceptions"
 msgstr ""
 
@@ -4046,30 +4469,34 @@ msgid "This inherits from :exc:`discord.DiscordException`."
 msgstr "これは :exc:`discord.DiscordException` を継承しています。"
 
 #: discord.ext.commands.CommandError:5 of
-#, fuzzy
 msgid ""
 "This exception and exceptions inherited from it are handled in a special "
 "way as they are caught and passed into a special event from "
 ":class:`.Bot`\\, :func:`on_command_error`."
 msgstr ""
-"この例外及び、ここから派生した例外は、キャッチされると :class:`.Bot` の :func:`on_command_error` "
-"に渡され、特別な方法で処理されます。"
 
 #: discord.ext.commands.ConversionError:1 of
 msgid "Exception raised when a Converter class raises non-CommandError."
 msgstr "Converter クラスで、CommandErrorではない例外が発生した際に、発生する例外。"
 
+#: discord.ext.commands.CommandNotFound:7
 #: discord.ext.commands.ConversionError:3 discord.ext.commands.UserInputError:4
 #: of
-msgid "This inherits from :exc:`.CommandError`."
+msgid "This inherits from :exc:`CommandError`."
 msgstr ""
 
 #: discord.ext.commands.ConversionError:7 of
-msgid ":class:`discord.ext.commands.Converter` -- The converter that failed."
-msgstr ":class:`discord.ext.commands.Converter` -- 例外が発生したConverter."
+msgid "The converter that failed."
+msgstr ""
 
-#: discord.ext.commands.CommandInvokeError:5
-#: discord.ext.commands.ConversionError:11 of
+#: discord.ext.commands.ConversionError:9 of
+msgid ":class:`discord.ext.commands.Converter`"
+msgstr ""
+
+#: discord.ext.commands.CommandInvokeError:7
+#: discord.ext.commands.ConversionError:13
+#: discord.ext.commands.ExtensionFailed:13
+#: discord.ext.commands.ExtensionNotFound:13 of
 msgid ""
 "The original exception that was raised. You can also get this via the "
 "``__cause__`` attribute."
@@ -4081,18 +4508,33 @@ msgid ""
 "is not encountered."
 msgstr "コマンドのパラメータ解析の際、要求されたパラメータに値が渡されていない場合に発生します。"
 
-#: discord.ext.commands.MissingRequiredArgument:6 of
-msgid ":class:`inspect.Parameter` -- The argument that is missing."
-msgstr ":class:`inspect.Parameter` -- 値が渡されなかった引数。"
+#: discord.ext.commands.BadArgument:4 discord.ext.commands.BadUnionArgument:4
+#: discord.ext.commands.MissingRequiredArgument:4
+#: discord.ext.commands.TooManyArguments:4 of
+msgid "This inherits from :exc:`UserInputError`"
+msgstr ""
+
+#: discord.ext.commands.MissingRequiredArgument:8 of
+msgid "The argument that is missing."
+msgstr ""
+
+#: discord.ext.commands.BadUnionArgument:10
+#: discord.ext.commands.MissingRequiredArgument:10 of
+msgid ":class:`inspect.Parameter`"
+msgstr ""
 
 #: discord.ext.commands.ArgumentParsingError:1 of
 msgid "An exception raised when the parser fails to parse a user's input."
 msgstr ""
 
 #: discord.ext.commands.ArgumentParsingError:3 of
+msgid "This inherits from :exc:`UserInputError`."
+msgstr ""
+
+#: discord.ext.commands.ArgumentParsingError:5 of
 msgid ""
-"This inherits from :exc:`UserInputError`. There are child classes that "
-"implement more granular parsing errors for i18n purposes."
+"There are child classes that implement more granular parsing errors for "
+"i18n purposes."
 msgstr ""
 
 #: discord.ext.commands.UnexpectedQuoteError:1 of
@@ -4108,9 +4550,7 @@ msgid "This inherits from :exc:`ArgumentParsingError`."
 msgstr ""
 
 #: discord.ext.commands.UnexpectedQuoteError:7 of
-msgid ""
-":class:`str` -- The quote mark that was found inside the non-quoted "
-"string."
+msgid "The quote mark that was found inside the non-quoted string."
 msgstr ""
 
 #: discord.ext.commands.InvalidEndOfQuotedStringError:1 of
@@ -4120,7 +4560,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.InvalidEndOfQuotedStringError:8 of
-msgid ":class:`str` -- The character found instead of the expected string."
+msgid "The character found instead of the expected string."
 msgstr ""
 
 #: discord.ext.commands.ExpectedClosingQuoteError:1 of
@@ -4128,7 +4568,7 @@ msgid "An exception raised when a quote character is expected but not found."
 msgstr ""
 
 #: discord.ext.commands.ExpectedClosingQuoteError:7 of
-msgid ":class:`str` -- The quote character expected."
+msgid "The quote character expected."
 msgstr ""
 
 #: discord.ext.commands.BadArgument:1 of
@@ -4139,24 +4579,43 @@ msgstr "コマンドの引数に渡された値の解析、または変換に失
 
 #: discord.ext.commands.BadUnionArgument:1 of
 msgid ""
-"Exception raised when a :class:`typing.Union` converter fails for all its"
-" associated types."
+"Exception raised when a :data:`typing.Union` converter fails for all its "
+"associated types."
 msgstr ""
 
-#: discord.ext.commands.BadUnionArgument:6 of
-msgid ":class:`inspect.Parameter` -- The parameter that failed being converted."
-msgstr ""
-
-#: discord.ext.commands.BadUnionArgument:10 of
-msgid ""
-"*Tuple[Type, ...]* -- A tuple of converters attempted in conversion, in "
-"order of failure."
+#: discord.ext.commands.BadUnionArgument:8 of
+msgid "The parameter that failed being converted."
 msgstr ""
 
 #: discord.ext.commands.BadUnionArgument:14 of
+msgid "A tuple of converters attempted in conversion, in order of failure."
+msgstr ""
+
+#: discord.ext.commands.BadUnionArgument:16 of
+msgid "Tuple[Type, ...]"
+msgstr ""
+
+#: discord.ext.commands.BadUnionArgument:20 of
+msgid "A list of errors that were caught from failing the conversion."
+msgstr ""
+
+#: discord.ext.commands.BadUnionArgument:22 of
+msgid "List[:class:`CommandError`]"
+msgstr ""
+
+#: discord.ext.commands.PrivateMessageOnly:1 of
 msgid ""
-"List[:class:`CommandError`] -- A list of errors that were caught from "
-"failing the conversion."
+"Exception raised when an operation does not work outside of private "
+"message contexts."
+msgstr ""
+
+#: discord.ext.commands.BotMissingAnyRole:4
+#: discord.ext.commands.BotMissingPermissions:4
+#: discord.ext.commands.BotMissingRole:3 discord.ext.commands.MissingAnyRole:4
+#: discord.ext.commands.MissingPermissions:4 discord.ext.commands.MissingRole:3
+#: discord.ext.commands.NoPrivateMessage:4 discord.ext.commands.NotOwner:3
+#: discord.ext.commands.PrivateMessageOnly:4 of
+msgid "This inherits from :exc:`CheckFailure`"
 msgstr ""
 
 #: discord.ext.commands.NoPrivateMessage:1 of
@@ -4169,6 +4628,13 @@ msgstr "プライベートメッセージコンテキストで、要求された
 msgid ""
 "Exception raised when the predicates in :attr:`.Command.checks` have "
 "failed."
+msgstr ""
+
+#: discord.ext.commands.CheckFailure:3
+#: discord.ext.commands.CommandInvokeError:3
+#: discord.ext.commands.CommandOnCooldown:3
+#: discord.ext.commands.DisabledCommand:3 of
+msgid "This inherits from :exc:`CommandError`"
 msgstr ""
 
 #: discord.ext.commands.CommandNotFound:1 of
@@ -4207,16 +4673,18 @@ msgstr ""
 msgid "Exception raised when the command being invoked is on cooldown."
 msgstr ""
 
-#: discord.ext.commands.CommandOnCooldown:5 of
+#: discord.ext.commands.CommandOnCooldown:7 of
 msgid ""
-"*Cooldown* -- A class with attributes ``rate``, ``per``, and ``type`` "
-"similar to the :func:`.cooldown` decorator."
+"A class with attributes ``rate``, ``per``, and ``type`` similar to the "
+":func:`.cooldown` decorator."
 msgstr ""
 
 #: discord.ext.commands.CommandOnCooldown:10 of
-msgid ""
-":class:`float` -- The amount of seconds to wait before you can retry "
-"again."
+msgid "Cooldown"
+msgstr ""
+
+#: discord.ext.commands.CommandOnCooldown:14 of
+msgid "The amount of seconds to wait before you can retry again."
 msgstr ""
 
 #: discord.ext.commands.NotOwner:1 of
@@ -4225,34 +4693,88 @@ msgstr ""
 
 #: discord.ext.commands.MissingPermissions:1 of
 msgid ""
-"Exception raised when the command invoker lacks permissions to run "
+"Exception raised when the command invoker lacks permissions to run a "
 "command."
 msgstr ""
 
-#: discord.ext.commands.BotMissingPermissions:5
-#: discord.ext.commands.MissingPermissions:6 of
-msgid ":class:`list` -- The required permissions that are missing."
+#: discord.ext.commands.BotMissingPermissions:8
+#: discord.ext.commands.MissingPermissions:8 of
+msgid "The required permissions that are missing."
 msgstr ""
 
 #: discord.ext.commands.BotMissingPermissions:1 of
-msgid "Exception raised when the bot lacks permissions to run command."
+msgid "Exception raised when the bot's member lacks permissions to run a command."
+msgstr ""
+
+#: discord.ext.commands.MissingRole:1 of
+msgid "Exception raised when the command invoker lacks a role to run a command."
+msgstr ""
+
+#: discord.ext.commands.BotMissingRole:9 discord.ext.commands.MissingRole:9 of
+msgid ""
+"The required role that is missing. This is the parameter passed to "
+":func:`~.commands.has_role`."
+msgstr ""
+
+#: discord.ext.commands.BotMissingRole:12 discord.ext.commands.MissingRole:12
+#: of
+msgid "Union[:class:`str`, :class:`int`]"
+msgstr ""
+
+#: discord.ext.commands.BotMissingRole:1 of
+msgid "Exception raised when the bot's member lacks a role to run a command."
+msgstr ""
+
+#: discord.ext.commands.MissingAnyRole:1 of
+msgid ""
+"Exception raised when the command invoker lacks any of the roles "
+"specified to run a command."
+msgstr ""
+
+#: discord.ext.commands.MissingAnyRole:10 of
+msgid ""
+"The roles that the invoker is missing. These are the parameters passed to"
+" :func:`~.commands.has_any_role`."
+msgstr ""
+
+#: discord.ext.commands.BotMissingAnyRole:13
+#: discord.ext.commands.MissingAnyRole:13 of
+msgid "List[Union[:class:`str`, :class:`int`]]"
+msgstr ""
+
+#: discord.ext.commands.BotMissingAnyRole:1 of
+msgid ""
+"Exception raised when the bot's member lacks any of the roles specified "
+"to run a command."
+msgstr ""
+
+#: discord.ext.commands.BotMissingAnyRole:10 of
+msgid ""
+"The roles that the bot's member is missing. These are the parameters "
+"passed to :func:`~.commands.has_any_role`."
+msgstr ""
+
+#: discord.ext.commands.NSFWChannelRequired:1 of
+msgid "Exception raised when a channel does not have the required NSFW setting."
+msgstr ""
+
+#: discord.ext.commands.NSFWChannelRequired:3 of
+msgid "This inherits from :exc:`CheckFailure`."
+msgstr ""
+
+#: discord.ext.commands.NSFWChannelRequired:7 of
+msgid "The channel that does not have NSFW enabled."
 msgstr ""
 
 #: discord.ext.commands.ExtensionError:1 of
-#, fuzzy
 msgid "Base exception for extension related errors."
-msgstr "コマンドに関連するエラーすべての基礎となる例外。"
-
-#: discord.ext.commands.ExtensionError:3 of
-#, fuzzy
-msgid "This inherits from :exc:`~discord.DiscordException`."
-msgstr "これは :exc:`discord.DiscordException` を継承しています。"
-
-#: discord.ext.commands.ExtensionError:7 of
-msgid "name: :class:`str`"
 msgstr ""
 
-#: discord.ext.commands.ExtensionError:8 of
+#: discord.ext.commands.ExtensionError:3 of
+msgid "This inherits from :exc:`~discord.DiscordException`."
+msgstr ""
+
+#: discord.ext.commands.ExtensionError:7 of
 msgid "The extension that had an error."
 msgstr ""
 
@@ -4265,14 +4787,12 @@ msgstr ""
 #: discord.ext.commands.ExtensionNotFound:3
 #: discord.ext.commands.ExtensionNotLoaded:3
 #: discord.ext.commands.NoEntryPointError:3 of
-#, fuzzy
 msgid "This inherits from :exc:`ExtensionError`"
-msgstr "これは :exc:`discord.DiscordException` を継承しています。"
+msgstr ""
 
 #: discord.ext.commands.ExtensionNotLoaded:1 of
-#, fuzzy
 msgid "An exception raised when an extension was not loaded."
-msgstr "プライベートメッセージコンテキストで、要求された処理が実行できない場合に発生する例外。"
+msgstr ""
 
 #: discord.ext.commands.NoEntryPointError:1 of
 msgid ""
@@ -4288,265 +4808,544 @@ msgstr ""
 
 #: discord.ext.commands.ExtensionFailed:7
 #: discord.ext.commands.ExtensionNotFound:7 of
-msgid ":class:`str` -- The extension that had the error."
+msgid "The extension that had the error."
 msgstr ""
 
-#: discord.ext.commands.ExtensionFailed:11 of
-#, fuzzy
-msgid ""
-":exc:`Exception` -- The original exception that was raised. You can also "
-"get this via the ``__cause__`` attribute."
-msgstr "Converter内で発生した元の例外。 ``__cause__`` からも取得できます。"
+#: discord.ext.commands.ExtensionFailed:16 of
+msgid ":exc:`Exception`"
+msgstr ""
 
 #: discord.ext.commands.ExtensionNotFound:1 of
 msgid "An exception raised when an extension failed to be imported."
 msgstr ""
 
-#: discord.ext.commands.ExtensionNotFound:11 of
-#, fuzzy
-msgid ""
-":exc:`ImportError` -- The original exception that was raised. You can "
-"also get this via the ``__cause__`` attribute."
-msgstr "Converter内で発生した元の例外。 ``__cause__`` からも取得できます。"
+#: discord.ext.commands.ExtensionNotFound:16 of
+msgid ":exc:`ImportError`"
+msgstr ""
 
-#: ../../ext/commands/api.rst:308
+#: ../../ext/commands/api.rst:331
 msgid "Exception Hierarchy"
 msgstr ""
 
-#: ../../ext/commands/api.rst:337
+#: ../../ext/commands/api.rst:366
 msgid ":exc:`~.DiscordException`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:331
+#: ../../ext/commands/api.rst:360
 msgid ":exc:`~.commands.CommandError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:314
+#: ../../ext/commands/api.rst:337
 msgid ":exc:`~.commands.ConversionError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:322
+#: ../../ext/commands/api.rst:345
 msgid ":exc:`~.commands.UserInputError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:316
+#: ../../ext/commands/api.rst:339
 msgid ":exc:`~.commands.MissingRequiredArgument`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:317
+#: ../../ext/commands/api.rst:340
 msgid ":exc:`~.commands.TooManyArguments`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:318
+#: ../../ext/commands/api.rst:341
 msgid ":exc:`~.commands.BadArgument`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:319
+#: ../../ext/commands/api.rst:342
 msgid ":exc:`~.commands.BadUnionArgument`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:322
+#: ../../ext/commands/api.rst:345
 msgid ":exc:`~.commands.ArgumentParsingError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:321
+#: ../../ext/commands/api.rst:344
 msgid ":exc:`~.commands.UnexpectedQuoteError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:322
+#: ../../ext/commands/api.rst:345
 msgid ":exc:`~.commands.InvalidEndOfQuotedStringError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:323
+#: ../../ext/commands/api.rst:346
 msgid ":exc:`~.commands.ExpectedClosingQuoteError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:324
+#: ../../ext/commands/api.rst:347
 msgid ":exc:`~.commands.CommandNotFound`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:328
+#: ../../ext/commands/api.rst:357
 msgid ":exc:`~.commands.CheckFailure`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:326
+#: ../../ext/commands/api.rst:349
+msgid ":exc:`~.commands.PrivateMessageOnly`"
+msgstr ""
+
+#: ../../ext/commands/api.rst:350
 msgid ":exc:`~.commands.NoPrivateMessage`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:327
+#: ../../ext/commands/api.rst:351
 msgid ":exc:`~.commands.NotOwner`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:328
+#: ../../ext/commands/api.rst:352
 msgid ":exc:`~.commands.MissingPermissions`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:329
+#: ../../ext/commands/api.rst:353
 msgid ":exc:`~.commands.BotMissingPermissions`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:330
+#: ../../ext/commands/api.rst:354
+msgid ":exc:`~.commands.MissingRole`"
+msgstr ""
+
+#: ../../ext/commands/api.rst:355
+msgid ":exc:`~.commands.BotMissingRole`"
+msgstr ""
+
+#: ../../ext/commands/api.rst:356
+msgid ":exc:`~.commands.MissingAnyRole`"
+msgstr ""
+
+#: ../../ext/commands/api.rst:357
+msgid ":exc:`~.commands.BotMissingAnyRole`"
+msgstr ""
+
+#: ../../ext/commands/api.rst:358
+msgid ":exc:`~.commands.NSFWChannelRequired`"
+msgstr ""
+
+#: ../../ext/commands/api.rst:359
 msgid ":exc:`~.commands.DisabledCommand`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:331
+#: ../../ext/commands/api.rst:360
 msgid ":exc:`~.commands.CommandInvokeError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:332
+#: ../../ext/commands/api.rst:361
 msgid ":exc:`~.commands.CommandOnCooldown`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:337
+#: ../../ext/commands/api.rst:366
 msgid ":exc:`~.commands.ExtensionError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:334
+#: ../../ext/commands/api.rst:363
 msgid ":exc:`~.commands.ExtensionAlreadyLoaded`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:335
+#: ../../ext/commands/api.rst:364
 msgid ":exc:`~.commands.ExtensionNotLoaded`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:336
+#: ../../ext/commands/api.rst:365
 msgid ":exc:`~.commands.NoEntryPointError`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:337
+#: ../../ext/commands/api.rst:366
 msgid ":exc:`~.commands.ExtensionFailed`"
 msgstr ""
 
-#: ../../ext/commands/api.rst:338
+#: ../../ext/commands/api.rst:367
 msgid ":exc:`~.commands.ExtensionNotFound`"
 msgstr ""
 
 #~ msgid ""
-#~ "The *bytes-like* object representing the"
-#~ " icon. See :meth:`~ClientUser.edit` for "
-#~ "more details on what is expected."
+#~ ":class:`bool` -- Whether the commands "
+#~ "should be case insensitive. Defaults to"
+#~ " ``False``. This attribute does not "
+#~ "carry over to groups. You must set"
+#~ " it to every group if you "
+#~ "require group commands to be case "
+#~ "insensitive as well."
+#~ msgstr ""
+#~ ":class:`bool` -- コマンドを大文字と小文字を区別するかどうか。デフォルトでは "
+#~ "``False`` "
+#~ "です。この属性はグループコマンドには影響されません。もしグループコマンドでも大文字と小文字の区別が必要な場合、すべてのグループでの設定が必要になります。"
+
+#~ msgid ":exc:`.HTTPException` -- Guild creation failed."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "The factory class that will be "
-#~ "used to create the context. By "
-#~ "default, this is :class:`.Context`. Should "
-#~ "a custom class be provided, it "
-#~ "must be similar enough to "
-#~ ":class:`.Context`'s interface."
+#~ ":exc:`.InvalidArgument` -- Invalid icon image"
+#~ " format given. Must be PNG or "
+#~ "JPG."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "*Optional[command]* -- The parent command "
-#~ "that this command belongs to. ``None``"
-#~ " is there isn't one."
-#~ msgstr ""
-
-#~ msgid "The extra event to listen to."
+#~ "Mapping[:class:`str`, :class:`py:types.ModuleType`] -- "
+#~ "A read-only mapping of extension "
+#~ "name to extension."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "If the invite is for a guild "
-#~ "you have not joined, the guild and"
-#~ " channel attributes of the returned "
-#~ "invite will be :class:`Object` with the"
-#~ " names patched in."
+#~ ":exc:`.InvalidData` -- An unknown channel "
+#~ "type was received from Discord."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Retrieving the channel failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.NotFound` -- Invalid Channel ID."
+#~ msgstr ""
+
+#~ msgid ":exc:`.Forbidden` -- You do not have permission to fetch this channel."
+#~ msgstr ""
+
+#~ msgid ":exc:`.Forbidden` -- You do not have access to the guild."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Getting the guild failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Getting the guilds failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.NotFound` -- The invite has expired or is invalid."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Getting the invite failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.NotFound` -- A user with this ID does not exist."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Fetching the user failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.Forbidden` -- Not allowed to fetch profiles."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Fetching the profile failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Retrieving the webhook failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`.NotFound` -- Invalid webhook ID."
+#~ msgstr ""
+
+#~ msgid ":exc:`.Forbidden` -- You do not have permission to fetch this webhook."
+#~ msgstr ""
+
+#~ msgid ":exc:`.Forbidden` -- The widget for this guild is disabled."
+#~ msgstr ""
+
+#~ msgid ":exc:`.HTTPException` -- Retrieving the widget failed."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "A :func:`.check` that is added that "
-#~ "checks if the member invoking the "
-#~ "command has the role specified via "
-#~ "the name specified."
+#~ "List[:class:`.Guild`] -- The guilds that "
+#~ "the connected client is a member "
+#~ "of."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "The name is case sensitive and "
-#~ "must be exact. No normalisation is "
-#~ "done in the input."
+#~ ":class:`float` -- Measures latency between "
+#~ "a HEARTBEAT and a HEARTBEAT_ACK in "
+#~ "seconds."
 #~ msgstr ""
 
-#~ msgid "The name of the role to check."
+#~ msgid ":exc:`ExtensionNotFound` -- The extension could not be imported."
 #~ msgstr ""
 
-#~ msgid "Similar to :func:`.has_role`\\, the names passed in must be exact."
-#~ msgstr ""
-
-#~ msgid "An argument list of names to check that the member has roles wise."
+#~ msgid ":exc:`ExtensionAlreadyLoaded` -- The extension is already loaded."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "They are meant as a way to "
-#~ "organize multiple relevant commands into "
-#~ "a singular class that shares some "
-#~ "state or no state at all."
+#~ ":exc:`NoEntryPointError` -- The extension does"
+#~ " not have a setup function."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "The cog can also have a "
-#~ "``__global_check`` member function that allows"
-#~ " you to define a global check. "
-#~ "See :meth:`.check` for more info. If "
-#~ "the name is ``__global_check_once`` then "
-#~ "it's equivalent to the :meth:`.check_once` "
-#~ "decorator."
+#~ ":exc:`ExtensionFailed` -- The extension setup"
+#~ " function had an execution error."
 #~ msgstr ""
 
-#~ msgid "More information will be documented soon."
-#~ msgstr ""
-
-#~ msgid "The name of the cog you are requesting."
-#~ msgstr ""
-
-#~ msgid "Gets a unique set of the cog's registered commands without aliases."
-#~ msgstr ""
-
-#~ msgid "If the cog is not found, an empty set is returned."
-#~ msgstr ""
-
-#~ msgid "The name of the cog whose commands you are requesting."
-#~ msgstr ""
-
-#~ msgid "A unique set of commands without aliases that belong to the cog."
-#~ msgstr ""
-
-#~ msgid "Set[:class:`.Command`]"
+#~ msgid ":exc:`.LoginFailure` -- The wrong credentials are passed."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "If the cog defines a special "
-#~ "member function named ``__unload`` then "
-#~ "it is called when removal has "
-#~ "completed. This function **cannot** be a"
-#~ " coroutine. It must be a regular "
+#~ ":exc:`.HTTPException` -- An unknown HTTP "
+#~ "related error occurred, usually when it"
+#~ " isn't 200 or the known incorrect "
+#~ "credentials passing status code."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "List[:class:`.abc.PrivateChannel`] -- The private"
+#~ " channels that the connected client "
+#~ "is participating on."
+#~ msgstr ""
+
+#~ msgid ":exc:`ExtensionNotLoaded` -- The extension was not loaded."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`.InvalidArgument` -- If any guild "
+#~ "is unavailable or not large in the"
+#~ " collection."
+#~ msgstr ""
+
+#~ msgid ":exc:`TypeError` -- An unexpected keyword argument was received."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Optional[:class:`.ClientUser`] -- Represents the "
+#~ "connected client. None if not logged "
+#~ "in."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "List[:class:`~discord.User`] -- Returns a list"
+#~ " of all the users the bot can"
+#~ " see."
+#~ msgstr ""
+
+#~ msgid "List[:class:`.VoiceClient`] -- Represents a list of voice connections."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`asyncio.TimeoutError` -- If a timeout"
+#~ " is provided and it was reached."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`TypeError` -- If the function is"
+#~ " not a coroutine or is already "
+#~ "a command."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- The name of the command."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":ref:`coroutine <coroutine>` -- The coroutine"
+#~ " that is executed when the command"
+#~ " is called."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- The long help text for the command."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`str` -- The short help text "
+#~ "for the command. If this is not"
+#~ " specified then the first line of "
+#~ "the long help text is used "
+#~ "instead."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- A replacement for arguments in the default help text."
+#~ msgstr ""
+
+#~ msgid ":class:`list` -- The list of aliases the command can be invoked under."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- A boolean that "
+#~ "indicates if the command is currently"
+#~ " enabled. If the command is invoked"
+#~ " while it is disabled, then "
+#~ ":exc:`.DisabledCommand` is raised to the "
+#~ ":func:`.on_command_error` event. Defaults to "
+#~ "``True``."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Optional[:class:`Command`] -- The parent "
+#~ "command that this command belongs to."
+#~ " ``None`` if there isn't one."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "List[Callable[..., :class:`bool`]] -- A list"
+#~ " of predicates that verifies if the"
+#~ " command could be executed with the"
+#~ " given :class:`.Context` as the sole "
+#~ "parameter. If an exception is necessary"
+#~ " to be thrown to signal failure, "
+#~ "then one inherited from :exc:`.CommandError`"
+#~ " should be used. Note that if "
+#~ "the checks fail then :exc:`.CheckFailure` "
+#~ "exception is raised to the "
+#~ ":func:`.on_command_error` event."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- The message prefixed into the default help command."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- If ``True``\\, the "
+#~ "default help command does not show "
+#~ "this in the help output."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- If ``False`` and a "
+#~ "keyword-only argument is provided then"
+#~ " the keyword only argument is "
+#~ "stripped and handled as if it was"
+#~ " a regular argument that handles "
+#~ ":exc:`.MissingRequiredArgument` and default values"
+#~ " in a regular matter rather than "
+#~ "passing the rest completely raw. If "
+#~ "``True`` then the keyword-only argument"
+#~ " will pass in the rest of the"
+#~ " arguments in a completely raw "
+#~ "matter. Defaults to ``False``."
+#~ msgstr ""
+
+#~ msgid "Optional[:class:`Command`] -- The subcommand that was invoked, if any."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- If ``True``\\, ignores "
+#~ "extraneous strings passed to a command"
+#~ " if all its requirements are met "
+#~ "(e.g. ``?foo a b c`` when only "
+#~ "expecting ``a`` and ``b``). Otherwise "
+#~ ":func:`.on_command_error` and local error "
+#~ "handlers are called with "
+#~ ":exc:`.TooManyArguments`. Defaults to ``True``."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- If ``True``\\, cooldown "
+#~ "processing is done after argument "
+#~ "parsing, which calls converters. If "
+#~ "``False`` then cooldown processing is "
+#~ "done first and then the converters "
+#~ "are called second. Defaults to "
+#~ "``False``."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- Retrieves the fully qualified parent command name."
+#~ msgstr ""
+
+#~ msgid ":class:`Command` -- Retrieves the parents of this command."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- Retrieves the fully qualified command name."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`str` -- The name of the "
+#~ "cog this command belongs to. None "
+#~ "otherwise."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- Gets the \"short\" documentation of a command."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`str` -- Returns a POSIX-like "
+#~ "signature useful for help command "
+#~ "output."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`CommandError` -- Any command error "
+#~ "that was raised during a check "
+#~ "call will be propagated by this "
 #~ "function."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`.HelpFormatter` -- The formatter used"
-#~ " to format the help message. By "
-#~ "default, it uses the :class:`.HelpFormatter`."
-#~ " Check it for more info on how"
-#~ " to override it. If you want to"
-#~ " change the help command completely "
-#~ "(add aliases, etc) then a call to"
-#~ " :meth:`~.Bot.remove_command` with 'help' as "
-#~ "the argument would do the trick."
+#~ "Optional[:class:`bool`] -- Indicates if the"
+#~ " group callback should begin parsing "
+#~ "and invocation only if no subcommand "
+#~ "was found. Useful for making it an"
+#~ " error handling function to tell the"
+#~ " user that no subcommand was found"
+#~ " or to have different functionality "
+#~ "in case no subcommand was found. "
+#~ "If this is ``False``, then the "
+#~ "group callback will always be invoked"
+#~ " first. This means that the checks"
+#~ " and the parsing dictated by its "
+#~ "parameters will be executed. Defaults to"
+#~ " ``False``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Optional[:class:`bool`] -- A tribool that "
-#~ "indicates if the help command should "
-#~ "PM the user instead of sending it"
-#~ " to the channel it received it "
-#~ "from. If the boolean is set to "
-#~ "``True``, then all help output is "
-#~ "PM'd. If ``False``, none of the "
-#~ "help output is PM'd. If ``None``, "
-#~ "then the bot will only PM when "
-#~ "the help message becomes too long "
-#~ "(dictated by more than 1000 characters)."
-#~ " Defaults to ``False``."
+#~ "Optional[:class:`bool`] -- Indicates if the"
+#~ " group's commands should be case "
+#~ "insensitive. Defaults to ``False``."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`dict` -- A mapping of command"
+#~ " name to :class:`.Command` or subclass "
+#~ "objects."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- Whether the commands "
+#~ "should be case insensitive. Defaults to"
+#~ " ``False``."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- Returns the cog's specified name, not the class name."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`str` -- Returns the cog's "
+#~ "description, typically the cleaned docstring."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`TypeError` -- The function is not"
+#~ " a coroutine function or a string "
+#~ "was not passed as the name."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`str` -- The cog name. By "
+#~ "default, it is the name of the "
+#~ "class with no modification."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`dict` -- A list of attributes"
+#~ " to apply to every command inside "
+#~ "this cog. The dictionary is passed "
+#~ "into the :class:`Command` (or its "
+#~ "subclass) options at ``__init__``. If "
+#~ "you specify attributes inside the "
+#~ "command attribute in the class, it "
+#~ "will override the one specified inside"
+#~ " this attribute. For example:"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Optional[:class:`Context`] -- The context that"
+#~ " invoked this help formatter. This is"
+#~ " generally set after the help command"
+#~ " assigned, :func:`command_callback`\\, has been"
+#~ " called."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- Specifies if hidden "
+#~ "commands should be shown in the "
+#~ "output. Defaults to ``False``."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`bool` -- Specifies if commands "
+#~ "should have their :attr:`.Command.checks` "
+#~ "called and verified. Defaults to "
+#~ "``True``."
 #~ msgstr ""
 
 #~ msgid ""
@@ -4557,386 +5356,307 @@ msgstr ""
 #~ "without actually changing the implementation"
 #~ " of the command. The attributes will"
 #~ " be the same as the ones passed"
-#~ " in the :class:`.Command` constructor. Note"
-#~ " that ``pass_context`` will always be "
-#~ "set to ``True`` regardless of what "
-#~ "you pass in."
+#~ " in the :class:`.Command` constructor."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`str` -- The format string used"
-#~ " when the help command is invoked "
-#~ "with a command that is not found."
-#~ " Useful for i18n. Defaults to ``\"No"
-#~ " command called {} found.\"``. The "
-#~ "only format argument is the name "
-#~ "of the command passed."
+#~ ":class:`int` -- The maximum number of"
+#~ " characters that fit in a line. "
+#~ "Defaults to 80."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`str` -- The format string used"
-#~ " when the help command is invoked "
-#~ "with requests for a subcommand but "
-#~ "the command does not have any "
-#~ "subcommands. Defaults to ``\"Command {0.name}"
-#~ " has no subcommands.\"``. The first "
-#~ "format argument is the :class:`.Command` "
-#~ "attempted to get a subcommand and "
-#~ "the second is the name."
-#~ msgstr ""
-
-#~ msgid ":exc:`TypeError` -- The function is not a coroutine function."
-#~ msgstr ""
-
-#~ msgid "Formatters"
+#~ ":class:`bool` -- Whether to sort the "
+#~ "commands in the output alphabetically. "
+#~ "Defaults to ``True``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`str` -- The prefix inserted to"
-#~ " every page. e.g. three backticks."
+#~ "Optional[:class:`bool`] -- A tribool that "
+#~ "indicates if the help command should "
+#~ "DM the user instead of sending it"
+#~ " to the channel it received it "
+#~ "from. If the boolean is set to "
+#~ "``True``, then all help output is "
+#~ "DM'd. If ``False``, none of the "
+#~ "help output is DM'd. If ``None``, "
+#~ "then the bot will only DM when "
+#~ "the help message becomes too long "
+#~ "(dictated by more than "
+#~ ":attr:`dm_help_threshold` characters). Defaults to"
+#~ " ``False``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`str` -- The suffix appended at"
-#~ " the end of every page. e.g. "
-#~ "three backticks."
+#~ "Optional[:class:`int`] -- The number of "
+#~ "characters the paginator must accumulate "
+#~ "before getting DM'd to the user if"
+#~ " :attr:`dm_help` is set to ``None``. "
+#~ "Defaults to 1000."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "To override the behaviour of the "
-#~ "formatter, :meth:`~.HelpFormatter.format` should be"
-#~ " overridden. A number of utility "
-#~ "functions are provided for use inside"
-#~ " that method."
-#~ msgstr ""
-#~ "このクラスのフォーマット動作を上書きするには、:meth:`~.HelpFormatter.format` "
-#~ "関数をオーバーライドする必要があります。本クラスでは、この関数内で使うことが出来るユーティリティ関数が数多く提供されています。"
-
-#~ msgid ":class:`bool`: Specifies if the command has subcommands."
-#~ msgstr ":class:`bool`: コマンドがサブコマンドを持つかを表します。"
-
-#~ msgid ""
-#~ ":class:`bool`: Specifies if the command "
-#~ "being formatted is the bot itself."
-#~ msgstr ":class:`bool`: フォーマット対象のコマンドが、bot自体であるかを表します。"
-
-#~ msgid ""
-#~ ":class:`bool`: Specifies if the command "
-#~ "being formatted is actually a cog."
-#~ msgstr ":class:`bool`: フォーマット対象のコマンドが、cogであるかを表します。"
-
-#~ msgid ""
-#~ ":class:`int` -- Returns the largest name"
-#~ " length of a command or if it"
-#~ " has subcommands the largest subcommand "
-#~ "name."
-#~ msgstr "コマンドまたはサブコマンドのうち、最も長い名前の文字数を返します。"
-
-#~ msgid ""
-#~ "Returns a filtered list of commands "
-#~ "based on the two attributes provided,"
-#~ " :attr:`show_check_failure` and :attr:`show_hidden`."
-#~ " Also filters based on if "
-#~ ":meth:`~.HelpFormatter.is_cog` is valid."
-#~ msgstr ""
-#~ ":attr:`show_check_failure` と :attr:`show_hidden` "
-#~ "に基づき、フィルタリングされたコマンドのリストを返します。また、 :meth:`~.HelpFormatter.is_cog`"
-#~ " が有効かどうかにも基づいてフィルタリングします。"
-
-#~ msgid ""
-#~ "An iterable with the filter being "
-#~ "applied. The resulting value is a "
-#~ "(key, value) :class:`tuple` of the "
-#~ "command name and the command itself."
-#~ msgstr ""
-#~ "フィルタリングされたイテラブル。結果は、コマンド名とコマンド自身の、 (key, value) "
-#~ ":class:`tuple` 形式で返されます。。"
-
-#~ msgid "Handles the actual behaviour involved with formatting."
-#~ msgstr "フォーマットに関わる実際の挙動を扱う関数です。"
-
-#~ msgid "To change the behaviour, this method should be overridden."
-#~ msgstr "フォーマットに関する挙動を変更したい場合、このメソッドをオーバーライドする必要があります。"
-
-#~ msgid ""
-#~ "Formats the help page and handles "
-#~ "the actual heavy lifting of how "
-#~ "the help command looks like. To "
-#~ "change the behaviour, override the "
-#~ ":meth:`~.HelpFormatter.format` method."
-#~ msgstr ""
-#~ "helpページをフォーマットし、helpコマンドがどう見えるかのもっとも重要な処理を行います。この挙動を変更したい場合、:meth:`~.HelpFormatter.format`"
-#~ " をオーバーライドして下さい。"
-
-#~ msgid ""
-#~ "A :func:`.check` that is added that "
-#~ "checks if the member has any of"
-#~ " the permissions necessary."
-#~ msgstr ""
-
-#~ msgid "Errors"
-#~ msgstr "エラー"
-
-#~ msgid ""
-#~ "When passing multiple prefixes be "
-#~ "careful to not pass a prefix that"
-#~ " matches a longer prefix occuring "
-#~ "later in the sequence.  For example, "
-#~ "if the command prefix is ``('!', "
-#~ "'!?')``  the ``'!?'`` prefix will never"
-#~ " be matched to any message as "
-#~ "the previous one matches messages "
-#~ "starting with ``!?``. This is especially"
-#~ " important when passing an empty "
-#~ "string, it should always be last "
-#~ "as no prefix after it will be "
-#~ "matched."
-#~ msgstr ""
-
-#~ msgid ":exc:`.ClientException` -- The coroutine is not actually a coroutine."
-#~ msgstr ""
-
-#~ msgid "Example: ::"
-#~ msgstr "例: ::"
-
-#~ msgid ""
-#~ "Similar to a command :func:`.check`\\, "
-#~ "this takes a single parameter of "
-#~ "type :class:`.Context` and can only "
-#~ "raise exceptions derived from "
-#~ ":exc:`.CommandError`."
+#~ ":class:`int` -- How much to intend "
+#~ "the commands from a heading. Defaults"
+#~ " to ``2``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "The events must be a |corourl|_, "
-#~ "if not, :exc:`ClientException` is raised."
-#~ msgstr ""
-
-#~ msgid ":obj:`bool`: Indicates if the websocket connection is closed."
-#~ msgstr ""
-
-#~ msgid ":obj:`bool`: Specifies if the client's internal cache is ready for use."
+#~ ":class:`str` -- The command list's "
+#~ "heading string used when the help "
+#~ "command is invoked with a category "
+#~ "name. Useful for i18n. Defaults to "
+#~ "``\"Commands:\"``"
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":obj:`float` -- Measures latency between "
-#~ "a HEARTBEAT and a HEARTBEAT_ACK in "
-#~ "seconds."
+#~ ":class:`str` -- The string used when "
+#~ "there is a command which does not"
+#~ " belong to any category(cog). Useful "
+#~ "for i18n. Defaults to ``\"No "
+#~ "Category\"``"
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":exc:`.ClientException` -- The function being"
-#~ " listened to is not a coroutine."
-#~ msgstr ""
-
-#~ msgid ":exc:`ClientException` -- The extension does not have a setup function."
-#~ msgstr ""
-
-#~ msgid ":exc:`ImportError` -- The extension could not be imported."
-#~ msgstr ""
-
-#~ msgid "Returns a :obj:`list` of all the :class:`User` the bot can see."
+#~ ":class:`Paginator` -- The paginator used "
+#~ "to paginate the help command output."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "In case the event returns multiple "
-#~ "arguments, a :obj:`tuple` containing those "
-#~ "arguments is returned instead. Please "
-#~ "check the :ref:`documentation <discord-api-"
-#~ "events>` for a list of events and"
-#~ " their parameters."
+#~ ":class:`str` -- The command list's "
+#~ "heading string used when the help "
+#~ "command is invoked with a category "
+#~ "name. Useful for i18n. Defaults to "
+#~ "``\"Commands\"``"
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Returns no arguments, a single argument,"
-#~ " or a :obj:`tuple` of multiple "
-#~ "arguments that mirrors the parameters "
-#~ "passed in the :ref:`event reference "
-#~ "<discord-api-events>`."
+#~ ":class:`str` -- The alias list's heading"
+#~ " string used to list the aliases "
+#~ "of the command. Useful for i18n. "
+#~ "Defaults to ``\"Aliases:\"``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "This is similar to :class:`.Bot` except"
-#~ " that it is derived from "
-#~ ":class:`discord.AutoShardedClient` instead."
+#~ "Optional[:class:`str`] -- The prefix inserted"
+#~ " to every page. e.g. three backticks."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "A list of predicates that verifies "
-#~ "if the command could be executed "
-#~ "with the given :class:`.Context` as the"
-#~ " sole parameter. If an exception is"
-#~ " necessary to be thrown to signal "
-#~ "failure, then one derived from "
-#~ ":exc:`.CommandError` should be used. Note "
-#~ "that if the checks fail then "
-#~ ":exc:`.CheckFailure` exception is raised to"
-#~ " the :func:`.on_command_error` event."
+#~ "Optional[:class:`str`] -- The suffix appended"
+#~ " at the end of every page. e.g."
+#~ " three backticks."
+#~ msgstr ""
+
+#~ msgid ":class:`int` -- The maximum amount of codepoints allowed in a page."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":exc:`discord.ClientException` -- The coroutine "
-#~ "is not actually a coroutine."
-#~ msgstr ""
-
-#~ msgid "The default implementation is empty."
-#~ msgstr ""
-
-#~ msgid "This derives from :class:`HelpCommand`."
+#~ ":exc:`RuntimeError` -- The line was too"
+#~ " big for the current :attr:`max_size`."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "This check raises a special exception,"
-#~ " :exc:`.MissingPermissions` that is derived "
-#~ "from :exc:`.CheckFailure`."
+#~ ":class:`.Message` -- The message that "
+#~ "triggered the command being executed."
+#~ msgstr ""
+
+#~ msgid ":class:`.Bot` -- The bot that contains the command being executed."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "This check raises a special exception,"
-#~ " :exc:`.BotMissingPermissions` that is derived"
-#~ " from :exc:`.CheckFailure`."
+#~ ":class:`list` -- The list of transformed"
+#~ " arguments that were passed into the"
+#~ " command. If this is accessed during"
+#~ " the :func:`on_command_error` event then "
+#~ "this list could be incomplete."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "This check raises a special exception,"
-#~ " :exc:`.NoPrivateMessage` that is derived "
-#~ "from :exc:`.CheckFailure`."
+#~ ":class:`dict` -- A dictionary of "
+#~ "transformed arguments that were passed "
+#~ "into the command. Similar to "
+#~ ":attr:`args`\\, if this is accessed in"
+#~ " the :func:`on_command_error` event then "
+#~ "this dict could be incomplete."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- The prefix that was used to invoke the command."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`discord.Message` -- The message that"
-#~ " triggered the command being executed."
+#~ ":class:`str` -- The command name that"
+#~ " triggered this invocation. Useful for "
+#~ "finding out which alias called the "
+#~ "command."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Return an :class:`AsyncIterator` that enables"
-#~ " receiving the destination's message "
-#~ "history."
+#~ "Optional[:class:`str`] -- The string that "
+#~ "was attempted to call a subcommand. "
+#~ "This does not have to point to "
+#~ "a valid registered subcommand and could"
+#~ " just point to a nonsense string. "
+#~ "If nothing was passed to attempt a"
+#~ " call to a subcommand then this "
+#~ "is set to ``None``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "If set to true, return messages in"
-#~ " oldest->newest order. If unspecified, this"
-#~ " defaults to ``False`` for most "
-#~ "cases. However if passing in a "
-#~ "``after`` parameter then this is set "
-#~ "to ``True``. This avoids getting "
-#~ "messages out of order in the "
-#~ "``after`` case."
+#~ ":class:`bool` -- A boolean that "
+#~ "indicates if the command failed to "
+#~ "be parsed, checked, or invoked."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":exc:`Forbidden` -- You do not have "
-#~ "permissions to get channel message "
-#~ "history."
-#~ msgstr ""
-
-#~ msgid ":exc:`HTTPException` -- The request to get message history failed."
-#~ msgstr ""
-
-#~ msgid ":class:`Message` -- The message with the message data parsed."
-#~ msgstr ""
-
-#~ msgid "Retrieves a single :class:`Message` from the destination."
-#~ msgstr ""
-
-#~ msgid ":class:`Message`"
-#~ msgstr ""
-
-#~ msgid ":exc:`NotFound` -- The specified message was not found."
+#~ "You must have "
+#~ ":attr:`~.Permissions.read_message_history` permissions to"
+#~ " use this."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":exc:`Forbidden` -- You do not have "
-#~ "the permissions required to get a "
-#~ "message."
-#~ msgstr ""
-
-#~ msgid ":exc:`HTTPException` -- Retrieving the message failed."
-#~ msgstr ""
-
-#~ msgid "Returns a :class:`list` of :class:`Message` that are currently pinned."
-#~ msgstr ""
-
-#~ msgid ":exc:`HTTPException` -- Retrieving the pinned messages failed."
+#~ ":exc:`~discord.Forbidden` -- You do not "
+#~ "have permissions to get channel message"
+#~ " history."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "To upload a single file, the "
-#~ "``file`` parameter should be used with"
-#~ " a single :class:`File` object. To "
-#~ "upload multiple files, the ``files`` "
-#~ "parameter should be used with a "
-#~ ":class:`list` of :class:`File` objects. "
-#~ "**Specifying both parameters will lead "
-#~ "to an exception**."
+#~ ":exc:`~discord.HTTPException` -- The request "
+#~ "to get message history failed."
+#~ msgstr ""
+
+#~ msgid ":exc:`~discord.NotFound` -- The specified message was not found."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "If the ``embed`` parameter is provided,"
-#~ " it must be of type :class:`Embed`"
-#~ " and it must be a rich embed"
-#~ " type."
+#~ ":exc:`~discord.Forbidden` -- You do not "
+#~ "have the permissions required to get "
+#~ "a message."
 #~ msgstr ""
 
-#~ msgid ":exc:`HTTPException` -- Sending the message failed."
+#~ msgid ":exc:`~discord.HTTPException` -- Retrieving the message failed."
 #~ msgstr ""
 
-#~ msgid ""
-#~ ":exc:`Forbidden` -- You do not have "
-#~ "the proper permissions to send the "
-#~ "message."
+#~ msgid ":exc:`~discord.HTTPException` -- Retrieving the pinned messages failed."
 #~ msgstr ""
 
-#~ msgid ""
-#~ ":exc:`InvalidArgument` -- The ``files`` list"
-#~ " is not of the appropriate size "
-#~ "or you specified both ``file`` and "
-#~ "``files``."
+#~ msgid ":exc:`~discord.HTTPException` -- Sending the message failed."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Returns the channel associated with this"
-#~ " context's command. Shorthand for "
-#~ ":attr:`Message.channel`."
+#~ ":exc:`~discord.Forbidden` -- You do not "
+#~ "have the proper permissions to send "
+#~ "the message."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Returns the author associated with this"
-#~ " context's command. Shorthand for "
-#~ ":attr:`Message.author`"
+#~ ":exc:`~discord.InvalidArgument` -- The ``files`` "
+#~ "list is not of the appropriate "
+#~ "size or you specified both ``file`` "
+#~ "and ``files``."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Similar to :attr:`Guild.me` except it "
-#~ "may return the :class:`ClientUser` in "
-#~ "private message contexts."
+#~ "Optional[:class:`.VoiceClient`] -- A shortcut "
+#~ "to :attr:`.Guild.voice_client`\\, if applicable."
+#~ msgstr ""
+
+#~ msgid ":class:`bool` -- Whether to clean channel mentions."
+#~ msgstr ""
+
+#~ msgid ":class:`bool` -- Whether to use nicknames when transforming mentions."
+#~ msgstr ""
+
+#~ msgid ":class:`bool` -- Whether to also escape special markdown characters."
+#~ msgstr ""
+
+#~ msgid ":class:`discord.ext.commands.Converter` -- The converter that failed."
+#~ msgstr ""
+
+#~ msgid ":class:`inspect.Parameter` -- The argument that is missing."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Optional[:class:`VoiceClient`] -- A shortcut "
-#~ "to :attr:`Guild.voice_client`\\, if applicable."
+#~ ":class:`str` -- The quote mark that "
+#~ "was found inside the non-quoted "
+#~ "string."
 #~ msgstr ""
 
-#~ msgid "This is done via an HTTP request using :meth:`.Bot.get_invite`."
+#~ msgid ":class:`str` -- The character found instead of the expected string."
 #~ msgstr ""
 
-#~ msgid ":obj:`bool` -- Whether to clean channel mentions."
-#~ msgstr ""
-
-#~ msgid ":obj:`bool` -- Whether to use nicknames when transforming mentions."
-#~ msgstr ""
-
-#~ msgid ":obj:`bool` -- Whether to also escape special markdown characters."
+#~ msgid ":class:`str` -- The quote character expected."
 #~ msgstr ""
 
 #~ msgid ""
-#~ "This derives from :exc:`UserInputError`. There"
-#~ " are child classes that implement "
-#~ "more granular parsing errors for i18n"
-#~ " purposes."
+#~ ":class:`inspect.Parameter` -- The parameter "
+#~ "that failed being converted."
 #~ msgstr ""
 
-#~ msgid "This derives from :exc:`ArgumentParsingError`."
+#~ msgid ""
+#~ "*Tuple[Type, ...]* -- A tuple of "
+#~ "converters attempted in conversion, in "
+#~ "order of failure."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "List[:class:`CommandError`] -- A list of "
+#~ "errors that were caught from failing "
+#~ "the conversion."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "*Cooldown* -- A class with attributes"
+#~ " ``rate``, ``per``, and ``type`` similar"
+#~ " to the :func:`.cooldown` decorator."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":class:`float` -- The amount of seconds"
+#~ " to wait before you can retry "
+#~ "again."
+#~ msgstr ""
+
+#~ msgid ":class:`list` -- The required permissions that are missing."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Union[:class:`str`, :class:`int`] -- The "
+#~ "required role that is missing. This "
+#~ "is the parameter passed to "
+#~ ":func:`~.commands.has_role`."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "List[Union[:class:`str`, :class:`int`]] -- The "
+#~ "roles that the invoker is missing. "
+#~ "These are the parameters passed to "
+#~ ":func:`~.commands.has_any_role`."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "List[Union[:class:`str`, :class:`int`]] -- The "
+#~ "roles that the bot's member is "
+#~ "missing. These are the parameters passed"
+#~ " to :func:`~.commands.has_any_role`."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- The extension that had an error."
+#~ msgstr ""
+
+#~ msgid ":class:`str` -- The extension that had the error."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`Exception` -- The original exception "
+#~ "that was raised. You can also get"
+#~ " this via the ``__cause__`` attribute."
+#~ msgstr ""
+
+#~ msgid ""
+#~ ":exc:`ImportError` -- The original exception"
+#~ " that was raised. You can also "
+#~ "get this via the ``__cause__`` "
+#~ "attribute."
 #~ msgstr ""
 

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import itertools
+from operator import attrgetter
 
 import discord.abc
 
@@ -49,17 +50,22 @@ class VoiceState:
         Indicates if the user is currently muted by their own accord.
     self_deaf: :class:`bool`
         Indicates if the user is currently deafened by their own accord.
+    self_stream: :class:`bool`
+        Indicates if the user is currently streaming via 'Go Live' feature.
+
+        .. versionadded:: 1.3.0 
+
     self_video: :class:`bool`
         Indicates if the user is currently broadcasting video.
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: :class:`VoiceChannel`
+    channel: Optional[:class:`VoiceChannel`]
         The voice channel that the user is currently connected to. None if the user
         is not currently in a voice channel.
     """
 
     __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_video', 'self_deaf', 'afk', 'channel')
+                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel')
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -68,6 +74,7 @@ class VoiceState:
     def _update(self, data, channel):
         self.self_mute = data.get('self_mute', False)
         self.self_deaf = data.get('self_deaf', False)
+        self.self_stream = data.get('self_stream', False)
         self.self_video = data.get('self_video', False)
         self.afk = data.get('suppress', False)
         self.mute = data.get('mute', False)
@@ -75,7 +82,7 @@ class VoiceState:
         self.channel = channel
 
     def __repr__(self):
-        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_video={0.self_video} channel={0.channel!r}>'.format(self)
+        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} channel={0.channel!r}>'.format(self)
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
@@ -90,10 +97,12 @@ def flatten_user(cls):
         # if it's a slotted attribute or a property, redirect it
         # slotted members are implemented as member_descriptors in Type.__dict__
         if not hasattr(value, '__annotations__'):
-            def getter(self, x=attr):
-                return getattr(self._user, x)
+            getter = attrgetter('_user.' + attr)
             setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
         else:
+            # Technically, this can also use attrgetter
+            # However I'm not sure how I feel about "functions" returning properties
+            # It probably breaks something in Sphinx.
             # probably a member function by now
             def generate_function(x):
                 def general(self, *args, **kwargs):
@@ -147,15 +156,19 @@ class Member(discord.abc.Messageable, _BaseUser):
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
         The guild specific nickname of the user.
+    premium_since: Optional[:class:`datetime.datetime`]
+        A datetime object that specifies the date and time in UTC when the member used their
+        Nitro boost on the guild, if available. This could be ``None``.
     """
 
-    __slots__ = ('_roles', 'joined_at', '_client_status', 'activities', 'guild', 'nick', '_user', '_state')
+    __slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status', 'activities', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
         self._user = state.store_user(data['user'])
         self.guild = guild
         self.joined_at = utils.parse_time(data.get('joined_at'))
+        self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
         self._client_status = {
             None: 'offline'
@@ -182,12 +195,19 @@ class Member(discord.abc.Messageable, _BaseUser):
     @classmethod
     def _from_message(cls, *, message, data):
         author = message.author
-        data['user'] = {
-            attr: getattr(author, attr)
-            for attr in author.__slots__
-            if attr[0] != '_'
-        }
+        data['user'] = author._to_minimal_user_json()
         return cls(data=data, guild=message.guild, state=message._state)
+
+    @classmethod
+    def _try_upgrade(cls, *,  data, guild, state):
+        # A User object with a 'member' key
+        try:
+            member_data = data.pop('member')
+        except KeyError:
+            return state.store_user(data)
+        else:
+            member_data['user'] = data
+            return cls(data=member_data, guild=guild, state=state)
 
     @classmethod
     def _from_presence_update(cls, *, data, guild, state):
@@ -206,6 +226,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
+        self.premium_since = member.premium_since
         self._client_status = member._client_status.copy()
         self.guild = member.guild
         self.nick = member.nick
@@ -232,6 +253,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
 
+        self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
 
     def _presence_update(self, data, user):
@@ -280,16 +302,16 @@ class Member(discord.abc.Messageable, _BaseUser):
         return try_enum(Status, self._client_status.get('web', 'offline'))
 
     def is_on_mobile(self):
-        """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
+        """A helper function that determines if a member is active on a mobile device."""
         return 'mobile' in self._client_status
 
     @property
     def colour(self):
-        """A property that returns a :class:`Colour` denoting the rendered colour
+        """:class:`Colour`: A property that returns a colour denoting the rendered colour
         for the member. If the default colour is the one rendered then an instance
         of :meth:`Colour.default` is returned.
 
-        There is an alias for this under ``color``.
+        There is an alias for this named :meth:`color`.
         """
 
         roles = self.roles[1:] # remove @everyone
@@ -302,11 +324,19 @@ class Member(discord.abc.Messageable, _BaseUser):
                 return role.colour
         return Colour.default()
 
-    color = colour
+    @property
+    def color(self):
+        """:class:`Colour`: A property that returns a color denoting the rendered color for
+        the member. If the default color is the one rendered then an instance of :meth:`Colour.default`
+        is returned.
+
+        There is an alias for this named :meth:`colour`.
+        """
+        return self.colour
 
     @property
     def roles(self):
-        """A :class:`list` of :class:`Role` that the member belongs to. Note
+        """List[:class:`Role`]: A :class:`list` of :class:`Role` that the member belongs to. Note
         that the first element of this list is always the default '@everyone'
         role.
 
@@ -324,14 +354,14 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def mention(self):
-        """Returns a string that mentions the member."""
+        """:class:`str`: Returns a string that allows you to mention the member."""
         if self.nick:
             return '<@!%s>' % self.id
         return '<@%s>' % self.id
 
     @property
     def display_name(self):
-        """Returns the user's display name.
+        """:class:`str`: Returns the user's display name.
 
         For regular users this is just their username, but
         if they have a guild specific nickname then that
@@ -341,7 +371,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def activity(self):
-        """Returns a class Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`] for the primary
+        """Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]: Returns the primary
         activity the user is currently doing. Could be None if no activity is being done.
 
         .. note::
@@ -387,7 +417,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def top_role(self):
-        """Returns the member's highest role.
+        """:class:`Role`: Returns the member's highest role.
 
         This is useful for figuring where a member stands in the role
         hierarchy chain.
@@ -408,7 +438,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         administrator implication.
         """
 
-        if self.guild.owner == self:
+        if self.guild.owner_id == self.id:
             return Permissions.all()
 
         base = Permissions.none()
@@ -428,21 +458,21 @@ class Member(discord.abc.Messageable, _BaseUser):
     async def ban(self, **kwargs):
         """|coro|
 
-        Bans this member. Equivalent to :meth:`Guild.ban`
+        Bans this member. Equivalent to :meth:`Guild.ban`.
         """
         await self.guild.ban(self, **kwargs)
 
     async def unban(self, *, reason=None):
         """|coro|
 
-        Unbans this member. Equivalent to :meth:`Guild.unban`
+        Unbans this member. Equivalent to :meth:`Guild.unban`.
         """
         await self.guild.unban(self, reason=reason)
 
     async def kick(self, *, reason=None):
         """|coro|
 
-        Kicks this member. Equivalent to :meth:`Guild.kick`
+        Kicks this member. Equivalent to :meth:`Guild.kick`.
         """
         await self.guild.kick(self, reason=reason)
 
@@ -469,18 +499,22 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         All parameters are optional.
 
+        .. versionchanged:: 1.1.0
+            Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
+
         Parameters
         -----------
         nick: Optional[:class:`str`]
             The member's new nickname. Use ``None`` to remove the nickname.
-        mute: Optional[:class:`bool`]
+        mute: :class:`bool`
             Indicates if the member should be guild muted or un-muted.
-        deafen: Optional[:class:`bool`]
+        deafen: :class:`bool`
             Indicates if the member should be guild deafened or un-deafened.
-        roles: Optional[List[:class:`Roles`]]
+        roles: Optional[List[:class:`Role`]]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
             The voice channel to move the member to.
+            Pass ``None`` to kick them from voice.
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -520,7 +554,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
         else:
-            payload['channel_id'] = vc.id
+            payload['channel_id'] = vc and vc.id
 
         try:
             roles = fields['roles']
@@ -543,10 +577,14 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         This raises the same exceptions as :meth:`edit`.
 
+        .. versionchanged:: 1.1.0
+            Can now pass ``None`` to kick a member from voice.
+
         Parameters
         -----------
-        channel: :class:`VoiceChannel`
+        channel: Optional[:class:`VoiceChannel`]
             The new voice channel to move the member to.
+            Pass ``None`` to kick them from voice.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
         """
@@ -562,12 +600,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles: :class:`Snowflake`
+        \*roles: :class:`abc.Snowflake`
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to give to the member.
         reason: Optional[:class:`str`]
             The reason for adding these roles. Shows up on the audit log.
-        atomic: bool
+        atomic: :class:`bool`
             Whether to atomically add roles. This will ensure that multiple
             operations will always be applied regardless of the current
             state of the cache.
@@ -600,7 +638,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        \*roles: :class:`Snowflake`
+        \*roles: :class:`abc.Snowflake`
             An argument list of :class:`abc.Snowflake` representing a :class:`Role`
             to remove from the member.
         reason: Optional[:class:`str`]

@@ -1,3 +1,5 @@
+.. _discord_ext_commands:
+
 ``discord.ext.commands`` -- Bot commands framework
 ====================================================
 

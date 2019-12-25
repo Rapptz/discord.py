@@ -31,12 +31,14 @@ import io
 
 from . import utils
 from .reaction import Reaction
-from .emoji import Emoji, PartialEmoji
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
+from .flags import MessageFlags
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -78,6 +80,9 @@ class Attachment:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
+    def __repr__(self):
+        return '<Attachment id={0.id} filename={0.filename!r} url={0.url!r}>'.format(self)
+
     async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
 
@@ -85,7 +90,7 @@ class Attachment:
 
         Parameters
         -----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
             The file-like object to save this attachment to or the filename
             to use. If a filename is passed then a file is created with that
             filename and used instead.
@@ -98,7 +103,7 @@ class Attachment:
             more often, compared to the regular URL which is generally deleted right
             after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
-            on some type of attachments.
+            on some types of attachments.
 
         Raises
         --------
@@ -112,8 +117,7 @@ class Attachment:
         :class:`int`
             The number of bytes written.
         """
-        url = self.proxy_url if use_cached else self.url
-        data = await self._http.get_from_cdn(url)
+        data = await self.read(use_cached=use_cached)
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
@@ -123,6 +127,54 @@ class Attachment:
             with open(fp, 'wb') as f:
                 return f.write(data)
 
+    async def read(self, *, use_cached=False):
+        """|coro|
+
+        Retrieves the content of this attachment as a :class:`bytes` object.
+
+        .. versionadded:: 1.1.0
+
+        Parameters
+        -----------
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, compared to the regular URL which is generally deleted right
+            after the message is deleted. Note that this can still fail to download
+            deleted attachments if too much time has passed and it does not work
+            on some types of attachments.
+
+        Raises
+        ------
+        HTTPException
+            Downloading the attachment failed.
+        Forbidden
+            You do not have permissions to access this attachment
+        NotFound
+            The attachment was deleted.
+
+        Returns
+        -------
+        :class:`bytes`
+            The contents of the attachment.
+        """
+        url = self.proxy_url if use_cached else self.url
+        data = await self._http.get_from_cdn(url)
+        return data
+
+def flatten_handlers(cls):
+    prefix = len('_handle_')
+    cls._HANDLERS = {
+        key[prefix:]: value
+        for key, value in cls.__dict__.items()
+        if key.startswith('_handle_')
+    }
+    cls._CACHED_SLOTS = [
+        attr for attr in cls.__slots__ if attr.startswith('_cs_')
+    ]
+    return cls
+
+@flatten_handlers
 class Message:
     r"""Represents a message from Discord.
 
@@ -132,10 +184,12 @@ class Message:
     -----------
     tts: :class:`bool`
         Specifies if the message was done with text-to-speech.
+        This can only be accurately received in :func:`on_message` due to
+        a discord limitation.
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
         in cases where it might be a system message for :attr:`system_content`.
-    author
+    author: :class:`abc.User`
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
@@ -145,7 +199,7 @@ class Message:
         This is typically non-important.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel
+    channel: Union[:class:`abc.Messageable`]
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     call: Optional[:class:`CallMessage`]
@@ -159,8 +213,7 @@ class Message:
             This does not check if the ``@everyone`` or the ``@here`` text is in the message itself.
             Rather this boolean indicates if either the ``@everyone`` or the ``@here`` text is in the message
             **and** it did end up mentioning.
-
-    mentions: :class:`list`
+    mentions: List[:class:`abc.User`]
         A list of :class:`Member` that were mentioned. If the message is in a private message
         then the list will be of :class:`User` instead. For messages that are not of type
         :attr:`MessageType.default`\, this array can be used to aid in system messages.
@@ -170,11 +223,10 @@ class Message:
 
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a discord limitation, not one with the library.
-
-    channel_mentions: :class:`list`
+    channel_mentions: List[:class:`abc.GuildChannel`]
         A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
         then the list is always empty.
-    role_mentions: :class:`list`
+    role_mentions: List[:class:`Role`]
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
     id: :class:`int`
@@ -186,6 +238,8 @@ class Message:
         A list of attachments given to a message.
     pinned: :class:`bool`
         Specifies if the message is currently pinned.
+    flags: :class:`MessageFlags`
+        Extra features of the message.
     reactions : List[:class:`Reaction`]
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
     activity: Optional[:class:`dict`]
@@ -212,7 +266,7 @@ class Message:
                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
                  'application', 'activity')
 
@@ -221,12 +275,28 @@ class Message:
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.attachments = [Attachment(data=a, state=self._state) for a in data['attachments']]
+        self.embeds = [Embed.from_dict(a) for a in data['embeds']]
         self.application = data.get('application')
         self.activity = data.get('activity')
-        self._update(channel, data)
+        self.channel = channel
+        self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
+        self.type = try_enum(MessageType, data['type'])
+        self.pinned = data['pinned']
+        self.flags = MessageFlags._from_value(data.get('flags', 0))
+        self.mention_everyone = data['mention_everyone']
+        self.tts = data['tts']
+        self.content = data['content']
+        self.nonce = data.get('nonce')
+
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
+            try:
+                getattr(self, '_handle_%s' % handler)(data[handler])
+            except KeyError:
+                continue
 
     def __repr__(self):
-        return '<Message id={0.id} pinned={0.pinned} author={0.author!r}>'.format(self)
+        return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
 
     def _try_patch(self, data, key, transform=None):
         try:
@@ -272,33 +342,58 @@ class Message:
 
         return reaction
 
-    def _update(self, channel, data):
-        self.channel = channel
-        self._edited_timestamp = utils.parse_time(data.get('edited_timestamp'))
-        self._try_patch(data, 'pinned')
-        self._try_patch(data, 'application')
-        self._try_patch(data, 'activity')
-        self._try_patch(data, 'mention_everyone')
-        self._try_patch(data, 'tts')
-        self._try_patch(data, 'type', lambda x: try_enum(MessageType, x))
-        self._try_patch(data, 'content')
-        self._try_patch(data, 'attachments', lambda x: [Attachment(data=a, state=self._state) for a in x])
-        self._try_patch(data, 'embeds', lambda x: list(map(Embed.from_dict, x)))
-        self._try_patch(data, 'nonce')
-
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+    def _update(self, data):
+        handlers = self._HANDLERS
+        for key, value in data.items():
             try:
-                getattr(self, '_handle_%s' % handler)(data[handler])
+                handler = handlers[key]
             except KeyError:
                 continue
+            else:
+                handler(self, value)
 
         # clear the cached properties
-        cached = filter(lambda attr: attr.startswith('_cs_'), self.__slots__)
-        for attr in cached:
+        for attr in self._CACHED_SLOTS:
             try:
                 delattr(self, attr)
             except AttributeError:
                 pass
+
+    def _handle_edited_timestamp(self, value):
+        self._edited_timestamp = utils.parse_time(value)
+
+    def _handle_pinned(self, value):
+        self.pinned = value
+
+    def _handle_flags(self, value):
+        self.flags = MessageFlags._from_value(value)
+
+    def _handle_application(self, value):
+        self.application = value
+
+    def _handle_activity(self, value):
+        self.activity = value
+
+    def _handle_mention_everyone(self, value):
+        self.mention_everyone = value
+
+    def _handle_tts(self, value):
+        self.tts = value
+
+    def _handle_type(self, value):
+        self.type = try_enum(MessageType, value)
+
+    def _handle_content(self, value):
+        self.content = value
+
+    def _handle_attachments(self, value):
+        self.attachments = [Attachment(data=a, state=self._state) for a in value]
+
+    def _handle_embeds(self, value):
+        self.embeds = [Embed.from_dict(data) for data in value]
+
+    def _handle_nonce(self, value):
+        self.nonce = value
 
     def _handle_author(self, author):
         self.author = self._state.store_user(author)
@@ -316,22 +411,29 @@ class Message:
         # ourselves to a more "partial" member object.
         author = self.author
         try:
+            # Update member reference
             if author.joined_at is None:
                 author.joined_at = utils.parse_time(member.get('joined_at'))
         except AttributeError:
+            # It's a user here
+            # TODO: consider adding to cache here
             self.author = Member._from_message(message=self, data=member)
 
     def _handle_mentions(self, mentions):
-        self.mentions = []
-        if self.guild is None:
-            self.mentions = [self._state.store_user(m) for m in mentions]
+        self.mentions = r = []
+        guild = self.guild
+        state = self._state
+        if guild is None:
+            self.mentions = [state.store_user(m) for m in mentions]
             return
 
         for mention in filter(None, mentions):
             id_search = int(mention['id'])
-            member = self.guild.get_member(id_search)
+            member = guild.get_member(id_search)
             if member is not None:
-                self.mentions.append(member)
+                r.append(member)
+            else:
+                r.append(Member._try_upgrade(data=mention, guild=guild, state=state))
 
     def _handle_mention_roles(self, role_mentions):
         self.role_mentions = []
@@ -368,8 +470,8 @@ class Message:
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self):
-        """A property that returns an array of user IDs matched with
-        the syntax of <@user_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of user IDs matched with
+        the syntax of ``<@user_id>`` in the message content.
 
         This allows you to receive the user IDs of mentioned users
         even in a private message context.
@@ -378,15 +480,15 @@ class Message:
 
     @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
-        """A property that returns an array of channel IDs matched with
-        the syntax of <#channel_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of channel IDs matched with
+        the syntax of ``<#channel_id>`` in the message content.
         """
         return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
-        """A property that returns an array of role IDs matched with
-        the syntax of <@&role_id> in the message content.
+        """List[:class:`int`]: A property that returns an array of role IDs matched with
+        the syntax of ``<@&role_id>`` in the message content.
         """
         return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
 
@@ -459,12 +561,12 @@ class Message:
 
     @property
     def created_at(self):
-        """datetime.datetime: The message's creation time in UTC."""
+        """:class:`datetime.datetime`: The message's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
     def edited_at(self):
-        """Optional[datetime.datetime]: A naive UTC datetime object containing the edited time of the message."""
+        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
     @property
@@ -472,6 +574,13 @@ class Message:
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
         return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+
+    def is_system(self):
+        """:class:`bool`: Whether the message is a system message.
+
+        .. versionadded:: 1.3
+        """
+        return self.type is not MessageType.default
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
@@ -563,7 +672,22 @@ class Message:
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
-    async def delete(self):
+        if self.type is MessageType.premium_guild_subscription:
+            return '{0.author.name} just boosted the server!'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_1:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_2:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 2!**'.format(self)
+
+        if self.type is MessageType.premium_guild_tier_3:
+            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 3!**'.format(self)
+
+        if self.type is MessageType.channel_follow_add:
+            return '{0.author.name} has added {0.content} to this channel'.format(self)
+
+    async def delete(self, *, delay=None):
         """|coro|
 
         Deletes the message.
@@ -572,6 +696,15 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
+        .. versionchanged:: 1.1.0
+            Added the new ``delay`` keyword-only parameter.
+
+        Parameters
+        -----------
+        delay: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message. If the deletion fails then it is silently ignored.
+
         Raises
         ------
         Forbidden
@@ -579,7 +712,17 @@ class Message:
         HTTPException
             Deleting the message failed.
         """
-        await self._state.http.delete_message(self.channel.id, self.id)
+        if delay is not None:
+            async def delete():
+                await asyncio.sleep(delay)
+                try:
+                    await self._state.http.delete_message(self.channel.id, self.id)
+                except HTTPException:
+                    pass
+
+            asyncio.ensure_future(delete(), loop=self._state.loop)
+        else:
+            await self._state.http.delete_message(self.channel.id, self.id)
 
     async def edit(self, **fields):
         """|coro|
@@ -596,6 +739,11 @@ class Message:
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
+        suppress: :class:`bool`
+            Whether to suppress embeds for the message. This removes
+            all the embeds if set to ``True``. If set to ``False``
+            this brings the embeds back if they were suppressed.
+            Using this parameter requires :attr:`~.Permissions.manage_messages`.
         delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
@@ -605,6 +753,9 @@ class Message:
         -------
         HTTPException
             Editing the message failed.
+        Forbidden
+            Tried to suppress a message without permissions or
+            edited a message's content or embed that isn't yours.
         """
 
         try:
@@ -623,23 +774,44 @@ class Message:
             if embed is not None:
                 fields['embed'] = embed.to_dict()
 
-        data = await self._state.http.edit_message(self.id, self.channel.id, **fields)
-        self._update(channel=self.channel, data=data)
-
         try:
-            delete_after = fields['delete_after']
+            suppress = fields.pop('suppress')
         except KeyError:
             pass
         else:
-            if delete_after is not None:
-                async def delete():
-                    await asyncio.sleep(delete_after, loop=self._state.loop)
-                    try:
-                        await self._state.http.delete_message(self.channel.id, self.id)
-                    except HTTPException:
-                        pass
+             flags = MessageFlags._from_value(self.flags.value)
+             flags.suppress_embeds = suppress
+             fields['flags'] = flags.value
 
-                asyncio.ensure_future(delete(), loop=self._state.loop)
+        delete_after = fields.pop('delete_after', None)
+
+        if fields:
+            data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
+            self._update(data)
+
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
+
+    async def publish(self):
+        """|coro|
+
+        Publishes this message to your announcement channel.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to use this.
+
+        .. note::
+
+            This can only be used by non-bot accounts.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to publish this message.
+        HTTPException
+            Publishing the message failed.
+        """
+
+        await self._state.http.publish_message(self.channel.id, self.id)
 
     async def pin(self):
         """|coro|
@@ -713,7 +885,7 @@ class Message:
         """
 
         emoji = self._emoji_reaction(emoji)
-        await self._state.http.add_reaction(self.id, self.channel.id, emoji)
+        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
     async def remove_reaction(self, emoji, member):
         """|coro|
@@ -750,9 +922,9 @@ class Message:
         emoji = self._emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
-            await self._state.http.remove_own_reaction(self.id, self.channel.id, emoji)
+            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
         else:
-            await self._state.http.remove_reaction(self.id, self.channel.id, emoji, member.id)
+            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
 
     @staticmethod
     def _emoji_reaction(emoji):
@@ -764,7 +936,9 @@ class Message:
         if isinstance(emoji, PartialEmoji):
             return emoji._as_reaction()
         if isinstance(emoji, str):
-            return emoji # this is okay
+            # Reactions can be in :name:id format, but not <:name:id>.
+            # No existing emojis have <> in them, so this should be okay.
+            return emoji.strip('<>')
 
         raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
@@ -782,9 +956,9 @@ class Message:
         Forbidden
             You do not have the proper permissions to remove all the reactions.
         """
-        await self._state.http.clear_reactions(self.id, self.channel.id)
+        await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    def ack(self):
+    async def ack(self):
         """|coro|
 
         Marks this message as read.
@@ -802,4 +976,4 @@ class Message:
         state = self._state
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
-        return state.http.ack_message(self.channel.id, self.id)
+        return await state.http.ack_message(self.channel.id, self.id)

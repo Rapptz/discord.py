@@ -31,11 +31,24 @@ import discord
 
 from .errors import BadArgument, NoPrivateMessage
 
-__all__ = ['Converter', 'MemberConverter', 'UserConverter',
-           'TextChannelConverter', 'InviteConverter', 'RoleConverter',
-           'GameConverter', 'ColourConverter', 'VoiceChannelConverter',
-           'EmojiConverter', 'PartialEmojiConverter', 'CategoryChannelConverter',
-           'IDConverter', 'clean_content', 'Greedy']
+__all__ = (
+    'Converter',
+    'MemberConverter',
+    'UserConverter',
+    'MessageConverter',
+    'TextChannelConverter',
+    'InviteConverter',
+    'RoleConverter',
+    'GameConverter',
+    'ColourConverter',
+    'VoiceChannelConverter',
+    'EmojiConverter',
+    'PartialEmojiConverter',
+    'CategoryChannelConverter',
+    'IDConverter',
+    'clean_content',
+    'Greedy',
+)
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -45,6 +58,8 @@ def _get_from_guilds(bot, getter, argument):
             return result
     return result
 
+_utils_get = discord.utils.get
+
 class Converter:
     """The base class of custom converters that require the :class:`.Context`
     to be passed to be useful.
@@ -53,7 +68,7 @@ class Converter:
     special cased ``discord`` classes.
 
     Classes that derive from this should override the :meth:`~.Converter.convert`
-    method to do its conversion logic. This method must be a coroutine.
+    method to do its conversion logic. This method must be a :ref:`coroutine <coroutine>`.
     """
 
     async def convert(self, ctx, argument):
@@ -83,7 +98,7 @@ class IDConverter(Converter):
         return self._id_regex.match(argument)
 
 class MemberConverter(IDConverter):
-    """Converts to a :class:`Member`.
+    """Converts to a :class:`~discord.Member`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -111,7 +126,7 @@ class MemberConverter(IDConverter):
         else:
             user_id = int(match.group(1))
             if guild:
-                result = guild.get_member(user_id)
+                result = guild.get_member(user_id) or _utils_get(ctx.message.mentions, id=user_id)
             else:
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
@@ -121,7 +136,7 @@ class MemberConverter(IDConverter):
         return result
 
 class UserConverter(IDConverter):
-    """Converts to a :class:`User`.
+    """Converts to a :class:`~discord.User`.
 
     All lookups are via the global user cache.
 
@@ -139,7 +154,7 @@ class UserConverter(IDConverter):
 
         if match is not None:
             user_id = int(match.group(1))
-            result = ctx.bot.get_user(user_id)
+            result = ctx.bot.get_user(user_id) or _utils_get(ctx.message.mentions, id=user_id)
         else:
             arg = argument
             # check for discriminator if it exists
@@ -159,8 +174,45 @@ class UserConverter(IDConverter):
 
         return result
 
+class MessageConverter(Converter):
+    """Converts to a :class:`discord.Message`.
+
+    .. versionadded:: 1.1.0
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
+    2. Lookup by message ID (the message **must** be in the context channel)
+    3. Lookup by message URL
+    """
+
+    async def convert(self, ctx, argument):
+        id_regex = re.compile(r'^(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        link_regex = re.compile(
+            r'^https?://(?:(ptb|canary)\.)?discordapp\.com/channels/'
+            r'(?:([0-9]{15,21})|(@me))'
+            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
+        )
+        match = id_regex.match(argument) or link_regex.match(argument)
+        if not match:
+            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+        message_id = int(match.group("message_id"))
+        channel_id = match.group("channel_id")
+        message = ctx.bot._connection._get_message(message_id)
+        if message:
+            return message
+        channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
+        if not channel:
+            raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
+        try:
+            return await channel.fetch_message(message_id)
+        except discord.NotFound:
+            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+        except discord.Forbidden:
+            raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+
 class TextChannelConverter(IDConverter):
-    """Converts to a :class:`TextChannel`.
+    """Converts to a :class:`~discord.TextChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -199,7 +251,7 @@ class TextChannelConverter(IDConverter):
         return result
 
 class VoiceChannelConverter(IDConverter):
-    """Converts to a :class:`VoiceChannel`.
+    """Converts to a :class:`~discord.VoiceChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -237,7 +289,7 @@ class VoiceChannelConverter(IDConverter):
         return result
 
 class CategoryChannelConverter(IDConverter):
-    """Converts to a :class:`CategoryChannel`.
+    """Converts to a :class:`~discord.CategoryChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -276,7 +328,7 @@ class CategoryChannelConverter(IDConverter):
         return result
 
 class ColourConverter(Converter):
-    """Converts to a :class:`Colour`.
+    """Converts to a :class:`~discord.Colour`.
 
     The following formats are accepted:
 
@@ -305,7 +357,7 @@ class ColourConverter(Converter):
             return method()
 
 class RoleConverter(IDConverter):
-    """Converts to a :class:`Role`.
+    """Converts to a :class:`~discord.Role`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -332,12 +384,12 @@ class RoleConverter(IDConverter):
         return result
 
 class GameConverter(Converter):
-    """Converts to :class:`Game`."""
+    """Converts to :class:`~discord.Game`."""
     async def convert(self, ctx, argument):
         return discord.Game(name=argument)
 
 class InviteConverter(Converter):
-    """Converts to a :class:`Invite`.
+    """Converts to a :class:`~discord.Invite`.
 
     This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
     """
@@ -349,7 +401,7 @@ class InviteConverter(Converter):
             raise BadArgument('Invite is invalid or expired') from exc
 
 class EmojiConverter(IDConverter):
-    """Converts to a :class:`Emoji`.
+    """Converts to a :class:`~discord.Emoji`.
 
     All lookups are done for the local guild first, if available. If that lookup
     fails, then it checks the client's global cache.
@@ -389,7 +441,7 @@ class EmojiConverter(IDConverter):
         return result
 
 class PartialEmojiConverter(Converter):
-    """Converts to a :class:`PartialEmoji`.
+    """Converts to a :class:`~discord.PartialEmoji`.
 
     This is done by extracting the animated flag, name and ID from the emoji.
     """
@@ -410,7 +462,7 @@ class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
     said content.
 
-    This behaves similarly to :attr:`.Message.clean_content`.
+    This behaves similarly to :attr:`~discord.Message.clean_content`.
 
     Attributes
     ------------
@@ -492,7 +544,7 @@ class _Greedy:
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        if not inspect.isclass(converter) and not isinstance(converter, Converter) and not hasattr(converter, '__origin__'):
+        if not (callable(converter) or isinstance(converter, Converter) or hasattr(converter, '__origin__')):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
         if converter is str or converter is type(None) or converter is _Greedy:

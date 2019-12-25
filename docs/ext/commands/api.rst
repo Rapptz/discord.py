@@ -38,9 +38,9 @@ are custom to the command extension module.
     A default one is provided (:meth:`.Bot.on_command_error`).
 
     :param ctx: The invocation context.
-    :type ctx: :class:`Context`
+    :type ctx: :class:`.Context`
     :param error: The error that was raised.
-    :type error: :class:`CommandError` derived
+    :type error: :class:`.CommandError` derived
 
 .. function:: on_command(ctx)
 
@@ -50,7 +50,7 @@ are custom to the command extension module.
     error or completes.
 
     :param ctx: The invocation context.
-    :type ctx: :class:`Context`
+    :type ctx: :class:`.Context`
 
 .. function:: on_command_completion(ctx)
 
@@ -60,7 +60,7 @@ are custom to the command extension module.
     passed and the user input it correctly.
 
     :param ctx: The invocation context.
-    :type ctx: :class:`Context`
+    :type ctx: :class:`.Context`
 
 .. _ext_commands_api_command:
 
@@ -134,6 +134,8 @@ Checks
 
 .. autofunction:: discord.ext.commands.guild_only
 
+.. autofunction:: discord.ext.commands.dm_only
+
 .. autofunction:: discord.ext.commands.is_owner
 
 .. autofunction:: discord.ext.commands.is_nsfw
@@ -148,10 +150,10 @@ Context
     :inherited-members:
     :exclude-members: history, typing
 
-    .. autocomethod:: discord.ext.commands.Context.history
+    .. automethod:: discord.ext.commands.Context.history
         :async-for:
 
-    .. autocomethod:: discord.ext.commands.Context.typing
+    .. automethod:: discord.ext.commands.Context.typing
         :async-with:
 
 .. _ext_commands_api_converters:
@@ -166,6 +168,9 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.UserConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.MessageConverter
     :members:
 
 .. autoclass:: discord.ext.commands.TextChannelConverter
@@ -252,6 +257,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.BadUnionArgument
     :members:
 
+.. autoexception:: discord.ext.commands.PrivateMessageOnly
+    :members:
+
 .. autoexception:: discord.ext.commands.NoPrivateMessage
     :members:
 
@@ -283,6 +291,21 @@ Exceptions
     :members:
 
 .. autoexception:: discord.ext.commands.BotMissingPermissions
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingRole
+    :members:
+
+.. autoexception:: discord.ext.commands.BotMissingRole
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingAnyRole
+    :members:
+
+.. autoexception:: discord.ext.commands.BotMissingAnyRole
+    :members:
+
+.. autoexception:: discord.ext.commands.NSFWChannelRequired
     :members:
 
 .. autoexception:: discord.ext.commands.ExtensionError
@@ -323,10 +346,16 @@ Exception Hierarchy
                     - :exc:`~.commands.ExpectedClosingQuoteError`
             - :exc:`~.commands.CommandNotFound`
             - :exc:`~.commands.CheckFailure`
+                - :exc:`~.commands.PrivateMessageOnly`
                 - :exc:`~.commands.NoPrivateMessage`
                 - :exc:`~.commands.NotOwner`
                 - :exc:`~.commands.MissingPermissions`
                 - :exc:`~.commands.BotMissingPermissions`
+                - :exc:`~.commands.MissingRole`
+                - :exc:`~.commands.BotMissingRole`
+                - :exc:`~.commands.MissingAnyRole`
+                - :exc:`~.commands.BotMissingAnyRole`
+                - :exc:`~.commands.NSFWChannelRequired`
             - :exc:`~.commands.DisabledCommand`
             - :exc:`~.commands.CommandInvokeError`
             - :exc:`~.commands.CommandOnCooldown`

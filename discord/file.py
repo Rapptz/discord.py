@@ -34,8 +34,8 @@ class File:
     for sending file objects.
 
     Attributes
-    -----------
-    fp: Union[:class:`str`, BinaryIO, :class:`aiohttp.StreamReader`]
+    ----------
+    fp: Union[:class:`str`, :class:`io.BufferedIOBase`, :class:`aiohttp.StreamReader`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
         open. A :class:`aiohttp.StreamReader` instance can also

@@ -64,12 +64,9 @@ class Embed:
             Returns the total size of the embed.
             Useful for checking if it's within the 6000 character limit.
 
-    The following attributes can be set during creation
-    of the object:
-
-    Certain properties return an ``EmbedProxy``. Which is a type
-    that acts similar to a regular :class:`dict` except access the attributes
-    via dotted access, e.g. ``embed.author.icon_url``. If the attribute
+    Certain properties return an ``EmbedProxy``, a type
+    that acts similar to a regular :class:`dict` except using dotted access,
+    e.g. ``embed.author.icon_url``. If the attribute
     is invalid or empty, then a special sentinel value is returned,
     :attr:`Embed.Empty`.
 
@@ -80,16 +77,21 @@ class Embed:
     -----------
     title: :class:`str`
         The title of the embed.
+        This can be set during initialisation.
     type: :class:`str`
         The type of embed. Usually "rich".
+        This can be set during initialisation.
     description: :class:`str`
         The description of the embed.
+        This can be set during initialisation.
     url: :class:`str`
         The URL of the embed.
-    timestamp: `datetime.datetime`
+        This can be set during initialisation.
+    timestamp: :class:`datetime.datetime`
         The timestamp of the embed content. This could be a naive or aware datetime.
-    colour: :class:`Colour` or :class:`int`
+    colour: Union[:class:`Colour`, :class:`int`]
         The colour code of the embed. Aliased to ``color`` as well.
+        This can be set during initialisation.
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
         to denote that the value or attribute is empty.
@@ -415,6 +417,39 @@ class Embed:
 
         try:
             self._fields.append(field)
+        except AttributeError:
+            self._fields = [field]
+
+        return self
+   
+    def insert_field_at(self, index, *, name, value, inline=True):
+        """Inserts a field before a specified index to the embed.
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        
+        .. versionadded:: 1.2.0
+        
+        Parameters
+        -----------
+        index: :class:`int`
+            The index of where to insert the field.
+        name: :class:`str`
+            The name of the field.
+        value: :class:`str`
+            The value of the field.
+        inline: :class:`bool`
+            Whether the field should be displayed inline.
+        """
+
+        field = {
+            'inline': inline,
+            'name': str(name),
+            'value': str(value)
+        }
+
+        try:
+            self._fields.insert(index, field)
         except AttributeError:
             self._fields = [field]
 
