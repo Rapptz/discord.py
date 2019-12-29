@@ -178,6 +178,14 @@ class Widget:
     members: Optional[List[:class:`Member`]]
         The online members in the server. Offline members
         do not appear in the widget.
+
+        .. note::
+
+            Due to a Discord limitation, if this data is available
+            the users will be "anonymized" with linear IDs and discriminator
+            information being incorrect. Likewise, the number of members
+            retrieved is capped.
+
     """
     __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name')
 
