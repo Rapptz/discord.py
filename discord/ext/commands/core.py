@@ -49,6 +49,8 @@ __all__ = (
     'has_any_role',
     'check',
     'check_any',
+    'before_invoke',
+    'after_invoke',
     'bot_has_role',
     'bot_has_permissions',
     'bot_has_any_role',
@@ -255,8 +257,16 @@ class Command(_BaseCommand):
         # bandaid for the fact that sometimes parent can be the bot instance
         parent = kwargs.get('parent')
         self.parent = parent if isinstance(parent, _BaseCommand) else None
-        self._before_invoke = None
-        self._after_invoke = None
+
+        try:
+            self.before_invoke(func.__before_invoke__)
+        except AttributeError:
+            self._before_invoke = None
+
+        try:
+            self.after_invoke(func.__after_invoke__)
+        except AttributeError:
+            self._after_invoke = None
 
     @property
     def callback(self):
@@ -1847,5 +1857,31 @@ def cooldown(rate, per, type=BucketType.default):
             func._buckets = CooldownMapping(Cooldown(rate, per, type))
         else:
             func.__commands_cooldown__ = Cooldown(rate, per, type)
+        return func
+    return decorator
+
+def before_invoke(coro):
+    """A decorator that registers a coroutine as a pre-invoke hook.
+
+    Same as :func:`Command.before_invoke`.
+    """
+    def decorator(func):
+        if isinstance(func, Command):
+            func.before_invoke(coro)
+        else:
+            func.__before_invoke__ = coro
+        return func
+    return decorator
+
+def after_invoke(coro):
+    """A decorator that registers a coroutine as a post-invoke hook.
+
+    Same as :func:`Command.after_invoke`.
+    """
+    def decorator(func):
+        if isinstance(func, Command):
+            func.after_invoke(coro)
+        else:
+            func.__after_invoke__ = coro
         return func
     return decorator
