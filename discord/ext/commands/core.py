@@ -49,6 +49,8 @@ __all__ = (
     'has_any_role',
     'check',
     'check_any',
+    'before_invoke',
+    'after_invoke',
     'bot_has_role',
     'bot_has_permissions',
     'bot_has_any_role',
@@ -266,8 +268,20 @@ class Command(_BaseCommand):
         # bandaid for the fact that sometimes parent can be the bot instance
         parent = kwargs.get('parent')
         self.parent = parent if isinstance(parent, _BaseCommand) else None
-        self._before_invoke = None
-        self._after_invoke = None
+
+        try:
+            before_invoke = func.__before_invoke__
+        except AttributeError:
+            self._before_invoke = None
+        else:
+            self.before_invoke(before_invoke)
+
+        try:
+            after_invoke = func.__after_invoke__
+        except AttributeError:
+            self._after_invoke = None
+        else:
+            self.after_invoke(after_invoke)
 
     @property
     def callback(self):
@@ -695,10 +709,18 @@ class Command(_BaseCommand):
         # first, call the command local hook:
         cog = self.cog
         if self._before_invoke is not None:
-            if cog is None:
-                await self._before_invoke(ctx)
+            try:
+                instance = self._before_invoke.__self__
+                # should be cog if @commands.before_invoke is used
+            except AttributeError:
+                # __self__ only exists for methods, not functions
+                # however, if @command.before_invoke is used, it will be a function
+                if self.cog:
+                    await self._before_invoke(cog, ctx)
+                else:
+                    await self._before_invoke(ctx)
             else:
-                await self._before_invoke(cog, ctx)
+                await self._before_invoke(instance, ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -714,10 +736,15 @@ class Command(_BaseCommand):
     async def call_after_hooks(self, ctx):
         cog = self.cog
         if self._after_invoke is not None:
-            if cog is None:
-                await self._after_invoke(ctx)
+            try:
+                instance = self._after_invoke.__self__
+            except AttributeError:
+                if self.cog:
+                    await self._after_invoke(cog, ctx)
+                else:
+                    await self._after_invoke(ctx)
             else:
-                await self._after_invoke(cog, ctx)
+                await self._after_invoke(instance, ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -1886,5 +1913,67 @@ def max_concurrency(number, per=BucketType.default, *, wait=False):
             func._max_concurrency = value
         else:
             func.__commands_max_concurrency__ = value
+        return func
+    return decorator
+
+def before_invoke(coro):
+    """A decorator that registers a coroutine as a pre-invoke hook.
+
+    This allows you to refer to one before invoke hook for several commands that
+    do not have to be within the same cog.
+
+    .. versionadded:: 1.4
+
+    Example
+    ---------
+
+    .. code-block:: python3
+
+        async def record_usage(ctx):
+            print(ctx.author, 'used', ctx.command, 'at', ctx.message.created_at)
+
+        @bot.command()
+        @commands.before_invoke(record_usage)
+        async def who(ctx): # Output: <User> used who at <Time>
+            await ctx.send('i am a bot')
+
+        class What(commands.Cog):
+
+            @commands.before_invoke(record_usage)
+            @commands.command()
+            async def when(self, ctx): # Output: <User> used when at <Time>
+                await ctx.send('and i have existed since {}'.format(ctx.bot.user.created_at))
+
+            @commands.command()
+            async def where(self, ctx): # Output: <Nothing>
+                await ctx.send('on Discord')
+
+            @commands.command()
+            async def why(self, ctx): # Output: <Nothing>
+                await ctx.send('because someone made me')
+
+        bot.add_cog(What())
+    """
+    def decorator(func):
+        if isinstance(func, Command):
+            func.before_invoke(coro)
+        else:
+            func.__before_invoke__ = coro
+        return func
+    return decorator
+
+def after_invoke(coro):
+    """A decorator that registers a coroutine as a post-invoke hook.
+
+    This allows you to refer to one after invoke hook for several commands that
+    do not have to be within the same cog.
+
+    .. versionadded:: 1.4
+    """
+    def decorator(func):
+        if isinstance(func, Command):
+            func.after_invoke(coro)
+        else:
+            func.__after_invoke__ = coro
         return func
     return decorator
