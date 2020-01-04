@@ -39,6 +39,7 @@ from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
+from .file import File
 from .utils import escape_mentions
 
 
@@ -163,6 +164,32 @@ class Attachment:
         url = self.proxy_url if use_cached else self.url
         data = await self._http.get_from_cdn(url)
         return data
+
+    async def to_file(self):
+        """|coro|
+
+        Converts the attachment into a :class:`File` suitable for sending via
+        :meth:`abc.Messageable.send`.
+
+        .. versionadded:: 1.3.0
+
+        Raises
+        ------
+        HTTPException
+            Downloading the attachment failed.
+        Forbidden
+            You do not have permissions to access this attachment
+        NotFound
+            The attachment was deleted.
+
+        Returns
+        -------
+        :class:`File`
+            The attachment as a file suitable for sending.
+        """
+
+        data = await self.read()
+        return File(io.BytesIO(data), filename=self.filename)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
