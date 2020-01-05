@@ -157,7 +157,13 @@ class UserConverter(IDConverter):
             result = ctx.bot.get_user(user_id) or _utils_get(ctx.message.mentions, id=user_id)
         else:
             arg = argument
-            # check for discriminator if it exists
+
+            # Remove the '@' character if this is the first character from the argument
+            if arg[0] == '@':
+                # Remove first character
+                arg = arg[1:]
+
+            # check for discriminator if it exists,
             if len(arg) > 5 and arg[-5] == '#':
                 discrim = arg[-4:]
                 name = arg[:-5]
@@ -173,7 +179,6 @@ class UserConverter(IDConverter):
             raise BadArgument('User "{}" not found'.format(argument))
 
         return result
-
 class MessageConverter(Converter):
     """Converts to a :class:`discord.Message`.
 
