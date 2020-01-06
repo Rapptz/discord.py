@@ -53,7 +53,7 @@ class VoiceState:
     self_stream: :class:`bool`
         Indicates if the user is currently streaming via 'Go Live' feature.
 
-        .. versionadded:: 1.3.0 
+        .. versionadded:: 1.3.0
 
     self_video: :class:`bool`
         Indicates if the user is currently broadcasting video.
@@ -389,12 +389,14 @@ class Member(discord.abc.Messageable, _BaseUser):
         message: :class:`Message`
             The message to check if you're mentioned in.
         """
+        if message.guild is None or message.guild.id != self.guild.id:
+            return False
+
         if self._user.mentioned_in(message):
             return True
 
         for role in message.role_mentions:
-            has_role = utils.get(self.roles, id=role.id) is not None
-            if has_role:
+            if self._roles.has(role.id):
                 return True
 
         return False
