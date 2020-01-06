@@ -926,7 +926,11 @@ class Command(_BaseCommand):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`.checks` attribute.
+        inside the :attr:`.checks` attribute. This also checks whether the
+        command is disabled.
+
+        .. versionchanged:: 1.3
+            Checks whether the command is disabled or not
 
         Parameters
         -----------
