@@ -34,6 +34,7 @@ __all__ = (
     'PrivateMessageOnly',
     'NoPrivateMessage',
     'CheckFailure',
+    'CheckAnyFailure',
     'CommandNotFound',
     'DisabledCommand',
     'CommandInvokeError',
@@ -152,6 +153,26 @@ class CheckFailure(CommandError):
     This inherits from :exc:`CommandError`
     """
     pass
+
+class CheckAnyFailure(CheckFailure):
+    """Exception raised when all predicates in :func:`check_any` fail.
+
+    This inherits from :exc:`CheckFailure`.
+
+    .. versionadded:: 1.3
+
+    Attributes
+    ------------
+    errors: List[:class:`CheckFailure`]
+        A list of errors that were caught during execution.
+    checks: List[Callable[[:class:`Context`], :class:`bool`]]
+        A list of check predicates that failed.
+    """
+
+    def __init__(self, checks, errors):
+        self.checks = checks
+        self.errors = errors
+        super().__init__('You do not have permission to run this command.')
 
 class PrivateMessageOnly(CheckFailure):
     """Exception raised when an operation does not work outside of private

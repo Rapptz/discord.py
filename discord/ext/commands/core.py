@@ -48,6 +48,7 @@ __all__ = (
     'has_permissions',
     'has_any_role',
     'check',
+    'check_any',
     'bot_has_role',
     'bot_has_permissions',
     'bot_has_any_role',
@@ -1378,6 +1379,75 @@ def check(predicate):
 
     decorator.predicate = predicate
     return decorator
+
+def check_any(*checks):
+    """A :func:`check` that is added that checks if any of the checks passed
+    will pass, i.e. using logical OR.
+
+    If all checks fail then :exc:`.CheckAnyFailure` is raised to signal the failure.
+    It inherits from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function **is** a coroutine.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ------------
+    \*checks: Callable[[:class:`Context`], :class:`bool`]
+        An argument list of checks that have been decorated with
+        the :func:`check` decorator.
+
+    Raises
+    -------
+    TypeError
+        A check passed has not been decorated with the :func:`check`
+        decorator.
+
+    Examples
+    ---------
+
+    Creating a basic check to see if it's the bot owner or
+    the server owner:
+
+    .. code-block:: python3
+
+        def is_guild_owner():
+            def predicate(ctx):
+                return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+            return commands.check(predicate)
+
+        @bot.command()
+        @commands.check_any(commands.is_owner(), is_guild_owner())
+        async def only_for_owners(ctx):
+            await ctx.send('Hello mister owner!')
+    """
+
+    unwrapped = []
+    for wrapped in checks:
+        try:
+            pred = wrapped.predicate
+        except AttributeError:
+            raise TypeError('%r must be wrapped by commands.check decorator' % wrapped) from None
+        else:
+            unwrapped.append(pred)
+
+    async def predicate(ctx):
+        errors = []
+        maybe = discord.utils.maybe_coroutine
+        for func in unwrapped:
+            try:
+                value = await maybe(func, ctx)
+            except CheckFailure as e:
+                errors.append(e)
+            else:
+                if value:
+                    return True
+        # if we're here, all checks failed
+        raise CheckAnyFailure(unwrapped, errors)
+
+    return check(predicate)
 
 def has_role(item):
     """A :func:`.check` that is added that checks if the member invoking the

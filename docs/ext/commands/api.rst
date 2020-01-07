@@ -118,6 +118,8 @@ Checks
 
 .. autofunction:: discord.ext.commands.check
 
+.. autofunction:: discord.ext.commands.check_any
+
 .. autofunction:: discord.ext.commands.has_role
 
 .. autofunction:: discord.ext.commands.has_permissions
