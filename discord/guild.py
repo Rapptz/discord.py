@@ -1617,7 +1617,7 @@ class Guild(Hashable):
             A :class:`dict` of :class:`Role` to :class:`int` to change the positions
             of each given role.
         reason: Optional[:class:`str`]
-            The reason for creating this channel. Shows up on the audit log.
+            The reason for editing the role positions. Shows up on the audit log.
 
         Raises
         -------
