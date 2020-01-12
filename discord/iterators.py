@@ -589,7 +589,7 @@ class GuildIterator(_AsyncIterator):
         return data
 
 class MemberIterator(_AsyncIterator):
-    def __init__(self, guild, limit=1, after=None):
+    def __init__(self, guild, limit=1000, after=None):
 
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
@@ -611,16 +611,30 @@ class MemberIterator(_AsyncIterator):
         except asyncio.QueueEmpty:
             raise NoMoreItems()
 
+    def _get_retrieve(self):
+        l = self.limit
+        if l is None:
+            r = 1000
+        elif l <= 1000:
+            r = l
+        else:
+            r = 1000
+
+        self.retrieve = r
+        return r > 0
+
     async def fill_members(self):
-        if self.limit > 0:
-            retrieve = self.limit if self.limit <= 1000 else 1000
-
+        if self._get_retrieve():
             after = self.after.id if self.after else None
-            data = await self.get_members(self.guild.id, retrieve, after)
+            data = await self.get_members(self.guild.id, self.retrieve, after)
+            if not data:
+                # no data, terminate
+                return
 
-            if data:
-                self.limit -= retrieve
-                self.after = Object(id=int(data[-1]['user']['id']))
+            if len(data) < 1000:
+                self.limit = 0 # terminate loop
+
+            self.after = Object(id=int(data[-1]['user']['id']))
 
             for element in reversed(data):
                 await self.members.put(self.create_member(element))

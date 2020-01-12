@@ -633,7 +633,7 @@ class Guild(Hashable):
     @property
     def discovery_splash_url(self):
         """:class:`Asset`: Returns the guild's discovery splash asset.
-        
+
         .. versionadded:: 1.3.0
         """
         return self.discovery_splash_url_as()
@@ -1130,7 +1130,7 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
-    def fetch_members(self, *, limit=1, after=None):
+    def fetch_members(self, *, limit=1000, after=None):
         """|coro|
 
         Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
@@ -1146,8 +1146,8 @@ class Guild(Hashable):
         Parameters
         ----------
         limit: Optional[:class:`int`]
-            The number of members to retrieve.
-            Defaults to 1.
+            The number of members to retrieve. Defaults to 1000.
+            Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
