@@ -1026,25 +1026,19 @@ class AutoShardedConnectionState(ConnectionState):
             launch.set()
             await asyncio.sleep(2.0 * self.shard_count)
 
-        if self._fetch_offline:
-            guilds = sorted(self._ready_state.guilds, key=lambda g: g[0].shard_id)
+        guilds = sorted(self._ready_state.guilds, key=lambda g: g[0].shard_id)
 
-            for shard_id, sub_guilds_info in itertools.groupby(guilds, key=lambda g: g[0].shard_id):
-                sub_guilds, sub_available = zip(*sub_guilds_info)
+        for shard_id, sub_guilds_info in itertools.groupby(guilds, key=lambda g: g[0].shard_id):
+            sub_guilds, sub_available = zip(*sub_guilds_info)
+            if self._fetch_offline:
                 await self.request_offline_members(sub_guilds, shard_id=shard_id)
 
-                for guild, unavailable in zip(sub_guilds, sub_available):
-                    if unavailable is False:
-                        self.dispatch('guild_available', guild)
-                    else:
-                        self.dispatch('guild_join', guild)
-                self.dispatch('shard_ready', shard_id)
-        else:
-            for guild, unavailable in self._ready_state.guilds:
+            for guild, unavailable in zip(sub_guilds, sub_available):
                 if unavailable is False:
                     self.dispatch('guild_available', guild)
                 else:
                     self.dispatch('guild_join', guild)
+            self.dispatch('shard_ready', shard_id)
 
         # remove the state
         try:
