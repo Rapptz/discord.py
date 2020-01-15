@@ -1321,12 +1321,13 @@ def check(predicate):
             def extended_check(ctx):
                 if ctx.guild is None:
                     return False
-                return ctx.guild.owner_id == ctx.author.id or original(ctx)
+                return ctx.guild.owner_id == ctx.author.id or await original(ctx)
             return commands.check(extended_check)
 
     .. note::
 
-        These functions can either be regular functions or coroutines.
+        The function returned by ``predicate`` is **always** a coroutine,
+        even if the original function was not a coroutine.
 
     .. versionchanged:: 1.3.0
         The ``predicate`` attribute was added.
@@ -1377,7 +1378,14 @@ def check(predicate):
 
         return func
 
-    decorator.predicate = predicate
+    if inspect.iscoroutinefunction(predicate):
+        decorator.predicate = predicate
+    else:
+        @functools.wraps(predicate)
+        async def wrapper(ctx):
+            return predicate(ctx)
+        decorator.predicate = wrapper
+
     return decorator
 
 def check_any(*checks):
@@ -1435,10 +1443,9 @@ def check_any(*checks):
 
     async def predicate(ctx):
         errors = []
-        maybe = discord.utils.maybe_coroutine
         for func in unwrapped:
             try:
-                value = await maybe(func, ctx)
+                value = await func(ctx)
             except CheckFailure as e:
                 errors.append(e)
             else:
@@ -1464,10 +1471,6 @@ def has_role(item):
     This check raises one of two special exceptions, :exc:`.MissingRole` if the user
     is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1504,10 +1507,6 @@ def has_any_role(*items):
     This check raises one of two special exceptions, :exc:`.MissingAnyRole` if the user
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1548,10 +1547,6 @@ def bot_has_role(item):
     is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
     .. versionchanged:: 1.1.0
 
         Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
@@ -1580,10 +1575,6 @@ def bot_has_any_role(*items):
     This check raises one of two special exceptions, :exc:`.BotMissingAnyRole` if the bot
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1614,10 +1605,6 @@ def has_permissions(**perms):
 
     This check raises a special exception, :exc:`.MissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     Parameters
     ------------
@@ -1654,10 +1641,6 @@ def bot_has_permissions(**perms):
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1680,10 +1663,6 @@ def has_guild_permissions(**perms):
     If this check is called in a DM context, it will raise an
     exception, :exc:`.NoPrivateMessage`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
     .. versionadded:: 1.3.0
     """
     def predicate(ctx):
@@ -1703,10 +1682,6 @@ def has_guild_permissions(**perms):
 def bot_has_guild_permissions(**perms):
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionadded:: 1.3.0
     """
@@ -1732,10 +1707,6 @@ def dm_only():
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
     .. versionadded:: 1.1.0
     """
 
@@ -1753,10 +1724,6 @@ def guild_only():
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
     """
 
     def predicate(ctx):
@@ -1774,10 +1741,6 @@ def is_owner():
 
     This check raises a special exception, :exc:`.NotOwner` that is derived
     from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function **is** a coroutine.
     """
 
     async def predicate(ctx):
@@ -1792,10 +1755,6 @@ def is_nsfw():
 
     This check raises a special exception, :exc:`.NSFWChannelRequired`
     that is derived from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
