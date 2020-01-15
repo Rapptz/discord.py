@@ -724,7 +724,12 @@ class CustomActivity(BaseActivity):
         return hash((self.name, str(self.emoji)))
 
     def __str__(self):
-        return self.name
+        if self.emoji:
+            if self.name:
+                return '%s %s' % (self.emoji, self.name)
+            return str(self.emoji)
+        else:
+            return str(self.name)
 
     def __repr__(self):
         return '<CustomActivity name={0.name!r} emoji={0.emoji!r}>'.format(self)
