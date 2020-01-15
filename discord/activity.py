@@ -29,6 +29,7 @@ import datetime
 from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
+from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
 
 __all__ = (
@@ -36,6 +37,7 @@ __all__ = (
     'Streaming',
     'Game',
     'Spotify',
+    'CustomActivity',
 )
 
 """If curious, this is the current schema for an activity.
@@ -146,10 +148,13 @@ class Activity(_ActivityTag):
 
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji that belongs to this activity.
     """
 
     __slots__ = ('state', 'details', '_created_at', 'timestamps', 'assets', 'party',
-                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
+                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url',
+                 'application_id', 'emoji')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -165,6 +170,11 @@ class Activity(_ActivityTag):
         self.sync_id = kwargs.pop('sync_id', None)
         self.session_id = kwargs.pop('session_id', None)
         self.type = try_enum(ActivityType, kwargs.pop('type', -1))
+        emoji = kwargs.pop('emoji', None)
+        if emoji is not None:
+            self.emoji = PartialEmoji.from_dict(emoji)
+        else:
+            self.emoji = None
 
     def __repr__(self):
         attrs = (
@@ -174,6 +184,7 @@ class Activity(_ActivityTag):
             'details',
             'application_id',
             'session_id',
+            'emoji',
         )
         mapped = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in attrs)
         return '<Activity %s>' % mapped
@@ -190,6 +201,8 @@ class Activity(_ActivityTag):
 
             ret[attr] = value
         ret['type'] = int(self.type)
+        if self.emoji:
+            ret['emoji'] = self.emoji.to_dict()
         return ret
 
     @property
@@ -614,6 +627,91 @@ class Spotify:
         """:class:`str`: The party ID of the listening party."""
         return self._party.get('id', '')
 
+class CustomActivity(_ActivityTag):
+    """Represents a Custom activity from Discord.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two activities are equal.
+
+        .. describe:: x != y
+
+            Checks if two activities are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the activity's hash.
+
+        .. describe:: str(x)
+
+            Returns the custom status text.
+
+    .. versionadded:: 1.3.0
+
+    Attributes
+    -----------
+    name: Optional[:class:`str`]
+        The custom activity's name.
+    emoji: Optional[`:class:`PartialEmoji`]
+        The emoji to pass to the activity, if any.
+    """
+
+    __slots__ = ('name', 'emoji', 'state')
+
+    def __init__(self, name, *, emoji=None, **extra):
+        self.name = name
+        self.state = extra.pop('state', None)
+        if self.name == 'Custom Status':
+            self.name = self.state
+
+        if emoji is None:
+            self.emoji = emoji
+        else:
+            self.emoji = PartialEmoji.from_dict(emoji)
+
+    @property
+    def type(self):
+        """Returns the activity's type. This is for compatibility with :class:`Activity`.
+
+        It always returns :attr:`ActivityType.custom`.
+        """
+        return ActivityType.custom
+
+    def to_dict(self):
+        if self.name == self.state:
+            o = {
+                'type': ActivityType.custom.value,
+                'state': self.name,
+                'name': 'Custom Status',
+            }
+        else:
+            o = {
+                'type': ActivityType.custom.value,
+                'name': self.name,
+            }
+
+        if self.emoji:
+            o['emoji'] = self.emoji.to_dict()
+        return o
+
+    def __eq__(self, other):
+        return (isinstance(other, CustomActivity) and other.name == self.name and other.emoji == self.emoji)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.name, str(self.emoji)))
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<CustomActivity name={0.name!r} emoji={0.emoji!r}>'.format(self)
+
+
 def create_activity(data):
     if not data:
         return None
@@ -623,6 +721,13 @@ def create_activity(data):
         if 'application_id' in data or 'session_id' in data:
             return Activity(**data)
         return Game(**data)
+    elif game_type is ActivityType.custom:
+        try:
+            name = data.pop('name')
+        except KeyError:
+            return Activity(**data)
+        else:
+            return CustomActivity(name=name, **data)
     elif game_type is ActivityType.streaming:
         if 'url' in data:
             return Streaming(**data)

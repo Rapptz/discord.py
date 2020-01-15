@@ -406,6 +406,7 @@ class ActivityType(Enum):
     streaming = 1
     listening = 2
     watching = 3
+    custom = 4
 
     def __int__(self):
         return self.value
