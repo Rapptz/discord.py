@@ -159,7 +159,7 @@ class UserConverter(IDConverter):
             arg = argument
 
             # Remove the '@' character if this is the first character from the argument
-            if arg[:1] == '@':
+            if arg[0] == '@':
                 # Remove first character
                 arg = arg[1:]
 
