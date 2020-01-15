@@ -272,6 +272,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.CheckFailure
     :members:
 
+.. autoexception:: discord.ext.commands.CheckAnyFailure
+    :members:
+
 .. autoexception:: discord.ext.commands.CommandNotFound
     :members:
 
@@ -352,6 +355,7 @@ Exception Hierarchy
                     - :exc:`~.commands.ExpectedClosingQuoteError`
             - :exc:`~.commands.CommandNotFound`
             - :exc:`~.commands.CheckFailure`
+                - :exc:`~.commands.CheckAnyFailure`
                 - :exc:`~.commands.PrivateMessageOnly`
                 - :exc:`~.commands.NoPrivateMessage`
                 - :exc:`~.commands.NotOwner`
