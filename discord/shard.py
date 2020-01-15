@@ -311,7 +311,7 @@ class AutoShardedClient(Client):
 
         Parameters
         ----------
-        activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+        activity: Optional[:class:`BaseActivity`]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
             Indicates what status to change to. If ``None``, then

@@ -33,6 +33,7 @@ from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
 
 __all__ = (
+    'BaseActivity',
     'Activity',
     'Streaming',
     'Game',
@@ -85,7 +86,24 @@ t.ActivityFlags = {
 }
 """
 
-class _ActivityTag:
+class BaseActivity:
+    """The base activity that all user-settable activities inherit from.
+    A user-settable activity is one that can be used in :meth:`Client.change_presence`.
+
+    The following types currently count as user-settable:
+
+    - :class:`Activity`
+    - :class:`Game`
+    - :class:`Streaming`
+    - :class:`CustomActivity`
+
+    Note that although these types are considered user-settable by the library,
+    Discord typically ignores certain combinations of activity depending on
+    what is currently set. This behaviour may change in the future so there are
+    no guarantees on whether Discord will actually let you set these types.
+
+    .. versionadded:: 1.3.0
+    """
     __slots__ = ('_created_at',)
 
     def __init__(self, **kwargs):
@@ -100,7 +118,7 @@ class _ActivityTag:
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
-class Activity(_ActivityTag):
+class Activity(BaseActivity):
     """Represents an activity in Discord.
 
     This could be an activity such as streaming, playing, listening
@@ -257,7 +275,7 @@ class Activity(_ActivityTag):
         return self.assets.get('small_text', None)
 
 
-class Game(_ActivityTag):
+class Game(BaseActivity):
     """A slimmed down version of :class:`Activity` that represents a Discord game.
 
     This is typically displayed via **Playing** on the official Discord client.
@@ -369,7 +387,7 @@ class Game(_ActivityTag):
     def __hash__(self):
         return hash(self.name)
 
-class Streaming(_ActivityTag):
+class Streaming(BaseActivity):
     """A slimmed down version of :class:`Activity` that represents a Discord streaming status.
 
     This is typically displayed via **Streaming** on the official Discord client.
@@ -627,7 +645,7 @@ class Spotify:
         """:class:`str`: The party ID of the listening party."""
         return self._party.get('id', '')
 
-class CustomActivity(_ActivityTag):
+class CustomActivity(BaseActivity):
     """Represents a Custom activity from Discord.
 
     .. container:: operations

@@ -36,7 +36,7 @@ import inspect
 import gc
 
 from .guild import Guild
-from .activity import _ActivityTag
+from .activity import BaseActivity
 from .user import User, ClientUser
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
@@ -83,8 +83,8 @@ class ConnectionState:
 
         activity = options.get('activity', None)
         if activity:
-            if not isinstance(activity, _ActivityTag):
-                raise TypeError('activity parameter must be one of Game, Streaming, or Activity.')
+            if not isinstance(activity, BaseActivity):
+                raise TypeError('activity parameter must derive from BaseActivity.')
 
             activity = activity.to_dict()
 
