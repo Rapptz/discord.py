@@ -2483,6 +2483,12 @@ Colour
 .. autoclass:: Colour
     :members:
 
+BaseActivity
+~~~~~~~~~~~~~~
+
+.. autoclass:: BaseActivity
+    :members:
+
 Activity
 ~~~~~~~~~
 

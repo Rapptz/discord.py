@@ -300,10 +300,6 @@ class AutoShardedClient(Client):
 
         Changes the client's presence.
 
-        The activity parameter is a :class:`Activity` object (not a string) that represents
-        the activity being done currently. This could also be the slimmed down versions,
-        :class:`Game` and :class:`Streaming`.
-
         Example: ::
 
             game = discord.Game("with the API")
