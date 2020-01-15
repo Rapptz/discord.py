@@ -611,8 +611,8 @@ class Client:
         loop = self.loop
 
         try:
-            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
-            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
+            loop.add_signal_handler(signal.SIGINT, lambda: asyncio.create_task(self.close()))
+            loop.add_signal_handler(signal.SIGTERM, lambda: asyncio.create_task(self.close()))
         except NotImplementedError:
             pass
 
