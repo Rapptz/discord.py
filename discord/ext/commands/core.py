@@ -259,14 +259,18 @@ class Command(_BaseCommand):
         self.parent = parent if isinstance(parent, _BaseCommand) else None
 
         try:
-            self.before_invoke(func.__before_invoke__)
+            before_invoke = func.__before_invoke__
         except AttributeError:
             self._before_invoke = None
+        else:
+            self.before_invoke(before_invoke)
 
         try:
-            self.after_invoke(func.__after_invoke__)
+            after_invoke = func.__after_invoke__
         except AttributeError:
             self._after_invoke = None
+        else:
+            self.after_invoke(after_invoke)
 
     @property
     def callback(self):
