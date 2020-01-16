@@ -1873,7 +1873,38 @@ def cooldown(rate, per, type=BucketType.default):
 def before_invoke(coro):
     """A decorator that registers a coroutine as a pre-invoke hook.
 
-    Same as :func:`Command.before_invoke`.
+    This allows you to refer to one before invoke hook for several commands that
+    do not have to be within the same cog. 
+    
+    Example
+    ---------
+
+    .. code-block:: python3
+        
+        async def record_usage(ctx):
+            print(ctx.author, 'used', ctx.command, 'at', ctx.message.created_at)
+
+        @commands.before_invoke(record_usage)
+        @bot.command()
+        async def who(ctx): # Output: <User> used who at <Time>
+            await ctx.send('i am a bot')
+
+        class What(commands.Cog):
+
+            @commands.before_invoke(record_usage)
+            @commands.command()
+            async def when(self, ctx): # Output: <User> used when at <Time>
+                await ctx.send('and i have existed since {}'.format(ctx.bot.user.created_at))
+
+            @commands.command()
+            async def where(self, ctx): # Output: <Nothing>
+                await ctx.send('on Discord')
+
+            @commands.command()
+            async def why(self, ctx): # Output: <Nothing>
+                await ctx.send('because someone made me')
+
+        bot.add_cog(What())
     """
     def decorator(func):
         if isinstance(func, Command):
@@ -1886,7 +1917,8 @@ def before_invoke(coro):
 def after_invoke(coro):
     """A decorator that registers a coroutine as a post-invoke hook.
 
-    Same as :func:`Command.after_invoke`.
+    This allows you to refer to one after invoke hook for several commands that
+    do not have to be within the same cog.
     """
     def decorator(func):
         if isinstance(func, Command):
