@@ -34,6 +34,7 @@ import traceback
 import aiohttp
 import websockets
 
+from .flags import Intents
 from .user import User, Profile
 from .asset import Asset
 from .invite import Invite
@@ -154,6 +155,8 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
+    intents: :class:`Intents`
+        The intents required for the events that need to be dispatched to the bot.
     guild_subscriptions: :class:`bool`
         Whether to dispatching of presence or typing events. Defaults to ``True``.
 
@@ -212,6 +215,7 @@ class Client:
         proxy = options.pop('proxy', None)
         proxy_auth = options.pop('proxy_auth', None)
         unsync_clock = options.pop('assume_unsync_clock', True)
+        self._intents = options.pop('intents', Intents())
         self.http = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
 
         self._handlers = {
@@ -225,6 +229,9 @@ class Client:
         self._closed = False
         self._ready = asyncio.Event()
         self._connection._get_websocket = lambda g: self.ws
+
+        if self._connection.guild_subscriptions:
+            self._intents._set_guild_subscriptions()
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False

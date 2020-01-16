@@ -102,6 +102,196 @@ class BaseFlags:
         else:
             raise TypeError('Value to set for %s must be a bool.' % self.__class__.__name__)
 
+@fill_with_flags()
+class Intents(BaseFlags):
+    r"""Wraps up the intents for the gateway.
+
+    Each flag represents the events that you will receive when the 
+    client connects to the gateway.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two flags are equal.
+        .. describe:: x != y
+
+            Checks if two flags are not equal.
+        .. describe:: hash(x)
+
+               Return the flag's hash.
+        .. describe:: iter(x)
+
+               Returns an iterator of ``(name, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+    __slots__ = ()
+
+    def _set_guild_subscriptions(self):
+        self.guild_members = True
+        # self.guild_presences = True
+        self.guild_message_typing = True
+
+    @flag_value
+    def guilds(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_guild_join`
+        - :func:`on_guild_remove`
+        - :func:`on_guild_role_create`
+        - :func:`on_guild_role_create`
+        - :func:`on_guild_role_delete`
+        - :func:`on_guild_role_update`
+        - :func:`on_guild_channel_create`
+        - :func:`on_guild_channel_delete`
+        - :func:`on_guild_channel_update`
+        - :func:`on_guild_channel_pins_update`
+        """
+        return 1
+
+    @flag_value
+    def guild_members(self):
+        """:class:`bool`: This enables:
+        
+        - :func:`on_member_join`
+        - :func:`on_member_remove`
+        - :func:`on_member_update`
+        """
+        return 2
+
+    @flag_value
+    def guild_bans(self):
+        """:class:`bool`: This enables:
+        
+        - :func:`on_member_ban`
+        - :func:`on_member_unban`
+        """
+        return 4
+
+    @flag_value
+    def guild_emojis(self):
+        """:class:`bool`: This enables:
+        
+        - :func:`on_guild_emojis_update`
+        """
+        return 8
+
+    @flag_value
+    def guild_integrations(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_guild_integrations_update`
+        """
+        return 16
+
+    @flag_value
+    def guild_webhooks(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_webhooks_update`
+        """
+        return 32
+
+    @flag_value
+    def guild_invites(self):
+        """:class:`bool`: This enables:
+        
+        - :func:`on_invite_create`
+        - :func:`on_invite_delete`
+        """
+        return 64
+
+    @flag_value
+    def guild_voice_states(self):
+        """:class:`bool`: This enables:
+        
+        - :func:`on_voice_state_update`
+        """
+        return 128
+
+    @flag_value
+    def guild_presences(self):
+        """:class:`bool`: This enables:
+        
+        - :func:`on_member_update`
+        """
+        return 256
+
+    @flag_value
+    def guild_messages(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_message`
+        - :func:`on_message_edit`
+        - :func:`on_message_delete`
+
+        for guilds.
+        """
+        return 512
+
+    @flag_value
+    def guild_message_reactions(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_reaction_add`
+        - :func:`on_reaction_remove`
+        - :func:`on_reaction_clear`
+
+        for guilds.
+        """
+        return 1024
+
+    @flag_value
+    def guild_message_typing(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_typing`
+
+        for guilds.
+        """
+        return 2048
+
+    @flag_value
+    def direct_messages(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_message`
+        - :func:`on_message_edit`
+        - :func:`on_message_delete`
+
+        for DM channels.
+        """
+        return 4096
+
+    @flag_value
+    def direct_message_reactions(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_reaction_add`
+        - :func:`on_reaction_remove`
+        - :func:`on_reaction_clear`
+
+        for DM channels.
+        """
+        return 8192
+
+    @flag_value
+    def direct_message_typing(self):
+        """:class:`bool`: This enables:
+
+        - :func:`on_typing`
+
+        for DM channels.
+        """
+        return 16384
+
 @fill_with_flags(inverted=True)
 class SystemChannelFlags(BaseFlags):
     r"""Wraps up a Discord system channel flag value.

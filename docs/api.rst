@@ -2525,6 +2525,12 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
+Intents
+~~~~~~~~
+
+.. autoclass:: Intents
+	:members:
+
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
 

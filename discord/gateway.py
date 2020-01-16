@@ -234,6 +234,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         ws.shard_count = client._connection.shard_count
         ws.session_id = session
         ws.sequence = sequence
+        ws.intents = client._intents
         ws._max_heartbeat_timeout = client._connection.heartbeat_timeout
 
         client._connection._update_references(ws)
@@ -297,7 +298,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 },
                 'compress': True,
                 'large_threshold': 250,
-                'guild_subscriptions': self._connection.guild_subscriptions,
+                'intents': self.intents.value,
                 'v': 3
             }
         }
