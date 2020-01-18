@@ -622,6 +622,37 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param user: The user that got unbanned.
     :type user: :class:`User`
 
+.. function:: on_invite_create(invite)
+
+    Called when an :class:`Invite` is created.
+
+    .. versionadded:: 1.3.0
+
+    .. note::
+
+        There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
+        attributes will be of :class:`Object` rather than the respective models.
+
+    :param invite: The invite that was created.
+    :type invite: :class:`Invite`
+
+.. function:: on_invite_delete(invite)
+
+    Called when an :class:`Invite` is deleted.
+
+    .. versionadded:: 1.3.0
+
+    .. note::
+
+        There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
+        attributes will be of :class:`Object` rather than the respective models.
+
+        Outside of those two attributes, the only other attribute guaranteed to be
+        filled by the Discord gateway for this event is :attr:`Invite.code`.
+
+    :param invite: The invite that was deleted.
+    :type invite: :class:`Invite`
+
 .. function:: on_group_join(channel, user)
               on_group_remove(channel, user)
 

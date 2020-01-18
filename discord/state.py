@@ -50,6 +50,7 @@ from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
 from .embeds import Embed
 from .object import Object
+from .invite import Invite
 
 class ListenerType(Enum):
     chunk = 0
@@ -536,6 +537,14 @@ class ConnectionState:
 
     def parse_user_update(self, data):
         self.user._update(data)
+
+    def parse_invite_create(self, data):
+        invite = Invite.from_gateway(state=self, data=data)
+        self.dispatch('invite_create', invite)
+
+    def parse_invite_delete(self, data):
+        invite = Invite.from_gateway(state=self, data=data)
+        self.dispatch('invite_delete', invite)
 
     def parse_channel_delete(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
