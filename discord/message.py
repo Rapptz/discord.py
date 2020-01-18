@@ -371,6 +371,18 @@ class Message:
 
         return reaction
 
+    def _clear_emoji(self, emoji):
+        to_check = str(emoji)
+        for index, reaction in enumerate(self.reactions):
+            if str(reaction.emoji) == to_check:
+                break
+        else:
+            # didn't find anything so just return
+            return
+
+        del self.reactions[index]
+        return reaction
+
     def _update(self, data):
         handlers = self._HANDLERS
         for key, value in data.items():
@@ -944,6 +956,37 @@ class Message:
             await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
         else:
             await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
+
+    async def clear_reaction(self, emoji):
+        """|coro|
+
+        Clears a specific reaction from the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to clear.
+
+        Raises
+        --------
+        HTTPException
+            Clearing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to clear the reaction.
+        NotFound
+            The emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        emoji = self._emoji_reaction(emoji)
+        await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
 
     @staticmethod
     def _emoji_reaction(emoji):

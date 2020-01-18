@@ -509,6 +509,23 @@ class ConnectionState:
                 if user:
                     self.dispatch('reaction_remove', reaction, user)
 
+    def parse_message_reaction_remove_emoji(self, data):
+        emoji = data['emoji']
+        emoji_id = utils._get_as_snowflake(emoji, 'id')
+        emoji = PartialEmoji.with_state(self, animated=emoji.get('animated', False), id=emoji_id, name=emoji['name'])
+        raw = RawReactionClearEmojiEvent(data, emoji)
+        self.dispatch('raw_reaction_clear_emoji', raw)
+
+        message = self._get_message(raw.message_id)
+        if message is not None:
+            try:
+                reaction = message._clear_emoji(emoji)
+            except (AttributeError, ValueError): # eventual consistency lol
+                pass
+            else:
+                if reaction:
+                    self.dispatch('reaction_clear_emoji', reaction)
+
     def parse_presence_update(self, data):
         guild_id = utils._get_as_snowflake(data, 'guild_id')
         guild = self._get_guild(guild_id)
