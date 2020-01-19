@@ -4,7 +4,7 @@ from .guild import Guild
 from .enums import Status, VoiceRegion
 from .emoji import Emoji
 from .gateway import *
-from .activity import Activity, Game, Streaming, Spotify
+from .activity import BaseActivity
 from .voice_client import VoiceClient
 from .webhook import Webhook
 from .iterators import GuildIterator
@@ -40,14 +40,14 @@ class Client:
     loop: asyncio.AbstractEventLoop
     shard_id: Optional[int]
     shard_count: Optional[int]
-    activity: Union[Activity, Game, Streaming, Spotify]
+    activity: Optional[BaseActivity]
 
     def __init__(self, *, max_messages: Optional[int] = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ...,
                  shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
                  fetch_offline_members: bool = ..., status: Optional[Status] = ...,
-                 activity: Optional[Union[Activity, Game, Streaming]] = ...,
+                 activity: Optional[Union[BaseActivity]] = ...,
                  heartbeat_timeout: float = ..., guild_subscriptions: bool = ...,
                  assume_unsync_clock: bool = ...) -> None: ...
     @property
@@ -248,9 +248,17 @@ class Client:
                  check: Optional[Callable[[Relationship, Relationship], bool]] = ...,
                  timeout: Optional[float] = ...) -> asyncio.Future[Tuple[Relationship, Relationship]]: ...
     @overload
+    def wait_for(self, event: Literal['invite_create'], *,
+                 check: Optional[Callable[[Invite], bool]] = ...,
+                 timeout: Optional[float] = ...) -> asyncio.Future[Invite]: ...
+    @overload
+    def wait_for(self, event: Literal['invite_delete'], *,
+                 check: Optional[Callable[[Invite], bool]] = ...,
+                 timeout: Optional[float] = ...) -> asyncio.Future[Invite]: ...
+    @overload
     def wait_for(self, event: str, *, check: Optional[Callable[..., bool]] = ..., timeout: Optional[float] = ...) -> asyncio.Future[Any]: ...
     def event(self, coro: _F) -> _F: ...
-    async def change_presence(self, *, activity: Optional[Union[Activity, Game, Streaming, Spotify]] = ...,
+    async def change_presence(self, *, activity: Optional[BaseActivity] = ...,
                               status: Optional[Status] = ..., afk: bool = ...) -> None: ...
     def fetch_guilds(self, *, limit: int = ..., before: Optional[Union[Snowflake, datetime]] = ...,
                      after: Optional[Union[Snowflake, datetime]] = ...) -> GuildIterator: ...

@@ -7,7 +7,8 @@ from .emoji import Emoji as Emoji
 from .partial_emoji import PartialEmoji as PartialEmoji
 from .activity import *
 from .channel import *
-from .guild import Guild as Guild, SystemChannelFlags as SystemChannelFlags
+from .guild import Guild as Guild
+from .flags import SystemChannelFlags as SystemChannelFlags, MessageFlags as MessageFlags
 from .relationship import Relationship as Relationship
 from .member import Member as Member, VoiceState as VoiceState
 from .message import Message as Message, Attachment as Attachment

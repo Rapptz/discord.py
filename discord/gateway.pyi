@@ -4,7 +4,7 @@ import asyncio
 import threading
 from .client import Client
 from .voice_client import VoiceClient
-from .activity import _ActivityTag
+from .activity import BaseActivity
 from .enums import Status, SpeakingState
 
 from typing import Any, Optional, Union, Iterable, NamedTuple, Callable, Dict, ClassVar, TypeVar, Type, AsyncIterable
@@ -69,7 +69,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     async def send(self, message: Union[websockets.typing.Data, Iterable[websockets.typing.Data],
                                         AsyncIterable[websockets.typing.Data]]) -> None: ...
     async def send_as_json(self, data: Any) -> None: ...
-    async def change_presence(self, *, activity: Optional[_ActivityTag] = ..., status: Optional[str] = ...,
+    async def change_presence(self, *, activity: Optional[BaseActivity] = ..., status: Optional[str] = ...,
                               afk: bool = ..., since: float = ...) -> None: ...
     async def request_sync(self, guild_ids: Iterable[int]) -> None: ...
     async def request_chunks(self, guild_id: int, query: str, limit: int) -> None: ...

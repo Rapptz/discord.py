@@ -72,3 +72,11 @@ class RawReactionClearEvent(_RawReprMixin):
     guild_id: Optional[int]
 
     def __init__(self, data: _ReactionClearDict) -> None: ...
+
+class RawReactionClearEmojiEvent(_RawReprMixin):
+    message_id: int
+    channel_id: int
+    guild_id: Optional[int]
+    emoji: PartialEmoji
+
+    def __init__(self, data: _ReactionClearDict, emoji: PartialEmoji) -> None: ...

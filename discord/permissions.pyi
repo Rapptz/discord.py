@@ -1,9 +1,11 @@
-from typing import Any, Iterator, Tuple, TypeVar, Optional, Type, ClassVar, Set
+from .flags import BaseFlags
+from typing import Any, Iterator, Tuple, TypeVar, Optional, Type, ClassVar, Dict, Set
 
 _P = TypeVar('_P', bound=Permissions)
 
-class Permissions:
-    value: int
+class Permissions(BaseFlags):
+    VALID_FLAGS: ClassVar[Dict[str, int]]
+
     create_instant_invite: bool
     kick_members: bool
     ban_members: bool
@@ -15,6 +17,7 @@ class Permissions:
     priority_speaker: bool
     stream: bool
     read_messages: bool
+    view_channel: bool
     send_messages: bool
     send_tts_messages: bool
     manage_messages: bool
@@ -23,6 +26,7 @@ class Permissions:
     read_message_history: bool
     mention_everyone: bool
     external_emojis: bool
+    use_external_emojis: bool
     view_guild_insights: bool
     connect: bool
     speak: bool
@@ -33,10 +37,11 @@ class Permissions:
     change_nickname: bool
     manage_nicknames: bool
     manage_roles: bool
+    manage_permissions: bool
     manage_webhooks: bool
     manage_emojis: bool
 
-    def __init__(self, permissions: int = ...) -> None: ...
+    def __init__(self, permissions: int = ..., **kwargs: bool) -> None: ...
     def __eq__(self, other: Any) -> bool: ...
     def __ne__(self, other: Any) -> bool: ...
     def __hash__(self) -> int: ...
@@ -64,19 +69,21 @@ class Permissions:
     def update(self, *, create_instant_invite: bool = ..., kick_members: bool = ..., ban_members: bool = ...,
                administrator: bool = ..., manage_channels: bool = ..., manage_guild: bool = ...,
                add_reactions: bool = ..., view_audit_log: bool = ..., priority_speaker: bool = ...,
-               stream: bool = ..., read_messages: bool = ..., send_messages: bool = ..., send_tts_messages: bool = ...,
+               stream: bool = ..., read_messages: bool = ..., view_channel: bool = ...,
+               send_messages: bool = ..., send_tts_messages: bool = ...,
                manage_messages: bool = ..., embed_links: bool = ..., attach_files: bool = ...,
                read_message_history: bool = ..., mention_everyone: bool = ..., external_emojis: bool = ...,
-               view_guild_insights: bool = ..., connect: bool = ..., speak: bool = ..., mute_members: bool = ...,
-               deafen_members: bool = ..., move_members: bool = ..., use_voice_activation: bool = ...,
-               change_nickname: bool = ..., manage_nicknames: bool = ..., manage_roles: bool = ...,
-               manage_webhooks: bool = ..., manage_emojis: bool = ...) -> None: ...
+               use_external_emojis: bool = ..., view_guild_insights: bool = ..., connect: bool = ...,
+               speak: bool = ..., mute_members: bool = ..., deafen_members: bool = ..., move_members: bool = ...,
+               use_voice_activation: bool = ..., change_nickname: bool = ..., manage_nicknames: bool = ...,
+               manage_roles: bool = ..., manage_webhooks: bool = ..., manage_emojis: bool = ...) -> None: ...
     def handle_overwrite(self, allow: int, deny: int) -> None: ...
 
 _PO = TypeVar('_PO', bound=PermissionOverwrite)
 
 class PermissionOverwrite:
     VALID_NAMES: ClassVar[Set[str]] = ...
+    PURE_FLAGS: ClassVar[Set[str]] = ...
 
     create_instant_invite: Optional[bool]
     kick_members: Optional[bool]
@@ -89,6 +96,7 @@ class PermissionOverwrite:
     priority_speaker: Optional[bool]
     stream: Optional[bool]
     read_messages: Optional[bool]
+    view_channel: Optional[bool]
     send_messages: Optional[bool]
     send_tts_messages: Optional[bool]
     manage_messages: Optional[bool]
@@ -97,6 +105,7 @@ class PermissionOverwrite:
     read_message_history: Optional[bool]
     mention_everyone: Optional[bool]
     external_emojis: Optional[bool]
+    use_external_emojis: Optional[bool]
     view_guild_insights: Optional[bool]
     connect: Optional[bool]
     speak: Optional[bool]
@@ -115,11 +124,13 @@ class PermissionOverwrite:
                  manage_channels: Optional[bool] = ..., manage_guild: Optional[bool] = ...,
                  add_reactions: Optional[bool] = ..., view_audit_log: Optional[bool] = ...,
                  priority_speaker: Optional[bool] = ..., stream: Optional[bool] = ...,
-                 read_messages: Optional[bool] = ..., send_messages: Optional[bool] = ...,
+                 read_messages: Optional[bool] = ..., view_channel: Optional[bool] = ...,
+                 send_messages: Optional[bool] = ...,
                  send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
                  embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
                  read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
-                 external_emojis: Optional[bool] = ..., view_guild_insights: Optional[bool] = ...,
+                 external_emojis: Optional[bool] = ..., use_external_emojis: Optional[bool] = ...,
+                 view_guild_insights: Optional[bool] = ...,
                  connect: Optional[bool] = ..., speak: Optional[bool] = ...,
                  mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
                  move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
@@ -136,11 +147,13 @@ class PermissionOverwrite:
                manage_channels: Optional[bool] = ..., manage_guild: Optional[bool] = ...,
                add_reactions: Optional[bool] = ..., view_audit_log: Optional[bool] = ...,
                priority_speaker: Optional[bool] = ..., stream: Optional[bool] = ...,
-               read_messages: Optional[bool] = ..., send_messages: Optional[bool] = ...,
+               read_messages: Optional[bool] = ..., view_channel: Optional[bool] = ...,
+               send_messages: Optional[bool] = ...,
                send_tts_messages: Optional[bool] = ..., manage_messages: Optional[bool] = ...,
                embed_links: Optional[bool] = ..., attach_files: Optional[bool] = ...,
                read_message_history: Optional[bool] = ..., mention_everyone: Optional[bool] = ...,
-               external_emojis: Optional[bool] = ..., view_guild_insights: Optional[bool] = ...,
+               external_emojis: Optional[bool] = ..., use_external_emojis: Optional[bool] = ...,
+               view_guild_insights: Optional[bool] = ...,
                connect: Optional[bool] = ..., speak: Optional[bool] = ...,
                mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
                move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,

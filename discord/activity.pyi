@@ -4,13 +4,17 @@ from typing import Any, Optional, Union, List, overload
 
 from .colour import Colour
 from .enums import ActivityType
-from .http import _ActivityDict, _TimestampsDict, _ActivityAssetsDict, _ActivityPartyDict, _SpotifyActivityDict
+from .http import (
+    _ActivityDict, _TimestampsDict, _ActivityAssetsDict, _ActivityPartyDict, _SpotifyActivityDict,
+    _CustomActivityDict
+)
+from .partial_emoji import PartialEmoji
 
-class _ActivityTag:
+class BaseActivity:
     @property
     def created_at(self) -> datetime.datetime: ...
 
-class Activity(_ActivityTag):
+class Activity(BaseActivity):
     application_id: int
     name: str
     url: str
@@ -20,6 +24,7 @@ class Activity(_ActivityTag):
     timestamps: _TimestampsDict
     assets: _ActivityAssetsDict
     party: _ActivityPartyDict
+    emoji: Optional[PartialEmoji]
     flags: int
     sync_id: Optional[str]
     session_id: Optional[str]
@@ -44,7 +49,7 @@ class Activity(_ActivityTag):
     @property
     def small_image_text(self) -> Optional[str]: ...
 
-class Game(_ActivityTag):
+class Game(BaseActivity):
     name: str
 
     @overload
@@ -62,10 +67,10 @@ class Game(_ActivityTag):
     def __ne__(self, other: Any) -> bool: ...
     def __hash__(self) -> int: ...
 
-class Streaming(_ActivityTag):
+class Streaming(BaseActivity):
     platform: str
-    name: Optional[str]
-    details: Optional[str]
+    name: str
+    details: str
     game: Optional[str]
     url: str
     assets: _ActivityAssetsDict
@@ -116,4 +121,14 @@ class Spotify:
     @property
     def party_id(self) -> str: ...
 
-def create_activity(data: Optional[_ActivityDict]) -> Optional[Union[Activity, Game, Streaming, Spotify]]: ...
+class CustomActivity(BaseActivity):
+    name: Optional[str]
+    emoji: Optional[PartialEmoji]
+
+    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = ..., **extra: Any) -> None: ...
+    @property
+    def type(self) -> ActivityType: ...
+    def to_dict(self) -> _CustomActivityDict: ...
+    def __eq__(self, other: Any) -> bool: ...
+    def __ne__(self, other: Any) -> bool: ...
+    def __hash__(self) -> int: ...

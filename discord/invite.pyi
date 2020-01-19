@@ -6,6 +6,7 @@ from .user import User
 from .channel import TextChannel, VoiceChannel, StoreChannel
 from .enums import ChannelType, VerificationLevel
 from .asset import Asset
+from .object import Object
 
 from typing import Optional, Union, NamedTuple, List, Set
 from typing_extensions import Literal
@@ -47,7 +48,7 @@ class PartialInviteGuild:
 class Invite(Hashable):
     max_age: int
     code: str
-    guild: Union[Guild, PartialInviteGuild]
+    guild: Union[Guild, Object, PartialInviteGuild]
     revoked: bool
     created_at: datetime.datetime
     temporary: bool
@@ -56,7 +57,7 @@ class Invite(Hashable):
     inviter: User
     approximate_member_count: Optional[int]
     approximate_presence_count: Optional[int]
-    channel: Union[TextChannel, VoiceChannel, StoreChannel, PartialInviteChannel]
+    channel: Union[TextChannel, VoiceChannel, StoreChannel, Object, PartialInviteChannel]
 
     def __hash__(self) -> int: ...
     @property

@@ -1,7 +1,7 @@
 import discord.abc
 import datetime
 
-from .activity import Activity, Game, Streaming, Spotify
+from .activity import BaseActivity, Spotify
 from .enums import Status, DefaultAvatar
 from .colour import Colour
 from .message import Message
@@ -27,7 +27,7 @@ class VoiceState:
 
 class Member(discord.abc.Messageable, discord.abc.User):
     joined_at: Optional[datetime.datetime]
-    activities: Tuple[Union[Activity, Game, Streaming, Spotify], ...]
+    activities: Tuple[Union[BaseActivity, Spotify], ...]
     nick: Optional[str]
     premium_since: Optional[datetime.datetime]
     guild: Guild
@@ -88,7 +88,7 @@ class Member(discord.abc.Messageable, discord.abc.User):
     @property
     def display_name(self) -> str: ...
     @property
-    def activity(self) -> Union[Activity, Game, Streaming, Spotify]: ...
+    def activity(self) -> Union[BaseActivity, Spotify]: ...
     def mentioned_in(self, message: Message) -> bool: ...
     def permissions_in(self, channel: discord.abc.GuildChannel) -> Permissions: ...
     @property

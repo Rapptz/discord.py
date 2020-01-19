@@ -49,6 +49,7 @@ class VoiceRegion(Enum):
     southafrica: str
     india: str
     europe: str
+    dubai: str
     vip_us_east: str
     vip_us_west: str
     vip_amsterdam: str
@@ -175,6 +176,8 @@ class UserFlags(Enum):
     hypesquad_brilliance: int
     hypesquad_balance: int
     early_supporter: int
+    team_user: int
+    system: int
 
 class ActivityType(Enum):
     unknown: int
@@ -182,6 +185,7 @@ class ActivityType(Enum):
     streaming: int
     listening: int
     watching: int
+    custom: int
 
     def __int__(self) -> int: ...
 

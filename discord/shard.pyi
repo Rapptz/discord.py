@@ -3,7 +3,7 @@ import aiohttp
 
 from .client import Client
 from .guild import Guild
-from .activity import Activity, Game, Streaming, Spotify
+from .activity import BaseActivity
 from .enums import Status
 
 from typing import Any, List, Tuple, Optional, Union, overload
@@ -27,14 +27,14 @@ class AutoShardedClient(Client):
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
                  fetch_offline_members: bool = ..., status: Optional[Status] = ...,
-                 activity: Optional[Union[Activity, Game, Streaming]] = ...,
+                 activity: Optional[BaseActivity] = ...,
                  heartbeat_timeout: float = ..., **kwargs: Any) -> None: ...
     @overload
     def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
                  fetch_offline_members: bool = ..., status: Optional[Status] = ...,
-                 activity: Optional[Union[Activity, Game, Streaming]] = ...,
+                 activity: Optional[BaseActivity] = ...,
                  heartbeat_timeout: float = ..., **kwargs: Any) -> None: ...
     @property
     def latency(self) -> float: ...
@@ -44,6 +44,6 @@ class AutoShardedClient(Client):
     async def launch_shard(self, gateway: str, shard_id: int) -> None: ...
     async def launch_shards(self) -> None: ...
     async def close(self) -> None: ...
-    async def change_presence(self, *, activity: Optional[Union[Activity, Game, Streaming, Spotify]] = ...,
+    async def change_presence(self, *, activity: Optional[BaseActivity] = ...,
                               status: Optional[Status] = ..., afk: bool = ...,
                               shard_id: Optional[int] = ...) -> None: ...

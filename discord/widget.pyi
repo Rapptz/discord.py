@@ -1,7 +1,7 @@
 from .enums import Status
 from .invite import Invite
 from .user import BaseUser
-from .activity import Activity, Game, Streaming, Spotify
+from .activity import BaseActivity, Spotify
 from .channel import VoiceChannel
 from .invite import Invite
 
@@ -20,13 +20,9 @@ class WidgetChannel(NamedTuple):
 
 class WidgetMember(BaseUser):
     id: int
-    name: str
-    discriminator: str
-    bot: bool
     status: Status
     nick: Optional[str]
-    avatar: Optional[str]
-    activity: Optional[Union[Activity, Game, Streaming, Spotify]]
+    activity: Optional[Union[BaseActivity, Spotify]]
     deafened: Optional[bool]
     muted: Optional[bool]
     suppress: Optional[bool]

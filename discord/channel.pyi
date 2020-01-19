@@ -18,12 +18,7 @@ from typing import Any, Optional, Union, List, Tuple, Dict, Iterable, Callable, 
 _OverwritesDict = Dict[Union[Role, Member], PermissionOverwrite]
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
-    id: int
-    name: str
-    guild: Guild
-    category_id: Optional[int]
     topic: Optional[str]
-    position: int
     last_message_id: Optional[int]
     slowmode_delay: int
     nsfw: bool
@@ -52,11 +47,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     async def follow(self, *, destination: TextChannel) -> Webhook: ...
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
-    id: int
-    name: str
-    guild: Guild
-    category_id: Optional[int]
-    position: int
     bitrate: int
     user_limit: int
 
@@ -72,12 +62,6 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                    category: Optional[CategoryChannel] = ..., overwrites: _OverwritesDict = ...) -> None: ...
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
-    id: int
-    guild: Guild
-    name: str
-    category_id: Optional[int]
-    position: int
-
     @property
     def type(self) -> ChannelType: ...
     def is_nsfw(self) -> bool: ...
@@ -99,11 +83,6 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
                                    reason: Optional[str] = ...) -> VoiceChannel: ...
 
 class StoreChannel(discord.abc.GuildChannel, Hashable):
-    id: int
-    name: str
-    guild: Guild
-    category_id: Optional[int]
-    position: int
     nsfw: bool
 
     @property
