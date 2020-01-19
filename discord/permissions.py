@@ -482,7 +482,7 @@ class PermissionOverwrite:
             setattr(self, key, value)
 
     def __eq__(self, other):
-        return self._values == other._values
+        return isinstance(other, PermissionOverwrite) and self._values == other._values
 
     def _set(self, key, value):
         if value not in (True, None, False):
