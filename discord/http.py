@@ -60,10 +60,17 @@ class Route:
         self.channel_id = parameters.get('channel_id')
         self.guild_id = parameters.get('guild_id')
 
-    @property
-    def bucket(self):
+    def get_bucket(self, shared_bucket=None):
+        # only used when the shared bucket returned by discord isn't available yet
         # the bucket is just method + path w/ major parameters
-        return '{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
+        if shared_bucket is None:
+            return '{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
+
+        return '{0.channel_id}:{0.guild_id}:{1}'.format(self, shared_bucket)
+
+    @property
+    def endpoint(self):
+        return '{0.method}:{0.path}'.format(self)
 
 class MaybeUnlock:
     def __init__(self, lock):
@@ -91,6 +98,7 @@ class HTTPClient:
         self.connector = connector
         self.__session = None # filled in static_login
         self._locks = weakref.WeakValueDictionary()
+        self._buckets = {} # Mapping Route endpoint (method + path) to shared bucket
         self._global_over = asyncio.Event()
         self._global_over.set()
         self.token = None
@@ -107,13 +115,14 @@ class HTTPClient:
             self.__session = aiohttp.ClientSession(connector=self.connector)
 
     async def request(self, route, *, files=None, **kwargs):
-        bucket = route.bucket
+        bucket = route.get_bucket(self._buckets.get(route.endpoint)) # Get shared bucket if available
         method = route.method
         url = route.url
 
         lock = self._locks.get(bucket)
         if lock is None:
-            lock = asyncio.Lock()
+            # Reuse lock if shared bucket was previously unavailable
+            lock = self._locks.get(route.get_bucket(), asyncio.Lock())
             if bucket is not None:
                 self._locks[bucket] = lock
 
@@ -159,6 +168,11 @@ class HTTPClient:
 
                 async with self.__session.request(method, url, **kwargs) as r:
                     log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
+
+                    # Save bucket returned by discord for later use
+                    bucket = r.headers.get('X-RateLimit-Bucket')
+                    if bucket is not None:
+                        self._buckets[route.endpoint] = bucket
 
                     # even errors have text involved in them so this is safe to call
                     data = await json_or_text(r)
