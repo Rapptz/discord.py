@@ -61,8 +61,8 @@ class Route:
         self.guild_id = parameters.get('guild_id')
 
     def get_bucket(self, shared_bucket=None):
-        # only used when the shared bucket returned by discord isn't available yet
-        # the bucket is just method + path w/ major parameters
+        # use the shared bucket returned by discord if available
+        # otherwise the bucket is just path w/ major parameters
         if shared_bucket is None:
             return '{0.channel_id}:{0.guild_id}:{0.path}'.format(self)
 
