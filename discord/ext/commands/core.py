@@ -1776,15 +1776,7 @@ def cooldown(rate, per, type=BucketType.default):
     of times in a specific time frame. These cooldowns can be based
     either on a per-guild, per-channel, per-user, per-role or global basis.
     Denoted by the third argument of ``type`` which must be of enum
-    type ``BucketType`` which could be either:
-
-    - ``BucketType.default`` for a global basis.
-    - ``BucketType.user`` for a per-user basis.
-    - ``BucketType.guild`` for a per-guild basis.
-    - ``BucketType.channel`` for a per-channel basis.
-    - ``BucketType.member`` for a per-member basis.
-    - ``BucketType.category`` for a per-category basis.
-    - ``BucketType.role`` for a per-role basis (added in v1.3.0).
+    type :class:`.BucketType`.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.
@@ -1797,7 +1789,7 @@ def cooldown(rate, per, type=BucketType.default):
         The number of times a command can be used before triggering a cooldown.
     per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
-    type: ``BucketType``
+    type: :class:`.BucketType`
         The type of cooldown to have.
     """
 
