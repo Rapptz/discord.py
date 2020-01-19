@@ -49,6 +49,7 @@ __all__ = (
     'has_permissions',
     'has_any_role',
     'check',
+    'check_any',
     'bot_has_role',
     'bot_has_permissions',
     'bot_has_any_role',
@@ -660,13 +661,6 @@ class Command(_BaseCommand, typing.Generic[_CT]):
             if not view.eof:
                 raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-    async def _verify_checks(self, ctx):
-        if not self.enabled:
-            raise DisabledCommand('{0.name} command is disabled'.format(self))
-
-        if not await self.can_run(ctx):
-            raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
-
     async def call_before_hooks(self, ctx):
         # now that we're done preparing we can call the pre-command hooks
         # first, call the command local hook:
@@ -716,7 +710,9 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
     async def prepare(self, ctx):
         ctx.command = self
-        await self._verify_checks(ctx)
+
+        if not await self.can_run(ctx):
+            raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
         if self.cooldown_after_parsing:
             await self._parse_arguments(ctx)
@@ -934,7 +930,11 @@ class Command(_BaseCommand, typing.Generic[_CT]):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`.checks` attribute.
+        inside the :attr:`.checks` attribute. This also checks whether the
+        command is disabled.
+
+        .. versionchanged:: 1.3
+            Checks whether the command is disabled or not
 
         Parameters
         -----------
@@ -952,6 +952,9 @@ class Command(_BaseCommand, typing.Generic[_CT]):
         :class:`bool`
             A boolean indicating if the command can be invoked.
         """
+
+        if not self.enabled:
+            raise DisabledCommand('{0.name} command is disabled'.format(self))
 
         original = ctx.command
         ctx.command = self
@@ -1318,15 +1321,16 @@ def check(predicate):
 
         def owner_or_permissions(**perms):
             original = commands.has_permissions(**perms).predicate
-            def extended_check(ctx):
+            async def extended_check(ctx):
                 if ctx.guild is None:
                     return False
-                return ctx.guild.owner_id == ctx.author.id or original(ctx)
+                return ctx.guild.owner_id == ctx.author.id or await original(ctx)
             return commands.check(extended_check)
 
     .. note::
 
-        These functions can either be regular functions or coroutines.
+        The function returned by ``predicate`` is **always** a coroutine,
+        even if the original function was not a coroutine.
 
     .. versionchanged:: 1.3.0
         The ``predicate`` attribute was added.
@@ -1377,8 +1381,83 @@ def check(predicate):
 
         return func
 
-    decorator.predicate = predicate
+    if inspect.iscoroutinefunction(predicate):
+        decorator.predicate = predicate
+    else:
+        @functools.wraps(predicate)
+        async def wrapper(ctx):
+            return predicate(ctx)
+        decorator.predicate = wrapper
+
     return decorator
+
+def check_any(*checks):
+    """A :func:`check` that is added that checks if any of the checks passed
+    will pass, i.e. using logical OR.
+
+    If all checks fail then :exc:`.CheckAnyFailure` is raised to signal the failure.
+    It inherits from :exc:`.CheckFailure`.
+
+    .. note::
+
+        The ``predicate`` attribute for this function **is** a coroutine.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ------------
+    \*checks: Callable[[:class:`Context`], :class:`bool`]
+        An argument list of checks that have been decorated with
+        the :func:`check` decorator.
+
+    Raises
+    -------
+    TypeError
+        A check passed has not been decorated with the :func:`check`
+        decorator.
+
+    Examples
+    ---------
+
+    Creating a basic check to see if it's the bot owner or
+    the server owner:
+
+    .. code-block:: python3
+
+        def is_guild_owner():
+            def predicate(ctx):
+                return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+            return commands.check(predicate)
+
+        @bot.command()
+        @commands.check_any(commands.is_owner(), is_guild_owner())
+        async def only_for_owners(ctx):
+            await ctx.send('Hello mister owner!')
+    """
+
+    unwrapped = []
+    for wrapped in checks:
+        try:
+            pred = wrapped.predicate
+        except AttributeError:
+            raise TypeError('%r must be wrapped by commands.check decorator' % wrapped) from None
+        else:
+            unwrapped.append(pred)
+
+    async def predicate(ctx):
+        errors = []
+        for func in unwrapped:
+            try:
+                value = await func(ctx)
+            except CheckFailure as e:
+                errors.append(e)
+            else:
+                if value:
+                    return True
+        # if we're here, all checks failed
+        raise CheckAnyFailure(unwrapped, errors)
+
+    return check(predicate)
 
 def has_role(item):
     """A :func:`.check` that is added that checks if the member invoking the
@@ -1395,10 +1474,6 @@ def has_role(item):
     This check raises one of two special exceptions, :exc:`.MissingRole` if the user
     is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1435,10 +1510,6 @@ def has_any_role(*items):
     This check raises one of two special exceptions, :exc:`.MissingAnyRole` if the user
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1479,10 +1550,6 @@ def bot_has_role(item):
     is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
     .. versionchanged:: 1.1.0
 
         Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
@@ -1511,10 +1578,6 @@ def bot_has_any_role(*items):
     This check raises one of two special exceptions, :exc:`.BotMissingAnyRole` if the bot
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1545,10 +1608,6 @@ def has_permissions(**perms):
 
     This check raises a special exception, :exc:`.MissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     Parameters
     ------------
@@ -1585,10 +1644,6 @@ def bot_has_permissions(**perms):
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1611,10 +1666,6 @@ def has_guild_permissions(**perms):
     If this check is called in a DM context, it will raise an
     exception, :exc:`.NoPrivateMessage`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
     .. versionadded:: 1.3.0
     """
     def predicate(ctx):
@@ -1634,10 +1685,6 @@ def has_guild_permissions(**perms):
 def bot_has_guild_permissions(**perms):
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionadded:: 1.3.0
     """
@@ -1663,10 +1710,6 @@ def dm_only():
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
     .. versionadded:: 1.1.0
     """
 
@@ -1684,10 +1727,6 @@ def guild_only():
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
     """
 
     def predicate(ctx):
@@ -1705,10 +1744,6 @@ def is_owner():
 
     This check raises a special exception, :exc:`.NotOwner` that is derived
     from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function **is** a coroutine.
     """
 
     async def predicate(ctx):
@@ -1723,10 +1758,6 @@ def is_nsfw():
 
     This check raises a special exception, :exc:`.NSFWChannelRequired`
     that is derived from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     .. versionchanged:: 1.1.0
 
@@ -1748,15 +1779,7 @@ def cooldown(rate, per, type=BucketType.default):
     of times in a specific time frame. These cooldowns can be based
     either on a per-guild, per-channel, per-user, per-role or global basis.
     Denoted by the third argument of ``type`` which must be of enum
-    type ``BucketType`` which could be either:
-
-    - ``BucketType.default`` for a global basis.
-    - ``BucketType.user`` for a per-user basis.
-    - ``BucketType.guild`` for a per-guild basis.
-    - ``BucketType.channel`` for a per-channel basis.
-    - ``BucketType.member`` for a per-member basis.
-    - ``BucketType.category`` for a per-category basis.
-    - ``BucketType.role`` for a per-role basis (added in v1.3.0).
+    type :class:`.BucketType`.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.
@@ -1769,7 +1792,7 @@ def cooldown(rate, per, type=BucketType.default):
         The number of times a command can be used before triggering a cooldown.
     per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
-    type: ``BucketType``
+    type: :class:`.BucketType`
         The type of cooldown to have.
     """
 

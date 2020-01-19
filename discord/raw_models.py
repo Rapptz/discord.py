@@ -177,3 +177,32 @@ class RawReactionClearEvent(_RawReprMixin):
             self.guild_id = int(data['guild_id'])
         except KeyError:
             self.guild_id = None
+
+class RawReactionClearEmojiEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_reaction_clear_emoji` event.
+
+    .. versionadded:: 1.3.0
+
+    Attributes
+    -----------
+    message_id: :class:`int`
+        The message ID that got its reactions cleared.
+    channel_id: :class:`int`
+        The channel ID where the reactions got cleared.
+    guild_id: Optional[:class:`int`]
+        The guild ID where the reactions got cleared.
+    emoji: :class:`PartialEmoji`
+        The custom or unicode emoji being removed.
+    """
+
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'emoji')
+
+    def __init__(self, data, emoji):
+        self.emoji = emoji
+        self.message_id = int(data['message_id'])
+        self.channel_id = int(data['channel_id'])
+
+        try:
+            self.guild_id = int(data['guild_id'])
+        except KeyError:
+            self.guild_id = None

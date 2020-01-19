@@ -77,7 +77,7 @@ General
 General questions regarding library usage belong here.
 
 Where can I find usage examples?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Example code can be found in the `examples folder <https://github.com/Rapptz/discord.py/tree/master/examples>`_
 in the repository.

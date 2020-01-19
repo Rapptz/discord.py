@@ -121,6 +121,28 @@ class Reaction:
 
         await self.message.remove_reaction(self.emoji, user)
 
+    async def clear(self):
+        """|coro|
+
+        Clears this reaction from the message.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        .. versionadded:: 1.3
+
+        Raises
+        --------
+        HTTPException
+            Clearing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to clear the reaction.
+        NotFound
+            The emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+        await self.message.clear_reaction(self.emoji)
+
     def users(self, limit=None, after=None):
         """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
 

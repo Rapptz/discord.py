@@ -71,10 +71,18 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
         flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
         return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
 
+    @property
+    def team_user(self):
+        return self._has_flag(UserFlags.team_user)
+
+    @property
+    def system(self):
+        return self._has_flag(UserFlags.system)
+
 _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', '_state')
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_state')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -98,6 +106,7 @@ class BaseUser(_BaseUser):
         self.discriminator = data['discriminator']
         self.avatar = data['avatar']
         self.bot = data.get('bot', False)
+        self.system = data.get('system', False)
 
     @classmethod
     def _copy(cls, user):
@@ -290,6 +299,8 @@ class ClientUser(BaseUser):
         The avatar hash the user has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     verified: :class:`bool`
         Specifies if the user is a verified account.
     email: Optional[:class:`str`]
@@ -658,6 +669,8 @@ class User(BaseUser, discord.abc.Messageable):
         The avatar hash the user has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
     __slots__ = BaseUser.__slots__ + ('__weakref__',)

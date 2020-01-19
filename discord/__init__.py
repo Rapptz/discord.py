@@ -27,7 +27,8 @@ from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .activity import *
 from .channel import *
-from .guild import Guild, SystemChannelFlags
+from .guild import Guild
+from .flags import SystemChannelFlags, MessageFlags
 from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message, Attachment

@@ -25,7 +25,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .asset import Asset
-from .utils import parse_time, snowflake_time
+from .utils import parse_time, snowflake_time, _get_as_snowflake
+from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
@@ -228,7 +229,7 @@ class Invite(Hashable):
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
-    guild: Union[:class:`Guild`, :class:`PartialInviteGuild`]
+    guild: Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]
         The guild the invite is for.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
@@ -248,7 +249,7 @@ class Invite(Hashable):
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
-    channel: Union[:class:`abc.GuildChannel`, :class:`PartialInviteChannel`]
+    channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
     """
 
@@ -288,6 +289,21 @@ class Invite(Hashable):
             channel_type = try_enum(ChannelType, channel_data['type'])
             channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
             guild = PartialInviteGuild(state, guild_data, guild_id)
+        data['guild'] = guild
+        data['channel'] = channel
+        return cls(state=state, data=data)
+
+    @classmethod
+    def from_gateway(cls, *, state, data):
+        guild_id = _get_as_snowflake(data, 'guild_id')
+        guild = state._get_guild(guild_id)
+        channel_id = _get_as_snowflake(data, 'channel_id')
+        if guild is not None:
+            channel = guild.get_channel(channel_id) or Object(id=channel_id)
+        else:
+            guild = Object(id=guild_id)
+            channel = Object(id=channel_id)
+
         data['guild'] = guild
         data['channel'] = channel
         return cls(state=state, data=data)

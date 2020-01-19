@@ -258,7 +258,8 @@ class Context(discord.abc.Messageable):
         Any
             The result of the help command, if any.
         """
-        from .core import Group, Command
+        from .core import Group, Command, wrap_callback
+        from .errors import CommandError
 
         bot = self.bot
         cmd = bot.help_command
@@ -271,7 +272,12 @@ class Context(discord.abc.Messageable):
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)
             mapping = cmd.get_bot_mapping()
-            return await cmd.send_bot_help(mapping)
+            injected = wrap_callback(cmd.send_bot_help)
+            try:
+                return await injected(mapping)
+            except CommandError as e:
+                await cmd.on_help_command_error(self, e)
+                return None
 
         entity = args[0]
         if entity is None:
@@ -288,11 +294,17 @@ class Context(discord.abc.Messageable):
 
         await cmd.prepare_help_command(self, entity.qualified_name)
 
-        if hasattr(entity, '__cog_commands__'):
-            return await cmd.send_cog_help(entity)
-        elif isinstance(entity, Group):
-            return await cmd.send_group_help(entity)
-        elif isinstance(entity, Command):
-            return await cmd.send_command_help(entity)
-        else:
-            return None
+        try:
+            if hasattr(entity, '__cog_commands__'):
+                injected = wrap_callback(cmd.send_cog_help)
+                return await injected(entity)
+            elif isinstance(entity, Group):
+                injected = wrap_callback(cmd.send_group_help)
+                return await injected(entity)
+            elif isinstance(entity, Command):
+                injected = wrap_callback(cmd.send_command_help)
+                return await injected(entity)
+            else:
+                return None
+        except CommandError as e:
+            await cmd.on_help_command_error(self, e)

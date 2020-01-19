@@ -250,7 +250,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute.
+    If this occurs increase the :attr:`Client.max_messages` attribute
+    or use the :func:`on_raw_message_delete` event instead.
 
     :param message: The deleted message.
     :type message: :class:`Message`
@@ -264,7 +265,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     the messages list. Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute.
+    If this occurs increase the :attr:`Client.max_messages` attribute
+    or use the :func:`on_raw_bulk_message_delete` event instead.
 
     :param messages: The messages that have been deleted.
     :type messages: List[:class:`Message`]
@@ -298,7 +300,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute.
+    If this occurs increase the :attr:`Client.max_messages` attribute
+    or use the :func:`on_raw_message_edit` event instead.
 
     The following non-exhaustive cases trigger this event:
 
@@ -339,7 +342,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a message has a reaction added to it. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this
-    event will not be called.
+    event will not be called. Consider using :func:`on_raw_reaction_add` instead.
 
     .. note::
 
@@ -385,7 +388,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a message has all its reactions removed from it. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this event
-    will not be called.
+    will not be called. Consider using :func:`on_raw_reaction_clear` instead.
 
     :param message: The message that had its reactions cleared.
     :type message: :class:`Message`
@@ -399,6 +402,27 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEvent`
+
+.. function:: on_reaction_clear_emoji(reaction)
+
+    Called when a message has a specific reaction removed from it. Similar to :func:`on_message_edit`,
+    if the message is not found in the internal message cache, then this event
+    will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
+
+    .. versionadded:: 1.3.0
+
+    :param reaction: The reaction that got cleared.
+    :type reaction: :class:`Reaction`
+
+.. function:: on_raw_reaction_clear_emoji(payload)
+
+    Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
+    regardless of the state of the internal message cache.
+
+    .. versionadded:: 1.3.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawReactionClearEmojiEvent`
 
 .. function:: on_private_channel_delete(channel)
               on_private_channel_create(channel)
@@ -622,6 +646,37 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param user: The user that got unbanned.
     :type user: :class:`User`
 
+.. function:: on_invite_create(invite)
+
+    Called when an :class:`Invite` is created.
+
+    .. versionadded:: 1.3.0
+
+    .. note::
+
+        There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
+        attributes will be of :class:`Object` rather than the respective models.
+
+    :param invite: The invite that was created.
+    :type invite: :class:`Invite`
+
+.. function:: on_invite_delete(invite)
+
+    Called when an :class:`Invite` is deleted.
+
+    .. versionadded:: 1.3.0
+
+    .. note::
+
+        There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
+        attributes will be of :class:`Object` rather than the respective models.
+
+        Outside of those two attributes, the only other attribute guaranteed to be
+        filled by the Discord gateway for this event is :attr:`Invite.code`.
+
+    :param invite: The invite that was deleted.
+    :type invite: :class:`Invite`
+
 .. function:: on_group_join(channel, user)
               on_group_remove(channel, user)
 
@@ -709,6 +764,12 @@ Profile
     .. attribute:: hypesquad_houses
 
         A list of :class:`HypeSquadHouse` that the user is in.
+    .. attribute:: team_user
+
+        A boolean indicating if the user is in part of a team.
+    .. attribute:: system
+
+        A boolean indicating if the user is officially part of the Discord urgent message system.
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this
@@ -831,6 +892,9 @@ of :class:`enum.Enum`.
     .. attribute:: watching
 
         A "Watching" activity type.
+    .. attribute:: custom
+
+        A custom activity type.
 
 .. class:: HypeSquadHouse
 
@@ -849,12 +913,12 @@ of :class:`enum.Enum`.
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
-    
+
     .. versionchanged:: 1.2
         The ``india`` region was added.
-    
+
     .. versionchanged:: 1.3
-        The ``europe`` region was added.
+        The ``europe`` and ``dubai`` regions were added.
 
     .. attribute:: amsterdam
 
@@ -862,6 +926,9 @@ of :class:`enum.Enum`.
     .. attribute:: brazil
 
         The Brazil region.
+    .. attribute:: dubai
+
+        The Dubai region.
     .. attribute:: eu_central
 
         The EU Central region.
@@ -869,7 +936,7 @@ of :class:`enum.Enum`.
 
         The EU West region.
     .. attribute:: europe
-    
+
         The Europe region.
     .. attribute:: frankfurt
 
@@ -2429,6 +2496,12 @@ RawReactionClearEvent
 .. autoclass:: RawReactionClearEvent()
     :members:
 
+RawReactionClearEmojiEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RawReactionClearEmojiEvent()
+    :members:
+
 
 .. _discord_api_data:
 
@@ -2471,6 +2544,12 @@ Colour
 .. autoclass:: Colour
     :members:
 
+BaseActivity
+~~~~~~~~~~~~~~
+
+.. autoclass:: BaseActivity
+    :members:
+
 Activity
 ~~~~~~~~~
 
@@ -2487,6 +2566,12 @@ Streaming
 ~~~~~~~~~~~
 
 .. autoclass:: Streaming
+    :members:
+
+CustomActivity
+~~~~~~~~~~~~~~~
+
+.. autoclass:: CustomActivity
     :members:
 
 Permissions
@@ -2506,6 +2591,12 @@ SystemChannelFlags
 
 .. autoclass:: SystemChannelFlags
     :members:
+
+MessageFlags
+~~~~~~~~~~~~
+
+.. autoclass:: MessageFlags
+	:members:
 
 
 Exceptions
