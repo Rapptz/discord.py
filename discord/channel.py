@@ -224,7 +224,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Raises
         ------
         InvalidArgument
-            If position is less than 0 or greater than the number of channels, or if 
+            If position is less than 0 or greater than the number of channels, or if
             the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
@@ -272,6 +272,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Forbidden
             You do not have proper permissions to delete the messages or
             you're not using a bot account.
+        NotFound
+            If single delete, then the message was already deleted.
         HTTPException
             Deleting the messages failed.
         """
@@ -948,14 +950,14 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
-            :class:`PermissionOverwrite` to apply to the channel.    
+            :class:`PermissionOverwrite` to apply to the channel.
 
             .. versionadded:: 1.3
 
         Raises
         ------
         InvalidArgument
-            If position is less than 0 or greater than the number of channels, or if 
+            If position is less than 0 or greater than the number of channels, or if
             the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.

@@ -740,6 +740,8 @@ class Message:
         ------
         Forbidden
             You do not have proper permissions to delete the message.
+        NotFound
+            The message was deleted already
         HTTPException
             Deleting the message failed.
         """
