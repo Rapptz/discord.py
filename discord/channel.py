@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -775,7 +775,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
-            
+
             .. versionadded:: 1.3.0
 
         Raises

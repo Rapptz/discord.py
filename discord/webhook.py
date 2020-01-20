@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -420,7 +420,7 @@ class Webhook:
         The default avatar of the webhook.
     """
 
-    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name', 
+    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
                  'avatar', 'token', '_state', '_adapter')
 
     def __init__(self, data, *, adapter, state=None):
