@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -106,22 +106,22 @@ def _convert_to_bool(argument):
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
-        return super().__contains__(k.lower())
+        return super().__contains__(k.casefold())
 
     def __delitem__(self, k):
-        return super().__delitem__(k.lower())
+        return super().__delitem__(k.casefold())
 
     def __getitem__(self, k):
-        return super().__getitem__(k.lower())
+        return super().__getitem__(k.casefold())
 
     def get(self, k, default=None):
-        return super().get(k.lower(), default)
+        return super().get(k.casefold(), default)
 
     def pop(self, k, default=None):
-        return super().pop(k.lower(), default)
+        return super().pop(k.casefold(), default)
 
     def __setitem__(self, k, v):
-        super().__setitem__(k.lower(), v)
+        super().__setitem__(k.casefold(), v)
 
 _CT = typing.TypeVar('_CT', bound=Context)
 
