@@ -53,9 +53,9 @@ class Attachment:
     size: :class:`int`
         The attachment size in bytes.
     height: Optional[:class:`int`]
-        The attachment's height, in pixels. Only applicable to images.
+        The attachment's height, in pixels. Only applicable to images and videos.
     width: Optional[:class:`int`]
-        The attachment's width, in pixels. Only applicable to images.
+        The attachment's width, in pixels. Only applicable to images and videos.
     filename: :class:`str`
         The attachment's filename.
     url: :class:`str`
