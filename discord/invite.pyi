@@ -48,7 +48,7 @@ class PartialInviteGuild:
 class Invite(Hashable):
     max_age: int
     code: str
-    guild: Union[Guild, Object, PartialInviteGuild]
+    guild: Optional[Union[Guild, Object, PartialInviteGuild]]
     revoked: bool
     created_at: datetime.datetime
     temporary: bool
