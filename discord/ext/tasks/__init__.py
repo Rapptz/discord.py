@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import aiohttp
 import websockets
 import discord
@@ -45,6 +46,8 @@ class Loop:
             raise ValueError('count must be greater than 0 or None.')
 
         self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
+        self._last_iteration = datetime.datetime.now(datetime.timezone.utc)
+        self._next_iteration = self._get_next_sleep_time()
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
@@ -64,6 +67,8 @@ class Loop:
         await self._call_loop_function('before_loop')
         try:
             while True:
+                self._last_iteration = self._next_iteration
+                self._next_iteration = self._get_next_sleep_time()
                 try:
                     await self.coro(*args, **kwargs)
                 except self._valid_exception as exc:
@@ -77,7 +82,7 @@ class Loop:
                     if self._current_loop == self.count:
                         break
 
-                    await asyncio.sleep(self._sleep)
+                    await self._sleep_until(self._next_iteration)
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
@@ -102,6 +107,18 @@ class Loop:
     def current_loop(self):
         """:class:`int`: The current iteration of the loop."""
         return self._current_loop
+
+    @property
+    def next_iteration(self):
+        """Optional[:class:`datetime.datetime`]: When the next iteration of the loop will occur.
+
+        .. versionadded:: 1.3.0
+        """
+        if self._task is None and self._sleep:
+            return None
+        elif self._task and self._task.done() or self._stop_next_iteration:
+            return None
+        return self._next_iteration
 
     def start(self, *args, **kwargs):
         r"""Starts the internal task in the event loop.
@@ -308,6 +325,14 @@ class Loop:
 
         self._after_loop = coro
         return coro
+
+    async def _sleep_until(self, dt):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        delta = (dt - now).total_seconds()
+        await asyncio.sleep(delta)
+
+    def _get_next_sleep_time(self):
+        return self._last_iteration + datetime.timedelta(seconds=self._sleep)
 
     def change_interval(self, *, seconds=0, minutes=0, hours=0):
         """Changes the interval for the sleep time.
