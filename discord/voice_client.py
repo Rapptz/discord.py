@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -359,7 +359,7 @@ class VoiceClient:
             The audio source we're reading from.
         after: Callable[[:class:`Exception`], Any]
             The finalizer that is called after the stream is exhausted.
-            This function must have a single parameter, ``error``, that 
+            This function must have a single parameter, ``error``, that
             denotes an optional exception that was raised during playing.
 
         Raises

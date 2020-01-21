@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -406,6 +406,7 @@ class ActivityType(Enum):
     streaming = 1
     listening = 2
     watching = 3
+    custom = 4
 
     def __int__(self):
         return self.value

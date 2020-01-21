@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -449,7 +449,7 @@ class Guild(Hashable):
 
         If no channel is set, then this returns ``None``.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         channel_id = self._rules_channel_id
         return channel_id and self._channels.get(channel_id)
@@ -633,8 +633,8 @@ class Guild(Hashable):
     @property
     def discovery_splash_url(self):
         """:class:`Asset`: Returns the guild's discovery splash asset.
-        
-        .. versionadded:: 1.3.0
+
+        .. versionadded:: 1.3
         """
         return self.discovery_splash_url_as()
 
@@ -644,7 +644,7 @@ class Guild(Hashable):
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -1104,7 +1104,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`channels` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Raises
         -------
@@ -1130,7 +1130,7 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
-    def fetch_members(self, *, limit=1, after=None):
+    def fetch_members(self, *, limit=1000, after=None):
         """|coro|
 
         Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
@@ -1139,15 +1139,15 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`members` instead.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         All parameters are optional.
 
         Parameters
         ----------
         limit: Optional[:class:`int`]
-            The number of members to retrieve.
-            Defaults to 1.
+            The number of members to retrieve. Defaults to 1000.
+            Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
@@ -1508,7 +1508,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`roles` instead.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Raises
         -------
@@ -1677,8 +1677,7 @@ class Guild(Hashable):
 
         Returns the guild's special vanity invite.
 
-        The guild must be partnered, i.e. have 'VANITY_URL' in
-        :attr:`~Guild.features`.
+        The guild must have 'VANITY_URL' in :attr:`~Guild.features`.
 
         You must have the :attr:`~Permissions.manage_guild` permission to use
         this as well.

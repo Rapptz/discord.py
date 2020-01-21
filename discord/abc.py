@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -202,9 +202,6 @@ class GuildChannel:
         bucket = self._sorting_bucket
         channels = [c for c in self.guild.channels if c._sorting_bucket == bucket]
 
-        if position >= len(channels):
-            raise InvalidArgument('Channel position cannot be greater than {}'.format(len(channels) - 1))
-
         channels.sort(key=lambda c: c.position)
 
         try:
@@ -214,8 +211,9 @@ class GuildChannel:
             # not there somehow lol
             return
         else:
+            index = next((i for i, c in enumerate(channels) if c.position >= position), -1)
             # add ourselves at our designated position
-            channels.insert(position, self)
+            channels.insert(index, self)
 
         payload = []
         for index, c in enumerate(channels):
@@ -259,7 +257,7 @@ class GuildChannel:
                 options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
         else:
             await self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
-        
+
         overwrites = options.get('overwrites', None)
         if overwrites:
             perms = []
@@ -661,7 +659,7 @@ class GuildChannel:
         Clones this channel. This creates a channel with the same properties
         as this channel.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
 
         Parameters
         ------------

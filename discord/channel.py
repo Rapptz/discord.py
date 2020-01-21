@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -219,12 +219,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
-            .. versionadded:: 1.3.0
+            .. versionadded:: 1.3
 
         Raises
         ------
         InvalidArgument
-            If position is less than 0 or greater than the number of channels, or if 
+            If position is less than 0 or greater than the number of channels, or if
             the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
@@ -272,6 +272,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Forbidden
             You do not have proper permissions to delete the messages or
             you're not using a bot account.
+        NotFound
+            If single delete, then the message was already deleted.
         HTTPException
             Deleting the messages failed.
         """
@@ -429,7 +431,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Requires :attr:`~.Permissions.manage_webhooks` permissions.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Added the ``reason`` keyword-only parameter.
 
         Parameters
@@ -472,7 +474,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The webhook returned will not provide a token to do webhook
             actions, as Discord does not provide it.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -599,7 +601,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def voice_states(self):
         """Returns a mapping of member IDs who have voice states in this channel.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         .. note::
 
@@ -664,7 +666,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
-            .. versionadded:: 1.3.0
+            .. versionadded:: 1.3
 
         Raises
         ------
@@ -770,6 +772,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             To mark the category as NSFW or not.
         reason: Optional[:class:`str`]
             The reason for editing this category. Shows up on the audit log.
+        overwrites: :class:`dict`
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.
+
+            .. versionadded:: 1.3
 
         Raises
         ------
@@ -948,14 +955,14 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
-            :class:`PermissionOverwrite` to apply to the channel.    
+            :class:`PermissionOverwrite` to apply to the channel.
 
             .. versionadded:: 1.3
 
         Raises
         ------
         InvalidArgument
-            If position is less than 0 or greater than the number of channels, or if 
+            If position is less than 0 or greater than the number of channels, or if
             the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.

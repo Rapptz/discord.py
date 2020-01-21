@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -38,7 +38,7 @@ import zlib
 import websockets
 
 from . import utils
-from .activity import _ActivityTag
+from .activity import BaseActivity
 from .enums import SpeakingState
 from .errors import ConnectionClosed, InvalidArgument
 
@@ -490,8 +490,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
         if activity is not None:
-            if not isinstance(activity, _ActivityTag):
-                raise InvalidArgument('activity must be one of Game, Streaming, or Activity.')
+            if not isinstance(activity, BaseActivity):
+                raise InvalidArgument('activity must derive from BaseActivity.')
             activity = activity.to_dict()
 
         if status == 'idle':

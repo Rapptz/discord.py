@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -171,14 +171,7 @@ class Asset:
             and a URL won't be present if a custom image isn't associated with
             the asset, e.g. a guild with no custom icon.
 
-        .. versionadded:: 1.1.0
-
-        Parameters
-        -----------
-        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
+        .. versionadded:: 1.1
 
         Raises
         ------

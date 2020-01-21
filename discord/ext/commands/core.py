@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -33,7 +33,7 @@ import datetime
 import discord
 
 from .errors import *
-from .cooldowns import Cooldown, BucketType, CooldownMapping
+from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -55,6 +55,7 @@ __all__ = (
     'bot_has_permissions',
     'bot_has_any_role',
     'cooldown',
+    'max_concurrency',
     'dm_only',
     'guild_only',
     'is_owner',
@@ -92,6 +93,9 @@ def hooked_wrapped_callback(command, ctx, coro):
             ctx.command_failed = True
             raise CommandInvokeError(exc) from exc
         finally:
+            if command._max_concurrency is not None:
+                await command._max_concurrency.release(ctx)
+
             await command.call_after_hooks(ctx)
         return ret
     return wrapped
@@ -107,22 +111,22 @@ def _convert_to_bool(argument):
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
-        return super().__contains__(k.lower())
+        return super().__contains__(k.casefold())
 
     def __delitem__(self, k):
-        return super().__delitem__(k.lower())
+        return super().__delitem__(k.casefold())
 
     def __getitem__(self, k):
-        return super().__getitem__(k.lower())
+        return super().__getitem__(k.casefold())
 
     def get(self, k, default=None):
-        return super().get(k.lower(), default)
+        return super().get(k.casefold(), default)
 
     def pop(self, k, default=None):
-        return super().pop(k.lower(), default)
+        return super().pop(k.casefold(), default)
 
     def __setitem__(self, k, v):
-        super().__setitem__(k.lower(), v)
+        super().__setitem__(k.casefold(), v)
 
 class Command(_BaseCommand):
     r"""A class that implements the protocol for a bot text command.
@@ -250,6 +254,13 @@ class Command(_BaseCommand):
         finally:
             self._buckets = CooldownMapping(cooldown)
 
+        try:
+            max_concurrency = func.__commands_max_concurrency__
+        except AttributeError:
+            max_concurrency = kwargs.get('max_concurrency')
+        finally:
+            self._max_concurrency = max_concurrency
+
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing = kwargs.get('cooldown_after_parsing', False)
         self.cog = None
@@ -300,7 +311,7 @@ class Command(_BaseCommand):
 
         This is the non-decorator interface to :func:`.check`.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -316,7 +327,7 @@ class Command(_BaseCommand):
         This function is idempotent and will not raise an exception
         if the function is not in the command's checks.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -338,6 +349,24 @@ class Command(_BaseCommand):
         """
         self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
 
+    async def __call__(self, *args, **kwargs):
+        """|coro|
+
+        Calls the internal callback that the command holds.
+
+        .. note::
+
+            This bypasses all mechanisms -- including checks, converters,
+            invoke hooks, cooldowns, etc. You must take care to pass
+            the proper arguments and types to this function.
+
+        .. versionadded:: 1.3
+        """
+        if self.cog is not None:
+            return await self.callback(self.cog, *args, **kwargs)
+        else:
+            return await self.callback(*args, **kwargs)
+
     def _ensure_assignment_on_copy(self, other):
         other._before_invoke = self._before_invoke
         other._after_invoke = self._after_invoke
@@ -345,6 +374,9 @@ class Command(_BaseCommand):
             other.checks = self.checks.copy()
         if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
+        if self._max_concurrency != other._max_concurrency:
+            other._max_concurrency = self._max_concurrency.copy()
+
         try:
             other.on_error = self.on_error
         except AttributeError:
@@ -582,7 +614,7 @@ class Command(_BaseCommand):
 
         For example in commands ``?a b c test``, the parents are ``[c, b, a]``.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
         """
         entries = []
         command = self
@@ -744,6 +776,9 @@ class Command(_BaseCommand):
         else:
             self._prepare_cooldowns(ctx)
             await self._parse_arguments(ctx)
+
+        if self._max_concurrency is not None:
+            await self._max_concurrency.acquire(ctx)
 
         await self.call_before_hooks(ctx)
 
@@ -1316,7 +1351,7 @@ def group(name=None, **attrs):
     This is similar to the :func:`.command` decorator but the ``cls``
     parameter is set to :class:`Group` by default.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
         The ``cls`` parameter can now be passed.
     """
 
@@ -1345,17 +1380,18 @@ def check(predicate):
 
         def owner_or_permissions(**perms):
             original = commands.has_permissions(**perms).predicate
-            def extended_check(ctx):
+            async def extended_check(ctx):
                 if ctx.guild is None:
                     return False
-                return ctx.guild.owner_id == ctx.author.id or original(ctx)
+                return ctx.guild.owner_id == ctx.author.id or await original(ctx)
             return commands.check(extended_check)
 
     .. note::
 
-        These functions can either be regular functions or coroutines.
+        The function returned by ``predicate`` is **always** a coroutine,
+        even if the original function was not a coroutine.
 
-    .. versionchanged:: 1.3.0
+    .. versionchanged:: 1.3
         The ``predicate`` attribute was added.
 
     Examples
@@ -1404,7 +1440,14 @@ def check(predicate):
 
         return func
 
-    decorator.predicate = predicate
+    if inspect.iscoroutinefunction(predicate):
+        decorator.predicate = predicate
+    else:
+        @functools.wraps(predicate)
+        async def wrapper(ctx):
+            return predicate(ctx)
+        decorator.predicate = wrapper
+
     return decorator
 
 def check_any(*checks):
@@ -1418,7 +1461,7 @@ def check_any(*checks):
 
         The ``predicate`` attribute for this function **is** a coroutine.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     Parameters
     ------------
@@ -1462,10 +1505,9 @@ def check_any(*checks):
 
     async def predicate(ctx):
         errors = []
-        maybe = discord.utils.maybe_coroutine
         for func in unwrapped:
             try:
-                value = await maybe(func, ctx)
+                value = await func(ctx)
             except CheckFailure as e:
                 errors.append(e)
             else:
@@ -1492,11 +1534,7 @@ def has_role(item):
     is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.MissingRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
@@ -1532,11 +1570,7 @@ def has_any_role(*items):
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.MissingAnyRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
@@ -1575,11 +1609,7 @@ def bot_has_role(item):
     is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
@@ -1608,11 +1638,7 @@ def bot_has_any_role(*items):
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.BotMissingAnyRole` or :exc:`.NoPrivateMessage`
         instead of generic checkfailure
@@ -1641,10 +1667,6 @@ def has_permissions(**perms):
 
     This check raises a special exception, :exc:`.MissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
 
     Parameters
     ------------
@@ -1681,10 +1703,6 @@ def bot_has_permissions(**perms):
 
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
     """
     def predicate(ctx):
         guild = ctx.guild
@@ -1707,11 +1725,7 @@ def has_guild_permissions(**perms):
     If this check is called in a DM context, it will raise an
     exception, :exc:`.NoPrivateMessage`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
     def predicate(ctx):
         if not ctx.guild:
@@ -1731,11 +1745,7 @@ def bot_has_guild_permissions(**perms):
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
     def predicate(ctx):
         if not ctx.guild:
@@ -1759,11 +1769,7 @@ def dm_only():
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
     """
 
     def predicate(ctx):
@@ -1780,10 +1786,6 @@ def guild_only():
 
     This check raises a special exception, :exc:`.NoPrivateMessage`
     that is inherited from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
     """
 
     def predicate(ctx):
@@ -1801,10 +1803,6 @@ def is_owner():
 
     This check raises a special exception, :exc:`.NotOwner` that is derived
     from :exc:`.CheckFailure`.
-
-    .. note::
-
-        The ``predicate`` attribute for this function **is** a coroutine.
     """
 
     async def predicate(ctx):
@@ -1820,11 +1818,7 @@ def is_nsfw():
     This check raises a special exception, :exc:`.NSFWChannelRequired`
     that is derived from :exc:`.CheckFailure`.
 
-    .. note::
-
-        The ``predicate`` attribute for this function is **not** a coroutine.
-
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.NSFWChannelRequired` instead of generic :exc:`.CheckFailure`.
         DM channels will also now pass this check.
@@ -1844,15 +1838,7 @@ def cooldown(rate, per, type=BucketType.default):
     of times in a specific time frame. These cooldowns can be based
     either on a per-guild, per-channel, per-user, per-role or global basis.
     Denoted by the third argument of ``type`` which must be of enum
-    type ``BucketType`` which could be either:
-
-    - ``BucketType.default`` for a global basis.
-    - ``BucketType.user`` for a per-user basis.
-    - ``BucketType.guild`` for a per-guild basis.
-    - ``BucketType.channel`` for a per-channel basis.
-    - ``BucketType.member`` for a per-member basis.
-    - ``BucketType.category`` for a per-category basis.
-    - ``BucketType.role`` for a per-role basis (added in v1.3.0).
+    type :class:`.BucketType`.
 
     If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
     :func:`.on_command_error` and the local error handler.
@@ -1865,7 +1851,7 @@ def cooldown(rate, per, type=BucketType.default):
         The number of times a command can be used before triggering a cooldown.
     per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
-    type: ``BucketType``
+    type: :class:`.BucketType`
         The type of cooldown to have.
     """
 
@@ -1915,5 +1901,40 @@ def after_invoke(coro):
             func.after_invoke(coro)
         else:
             func.__after_invoke__ = coro
+            
+        return func
+    return decorator
+
+def max_concurrency(number, per=BucketType.default, *, wait=False):
+    """A decorator that adds a maximum concurrency to a :class:`.Command` or its subclasses.
+
+    This enables you to only allow a certain number of command invocations at the same time,
+    for example if a command takes too long or if only one user can use it at a time. This
+    differs from a cooldown in that there is no set waiting period or token bucket -- only
+    a set number of people can run the command.
+
+    .. versionadded:: 1.3
+
+    Parameters
+    -------------
+    number: :class:`int`
+        The maximum number of invocations of this command that can be running at the same time.
+    per: :class:`.BucketType`
+        The bucket that this concurrency is based on, e.g. ``BucketType.guild`` would allow
+        it to be used up to ``number`` times per guild.
+    wait: :class:`bool`
+        Whether the command should wait for the queue to be over. If this is set to ``False``
+        then instead of waiting until the command can run again, the command raises
+        :exc:`.MaxConcurrencyReached` to its error handler. If this is set to ``True``
+        then the command waits until it can be executed.
+    """
+
+    def decorator(func):
+        value = MaxConcurrency(number, per=per, wait=wait)
+        if isinstance(func, Command):
+            func._max_concurrency = value
+        else:
+            func.__commands_max_concurrency__ = value
+            
         return func
     return decorator

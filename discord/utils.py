@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -337,6 +337,24 @@ async def sane_wait_for(futures, *, timeout):
         raise asyncio.TimeoutError()
 
     return done
+
+async def sleep_until(when):
+    """Sleep until a specified time.
+
+    If the time supplied is in the past this function will yield instantly.
+
+    Parameters
+    -----------
+    when: :class:`datetime.datetime`
+        The timestamp in which to sleep until.
+
+    .. versionadded:: 1.3
+    """
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    delta = (when - now).total_seconds()
+    await asyncio.sleep(max(delta, 0))
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""

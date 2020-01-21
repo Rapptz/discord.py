@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -120,7 +120,7 @@ class FFmpegAudio(AudioSource):
     User created AudioSources using FFmpeg differently from how :class:`FFmpegPCMAudio` and
     :class:`FFmpegOpusAudio` work should subclass this.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
 
     def __init__(self, source, *, executable='ffmpeg', args, **subprocess_kwargs):
@@ -242,7 +242,7 @@ class FFmpegOpusAudio(FFmpegAudio):
     The same can be achieved by passing ``copy`` to the ``codec`` parameter, but only if you
     know that the input source is opus encoded beforehand.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     .. warning::
 

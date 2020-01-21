@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -53,7 +53,7 @@ class VoiceState:
     self_stream: :class:`bool`
         Indicates if the user is currently streaming via 'Go Live' feature.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
     self_video: :class:`bool`
         Indicates if the user is currently broadcasting video.
@@ -150,7 +150,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     joined_at: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC that the member joined the guild for
         the first time. In certain cases, this can be ``None``.
-    activities: Tuple[Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]]
+    activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
     guild: :class:`Guild`
         The guild that the member belongs to.
@@ -381,7 +381,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def activity(self):
-        """Union[:class:`Game`, :class:`Streaming`, :class:`Spotify`, :class:`Activity`]: Returns the primary
+        """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
         activity the user is currently doing. Could be None if no activity is being done.
 
         .. note::
@@ -511,7 +511,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         All parameters are optional.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
         Parameters
@@ -589,7 +589,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         This raises the same exceptions as :meth:`edit`.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Can now pass ``None`` to kick a member from voice.
 
         Parameters

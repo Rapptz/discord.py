@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -53,9 +53,9 @@ class Attachment:
     size: :class:`int`
         The attachment size in bytes.
     height: Optional[:class:`int`]
-        The attachment's height, in pixels. Only applicable to images.
+        The attachment's height, in pixels. Only applicable to images and videos.
     width: Optional[:class:`int`]
-        The attachment's width, in pixels. Only applicable to images.
+        The attachment's width, in pixels. Only applicable to images and videos.
     filename: :class:`str`
         The attachment's filename.
     url: :class:`str`
@@ -135,7 +135,7 @@ class Attachment:
 
         Retrieves the content of this attachment as a :class:`bytes` object.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
 
         Parameters
         -----------
@@ -171,7 +171,7 @@ class Attachment:
         Converts the attachment into a :class:`File` suitable for sending via
         :meth:`abc.Messageable.send`.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Raises
         ------
@@ -369,6 +369,18 @@ class Message:
             # this raises ValueError if something went wrong as well.
             self.reactions.remove(reaction)
 
+        return reaction
+
+    def _clear_emoji(self, emoji):
+        to_check = str(emoji)
+        for index, reaction in enumerate(self.reactions):
+            if str(reaction.emoji) == to_check:
+                break
+        else:
+            # didn't find anything so just return
+            return
+
+        del self.reactions[index]
         return reaction
 
     def _update(self, data):
@@ -715,7 +727,7 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Added the new ``delay`` keyword-only parameter.
 
         Parameters
@@ -728,6 +740,8 @@ class Message:
         ------
         Forbidden
             You do not have proper permissions to delete the message.
+        NotFound
+            The message was deleted already
         HTTPException
             Deleting the message failed.
         """
@@ -944,6 +958,37 @@ class Message:
             await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
         else:
             await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
+
+    async def clear_reaction(self, emoji):
+        """|coro|
+
+        Clears a specific reaction from the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to clear.
+
+        Raises
+        --------
+        HTTPException
+            Clearing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to clear the reaction.
+        NotFound
+            The emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        emoji = self._emoji_reaction(emoji)
+        await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
 
     @staticmethod
     def _emoji_reaction(emoji):

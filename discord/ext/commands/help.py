@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -344,7 +344,8 @@ class HelpCommand:
         # consider this to be an *incredibly* strange use case. I'd rather go
         # for this common use case rather than waste performance for the
         # odd one.
-        return self.context.prefix.replace(user.mention, '@' + user.display_name)
+        pattern = re.compile(r"<@!?%s>" % user.id)
+        return pattern.sub("@%s" % user.display_name, self.context.prefix)
 
     @property
     def invoked_with(self):
