@@ -679,10 +679,14 @@ class Command(_BaseCommand):
         if self._before_invoke is not None:
             try:
                 instance = self._before_invoke.__self__  
-                # should be cog unless the hook isn't in the cog
+                # should be cog if @commands.before_invoke is used
             except AttributeError:
                 # __self__ only exists for methods, not functions
-                await self._before_invoke(ctx)
+                # however, if @command.before_invoke is used, it will be a function
+                if self.cog:
+                    await self._before_invoke(cog, ctx)
+                else:
+                    await self._before_invoke(ctx)
             else:
                 await self._before_invoke(instance, ctx)
 
@@ -1884,27 +1888,10 @@ def before_invoke(coro):
         async def record_usage(ctx):
             print(ctx.author, 'used', ctx.command, 'at', ctx.message.created_at)
 
-        @commands.before_invoke(record_usage)
         @bot.command()
+        @commands.before_invoke(record_usage)
         async def who(ctx): # Output: <User> used who at <Time>
-            await ctx.send('i am a bot')
-
-        class What(commands.Cog):
-
-            @commands.before_invoke(record_usage)
-            @commands.command()
-            async def when(self, ctx): # Output: <User> used when at <Time>
-                await ctx.send('and i have existed since {}'.format(ctx.bot.user.created_at))
-
-            @commands.command()
-            async def where(self, ctx): # Output: <Nothing>
-                await ctx.send('on Discord')
-
-            @commands.command()
-            async def why(self, ctx): # Output: <Nothing>
-                await ctx.send('because someone made me')
-
-        bot.add_cog(What())
+            await ctx.send('I am a bot!')
     """
     def decorator(func):
         if isinstance(func, Command):
