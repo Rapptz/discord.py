@@ -707,7 +707,10 @@ class Command(_BaseCommand):
             try:
                 instance = self._after_invoke.__self__
             except AttributeError:
-                await self._after_invoke(ctx)
+                if self.cog:
+                    await self._after_invoke(cog, ctx)
+                else:
+                    await self._after_invoke(ctx)
             else:
                 await self._after_invoke(instance, ctx)
 
