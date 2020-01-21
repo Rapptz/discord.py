@@ -2,7 +2,7 @@ from discord.errors import DiscordException
 from discord import Permissions, abc
 from inspect import Parameter
 
-from .cooldowns import Cooldown
+from .cooldowns import Cooldown, BucketType
 
 from typing import Any, Optional, Union, List, Tuple
 
@@ -51,6 +51,12 @@ class CommandOnCooldown(CommandError):
     retry_after: float
 
     def __init__(self, cooldown: Cooldown, retry_after: float) -> None: ...
+
+class MaxConcurrencyReached(CommandError):
+    number: int
+    per: BucketType
+
+    def __init__(self, number: int, per: BucketType) -> None: ...
 
 class MissingRole(CheckFailure):
     missing_role: Union[str, int]

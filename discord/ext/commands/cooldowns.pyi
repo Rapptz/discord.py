@@ -3,9 +3,10 @@ from discord.enums import Enum
 from .context import Context
 from ...message import Message
 
-from typing import Optional, TypeVar, Type
+from typing import Optional, TypeVar, Type, Union, Tuple
 
 _CM = TypeVar('_CM', bound=CooldownMapping)
+_MC = TypeVar('_MC', bound=MaxConcurrency)
 
 class BucketType(Enum):
     default: int
@@ -15,6 +16,8 @@ class BucketType(Enum):
     member: int
     category: int
     role: int
+
+    def get_key(self, msg: Message) -> Optional[Union[int, Tuple[Optional[int], int]]]: ...
 
 class Cooldown:
     rate: int
@@ -36,3 +39,9 @@ class CooldownMapping:
     def from_cooldown(cls: Type[_CM], rate: int, per: float, type: BucketType) -> _CM: ...
     def get_bucket(self, message: Message, current: Optional[float] = ...) -> Cooldown: ...
     def update_rate_limit(self, message: Message, current: Optional[float] = ...) -> Optional[float]: ...
+
+class MaxConcurrency:
+    def copy(self: _MC) -> _MC: ...
+    def get_key(self, message: Message) -> Union[str, int]: ...
+    async def acquire(self, message: Message) -> None: ...
+    async def release(self, message: Message) -> None: ...
