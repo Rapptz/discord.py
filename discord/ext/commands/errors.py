@@ -261,7 +261,7 @@ class MaxConcurrencyReached(CommandError):
         suffix = 'per %s' % name if per.name != 'default' else 'globally'
         plural = '%s times %s' if number > 1 else '%s time %s'
         fmt = plural % (number, suffix)
-        super().__init__('Too many people using this command. It can only be used {}.'.format(fmt))
+        super().__init__('Too many people using this command. It can only be used {} concurrently.'.format(fmt))
 
 class MissingRole(CheckFailure):
     """Exception raised when the command invoker lacks a role to run a command.
