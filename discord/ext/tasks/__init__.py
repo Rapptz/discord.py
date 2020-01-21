@@ -333,7 +333,7 @@ class Loop:
     async def _sleep_until(self, dt):
         now = datetime.datetime.now(datetime.timezone.utc)
         delta = (dt - now).total_seconds()
-        await asyncio.sleep(delta)
+        await asyncio.sleep(max(delta, 0))
 
     def _get_next_sleep_time(self):
         return self._last_iteration + datetime.timedelta(seconds=self._sleep)
