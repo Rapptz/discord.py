@@ -335,6 +335,24 @@ class Command(_BaseCommand):
         """
         self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
 
+    async def __call__(self, *args, **kwargs):
+        """|coro|
+
+        Calls the internal callback that the command holds.
+
+        .. note::
+
+            This bypasses all mechanisms -- including checks, converters,
+            invoke hooks, cooldowns, etc. You must take care to pass
+            the proper arguments and types to this function.
+
+        .. versionadded:: 1.3
+        """
+        if self.cog is not None:
+            return await self.callback(self.cog, *args, **kwargs)
+        else:
+            return await self.callback(*args, **kwargs)
+
     def _ensure_assignment_on_copy(self, other):
         other._before_invoke = self._before_invoke
         other._after_invoke = self._after_invoke

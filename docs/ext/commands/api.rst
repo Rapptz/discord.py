@@ -73,6 +73,7 @@ Command
 
 .. autoclass:: discord.ext.commands.Command
     :members:
+    :special-members: __call__
 
 .. autoclass:: discord.ext.commands.Group
     :members:
