@@ -46,8 +46,8 @@ class Loop:
             raise ValueError('count must be greater than 0 or None.')
 
         self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
-        self._last_iteration = datetime.datetime.now(datetime.timezone.utc)
-        self._next_iteration = self._get_next_sleep_time()
+        self._last_iteration = None
+        self._next_iteration = None
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
@@ -65,12 +65,16 @@ class Loop:
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
+        self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
             while True:
                 self._last_iteration = self._next_iteration
                 self._next_iteration = self._get_next_sleep_time()
                 try:
                     await self.coro(*args, **kwargs)
+                    now = datetime.datetime.now(datetime.timezone.utc)
+                    if now > self._next_iteration:
+                        self._next_iteration = now
                 except self._valid_exception as exc:
                     if not self.reconnect:
                         raise
@@ -329,7 +333,7 @@ class Loop:
     async def _sleep_until(self, dt):
         now = datetime.datetime.now(datetime.timezone.utc)
         delta = (dt - now).total_seconds()
-        await asyncio.sleep(delta)
+        await asyncio.sleep(max(delta, 0))
 
     def _get_next_sleep_time(self):
         return self._last_iteration + datetime.timedelta(seconds=self._sleep)
