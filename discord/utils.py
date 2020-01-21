@@ -339,7 +339,7 @@ async def sane_wait_for(futures, *, timeout):
 
     return done
 
-async def sleep_until(when):
+async def sleep_until(when, result=None):
     """Sleep until a specified time.
 
     If the time supplied is in the past this function will yield instantly.
@@ -348,6 +348,8 @@ async def sleep_until(when):
     -----------
     when: :class:`datetime.datetime`
         The timestamp in which to sleep until.
+    result: Any
+        If provided is returned to the caller when the coroutine comples.
 
     .. versionadded:: 1.3
     """
@@ -358,7 +360,7 @@ async def sleep_until(when):
     while delta > MAX_ASYNCIO_SECONDS:
         await asyncio.sleep(MAX_ASYNCIO_SECONDS)
         delta -= MAX_ASYNCIO_SECONDS
-    await asyncio.sleep(max(delta, 0))
+    return await asyncio.sleep(max(delta, 0), result)
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""
