@@ -350,6 +350,8 @@ async def sleep_until(when):
 
     .. versionadded:: 1.3.0
     """
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=datetime.timezone.utc)
     now = datetime.datetime.now(datetime.timezone.utc)
     delta = (when - now).total_seconds()
     await asyncio.sleep(max(delta, 0))
