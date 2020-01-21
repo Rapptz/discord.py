@@ -65,6 +65,7 @@ class Loop:
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
+        sleep_until = discord.utils.sleep_until
         self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
             while True:
@@ -86,7 +87,7 @@ class Loop:
                     if self._current_loop == self.count:
                         break
 
-                    await self._sleep_until(self._next_iteration)
+                    await sleep_until(self._next_iteration)
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
@@ -329,11 +330,6 @@ class Loop:
 
         self._after_loop = coro
         return coro
-
-    async def _sleep_until(self, dt):
-        now = datetime.datetime.now(datetime.timezone.utc)
-        delta = (dt - now).total_seconds()
-        await asyncio.sleep(max(delta, 0))
 
     def _get_next_sleep_time(self):
         return self._last_iteration + datetime.timedelta(seconds=self._sleep)
