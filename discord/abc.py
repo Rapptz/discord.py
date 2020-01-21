@@ -659,7 +659,7 @@ class GuildChannel:
         Clones this channel. This creates a channel with the same properties
         as this channel.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
 
         Parameters
         ------------

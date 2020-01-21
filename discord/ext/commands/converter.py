@@ -182,7 +182,7 @@ class UserConverter(IDConverter):
 class MessageConverter(Converter):
     """Converts to a :class:`discord.Message`.
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     The lookup strategy is as follows (in order):
 

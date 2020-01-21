@@ -41,6 +41,7 @@ __all__ = (
     'TooManyArguments',
     'UserInputError',
     'CommandOnCooldown',
+    'MaxConcurrencyReached',
     'NotOwner',
     'MissingRole',
     'BotMissingRole',
@@ -240,12 +241,34 @@ class CommandOnCooldown(CommandError):
         self.retry_after = retry_after
         super().__init__('You are on cooldown. Try again in {:.2f}s'.format(retry_after))
 
+class MaxConcurrencyReached(CommandError):
+    """Exception raised when the command being invoked has reached its maximum concurrency.
+
+    This inherits from :exc:`CommandError`.
+
+    Attributes
+    ------------
+    number: :class:`int`
+        The maximum number of concurrent invokers allowed.
+    per: :class:`BucketType`
+        The bucket type passed to the :func:`.max_concurrency` decorator.
+    """
+
+    def __init__(self, number, per):
+        self.number = number
+        self.per = per
+        name = per.name
+        suffix = 'per %s' % name if per.name != 'default' else 'globally'
+        plural = '%s times %s' if number > 1 else '%s time %s'
+        fmt = plural % (number, suffix)
+        super().__init__('Too many people using this command. It can only be used {} concurrently.'.format(fmt))
+
 class MissingRole(CheckFailure):
     """Exception raised when the command invoker lacks a role to run a command.
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -263,7 +286,7 @@ class BotMissingRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -282,7 +305,7 @@ class MissingAnyRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -310,7 +333,7 @@ class BotMissingAnyRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -337,7 +360,7 @@ class NSFWChannelRequired(CheckFailure):
 
     This inherits from :exc:`CheckFailure`.
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Parameters
     -----------
@@ -546,7 +569,7 @@ class ExtensionNotFound(ExtensionError):
 
     This inherits from :exc:`ExtensionError`
 
-    .. versionchanged:: 1.3.0
+    .. versionchanged:: 1.3
         Made the ``original`` attribute always None.
 
     Attributes

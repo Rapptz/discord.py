@@ -135,7 +135,7 @@ class Attachment:
 
         Retrieves the content of this attachment as a :class:`bytes` object.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
 
         Parameters
         -----------
@@ -171,7 +171,7 @@ class Attachment:
         Converts the attachment into a :class:`File` suitable for sending via
         :meth:`abc.Messageable.send`.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Raises
         ------
@@ -727,7 +727,7 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Added the new ``delay`` keyword-only parameter.
 
         Parameters

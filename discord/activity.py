@@ -102,7 +102,7 @@ class BaseActivity:
     what is currently set. This behaviour may change in the future so there are
     no guarantees on whether Discord will actually let you set these types.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
     __slots__ = ('_created_at',)
 
@@ -113,7 +113,7 @@ class BaseActivity:
     def created_at(self):
         """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
@@ -534,7 +534,7 @@ class Spotify:
     def created_at(self):
         """Optional[:class:`datetime.datetime`]: When the user started listening in UTC.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
@@ -666,7 +666,7 @@ class CustomActivity(BaseActivity):
 
             Returns the custom status text.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     Attributes
     -----------

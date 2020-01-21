@@ -171,7 +171,7 @@ class Asset:
             and a URL won't be present if a custom image isn't associated with
             the asset, e.g. a guild with no custom icon.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
 
         Raises
         ------

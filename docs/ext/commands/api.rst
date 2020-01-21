@@ -73,6 +73,7 @@ Command
 
 .. autoclass:: discord.ext.commands.Command
     :members:
+    :special-members: __call__
 
 .. autoclass:: discord.ext.commands.Group
     :members:
@@ -169,6 +170,8 @@ Checks
 .. autofunction:: discord.ext.commands.bot_has_any_role
 
 .. autofunction:: discord.ext.commands.cooldown
+
+.. autofunction:: discord.ext.commands.max_concurrency
 
 .. autofunction:: discord.ext.commands.guild_only
 
@@ -325,6 +328,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.CommandOnCooldown
     :members:
 
+.. autoexception:: discord.ext.commands.MaxConcurrencyReached
+    :members:
+
 .. autoexception:: discord.ext.commands.NotOwner
     :members:
 
@@ -401,6 +407,7 @@ Exception Hierarchy
             - :exc:`~.commands.DisabledCommand`
             - :exc:`~.commands.CommandInvokeError`
             - :exc:`~.commands.CommandOnCooldown`
+            - :exc:`~.commands.MaxConcurrencyReached`
         - :exc:`~.commands.ExtensionError`
             - :exc:`~.commands.ExtensionAlreadyLoaded`
             - :exc:`~.commands.ExtensionNotLoaded`
