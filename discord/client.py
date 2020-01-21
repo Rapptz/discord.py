@@ -283,7 +283,7 @@ class Client:
     def cached_messages(self):
         """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
         """
         return utils.SequenceProxy(self._connection._messages or [])
 
@@ -1283,7 +1283,7 @@ class Client:
 
             This method is an API call. For general usage, consider :meth:`get_channel` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Raises
         -------

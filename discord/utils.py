@@ -342,13 +342,13 @@ async def sleep_until(when):
     """Sleep until a specified time.
 
     If the time supplied is in the past this function will yield instantly.
-    
+
     Parameters
     -----------
     when: :class:`datetime.datetime`
         The timestamp in which to sleep until.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
     if when.tzinfo is None:
         when = when.replace(tzinfo=datetime.timezone.utc)

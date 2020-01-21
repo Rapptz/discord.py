@@ -268,7 +268,7 @@ class MissingRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -286,7 +286,7 @@ class BotMissingRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -305,7 +305,7 @@ class MissingAnyRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -333,7 +333,7 @@ class BotMissingAnyRole(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Attributes
     -----------
@@ -360,7 +360,7 @@ class NSFWChannelRequired(CheckFailure):
 
     This inherits from :exc:`CheckFailure`.
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
 
     Parameters
     -----------
@@ -569,7 +569,7 @@ class ExtensionNotFound(ExtensionError):
 
     This inherits from :exc:`ExtensionError`
 
-    .. versionchanged:: 1.3.0
+    .. versionchanged:: 1.3
         Made the ``original`` attribute always None.
 
     Attributes

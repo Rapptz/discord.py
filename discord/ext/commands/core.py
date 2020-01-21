@@ -297,7 +297,7 @@ class Command(_BaseCommand):
 
         This is the non-decorator interface to :func:`.check`.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -313,7 +313,7 @@ class Command(_BaseCommand):
         This function is idempotent and will not raise an exception
         if the function is not in the command's checks.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -582,7 +582,7 @@ class Command(_BaseCommand):
 
         For example in commands ``?a b c test``, the parents are ``[c, b, a]``.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
         """
         entries = []
         command = self
@@ -1306,7 +1306,7 @@ def group(name=None, **attrs):
     This is similar to the :func:`.command` decorator but the ``cls``
     parameter is set to :class:`Group` by default.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
         The ``cls`` parameter can now be passed.
     """
 
@@ -1346,7 +1346,7 @@ def check(predicate):
         The function returned by ``predicate`` is **always** a coroutine,
         even if the original function was not a coroutine.
 
-    .. versionchanged:: 1.3.0
+    .. versionchanged:: 1.3
         The ``predicate`` attribute was added.
 
     Examples
@@ -1416,7 +1416,7 @@ def check_any(*checks):
 
         The ``predicate`` attribute for this function **is** a coroutine.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     Parameters
     ------------
@@ -1489,7 +1489,7 @@ def has_role(item):
     is missing a role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.MissingRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
@@ -1525,7 +1525,7 @@ def has_any_role(*items):
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.MissingAnyRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
@@ -1564,7 +1564,7 @@ def bot_has_role(item):
     is missing the role, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
@@ -1593,7 +1593,7 @@ def bot_has_any_role(*items):
     is missing all roles, or :exc:`.NoPrivateMessage` if it is used in a private message.
     Both inherit from :exc:`.CheckFailure`.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.BotMissingAnyRole` or :exc:`.NoPrivateMessage`
         instead of generic checkfailure
@@ -1680,7 +1680,7 @@ def has_guild_permissions(**perms):
     If this check is called in a DM context, it will raise an
     exception, :exc:`.NoPrivateMessage`.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
     def predicate(ctx):
         if not ctx.guild:
@@ -1700,7 +1700,7 @@ def bot_has_guild_permissions(**perms):
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
     """
     def predicate(ctx):
         if not ctx.guild:
@@ -1724,7 +1724,7 @@ def dm_only():
     This check raises a special exception, :exc:`.PrivateMessageOnly`
     that is inherited from :exc:`.CheckFailure`.
 
-    .. versionadded:: 1.1.0
+    .. versionadded:: 1.1
     """
 
     def predicate(ctx):
@@ -1773,7 +1773,7 @@ def is_nsfw():
     This check raises a special exception, :exc:`.NSFWChannelRequired`
     that is derived from :exc:`.CheckFailure`.
 
-    .. versionchanged:: 1.1.0
+    .. versionchanged:: 1.1
 
         Raise :exc:`.NSFWChannelRequired` instead of generic :exc:`.CheckFailure`.
         DM channels will also now pass this check.
@@ -1826,7 +1826,7 @@ def max_concurrency(number, per=BucketType.default, *, wait=False):
     differs from a cooldown in that there is no set waiting period or token bucket -- only
     a set number of people can run the command.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     Parameters
     -------------

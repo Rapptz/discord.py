@@ -117,7 +117,7 @@ class Loop:
     def next_iteration(self):
         """Optional[:class:`datetime.datetime`]: When the next iteration of the loop will occur.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         if self._task is None and self._sleep:
             return None
@@ -171,7 +171,7 @@ class Loop:
             before stopping via :meth:`clear_exception_types` or
             use :meth:`cancel` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
         """
         if self._task and not self._task.done():
             self._stop_next_iteration = True
@@ -274,7 +274,7 @@ class Loop:
     def failed(self):
         """:class:`bool`: Whether the internal task has failed.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
         """
         return self._has_failed
 
@@ -342,7 +342,7 @@ class Loop:
             This only applies on the next loop iteration. If it is desirable for the change of interval
             to be applied right away, cancel the task with :meth:`cancel`.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Parameters
         ------------

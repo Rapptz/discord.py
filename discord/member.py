@@ -53,7 +53,7 @@ class VoiceState:
     self_stream: :class:`bool`
         Indicates if the user is currently streaming via 'Go Live' feature.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
     self_video: :class:`bool`
         Indicates if the user is currently broadcasting video.
@@ -511,7 +511,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         All parameters are optional.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
         Parameters
@@ -589,7 +589,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         This raises the same exceptions as :meth:`edit`.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Can now pass ``None`` to kick a member from voice.
 
         Parameters

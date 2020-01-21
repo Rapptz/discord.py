@@ -337,7 +337,7 @@ class Permissions(BaseFlags):
     def view_guild_insights(self):
         """:class:`bool`: Returns ``True`` if a user can view the guild's insights.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         return 1 << 19
 

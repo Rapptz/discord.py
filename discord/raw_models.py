@@ -85,7 +85,7 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
 class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
 
-    .. versionchanged:: 1.3.0
+    .. versionchanged:: 1.3
         The ``channel_id`` attribute was added.
 
     Attributes
@@ -112,7 +112,7 @@ class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
     :func:`on_raw_reaction_remove` event.
 
-    .. versionchanged:: 1.3.0
+    .. versionchanged:: 1.3
         The ``event_type`` attribute was added.
 
     Attributes
@@ -181,7 +181,7 @@ class RawReactionClearEvent(_RawReprMixin):
 class RawReactionClearEmojiEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear_emoji` event.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     Attributes
     -----------

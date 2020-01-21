@@ -449,7 +449,7 @@ class Guild(Hashable):
 
         If no channel is set, then this returns ``None``.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         channel_id = self._rules_channel_id
         return channel_id and self._channels.get(channel_id)
@@ -634,7 +634,7 @@ class Guild(Hashable):
     def discovery_splash_url(self):
         """:class:`Asset`: Returns the guild's discovery splash asset.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         return self.discovery_splash_url_as()
 
@@ -644,7 +644,7 @@ class Guild(Hashable):
         The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
         size must be a power of 2 between 16 and 4096.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Parameters
         -----------
@@ -1104,7 +1104,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`channels` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Raises
         -------
@@ -1139,7 +1139,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`members` instead.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         All parameters are optional.
 
@@ -1508,7 +1508,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`roles` instead.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Raises
         -------
