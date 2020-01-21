@@ -725,6 +725,7 @@ Utility Functions
 
 .. autofunction:: discord.utils.resolve_invite
 
+.. autofunction:: discord.utils.sleep_until
 
 Profile
 ---------
