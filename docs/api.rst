@@ -409,7 +409,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     :param reaction: The reaction that got cleared.
     :type reaction: :class:`Reaction`
@@ -419,7 +419,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
     regardless of the state of the internal message cache.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEmojiEvent`
@@ -650,7 +650,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an :class:`Invite` is created.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     .. note::
 
@@ -664,7 +664,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an :class:`Invite` is deleted.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     .. note::
 
@@ -822,9 +822,6 @@ of :class:`enum.Enum`.
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
 
-    .. versionchanged:: 1.3.0
-        The ``channel_follow_add`` attribute was added.
-
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
@@ -871,6 +868,8 @@ of :class:`enum.Enum`.
     .. attribute:: channel_follow_add
 
         The system message denoting that an announcement channel has been followed.
+
+        .. versionadded:: 1.3
 
 .. class:: ActivityType
 
