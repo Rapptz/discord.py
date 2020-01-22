@@ -1826,6 +1826,15 @@ def cooldown(rate, per, type=BucketType.default, *, cls=Cooldown, mapping=Cooldo
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: :class:`.BucketType`
         The type of cooldown to have.
+    cls: :class:`.Cooldown`
+        The factory class that will be used to create cooldown. 
+        By default, this is :class:`.Cooldown`. Should a custom class 
+        be provided, it must be similar enough to :class:`.Cooldown`\'s interface.
+    mapping: :class:`.CooldownMapping`
+        The factory class that will be used to create cooldown mapping. 
+        By default, this is :class:`.CooldownMapping`. Should a custom 
+        class be provided, it must be similar enough to :class:`.CooldownMapping`\'s 
+        interface.
     """
 
     def decorator(func):
