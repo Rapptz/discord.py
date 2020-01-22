@@ -134,7 +134,8 @@ class EnumMeta(type):
         # isinstance(x, Y)
         # -> __instancecheck__(Y, x)
         try:
-            return instance._actual_enum_cls_ is self
+            cls = instance._actual_enum_cls_
+            return cls is self or issubclass(cls, self)
         except AttributeError:
             return False
 
