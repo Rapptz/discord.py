@@ -346,14 +346,14 @@ async def sleep_until(when, result=None):
 
     If the time supplied is in the past this function will yield instantly.
 
+    .. versionadded:: 1.3
+
     Parameters
     -----------
     when: :class:`datetime.datetime`
         The timestamp in which to sleep until.
     result: Any
         If provided is returned to the caller when the coroutine completes.
-
-    .. versionadded:: 1.3
     """
     if when.tzinfo is None:
         when = when.replace(tzinfo=datetime.timezone.utc)

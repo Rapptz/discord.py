@@ -169,7 +169,7 @@ class Client:
                     - :func:`on_member_join`
                     - :func:`on_member_remove`
 
-                - Typing events will be disabled (:func:`on_typing_start`).
+                - Typing events will be disabled (:func:`on_typing`).
                 - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
                   This makes it difficult or impossible to do many things, for example:
 
