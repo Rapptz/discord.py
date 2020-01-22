@@ -340,7 +340,9 @@ async def sane_wait_for(futures, *, timeout):
     return done
 
 async def sleep_until(when, result=None):
-    """Sleep until a specified time.
+    """|coro|
+
+    Sleep until a specified time.
 
     If the time supplied is in the past this function will yield instantly.
 
