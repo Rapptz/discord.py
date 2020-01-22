@@ -197,6 +197,9 @@ class _Semaphore:
     def locked(self):
         return self.value == 0
 
+    def is_active(self):
+        return len(self._waiters) > 0
+
     def wake_up(self):
         while self._waiters:
             future = self._waiters.popleft()
@@ -276,5 +279,5 @@ class MaxConcurrency:
         else:
             sem.release()
 
-        if sem.value >= self.number:
+        if sem.value >= self.number and not sem.is_active():
             del self._mapping[key]
