@@ -1803,7 +1803,7 @@ def is_nsfw():
         raise NSFWChannelRequired(ch)
     return check(pred)
 
-def cooldown(rate, per, type=BucketType.default):
+def cooldown(rate, per, type=BucketType.default, *, cls=Cooldown, mapping=CooldownMapping):
     """A decorator that adds a cooldown to a :class:`.Command`
     or its subclasses.
 
@@ -1830,9 +1830,9 @@ def cooldown(rate, per, type=BucketType.default):
 
     def decorator(func):
         if isinstance(func, Command):
-            func._buckets = CooldownMapping(Cooldown(rate, per, type))
+            func._buckets = mapping(cls(rate, per, type))
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per, type)
+            func.__commands_cooldown__ = cls(rate, per, type)
         return func
     return decorator
 
