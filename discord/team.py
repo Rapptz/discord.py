@@ -49,6 +49,8 @@ class Team:
         The team's owner ID.
     members: List[:class:`TeamMember`]
         A list of the members in the team
+
+    .. versionadded:: 1.3
     """
     __slots__ = ('_state', 'id', 'name', 'icon', 'owner_id', 'members')
 
@@ -94,6 +96,8 @@ class TeamMember(BaseUser):
         .. describe:: str(x)
 
             Returns the team member's name with discriminator.
+
+    .. versionadded:: 1.3
 
     Attributes
     -------------

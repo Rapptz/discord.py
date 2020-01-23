@@ -11,6 +11,124 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p3p0:
+
+v1.3.0
+--------
+
+This version comes with a lot of bug fixes and new features. It's been in development for a lot longer than was anticipated!
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add :meth:`Guild.fetch_members` to fetch members from the HTTP API. (:issue:`2204`)
+- Add :meth:`Guild.fetch_roles` to fetch roles from the HTTP API. (:issue:`2208`)
+- Add support for teams via :class:`Team` when fetching with :meth:`Client.application_info`. (:issue:`2239`)
+- Add support for suppressing embeds via :meth:`Message.edit`
+- Add support for guild subscriptions. See the :class:`Client` documentation for more details.
+- Add :attr:`VoiceChannel.voice_states` to get voice states without relying on member cache.
+- Add :meth:`Guild.query_members` to request members from the gateway.
+- Add :class:`FFmpegOpusAudio` and other voice improvements. (:issue:`2258`)
+- Add :attr:`RawMessageUpdateEvent.channel_id` for retrieving channel IDs during raw message updates. (:issue:`2301`)
+- Add :attr:`RawReactionActionEvent.event_type` to disambiguate between reaction addition and removal in reaction events.
+- Add :attr:`abc.GuildChannel.permissions_synced` to query whether permissions are synced with the category. (:issue:`2300`, :issue:`2324`)
+- Add :attr:`MessageType.channel_follow_add` message type for announcement channels being followed. (:issue:`2314`)
+- Add :meth:`Message.is_system` to allow for quickly filtering through system messages.
+- Add :attr:`VoiceState.self_stream` to indicate whether someone is streaming via Go Live. (:issue:`2343`)
+- Add :meth:`Emoji.is_usable` to check if the client user can use an emoji. (:issue:`2349`)
+- Add :attr:`VoiceRegion.europe` and :attr:`VoiceRegion.dubai`. (:issue:`2358`, :issue:`2490`)
+- Add :meth:`TextChannel.follow` to follow a news channel. (:issue:`2367`)
+- Add :attr:`Permissions.view_guild_insights` permission. (:issue:`2415`)
+- Add support for new audit log types. See :ref:`discord-api-audit-logs` for more information. (:issue:`2427`)
+    - Note that integration support is not finalized.
+
+- Add :attr:`Webhook.type` to query the type of webhook (:class:`WebhookType`). (:issue:`2441`)
+- Allow bulk editing of channel overwrites through :meth:`abc.GuildChannel.edit`. (:issue:`2198`)
+- Add :class:`Activity.created_at` to see when an activity was started. (:issue:`2446`)
+- Add support for ``xsalsa20_poly1305_lite`` encryption mode for voice. (:issue:`2463`)
+- Add :attr:`RawReactionActionEvent.member` to get the member who did the reaction. (:issue:`2443`)
+- Add support for new YouTube streaming via :attr:`Streaming.platform` and :attr:`Streaming.game`. (:issue:`2445`)
+- Add :attr:`Guild.discovery_splash_url` to get the discovery splash image asset. (:issue:`2482`)
+- Add :attr:`Guild.rules_channel` to get the rules channel of public guilds. (:issue:`2482`)
+    - It should be noted that this feature is restricted to those who are either in Server Discovery or planning to be there.
+
+- Add support for message flags via :attr:`Message.flags` and :class:`MessageFlags`. (:issue:`2433`)
+- Add :attr:`User.system` and :attr:`Profile.system` to know whether a user is an official Discord Trust and Safety account.
+- Add :attr:`Profile.team_user` to check whether a user is a member of a team.
+- Add :meth:`Attachment.to_file` to easily convert attachments to :class:`File` for sending.
+- Add certain aliases to :class:`Permissions` to match the UI better. (:issue:`2496`)
+    - :attr:`Permissions.manage_permissions`
+    - :attr:`Permissions.view_channel`
+    - :attr:`Permissions.use_external_emojis`
+
+- Add support for passing keyword arguments when creating :class:`Permissions`.
+- Add support for custom activities via :class:`CustomActivity`. (:issue:`2400`)
+    - Note that as of now, bots cannot send custom activities yet.
+
+- Add support for :func:`on_invite_create` and :func:`on_invite_delete` events.
+- Add support for clearing a specific reaction emoji from a message.
+    - :meth:`Message.clear_reaction` and :meth:`Reaction.clear` methods.
+    - :func:`on_raw_reaction_clear_emoji` and :func:`on_reaction_clear_emoji` events.
+
+- Add :func:`utils.sleep_until` helper to sleep until a specific datetime. (:issue:`2517`, :issue:`2519`)
+- |commands| Add support for teams and :attr:`Bot.owner_ids <.ext.commands.Bot.owner_ids>` to have multiple bot owners. (:issue:`2239`)
+- |commands| Add new :attr:`BucketType.role <.ext.commands.BucketType.role>` bucket type. (:issue:`2201`)
+- |commands| Expose :attr:`Command.cog <.ext.commands.Command.cog>` property publicly. (:issue:`2360`)
+- |commands| Add non-decorator interface for adding checks to commands via :meth:`Command.add_check <.ext.commands.Command.add_check>` and :meth:`Command.remove_check <.ext.commands.Command.remove_check>`. (:issue:`2411`)
+- |commands| Add :func:`has_guild_permissions <.ext.commands.has_guild_permissions>` check. (:issue:`2460`)
+- |commands| Add :func:`bot_has_guild_permissions <.ext.commands.bot_has_guild_permissions>` check. (:issue:`2460`)
+- |commands| Add ``predicate`` attribute to checks decorated with :func:`~.ext.commands.check`.
+- |commands| Add :func:`~.ext.commands.check_any` check to logical OR multiple checks.
+- |commands| Add :func:`~.ext.commands.max_concurrency` to allow only a certain amount of users to use a command concurrently before waiting or erroring.
+- |commands| Add support for calling a :class:`~.ext.commands.Command` as a regular function.
+- |tasks| :meth:`Loop.add_exception_type <.ext.tasks.Loop.add_exception_type>` now allows multiple exceptions to be set. (:issue:`2333`)
+- |tasks| Add :attr:`Loop.next_iteration <.ext.tasks.Loop.next_iteration>` property. (:issue:`2305`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix issue with permission resolution sometimes failing for guilds with no owner.
+- Tokens are now stripped upon use. (:issue:`2135`)
+- Passing in a ``name`` is no longer required for :meth:`Emoji.edit`. (:issue:`2368`)
+- Fix issue with webhooks not re-raising after retries have run out. (:issue:`2272`, :issue:`2380`)
+- Fix mismatch in URL handling in :func:`utils.escape_markdown`. (:issue:`2420`)
+- Fix issue with ports being read in little endian when they should be big endian in voice connections. (:issue:`2470`)
+- Fix :meth:`Member.mentioned_in` not taking into consideration the message's guild.
+- Fix bug with moving channels when there are gaps in positions due to channel deletion and creation.
+- Fix :func:`on_shard_ready` not triggering when ``fetch_offline_members`` is disabled. (:issue:`2504`)
+- Fix issue with large sharded bots taking too long to actually dispatch :func:`on_ready`.
+- Fix issue with fetching group DM based invites in :meth:`Client.fetch_invite`.
+- Fix out of order files being sent in webhooks when there are 10 files.
+- |commands| Extensions that fail internally due to ImportError will no longer raise :exc:`~.ext.commands.ExtensionNotFound`. (:issue:`2244`, :issue:`2275`, :issue:`2291`)
+- |commands| Updating the :attr:`Paginator.suffix <.ext.commands.Paginator.suffix>` will not cause out of date calculations. (:issue:`2251`)
+- |commands| Allow converters from custom extension packages. (:issue:`2369`, :issue:`2374`)
+- |commands| Fix issue with paginator prefix being ``None`` causing empty pages. (:issue:`2471`)
+- |commands| :class:`~.commands.Greedy` now ignores parsing errors rather than propagating them.
+- |commands| :meth:`Command.can_run <.ext.commands.Command.can_run>` now checks whether a command is disabled.
+- |commands| :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` now takes into consideration nickname mentions. (:issue:`2489`)
+- |commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` now properly propagates to the :meth:`HelpCommand.on_help_command_error <.ext.commands.HelpCommand.on_help_command_error>` handler.
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- The library now fully supports Python 3.8 without warnings.
+- Bump the dependency of ``websockets`` to 8.0 for those who can use it. (:issue:`2453`)
+- Due to Discord providing :class:`Member` data in mentions, users will now be upgraded to :class:`Member` more often if mentioned.
+- :func:`utils.escape_markdown` now properly escapes new quote markdown.
+- The message cache can now be disabled by passing ``None`` to ``max_messages`` in :class:`Client`.
+- The default message cache size has changed from 5000 to 1000 to accommodate small bots.
+- Lower memory usage by only creating certain objects as needed in :class:`Role`.
+- There is now a sleep of 5 seconds before re-IDENTIFYing during a reconnect to prevent long loops of session invalidation.
+- The rate limiting code now uses millisecond precision to have more granular rate limit handling.
+    - Along with that, the rate limiting code now uses Discord's response to wait. If you need to use the system clock again for whatever reason, consider passing ``assume_synced_clock`` in :class:`Client`.
+
+- The performance of :attr:`Guild.default_role` has been improved from O(N) to O(1). (:issue:`2375`)
+- The performance of :attr:`Member.roles` has improved due to usage of caching to avoid surprising performance traps.
+- The GC is manually triggered during things that cause large deallocations (such as guild removal) to prevent memory fragmentation.
+- There have been many changes to the documentation for fixes both for usability, correctness, and to fix some linter errors. Thanks to everyone who contributed to those.
+- |commands| Usernames prefixed with @ inside DMs will properly convert using the :class:`User` converter. (:issue:`2498`)
+- |tasks| The task sleeping time will now take into consideration the amount of time the task body has taken before sleeping. (:issue:`2516`)
+
 .. _vp1p2p5:
 
 v1.2.5

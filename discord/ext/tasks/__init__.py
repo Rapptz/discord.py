@@ -8,8 +8,6 @@ import logging
 
 from discord.backoff import ExponentialBackoff
 
-MAX_ASYNCIO_SECONDS = 3456000
-
 log = logging.getLogger(__name__)
 
 class Loop:
@@ -360,10 +358,6 @@ class Loop:
         """
 
         sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
-        if sleep >= MAX_ASYNCIO_SECONDS:
-            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
-            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
-
         if sleep < 0:
             raise ValueError('Total number of seconds cannot be less than zero.')
 

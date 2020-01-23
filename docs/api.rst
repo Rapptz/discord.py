@@ -409,7 +409,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     :param reaction: The reaction that got cleared.
     :type reaction: :class:`Reaction`
@@ -419,7 +419,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
     regardless of the state of the internal message cache.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEmojiEvent`
@@ -650,7 +650,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an :class:`Invite` is created.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     .. note::
 
@@ -664,7 +664,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an :class:`Invite` is deleted.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.3
 
     .. note::
 
@@ -725,6 +725,7 @@ Utility Functions
 
 .. autofunction:: discord.utils.resolve_invite
 
+.. autofunction:: discord.utils.sleep_until
 
 Profile
 ---------
@@ -767,9 +768,15 @@ Profile
     .. attribute:: team_user
 
         A boolean indicating if the user is in part of a team.
+
+        .. versionadded:: 1.3
+
     .. attribute:: system
 
         A boolean indicating if the user is officially part of the Discord urgent message system.
+
+        .. versionadded:: 1.3
+
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this
@@ -822,9 +829,6 @@ of :class:`enum.Enum`.
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
 
-    .. versionchanged:: 1.3.0
-        The ``channel_follow_add`` attribute was added.
-
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
@@ -872,6 +876,8 @@ of :class:`enum.Enum`.
 
         The system message denoting that an announcement channel has been followed.
 
+        .. versionadded:: 1.3
+
 .. class:: ActivityType
 
     Specifies the type of :class:`Activity`. This is used to check how to
@@ -914,12 +920,6 @@ of :class:`enum.Enum`.
 
     Specifies the region a voice server belongs to.
 
-    .. versionchanged:: 1.2
-        The ``india`` region was added.
-
-    .. versionchanged:: 1.3
-        The ``europe`` and ``dubai`` regions were added.
-
     .. attribute:: amsterdam
 
         The Amsterdam region.
@@ -929,6 +929,9 @@ of :class:`enum.Enum`.
     .. attribute:: dubai
 
         The Dubai region.
+
+        .. versionadded:: 1.3
+
     .. attribute:: eu_central
 
         The EU Central region.
@@ -938,6 +941,9 @@ of :class:`enum.Enum`.
     .. attribute:: europe
 
         The Europe region.
+
+        .. versionadded:: 1.3
+
     .. attribute:: frankfurt
 
         The Frankfurt region.
@@ -947,6 +953,9 @@ of :class:`enum.Enum`.
     .. attribute:: india
 
         The India region.
+
+        .. versionadded:: 1.2
+
     .. attribute:: japan
 
         The Japan region.
@@ -1332,6 +1341,8 @@ of :class:`enum.Enum`.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the members were moved.
         - ``count``: An integer specifying how many members were moved.
 
+        .. versionadded:: 1.3
+
     .. attribute:: member_disconnect
 
         A member's voice state has changed. This triggers when a
@@ -1342,12 +1353,16 @@ of :class:`enum.Enum`.
 
         - ``count``: An integer specifying how many members were disconnected.
 
+        .. versionadded:: 1.3
+
     .. attribute:: bot_add
 
         A bot was added to the guild.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member` or :class:`User` which was added to the guild.
+
+        .. versionadded:: 1.3
 
     .. attribute:: role_create
 
@@ -1540,6 +1555,8 @@ of :class:`enum.Enum`.
 
         - ``count``: An integer specifying how many messages were deleted.
 
+        .. versionadded:: 1.3
+
     .. attribute:: message_pin
 
         A message was pinned in a channel.
@@ -1552,6 +1569,8 @@ of :class:`enum.Enum`.
 
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was pinned.
         - ``message_id``: the ID of the message which was pinned.
+
+        .. versionadded:: 1.3
 
     .. attribute:: message_unpin
 
@@ -1566,12 +1585,16 @@ of :class:`enum.Enum`.
         - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was unpinned.
         - ``message_id``: the ID of the message which was unpinned.
 
+        .. versionadded:: 1.3
+
     .. attribute:: integration_create
 
         A guild integration was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Object` with the integration ID of the integration which was created.
+
+        .. versionadded:: 1.3
 
     .. attribute:: integration_update
 
@@ -1580,12 +1603,16 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Object` with the integration ID of the integration which was updated.
 
+        .. versionadded:: 1.3
+
     .. attribute:: integration_delete
 
         A guild integration was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Object` with the integration ID of the integration which was deleted.
+
+        .. versionadded:: 1.3
 
 .. class:: AuditLogActionCategory
 
@@ -1721,6 +1748,8 @@ of :class:`enum.Enum`.
 
     Represents the membership state of a team member retrieved through :func:`Bot.application_info`.
 
+    .. versionadded:: 1.3
+
     .. attribute:: invited
 
         Represents an invited member.
@@ -1732,6 +1761,8 @@ of :class:`enum.Enum`.
 .. class:: WebhookType
 
 	Represents the type of webhook that can be received.
+
+    .. versionadded:: 1.3
 
 	.. attribute:: incoming
 
@@ -1850,6 +1881,7 @@ Certain utilities make working with async iterators easier, detailed below.
         :param predicate: The predicate to call on every element. Could be a |coroutine_link|_.
         :return: An async iterator.
 
+.. _discord-api-audit-logs:
 
 Audit Log Data
 ----------------
