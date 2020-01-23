@@ -269,6 +269,9 @@ class Message:
         Specifies if the message is currently pinned.
     flags: :class:`MessageFlags`
         Extra features of the message.
+
+        .. versionadded:: 1.3
+
     reactions : List[:class:`Reaction`]
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
     activity: Optional[:class:`dict`]
@@ -763,6 +766,9 @@ class Message:
         Edits the message.
 
         The content must be able to be transformed into a string via ``str(content)``.
+
+        .. versionchanged:: 1.3
+            The ``suppress`` keyword-only parameter was added.
 
         Parameters
         -----------

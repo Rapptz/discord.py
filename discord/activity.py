@@ -414,12 +414,18 @@ class Streaming(BaseActivity):
     -----------
     platform: :class:`str`
         Where the user is streaming from (ie. YouTube, Twitch).
+
+        .. versionadded:: 1.3
+
     name: Optional[:class:`str`]
         The stream's name.
     details: Optional[:class:`str`]
         Same as :attr:`name`
     game: Optional[:class:`str`]
         The game being streamed.
+
+        .. versionadded:: 1.3
+
     url: :class:`str`
         The stream's URL.
     assets: :class:`dict`

@@ -154,7 +154,10 @@ class Emoji(_EmojiTag):
         return self._state._get_guild(self.guild_id)
 
     def is_usable(self):
-        """:class:`bool`: Whether the bot can use this emoji."""
+        """:class:`bool`: Whether the bot can use this emoji.
+
+        .. versionadded:: 1.3
+        """
         if not self.available:
             return False
         if not self._roles:

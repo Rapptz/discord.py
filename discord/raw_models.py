@@ -85,15 +85,15 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
 class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
 
-    .. versionchanged:: 1.3
-        The ``channel_id`` attribute was added.
-
     Attributes
     -----------
     message_id: :class:`int`
         The message ID that got updated.
     channel_id: :class:`int`
         The channel ID where the update took place.
+
+        .. versionadded:: 1.3
+
     data: :class:`dict`
         The raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
@@ -111,9 +111,6 @@ class RawMessageUpdateEvent(_RawReprMixin):
 class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
     :func:`on_raw_reaction_remove` event.
-
-    .. versionchanged:: 1.3
-        The ``event_type`` attribute was added.
 
     Attributes
     -----------
@@ -136,6 +133,8 @@ class RawReactionActionEvent(_RawReprMixin):
         The event type that triggered this action. Can be
         ``REACTION_ADD`` for reaction addition or
         ``REACTION_REMOVE`` for reaction removal.
+
+        .. versionadded:: 1.3
     """
 
     __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',

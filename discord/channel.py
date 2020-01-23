@@ -194,6 +194,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
+        .. versionchanged:: 1.3
+            The ``overwrites`` keyword-only parameter was added.
+
         Parameters
         ----------
         name: :class:`str`
@@ -218,8 +221,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
-
-            .. versionadded:: 1.3
 
         Raises
         ------
@@ -644,6 +645,9 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
+        .. versionchanged:: 1.3
+            The ``overwrites`` keyword-only parameter was added.
+
         Parameters
         ----------
         name: :class:`str`
@@ -665,8 +669,6 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
-
-            .. versionadded:: 1.3
 
         Raises
         ------
@@ -762,6 +764,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
 
+        .. versionchanged:: 1.3
+            The ``overwrites`` keyword-only parameter was added.
+
         Parameters
         ----------
         name: :class:`str`
@@ -775,8 +780,6 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
-
-            .. versionadded:: 1.3
 
         Raises
         ------
