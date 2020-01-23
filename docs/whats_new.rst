@@ -25,7 +25,7 @@ New Features
 - Add :meth:`Guild.fetch_roles` to fetch roles from the HTTP API. (:issue:`2208`)
 - Add support for teams via :class:`Team` when fetching with :meth:`Client.application_info`. (:issue:`2239`)
 - Add support for suppressing embeds via :meth:`Message.edit`
-- Add support for guild subscriptions, see the :class:`Client` documentation for more details.
+- Add support for guild subscriptions. See the :class:`Client` documentation for more details.
 - Add :attr:`VoiceChannel.voice_states` to get voice states without relying on member cache.
 - Add :meth:`Guild.query_members` to request members from the gateway.
 - Add :class:`FFmpegOpusAudio` and other voice improvements. (:issue:`2258`)
