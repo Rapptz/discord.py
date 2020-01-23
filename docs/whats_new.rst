@@ -22,7 +22,7 @@ New Features
 ~~~~~~~~~~~~~~
 
 - Add :meth:`Guild.fetch_members` to fetch members from the HTTP API. (:issue:`2204`)
-- Add :meth:`Guild.fetch_roles` to fetch members from the HTTP API. (:issue:`2208`)
+- Add :meth:`Guild.fetch_roles` to fetch roles from the HTTP API. (:issue:`2208`)
 - Add support for teams via :class:`Team` when fetching with :meth:`Client.application_info`. (:issue:`2239`)
 - Add support for suppressing embeds via :meth:`Message.edit`
 - Add support for guild subscriptions, see the :class:`Client` documentation for more details.
