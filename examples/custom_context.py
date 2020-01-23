@@ -1,3 +1,5 @@
+import random
+
 import discord
 from discord.ext import commands
 
@@ -6,9 +8,9 @@ class MyContext(commands.Context):
     async def tick(self, value):
         # reacts to the message with an emoji
         # depending on whether value is True or False
-        # if its True, itll add a green check mark
-        # otherwise, itll add a red cross mark
-        emoji = '\N{white heavy check mark}' if value else '\N{cross mark}'
+        # if its True, it'll add a green check mark
+        # otherwise, it'll add a red cross mark
+        emoji = '\N{WHITE HEAVY CHECK MARK}' if value else '\N{CROSS MARK}'
         try:
             # this will react to the command author's message
             await self.message.add_reaction(emoji)
@@ -39,5 +41,11 @@ async def guess(ctx, number: int):
     # green check mark if the guess was correct,
     # or a red cross mark if it wasnt
     await ctx.tick(number == value)
-    
-bot.run("your token here")
+
+# important: you shouldnt hard code your token
+# these are very important, and leaking them can 
+# let people do very malicious things with your
+# bot. try to use a file or something to keep
+# them private, and dont commit it to GitHub
+token = "your token here"
+bot.run(token)
