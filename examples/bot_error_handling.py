@@ -40,7 +40,7 @@ async def on_divide_error(ctx, error): # the name of the function doesn't matter
     if isinstance(error, commands.CommandInvokeError):
         error = error.original
 
-    # respond with an error message if the user tries do divide by zero
+    # respond with an error message if the user tries to divide by zero
     if isinstance(error, ZeroDivisionError):
         await ctx.send("You can't divide a number by zero.")
 
