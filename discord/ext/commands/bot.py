@@ -293,8 +293,9 @@ class BotBase(GroupMixin):
         If an :attr:`owner_id` is not set, it is fetched automatically
         through the use of :meth:`~.Bot.application_info`.
 
-        The function also checks if the application is team-owned if
-        :attr:`owner_ids` is not set.
+        .. versionchanged:: 1.3
+            The function also checks if the application is team-owned if
+            :attr:`owner_ids` is not set.
 
         Parameters
         -----------
