@@ -61,6 +61,7 @@ New Features
     - :attr:`Permissions.view_channel`
     - :attr:`Permissions.use_external_emojis`
 
+- Add support for passing keyword arguments when creating :class:`Permissions`.
 - Add support for custom activities via :class:`CustomActivity`. (:issue:`2400`)
     - Note that as of now, bots cannot send custom activities yet.
 

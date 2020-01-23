@@ -51,6 +51,10 @@ class Permissions(BaseFlags):
     bits using the properties as if they were regular bools. This allows
     you to edit permissions.
 
+    .. versionchanged:: 1.3
+        You can now use keyword arguments to initialize :class:`Permissions`
+        similar to :meth:`update`.
+
     .. container:: operations
 
         .. describe:: x == y
