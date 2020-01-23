@@ -56,7 +56,7 @@ New Features
 - Add :attr:`User.system` and :attr:`Profile.system` to know whether a user is an official Discord Trust and Safety account.
 - Add :attr:`Profile.team_user` to check whether a user is a member of a team.
 - Add :meth:`Attachment.to_file` to easily convert attachments to :class:`File` for sending.
-- Add certain aliases to :class:`Permission` to match the UI better. (:issue:`2496`)
+- Add certain aliases to :class:`Permissions` to match the UI better. (:issue:`2496`)
     - :attr:`Permissions.manage_permissions`
     - :attr:`Permissions.view_channel`
     - :attr:`Permissions.use_external_emojis`
@@ -66,11 +66,11 @@ New Features
 
 - Add support for :func:`on_invite_create` and :func:`on_invite_delete` events.
 - Add support for clearing a specific reaction emoji from a message.
-    - :meth:`Message.clear_reaction` and :class:`Reaction.clear` methods.
+    - :meth:`Message.clear_reaction` and :meth:`Reaction.clear` methods.
     - :func:`on_raw_reaction_clear_emoji` and :func:`on_reaction_clear_emoji` events.
 
 - Add :func:`utils.sleep_until` helper to sleep until a specific datetime. (:issue:`2517`, :issue:`2519`)
-- |commands| Add support for teams and :attr:`Bot.owner_ids` to have multiple bot owners. (:issue:`2239`)
+- |commands| Add support for teams and :attr:`Bot.owner_ids <.ext.commands.Bot.owner_ids>` to have multiple bot owners. (:issue:`2239`)
 - |commands| Add new :attr:`BucketType.role <.ext.commands.BucketType.role>` bucket type. (:issue:`2201`)
 - |commands| Expose :attr:`Command.cog <.ext.commands.Command.cog>` property publicly. (:issue:`2360`)
 - |commands| Add non-decorator interface for adding checks to commands via :meth:`Command.add_check <.ext.commands.Command.add_check>` and :meth:`Command.remove_check <.ext.commands.Command.remove_check>`. (:issue:`2411`)
