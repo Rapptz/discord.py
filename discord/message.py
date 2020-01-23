@@ -767,6 +767,9 @@ class Message:
 
         The content must be able to be transformed into a string via ``str(content)``.
 
+        .. versionchanged:: 1.3
+            The ``suppress`` keyword-only parameter was added.
+
         Parameters
         -----------
         content: Optional[:class:`str`]
