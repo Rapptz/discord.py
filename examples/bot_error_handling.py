@@ -27,7 +27,7 @@ async def divide(ctx, left: int, right: int):
 @divide.error
 async def on_divide_error(ctx, error): # the name of the function doesn't matter in this case
     # this event is called every time an exception occurs during the "divide" command's processing.
-    # may this be cause by parsing errors (e.g. invalid quotes or a converter raising the exception),
+    # this can be caused by parsing errors (e.g. invalid quotes or a converter raising the exception),
     # the command being on cooldown, disabled or a general invoke error.
     # Note: the global command error handler (see below) will be called after.
     #
@@ -38,7 +38,7 @@ async def on_divide_error(ctx, error): # the name of the function doesn't matter
     # into CommandInvokeError and stored in its 'original' attribute,
     # so we unwrap it.
     if isinstance(error, commands.CommandInvokeError):
-        error = getattr(error, "original")
+        error = error.original
 
     # respond with an error message if the user tries do divide by zero
     if isinstance(error, ZeroDivisionError):
@@ -47,7 +47,7 @@ async def on_divide_error(ctx, error): # the name of the function doesn't matter
 @bot.event
 async def on_command_error(ctx, error):
     # this event is called every time an exception occurs during a command's processing.
-    # may this be caused by parsing errors (e.g. invalid quotes or a converter raising the exception),
+    # this can be caused by parsing errors (e.g. invalid quotes or a converter raising the exception),
     # a command being on cooldown, disabled, not found or a general invoke error.
     #
     # ctx   = the command's context
@@ -59,7 +59,7 @@ async def on_command_error(ctx, error):
         return
 
     if isinstance(error, commands.CommandInvokeError):
-        error = getattr(error, "original")
+        error = error.original
 
     # do nothing since we don't really care in this case
     if isinstance(error, commands.CommandNotFound):
