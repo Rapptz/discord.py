@@ -102,7 +102,7 @@ Bug Fixes
 - |commands| Updating the :attr:`Paginator.suffix <.ext.commands.Paginator.suffix>` will not cause out of date calculations. (:issue:`2251`)
 - |commands| Allow converters from custom extension packages. (:issue:`2369`, :issue:`2374`)
 - |commands| Fix issue with paginator prefix being ``None`` causing empty pages. (:issue:`2471`)
-- |commands| :class:`~.ext.commands.Greedy` now ignores parsing errors rather than propagating them.
+- |commands| :class:`~.commands.Greedy` now ignores parsing errors rather than propagating them.
 - |commands| :meth:`Command.can_run <.ext.commands.Command.can_run>` now checks whether a command is disabled.
 - |commands| :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` now takes into consideration nickname mentions. (:issue:`2489`)
 - |commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` now properly propagates to the :meth:`HelpCommand.on_help_command_error <.ext.commands.HelpCommand.on_help_command_error>` handler.
