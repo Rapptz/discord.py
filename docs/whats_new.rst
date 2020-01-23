@@ -39,7 +39,7 @@ New Features
 - Add :attr:`VoiceRegion.europe` and :attr:`VoiceRegion.dubai`. (:issue:`2358`, :issue:`2490`)
 - Add :meth:`TextChannel.follow` to follow a news channel. (:issue:`2367`)
 - Add :attr:`Permissions.view_guild_insights` permission. (:issue:`2415`)
-- Add support for new audit log types. See :ref`discord-api-audit-logs` for more information. (:issue:`2427`)
+- Add support for new audit log types. See :ref:`discord-api-audit-logs` for more information. (:issue:`2427`)
     - Note that integration support is not finalized.
 
 - Add :attr:`Webhook.type` to query the type of webhook (:class:`WebhookType`). (:issue:`2441`)
@@ -117,6 +117,7 @@ Miscellaneous
 - The message cache can now be disabled by passing ``None`` to ``max_messages`` in :class:`Client`.
 - The default message cache size has changed from 5000 to 1000 to accommodate small bots.
 - Lower memory usage by only creating certain objects as needed in :class:`Role`.
+- There is now a sleep of 5 seconds before re-IDENTIFYing during a reconnect to prevent long loops of session invalidation.
 - The rate limiting code now uses millisecond precision to have more granular rate limit handling.
     - Along with that, the rate limiting code now uses Discord's response to wait. If you need to use the system clock again for whatever reason, consider passing ``assume_synced_clock`` in :class:`Client`.
 
