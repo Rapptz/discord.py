@@ -920,12 +920,6 @@ of :class:`enum.Enum`.
 
     Specifies the region a voice server belongs to.
 
-    .. versionchanged:: 1.2
-        The ``india`` region was added.
-
-    .. versionchanged:: 1.3
-        The ``europe`` and ``dubai`` regions were added.
-
     .. attribute:: amsterdam
 
         The Amsterdam region.
@@ -935,6 +929,9 @@ of :class:`enum.Enum`.
     .. attribute:: dubai
 
         The Dubai region.
+
+        .. versionadded:: 1.3
+
     .. attribute:: eu_central
 
         The EU Central region.
@@ -944,6 +941,9 @@ of :class:`enum.Enum`.
     .. attribute:: europe
 
         The Europe region.
+
+        .. versionadded:: 1.3
+
     .. attribute:: frankfurt
 
         The Frankfurt region.
@@ -953,6 +953,9 @@ of :class:`enum.Enum`.
     .. attribute:: india
 
         The India region.
+
+        .. versionadded:: 1.2
+
     .. attribute:: japan
 
         The Japan region.
