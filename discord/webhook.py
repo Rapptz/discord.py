@@ -404,6 +404,9 @@ class Webhook:
         The webhook's ID
     type: :class:`WebhookType`
         The type of the webhook.
+
+        .. versionadded:: 1.3
+
     token: Optional[:class:`str`]
         The authentication token of the webhook. If this is ``None``
         then the webhook cannot be used to make requests.

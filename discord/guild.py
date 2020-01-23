@@ -146,6 +146,8 @@ class Guild(Hashable):
         results to a specific language.
     discovery_splash: :class:`str`
         The guild's discovery splash.
+
+        .. versionadded:: 1.3
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',

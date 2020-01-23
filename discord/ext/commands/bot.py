@@ -993,6 +993,8 @@ class Bot(BotBase, discord.Client):
         fetched automatically using :meth:`~.Bot.application_info`.
         For performance reasons it is recommended to use a :class:`set`
         for the collection. You cannot set both `owner_id` and `owner_ids`.
+
+        .. versionadded:: 1.3
     """
     pass
 
