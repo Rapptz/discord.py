@@ -1850,6 +1850,7 @@ Certain utilities make working with async iterators easier, detailed below.
         :param predicate: The predicate to call on every element. Could be a |coroutine_link|_.
         :return: An async iterator.
 
+.. _discord-api-audit-logs:
 
 Audit Log Data
 ----------------
