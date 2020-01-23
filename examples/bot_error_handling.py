@@ -89,4 +89,6 @@ async def on_command_error(ctx, error):
 
 # Treat your bot's token like your account's password,
 # never share it with anyone or upload it anywhere.
-bot.run("TOKEN")
+token = "TOKEN"
+
+bot.run(token)
