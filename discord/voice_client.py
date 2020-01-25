@@ -60,6 +60,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+
 class VoiceClient:
     """Represents a Discord voice connection.
 
@@ -81,6 +82,10 @@ class VoiceClient:
         The voice connection token.
     endpoint: :class:`str`
         The endpoint we are connecting to.
+    latency: :class:`float`
+        Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+        This could be referred to as the Discord Voice WebSocket latency and is
+        an analogue of user's voice latencies.
     channel: :class:`abc.Connectable`
         The voice channel connected to.
     loop: :class:`asyncio.AbstractEventLoop`
@@ -95,6 +100,7 @@ class VoiceClient:
         self.timeout = timeout
         self.ws = None
         self.socket = None
+        self.latency = float('inf')
         self.loop = state.loop
         self._state = state
         # this will be used in the AudioPlayer thread
@@ -183,7 +189,7 @@ class VoiceClient:
         endpoint = data.get('endpoint')
 
         if endpoint is None or self.token is None:
-            log.warning('Awaiting endpoint... This requires waiting. ' \
+            log.warning('Awaiting endpoint... This requires waiting. '
                         'If timeout occurred considering raising the timeout and reconnecting.')
             return
 
@@ -219,6 +225,7 @@ class VoiceClient:
 
         try:
             self.ws = await DiscordVoiceWebSocket.from_client(self)
+            self.latency = self.ws.latency
             self._handshaking = False
             self._connected.clear()
             while not hasattr(self, 'secret_key'):
@@ -341,7 +348,6 @@ class VoiceClient:
         self.checked_add('_lite_nonce', 1, 4294967295)
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
-
 
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
