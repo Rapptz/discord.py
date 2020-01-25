@@ -574,6 +574,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         await super().close_connection(*args, **kwargs)
 
+
 class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements the websocket protocol for handling voice connections.
 
@@ -753,6 +754,12 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         log.info('selected the voice protocol for use (%s)', mode)
 
         await self.client_connect()
+
+    @property
+    def latency(self):
+        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
+        heartbeat = self._keep_alive
+        return float('inf') if heartbeat is None else heartbeat.latency
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
