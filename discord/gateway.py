@@ -52,12 +52,15 @@ __all__ = (
     'ResumeWebSocket',
 )
 
+
 class ResumeWebSocket(Exception):
     """Signals to initialise via RESUME opcode instead of IDENTIFY."""
     def __init__(self, shard_id):
         self.shard_id = shard_id
 
+
 EventListener = namedtuple('EventListener', 'predicate event result future')
+
 
 class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -129,9 +132,11 @@ class KeepAliveHandler(threading.Thread):
         if self.latency > 10:
             log.warning(self.behind_msg, self.latency)
 
+
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.recent_ack_latencies = []
         self.msg = 'Keeping voice websocket alive with timestamp %s.'
         self.block_msg = 'Voice heartbeat blocked for more than %s seconds'
         self.behind_msg = 'Can\'t keep up, voice websocket is %.1fs behind'
@@ -141,6 +146,20 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
             'op': self.ws.HEARTBEAT,
             'd': int(time.time() * 1000)
         }
+
+    def ack(self):
+        ack_time = time.perf_counter()
+        self._last_ack = ack_time
+        self.recent_ack_latencies.append(ack_time - self._last_send)
+        # Only the most recent 20 latencies are stored
+        if len(self.recent_ack_latencies) > 20:
+            del self.recent_ack_latencies[0]
+
+        self.latency = sum(self.recent_ack_latencies)/len(self.recent_ack_latencies)
+
+        if self.latency > 10:
+            log.warning(self.behind_msg, self.latency)
+
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements a WebSocket for Discord's gateway v6.
@@ -702,7 +721,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             await self.load_secret_key(data)
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=interval)
+            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=5.0)
             self._keep_alive.start()
 
     async def initial_connection(self, data):
