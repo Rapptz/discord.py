@@ -100,7 +100,6 @@ class VoiceClient:
         self.timeout = timeout
         self.ws = None
         self.socket = None
-        self.latency = float('inf')
         self.loop = state.loop
         self._state = state
         # this will be used in the AudioPlayer thread
@@ -213,6 +212,17 @@ class VoiceClient:
 
         self._handshake_complete.set()
 
+    @property
+    def latency(self):
+        """:class:`float`: Moving average latency between a HEARTBEAT and a HEARTBEAT_ACK in
+        seconds.
+
+        This could be referred to as the Discord Voice latency and is an analogue to latency as
+        seen by normal discord users.
+        """
+        ws = self.ws
+        return float("inf") if not ws else ws.latency
+
     async def connect(self, *, reconnect=True, _tries=0, do_handshake=True):
         log.info('Connecting to voice...')
         try:
@@ -225,7 +235,6 @@ class VoiceClient:
 
         try:
             self.ws = await DiscordVoiceWebSocket.from_client(self)
-            self.latency = self.ws.latency
             self._handshaking = False
             self._connected.clear()
             while not hasattr(self, 'secret_key'):
