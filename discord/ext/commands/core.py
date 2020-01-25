@@ -1424,7 +1424,7 @@ def check(predicate):
     return decorator
 
 def check_any(*checks):
-    """A :func:`check` that is added that checks if any of the checks passed
+    r"""A :func:`check` that is added that checks if any of the checks passed
     will pass, i.e. using logical OR.
 
     If all checks fail then :exc:`.CheckAnyFailure` is raised to signal the failure.
