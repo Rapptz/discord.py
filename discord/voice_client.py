@@ -82,8 +82,8 @@ class VoiceClient:
         The voice connection token.
     endpoint: :class:`str`
         The endpoint we are connecting to.
-    latency: :class:`float`
-        Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+    latency: :class:`list`
+        List of latencies between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
         This could be referred to as the Discord Voice WebSocket latency and is
         an analogue of user's voice latencies.
     channel: :class:`abc.Connectable`
@@ -214,14 +214,20 @@ class VoiceClient:
 
     @property
     def latency(self):
-        """:class:`float`: Moving average latency between a HEARTBEAT and a HEARTBEAT_ACK in
-        seconds.
+        """:class:`list`: Up to 20 element list of latency between a HEARTBEAT and a
+        HEARTBEAT_ACK in seconds.
 
         This could be referred to as the Discord Voice latency and is an analogue to latency as
         seen by normal discord users.
         """
         ws = self.ws
-        return float("inf") if not ws else ws.latency
+        return [float("inf")] if not ws else ws.latency
+
+    @property
+    def average_latency(self):
+        """:class:`float`: Mean average of :list:`VoiceClient.latency`"""
+        ws = self.ws
+        return float("inf") if not ws else (sum(ws.latency)/len(ws.latency))
 
     async def connect(self, *, reconnect=True, _tries=0, do_handshake=True):
         log.info('Connecting to voice...')
