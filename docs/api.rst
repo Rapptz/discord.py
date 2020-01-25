@@ -1548,7 +1548,7 @@ of :class:`enum.Enum`.
         Messages were bulk deleted by a moderator.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-		the :class:`TextChannel` or :class:`Object` with the ID of the channel that was purged.
+        the :class:`TextChannel` or :class:`Object` with the ID of the channel that was purged.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with one attribute:
@@ -1760,17 +1760,17 @@ of :class:`enum.Enum`.
 
 .. class:: WebhookType
 
-	Represents the type of webhook that can be received.
+    Represents the type of webhook that can be received.
 
     .. versionadded:: 1.3
 
-	.. attribute:: incoming
+    .. attribute:: incoming
 
-		Represents a webhook that can post messages to channels with a token.
+        Represents a webhook that can post messages to channels with a token.
 
-	.. attribute:: channel_follower
+    .. attribute:: channel_follower
 
-		Represents a webhook that is internally managed by Discord, used for following channels.
+        Represents a webhook that is internally managed by Discord, used for following channels.
 
 Async Iterator
 ----------------
@@ -2628,7 +2628,7 @@ MessageFlags
 ~~~~~~~~~~~~
 
 .. autoclass:: MessageFlags
-	:members:
+    :members:
 
 
 Exceptions
