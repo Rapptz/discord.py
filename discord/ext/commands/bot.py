@@ -792,7 +792,7 @@ class BotBase(GroupMixin):
             except TypeError:
                 # It's possible that a generator raised this exception.  Don't
                 # replace it with our own error if that's the case.
-                if isinstance(ret, collections.Iterable):
+                if isinstance(ret, collections.abc.Iterable):
                     raise
 
                 raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
