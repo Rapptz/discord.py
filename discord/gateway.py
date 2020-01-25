@@ -155,9 +155,9 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         if len(self.recent_ack_latencies) > 20:
             del self.recent_ack_latencies[0]
 
-        self.latency = sum(self.recent_ack_latencies)/len(self.recent_ack_latencies)
+        self.latency = self.recent_ack_latencies
 
-        if self.latency > 10:
+        if self.latency[-1] > 10:
             log.warning(self.behind_msg, self.latency)
 
 
@@ -757,9 +757,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     @property
     def latency(self):
-        """:class:`float`: Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."""
+        """:class:`list`: List of latencies measuring latency between a HEARTBEAT and a
+        HEARTBEAT_ACK in seconds."""
         heartbeat = self._keep_alive
-        return float('inf') if heartbeat is None else heartbeat.latency
+        return [float('inf')] if heartbeat is None else heartbeat.latency
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
