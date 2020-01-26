@@ -58,9 +58,7 @@ class ResumeWebSocket(Exception):
     def __init__(self, shard_id):
         self.shard_id = shard_id
 
-
 EventListener = namedtuple('EventListener', 'predicate event result future')
-
 
 class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -132,7 +130,6 @@ class KeepAliveHandler(threading.Thread):
         if self.latency > 10:
             log.warning(self.behind_msg, self.latency)
 
-
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -155,7 +152,6 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
 
         if self.latency > 10:
             log.warning(self.behind_msg, self.latency)
-
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements a WebSocket for Discord's gateway v6.
@@ -569,7 +565,6 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             self._keep_alive.stop()
 
         await super().close_connection(*args, **kwargs)
-
 
 class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements the websocket protocol for handling voice connections.

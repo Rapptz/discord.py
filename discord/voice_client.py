@@ -57,9 +57,7 @@ try:
 except ImportError:
     has_nacl = False
 
-
 log = logging.getLogger(__name__)
-
 
 class VoiceClient:
     """Represents a Discord voice connection.
