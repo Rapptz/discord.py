@@ -34,6 +34,7 @@ import sys
 import time
 import threading
 import zlib
+import collections
 
 import websockets
 
@@ -51,7 +52,6 @@ __all__ = (
     'DiscordVoiceWebSocket',
     'ResumeWebSocket',
 )
-
 
 class ResumeWebSocket(Exception):
     """Signals to initialise via RESUME opcode instead of IDENTIFY."""
@@ -136,10 +136,10 @@ class KeepAliveHandler(threading.Thread):
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.recent_ack_latencies = []
+        self.recent_ack_latencies = collections.deque(maxlen=20)
         self.msg = 'Keeping voice websocket alive with timestamp %s.'
         self.block_msg = 'Voice heartbeat blocked for more than %s seconds'
-        self.behind_msg = 'Can\'t keep up, voice websocket is %.1fs behind'
+        self.behind_msg = 'High socket latency, heartbeat is %.1fs behind'
 
     def get_payload(self):
         return {
@@ -150,14 +150,10 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
     def ack(self):
         ack_time = time.perf_counter()
         self._last_ack = ack_time
-        self.recent_ack_latencies.append(ack_time - self._last_send)
-        # Only the most recent 20 latencies are stored
-        if len(self.recent_ack_latencies) > 20:
-            del self.recent_ack_latencies[0]
+        self.latency = ack_time - self._last_send
+        self.recent_ack_latencies.append(self.latency)
 
-        self.latency = self.recent_ack_latencies
-
-        if self.latency[-1] > 10:
+        if self.latency > 10:
             log.warning(self.behind_msg, self.latency)
 
 
@@ -722,7 +718,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             await self.load_secret_key(data)
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=5.0)
+            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
 
     async def initial_connection(self, data):
@@ -757,10 +753,9 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     @property
     def latency(self):
-        """:class:`list`: List of latencies measuring latency between a HEARTBEAT and a
-        HEARTBEAT_ACK in seconds."""
+        """:class:`float`: Latency between a HEARTBEAT and its HEARTBEAT_ACK in seconds."""
         heartbeat = self._keep_alive
-        return [float('inf')] if heartbeat is None else heartbeat.latency
+        return float('inf') if heartbeat is None else heartbeat.latency
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
