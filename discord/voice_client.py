@@ -222,12 +222,6 @@ class VoiceClient:
         ws = self.ws
         return float("inf") if not ws else ws.latency
 
-    @property
-    def average_latency(self):
-        """:class:`float`: Mean average of :list:`VoiceClient.latency`"""
-        ws = self.ws
-        return float("inf") if not ws else (sum(ws.latency)/len(ws.latency))
-
     async def connect(self, *, reconnect=True, _tries=0, do_handshake=True):
         log.info('Connecting to voice...')
         try:
