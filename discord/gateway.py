@@ -420,7 +420,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         try:
             func = self._discord_parsers[event]
         except KeyError:
-            log.warning('Unknown event %s.', event)
+            log.debug('Unknown event %s.', event)
         else:
             func(data)
 
