@@ -126,6 +126,7 @@ Miscellaneous
 - The performance of :attr:`Member.roles` has improved due to usage of caching to avoid surprising performance traps.
 - The GC is manually triggered during things that cause large deallocations (such as guild removal) to prevent memory fragmentation.
 - There have been many changes to the documentation for fixes both for usability, correctness, and to fix some linter errors. Thanks to everyone who contributed to those.
+- The loading of the opus module has been delayed which would make the result of :func:`opus.is_loaded` somewhat surprising.
 - |commands| Usernames prefixed with @ inside DMs will properly convert using the :class:`User` converter. (:issue:`2498`)
 - |tasks| The task sleeping time will now take into consideration the amount of time the task body has taken before sleeping. (:issue:`2516`)
 
