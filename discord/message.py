@@ -41,6 +41,7 @@ from .member import Member
 from .flags import MessageFlags
 from .file import File
 from .utils import escape_mentions
+from .guild import Guild
 
 
 class Attachment:
@@ -441,7 +442,7 @@ class Message:
 
     def _handle_author(self, author):
         self.author = self._state.store_user(author)
-        if self.guild is not None:
+        if isinstance(self.guild, Guild):
             found = self.guild.get_member(self.author.id)
             if found is not None:
                 self.author = found

@@ -50,7 +50,7 @@ class Team:
     members: List[:class:`TeamMember`]
         A list of the members in the team
 
-    .. versionadded:: 1.3
+        .. versionadded:: 1.3
     """
     __slots__ = ('_state', 'id', 'name', 'icon', 'owner_id', 'members')
 

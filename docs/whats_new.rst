@@ -11,6 +11,25 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p3p1:
+
+v1.3.1
+--------
+
+Minor bug fix release.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix fetching invites in guilds that the user is not in.
+- Fix the channel returned from :meth:`Client.fetch_channel` raising when sending messages. (:issue:`2531`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Fix compatibility warnings when using the Python 3.9 alpha.
+- Change the unknown event logging from WARNING to DEBUG to reduce noise.
+
 .. _vp1p3p0:
 
 v1.3.0
@@ -126,6 +145,7 @@ Miscellaneous
 - The performance of :attr:`Member.roles` has improved due to usage of caching to avoid surprising performance traps.
 - The GC is manually triggered during things that cause large deallocations (such as guild removal) to prevent memory fragmentation.
 - There have been many changes to the documentation for fixes both for usability, correctness, and to fix some linter errors. Thanks to everyone who contributed to those.
+- The loading of the opus module has been delayed which would make the result of :func:`opus.is_loaded` somewhat surprising.
 - |commands| Usernames prefixed with @ inside DMs will properly convert using the :class:`User` converter. (:issue:`2498`)
 - |tasks| The task sleeping time will now take into consideration the amount of time the task body has taken before sleeping. (:issue:`2516`)
 

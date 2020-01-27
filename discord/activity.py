@@ -678,7 +678,7 @@ class CustomActivity(BaseActivity):
     -----------
     name: Optional[:class:`str`]
         The custom activity's name.
-    emoji: Optional[`:class:`PartialEmoji`]
+    emoji: Optional[:class:`PartialEmoji`]
         The emoji to pass to the activity, if any.
     """
 

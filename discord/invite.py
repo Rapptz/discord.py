@@ -296,7 +296,7 @@ class Invite(Hashable):
         channel_id = int(channel_data['id'])
         channel_type = try_enum(ChannelType, channel_data['type'])
         channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
-        if guild is not None:
+        if guild is not None and not isinstance(guild, PartialInviteGuild):
             # Upgrade the partial data if applicable
             channel = guild.get_channel(channel_id) or channel
 
