@@ -276,6 +276,13 @@ class Loop:
         """
         return self._has_failed
 
+    def is_running(self):
+        """:class:`bool`: Check if the task is currently running.
+
+        .. versionadded:: 1.4
+        """
+        return not bool(self._task.done()) if self._task else False
+
     def before_loop(self, coro):
         """A decorator that registers a coroutine to be called before the loop starts running.
 
