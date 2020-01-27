@@ -122,6 +122,11 @@ class Loop:
         elif self._task and self._task.done() or self._stop_next_iteration:
             return None
         return self._next_iteration
+    
+    @property
+    def is_running(self):
+        """:class:`bool`: Check if the task is currently running."""
+        return not self._task.done()
 
     def start(self, *args, **kwargs):
         r"""Starts the internal task in the event loop.
