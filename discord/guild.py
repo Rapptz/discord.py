@@ -221,7 +221,10 @@ class Guild(Hashable):
 
         member = self.get_member(user_id)
         if member is None:
-            member = Member(data=data['member'], state=self._state, guild=self)
+            try:
+                member = Member(data=data['member'], state=self._state, guild=self)
+            except KeyError:
+                member = None
 
         return member, before, after
 
