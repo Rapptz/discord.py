@@ -125,7 +125,6 @@ class Guild(Hashable):
         - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
         - ``VERIFIED``: Guild is a verified server.
         - ``PARTNERED``: Guild is a partnered server.
-        - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``COMMERCE``: Guild can sell things using store channels.
         - ``PUBLIC``: Users can lurk in this guild via Server Discovery.
@@ -465,7 +464,7 @@ class Guild(Hashable):
     @property
     def emoji_limit(self):
         """:class:`int`: The maximum number of emoji slots this guild has."""
-        more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
+        more_emoji = 50
         return max(more_emoji, self._PREMIUM_GUILD_LIMITS[self.premium_tier].emoji)
 
     @property
@@ -1469,9 +1468,6 @@ class Guild(Hashable):
         r"""|coro|
 
         Creates a custom :class:`Emoji` for the guild.
-
-        There is currently a limit of 50 static and animated emojis respectively per guild,
-        unless the guild has the ``MORE_EMOJI`` feature which extends the limit to 200.
 
         You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
