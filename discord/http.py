@@ -179,7 +179,7 @@ class HTTPClient:
 
                     # we are being rate limited
                     if r.status == 429:
-                        if not isinstance(data, dict):
+                        if not r.headers.get('Via'):
                             # Banned by Cloudflare more than likely.
                             raise HTTPException(r, data)
 
