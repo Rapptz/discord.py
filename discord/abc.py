@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import abc
 import copy
 import asyncio
+import time
 from collections import namedtuple
 
 from .iterators import HistoryIterator
@@ -1004,7 +1005,117 @@ class Messageable(metaclass=abc.ABCMeta):
             The message with the message data parsed.
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
+    
+    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
+        """|coro|
 
+        Purges a list of messages that meet the criteria given by the predicate
+        ``check``. If a ``check`` is not provided then all messages are deleted
+        without discrimination.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to
+        delete messages even if they are your own (unless you are a user
+        account). The :attr:`~Permissions.read_message_history` permission is
+        also needed to retrieve message history.
+
+        Internally, this employs a different number of strategies depending
+        on the conditions met such as if a bulk delete is possible or if
+        the account is a user bot or not.
+
+        Examples
+        ---------
+
+        Deleting bot's messages ::
+
+            def is_me(m):
+                return m.author == client.user
+
+            deleted = await channel.purge(limit=100, check=is_me)
+            await channel.send('Deleted {} message(s)'.format(len(deleted)))
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of messages to search through. This is not the number
+            of messages that will be deleted, though it can be.
+        check: Callable[[:class:`Message`], :class:`bool`]
+            The function used to check if a message should be deleted.
+            It must take a :class:`Message` as its sole parameter.
+        before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
+            Same as ``before`` in :meth:`history`.
+        after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
+            Same as ``after`` in :meth:`history`.
+        around: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
+            Same as ``around`` in :meth:`history`.
+        oldest_first: Optional[:class:`bool`]
+            Same as ``oldest_first`` in :meth:`history`.
+        bulk: :class:`bool`
+            If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
+            a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
+            fall back to single delete if current account is a user bot, or if messages are
+            older than two weeks.
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to do the actions required.
+        HTTPException
+            Purging the messages failed.
+
+        Returns
+        --------
+        List[:class:`.Message`]
+            The list of messages that were deleted.
+        """
+
+        if check is None:
+            check = lambda m: True
+
+        # Filter message history to messages matching check predicate
+        message_history = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
+        message_history = (msg async for msg in message_history if check(msg))
+        
+        # This list is populated with successfully deleted messages and is returned upon function completion
+        deleted_messages = []
+
+        # Calculates the lowest possible snowflake ID for messages that are exactly 14 days old
+        # This is used later to choose delete strategies
+        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
+        
+        # Use bulk delete strategy and API endpoint if possible
+        if self._state.is_bot and bulk:
+            # Can only bulk delete 100 messages at a time so store them in a buffer temporarily
+            message_buffer = []
+            async for msg in message_history:
+                if len(message_buffer) == 100:
+                    await self._state.http.delete_messages(msg.channel.id, [m.id for m in message_buffer])
+                    deleted_messages += message_buffer
+                    message_buffer = []
+                
+                if msg.id > minimum_time:
+                    message_buffer.append(msg)
+                
+                # Message older than 2 weeks
+                # Must use single delete here
+                else:
+                    await msg.delete()
+                    deleted_messages.append(msg)
+            
+            # History iterator exhausted, clear buffer of any remaining messages
+            if len(message_buffer) >= 2:
+                await self._state.http.delete_messages(msg.channel.id, [m.id for m in message_buffer])
+            elif len(message_buffer) == 1:
+                await message_buffer[0].delete()
+            # Ensure deleted_messages is updated with partial buffer data
+            deleted_messages += message_buffer
+
+        # Single delete strategy is used
+        else:
+            async for msg in message_history:
+                await msg.delete()
+                deleted_messages.append(msg)
+        
+        return deleted_messages 
 
 class Connectable(metaclass=abc.ABCMeta):
     """An ABC that details the common operations on a channel that can

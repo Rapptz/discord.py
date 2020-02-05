@@ -24,7 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import time
 import asyncio
 
 import discord.abc
@@ -45,10 +44,6 @@ __all__ = (
     'GroupChannel',
     '_channel_factory',
 )
-
-async def _single_delete_strategy(messages):
-    for m in messages:
-        await m.delete()
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
@@ -294,115 +289,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         message_ids = [m.id for m in messages]
         await self._state.http.delete_messages(self.id, message_ids)
-
-    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
-        """|coro|
-
-        Purges a list of messages that meet the criteria given by the predicate
-        ``check``. If a ``check`` is not provided then all messages are deleted
-        without discrimination.
-
-        You must have the :attr:`~Permissions.manage_messages` permission to
-        delete messages even if they are your own (unless you are a user
-        account). The :attr:`~Permissions.read_message_history` permission is
-        also needed to retrieve message history.
-
-        Internally, this employs a different number of strategies depending
-        on the conditions met such as if a bulk delete is possible or if
-        the account is a user bot or not.
-
-        Examples
-        ---------
-
-        Deleting bot's messages ::
-
-            def is_me(m):
-                return m.author == client.user
-
-            deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send('Deleted {} message(s)'.format(len(deleted)))
-
-        Parameters
-        -----------
-        limit: Optional[:class:`int`]
-            The number of messages to search through. This is not the number
-            of messages that will be deleted, though it can be.
-        check: Callable[[:class:`Message`], :class:`bool`]
-            The function used to check if a message should be deleted.
-            It must take a :class:`Message` as its sole parameter.
-        before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
-            Same as ``before`` in :meth:`history`.
-        after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
-            Same as ``after`` in :meth:`history`.
-        around: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
-            Same as ``around`` in :meth:`history`.
-        oldest_first: Optional[:class:`bool`]
-            Same as ``oldest_first`` in :meth:`history`.
-        bulk: :class:`bool`
-            If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
-            a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
-            fall back to single delete if current account is a user bot, or if messages are
-            older than two weeks.
-
-        Raises
-        -------
-        Forbidden
-            You do not have proper permissions to do the actions required.
-        HTTPException
-            Purging the messages failed.
-
-        Returns
-        --------
-        List[:class:`.Message`]
-            The list of messages that were deleted.
-        """
-
-        if check is None:
-            check = lambda m: True
-
-        iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
-        ret = []
-        count = 0
-
-        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if self._state.is_bot and bulk else _single_delete_strategy
-
-        while True:
-            try:
-                msg = await iterator.next()
-            except NoMoreItems:
-                # no more messages to poll
-                if count >= 2:
-                    # more than 2 messages -> bulk delete
-                    to_delete = ret[-count:]
-                    await strategy(to_delete)
-                elif count == 1:
-                    # delete a single message
-                    await ret[-1].delete()
-
-                return ret
-            else:
-                if count == 100:
-                    # we've reached a full 'queue'
-                    to_delete = ret[-100:]
-                    await strategy(to_delete)
-                    count = 0
-                    await asyncio.sleep(1)
-
-                if check(msg):
-                    if msg.id < minimum_time:
-                        # older than 14 days old
-                        if count == 1:
-                            await ret[-1].delete()
-                        elif count >= 2:
-                            to_delete = ret[-count:]
-                            await strategy(to_delete)
-
-                        count = 0
-                        strategy = _single_delete_strategy
-
-                    count += 1
-                    ret.append(msg)
 
     async def webhooks(self):
         """|coro|
