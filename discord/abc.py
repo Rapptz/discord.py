@@ -28,7 +28,7 @@ import abc
 import copy
 import asyncio
 import time
-from collections import namedtuple
+from collections import namedtuple, deque
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -1085,7 +1085,7 @@ class Messageable(metaclass=abc.ABCMeta):
         # Use bulk delete strategy and API endpoint if possible
         if self._state.is_bot and bulk:
             # Can only bulk delete 100 messages at a time so store them in a buffer temporarily
-            message_buffer = []
+            message_buffer = deque()
             async for msg in message_history:
                 if len(message_buffer) == 100:
                     await self._state.http.delete_messages(msg.channel.id, [m.id for m in message_buffer])
