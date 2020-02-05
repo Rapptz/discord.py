@@ -220,6 +220,12 @@ class Guild(Hashable):
             self._voice_states[user_id] = after
 
         member = self.get_member(user_id)
+        if member is None:
+            try:
+                member = Member(data=data['member'], state=self._state, guild=self)
+            except KeyError:
+                member = None
+
         return member, before, after
 
     def _add_role(self, role):
