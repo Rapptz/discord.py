@@ -816,6 +816,9 @@ of :class:`enum.Enum`.
     .. attribute:: group
 
         A private group text channel.
+    .. attribute:: category
+
+        A category channel.
     .. attribute:: news
 
         A guild news channel.
