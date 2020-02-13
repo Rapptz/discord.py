@@ -587,6 +587,7 @@ class BotBase(GroupMixin):
             for module in list(sys.modules.keys()):
                 if _is_submodule(name, module):
                     del sys.modules[module]
+                    del self.__extensions[module]
 
     def _load_from_module_spec(self, spec, key):
         # precondition: key not in self.__extensions
