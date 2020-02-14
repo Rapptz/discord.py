@@ -587,7 +587,7 @@ class BotBase(GroupMixin):
             for module in list(sys.modules.keys()):
                 if _is_submodule(name, module):
                     try:
-                        func = getattr(module, 'teardown')
+                        func = getattr(sys.modules[module], 'teardown')
                     except AttributeError:
                         pass
                     del sys.modules[module]
