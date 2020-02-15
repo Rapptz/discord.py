@@ -287,40 +287,27 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if len(messages) == 0:
             return # do nothing
 
-        if len(messages) == 1:
-            message_id = messages[0].id
-
-            if delay is not None:
-                async def delete():
-                    await asyncio.sleep(delay)
-                    try:
-                        await self._state.http.delete_message(self.id, message_id)
-                    except HTTPException:
-                        pass
-
-                asyncio.ensure_future(delete(), loop=self._state.loop)
-            else:
-                await self._state.http.delete_message(self.id, message_id)
-            return
-
         if len(messages) > 100:
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
         message_ids = [m.id for m in messages]
-
         if delay is not None:
             async def delete():
                 await asyncio.sleep(delay)
                 try:
-                    await self._state.http.delete_messages(self.id, message_ids)
+                    if len(message_ids) == 1:
+                        await self._state.http.delete_message(self.id, message_ids[0])
+                    else:
+                        await self._state.http.delete_messages(self.id, message_ids)
                 except HTTPException:
                     pass
 
             asyncio.ensure_future(delete(), loop=self._state.loop)
         else:
-            await self._state.http.delete_messages(self.id, message_ids)
-
-
+            if len(message_ids) == 1:
+                await self._state.http.delete_message(self.id, message_ids[0])
+            else:
+                await self._state.http.delete_messages(self.id, message_ids)
 
     async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
         """|coro|
