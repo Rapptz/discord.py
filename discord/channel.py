@@ -243,7 +243,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
-    async def delete_messages(self, messages):
+    async def delete_messages(self, messages, delay=None):
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -265,6 +265,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         -----------
         messages: Iterable[:class:`abc.Snowflake`]
             An iterable of messages denoting which ones to bulk delete.
+        delay: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the messages. If the deletion fails then it is silently ignored.
 
         Raises
         ------
@@ -286,14 +289,38 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         if len(messages) == 1:
             message_id = messages[0].id
-            await self._state.http.delete_message(self.id, message_id)
+
+            if delay is not None:
+                async def delete():
+                    await asyncio.sleep(delay)
+                    try:
+                        await self._state.http.delete_message(self.id, message_id)
+                    except HTTPException:
+                        pass
+
+                asyncio.ensure_future(delete(), loop=self._state.loop)
+            else:
+                await self._state.http.delete_message(self.id, message_id)
             return
 
         if len(messages) > 100:
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
         message_ids = [m.id for m in messages]
-        await self._state.http.delete_messages(self.id, message_ids)
+
+        if delay is not None:
+            async def delete():
+                await asyncio.sleep(delay)
+                try:
+                    await self._state.http.delete_messages(self.id, message_ids)
+                except HTTPException:
+                    pass
+
+            asyncio.ensure_future(delete(), loop=self._state.loop)
+        else:
+            await self._state.http.delete_messages(self.id, message_ids)
+
+
 
     async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
         """|coro|
