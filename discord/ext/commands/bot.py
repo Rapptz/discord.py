@@ -590,8 +590,14 @@ class BotBase(GroupMixin):
                         func = getattr(sys.modules[module], 'teardown')
                     except AttributeError:
                         pass
-                    del sys.modules[module]
-                    del self.__extensions[module]
+                    else:
+                        try:
+                            func(self)
+                        except Exception:
+                            pass
+                    finally:
+                        del sys.modules[module]
+                        del self.__extensions[module]
 
     def _load_from_module_spec(self, spec, key):
         # precondition: key not in self.__extensions
