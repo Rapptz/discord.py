@@ -357,7 +357,7 @@ class _PartialWebhookState:
         return _FriendlyHttpAttributeErrorHelper()
 
     def __getattr__(self, attr):
-        raise AttributeError('PartialWebhookState does not support {0:!r}.'.format(attr))
+        raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
 
 class Webhook:
     """Represents a Discord webhook.
