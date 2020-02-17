@@ -194,7 +194,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 file.reset(seek=tries)
 
             async with self.session.request(verb, url, headers=headers, data=data) as r:
-                response = await r.text(encoding='utf-8')
+                # Coerce empty strings to return None for hygiene purposes
+                response = (await r.text(encoding='utf-8')) or None
                 if r.headers['Content-Type'] == 'application/json':
                     response = json.loads(response)
 
@@ -275,7 +276,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
-            response = r.text
+            # Coerce empty responses to return None for hygiene purposes
+            response = r.text or None
 
             # compatibility with aiohttp
             r.status = r.status_code
