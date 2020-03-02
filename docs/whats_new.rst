@@ -11,6 +11,24 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p3p2:
+
+v1.3.2
+---------
+
+Another minor bug fix release.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Higher the wait time during the ``GUILD_CREATE`` stream before ``on_ready`` is fired for :class:`AutoShardedClient`.
+- :func:`on_voice_state_update` now uses the inner ``member`` payload which should make it more reliable.
+- Fix various Cloudflare handling errors (:issue:`2572`, :issue:`2544`)
+- Fix crashes if :attr:`Message.guild` is :class:`Object` instead of :class:`Guild`.
+- Fix :meth:`Webhook.send` returning an empty string instead of ``None`` when ``wait=False``.
+- Fix invalid format specifier in webhook state (:issue:`2570`)
+- |commands| Passing invalid permissions to permission related checks now raises ``TypeError``.
+
 .. _vp1p3p1:
 
 v1.3.1

@@ -649,6 +649,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_invite_create(invite)
 
     Called when an :class:`Invite` is created.
+    You must have the :attr:`~Permissions.manage_channels` permission to receive this.
 
     .. versionadded:: 1.3
 
@@ -663,6 +664,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_invite_delete(invite)
 
     Called when an :class:`Invite` is deleted.
+    You must have the :attr:`~Permissions.manage_channels` permission to receive this.
 
     .. versionadded:: 1.3
 
@@ -816,6 +818,9 @@ of :class:`enum.Enum`.
     .. attribute:: group
 
         A private group text channel.
+    .. attribute:: category
+
+        A category channel.
     .. attribute:: news
 
         A guild news channel.

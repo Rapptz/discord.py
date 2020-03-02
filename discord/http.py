@@ -40,8 +40,13 @@ log = logging.getLogger(__name__)
 
 async def json_or_text(response):
     text = await response.text(encoding='utf-8')
-    if response.headers['content-type'] == 'application/json':
-        return json.loads(text)
+    try:
+        if response.headers['content-type'] == 'application/json':
+            return json.loads(text)
+    except KeyError:
+        # Thanks Cloudflare
+        pass
+
     return text
 
 class Route:

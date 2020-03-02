@@ -468,7 +468,7 @@ class Message:
         self.mentions = r = []
         guild = self.guild
         state = self._state
-        if guild is None:
+        if not isinstance(guild, Guild):
             self.mentions = [state.store_user(m) for m in mentions]
             return
 
@@ -482,7 +482,7 @@ class Message:
 
     def _handle_mention_roles(self, role_mentions):
         self.role_mentions = []
-        if self.guild is not None:
+        if isinstance(self.guild, Guild):
             for role_id in map(int, role_mentions):
                 role = self.guild.get_role(role_id)
                 if role is not None:
