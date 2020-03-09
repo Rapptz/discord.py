@@ -1110,7 +1110,7 @@ class GroupMixin:
 
     def walk_commands(self):
         """An iterator that recursively walks through all commands and subcommands."""
-        for command in tuple(self.all_commands.values()):
+        for command in self.commands:
             yield command
             if isinstance(command, GroupMixin):
                 yield from command.walk_commands()
