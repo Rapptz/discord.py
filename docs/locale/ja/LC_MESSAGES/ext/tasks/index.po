@@ -106,7 +106,7 @@ msgid "Parameters"
 msgstr "パラメーター"
 
 #: discord.ext.tasks.Loop.restart:8 discord.ext.tasks.Loop.start:3 of
-msgid "The arguments to to use."
+msgid "The arguments to use."
 msgstr ""
 
 #: discord.ext.tasks.Loop.restart:9 discord.ext.tasks.Loop.start:4 of
