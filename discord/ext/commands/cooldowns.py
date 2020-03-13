@@ -179,7 +179,7 @@ class _Semaphore:
     value is necessary because I need to support both `wait=True` and
     `wait=False`.
 
-    An asyncio.Queue could have been used to do this as well -- but it
+    An asyncio.Queue could have been used to do this as well -- but it is
     not as inefficient since internally that uses two queues and is a bit
     overkill for what is basically a counter.
     """
