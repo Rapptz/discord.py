@@ -127,6 +127,7 @@ class Guild(Hashable):
         - ``PARTNERED``: Guild is a partnered server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
+        - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
         - ``COMMERCE``: Guild can sell things using store channels.
         - ``PUBLIC``: Users can lurk in this guild via Server Discovery.
         - ``NEWS``: Guild can create news channels.
