@@ -128,11 +128,12 @@ class Guild(Hashable):
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``COMMERCE``: Guild can sell things using store channels.
-        - ``PUBLIC``: Users can lurk in this guild via Server Discovery.
+        - ``PUBLIC``: Guild has access to features that allow users to join without an invite.
         - ``NEWS``: Guild can create news channels.
         - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
         - ``PUBLIC_DISABLED``: Guild cannot be public.
+        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
@@ -957,7 +958,7 @@ class Guild(Hashable):
             The new name of the guild.
         description: :class:`str`
             The new description of the guild. This is only available to guilds that
-            contain `VERIFIED` in :attr:`Guild.features`.
+            contain `PUBLIC` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
             and GIF for guilds with ``ANIMATED_ICON`` feature.
