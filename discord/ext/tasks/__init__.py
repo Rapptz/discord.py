@@ -129,7 +129,7 @@ class Loop:
         Parameters
         ------------
         \*args
-            The arguments to to use.
+            The arguments to use.
         \*\*kwargs
             The keyword arguments to use.
 
