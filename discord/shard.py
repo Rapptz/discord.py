@@ -353,5 +353,6 @@ class AutoShardedClient(Client):
             if me is None:
                 continue
 
-            me.activities = (activity,)
+            if activity is not None:
+                me.activities = (activity,)
             me.status = status_enum
