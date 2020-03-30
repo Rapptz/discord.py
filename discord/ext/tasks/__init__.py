@@ -347,6 +347,8 @@ class Loop:
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
 
+        .. versionadded:: 1.4
+
         Parameters
         ------------
         coro: :ref:`coroutine <coroutine>`
