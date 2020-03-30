@@ -5,6 +5,8 @@ import websockets
 import discord
 import inspect
 import logging
+import sys
+import traceback
 
 from discord.backoff import ExponentialBackoff
 
@@ -89,10 +91,10 @@ class Loop:
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
-        except Exception:
+        except Exception as exc:
             self._has_failed = True
-            log.exception('Internal background task failed.')
-            raise
+            await self._error(exc)
+            raise exc
         finally:
             await self._call_loop_function('after_loop')
             self._is_being_cancelled = False
@@ -276,6 +278,17 @@ class Loop:
         """
         return self._has_failed
 
+    async def _error(self, exception):
+        """|coro|
+
+        The default error handler provided by the task.
+
+        By default this prints to :data:`sys.stderr` however it could be
+        overridden to have a different implementation.
+        """
+        print('Internal background task failed and was cancelled.', file=sys.stderr)
+        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
+
     def before_loop(self, coro):
         """A decorator that registers a coroutine to be called before the loop starts running.
 
@@ -327,6 +340,27 @@ class Loop:
             raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
 
         self._after_loop = coro
+        return coro
+
+    def error(self, coro):
+        """A decorator that register a coroutine to be called if the task encounters an unhandled exception.
+
+        The coroutine must take only one argument the exception raised (except ``self`` in a class context).
+
+        Parameters
+        ------------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register in the event of an unhandled exception.
+
+        Raises
+        -------
+        TypeError
+            The function was not a coroutine.
+        """
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+
+        self._error = coro
         return coro
 
     def _get_next_sleep_time(self):
