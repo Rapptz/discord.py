@@ -343,7 +343,7 @@ class Loop:
         return coro
 
     def error(self, coro):
-        """A decorator that register a coroutine to be called if the task encounters an unhandled exception.
+        """A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
 
