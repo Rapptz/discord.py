@@ -52,15 +52,15 @@ class Loop:
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
 
-    async def _call_loop_function(self, name):
+    async def _call_loop_function(self, name, *args, **kwargs):
         coro = getattr(self, '_' + name)
         if coro is None:
             return
 
         if self._injected is not None:
-            await coro(self._injected)
+            await coro(self._injected, *args, **kwargs)
         else:
-            await coro()
+            await coro(*args, **kwargs)
 
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
@@ -93,7 +93,7 @@ class Loop:
             raise
         except Exception as exc:
             self._has_failed = True
-            await self._error(exc)
+            await self._call_loop_function('error', exc)
             raise exc
         finally:
             await self._call_loop_function('after_loop')
