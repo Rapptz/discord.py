@@ -279,14 +279,7 @@ class Loop:
         return self._has_failed
 
     async def _error(self, exception):
-        """|coro|
-
-        The default error handler provided by the task.
-
-        By default this prints to :data:`sys.stderr` however it could be
-        overridden to have a different implementation.
-        """
-        print('Internal background task failed and was cancelled.', file=sys.stderr)
+        print('Unhandled exception in internal background task {0.__name__!r}.'.format(self.coro), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     def before_loop(self, coro):
