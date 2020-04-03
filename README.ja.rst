@@ -112,3 +112,5 @@ examplesディレクトリに更に多くのサンプルがあります。
 - `ドキュメント <https://discordpy.readthedocs.io/ja/latest/index.html>`_
 - `公式Discordサーバー <https://discord.gg/nXzj3dg>`_
 - `Discord API <https://discord.gg/discord-api>`_
+
+[![Run on Repl.it](https://repl.it/badge/github/Rapptz/discord.py)](https://repl.it/github/Rapptz/discord.py)
