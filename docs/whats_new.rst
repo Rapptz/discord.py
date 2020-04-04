@@ -11,6 +11,19 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p3p3:
+
+v1.3.3
+--------
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Change default WS close to 4000 instead of 1000.
+    - The previous close code caused sessions to be invalidated at a higher frequency than desired.
+
+- Fix ``None`` appearing in ``Member.activities``. (:issue:`2619`)
+
 .. _vp1p3p2:
 
 v1.3.2

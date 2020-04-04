@@ -37,7 +37,7 @@ extras_require = {
     'voice': ['PyNaCl==1.3.0'],
     'docs': [
         'sphinx==1.8.5',
-        'sphinxcontrib_trio==1.1.0',
+        'sphinxcontrib_trio==1.1.1',
         'sphinxcontrib-websupport',
     ],
     'typings': ['typing-extensions>=3.7.4']
@@ -53,7 +53,7 @@ setup(name='discord.py',
       version=version,
       packages=['discord', 'discord.ext.commands', 'discord.ext.tasks'],
       license='MIT',
-      description='A python wrapper for the Discord API',
+      description='A Python wrapper for the Discord API',
       long_description=readme,
       long_description_content_type="text/x-rst",
       include_package_data=True,

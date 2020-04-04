@@ -147,7 +147,7 @@ class Client:
         must be used to fetch the offline members of the guild.
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
-    activity: Optional[:class:`BaseActivity`]
+    activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
     heartbeat_timeout: :class:`float`
         The maximum numbers of seconds before timing out and restarting the
@@ -549,7 +549,7 @@ class Client:
                 pass
 
         if self.ws is not None and self.ws.open:
-            await self.ws.close()
+            await self.ws.close(code=1000)
 
         self._ready.clear()
 
@@ -647,7 +647,7 @@ class Client:
 
     @property
     def activity(self):
-        """Optional[:class:`BaseActivity`]: The activity being used upon
+        """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
         """
         return create_activity(self._connection._activity)
@@ -914,7 +914,7 @@ class Client:
 
         Parameters
         ----------
-        activity: Optional[:class:`BaseActivity`]
+        activity: Optional[:class:`.BaseActivity`]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`.Status`]
             Indicates what status to change to. If ``None``, then
@@ -947,7 +947,8 @@ class Client:
             if me is None:
                 continue
 
-            me.activities = (activity,)
+            if activity is not None:
+                me.activities = (activity,)
             me.status = status_enum
 
     # Guild stuff
