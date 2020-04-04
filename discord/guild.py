@@ -1591,13 +1591,15 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
-    async def edit_role_positions(self, *, positions=None, reason=None):
+    async def edit_role_positions(self, *, positions, reason=None):
         """|coro|
         
-        Changes the positions of a set of :class:`Role` for the guild.
+        Bulk edits a list of :class:`Role` in the guild.
 
         You must have the :attr:`~Permissions.manage_roles` permission to
         do this.
+
+        .. versionadded:: 1.4
 
         Example:
 
@@ -1633,23 +1635,25 @@ class Guild(Hashable):
         List[:class:`Role`]
             A list of all the roles in the guild.
         """
-        if positions is None:
-            positions = {}
-        elif not isinstance(positions, dict):
+        if not isinstance(positions, dict):
             raise InvalidArgument('positions parameter expects a dict.')
 
         role_positions = []
         for role, position in positions.items():
 
             payload = {
-                'id': role.id, 
+                'id': role.id,
                 'position': position
             }
 
             role_positions.append(payload)
 
         data = await self._state.http.move_role_position(self.id, role_positions, reason=reason)
-        roles = [Role(guild=self, data=d, state=self._state) for d in data]
+        roles = []
+        for d in data:
+            role = Role(guild=self, data=d, state=self._state)
+            roles.append(role)
+            self._roles[role.id] = role
 
         return roles
 
