@@ -781,13 +781,15 @@ class Webhook:
         if username:
             payload['username'] = username
 
+        previous_mentions = getattr(self._state, 'mentions', None)
+
         if mentions:
-            try:
-                mentions = self._state.mentions.merge(mentions).to_dict()
-            except AttributeError:
-                mentions = mentions.to_dict()
-            finally:
-                payload['allowed_mentions'] = mentions
+            if previous_mentions is not None:
+                payload['allowed_mentions'] = previous_mentions.merge(mentions).to_dict()
+            else:
+                payload['allowed_mentions'] = mentions.to_dict()
+        elif previous_mentions is not None:
+            payload['allowed_mentions'] = previous_mentions.to_dict()
 
         return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 

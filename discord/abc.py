@@ -838,6 +838,8 @@ class Messageable(metaclass=abc.ABCMeta):
                 mentions = state.mentions.merge(mentions).to_dict()
             else:
                 mentions = mentions.to_dict()
+        else:
+            mentions = state.mentions and state.mentions.to_dict()
 
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')

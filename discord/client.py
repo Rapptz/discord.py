@@ -149,7 +149,7 @@ class Client:
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
-    mention: Optional[:class:`AllowedMentions`]
+    mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
 
         .. versionadded:: 1.4
