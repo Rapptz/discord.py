@@ -733,7 +733,7 @@ class Webhook:
             A list of embeds to send with the content. Maximum of 10. This cannot
             be mixed with the ``embed`` parameter.
         allowed_mentions: :class:`AllowedMentions`
-            Controls the allowed_mentions being processed in this message.
+            Controls the mentions being processed in this message.
 
             .. versionadded:: 1.4
 

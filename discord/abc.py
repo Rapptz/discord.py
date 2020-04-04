@@ -806,7 +806,7 @@ class Messageable(metaclass=abc.ABCMeta):
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
-        allowed_mentions: :class:`AllowedMentions`
+        allowed_mentions: :class:`~discord.AllowedMentions`
             Controls the mentions being processed in this message.
 
             .. versionadded:: 1.4
