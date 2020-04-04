@@ -37,6 +37,7 @@ import websockets
 from .user import User, Profile
 from .asset import Asset
 from .invite import Invite
+from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .channel import _channel_factory
@@ -1033,6 +1034,11 @@ class Client:
         """
         return GuildIterator(self, limit=limit, before=before, after=after)
 
+    async def fetch_template(self, code):
+        code = utils.resolve_template(code)
+        data = await self.http.get_template(code)
+        return Template(data=data, state=self._connection)
+
     async def fetch_guild(self, guild_id):
         """|coro|
 
@@ -1067,7 +1073,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None):
+    async def create_guild(self, name, region=None, icon=None, *, template=None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1084,6 +1090,8 @@ class Client:
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
+        template: :class:`.Template`
+            A guild template used to create the guild.
 
         Raises
         ------
@@ -1098,6 +1106,9 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
+        if isinstance(template, Template):
+            await template.create_guild(name, region, icon)
+
         if icon is not None:
             icon = utils._bytes_to_base64_data(icon)
 

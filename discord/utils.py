@@ -436,6 +436,17 @@ def resolve_invite(invite):
             return m.group(1)
     return invite
 
+def resolve_template(code):
+    from .template import Template # circular import
+    if isinstance(code, Template) or isinstance(code, Object):
+        return template.id
+    else:
+        rx = r'(?:https?\:\/\/)?discord(?:\.new|app\.com\/invite)\/(.+)'
+        m = re.match(rx, code)
+        if m:
+            return m.group(1)
+    return code
+
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
                                      for c in ('*', '`', '_', '~', '|'))
 
