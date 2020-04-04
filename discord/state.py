@@ -79,12 +79,12 @@ class ConnectionState:
         self._fetch_offline = options.get('fetch_offline_members', True)
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_subscriptions = options.get('guild_subscriptions', True)
-        mentions = options.get('mentions')
+        allowed_mentions = options.get('allowed_mentions')
 
-        if mentions is not None and not isinstance(mentions, AllowedMentions):
-            raise TypeError('mentions parameter must be AllowedMentions')
+        if allowed_mentions is not None and not isinstance(allowed_mentions, AllowedMentions):
+            raise TypeError('allowed_mentions parameter must be AllowedMentions')
 
-        self.mentions = mentions
+        self.allowed_mentions = allowed_mentions
         # Only disable cache if both fetch_offline and guild_subscriptions are off.
         self._cache_members = (self._fetch_offline or self.guild_subscriptions)
         self._listeners = []

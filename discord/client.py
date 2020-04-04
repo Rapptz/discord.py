@@ -150,7 +150,7 @@ class Client:
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
-    mentions: Optional[:class:`AllowedMentions`]
+    allowed_mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
 
         .. versionadded:: 1.4
@@ -667,21 +667,21 @@ class Client:
             raise TypeError('activity must derive from BaseActivity.')
 
     @property
-    def mentions(self):
+    def allowed_mentions(self):
         """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
 
         .. versionadded:: 1.4
         """
-        return self._connection.mentions
+        return self._connection.allowed_mentions
 
-    @mentions.setter
-    def mentions(self, value):
+    @allowed_mentions.setter
+    def allowed_mentions(self, value):
         if value is None:
-            self._connection.mentions = value
+            self._connection.allowed_mentions = value
         elif isinstance(value, AllowedMentions):
-            self._connection.mentions = value
+            self._connection.allowed_mentions = value
         else:
-            raise TypeError('mentions must be AllowedMentions not {0.__class__!r}'.format(value))
+            raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
 
     # helpers/getters
 
