@@ -549,7 +549,7 @@ class Client:
                 pass
 
         if self.ws is not None and self.ws.open:
-            await self.ws.close()
+            await self.ws.close(code=1000)
 
         self._ready.clear()
 
