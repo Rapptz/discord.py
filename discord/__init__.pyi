@@ -6,7 +6,10 @@ from .user import User as User, ClientUser as ClientUser, Profile as Profile
 from .emoji import Emoji as Emoji
 from .partial_emoji import PartialEmoji as PartialEmoji
 from .activity import *
-from .channel import *
+from .channel import (
+    TextChannel as TextChannel, VoiceChannel as VoiceChannel, DMChannel as DMChannel,
+    CategoryChannel as CategoryChannel, StoreChannel as StoreChannel, GroupChannel as GroupChannel
+)
 from .guild import Guild as Guild
 from .flags import SystemChannelFlags as SystemChannelFlags, MessageFlags as MessageFlags
 from .relationship import Relationship as Relationship
