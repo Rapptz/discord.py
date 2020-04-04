@@ -42,6 +42,7 @@ from .guild import Guild
 from .channel import _channel_factory
 from .enums import ChannelType
 from .member import Member
+from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
@@ -664,6 +665,23 @@ class Client:
             self._connection._activity = value.to_dict()
         else:
             raise TypeError('activity must derive from BaseActivity.')
+
+    @property
+    def mentions(self):
+        """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
+
+        .. versionadded:: 1.4
+        """
+        return self._connection.mentions
+
+    @mentions.setter
+    def mentions(self, value):
+        if value is None:
+            self._connection.mentions = value
+        elif isinstance(value, AllowedMentions):
+            self._connection.mentions = value
+        else:
+            raise TypeError('mentions must be AllowedMentions not {0.__class__!r}'.format(value))
 
     # helpers/getters
 
