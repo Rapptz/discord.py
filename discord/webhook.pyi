@@ -2,7 +2,7 @@ import aiohttp
 import asyncio
 import datetime
 
-from .abc import User as ABCUser
+from .abc import User as _ABCUser
 from .guild import Guild
 from .channel import TextChannel
 from .embeds import Embed
@@ -38,7 +38,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
     def __init__(self, session: aiohttp.ClientSession) -> None: ...
     async def request(self, verb: str, url: str, payload: Optional[Dict[str, Any]] = ...,
                       multipart: Optional[Dict[str, Any]] = ..., *, files: Optional[Iterable[File]] = ...) -> Any: ...
-    async def handle_execution_response(self, data: Any, *, wait: bool) -> Message: ...
+    async def handle_execution_response(self, response: Any, *, wait: bool) -> Message: ...
 
 class RequestsWebhookAdapter(WebhookAdapter):
     session: Any
@@ -58,7 +58,7 @@ class Webhook:
     guild_id: Optional[int]
     name: Optional[str]
     avatar: Optional[str]
-    user: Optional[ABCUser]
+    user: Optional[_ABCUser]
 
     @property
     def url(self) -> str: ...
@@ -66,6 +66,7 @@ class Webhook:
     def partial(cls: Type[_T], id: int, token: str, *, adapter: WebhookAdapter) -> _T: ...
     @classmethod
     def from_url(cls: Type[_T], url: str, *, adapter: WebhookAdapter) -> _T: ...
+    # NOTE: While this method is public, it should never be invoked by users.
     @classmethod
     def from_state(cls: Type[_T], data: _WebhookDict, state: ConnectionState) -> _T: ...
     @property

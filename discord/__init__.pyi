@@ -27,7 +27,10 @@ from . import utils as utils, opus as opus, abc as abc
 from .enums import *
 from .embeds import Embed as Embed
 from .shard import AutoShardedClient as AutoShardedClient
-from .player import *
+from .player import (
+    AudioSource as AudioSource, PCMAudio as PCMAudio, FFmpegAudio as FFmpegAudio, FFmpegPCMAudio as FFmpegPCMAudio,
+    FFmpegOpusAudio as FFmpegOpusAudio, PCMVolumeTransformer as PCMVolumeTransformer
+)
 from .webhook import *
 from .voice_client import VoiceClient as VoiceClient
 from .audit_logs import AuditLogChanges as AuditLogChanges, AuditLogEntry as AuditLogEntry, AuditLogDiff as AuditLogDiff

@@ -1,9 +1,9 @@
 import datetime
 
-from typing import Any, Union, Optional, List, Dict, Tuple, Iterable, Iterator
+from typing import Any, Union, Optional, List, Dict, Tuple, Iterable, Iterator, ClassVar, Callable
 
 from . import enums
-from .abc import User as ABCUser
+from .abc import User as _ABCUser
 from .guild import Guild
 from .member import Member
 from .user import User
@@ -13,6 +13,7 @@ class AuditLogDiff:
     def __iter__(self) -> Iterator[Tuple[str, Any]]: ...
 
 class AuditLogChanges:
+    TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Callable[[Any, Any], AuditLogDiff]]]]]
     before: AuditLogDiff
     after: AuditLogDiff
 
@@ -20,7 +21,7 @@ class AuditLogEntry:
     id: int
     guild: Guild
     action: enums.AuditLogAction
-    user: ABCUser
+    user: _ABCUser
     reason: Optional[str]
     extra: Any
 

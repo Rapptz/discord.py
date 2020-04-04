@@ -25,6 +25,10 @@ from typing_extensions import Literal
 
 _VALID_STATIC_ICON_FORMATS = Literal['jpeg', 'jpg', 'webp', 'png']
 _VALID_ANIMATED_ICON_FORMATS = Literal[_VALID_STATIC_ICON_FORMATS, 'gif']
+_VALID_FEATURES = Literal['VIP_REGIONS', 'VANITY_URL', 'INVITE_SPLASH',
+                          'VERIFIED', 'PARTNERED', 'MORE_EMOJI', 'DISCOVERABLE',
+                          'FEATURABLE', 'COMMERCE', 'PUBLIC', 'NEWS', 'BANNER',
+                          'ANIMATED_ICON', 'PUBLIC_DISABLED']
 
 class BanEntry(NamedTuple):
     user: User
@@ -48,7 +52,7 @@ class Guild(Hashable):
     verification_level: VerificationLevel
     default_notifications: NotificationLevel
     explicit_content_filter: ContentFilter
-    features: List[str]
+    features: List[_VALID_FEATURES]
     splash: Optional[str]
     premium_tier: int
     premium_subscription_count: int

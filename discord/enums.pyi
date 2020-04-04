@@ -1,5 +1,5 @@
 from enum import Enum as Enum
-from typing import Union, TypeVar, Type, overload
+from typing import Optional, Union, TypeVar, Type, overload
 from typing_extensions import Literal
 
 # Technically, these enumerations do not inherit from enum.Enum, but because type checking
@@ -161,7 +161,7 @@ class AuditLogAction(Enum):
     integration_delete: int
 
     @property
-    def category(self) -> AuditLogActionCategory: ...
+    def category(self) -> Optional[AuditLogActionCategory]: ...
 
     @property
     def target_type(self) -> Literal['all', 'guild', 'channel', 'user', 'role', 'invite', 'webhook',

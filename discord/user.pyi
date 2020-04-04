@@ -44,9 +44,7 @@ class Profile(NamedTuple):
     @property
     def system(self) -> bool: ...
 
-_BaseUser = discord.abc.User
-
-class BaseUser(_BaseUser):
+class BaseUser(discord.abc.User):
     name: str
     id: int
     discriminator: str
