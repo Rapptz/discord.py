@@ -2569,6 +2569,12 @@ Embed
 .. autoclass:: Embed
     :members:
 
+AllowedMentions
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: AllowedMentions
+    :members:
+
 File
 ~~~~~
 

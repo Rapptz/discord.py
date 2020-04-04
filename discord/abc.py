@@ -768,7 +768,9 @@ class Messageable(metaclass=abc.ABCMeta):
     async def _get_channel(self):
         raise NotImplementedError
 
-    async def send(self, content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None):
+    async def send(self, content=None, *, tts=False, embed=None, file=None,
+                                          files=None, delete_after=None, nonce=None,
+                                          mentions=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -804,6 +806,10 @@ class Messageable(metaclass=abc.ABCMeta):
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
             then it is silently ignored.
+        mentions: :class:`AllowedMentions`
+            Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
 
         Raises
         --------
@@ -827,6 +833,12 @@ class Messageable(metaclass=abc.ABCMeta):
         if embed is not None:
             embed = embed.to_dict()
 
+        if mentions is not None:
+            if state.mentions is not None:
+                mentions = state.mentions.merge(mentions).to_dict()
+            else:
+                mentions = mentions.to_dict()
+
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')
 
@@ -848,12 +860,12 @@ class Messageable(metaclass=abc.ABCMeta):
 
             try:
                 data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
-                                                   embed=embed, nonce=nonce)
+                                                   embed=embed, nonce=nonce, mentions=mentions)
             finally:
                 for f in files:
                     f.close()
         else:
-            data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce)
+            data = await state.http.send_message(channel.id, content, tts=tts, embed=embed, nonce=nonce, mentions=mentions)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
