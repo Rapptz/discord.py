@@ -688,7 +688,7 @@ class Webhook:
         return self._adapter.edit_webhook(**payload)
 
     def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
-                                    file=None, files=None, embed=None, embeds=None):
+                                    file=None, files=None, embed=None, embeds=None, allowed_mentions=None):
         """|maybecoro|
 
         Sends a message using the webhook.
@@ -732,6 +732,10 @@ class Webhook:
         embeds: List[:class:`Embed`]
             A list of embeds to send with the content. Maximum of 10. This cannot
             be mixed with the ``embed`` parameter.
+        allowed_mentions: :class:`AllowedMentions`
+            Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
 
         Raises
         --------
@@ -776,6 +780,16 @@ class Webhook:
             payload['avatar_url'] = str(avatar_url)
         if username:
             payload['username'] = username
+
+        previous_mentions = getattr(self._state, 'allowed_mentions', None)
+
+        if allowed_mentions:
+            if previous_mentions is not None:
+                payload['allowed_mentions'] = previous_mentions.merge(allowed_mentions).to_dict()
+            else:
+                payload['allowed_mentions'] = allowed_mentions.to_dict()
+        elif previous_mentions is not None:
+            payload['allowed_mentions'] = previous_mentions.to_dict()
 
         return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 

@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-from collections import namedtuple
+from collections import namedtuple, deque
 import concurrent.futures
 import json
 import logging
@@ -132,15 +132,22 @@ class KeepAliveHandler(threading.Thread):
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.recent_ack_latencies = deque(maxlen=20)
         self.msg = 'Keeping voice websocket alive with timestamp %s.'
         self.block_msg = 'Voice heartbeat blocked for more than %s seconds'
-        self.behind_msg = 'Can\'t keep up, voice websocket is %.1fs behind'
+        self.behind_msg = 'High socket latency, heartbeat is %.1fs behind'
 
     def get_payload(self):
         return {
             'op': self.ws.HEARTBEAT,
             'd': int(time.time() * 1000)
         }
+
+    def ack(self):
+        ack_time = time.perf_counter()
+        self._last_ack = ack_time
+        self.latency = ack_time - self._last_send
+        self.recent_ack_latencies.append(self.latency)
 
 class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
     """Implements a WebSocket for Discord's gateway v6.
@@ -702,7 +709,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             await self.load_secret_key(data)
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
-            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=interval)
+            self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
 
     async def initial_connection(self, data):
@@ -734,6 +741,19 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         log.info('selected the voice protocol for use (%s)', mode)
 
         await self.client_connect()
+
+    @property
+    def latency(self):
+        """:class:`float`: Latency between a HEARTBEAT and its HEARTBEAT_ACK in seconds."""
+        heartbeat = self._keep_alive
+        return float('inf') if heartbeat is None else heartbeat.latency
+
+    @property
+    def average_latency(self):
+        """:class:`list`: Average of last 20 HEARTBEAT latencies."""
+        heartbeat = self._keep_alive
+        average_latency = sum(heartbeat.recent_ack_latencies)/len(heartbeat.recent_ack_latencies)
+        return float('inf') if heartbeat is None else average_latency
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')

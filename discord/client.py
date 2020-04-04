@@ -42,6 +42,7 @@ from .guild import Guild
 from .channel import _channel_factory
 from .enums import ChannelType
 from .member import Member
+from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
@@ -142,13 +143,17 @@ class Client:
         The total number of shards.
     fetch_offline_members: :class:`bool`
         Indicates if :func:`.on_ready` should be delayed to fetch all offline
-        members from the guilds the bot belongs to. If this is ``False``\, then
+        members from the guilds the client belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
+    allowed_mentions: Optional[:class:`AllowedMentions`]
+        Control how the client handles mentions by default on every message sent.
+
+        .. versionadded:: 1.4
     heartbeat_timeout: :class:`float`
         The maximum numbers of seconds before timing out and restarting the
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
@@ -661,6 +666,23 @@ class Client:
         else:
             raise TypeError('activity must derive from BaseActivity.')
 
+    @property
+    def allowed_mentions(self):
+        """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
+
+        .. versionadded:: 1.4
+        """
+        return self._connection.allowed_mentions
+
+    @allowed_mentions.setter
+    def allowed_mentions(self, value):
+        if value is None:
+            self._connection.allowed_mentions = value
+        elif isinstance(value, AllowedMentions):
+            self._connection.allowed_mentions = value
+        else:
+            raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
+
     # helpers/getters
 
     @property
@@ -949,6 +971,9 @@ class Client:
 
             if activity is not None:
                 me.activities = (activity,)
+            else:
+                me.activities = ()
+
             me.status = status_enum
 
     # Guild stuff

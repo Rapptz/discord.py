@@ -161,7 +161,10 @@ class Role(Hashable):
         """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
         return Colour(self._colour)
 
-    color = colour
+    @property
+    def color(self):
+        """:class:`Colour`: Returns the role color. An alias exists under ``colour``."""
+        return self.colour
 
     @property
     def created_at(self):

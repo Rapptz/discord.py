@@ -892,7 +892,7 @@ class Guild(Hashable):
         self._channels[channel.id] = channel
         return channel
 
-    async def create_category(self, name, *, overwrites=None, reason=None):
+    async def create_category(self, name, *, overwrites=None, reason=None, position=None):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
@@ -902,7 +902,7 @@ class Guild(Hashable):
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache

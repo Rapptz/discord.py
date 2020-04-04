@@ -166,13 +166,23 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self):
+    async def to_file(self, use_cached=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
         :meth:`abc.Messageable.send`.
 
         .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, compared to the regular URL which is generally deleted right
+            after the message is deleted. Note that this can still fail to download
+            deleted attachments if too much time has passed and it does not work
+            on some types of attachments.
 
         Raises
         ------
@@ -189,7 +199,7 @@ class Attachment:
             The attachment as a file suitable for sending.
         """
 
-        data = await self.read()
+        data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename)
 
 def flatten_handlers(cls):

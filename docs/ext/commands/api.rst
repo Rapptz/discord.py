@@ -173,6 +173,10 @@ Checks
 
 .. autofunction:: discord.ext.commands.max_concurrency
 
+.. autofunction:: discord.ext.commands.before_invoke
+
+.. autofunction:: discord.ext.commands.after_invoke
+
 .. autofunction:: discord.ext.commands.guild_only
 
 .. autofunction:: discord.ext.commands.dm_only
