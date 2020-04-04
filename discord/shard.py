@@ -348,11 +348,11 @@ class AutoShardedClient(Client):
             await shard.ws.change_presence(activity=activity, status=status, afk=afk)
             guilds = [g for g in self._connection.guilds if g.shard_id == shard_id]
 
+        activities = () if activity is None else (activity,)
         for guild in guilds:
             me = guild.me
             if me is None:
                 continue
 
-            if activity is not None:
-                me.activities = (activity,)
+            me.activities = activities
             me.status = status_enum

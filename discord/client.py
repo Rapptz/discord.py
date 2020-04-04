@@ -949,6 +949,9 @@ class Client:
 
             if activity is not None:
                 me.activities = (activity,)
+            else:
+                me.activities = ()
+
             me.status = status_enum
 
     # Guild stuff
