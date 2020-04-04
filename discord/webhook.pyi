@@ -7,6 +7,7 @@ from .guild import Guild
 from .channel import TextChannel
 from .embeds import Embed
 from .file import File
+from .mentions import AllowedMentions
 from .message import Message
 from .http import _WebhookDict
 from .state import ConnectionState
@@ -83,17 +84,21 @@ class Webhook:
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
              avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., file: Optional[File] = ...,
-             embed: Optional[Embed] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+             embed: Optional[Embed] = ...,
+             allowed_mentions: Optional[AllowedMentions] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
              avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
-             embed: Optional[Embed] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+             embed: Optional[Embed] = ...,
+             allowed_mentions: Optional[AllowedMentions] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
              avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., file: Optional[File] = ...,
-             embeds: Optional[List[Embed]] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+             embeds: Optional[List[Embed]] = ...,
+             allowed_mentions: Optional[AllowedMentions] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
     @overload
     def send(self, content: Optional[str] = ..., *, wait: bool = ..., username: Optional[str] = ...,
              avatar_url: Optional[Union[str, Asset]] = ..., tts: bool = ..., files: Optional[List[File]] = ...,
-             embeds: Optional[List[Embed]] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
+             embeds: Optional[List[Embed]] = ...,
+             allowed_mentions: Optional[AllowedMentions] = ...) -> Union[Message, Coroutine[Any, Any, Message]]: ...
     def execute(self, *args: Any, **kwargs: Any) -> Any: ...

@@ -9,6 +9,7 @@ from .guild import Guild
 from .invite import Invite
 from .iterators import HistoryIterator
 from .member import Member
+from .mentions import AllowedMentions
 from .message import Message
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role
@@ -96,7 +97,8 @@ class GuildChannel:
 class Messageable(metaclass=abc.ABCMeta):
     async def send(self, content: Optional[str] = ..., *, tts: bool = ..., embed: Optional[Embed] = ...,
                    file: Optional[File] = ..., files: Optional[List[File]] = ...,
-                   delete_after: Optional[float] = ..., nonce: Optional[int] = ...) -> Message: ...
+                   delete_after: Optional[float] = ..., nonce: Optional[int] = ...,
+                   allowed_mentions: Optional[AllowedMentions] = ...) -> Message: ...
     async def trigger_typing(self) -> None: ...
     def typing(self) -> Typing: ...
     async def fetch_message(self, id: int) -> Message: ...

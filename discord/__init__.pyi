@@ -29,6 +29,7 @@ from .reaction import Reaction as Reaction
 from . import utils as utils, opus as opus, abc as abc
 from .enums import *
 from .embeds import Embed as Embed
+from .mentions import AllowedMentions as AllowedMentions
 from .shard import AutoShardedClient as AutoShardedClient
 from .player import (
     AudioSource as AudioSource, PCMAudio as PCMAudio, FFmpegAudio as FFmpegAudio, FFmpegPCMAudio as FFmpegPCMAudio,

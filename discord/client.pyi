@@ -9,6 +9,7 @@ from .voice_client import VoiceClient
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .member import Member, VoiceState
+from .mentions import AllowedMentions
 from .channel import TextChannel, VoiceChannel, CategoryChannel, StoreChannel, DMChannel, GroupChannel
 from .message import Message
 from .raw_models import (
@@ -41,13 +42,15 @@ class Client:
     shard_id: Optional[int]
     shard_count: Optional[int]
     activity: Optional[BaseActivity]
+    allowed_mentions: Optional[AllowedMentions]
 
     def __init__(self, *, max_messages: Optional[int] = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
                  proxy_auth: Optional[aiohttp.BasicAuth] = ...,
                  shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
                  fetch_offline_members: bool = ..., status: Optional[Status] = ...,
-                 activity: Optional[Union[BaseActivity]] = ...,
+                 activity: Optional[BaseActivity] = ...,
+                 allowed_mentions: Optional[AllowedMentions] = ...,
                  heartbeat_timeout: float = ..., guild_subscriptions: bool = ...,
                  assume_unsync_clock: bool = ...) -> None: ...
     @property
