@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,7 @@ from collections import namedtuple
 from .utils import _get_as_snowflake, get, parse_time
 from .user import User
 from .errors import InvalidArgument
-from .enums import try_enum, ExpireGracePeriod, ExpireBehaviour
+from .enums import try_enum, ExpireBehaviour
 
 class IntegrationAccount(namedtuple('IntegrationAccount', 'id name')):
     """Represents an integration account.
@@ -66,10 +66,12 @@ class Integration:
         Where the integration is currently syncing.
     role: :class:`Role`
         The role which the integration uses for subscribers.
+    enable_emoticons: :class:`bool`
+        Whether emoticons should be synced for this integration (currently twitch only).
     expire_behaviour: :class:`ExpireBehaviour`
-        The behaviour of expiring subscribers.
-    expire_grace_period: :class:`ExpireGracePeriod`
-        The grace period for expiring subscribers.
+        The behaviour of expiring subscribers. Aliased to ``expire_behavior`` as well.
+    expire_grace_period: :class:`int`
+        The grace period (in days) for expiring subscribers.
     user: :class:`User`
         The user for the integration.
     account: :class:`IntegrationAccount`
@@ -82,7 +84,7 @@ class Integration:
                  'syncing', 'role', 'expire_behaviour', 'expire_behavior',
                  'expire_grace_period', 'synced_at', 'user', 'account')
 
-    def __init__(self, guild, data):
+    def __init__(self, *, data, guild):
         self.guild = guild
         self._state = guild._state
         self._from_data(data)
@@ -96,10 +98,12 @@ class Integration:
         self.type = integ['type']
         self.enabled = integ['enabled']
         self.syncing = integ['syncing']
-        self.role = get(self.guild.roles, id=int(integ['role_id']))
+        self._role_id = _get_as_snowflake(integ, 'role_id')
+        self.role = get(self.guild.roles, id=self._role_id)
+        self.enable_emoticons = integ.get('enable_emoticons')
         self.expire_behaviour = try_enum(ExpireBehaviour, integ['expire_behavior'])
         self.expire_behavior = self.expire_behaviour
-        self.expire_grace_period = try_enum(ExpireGracePeriod, integ['expire_grace_period'])
+        self.expire_grace_period = integ['expire_grace_period']
         self.synced_at = parse_time(integ['synced_at'])
 
         self.user = User(state=self._state, data=integ['user'])
@@ -116,12 +120,11 @@ class Integration:
         Parameters
         -----------
         expire_behaviour: :class:`ExpireBehaviour`
-            The behaviour when an integration subscription lapses.
-        expire_grace_period: :class:`ExpireGracePeriod`
-            The period where the integration will ignore lapsed subscriptions.
+            The behaviour when an integration subscription lapses. Aliased to ``expire_behavior`` as well.
+        expire_grace_period: :class:`int`
+            The period (in days) where the integration will ignore lapsed subscriptions.
         enable_emoticons: :class:`bool`
-            Where emoticons should be synced for this integration (currently only
-            works for twitch).
+            Where emoticons should be synced for this integration (currently twitch only).
 
         Raises
         -------
@@ -130,8 +133,7 @@ class Integration:
         HTTPException
             Editing the guild failed.
         InvalidArgument
-            ``expire_grace_period`` or ``expire_behaviour`` did not receive their
-            respective enum.
+            ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
         """
         try:
             expire_behavior = fields['expire_behaviour']
@@ -142,9 +144,6 @@ class Integration:
             raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
 
         expire_grace_period = fields.get('expire_grace_period', self.expire_grace_period)
-
-        if not isinstance(expire_grace_period, ExpireGracePeriod):
-            raise InvalidArgument('expire_grace_period field must be of type ExpireGracePeriod')
 
         payload = {
             'expire_behavior': expire_behavior.value,
@@ -161,6 +160,7 @@ class Integration:
         self.expire_behaviour = expire_behavior
         self.expire_behavior = self.expire_behaviour
         self.expire_grace_period = expire_grace_period
+        self.enable_emoticons = enable_emoticons
 
     async def sync(self):
         """|coro|

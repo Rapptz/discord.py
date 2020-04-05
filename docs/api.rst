@@ -1643,6 +1643,22 @@ of :class:`enum.Enum`.
 
         The action is the update of something.
 
+.. class:: ExpireBehaviour
+
+    Represents the behaviour the :class:`Integration` should perform
+    when a user's subscription has finished.
+
+    There is an alias for this called ExpireBehavior.
+
+    .. attribute:: remove_role
+
+        This will remove the :attr:`Integration.role` from the user
+        when their subscription is finished.
+
+    .. attribute:: kick
+
+        This will kick the user when their subscription is finished.
+
 .. class:: RelationshipType
 
     Specifies the type of :class:`Relationship`.

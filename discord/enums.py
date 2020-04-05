@@ -50,6 +50,8 @@ __all__ = (
     'TeamMembershipState',
     'Theme',
     'WebhookType',
+    'ExpireBehaviour',
+    'ExpireBehavior'
 )
 
 def _create_value_cls(name):
@@ -433,17 +435,7 @@ class ExpireBehaviour(Enum):
     remove_role = 0
     kick = 1
 
-class ExpireGracePeriod(Enum):
-    one_day = 1
-    day = 1
-    three_days = 3
-    three = 3
-    seven_days = 7
-    week = 7
-    fourteen_days = 14
-    fortnight = 14
-    thirty_days = 30
-    month = 30
+ExpireBehavior = ExpireBehaviour
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

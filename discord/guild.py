@@ -1478,7 +1478,7 @@ class Guild(Hashable):
         data = await self._state.http.get_custom_emoji(self.id, emoji_id)
         return Emoji(guild=self, state=self._state, data=data)
 
-    async def create_integration(self, integration_type, integration_id):
+    async def create_integration(self, *, type, id):
         """|coro|
 
         Attaches an integration to the guild.
@@ -1488,9 +1488,9 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        integration_type: :class:`string`
-            The integration type (i.e. Twitch).
-        integration_id: :class:`id`
+        type: :class:`str`
+            The integration type (e.g. Twitch).
+        id: :class:`int`
             The integration ID.
 
         Raises
@@ -1500,7 +1500,7 @@ class Guild(Hashable):
         HTTPException
             The account could not be found.
         """
-        await self._state.http.create_integration(self.id, integration_type, integration_id)
+        await self._state.http.create_integration(self.id, type, id)
 
     async def integrations(self):
         """|coro|
@@ -1523,7 +1523,7 @@ class Guild(Hashable):
             The list of integrations that are attached to the guild.
         """
         data = await self._state.http.get_all_integrations(self.id)
-        return [Integration(self, d) for d in data]
+        return [Integration(guild=self, data=d) for d in data]
 
     async def fetch_emojis(self):
         """|coro|
