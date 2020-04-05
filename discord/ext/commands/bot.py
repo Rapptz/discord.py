@@ -42,7 +42,7 @@ from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
-def when_mentioned(bot, msg):
+def when_mentioned(bot, ctx):
     """A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
@@ -69,18 +69,18 @@ def when_mentioned_or(*prefixes):
 
         .. code-block:: python3
 
-            async def get_prefix(bot, message):
+            async def get_prefix(bot, ctx):
                 extras = await prefixes_for(message.guild) # returns a list
-                return commands.when_mentioned_or(*extras)(bot, message)
+                return commands.when_mentioned_or(*extras)(bot, ctx)
 
 
     See Also
     ----------
     :func:`.when_mentioned`
     """
-    def inner(bot, msg):
+    def inner(bot, ctx):
         r = list(prefixes)
-        r = when_mentioned(bot, msg) + r
+        r = when_mentioned(bot, ctx) + r
         return r
 
     return inner
@@ -765,7 +765,7 @@ class BotBase(GroupMixin):
 
     # command processing
 
-    async def get_prefix(self, message):
+    async def get_prefix(self, ctx):
         """|coro|
 
         Retrieves the prefix the bot is listening to
@@ -773,8 +773,8 @@ class BotBase(GroupMixin):
 
         Parameters
         -----------
-        message: :class:`discord.Message`
-            The message context to get the prefix of.
+        ctx: :class:`.Context`
+            The context to get the prefix of.
 
         Returns
         --------
@@ -784,7 +784,7 @@ class BotBase(GroupMixin):
         """
         prefix = ret = self.command_prefix
         if callable(prefix):
-            ret = await discord.utils.maybe_coroutine(prefix, self, message)
+            ret = await discord.utils.maybe_coroutine(prefix, self, ctx)
 
         if not isinstance(ret, str):
             try:
@@ -839,7 +839,7 @@ class BotBase(GroupMixin):
         if self._skip_check(message.author.id, self.user.id):
             return ctx
 
-        prefix = await self.get_prefix(message)
+        prefix = await self.get_prefix(ctx)
         invoked_prefix = prefix
 
         if isinstance(prefix, str):
