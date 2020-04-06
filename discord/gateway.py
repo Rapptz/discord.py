@@ -714,30 +714,31 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def initial_connection(self, data):
         state = self._connection
-        state._VoiceClient__ssrc = data['ssrc']
-        state._VoiceClient__voice_port = data['port']
-        state._VoiceClient__endpoint_ip = data['ip']
+        state._VoiceClient__ssrc = ssrc = data['ssrc']
+        state._VoiceClient__voice_port = port = data['port']
+        state._VoiceClient__endpoint_ip = endpoint_ip = data['ip']
+        socket = state._VoiceClient__socket
 
         packet = bytearray(70)
-        struct.pack_into('>I', packet, 0, state._VoiceClient__ssrc)
-        state._VoiceClient__socket.sendto(packet, (state._VoiceClient__endpoint_ip, state._VoiceClient__voice_port))
-        recv = await self.loop.sock_recv(state._VoiceClient__socket, 70)
+        struct.pack_into('>I', packet, 0, ssrc)
+        socket.sendto(packet, (endpoint_ip, port))
+        recv = await self.loop.sock_recv(socket, 70)
         log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
         ip_end = recv.index(0, ip_start)
-        state._VoiceClient__ip = recv[ip_start:ip_end].decode('ascii')
+        state._VoiceClient__ip = ip = recv[ip_start:ip_end].decode('ascii')
 
-        state._VoiceClient__port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        log.debug('detected ip: %s port: %s', state._VoiceClient__ip, state._VoiceClient__port)
+        state._VoiceClient__port = port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
+        log.debug('detected ip: %s port: %s', ip, port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         log.debug('received supported encryption modes: %s', ", ".join(modes))
 
         mode = modes[0]
-        await self.select_protocol(state._VoiceClient__ip, state._VoiceClient__port, mode)
+        await self.select_protocol(ip, port, mode)
         log.info('selected the voice protocol for use (%s)', mode)
 
         await self.client_connect()
