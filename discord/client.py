@@ -1033,7 +1033,7 @@ class Client:
         """
         return GuildIterator(self, limit=limit, before=before, after=after)
 
-    async def fetch_guild(self, guild_id, *, preview=False):
+    async def fetch_guild(self, guild_id):
         """|coro|
 
         Retrieves a :class:`.Guild` from an ID.
@@ -1054,20 +1054,6 @@ class Client:
         -----------
         guild_id: :class:`int`
             The guild's ID to fetch from.
-        preview: Optional[:class:`bool`]
-            Provides a preview of the guild. Does not require you to be in the guild. By default,
-            it is set to ``False``.
-
-            .. note::
-
-                Using this, you will only receive :attr:`.Guild.id`, :attr:`.Guild.name`,
-                :attr:`.Guild.icon`, :attr:`.Guild.splash`, :attr:`.Guild.emojis`, :attr:`.Guild.features`,
-                :attr:`.Guild.description`, :attr:`.Guild.approximate_member_count`, and 
-                :attr:`.Guild.approximate_presence_count`.
-
-            .. note::
-
-                This is only available for public guilds.
 
         Raises
         ------
@@ -1081,10 +1067,46 @@ class Client:
         :class:`.Guild`
             The guild from the ID.
         """
-        if preview:
-            data = await self.http.get_guild_preview(guild_id)
-        else:
-            data = await self.http.get_guild(guild_id)
+        data = await self.http.get_guild(guild_id)
+        return Guild(data=data, state=self._connection)
+
+    async def fetch_guild_preview(self, guild_id):
+        """|coro|
+
+        Retrieves a preview of a :class:`.Guild` from an ID. 
+        
+        You do not have to be in the guild.
+
+        .. versionadded:: 1.4
+
+        .. note::
+
+            Using this, you will only receive :attr:`.Guild.id`, :attr:`.Guild.name`, :attr:`.Guild.icon`, 
+            :attr:`.Guild.splash`, :attr:`.Guild.emojis`, :attr:`.Guild.features`, :attr:`.Guild.description`, 
+            :attr:`.Guild.approximate_member_count`, and :attr:`.Guild.approximate_presence_count`.
+
+        .. note::
+
+                This is only available for public guilds.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The guild's ID to fetch from.
+
+        Raises
+        ------
+        :exc:`.Forbidden`
+            You do not have access to the guild.
+        :exc:`.HTTPException`
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`.Guild`
+            The guild from the ID.
+        """
+        data = await self.http.get_guild_preview(guild_id)
         return Guild(data=data, state=self._connection)
 
     async def create_guild(self, name, region=None, icon=None):

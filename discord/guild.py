@@ -152,12 +152,12 @@ class Guild(Hashable):
         .. versionadded:: 1.3
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in this guild. This is only available through 
-        :meth:`Client.fetch_guild` with ``preview`` enabled.
+        :meth:`Client.fetch_guild_preview`.
 
         .. versionadded: 1.4
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of online members in this guild. This is only available through 
-        :meth:`Client.fetch_guild` with ``preview`` enabled.
+        :meth:`Client.fetch_guild_preview`.
 
         .. versionadded: 1.4
     """
