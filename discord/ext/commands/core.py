@@ -412,6 +412,17 @@ class Command(_BaseCommand):
                 await injected(ctx, error)
 
         try:
+            coro = self.root_parent.on_error
+        except AttributeError:
+            pass
+        else:
+            injected = wrap_callback(coro)
+            if cog is not None:
+                await injected(cog, ctx, error)
+            else:
+                await injected(ctx, error)
+
+        try:
             if cog is not None:
                 local = Cog._get_overridden_method(cog.cog_command_error)
                 if local is not None:

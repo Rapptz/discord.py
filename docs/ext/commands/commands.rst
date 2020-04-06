@@ -668,17 +668,25 @@ raise a custom :exc:`~ext.commands.CommandError` derived exception, then it will
 
 .. code-block:: python3
 
-    @bot.command()
-    @commands.is_owner()
+    @bot.group()
     @is_in_guild(41771983423143937)
     async def secretguilddata(ctx):
         """super secret stuff"""
         await ctx.send('secret stuff')
 
+    @secretguilddata.command()
+    @commands.is_owner()
+    async def actualsecrets(ctx):
+        """the actual goods"""
+        await ctx.send('the double bluff')
+
     @secretguilddata.error
     async def secretguilddata_error(ctx, error):
         if isinstance(error, commands.CheckFailure):
             await ctx.send('nothing to see here comrade.')
+
+.. versionchanged:: 1.4
+    Subcommands can now use their root parent's error handler.
 
 If you want a more robust error system, you can derive from the exception and raise it instead of returning ``False``:
 
@@ -695,6 +703,7 @@ If you want a more robust error system, you can derive from the exception and ra
         return commands.check(predicate)
 
     @guild_only()
+    @bot.command()
     async def test(ctx):
         await ctx.send('Hey this is not a DM! Nice.')
 
