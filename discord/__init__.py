@@ -15,7 +15,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2020 Rapptz'
-__version__ = '1.3.3'
+__version__ = '1.4.0a'
 
 from collections import namedtuple
 import logging
@@ -57,7 +57,7 @@ from .team import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=1, minor=3, micro=3, releaselevel='final', serial=0)
+version_info = VersionInfo(major=1, minor=4, micro=0, releaselevel='alpha', serial=0)
 
 try:
     from logging import NullHandler
