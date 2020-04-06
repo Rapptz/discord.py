@@ -90,27 +90,27 @@ class VoiceClient:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
         self.channel = channel
-        self.main_ws = None
-        self.timeout = timeout
-        self.ws = None
-        self.socket = None
+        self.__main_ws = None
+        self.__timeout = timeout
+        self.__ws = None
+        self.__socket = None
         self.loop = state.loop
-        self._state = state
+        self.__state = state
         # this will be used in the AudioPlayer thread
-        self._connected = threading.Event()
+        self.__connected = threading.Event()
 
-        self._handshaking = False
-        self._handshake_check = asyncio.Lock()
-        self._handshake_complete = asyncio.Event()
+        self.__handshaking = False
+        self.__handshake_check = asyncio.Lock()
+        self.__handshake_complete = asyncio.Event()
 
-        self.mode = None
-        self._connections = 0
-        self.sequence = 0
-        self.timestamp = 0
-        self._runner = None
-        self._player = None
-        self.encoder = None
-        self._lite_nonce = 0
+        self.__mode = None
+        self.__connections = 0
+        self.__sequence = 0
+        self.__timestamp = 0
+        self.__runner = None
+        self.__player = None
+        self.__encoder = None
+        self.__lite_nonce = 0
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -127,9 +127,9 @@ class VoiceClient:
     @property
     def user(self):
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user
+        return self.__state.user
 
-    def checked_add(self, attr, value, limit):
+    def __checked_add(self, attr, value, limit):
         val = getattr(self, attr)
         if val + value > limit:
             setattr(self, attr, 0)
@@ -138,46 +138,46 @@ class VoiceClient:
 
     # connection related
 
-    async def start_handshake(self):
+    async def __start_handshake(self):
         log.info('Starting voice handshake...')
 
         guild_id, channel_id = self.channel._get_voice_state_pair()
-        state = self._state
-        self.main_ws = ws = state._get_websocket(guild_id)
-        self._connections += 1
+        state = self.__state
+        self.__main_ws = ws = state._get_websocket(guild_id)
+        self.__connections += 1
 
         # request joining
         await ws.voice_state(guild_id, channel_id)
 
         try:
-            await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout)
+            await asyncio.wait_for(self.__handshake_complete.wait(), timeout=self.__timeout)
         except asyncio.TimeoutError:
-            await self.terminate_handshake(remove=True)
+            await self.__terminate_handshake(remove=True)
             raise
 
-        log.info('Voice handshake complete. Endpoint found %s (IP: %s)', self.endpoint, self.endpoint_ip)
+        log.info('Voice handshake complete. Endpoint found %s (IP: %s)', self.endpoint, self.__endpoint_ip)
 
-    async def terminate_handshake(self, *, remove=False):
+    async def __terminate_handshake(self, *, remove=False):
         guild_id, channel_id = self.channel._get_voice_state_pair()
-        self._handshake_complete.clear()
-        await self.main_ws.voice_state(guild_id, None, self_mute=True)
+        self.__handshake_complete.clear()
+        await self.__main_ws.voice_state(guild_id, None, self_mute=True)
 
         log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', channel_id, guild_id)
         if remove:
             log.info('The voice client has been removed for Channel ID %s (Guild ID %s)', channel_id, guild_id)
             key_id, _ = self.channel._get_voice_client_key()
-            self._state._remove_voice_client(key_id)
+            self.__state._remove_voice_client(key_id)
 
-    async def _create_socket(self, server_id, data):
-        async with self._handshake_check:
-            if self._handshaking:
+    async def __create_socket(self, server_id, data):
+        async with self.__handshake_check:
+            if self.__handshaking:
                 log.info("Ignoring voice server update while handshake is in progress")
                 return
-            self._handshaking = True
+            self.__handshaking = True
 
-        self._connected.clear()
-        self.session_id = self.main_ws.session_id
-        self.server_id = server_id
+        self.__connected.clear()
+        self.session_id = self.__main_ws.session_id
+        self.__server_id = server_id
         self.token = data.get('token')
         endpoint = data.get('endpoint')
 
@@ -187,24 +187,24 @@ class VoiceClient:
             return
 
         self.endpoint = endpoint.replace(':80', '')
-        self.endpoint_ip = socket.gethostbyname(self.endpoint)
+        self.__endpoint_ip = socket.gethostbyname(self.endpoint)
 
-        if self.socket:
+        if self.__socket:
             try:
-                self.socket.close()
+                self.__socket.close()
             except Exception:
                 pass
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.setblocking(False)
+        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.__socket.setblocking(False)
 
-        if self._handshake_complete.is_set():
+        if self.__handshake_complete.is_set():
             # terminate the websocket and handle the reconnect loop if necessary.
-            self._handshake_complete.clear()
-            await self.ws.close(4000)
+            self.__handshake_complete.clear()
+            await self.__ws.close(4000)
             return
 
-        self._handshake_complete.set()
+        self.__handshake_complete.set()
 
     @property
     def latency(self):
@@ -213,49 +213,49 @@ class VoiceClient:
         This could be referred to as the Discord Voice WebSocket latency and is
         an analogue of user's voice latencies as seen in the Discord client.
         """
-        ws = self.ws
+        ws = self.__ws
         return float("inf") if not ws else ws.latency
 
     @property
     def average_latency(self):
         """:class:`float`: Average of most recent 20 HEARTBEAT latencies in seconds."""
-        ws = self.ws
+        ws = self.__ws
         return float("inf") if not ws else ws.average_latency
 
     async def connect(self, *, reconnect=True, _tries=0, do_handshake=True):
         log.info('Connecting to voice...')
         try:
-            del self.secret_key
+            del self.__secret_key
         except AttributeError:
             pass
 
         if do_handshake:
-            await self.start_handshake()
+            await self.__start_handshake()
 
         try:
-            self.ws = await DiscordVoiceWebSocket.from_client(self)
-            self._handshaking = False
-            self._connected.clear()
-            while not hasattr(self, 'secret_key'):
-                await self.ws.poll_event()
-            self._connected.set()
+            self.__ws = await DiscordVoiceWebSocket.from_client(self)
+            self.__handshaking = False
+            self.__connected.clear()
+            while not hasattr(self, '_VoiceClient__secret_key'):
+                await self.__ws.poll_event()
+            self.__connected.set()
         except (ConnectionClosed, asyncio.TimeoutError):
             if reconnect and _tries < 5:
                 log.exception('Failed to connect to voice... Retrying...')
                 await asyncio.sleep(1 + _tries * 2.0)
-                await self.terminate_handshake()
+                await self.__terminate_handshake()
                 await self.connect(reconnect=reconnect, _tries=_tries + 1)
             else:
                 raise
 
-        if self._runner is None:
-            self._runner = self.loop.create_task(self.poll_voice_ws(reconnect))
+        if self.__runner is None:
+            self.__runner = self.loop.create_task(self.__poll_voice_ws(reconnect))
 
-    async def poll_voice_ws(self, reconnect):
+    async def __poll_voice_ws(self, reconnect):
         backoff = ExponentialBackoff()
         while True:
             try:
-                await self.ws.poll_event()
+                await self.__ws.poll_event()
             except (ConnectionClosed, asyncio.TimeoutError) as exc:
                 if isinstance(exc, ConnectionClosed):
                     # The following close codes are undocumented so I will document them here.
@@ -273,9 +273,9 @@ class VoiceClient:
 
                 retry = backoff.delay()
                 log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
-                self._connected.clear()
+                self.__connected.clear()
                 await asyncio.sleep(retry)
-                await self.terminate_handshake()
+                await self.__terminate_handshake()
                 try:
                     await self.connect(reconnect=True)
                 except asyncio.TimeoutError:
@@ -292,16 +292,16 @@ class VoiceClient:
             return
 
         self.stop()
-        self._connected.clear()
+        self.__connected.clear()
 
         try:
-            if self.ws:
-                await self.ws.close()
+            if self.__ws:
+                await self.__ws.close()
 
-            await self.terminate_handshake(remove=True)
+            await self.__terminate_handshake(remove=True)
         finally:
-            if self.socket:
-                self.socket.close()
+            if self.__socket:
+                self.__socket.close()
 
     async def move_to(self, channel):
         """|coro|
@@ -314,46 +314,46 @@ class VoiceClient:
             The channel to move to. Must be a voice channel.
         """
         guild_id, _ = self.channel._get_voice_state_pair()
-        await self.main_ws.voice_state(guild_id, channel.id)
+        await self.__main_ws.voice_state(guild_id, channel.id)
 
     def is_connected(self):
         """Indicates if the voice client is connected to voice."""
-        return self._connected.is_set()
+        return self.__connected.is_set()
 
     # audio related
 
-    def _get_voice_packet(self, data):
+    def __get_voice_packet(self, data):
         header = bytearray(12)
 
         # Formulate rtp header
         header[0] = 0x80
         header[1] = 0x78
-        struct.pack_into('>H', header, 2, self.sequence)
-        struct.pack_into('>I', header, 4, self.timestamp)
-        struct.pack_into('>I', header, 8, self.ssrc)
+        struct.pack_into('>H', header, 2, self.__sequence)
+        struct.pack_into('>I', header, 4, self.__timestamp)
+        struct.pack_into('>I', header, 8, self.__ssrc)
 
-        encrypt_packet = getattr(self, '_encrypt_' + self.mode)
+        encrypt_packet = getattr(self, '_VoiceClient__encrypt_' + self.__mode)
         return encrypt_packet(header, data)
 
-    def _encrypt_xsalsa20_poly1305(self, header, data):
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
+    def __encrypt_xsalsa20_poly1305(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.__secret_key))
         nonce = bytearray(24)
         nonce[:12] = header
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
 
-    def _encrypt_xsalsa20_poly1305_suffix(self, header, data):
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
+    def __encrypt_xsalsa20_poly1305_suffix(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.__secret_key))
         nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
 
         return header + box.encrypt(bytes(data), nonce).ciphertext + nonce
 
-    def _encrypt_xsalsa20_poly1305_lite(self, header, data):
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
+    def __encrypt_xsalsa20_poly1305_lite(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.__secret_key))
         nonce = bytearray(24)
 
-        nonce[:4] = struct.pack('>I', self._lite_nonce)
-        self.checked_add('_lite_nonce', 1, 4294967295)
+        nonce[:4] = struct.pack('>I', self.__lite_nonce)
+        self.__checked_add('_VoiceClient__lite_nonce', 1, 4294967295)
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
@@ -395,35 +395,35 @@ class VoiceClient:
         if not isinstance(source, AudioSource):
             raise TypeError('source must an AudioSource not {0.__class__.__name__}'.format(source))
 
-        if not self.encoder and not source.is_opus():
-            self.encoder = opus.Encoder()
+        if not self.__encoder and not source.is_opus():
+            self.__encoder = opus.Encoder()
 
-        self._player = AudioPlayer(source, self, after=after)
-        self._player.start()
+        self.__player = AudioPlayer(source, self, after=after)
+        self.__player.start()
 
     def is_playing(self):
         """Indicates if we're currently playing audio."""
-        return self._player is not None and self._player.is_playing()
+        return self.__player is not None and self.__player.is_playing()
 
     def is_paused(self):
         """Indicates if we're playing audio, but if we're paused."""
-        return self._player is not None and self._player.is_paused()
+        return self.__player is not None and self.__player.is_paused()
 
     def stop(self):
         """Stops playing audio."""
-        if self._player:
-            self._player.stop()
-            self._player = None
+        if self.__player:
+            self.__player.stop()
+            self.__player = None
 
     def pause(self):
         """Pauses the audio playing."""
-        if self._player:
-            self._player.pause()
+        if self.__player:
+            self.__player.pause()
 
     def resume(self):
         """Resumes the audio playing."""
-        if self._player:
-            self._player.resume()
+        if self.__player:
+            self.__player.resume()
 
     @property
     def source(self):
@@ -431,17 +431,17 @@ class VoiceClient:
 
         This property can also be used to change the audio source currently being played.
         """
-        return self._player.source if self._player else None
+        return self.__player.source if self.__player else None
 
     @source.setter
     def source(self, value):
         if not isinstance(value, AudioSource):
             raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(value))
 
-        if self._player is None:
+        if self.__player is None:
             raise ValueError('Not playing anything.')
 
-        self._player._set_source(value)
+        self.__player._set_source(value)
 
     def send_audio_packet(self, data, *, encode=True):
         """Sends an audio packet composed of the data.
@@ -463,15 +463,15 @@ class VoiceClient:
             Encoding the data failed.
         """
 
-        self.checked_add('sequence', 1, 65535)
+        self.__checked_add('_VoiceClient__sequence', 1, 65535)
         if encode:
-            encoded_data = self.encoder.encode(data, self.encoder.SAMPLES_PER_FRAME)
+            encoded_data = self.__encoder.encode(data, self.__encoder.SAMPLES_PER_FRAME)
         else:
             encoded_data = data
-        packet = self._get_voice_packet(encoded_data)
+        packet = self.__get_voice_packet(encoded_data)
         try:
-            self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+            self.__socket.sendto(packet, (self.__endpoint_ip, self.__voice_port))
         except BlockingIOError:
-            log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
+            log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.__sequence, self.__timestamp)
 
-        self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
+        self.__checked_add('_VoiceClient__timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)

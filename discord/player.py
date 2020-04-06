@@ -552,7 +552,7 @@ class AudioPlayer(threading.Thread):
         self._resumed = threading.Event()
         self._resumed.set() # we are not paused
         self._current_error = None
-        self._connected = client._connected
+        self._connected = client._VoiceClient__connected
         self._lock = threading.Lock()
 
         if after is not None and not callable(after):
@@ -650,6 +650,6 @@ class AudioPlayer(threading.Thread):
 
     def _speak(self, speaking):
         try:
-            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.client._VoiceClient__ws.speak(speaking), self.client.loop)
         except Exception as e:
             log.info("Speaking call in player failed: %s", e)

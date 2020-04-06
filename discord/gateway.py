@@ -621,7 +621,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             'op': self.RESUME,
             'd': {
                 'token': state.token,
-                'server_id': str(state.server_id),
+                'server_id': str(state.guild.id),
                 'session_id': state.session_id
             }
         }
@@ -632,7 +632,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         payload = {
             'op': self.IDENTIFY,
             'd': {
-                'server_id': str(state.server_id),
+                'server_id': str(state.guild.id),
                 'user_id': str(state.user.id),
                 'session_id': state.session_id,
                 'token': state.token
@@ -675,7 +675,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         payload = {
             'op': self.CLIENT_CONNECT,
             'd': {
-                'audio_ssrc': self._connection.ssrc
+                'audio_ssrc': self._connection._VoiceClient__ssrc
             }
         }
 
@@ -705,7 +705,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
             log.info('Voice RESUME failed.')
             await self.identify()
         elif op == self.SESSION_DESCRIPTION:
-            self._connection.mode = data['mode']
+            self._connection._VoiceClient__mode = data['mode']
             await self.load_secret_key(data)
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
@@ -714,30 +714,30 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def initial_connection(self, data):
         state = self._connection
-        state.ssrc = data['ssrc']
-        state.voice_port = data['port']
-        state.endpoint_ip = data['ip']
+        state._VoiceClient__ssrc = data['ssrc']
+        state._VoiceClient__voice_port = data['port']
+        state._VoiceClient__endpoint_ip = data['ip']
 
         packet = bytearray(70)
-        struct.pack_into('>I', packet, 0, state.ssrc)
-        state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
-        recv = await self.loop.sock_recv(state.socket, 70)
+        struct.pack_into('>I', packet, 0, state._VoiceClient__ssrc)
+        state._VoiceClient__socket.sendto(packet, (state._VoiceClient__endpoint_ip, state._VoiceClient__voice_port))
+        recv = await self.loop.sock_recv(state._VoiceClient__socket, 70)
         log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
         ip_end = recv.index(0, ip_start)
-        state.ip = recv[ip_start:ip_end].decode('ascii')
+        state._VoiceClient__ip = recv[ip_start:ip_end].decode('ascii')
 
-        state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        log.debug('detected ip: %s port: %s', state.ip, state.port)
+        state._VoiceClient__port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
+        log.debug('detected ip: %s port: %s', state._VoiceClient__ip, state._VoiceClient__port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         log.debug('received supported encryption modes: %s', ", ".join(modes))
 
         mode = modes[0]
-        await self.select_protocol(state.ip, state.port, mode)
+        await self.select_protocol(state._VoiceClient__ip, state._VoiceClient__port, mode)
         log.info('selected the voice protocol for use (%s)', mode)
 
         await self.client_connect()
@@ -759,7 +759,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
-        self._connection.secret_key = data.get('secret_key')
+        self._connection._VoiceClient__secret_key = data.get('secret_key')
         await self.speak()
         await self.speak(False)
 
