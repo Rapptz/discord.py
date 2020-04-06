@@ -4,10 +4,8 @@ import datetime
 from typing import Any, Optional, Union, TypeVar, Generic, Type, Awaitable, Generator, Callable
 from typing_extensions import Final, Protocol
 
-MAX_ASYNCIO_SECONDS: Final[int]
-
 _T = TypeVar('_T')
-_L = TypeVar('_L', bound=Loop)
+_L = TypeVar('_L', bound=Loop[Any])
 _CoroType = Callable[..., Union[Awaitable[_T], Generator[Any, None, _T]]]
 _C = TypeVar('_C', bound=Callable[..., Awaitable[Any]])
 

@@ -3,7 +3,7 @@ from .invite import Invite
 from .guild import Guild
 from .enums import Status, VoiceRegion
 from .emoji import Emoji
-from .gateway import *
+from .gateway import DiscordWebSocket
 from .activity import BaseActivity
 from .voice_client import VoiceClient
 from .webhook import Webhook

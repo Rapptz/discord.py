@@ -18,7 +18,7 @@ from mypy_extensions import TypedDict
 _T = TypeVar('_T')
 _MaybeAwaitable = Union[Awaitable[_T], _T]
 _CT = TypeVar('_CT', bound=Context)
-_HC = TypeVar('_HC', bound=HelpCommand)
+_HC = TypeVar('_HC', bound=HelpCommand[Any])
 
 class _CommandAttrs(TypedDict, total=False):
     name: str
@@ -72,7 +72,7 @@ class HelpCommand(Generic[_CT]):
     cog: Optional[Cog[_CT]]
 
     MENTION_TRANSFORMS: ClassVar[Dict[str, str]] = ...
-    MENTION_PATTHER: ClassVar[Pattern[str]] = ...
+    MENTION_PATTERN: ClassVar[Pattern[str]] = ...
 
     def __init__(self, *, show_hidden: bool = ..., verify_checks: bool = ...,
                  command_attrs: _CommandAttrs = ...) -> None: ...

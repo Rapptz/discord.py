@@ -33,8 +33,8 @@ class _SignalCtl(TypedDict):
     voice: int
     music: int
 
-band_ctl: Final[_BandCtl] = ...
-signal_ctl: Final[_SignalCtl] = ...
+band_ctl: Final[_BandCtl]
+signal_ctl: Final[_SignalCtl]
 
 class Encoder:
     SAMPLING_RATE: ClassVar[int]

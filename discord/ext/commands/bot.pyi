@@ -20,8 +20,8 @@ _T = TypeVar('_T')
 _CallablePrefix = Callable[[Bot, discord.Message], Union[_T, Coroutine[Any, Any, _T]]]
 _CommandPrefix = Union[str, Iterable[str], _CallablePrefix[str], _CallablePrefix[Iterable[str]]]
 
-def when_mentioned(bot: Bot, msg: discord.Message) -> List[str]: ...
-def when_mentioned_or(*prefixes: str) -> Callable[[Bot, discord.Message], List[str]]: ...
+def when_mentioned(bot: Bot[Any], msg: discord.Message) -> List[str]: ...
+def when_mentioned_or(*prefixes: str) -> Callable[[Bot[Any], discord.Message], List[str]]: ...
 
 class BotBase(GroupMixin[_CT]):
     command_prefix: _CommandPrefix
@@ -68,8 +68,8 @@ class BotBase(GroupMixin[_CT]):
     async def on_message(self, message: discord.Message) -> None: ...
 
 class Bot(BotBase[_CT], discord.Client):
-    def __init__(self, command_prefix: _CommandPrefix, description: Optional[str] = ...,
-                 help_command: Optional[HelpCommand[_CT]] = ..., *,
+    def __init__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,
+                 description: Optional[str] = ..., *,
                  case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
@@ -79,8 +79,8 @@ class Bot(BotBase[_CT], discord.Client):
                  heartbeat_timeout: float = ..., **options: Any) -> None: ...
 
 class AutoShardedBot(BotBase[_CT], discord.AutoShardedClient):
-    def __init__(self, command_prefix: _CommandPrefix, description: Optional[str] = ...,
-                 help_command: Optional[HelpCommand[_CT]] = ..., *,
+    def __init__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,
+                 description: Optional[str] = ..., *,
                  case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
                  shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
                  connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,

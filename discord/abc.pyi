@@ -17,11 +17,11 @@ from .user import ClientUser
 from .voice_client import VoiceClient
 
 from typing import Any, Optional, Union, List, Dict, TypeVar, overload
-from typing_extensions import Protocol, runtime
+from typing_extensions import Protocol, runtime_checkable
 
 _GC = TypeVar('_GC', bound=GuildChannel)
 
-@runtime
+@runtime_checkable
 class Snowflake(Protocol):
     id: int
 
@@ -29,7 +29,7 @@ class Snowflake(Protocol):
     @abc.abstractmethod
     def created_at(self) -> datetime.datetime: ...
 
-@runtime
+@runtime_checkable
 class User(Protocol):
     name: str
     discriminator: str
@@ -43,7 +43,7 @@ class User(Protocol):
     @abc.abstractmethod
     def mention(self) -> str: ...
 
-@runtime
+@runtime_checkable
 class PrivateChannel(Protocol):
     me: ClientUser
 

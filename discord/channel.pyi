@@ -62,6 +62,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
                    category: Optional[CategoryChannel] = ..., overwrites: _OverwritesDict = ...) -> None: ...
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
+    nsfw: bool
+
     @property
     def type(self) -> ChannelType: ...
     def is_nsfw(self) -> bool: ...
@@ -110,6 +112,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     owner: User
     icon: Optional[str]
     name: Optional[str]
+    recipients: List[User]
 
     @property
     def type(self) -> ChannelType: ...

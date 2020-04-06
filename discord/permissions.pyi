@@ -76,7 +76,8 @@ class Permissions(BaseFlags):
                use_external_emojis: bool = ..., view_guild_insights: bool = ..., connect: bool = ...,
                speak: bool = ..., mute_members: bool = ..., deafen_members: bool = ..., move_members: bool = ...,
                use_voice_activation: bool = ..., change_nickname: bool = ..., manage_nicknames: bool = ...,
-               manage_roles: bool = ..., manage_webhooks: bool = ..., manage_emojis: bool = ...) -> None: ...
+               manage_roles: bool = ..., manage_permissions: bool = ..., manage_webhooks: bool = ...,
+               manage_emojis: bool = ...) -> None: ...
     def handle_overwrite(self, allow: int, deny: int) -> None: ...
 
 _PO = TypeVar('_PO', bound=PermissionOverwrite)
@@ -116,6 +117,7 @@ class PermissionOverwrite:
     change_nickname: Optional[bool]
     manage_nicknames: Optional[bool]
     manage_roles: Optional[bool]
+    manage_permissions: Optional[bool]
     manage_webhooks: Optional[bool]
     manage_emojis: Optional[bool]
 
@@ -135,8 +137,8 @@ class PermissionOverwrite:
                  mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
                  move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
                  change_nickname: Optional[bool] = ..., manage_nicknames: Optional[bool] = ...,
-                 manage_roles: Optional[bool] = ..., manage_webhooks: Optional[bool] = ...,
-                 manage_emojis: Optional[bool] = ...) -> None: ...
+                 manage_roles: Optional[bool] = ..., manage_permissions: Optional[bool] = ...,
+                 manage_webhooks: Optional[bool] = ..., manage_emojis: Optional[bool] = ...) -> None: ...
     def __eq__(self, other: Any) -> bool: ...
     def pair(self) -> Tuple[Permissions, Permissions]: ...
     @classmethod
@@ -158,6 +160,6 @@ class PermissionOverwrite:
                mute_members: Optional[bool] = ..., deafen_members: Optional[bool] = ...,
                move_members: Optional[bool] = ..., use_voice_activation: Optional[bool] = ...,
                change_nickname: Optional[bool] = ..., manage_nicknames: Optional[bool] = ...,
-               manage_roles: Optional[bool] = ..., manage_webhooks: Optional[bool] = ...,
-               manage_emojis: Optional[bool] = ...) -> None: ...
+               manage_roles: Optional[bool] = ..., manage_permissions: Optional[bool] = ...,
+               manage_webhooks: Optional[bool] = ..., manage_emojis: Optional[bool] = ...) -> None: ...
     def __iter__(self) -> Iterator[Tuple[str, Optional[bool]]]: ...

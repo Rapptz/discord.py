@@ -14,6 +14,7 @@ from .calls import CallMessage
 from .role import Role
 from .flags import MessageFlags
 from .file import File
+from .utils import cached_slot_property
 
 from typing import Any, Optional, List, Union, BinaryIO
 from typing_extensions import TypedDict
@@ -34,11 +35,11 @@ class Attachment:
     async def read(self, *, use_cached: bool = ...) -> bytes: ...
     async def to_file(self, use_cached: bool = ...) -> File: ...
 
-class MessageActivity(TypedDict, total=False):
+class _MessageActivity(TypedDict, total=False):
     type: int
     party_id: str
 
-class MessageApplication(TypedDict):
+class _MessageApplication(TypedDict):
     id: str
     name: str
     description: str
@@ -51,6 +52,7 @@ class Message:
     type: MessageType
     author: Union[User, Member]
     content: str
+    nonce: Union[int, str]
     embeds: List[Embed]
     channel: Union[TextChannel, DMChannel, GroupChannel]
     call: Optional[CallMessage]
@@ -62,20 +64,20 @@ class Message:
     pinned: bool
     flags: MessageFlags
     reactions: List[Reaction]
-    activity: Optional[MessageActivity]
-    application: Optional[MessageApplication]
+    activity: Optional[_MessageActivity]
+    application: Optional[_MessageApplication]
 
-    @property
+    @cached_slot_property('_cs_guild')
     def guild(self) -> Optional[Guild]: ...
-    @property
+    @cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]: ...
-    @property
+    @cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self) -> List[int]: ...
-    @property
+    @cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self) -> List[int]: ...
-    @property
+    @cached_slot_property('_cs_channel_mentions')
     def channel_mentions(self) -> List[TextChannel]: ...
-    @property
+    @cached_slot_property('_cs_clean_content')
     def clean_content(self) -> str: ...
     @property
     def created_at(self) -> datetime.datetime: ...
@@ -84,7 +86,7 @@ class Message:
     @property
     def jump_url(self) -> str: ...
     def is_system(self) -> bool: ...
-    @property
+    @cached_slot_property('_cs_system_content')
     def system_content(self) -> str: ...
     async def delete(self, *, delay: Optional[float] = ...) -> None: ...
     async def edit(self, *, content: Optional[str] = ..., embed: Optional[Embed] = ...,

@@ -18,3 +18,4 @@ class Team:
 class TeamMember(BaseUser):
     team: Team
     membership_state: TeamMembershipState
+    permissions: List[str]

@@ -64,7 +64,8 @@ class RawReactionActionEvent(_RawReprMixin):
     event_type: Literal['REACTION_ADD', 'REACTION_REMOVE']
     guild_id: Optional[int]
 
-    def __init__(self, data: _ReactionActionDict, emoji: PartialEmoji) -> None: ...
+    def __init__(self, data: _ReactionActionDict, emoji: PartialEmoji,
+                 event_type: Literal['REACTION_ADD', 'REACTION_REMOVE']) -> None: ...
 
 class RawReactionClearEvent(_RawReprMixin):
     message_id: int

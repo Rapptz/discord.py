@@ -8,7 +8,7 @@ from .enums import ChannelType, VerificationLevel
 from .asset import Asset
 from .object import Object
 
-from typing import Optional, Union, NamedTuple, List, Set
+from typing import Optional, Union, NamedTuple, List, Set, ClassVar
 from typing_extensions import Literal
 
 _VALID_ICON_FORMATS = Literal['jpeg', 'jpg', 'webp', 'png']
@@ -46,6 +46,8 @@ class PartialInviteGuild:
     def splash_url_as(self, *, format: _VALID_ICON_FORMATS = ..., size: int = ...) -> Asset: ...
 
 class Invite(Hashable):
+    BASE: ClassVar[str]
+
     max_age: int
     code: str
     guild: Optional[Union[Guild, Object, PartialInviteGuild]]

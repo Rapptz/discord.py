@@ -23,10 +23,11 @@ class Profile(NamedTuple):
     mutual_guilds: List[Guild]
     connected_accounts: List[Any]
     premium_since: Optional[datetime.datetime]
-    premium: bool
 
     @property
     def nitro(self) -> bool: ...
+    @property
+    def premium(self) -> bool: ...
     @property
     def staff(self) -> bool: ...
     @property

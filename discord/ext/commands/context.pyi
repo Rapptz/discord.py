@@ -5,12 +5,13 @@ import discord
 from .core import Command
 from .bot import Bot
 from .cog import Cog
+from ...utils import cached_property
 
 _C = TypeVar('_C', bound=Context)
 
 class Context(discord.abc.Messageable):
     message: discord.Message
-    bot: Bot
+    bot: Bot[Any]
     args: List[Any]
     kwargs: Dict[str, Any]
     prefix: str
@@ -26,13 +27,13 @@ class Context(discord.abc.Messageable):
     def valid(self) -> bool: ...
     @property
     def cog(self: _C) -> Optional[Cog[_C]]: ...
-    @property
+    @cached_property
     def guild(self) -> Optional[discord.Guild]: ...
-    @property
+    @cached_property
     def channel(self) -> Union[discord.TextChannel, discord.DMChannel, discord.GroupChannel]: ...
-    @property
+    @cached_property
     def author(self) -> Union[discord.User, discord.Member]: ...
-    @property
+    @cached_property
     def me(self) -> Union[discord.Member, discord.ClientUser]: ...
     @property
     def voice_client(self) -> Optional[discord.VoiceClient]: ...

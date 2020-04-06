@@ -14,7 +14,7 @@ _CheckType = Union[Callable[[_CT], bool],
                    Callable[[_CT], Coroutine[Any, Any, bool]]]
 _CoroType = Callable[..., Coroutine[Any, Any, Any]]
 _C = TypeVar('_C', bound=_CoroType)
-_CMD = TypeVar('_CMD', bound=Command)
+_CMD = TypeVar('_CMD', bound=Command[Any])
 _F = TypeVar('_F', bound=Union[_CoroType, Command[Any]])
 
 class _CheckDecorator(Protocol):
@@ -43,7 +43,7 @@ class Command(_BaseCommand, Generic[_CT]):
     aliases: List[str]
     enabled: bool
     parent: Optional[Command[_CT]]
-    checks: List[_CheckType]
+    checks: List[_CheckType[_CT]]
     description: str
     hidden: bool
     rest_is_raw: bool
@@ -57,11 +57,11 @@ class Command(_BaseCommand, Generic[_CT]):
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
                  aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
                  rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
-                 checks: List[_CheckType] = ..., cooldown: Cooldown = ..., parent: _BaseCommand = ...,
+                 checks: List[_CheckType[_CT]] = ..., cooldown: Cooldown = ..., parent: _BaseCommand = ...,
                  cog: Optional[Cog[_CT]] = ...) -> None: ...
-    def add_check(self, func: _CheckType) -> None: ...
-    def remove_check(self, func: _CheckType) -> None: ...
-    def update(self, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
+    def add_check(self, func: _CheckType[_CT]) -> None: ...
+    def remove_check(self, func: _CheckType[_CT]) -> None: ...
+    def update(self, *, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
                usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
                rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
     async def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
@@ -118,7 +118,7 @@ class GroupMixin(Generic[_CT]):
               invoke_without_command: bool = ...,
               case_insensitive: bool = ...) -> Callable[[_CoroType], Group[_CT]]: ...
 
-_G = TypeVar('_G', bound=Group)
+_G = TypeVar('_G', bound=Group[Any])
 
 class Group(GroupMixin[_CT], Command[_CT]):
     invoke_without_command: bool
@@ -150,8 +150,8 @@ def group(name: str = ..., *, cls: Optional[Type[Group[_CT]]] = ..., enabled: bo
           description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
           cooldown_after_parsing: bool = ..., invoke_without_command: bool = ...,
           case_insensitive: bool = ...) -> Callable[[_CoroType], Group[Any]]: ...
-def check(predicate: _CheckType) -> _CheckDecorator: ...
-def check_any(*checks: _CheckType) -> _CheckDecorator: ...
+def check(predicate: _CheckType[_CT]) -> _CheckDecorator: ...
+def check_any(*checks: _CheckType[_CT]) -> _CheckDecorator: ...
 def has_role(item: Union[int, str]) -> _CheckDecorator: ...
 def has_any_role(*items: Union[int, str]) -> _CheckDecorator: ...
 def bot_has_role(item: Union[int, str]) -> _CheckDecorator: ...
