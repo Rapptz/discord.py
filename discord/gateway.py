@@ -752,8 +752,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     def average_latency(self):
         """:class:`list`: Average of last 20 HEARTBEAT latencies."""
         heartbeat = self._keep_alive
-        average_latency = sum(heartbeat.recent_ack_latencies)/len(heartbeat.recent_ack_latencies)
-        return float('inf') if heartbeat is None else average_latency
+        if heartbeat is None:
+            return float('inf')
+
+        return sum(heartbeat.recent_ack_latencies) / len(heartbeat.recent_ack_latencies)
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
