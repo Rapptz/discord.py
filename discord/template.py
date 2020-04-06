@@ -17,8 +17,6 @@ class TemplateChannel:
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._type = data.get('type', self._type)
 
-    
-
 
 class TemplateRole:
     def __init__(self, *, guild, data):
@@ -59,7 +57,7 @@ class TemplateGuild:
 
 
 class Template:
-    def __init__(self, *, state, data):
+    def __init__(self, *, state, data, custom=False):
         self._state = state
 
         self.code = data['code']
@@ -73,7 +71,7 @@ class Template:
         self.updated_at = parse_time(data.get('updated_at'))
         source_id = _get_as_snowflake(data, 'source_guild_id')
         source_serialised = data['serialized_source_guild']
-        self.source_guild = TemplateGuild(id=source_id, data=source_serialised)
+        self.source_guild = TemplateGuild.from_data(id=source_id, data=source_serialised)
 
     async def create_guild(self, name, region=None, icon=None):
         if icon is not None:
@@ -86,3 +84,7 @@ class Template:
 
         data = await self._state.http.create_from_template(self.code, name, region, icon)
         return Guild(data=data, state=self._sate)
+
+    @classmethod
+    def new(cls, *, guild):
+        ...
