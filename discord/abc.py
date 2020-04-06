@@ -1039,7 +1039,7 @@ class Connectable(metaclass=abc.ABCMeta):
     def _get_voice_state_pair(self):
         raise NotImplementedError
 
-    async def connect(self, *, timeout=60.0, reconnect=True):
+    async def connect(self, *, timeout=60.0, reconnect=True, cls=VoiceClient):
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
@@ -1053,6 +1053,10 @@ class Connectable(metaclass=abc.ABCMeta):
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.
+        cls:
+            The factory class that will be used to create the voice connection.
+            By default, this is :class:`VoiceClient`. Should a custom
+            class be provided, it must be inherited from :class:`VoiceClient`
 
         Raises
         -------
@@ -1074,7 +1078,10 @@ class Connectable(metaclass=abc.ABCMeta):
         if state._get_voice_client(key_id):
             raise ClientException('Already connected to a voice channel.')
 
-        voice = VoiceClient(state=state, timeout=timeout, channel=self)
+        if not issubclass(cls, VoiceClient):
+            raise TypeError('Custom class {0.__name__!r} is not inherited from class {1.__name__!r}.'.format(cls, VoiceClient))
+
+        voice = cls(client=state.client, timeout=timeout, channel=self)
         state._add_voice_client(key_id, voice)
 
         try:

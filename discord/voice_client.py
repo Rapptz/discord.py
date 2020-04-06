@@ -85,7 +85,7 @@ class VoiceClient:
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the voice client is running on.
     """
-    def __init__(self, state, timeout, channel):
+    def __init__(self, client, timeout, channel):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
@@ -94,8 +94,8 @@ class VoiceClient:
         self.__timeout = timeout
         self.__ws = None
         self.__socket = None
-        self.loop = state.loop
-        self.__state = state
+        self.loop = client.loop
+        self.__state = client._connection
         # this will be used in the AudioPlayer thread
         self.__connected = threading.Event()
 

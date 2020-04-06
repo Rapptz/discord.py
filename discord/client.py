@@ -223,7 +223,7 @@ class Client:
             'ready': self._handle_ready
         }
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
+        self._connection = ConnectionState(client=self, dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count

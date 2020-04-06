@@ -126,7 +126,7 @@ class AutoShardedClient(Client):
             elif not isinstance(self.shard_ids, (list, tuple)):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
-        self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+        self._connection = AutoShardedConnectionState(client=self, dispatch=self.dispatch, chunker=self._chunker,
                                                       handlers=self._handlers, syncer=self._syncer,
                                                       http=self.http, loop=self.loop, **kwargs)
 

@@ -62,13 +62,14 @@ log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
 class ConnectionState:
-    def __init__(self, *, dispatch, chunker, handlers, syncer, http, loop, **options):
+    def __init__(self, *, client, dispatch, chunker, handlers, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
         self.max_messages = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
             self.max_messages = 1000
 
+        self.client = client
         self.dispatch = dispatch
         self.chunker = chunker
         self.syncer = syncer
