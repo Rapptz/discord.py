@@ -1033,10 +1033,13 @@ class Client:
         """
         return GuildIterator(self, limit=limit, before=before, after=after)
 
-    async def fetch_guild(self, guild_id):
+    async def fetch_guild(self, guild_id, *, preview=False):
         """|coro|
 
         Retrieves a :class:`.Guild` from an ID.
+
+        .. versionchanged:: 1.4
+            The ``preview`` keyword-only parameter was added.
 
         .. note::
 
@@ -1051,6 +1054,20 @@ class Client:
         -----------
         guild_id: :class:`int`
             The guild's ID to fetch from.
+        preview: Optional[:class:`bool`]
+            Provides a preview of the guild. Does not require you to be in the guild. By default,
+            it is set to ``False``.
+
+            .. note::
+
+                Using this, you will only receive :attr:`.Guild.id`, :attr:`.Guild.name`,
+                :attr:`.Guild.icon`, :attr:`.Guild.splash`, :attr:`.Guild.emojis`, :attr:`.Guild.features`,
+                :attr:`.Guild.description`, :attr:`.Guild.approximate_member_count`, and 
+                :attr:`.Guild.approximate_presence_count`.
+
+            .. note::
+
+                This is only available for public guilds.
 
         Raises
         ------
@@ -1064,7 +1081,10 @@ class Client:
         :class:`.Guild`
             The guild from the ID.
         """
-        data = await self.http.get_guild(guild_id)
+        if preview:
+            data = await self.http.get_guild_preview(guild_id)
+        else:
+            data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
     async def create_guild(self, name, region=None, icon=None):
