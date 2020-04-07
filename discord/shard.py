@@ -40,9 +40,9 @@ from .enums import Status
 log = logging.getLogger(__name__)
 
 class EventType:
-    Close = 0
-    Resume = 1
-    Identify = 2
+    close = 0
+    resume = 1
+    identify = 2
 
 class Shard:
     def __init__(self, ws, client):
@@ -61,7 +61,7 @@ class Shard:
         self._task = self.loop.create_task(self.worker())
 
     async def worker(self):
-        while True:
+        while not self._client.is_closed():
             try:
                 await self.ws.poll_event()
             except ReconnectWebSocket as e:
