@@ -73,9 +73,9 @@ class KeepAliveHandler(threading.Thread):
         self.interval = interval
         self.daemon = True
         self.shard_id = shard_id
-        self.msg = 'Keeping websocket alive with sequence %s.'
-        self.block_msg = 'Heartbeat blocked for more than %s seconds.'
-        self.behind_msg = 'Can\'t keep up, websocket is %.1fs behind.'
+        self.msg = 'Keeping shard ID %d websocket alive with sequence %s.'
+        self.block_msg = 'Shard ID %d heartbeat blocked for more than %s seconds.'
+        self.behind_msg = 'Can\'t keep up, shard ID %d websocket is %.1fs behind.'
         self._stop_ev = threading.Event()
         self._last_ack = time.perf_counter()
         self._last_send = time.perf_counter()
@@ -98,7 +98,7 @@ class KeepAliveHandler(threading.Thread):
                     return
 
             data = self.get_payload()
-            log.debug(self.msg, data['d'])
+            log.debug(self.msg, self.shard_id, data['d'])
             coro = self.ws.send_as_json(data)
             f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
@@ -117,7 +117,7 @@ class KeepAliveHandler(threading.Thread):
                         else:
                             stack = traceback.format_stack(frame)
                             msg = '%s\nLoop thread traceback (most recent call last):\n%s' % (self.block_msg, ''.join(stack))
-                        log.warning(msg, total)
+                        log.warning(msg, self.shard_id, total)
 
             except Exception:
                 self.stop()
@@ -138,15 +138,15 @@ class KeepAliveHandler(threading.Thread):
         self._last_ack = ack_time
         self.latency = ack_time - self._last_send
         if self.latency > 10:
-            log.warning(self.behind_msg, self.latency)
+            log.warning(self.behind_msg, self.shard_id, self.latency)
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.recent_ack_latencies = deque(maxlen=20)
-        self.msg = 'Keeping voice websocket alive with timestamp %s.'
-        self.block_msg = 'Voice heartbeat blocked for more than %s seconds'
-        self.behind_msg = 'High socket latency, heartbeat is %.1fs behind'
+        self.msg = 'Keeping shard ID %s voice websocket alive with timestamp %s.'
+        self.block_msg = 'Shard ID %s voice heartbeat blocked for more than %s seconds'
+        self.behind_msg = 'High socket latency, shard ID %s heartbeat is %.1fs behind'
 
     def get_payload(self):
         return {
