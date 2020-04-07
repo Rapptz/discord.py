@@ -50,13 +50,15 @@ __all__ = (
     'KeepAliveHandler',
     'VoiceKeepAliveHandler',
     'DiscordVoiceWebSocket',
-    'ResumeWebSocket',
+    'ReconnectWebSocket',
 )
 
-class ResumeWebSocket(Exception):
-    """Signals to initialise via RESUME opcode instead of IDENTIFY."""
-    def __init__(self, shard_id):
+class ReconnectWebSocket(Exception):
+    """Signals to safely reconnect the websocket."""
+    def __init__(self, shard_id, *, resume=True):
         self.shard_id = shard_id
+        self.resume = resume
+        self.op = 'RESUME' if resume else 'IDENTIFY'
 
 EventListener = namedtuple('EventListener', 'predicate event result future')
 
@@ -385,7 +387,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 # internal exception signalling to reconnect.
                 log.debug('Received RECONNECT opcode.')
                 await self.close()
-                raise ResumeWebSocket(self.shard_id)
+                raise ReconnectWebSocket(self.shard_id)
 
             if op == self.HEARTBEAT_ACK:
                 self._keep_alive.ack()
@@ -406,16 +408,14 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
             if op == self.INVALIDATE_SESSION:
                 if data is True:
-                    await asyncio.sleep(5.0)
                     await self.close()
-                    raise ResumeWebSocket(self.shard_id)
+                    raise ReconnectWebSocket(self.shard_id)
 
                 self.sequence = None
                 self.session_id = None
                 log.info('Shard ID %s session has been invalidated.', self.shard_id)
-                await asyncio.sleep(5.0)
-                await self.identify()
-                return
+                await self.close(code=1000)
+                raise ReconnectWebSocket(self.shard_id, resume=False)
 
             log.warning('Unknown OP code %s.', op)
             return
@@ -489,7 +489,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         except websockets.exceptions.ConnectionClosed as exc:
             if self._can_handle_close(exc.code):
                 log.info('Websocket closed with %s (%s), attempting a reconnect.', exc.code, exc.reason)
-                raise ResumeWebSocket(self.shard_id) from exc
+                raise ReconnectWebSocket(self.shard_id) from exc
             else:
                 log.info('Websocket closed with %s (%s), cannot reconnect.', exc.code, exc.reason)
                 raise ConnectionClosed(exc, shard_id=self.shard_id) from exc
