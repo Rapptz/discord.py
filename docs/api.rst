@@ -140,7 +140,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         
     .. warning::
     
-        This function will  not be called if logging in with
+        This function will not be called if logging in with
         `bot=False`, as Discord does not send a READY communication
         to the client in that case.
 
