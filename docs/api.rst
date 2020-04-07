@@ -113,7 +113,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_connect()
 
     Called when the client has successfully connected to Discord. This is not
-    the same as the client being fully prepared, see :func:`on_ready` for that.
+    the same as the client being fully prepared, see :func:`
+    ` for that.
 
     The warnings on :func:`on_ready` also apply.
 
@@ -136,6 +137,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         Likewise, this function is **not** guaranteed to only be called
         once. This library implements reconnection logic and thus will
         end up calling this event whenever a RESUME request fails.
+        
+    .. warning::
+    
+        This function will  not be called if logging in with
+        `bot=False`, as Discord does not send a READY communication
+        to the client in that case.
 
 .. function:: on_shard_ready(shard_id)
 
