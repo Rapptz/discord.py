@@ -73,9 +73,9 @@ class KeepAliveHandler(threading.Thread):
         self.interval = interval
         self.daemon = True
         self.shard_id = shard_id
-        self.msg = 'Keeping shard ID %d websocket alive with sequence %s.'
-        self.block_msg = 'Shard ID %d heartbeat blocked for more than %s seconds.'
-        self.behind_msg = 'Can\'t keep up, shard ID %d websocket is %.1fs behind.'
+        self.msg = 'Keeping shard ID %s websocket alive with sequence %s.'
+        self.block_msg = 'Shard ID %s heartbeat blocked for more than %s seconds.'
+        self.behind_msg = 'Can\'t keep up, shard ID %s websocket is %.1fs behind.'
         self._stop_ev = threading.Event()
         self._last_ack = time.perf_counter()
         self._last_send = time.perf_counter()
