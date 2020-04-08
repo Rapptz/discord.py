@@ -28,8 +28,6 @@ import asyncio
 import itertools
 import logging
 
-import websockets
-
 from .state import AutoShardedConnectionState
 from .client import Client
 from .gateway import *
@@ -191,28 +189,10 @@ class AutoShardedClient(Client):
 
     async def launch_shard(self, gateway, shard_id):
         try:
-            coro = websockets.connect(gateway, loop=self.loop, klass=DiscordWebSocket, compression=None)
+            coro = DiscordWebSocket.from_client(self, gateway=gateway, shard_id=shard_id)
             ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
             log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
-            await asyncio.sleep(5.0)
-            return await self.launch_shard(gateway, shard_id)
-
-        ws.token = self.http.token
-        ws._connection = self._connection
-        ws._discord_parsers = self._connection.parsers
-        ws._dispatch = self.dispatch
-        ws.gateway = gateway
-        ws.shard_id = shard_id
-        ws.shard_count = self.shard_count
-        ws._max_heartbeat_timeout = self._connection.heartbeat_timeout
-
-        try:
-            # OP HELLO
-            await asyncio.wait_for(ws.poll_event(), timeout=180.0)
-            await asyncio.wait_for(ws.identify(), timeout=180.0)
-        except asyncio.TimeoutError:
-            log.info('Timed out when connecting for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 

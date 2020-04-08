@@ -32,7 +32,6 @@ import sys
 import traceback
 
 import aiohttp
-import websockets
 
 from .user import User, Profile
 from .asset import Asset
@@ -497,9 +496,7 @@ class Client:
                     GatewayNotFound,
                     ConnectionClosed,
                     aiohttp.ClientError,
-                    asyncio.TimeoutError,
-                    websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as exc:
+                    asyncio.TimeoutError) as exc:
 
                 self.dispatch('disconnect')
                 if not reconnect:
@@ -632,7 +629,11 @@ class Client:
             _cleanup_loop(loop)
 
         if not future.cancelled():
-            return future.result()
+            try:
+                return future.result()
+            except KeyboardInterrupt:
+                # I am unsure why this gets raised here but suppress it anyway
+                return None
 
     # properties
 
