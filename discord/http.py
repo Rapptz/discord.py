@@ -111,6 +111,17 @@ class HTTPClient:
         if self.__session.closed:
             self.__session = aiohttp.ClientSession(connector=self.connector)
 
+    async def ws_connect(self, url):
+        kwargs = {
+            'proxy_auth': self.proxy_auth,
+            'proxy': self.proxy,
+            'max_msg_size': 0,
+            'timeout': 30.0,
+            'autoclose': False,
+        }
+
+        return await self.__session.ws_connect(url, **kwargs)
+
     async def request(self, route, *, files=None, **kwargs):
         bucket = route.bucket
         method = route.method
