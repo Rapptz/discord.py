@@ -330,9 +330,6 @@ class TemplateRole(Hashable):
     position: :class:`int`
         The position of the role. This number is usually positive. The bottom
         role has a position of 0.
-    managed: :class:`bool`
-        Indicates if the role is managed by the guild through some form of
-        integrations such as Twitch.
     mentionable: :class:`bool`
         Indicates if the role can be mentioned by users.
     """
@@ -345,7 +342,6 @@ class TemplateRole(Hashable):
         self.position = data.get('position', 0)
         self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)
-        self.managed = data.get('managed', False)
         self.mentionable = data.get('mentionable', False)
 
     def __str__(self):
