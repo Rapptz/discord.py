@@ -1073,7 +1073,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None, *, template=None):
+    async def create_guild(self, name, region=None, icon=None, *, code=None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1090,8 +1090,8 @@ class Client:
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
-        template: :class:`.Template`
-            A guild template used to create the guild.
+        code: Optional[:class:`str`]
+            The code for a template to create the guild with.
 
         Raises
         ------
@@ -1106,9 +1106,6 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
-        if isinstance(template, Template):
-            await template.create_guild(name, region, icon)
-
         if icon is not None:
             icon = utils._bytes_to_base64_data(icon)
 
@@ -1117,7 +1114,10 @@ class Client:
         else:
             region = region.value
 
-        data = await self.http.create_guild(name, region, icon)
+        if code:
+            data = await self.http.create_from_template(code, name, region, icon)
+        else:
+            data = await self.http.create_guild(name, region, icon)
         return Guild(data=data, state=self._connection)
 
     # Invite management
