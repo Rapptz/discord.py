@@ -503,7 +503,7 @@ class DiscordWebSocket:
                 raise msg.data
             elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE):
                 log.debug('Received %s', msg)
-                raise WebSocketClosure('Unexpected WebSocket closure.')
+                raise WebSocketClosure
         except WebSocketClosure as e:
             if self._can_handle_close():
                 log.info('Websocket closed with %s, attempting a reconnect.', self.socket.close_code)
@@ -638,8 +638,9 @@ class DiscordVoiceWebSocket:
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
 
-    def __init__(self, socket):
+    def __init__(self, socket, loop):
         self.ws = socket
+        self.loop = loop
         self._keep_alive = None
 
     async def send_as_json(self, data):
@@ -676,8 +677,8 @@ class DiscordVoiceWebSocket:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
-        socket = await http.ws_connect(gateway)
-        ws = cls(socket)
+        socket = await http.ws_connect(gateway, compress=15)
+        ws = cls(socket, loop=client.loop)
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0
