@@ -85,6 +85,10 @@ class MaybeUnlock:
         if self._unlock:
             self.lock.release()
 
+# For some reason, the Discord voice websocket expects this header to be
+# completely lowercase while aiohttp respects spec and does it as case-insensitive
+aiohttp.hdrs.WEBSOCKET = 'websocket'
+
 class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
 
@@ -111,13 +115,17 @@ class HTTPClient:
         if self.__session.closed:
             self.__session = aiohttp.ClientSession(connector=self.connector)
 
-    async def ws_connect(self, url):
+    async def ws_connect(self, url, *, compress=0):
         kwargs = {
             'proxy_auth': self.proxy_auth,
             'proxy': self.proxy,
             'max_msg_size': 0,
             'timeout': 30.0,
             'autoclose': False,
+            'headers': {
+                'User-Agent': self.user_agent,
+            },
+            'compress': compress
         }
 
         return await self.__session.ws_connect(url, **kwargs)
