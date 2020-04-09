@@ -441,7 +441,7 @@ def resolve_template(code):
     if isinstance(code, Template) or isinstance(code, Object):
         return template.id
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.new|app\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.new|app\.com\/templates)\/(.+)'
         m = re.match(rx, code)
         if m:
             return m.group(1)

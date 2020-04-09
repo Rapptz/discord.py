@@ -4,6 +4,15 @@ from .mixins import Hashable
 from .guild import Guild
 from .permissions import Permissions, PermissionOverwrite
 
+__all__ = (
+    'TemplateChannel',
+    'TemplateTextChannel',
+    'TemplateVoiceChannel',
+    'TemplateCategoryChannel',
+    'TemplateGuild',
+    'Template'
+)
+
 class TemplateChannel(Hashable):
     """The base class for :class:`TemplateTextChannel`, :class:`TemplateVoiceChannel`, and :class:`TemplateCategoryChannel`.
 
