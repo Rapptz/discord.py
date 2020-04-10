@@ -221,9 +221,6 @@ class AutoShardedClient(Client):
         self.shards[shard_id] = ret = Shard(ws, self)
         ret.launch()
 
-        if len(self.shards) == self.shard_count:
-            self._connection.shards_launched.set()
-
     async def launch_shards(self):
         if self.shard_count is None:
             self.shard_count, gateway = await self.http.get_bot_gateway()
@@ -240,6 +237,8 @@ class AutoShardedClient(Client):
             await self.launch_shard(gateway, shard_id)
             if shard_id != last_shard_id:
                 await asyncio.sleep(5.0)
+
+        self._connection.shards_launched.set()
 
     async def _connect(self):
         await self.launch_shards()
