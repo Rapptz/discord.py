@@ -847,11 +847,8 @@ class Message:
 
         Publishes this message to your announcement channel.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to use this.
-
-        .. note::
-
-            This can only be used by non-bot accounts.
+        If the message is not your own then the :attr:`~Permissions.manage_messages`
+        permission is needed.
 
         Raises
         -------
