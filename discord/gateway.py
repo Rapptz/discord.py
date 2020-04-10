@@ -245,7 +245,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         client._connection._update_references(ws)
 
-        log.info('Created websocket connected to %s', gateway)
+        log.debug('Created websocket connected to %s', gateway)
 
         # poll event for OP Hello
         await ws.poll_event()
@@ -259,7 +259,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
             await ws.ensure_open()
         except websockets.exceptions.ConnectionClosed:
             # ws got closed so let's just do a regular IDENTIFY connect.
-            log.info('RESUME failed (the websocket decided to close) for Shard ID %s. Retrying.', shard_id)
+            log.warning('RESUME failed (the websocket decided to close) for Shard ID %s. Retrying.', shard_id)
             return await cls.from_client(client, shard_id=shard_id)
         else:
             return ws
@@ -373,7 +373,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
                 # "reconnect" can only be handled by the Client
                 # so we terminate our connection and raise an
                 # internal exception signalling to reconnect.
-                log.info('Received RECONNECT opcode.')
+                log.debug('Received RECONNECT opcode.')
                 await self.close()
                 raise ResumeWebSocket(self.shard_id)
 
@@ -752,8 +752,10 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
     def average_latency(self):
         """:class:`list`: Average of last 20 HEARTBEAT latencies."""
         heartbeat = self._keep_alive
-        average_latency = sum(heartbeat.recent_ack_latencies)/len(heartbeat.recent_ack_latencies)
-        return float('inf') if heartbeat is None else average_latency
+        if heartbeat is None:
+            return float('inf')
+
+        return sum(heartbeat.recent_ack_latencies) / len(heartbeat.recent_ack_latencies)
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')

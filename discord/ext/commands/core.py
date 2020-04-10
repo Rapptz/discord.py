@@ -1139,8 +1139,12 @@ class GroupMixin(typing.Generic[_CT]):
         return command
 
     def walk_commands(self):
-        """An iterator that recursively walks through all commands and subcommands."""
-        for command in tuple(self.all_commands.values()):
+        """An iterator that recursively walks through all commands and subcommands.
+
+        .. versionchanged:: 1.4
+            Duplicates due to aliases are no longer returned
+        """
+        for command in self.commands:
             yield command
             if isinstance(command, GroupMixin):
                 yield from command.walk_commands()
