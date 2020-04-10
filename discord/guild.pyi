@@ -28,7 +28,7 @@ _VALID_ANIMATED_ICON_FORMATS = Literal[_VALID_STATIC_ICON_FORMATS, 'gif']
 _VALID_FEATURES = Literal['VIP_REGIONS', 'VANITY_URL', 'INVITE_SPLASH',
                           'VERIFIED', 'PARTNERED', 'MORE_EMOJI', 'DISCOVERABLE',
                           'FEATURABLE', 'COMMERCE', 'PUBLIC', 'NEWS', 'BANNER',
-                          'ANIMATED_ICON', 'PUBLIC_DISABLED']
+                          'ANIMATED_ICON', 'PUBLIC_DISABLED', 'WELCOME_SCREEN_ENABLED']
 
 class BanEntry(NamedTuple):
     user: User
