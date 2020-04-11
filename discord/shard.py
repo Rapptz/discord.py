@@ -135,12 +135,16 @@ class Shard:
 
     async def reidentify(self, exc):
         self._cancel_task()
-        log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
-        coro = DiscordWebSocket.from_client(self._client, resume=exc.resume, shard_id=self.id,
-                                            session=self.ws.session_id, sequence=self.ws.sequence)
         self._dispatch('disconnect')
-        self.ws = await asyncio.wait_for(coro, timeout=180.0)
-        self.launch()
+        log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
+        try:
+            coro = DiscordWebSocket.from_client(self._client, resume=exc.resume, shard_id=self.id,
+                                                session=self.ws.session_id, sequence=self.ws.sequence)
+            self.ws = await asyncio.wait_for(coro, timeout=180.0)
+        except self._handled_exceptions as e:
+            await self._handle_disconnect(e)
+        else:
+            self.launch()
 
     async def reconnect(self):
         self._cancel_task()
