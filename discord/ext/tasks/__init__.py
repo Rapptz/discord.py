@@ -17,7 +17,7 @@ class Loop:
 
     The main interface to create this is through :func:`loop`.
     """
-    def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
+    def __init__(self, coro, seconds, hours, minutes, provider, count, reconnect, loop):
         self.coro = coro
         self.reconnect = reconnect
         self.loop = loop or asyncio.get_event_loop()
@@ -49,8 +49,12 @@ class Loop:
         self._last_iteration = None
         self._next_iteration = None
 
-        if not inspect.iscoroutinefunction(self.coro):
-            raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
+        if provider is not None:
+            self._provider = provider
+
+        for coro in (self._provider, self.coro):
+            if not inspect.iscoroutinefunction(coro):
+                raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(coro)))
 
     async def _call_loop_function(self, name, *args, **kwargs):
         coro = getattr(self, '_' + name)
@@ -58,9 +62,9 @@ class Loop:
             return
 
         if self._injected is not None:
-            await coro(self._injected, *args, **kwargs)
+            return await coro(self._injected, *args, **kwargs)
         else:
-            await coro(*args, **kwargs)
+            return await coro(*args, **kwargs)
 
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
@@ -70,7 +74,7 @@ class Loop:
         try:
             while True:
                 self._last_iteration = self._next_iteration
-                self._next_iteration = self._get_next_sleep_time()
+                self._next_iteration = await self._get_next_sleep_time()
                 try:
                     await self.coro(*args, **kwargs)
                     now = datetime.datetime.now(datetime.timezone.utc)
@@ -368,8 +372,23 @@ class Loop:
         self._error = coro
         return coro
 
-    def _get_next_sleep_time(self):
-        return self._last_iteration + datetime.timedelta(seconds=self._sleep)
+    async def _provider(self):
+        return self._sleep
+
+    async def _get_next_sleep_time(self):
+        sleep_time = await self._call_loop_function('provider')
+
+        if isinstance(sleep_time, (int, float)):
+            sleep_time = datetime.timedelta(seconds=sleep_time)
+
+        if isinstance(sleep_time, datetime.datetime):
+            if sleep_time.tzinfo is None:
+                sleep_time = sleep_time.replace(tzinfo=datetime.timezone.utc)
+            return sleep_time
+        elif isinstance(sleep_time, datetime.timedelta):
+            return self._last_iteration + sleep_time
+
+        raise TypeError('Unsupported sleep time type, received {0.__name__!r}.'.format(type(sleep_time)))
 
     def change_interval(self, *, seconds=0, minutes=0, hours=0):
         """Changes the interval for the sleep time.
@@ -405,7 +424,7 @@ class Loop:
         self.hours = hours
         self.minutes = minutes
 
-def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
+def loop(*, seconds=0, minutes=0, hours=0, provider=None, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
@@ -417,6 +436,10 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
         The number of minutes between every iteration.
     hours: :class:`float`
         The number of hours between every iteration.
+    provider: Optional[callable]
+        A custom callable which would be called to determine how long
+        to wait between each iteration, this should return a number of seconds,
+        :class:`datetime.timedelta` or :class:`datetime.datetime`.
     count: Optional[:class:`int`]
         The number of loops to do, ``None`` if it should be an
         infinite loop.
@@ -437,5 +460,5 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
     """
     def decorator(func):
         return Loop(func, seconds=seconds, minutes=minutes, hours=hours,
-                          count=count, reconnect=reconnect, loop=loop)
+                          provider=provider, count=count, reconnect=reconnect, loop=loop)
     return decorator
