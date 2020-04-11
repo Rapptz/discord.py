@@ -223,8 +223,12 @@ class Client:
             'ready': self._handle_ready
         }
 
+        self._hooks = {
+            'before_identify': self._call_before_identify_hook
+        }
+
         self._connection = ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
+                                           hooks=self._hooks, syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
         self._closed = False
@@ -394,6 +398,36 @@ class Client:
 
         await self._connection.request_offline_members(guilds)
 
+    # hooks
+
+    async def _call_before_identify_hook(self, shard_id, *, initial=False):
+        # This hook is an internal hook that actually calls the public one.
+        # It allows the library to have its own hook without stepping on the
+        # toes of those who need to override their own hook.
+        await self.before_identify_hook(shard_id, initial=initial)
+
+    async def before_identify_hook(self, shard_id, *, initial=False):
+        """|coro|
+
+        A hook that is called before IDENTIFYing a session. This is useful
+        if you wish to have more control over the synchronization of multiple
+        IDENTIFYing clients.
+
+        The default implementation sleeps for 5 seconds.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        ------------
+        shard_id: :class:`int`
+            The shard ID that requested being IDENTIFY'd
+        initial: :class:`bool`
+            Whether this IDENTIFY is the first initial IDENTIFY.
+        """
+
+        if not initial:
+            await asyncio.sleep(5.0)
+
     # login state management
 
     async def login(self, token, *, bot=True):
@@ -447,7 +481,7 @@ class Client:
         await self.close()
 
     async def _connect(self):
-        coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
+        coro = DiscordWebSocket.from_client(self, initial=True, shard_id=self.shard_id)
         self.ws = await asyncio.wait_for(coro, timeout=180.0)
         while True:
             try:
@@ -455,11 +489,8 @@ class Client:
             except ReconnectWebSocket as e:
                 log.info('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
-                if not e.resume:
-                    await asyncio.sleep(5.0)
-
                 coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
-                                                    sequence=self.ws.sequence, resume=e.resume)
+                                                          sequence=self.ws.sequence, resume=e.resume)
                 self.ws = await asyncio.wait_for(coro, timeout=180.0)
 
     async def connect(self, *, reconnect=True):

@@ -250,7 +250,7 @@ class DiscordWebSocket:
         return not self.socket.closed
 
     @classmethod
-    async def from_client(cls, client, *, gateway=None, shard_id=None, session=None, sequence=None, resume=False):
+    async def from_client(cls, client, *, initial=False, gateway=None, shard_id=None, session=None, sequence=None, resume=False):
         """Creates a main websocket for Discord from a :class:`Client`.
 
         This is for internal use only.
@@ -265,6 +265,8 @@ class DiscordWebSocket:
         ws._discord_parsers = client._connection.parsers
         ws._dispatch = client.dispatch
         ws.gateway = gateway
+        ws.call_hooks = client._connection.call_hooks
+        ws._initial_identify = initial
         ws.shard_id = shard_id
         ws.shard_count = client._connection.shard_count
         ws.session_id = session
@@ -345,6 +347,7 @@ class DiscordWebSocket:
                 'afk': False
             }
 
+        await self.call_hooks('before_identify', self.shard_id, initial=self._initial_identify)
         await self.send_as_json(payload)
         log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
 

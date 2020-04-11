@@ -96,9 +96,6 @@ class Shard:
             self._task.cancel()
 
         log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
-        if not exc.resume:
-            await asyncio.sleep(5.0)
-
         coro = DiscordWebSocket.from_client(self._client, resume=exc.resume, shard_id=self.id,
                                             session=self.ws.session_id, sequence=self.ws.sequence)
         self._dispatch('disconnect')
@@ -144,7 +141,7 @@ class AutoShardedClient(Client):
 
         self._connection = AutoShardedConnectionState(dispatch=self.dispatch,
                                                       handlers=self._handlers, syncer=self._syncer,
-                                                      http=self.http, loop=self.loop, **kwargs)
+                                                      hooks=self._hooks, http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
@@ -208,12 +205,12 @@ class AutoShardedClient(Client):
             sub_guilds = list(sub_guilds)
             await self._connection.request_offline_members(sub_guilds, shard_id=shard_id)
 
-    async def launch_shard(self, gateway, shard_id):
+    async def launch_shard(self, gateway, shard_id, *, initial=False):
         try:
-            coro = DiscordWebSocket.from_client(self, gateway=gateway, shard_id=shard_id)
+            coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id)
             ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
-            log.info('Failed to connect for shard_id: %s. Retrying...', shard_id)
+            log.exception('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 
@@ -232,11 +229,9 @@ class AutoShardedClient(Client):
         shard_ids = self.shard_ids if self.shard_ids else range(self.shard_count)
         self._connection.shard_ids = shard_ids
 
-        last_shard_id = shard_ids[-1]
         for shard_id in shard_ids:
-            await self.launch_shard(gateway, shard_id)
-            if shard_id != last_shard_id:
-                await asyncio.sleep(5.0)
+            initial = shard_id == shard_ids[0]
+            await self.launch_shard(gateway, shard_id, initial=initial)
 
         self._connection.shards_launched.set()
 
