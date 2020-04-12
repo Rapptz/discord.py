@@ -194,6 +194,8 @@ class FFmpegPCMAudio(FFmpegAudio):
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
+    log_level: :class:`str`
+        The logging level to use for ffmpeg. Defaults to ``info``.
 
     Raises
     --------
@@ -201,8 +203,14 @@ class FFmpegPCMAudio(FFmpegAudio):
         The subprocess failed to be created.
     """
 
-    def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
-        args = []
+    def __init__(self, source, *, executable='ffmpeg', pipe=False, 
+                 stderr=None, before_options=None, options=None,
+                 log_level = "info"):
+        args = [
+            '-reconnect_at_eof', '1',
+            '-reconnect_delay_max', '4',
+            '-analyzeduration', '0',
+        ]
         subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
 
         if isinstance(before_options, str):
@@ -210,7 +218,7 @@ class FFmpegPCMAudio(FFmpegAudio):
 
         args.append('-i')
         args.append('-' if pipe else source)
-        args.extend(('-f', 's16le', '-ar', '48000', '-ac', '2', '-loglevel', 'warning'))
+        args.extend(('-f', 's16le', '-ar', '48000', '-ac', '2', '-loglevel', log_level))
 
         if isinstance(options, str):
             args.extend(shlex.split(options))
