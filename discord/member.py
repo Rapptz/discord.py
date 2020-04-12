@@ -33,7 +33,7 @@ from . import utils
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import Status, try_enum, UserFlags, HypeSquadHouse
 from .colour import Colour
 from .object import Object
 
@@ -159,10 +159,12 @@ class Member(discord.abc.Messageable, _BaseUser):
     premium_since: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC when the member used their
         Nitro boost on the guild, if available. This could be ``None``.
+    user_flags: list[:class:`UserFlags`]
+        The flags the member has.
     """
 
     __slots__ = ('_roles', '_cs_roles', 'joined_at', 'premium_since', '_client_status',
-                 'activities', 'guild', 'nick', '_user', '_state')
+                 'activities', 'guild', 'nick', '_user', '_state', '_public_flags')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -171,6 +173,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
+        self._public_flags = data['user'].get('public_flags', 0)
         self._client_status = {
             None: 'offline'
         }
@@ -192,6 +195,19 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def __hash__(self):
         return hash(self._user)
+
+    def has_flag(self, flag: UserFlags):
+        v = flag.value
+        return (self._public_flags & v) == v
+
+    @property
+    def hypesquad_houses(self):
+        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
+        return [house for house, flag in zip(HypeSquadHouse, flags) if self.has_flag(flag)]
+
+    @property
+    def flags(self):
+        return [flag for flag in UserFlags if self.has_flag(flag)]
 
     @classmethod
     def _from_message(cls, *, message, data):

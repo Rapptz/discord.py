@@ -82,7 +82,7 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
 _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_state')
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -100,13 +100,27 @@ class BaseUser(_BaseUser):
     def __hash__(self):
         return self.id >> 22
 
+    def has_flag(self, flag: UserFlags):
+        v = flag.value
+        return (self._public_flags & v) == v
+
     def _update(self, data):
         self.name = data['username']
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self.avatar = data['avatar']
+        self._public_flags = data.get("public_flags", 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
+
+    @property
+    def hypesquad_houses(self):
+        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
+        return [house for house, flag in zip(HypeSquadHouse, flags) if self.has_flag(flag)]
+
+    @property
+    def flags(self):
+        return [flag for flag in UserFlags if self.has_flag(flag)]
 
     @classmethod
     def _copy(cls, user):
