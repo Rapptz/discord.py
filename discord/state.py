@@ -1142,5 +1142,10 @@ class AutoShardedConnectionState(ConnectionState):
             self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
+        self.dispatch('shard_connect', data['__shard_id__'])
         if self._ready_task is None:
             self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+
+    def parse_resumed(self, data):
+        self.dispatch('resumed')
+        self.dispatch('shard_resumed', data['__shard_id__'])

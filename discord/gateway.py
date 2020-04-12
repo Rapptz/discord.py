@@ -438,11 +438,15 @@ class DiscordWebSocket:
             self._trace = trace = data.get('_trace', [])
             self.sequence = msg['s']
             self.session_id = data['session_id']
+            # pass back shard ID to ready handler
+            data['__shard_id__'] = self.shard_id
             log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
                      self.shard_id, ', '.join(trace), self.session_id)
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
+            # pass back the shard ID to the resumed handler
+            data['__shard_id__'] = self.shard_id
             log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
                      self.shard_id, self.session_id, ', '.join(trace))
 
