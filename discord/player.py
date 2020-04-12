@@ -233,14 +233,14 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     This launches a sub-process to a specific input file given.  However, rather than
     producing PCM packets like :class:`FFmpegPCMAudio` does that need to be encoded to
-    opus, this class produces opus packets, skipping the encoding step done by the library.
+    Opus, this class produces Opus packets, skipping the encoding step done by the library.
 
     Alternatively, instead of instantiating this class directly, you can use
     :meth:`FFmpegOpusAudio.from_probe` to probe for bitrate and codec information.  This
-    can be used to opportunistically skip pointless re-encoding of existing opus audio data
+    can be used to opportunistically skip pointless re-encoding of existing Opus audio data
     for a boost in performance at the cost of a short initial delay to gather the information.
     The same can be achieved by passing ``copy`` to the ``codec`` parameter, but only if you
-    know that the input source is opus encoded beforehand.
+    know that the input source is Opus encoded beforehand.
 
     .. versionadded:: 1.3
 
@@ -252,7 +252,7 @@ class FFmpegOpusAudio(FFmpegAudio):
     Parameters
     ------------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
-        The input that ffmpeg will take and convert to PCM bytes.
+        The input that ffmpeg will take and convert to Opus bytes.
         If ``pipe`` is True then this is a file-like object that is
         passed to the stdin of ffmpeg.
     bitrate: :class:`int`
@@ -260,14 +260,14 @@ class FFmpegOpusAudio(FFmpegAudio):
     codec: Optional[:class:`str`]
         The codec to use to encode the audio data.  Normally this would be
         just ``libopus``, but is used by :meth:`FFmpegOpusAudio.from_probe` to
-        opportunistically skip pointlessly re-encoding opus audio data by passing
+        opportunistically skip pointlessly re-encoding Opus audio data by passing
         ``copy`` as the codec value.  Any values other than ``copy``, ``opus``, or
         ``libopus`` will be considered ``libopus``.  Defaults to ``libopus``.
 
         .. warning::
 
             Do not provide this parameter unless you are certain that the audio input is
-            already opus encoded.  For typical use :meth:`FFmpegOpusAudio.from_probe`
+            already Opus encoded.  For typical use :meth:`FFmpegOpusAudio.from_probe`
             should be used to determine the proper value for this parameter.
 
     executable: :class:`str`
