@@ -321,7 +321,7 @@ Quick example: ::
 
     Due to a Discord limitation, filenames may not include underscores.
 
-Is there an event for invites or audit log entries being created?
+Is there an event for audit log entries being created?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since Discord does not dispatch this information in the gateway, the library cannot provide this information.
