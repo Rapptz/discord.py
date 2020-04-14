@@ -104,17 +104,17 @@ class KeepAliveHandler(threading.Thread):
                 total = 0
                 while True:
                     try:
-                        f.result(5)
+                        f.result(10)
                         break
                     except concurrent.futures.TimeoutError:
-                        total += 5
+                        total += 10
                         try:
                             frame = sys._current_frames()[self._main_thread_id]
                         except KeyError:
                             msg = self.block_msg
                         else:
                             stack = traceback.format_stack(frame)
-                            msg = '%s\nLoop thread stacktrace:\n%s' % (self.block_msg, ''.join(stack))
+                            msg = '%s\nLoop thread traceback (most recent call last):\n%s' % (self.block_msg, ''.join(stack))
                         log.warning(msg, total)
 
             except Exception:
