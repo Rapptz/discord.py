@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 import discord.abc
+from .public_flags import PublicFlags
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
 from .errors import ClientException
@@ -82,7 +83,7 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
 _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state')
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state', 'public_flags')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -112,15 +113,7 @@ class BaseUser(_BaseUser):
         self._public_flags = data.get("public_flags", 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
-
-    @property
-    def hypesquad_houses(self):
-        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
-        return [house for house, flag in zip(HypeSquadHouse, flags) if self.has_flag(flag)]
-
-    @property
-    def flags(self):
-        return [flag for flag in UserFlags if self.has_flag(flag)]
+        self.public_flags = PublicFlags(self)
 
     @classmethod
     def _copy(cls, user):
@@ -315,6 +308,8 @@ class ClientUser(BaseUser):
         Specifies if the user is a bot account.
     system: :class:`bool`
         Specifies if the user is a system user (i.e. represents Discord officially).
+    public_flags: :class:´PublicFlags´
+        The publicly available flags the user has.
 
         .. versionadded:: 1.3
 
@@ -688,6 +683,8 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a bot account.
     system: :class:`bool`
         Specifies if the user is a system user (i.e. represents Discord officially).
+    public_flags: :class:`PublicFlags`
+        The publicly available flags the user has.
     """
 
     __slots__ = BaseUser.__slots__ + ('__weakref__',)
