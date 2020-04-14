@@ -105,8 +105,12 @@ class Loop:
     def __get__(self, obj, objtype):
         if obj is None:
             return self
-        self._injected = obj
-        return self
+
+        copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
+                               count=self.count, reconnect=self.reconnect, loop=self.loop)
+        copy._injected = obj
+        setattr(obj, self.coro.__name__, copy)
+        return copy
 
     @property
     def current_loop(self):
@@ -405,21 +409,6 @@ class Loop:
         self.hours = hours
         self.minutes = minutes
 
-class _LoopFactory:
-    def __init__(self, func, **kwargs):
-        self.func = func
-        self.name = func.__name__
-        self.kwargs = kwargs
-
-    def __get__(self, obj, objtype):
-        if obj is None:
-            return self
-
-        loop = Loop(self.func, **self.kwargs)
-        loop._injected = obj
-        setattr(obj, self.name, loop)
-        return loop
-
 def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
@@ -451,23 +440,6 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
         The function was not a coroutine.
     """
     def decorator(func):
-        defined_within_class = False
-        frames = inspect.stack()
-        # Essentially, to detect whether we're using this decorator a class
-        # context we're walking the stack to see whether it's top level or
-        # within a class level. This code is pretty finicky and hacky but
-        # it's better than the alternative that requires maintaining a list
-        # of IDs. This code does however break if someone assigns a loop
-        # decorator using different ways, such as a dynamically created
-        # class or calling the decorator directly. However such uses should
-        # be niche and thus don't really impede functionality for 99.99% of users
-        for frame in frames[1:]:
-            if frame[3] == '<module>':
-                break
-            if '__module__' in frame[0].f_code.co_names:
-                defined_within_class = True
-                break
-
         kwargs = {
             'seconds': seconds,
             'minutes': minutes,
@@ -476,8 +448,5 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
             'reconnect': reconnect,
             'loop': loop
         }
-
-        if defined_within_class:
-            return _LoopFactory(func, **kwargs)
         return Loop(func, **kwargs)
     return decorator
