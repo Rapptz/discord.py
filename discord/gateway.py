@@ -33,6 +33,7 @@ import struct
 import sys
 import time
 import threading
+import traceback
 import zlib
 
 import websockets
@@ -66,6 +67,7 @@ class KeepAliveHandler(threading.Thread):
         shard_id = kwargs.pop('shard_id', None)
         threading.Thread.__init__(self, *args, **kwargs)
         self.ws = ws
+        self._main_thread_id = ws.thread_id
         self.interval = interval
         self.daemon = True
         self.shard_id = shard_id
@@ -102,11 +104,18 @@ class KeepAliveHandler(threading.Thread):
                 total = 0
                 while True:
                     try:
-                        f.result(5)
+                        f.result(10)
                         break
                     except concurrent.futures.TimeoutError:
-                        total += 5
-                        log.warning(self.block_msg, total)
+                        total += 10
+                        try:
+                            frame = sys._current_frames()[self._main_thread_id]
+                        except KeyError:
+                            msg = self.block_msg
+                        else:
+                            stack = traceback.format_stack(frame)
+                            msg = '%s\nLoop thread traceback (most recent call last):\n%s' % (self.block_msg, ''.join(stack))
+                        log.warning(msg, total)
 
             except Exception:
                 self.stop()
@@ -215,6 +224,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         self._dispatch_listeners = []
         # the keep alive
         self._keep_alive = None
+        self.thread_id = threading.get_ident()
 
         # ws related stuff
         self.session_id = None
@@ -648,6 +658,7 @@ class DiscordVoiceWebSocket(websockets.client.WebSocketClientProtocol):
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0
+        ws.thread_id = threading.get_ident()
 
         if resume:
             await ws.resume()

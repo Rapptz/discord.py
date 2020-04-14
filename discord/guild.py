@@ -537,7 +537,7 @@ class Guild(Hashable):
 
     @property
     def owner(self):
-        """:class:`Member`: The member that owns the guild."""
+        """Optional[:class:`Member`]: The member that owns the guild."""
         return self.get_member(self.owner_id)
 
     @property

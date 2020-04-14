@@ -109,8 +109,12 @@ class Loop:
     def __get__(self, obj, objtype):
         if obj is None:
             return self
-        self._injected = obj
-        return self
+
+        copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
+                               count=self.count, reconnect=self.reconnect, loop=self.loop)
+        copy._injected = obj
+        setattr(obj, self.coro.__name__, copy)
+        return copy
 
     @property
     def current_loop(self):
@@ -459,6 +463,14 @@ def loop(*, seconds=0, minutes=0, hours=0, provider=None, count=None, reconnect=
         The function was not a coroutine.
     """
     def decorator(func):
-        return Loop(func, seconds=seconds, minutes=minutes, hours=hours,
-                          provider=provider, count=count, reconnect=reconnect, loop=loop)
+        kwargs = {
+            'seconds': seconds,
+            'minutes': minutes,
+            'hours': hours,
+            'provider': provider,
+            'count': count,
+            'reconnect': reconnect,
+            'loop': loop
+        }
+        return Loop(func, **kwargs)
     return decorator
