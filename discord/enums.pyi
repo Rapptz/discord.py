@@ -70,6 +70,7 @@ class VerificationLevel(Enum):
     table_flip: int
     extreme: int
     double_table_flip: int
+    very_high: int
 
 class ContentFilter(Enum):
     disabled: int

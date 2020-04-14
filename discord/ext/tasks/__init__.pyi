@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 
-from typing import Any, Optional, Union, TypeVar, Generic, Type, Awaitable, Generator, Callable
+from typing import Any, Optional, Union, TypeVar, Generic, Type, Awaitable, Generator, Callable, overload
 from typing_extensions import Final, Protocol
 
 _T = TypeVar('_T')
@@ -26,7 +26,10 @@ class Loop(Generic[_T]):
     def __init__(self, coro: _CoroType[_T], seconds: float, hours: float,
                  minutes: float, count: Optional[int], reconnect: bool,
                  loop: Optional[asyncio.AbstractEventLoop]) -> None: ...
-    def __get__(self: _L, obj: Any, objtype: Any) -> _L: ...
+    @overload
+    def __get__(self: _L, obj: None, objtype: Any) -> _L: ...
+    @overload
+    def __get__(self, obj: Any, objtype: Any) -> Loop[_T]: ...
     @property
     def current_loop(self) -> int: ...
     @property
