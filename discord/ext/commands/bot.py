@@ -47,7 +47,12 @@ def when_mentioned(bot, msg):
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
-    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
+    prefixes = [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
+
+    role = discord.utils.get(msg.guild.roles, name=bot.user.name)
+    if role is not None:
+        prefixes.append('<@&%s> ' % role.id)
+    return prefixes
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
