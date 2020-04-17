@@ -203,6 +203,11 @@ class Cog(metaclass=CogMeta):
         return self.__cog_name__
 
     @property
+    def command_attrs(self):
+        """:class:`dict`: Returns the commands attributes applied for the cog."""
+        return self.__cog_settings__
+
+    @property
     def description(self):
         """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
         try:
