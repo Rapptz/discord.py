@@ -257,7 +257,7 @@ class Guild(Hashable):
         # according to Stan, this is always available even if the guild is unavailable
         # I don't have this guarantee when someone updates the guild.
         member_count = guild.get('member_count', None)
-        if member_count:
+        if member_count is not None:
             self._member_count = member_count
 
         self.name = guild.get('name')
