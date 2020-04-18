@@ -992,7 +992,7 @@ class ConnectionState:
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji(animated=data.get('animated', False), id=emoji_id, name=data['name'])
+            return PartialEmoji.with_state(self, animated=data.get('animated', False), id=emoji_id, name=data['name'])
 
     def _upgrade_partial_emoji(self, emoji):
         emoji_id = emoji.id
