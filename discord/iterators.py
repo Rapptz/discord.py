@@ -237,8 +237,6 @@ class HistoryIterator(_AsyncIterator):
                 raise ValueError("history max limit 101 when specifying around parameter")
             elif self.limit == 101:
                 self.limit = 100  # Thanks discord
-            elif self.limit == 1:
-                raise ValueError("Use fetch_message.")
 
             self._retrieve_messages = self._retrieve_messages_around_strategy
             if self.before and self.after:
