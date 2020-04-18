@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 import discord.abc
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time
+from .utils import snowflake_time, _bytes_to_base64_data, parse_time, get_timedelta
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
 from .errors import ClientException
 from .colour import Colour
@@ -237,6 +237,14 @@ class BaseUser(_BaseUser):
 
         This is when the user's Discord account was created."""
         return snowflake_time(self.id)
+
+    @property
+    def created_ago(self):
+        """:class:`datetime.timedelta`: Returns the difference between the current
+        time and the user's creation time.
+
+        This is how much time has passed since the user's Discord account was created."""
+        return get_timedelta(self.created_at)
 
     @property
     def display_name(self):

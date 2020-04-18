@@ -33,6 +33,7 @@ from . import utils
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
+from .utils import get_timedelta
 from .enums import Status, try_enum
 from .colour import Colour
 from .object import Object
@@ -285,6 +286,14 @@ class Member(discord.abc.Messageable, _BaseUser):
                 # Signal to dispatch on_user_update
                 return to_return, u
         return False
+
+    @property
+    def joined_ago(self):
+        """Optional[:class:`datetime.timedelta`]: A timedelta object that specifies the
+        difference between the current time and the time that the member joined the
+        guild for the first time. In certain cases, this can be ``None``.
+        """
+        return get_timedelta(self.joined_at)
 
     @property
     def status(self):

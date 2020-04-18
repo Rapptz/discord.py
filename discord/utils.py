@@ -112,6 +112,11 @@ def parse_time(timestamp):
         return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
 
+def get_timedelta(datetime_obj):
+    if datetime_obj:
+        return datetime.datetime.utcnow() - datetime_obj
+    return None
+
 def deprecated(instead=None):
     def actual_decorator(func):
         @functools.wraps(func)
