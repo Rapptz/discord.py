@@ -686,11 +686,11 @@ class ConnectionState:
     def parse_guild_member_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
+            guild._member_count -= 1
             user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
             if member is not None:
                 guild._remove_member(member)
-                guild._member_count -= 1
                 self.dispatch('member_remove', member)
         else:
             log.warning('GUILD_MEMBER_REMOVE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
