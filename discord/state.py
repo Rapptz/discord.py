@@ -686,11 +686,11 @@ class ConnectionState:
     def parse_guild_member_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
+            guild._member_count -= 1
             user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
             if member is not None:
                 guild._remove_member(member)
-                guild._member_count -= 1
                 self.dispatch('member_remove', member)
         else:
             log.warning('GUILD_MEMBER_REMOVE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
@@ -992,7 +992,7 @@ class ConnectionState:
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji(animated=data.get('animated', False), id=emoji_id, name=data['name'])
+            return PartialEmoji.with_state(self, animated=data.get('animated', False), id=emoji_id, name=data['name'])
 
     def _upgrade_partial_emoji(self, emoji):
         emoji_id = emoji.id
