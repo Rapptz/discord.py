@@ -183,6 +183,8 @@ class Attachment:
             after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
             on some types of attachments.
+            
+            .. versionadded:: 1.4
 
         Raises
         ------
