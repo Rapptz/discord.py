@@ -600,8 +600,11 @@ class HTTPClient:
     def leave_guild(self, guild_id):
         return self.request(Route('DELETE', '/users/@me/guilds/{guild_id}', guild_id=guild_id))
 
-    def get_guild(self, guild_id):
-        return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id))
+    def get_guild(self, guild_id, *, with_counts=True):
+        params = {
+            'with_counts': int(with_counts)
+        }
+        return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id), params=params)
 
     def delete_guild(self, guild_id):
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))

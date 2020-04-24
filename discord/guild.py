@@ -150,6 +150,18 @@ class Guild(Hashable):
         The guild's discovery splash.
 
         .. versionadded:: 1.3
+    approximate_member_count: Optional[:class:`int`]
+        The approximate number of members in the guild. This is ``None`` unless the guild is obtained
+        using :meth:`Client.fetch_guild` with ``with_counts=True``.
+
+        .. versionadded:: 1.4
+    approximate_presence_count: Optional[:class:`int`]
+        The approximate number of members currently active in the guild.
+        This includes idle, dnd, online, and invisible members. Offline members are excluded.
+        This is ``None`` unless the guild is obtained using :meth:`Client.fetch_guild`
+        with ``with_counts=True``.
+
+        .. versionadded:: 1.4
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -160,7 +172,8 @@ class Guild(Hashable):
                  '_voice_states', '_system_channel_id', 'default_notifications',
                  'description', 'max_presences', 'max_members', 'premium_tier',
                  'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale', 'discovery_splash', '_rules_channel_id')
+                 'preferred_locale', 'discovery_splash', '_rules_channel_id',
+                 'approximate_member_count', 'approximate_presence_count')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -290,6 +303,8 @@ class Guild(Hashable):
         self.preferred_locale = guild.get('preferred_locale')
         self.discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
+        self.approximate_presence_count = guild.get('approximate_presence_count')
+        self.approximate_member_count = guild.get('approximate_member_count')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
