@@ -126,7 +126,7 @@ class BotBase(GroupMixin):
         else:
             self.help_command = help_command
 
-        if options.pop('bot_replies', True):
+        if not options.pop('bot_replies', False):
             self._checks.append(lambda ctx: not ctx.message.author.bot)
 
     # internal helpers
@@ -994,7 +994,7 @@ class Bot(BotBase, discord.Client):
         For performance reasons it is recommended to use a :class:`set`
         for the collection. You cannot set both `owner_id` and `owner_ids`.
      bot_replies: Optional[:class:`bool`]
-        Should the bot be allowed to reply to other bots. This is ``False`` by default as it violates the Discord TOS.
+        Should the bot be allowed to reply to other bots? This is ``False`` by default as it violates the Discord TOS.
         This should only be used for automated testing purposes!
 
         .. versionadded:: 1.3
