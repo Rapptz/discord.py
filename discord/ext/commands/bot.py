@@ -126,6 +126,9 @@ class BotBase(GroupMixin):
         else:
             self.help_command = help_command
 
+        if options.pop('bot_replies', True):
+            self._checks.append(lambda ctx: not ctx.message.author.bot)
+
     # internal helpers
 
     def dispatch(self, event_name, *args, **kwargs):
@@ -914,17 +917,11 @@ class BotBase(GroupMixin):
         This is built using other low level tools, and is equivalent to a
         call to :meth:`~.Bot.get_context` followed by a call to :meth:`~.Bot.invoke`.
 
-        This also checks if the message's author is a bot and doesn't
-        call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
-
         Parameters
         -----------
         message: :class:`discord.Message`
             The message to process commands for.
         """
-        if message.author.bot:
-            return
-
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 
@@ -996,6 +993,9 @@ class Bot(BotBase, discord.Client):
         fetched automatically using :meth:`~.Bot.application_info`.
         For performance reasons it is recommended to use a :class:`set`
         for the collection. You cannot set both `owner_id` and `owner_ids`.
+     bot_replies: Optional[:class:`bool`]
+        Should the bot be allowed to reply to other bots. This is ``False`` by default as it violates the Discord TOS.
+        This should only be used for automated testing purposes!
 
         .. versionadded:: 1.3
     """
