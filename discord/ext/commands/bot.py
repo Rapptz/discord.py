@@ -712,7 +712,7 @@ class BotBase(GroupMixin):
 
         lib = self.__extensions.get(name)
         if lib is None:
-            raise errors.ExtensionNotLoaded(name)
+            raise errors.ExtensionNotFound(name)
 
         # get the previous module states from sys modules
         modules = {
