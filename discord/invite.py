@@ -242,7 +242,7 @@ class Invite(Hashable):
         How many times the invite has been used.
     max_uses: :class:`int`
         How many times the invite can be used.
-    inviter: :class:`User`
+    inviter: Optional[:class:`User`]
         The user who created the invite.
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in the guild.
