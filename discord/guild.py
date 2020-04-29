@@ -1296,7 +1296,7 @@ class Guild(Hashable):
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
 
-        To prune members that have specific roles see the :meth:`roles` function.
+        To prune members that have specific roles see the ``roles`` parameter.
 
         .. versionchanged:: 1.4
             The ``roles`` keyword-only parameter was added.
