@@ -1313,8 +1313,8 @@ class Guild(Hashable):
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
         roles: Optional[list[:class:`Role`]]
-            A :class:`list` of :class:`Role`\s to include in the pruning process, if a member 
-            have a role that is not specified, they'll be excluded.
+            A :class:`list` of :class:`Role`\s to include in the pruning process. If a member 
+            has a role that is not specified, they'll be excluded.
 
         Raises
         -------
