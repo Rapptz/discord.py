@@ -1282,7 +1282,7 @@ class Guild(Hashable):
                          reason=e['reason'])
                 for e in data]
 
-    async def prune_members(self, *, days, compute_prune_count=True, reason=None):
+    async def prune_members(self, *, days, compute_prune_count=True, roles=None, reason=None):
         r"""|coro|
 
         Prunes the guild from its inactive members.
@@ -1296,6 +1296,11 @@ class Guild(Hashable):
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
 
+        To prune members that have specific roles see the ``roles`` parameter.
+
+        .. versionchanged:: 1.4
+            The ``roles`` keyword-only parameter was added.
+
         Parameters
         -----------
         days: :class:`int`
@@ -1307,6 +1312,9 @@ class Guild(Hashable):
             which makes it prone to timeouts in very large guilds. In order
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member 
+            has a role that is not specified, they'll be excluded.
 
         Raises
         -------
@@ -1327,7 +1335,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+
+        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
 
     async def webhooks(self):
