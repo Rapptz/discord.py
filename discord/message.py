@@ -220,6 +220,16 @@ class Message:
 
     There should be no need to create one of these manually.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two messages are the same.
+
+        .. describe:: x != y
+
+            Checks if two messages are not the same.
+
     Attributes
     -----------
     tts: :class:`bool`
@@ -337,6 +347,12 @@ class Message:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
                 continue
+
+    def __eq__(self, other):
+        return isinstance(other, Message) and other.id == self.id
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __repr__(self):
         return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
