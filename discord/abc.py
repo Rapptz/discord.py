@@ -967,6 +967,8 @@ class Messageable(metaclass=abc.ABCMeta):
         """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
 
         You must have :attr:`~Permissions.read_message_history` permissions to use this.
+        
+        If used on a :class:`~discord.Member`, that retrieves the :class:`~discord.User` DMs.
 
         Examples
         ---------
