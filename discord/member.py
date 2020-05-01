@@ -321,7 +321,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         for the member. If the default colour is the one rendered then an instance
         of :meth:`Colour.default` is returned.
 
-        There is an alias for this named :meth:`color`.
+        There is an alias for this named :attr:`color`.
         """
 
         roles = self.roles[1:] # remove @everyone
@@ -340,7 +340,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         the member. If the default color is the one rendered then an instance of :meth:`Colour.default`
         is returned.
 
-        There is an alias for this named :meth:`colour`.
+        There is an alias for this named :attr:`colour`.
         """
         return self.colour
 
