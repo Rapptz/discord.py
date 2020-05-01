@@ -672,6 +672,10 @@ class CustomActivity(BaseActivity):
 
             Returns the custom status text.
 
+    .. note::
+
+        Bot accounts cannot currently set a CustomActivity as their presence.
+
     .. versionadded:: 1.3
 
     Attributes

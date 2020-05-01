@@ -950,6 +950,10 @@ class Client:
         ------
         :exc:`.InvalidArgument`
             If the ``activity`` parameter is not the proper type.
+
+        .. note::
+
+            Bot accounts cannot currently set a CustomActivity as their presence.
         """
 
         if status is None:
