@@ -197,7 +197,7 @@ class BaseUser(_BaseUser):
         """:class:`Colour`: A property that returns a colour denoting the rendered colour
         for the user. This always returns :meth:`Colour.default`.
 
-        There is an alias for this named :meth:`color`.
+        There is an alias for this named `color`.
         """
         return Colour.default()
 
@@ -206,7 +206,7 @@ class BaseUser(_BaseUser):
         """:class:`Colour`: A property that returns a color denoting the rendered color
         for the user. This always returns :meth:`Colour.default`.
 
-        There is an alias for this named :meth:`colour`.
+        There is an alias for this named `colour`.
         """
         return self.colour
 
