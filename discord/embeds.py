@@ -276,6 +276,9 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` removes the image.
+
         Parameters
         -----------
         url: :class:`str`
@@ -311,6 +314,9 @@ class Embed:
 
         This function returns the class instance to allow for fluent-style
         chaining.
+
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` removes the thumbnail.
 
         Parameters
         -----------
