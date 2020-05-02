@@ -282,9 +282,12 @@ class Embed:
             The source URL for the image. Only HTTP(S) is supported.
         """
 
-        self._image = {
-            'url': str(url)
-        }
+        if url is EmptyEmbed:
+            del self._image
+        else:
+            self._image = {
+                'url': str(url)
+            }
 
         return self
 
@@ -315,9 +318,12 @@ class Embed:
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
-        self._thumbnail = {
-            'url': str(url)
-        }
+        if url is EmptyEmbed:
+            del self._thumbnail
+        else:
+            self._thumbnail = {
+                'url': str(url)
+            }
 
         return self
 
