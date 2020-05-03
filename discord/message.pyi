@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 from .guild import Guild
 from .channel import TextChannel, DMChannel, GroupChannel
@@ -18,7 +19,8 @@ from .utils import cached_slot_property
 
 from typing import Any, Optional, List, Union, BinaryIO
 from typing_extensions import TypedDict
-from os import PathLike
+if sys.version_info >= (3, 6):
+    from os import PathLike
 
 class Attachment:
     id: int
@@ -30,8 +32,12 @@ class Attachment:
     proxy_url: str
 
     def is_spoiler(self) -> bool: ...
-    async def save(self, fp: Union[BinaryIO, PathLike[str], str], *, seek_begin: bool = ...,
-                   use_cached: bool = ...) -> int: ...
+    if sys.version_info >= (3, 6):
+        async def save(self, fp: Union[BinaryIO, PathLike[str], str], *, seek_begin: bool = ...,
+                       use_cached: bool = ...) -> int: ...
+    else:
+        async def save(self, fp: Union[BinaryIO, str], *, seek_begin: bool = ...,
+                       use_cached: bool = ...) -> int: ...
     async def read(self, *, use_cached: bool = ...) -> bytes: ...
     async def to_file(self, *, use_cached: bool = ...) -> File: ...
 
