@@ -1312,7 +1312,7 @@ class Guild(Hashable):
             which makes it prone to timeouts in very large guilds. In order
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
-        roles: Optional[list[:class:`Role`]]
+        roles: Optional[List[:class:`abc.Snowflake`]]
             A :class:`list` of :class:`Role`\s to include in the pruning process. If a member 
             has a role that is not specified, they'll be excluded.
 
