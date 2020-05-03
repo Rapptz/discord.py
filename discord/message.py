@@ -166,7 +166,7 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, use_cached=False):
+    async def to_file(self, *, use_cached=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -183,7 +183,7 @@ class Attachment:
             after the message is deleted. Note that this can still fail to download
             deleted attachments if too much time has passed and it does not work
             on some types of attachments.
-            
+
             .. versionadded:: 1.4
 
         Raises
