@@ -657,10 +657,11 @@ class HTTPClient:
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
-    def prune_members(self, guild_id, days, compute_prune_count, *, reason=None):
+    def prune_members(self, guild_id, days, compute_prune_count, roles, *, reason=None):
         params = {
             'days': days,
-            'compute_prune_count': 'true' if compute_prune_count else 'false'
+            'compute_prune_count': 'true' if compute_prune_count else 'false',
+            'include_roles': roles
         }
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params, reason=reason)
 

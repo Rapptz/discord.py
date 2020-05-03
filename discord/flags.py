@@ -35,10 +35,15 @@ class flag_value:
         self.__doc__ = func.__doc__
 
     def __get__(self, instance, owner):
+        if instance is None:
+            return self
         return instance._has_flag(self.flag)
 
     def __set__(self, instance, value):
         instance._set_flag(self.flag, value)
+
+    def __repr__(self):
+        return '<flag_value flag={.flag!r}>'.format(self)
 
 def fill_with_flags(*, inverted=False):
     def decorator(cls):
