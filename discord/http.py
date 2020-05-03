@@ -246,10 +246,9 @@ class HTTPClient:
                 # This is handling exceptions from the request
                 except OSError as e:
                     # Connection reset by peer
-                    if e.errno in (54, 10054):
-                        # Just re-do the request
+                    if tries < 4 and e.errno in (54, 10054):
                         continue
-
+                    raise
 
             # We've run out of retries, raise.
             raise HTTPException(r, data)
