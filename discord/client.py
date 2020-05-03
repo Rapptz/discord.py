@@ -480,19 +480,6 @@ class Client:
         """
         await self.close()
 
-    async def _connect(self):
-        coro = DiscordWebSocket.from_client(self, initial=True, shard_id=self.shard_id)
-        self.ws = await asyncio.wait_for(coro, timeout=180.0)
-        while True:
-            try:
-                await self.ws.poll_event()
-            except ReconnectWebSocket as e:
-                log.info('Got a request to %s the websocket.', e.op)
-                self.dispatch('disconnect')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
-                                                          sequence=self.ws.sequence, resume=e.resume)
-                self.ws = await asyncio.wait_for(coro, timeout=180.0)
-
     async def connect(self, *, reconnect=True):
         """|coro|
 
@@ -519,9 +506,22 @@ class Client:
         """
 
         backoff = ExponentialBackoff()
+        ws_params = {
+            'initial': True,
+            'shard_id': self.shard_id,
+        }
         while not self.is_closed():
             try:
-                await self._connect()
+                coro = DiscordWebSocket.from_client(self, **ws_params)
+                self.ws = await asyncio.wait_for(coro, timeout=60.0)
+                ws_params['initial'] = False
+                while True:
+                    await self.ws.poll_event()
+            except ReconnectWebSocket as e:
+                log.info('Got a request to %s the websocket.', e.op)
+                self.dispatch('disconnect')
+                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
+                continue
             except (OSError,
                     HTTPException,
                     GatewayNotFound,
@@ -540,6 +540,11 @@ class Client:
                 if self.is_closed():
                     return
 
+                # If we get connection reset by peer then try to RESUME
+                if isinstance(exc, OSError) and exc.errno in (54, 10054):
+                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)
+                    continue
+
                 # We should only get this when an unhandled close code happens,
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
@@ -552,6 +557,10 @@ class Client:
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in %.2fs", retry)
                 await asyncio.sleep(retry)
+                # Always try to RESUME the connection
+                # If the connection is not RESUME-able then the gateway will invalidate the session.
+                # This is apparently what the official Discord client does.
+                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
 
     async def close(self):
         """|coro|
