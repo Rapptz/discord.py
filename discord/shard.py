@@ -112,6 +112,12 @@ class Shard:
         if self._client.is_closed():
             return
 
+        if isinstance(e, OSError) and e.errno in (54, 10054):
+            # If we get Connection reset by peer then always try to RESUME the connection.
+            exc = ReconnectWebSocket(self.id, resume=True)
+            self._queue.put_nowait(EventItem(EventType.resume, self, exc))
+            return
+
         if isinstance(e, ConnectionClosed):
             if e.code != 1000:
                 self._queue.put_nowait(EventItem(EventType.close, self, e))
@@ -142,7 +148,7 @@ class Shard:
         try:
             coro = DiscordWebSocket.from_client(self._client, resume=exc.resume, shard_id=self.id,
                                                 session=self.ws.session_id, sequence=self.ws.sequence)
-            self.ws = await asyncio.wait_for(coro, timeout=180.0)
+            self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
         else:
@@ -152,7 +158,7 @@ class Shard:
         self._cancel_task()
         try:
             coro = DiscordWebSocket.from_client(self._client, shard_id=self.id)
-            self.ws = await asyncio.wait_for(coro, timeout=180.0)
+            self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
         else:

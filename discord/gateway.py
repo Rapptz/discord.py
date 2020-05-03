@@ -508,16 +508,21 @@ class DiscordWebSocket:
             elif msg.type is aiohttp.WSMsgType.ERROR:
                 log.debug('Received %s', msg)
                 raise msg.data
-            elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE):
+            elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.CLOSE):
                 log.debug('Received %s', msg)
                 raise WebSocketClosure
-        except WebSocketClosure as e:
+        except WebSocketClosure:
+            # Ensure the keep alive handler is closed
+            if self._keep_alive:
+                self._keep_alive.stop()
+                self._keep_alive = None
+
             if self._can_handle_close():
                 log.info('Websocket closed with %s, attempting a reconnect.', self.socket.close_code)
-                raise ReconnectWebSocket(self.shard_id) from e
+                raise ReconnectWebSocket(self.shard_id) from None
             elif self.socket.close_code is not None:
                 log.info('Websocket closed with %s, cannot reconnect.', self.socket.close_code)
-                raise ConnectionClosed(self.socket, shard_id=self.shard_id) from e
+                raise ConnectionClosed(self.socket, shard_id=self.shard_id) from None
 
     async def send(self, data):
         self._dispatch('socket_raw_send', data)
@@ -598,6 +603,7 @@ class DiscordWebSocket:
     async def close(self, code=4000):
         if self._keep_alive:
             self._keep_alive.stop()
+            self._keep_alive = None
 
         await self.socket.close(code=code)
 

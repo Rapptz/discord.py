@@ -180,68 +180,76 @@ class HTTPClient:
                 if files:
                     for f in files:
                         f.reset(seek=tries)
+                try:
+                    async with self.__session.request(method, url, **kwargs) as r:
+                        log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
 
-                async with self.__session.request(method, url, **kwargs) as r:
-                    log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
+                        # even errors have text involved in them so this is safe to call
+                        data = await json_or_text(r)
 
-                    # even errors have text involved in them so this is safe to call
-                    data = await json_or_text(r)
+                        # check if we have rate limit header information
+                        remaining = r.headers.get('X-Ratelimit-Remaining')
+                        if remaining == '0' and r.status != 429:
+                            # we've depleted our current bucket
+                            delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
+                            log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
+                            maybe_lock.defer()
+                            self.loop.call_later(delta, lock.release)
 
-                    # check if we have rate limit header information
-                    remaining = r.headers.get('X-Ratelimit-Remaining')
-                    if remaining == '0' and r.status != 429:
-                        # we've depleted our current bucket
-                        delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
-                        log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
-                        maybe_lock.defer()
-                        self.loop.call_later(delta, lock.release)
+                        # the request was successful so just return the text/json
+                        if 300 > r.status >= 200:
+                            log.debug('%s %s has received %s', method, url, data)
+                            return data
 
-                    # the request was successful so just return the text/json
-                    if 300 > r.status >= 200:
-                        log.debug('%s %s has received %s', method, url, data)
-                        return data
+                        # we are being rate limited
+                        if r.status == 429:
+                            if not r.headers.get('Via'):
+                                # Banned by Cloudflare more than likely.
+                                raise HTTPException(r, data)
 
-                    # we are being rate limited
-                    if r.status == 429:
-                        if not r.headers.get('Via'):
-                            # Banned by Cloudflare more than likely.
+                            fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
+
+                            # sleep a bit
+                            retry_after = data['retry_after'] / 1000.0
+                            log.warning(fmt, retry_after, bucket)
+
+                            # check if it's a global rate limit
+                            is_global = data.get('global', False)
+                            if is_global:
+                                log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
+                                self._global_over.clear()
+
+                            await asyncio.sleep(retry_after)
+                            log.debug('Done sleeping for the rate limit. Retrying...')
+
+                            # release the global lock now that the
+                            # global rate limit has passed
+                            if is_global:
+                                self._global_over.set()
+                                log.debug('Global rate limit is now over.')
+
+                            continue
+
+                        # we've received a 500 or 502, unconditional retry
+                        if r.status in {500, 502}:
+                            await asyncio.sleep(1 + tries * 2)
+                            continue
+
+                        # the usual error cases
+                        if r.status == 403:
+                            raise Forbidden(r, data)
+                        elif r.status == 404:
+                            raise NotFound(r, data)
+                        else:
                             raise HTTPException(r, data)
 
-                        fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
-
-                        # sleep a bit
-                        retry_after = data['retry_after'] / 1000.0
-                        log.warning(fmt, retry_after, bucket)
-
-                        # check if it's a global rate limit
-                        is_global = data.get('global', False)
-                        if is_global:
-                            log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
-                            self._global_over.clear()
-
-                        await asyncio.sleep(retry_after)
-                        log.debug('Done sleeping for the rate limit. Retrying...')
-
-                        # release the global lock now that the
-                        # global rate limit has passed
-                        if is_global:
-                            self._global_over.set()
-                            log.debug('Global rate limit is now over.')
-
+                # This is handling exceptions from the request
+                except OSError as e:
+                    # Connection reset by peer
+                    if e.errno in (54, 10054):
+                        # Just re-do the request
                         continue
 
-                    # we've received a 500 or 502, unconditional retry
-                    if r.status in {500, 502}:
-                        await asyncio.sleep(1 + tries * 2)
-                        continue
-
-                    # the usual error cases
-                    if r.status == 403:
-                        raise Forbidden(r, data)
-                    elif r.status == 404:
-                        raise NotFound(r, data)
-                    else:
-                        raise HTTPException(r, data)
 
             # We've run out of retries, raise.
             raise HTTPException(r, data)
