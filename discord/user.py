@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 import discord.abc
-from .public_flags import PublicFlags
+from .public_flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, parse_time
 from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
 from .errors import ClientException
@@ -83,7 +83,7 @@ class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts
 _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state', 'public_flags')
+    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -101,19 +101,14 @@ class BaseUser(_BaseUser):
     def __hash__(self):
         return self.id >> 22
 
-    def has_flag(self, flag: UserFlags):
-        v = flag.value
-        return (self._public_flags & v) == v
-
     def _update(self, data):
         self.name = data['username']
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self.avatar = data['avatar']
-        self._public_flags = data.get("public_flags", 0)
+        self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
-        self.public_flags = PublicFlags(self)
 
     @classmethod
     def _copy(cls, user):
@@ -136,6 +131,11 @@ class BaseUser(_BaseUser):
             'discriminator': self.discriminator,
             'bot': self.bot,
         }
+
+    @property
+    def public_flags(self):
+        """:class:`PublicFlags`: The publicly available flags the user has."""
+        return PublicUserFlags._from_value(self._public_flags)
 
     @property
     def avatar_url(self):
@@ -308,8 +308,6 @@ class ClientUser(BaseUser):
         Specifies if the user is a bot account.
     system: :class:`bool`
         Specifies if the user is a system user (i.e. represents Discord officially).
-    public_flags: :class:´PublicFlags´
-        The publicly available flags the user has.
 
         .. versionadded:: 1.3
 
@@ -683,8 +681,6 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a bot account.
     system: :class:`bool`
         Specifies if the user is a system user (i.e. represents Discord officially).
-    public_flags: :class:`PublicFlags`
-        The publicly available flags the user has.
     """
 
     __slots__ = BaseUser.__slots__ + ('__weakref__',)

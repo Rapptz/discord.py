@@ -2641,6 +2641,12 @@ MessageFlags
 .. autoclass:: MessageFlags
     :members:
 
+PublicUserFlags
+~~~~~~~~~~~~~~~
+
+.. autoclass:: PublicUserFlags
+    :members:
+
 
 Exceptions
 ------------
