@@ -63,7 +63,7 @@ class Asset:
     """
     __slots__ = ('_state', '_url')
 
-    BASE = 'https://cdn.discord.com'
+    BASE = 'https://cdn.discordapp.com'
 
     def __init__(self, state, url=None):
         self._state = state
