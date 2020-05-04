@@ -130,7 +130,7 @@ class Embed:
 
         You can find out about this format in the `official Discord documentation`__.
 
-        .. _DiscordDocs: https://discordapp.com/developers/docs/resources/channel#embed-object
+        .. _DiscordDocs: https://discord.com/developers/docs/resources/channel#embed-object
 
         __ DiscordDocs_
 

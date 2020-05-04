@@ -639,11 +639,11 @@ msgstr "この関数は、異なる二通りの方法で使用することがで
 #: discord.Client.login:9 of
 msgid ""
 "Logging on with a user token is against the Discord `Terms of Service "
-"<https://support.discordapp.com/hc/en-us/articles/115002192352>`_ and "
+"<https://support.discord.com/hc/en-us/articles/115002192352>`_ and "
 "doing so might potentially get your account banned. Use this at your own "
 "risk."
 msgstr ""
-"ユーザートークンを用いてのログインはDiscordの `利用規約 <https://support.discordapp.com/hc/en-"
+"ユーザートークンを用いてのログインはDiscordの `利用規約 <https://support.discord.com/hc/en-"
 "us/articles/115002192352>`_ に違反しているため、アカウントを停止される可能性があります。自己責任で使用してください。"
 
 #: discord.Client.login:14 of
@@ -2624,10 +2624,10 @@ msgstr ""
 msgid ""
 "Due to the inherently raw nature of this event, the data parameter "
 "coincides with the raw data given by the `gateway "
-"<https://discordapp.com/developers/docs/topics/gateway#message-update>`_."
+"<https://discord.com/developers/docs/topics/gateway#message-update>`_."
 msgstr ""
 "このイベントの性質は、本質的に生表現のため、データのパラメータは `ゲートウェイ "
-"<https://discordapp.com/developers/docs/topics/gateway#message-update>`_ "
+"<https://discord.com/developers/docs/topics/gateway#message-update>`_ "
 "によって与えられた生データと一致します。"
 
 #: ../../api.rst:317
@@ -11472,10 +11472,10 @@ msgstr "Banが解除されたユーザー。"
 #, fuzzy
 msgid ""
 "The raw data given by the `gateway "
-"<https://discordapp.com/developers/docs/topics/gateway#message-update>`_"
+"<https://discord.com/developers/docs/topics/gateway#message-update>`_"
 msgstr ""
 "このイベントの性質は、本質的に生表現のため、データのパラメータは `ゲートウェイ "
-"<https://discordapp.com/developers/docs/topics/gateway#message-update>`_ "
+"<https://discord.com/developers/docs/topics/gateway#message-update>`_ "
 "によって与えられた生データと一致します。"
 
 #: ../../api.rst:2284
@@ -15035,7 +15035,7 @@ msgstr ""
 #~ msgid ""
 #~ ":class:`dict` -- The raw data given "
 #~ "by the `gateway "
-#~ "<https://discordapp.com/developers/docs/topics/gateway#message-"
+#~ "<https://discord.com/developers/docs/topics/gateway#message-"
 #~ "update>`_"
 #~ msgstr ""
 

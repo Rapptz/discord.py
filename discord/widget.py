@@ -226,7 +226,7 @@ class Widget:
     @property
     def json_url(self):
         """:class:`str`: The JSON URL of the widget."""
-        return "https://discordapp.com/api/guilds/{0.id}/widget.json".format(self)
+        return "https://discord.com/api/guilds/{0.id}/widget.json".format(self)
 
     @property
     def invite_url(self):
