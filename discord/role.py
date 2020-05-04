@@ -225,7 +225,7 @@ class Role(Hashable):
             The new role name to change to.
         permissions: :class:`Permissions`
             The new permissions to change to.
-        colour: :class:`Colour`
+        colour: Union[:class:`Colour`, :class:`int`]
             The new colour to change to. (aliased to color as well)
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
@@ -257,6 +257,9 @@ class Role(Hashable):
             colour = fields['colour']
         except KeyError:
             colour = fields.get('color', self.colour)
+        
+        if isinstance(colour, int):
+            colour = Colour(value=colour)
 
         payload = {
             'name': fields.get('name', self.name),
