@@ -4,7 +4,7 @@ from .enums import UserFlags
 class PublicFlags:
     """Wraps up the Discord public flags.
 
-    .. versionadded :: 1.3.4
+    .. versionadded :: 1.4
     .. container:: operations
         .. describe:: x == y
 
