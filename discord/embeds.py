@@ -395,6 +395,21 @@ class Embed:
 
         return self
 
+    def remove_author(self):
+        """Clears embed's author information.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        .. versionadded:: 1.4
+        """
+        try:
+            del self._author
+        except AttributeError:
+            pass
+
+        return self
+
     @property
     def fields(self):
         """Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
