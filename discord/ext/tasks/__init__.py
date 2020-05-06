@@ -109,6 +109,9 @@ class Loop:
         copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
                                count=self.count, reconnect=self.reconnect, loop=self.loop)
         copy._injected = obj
+        copy._before_loop = self._before_loop
+        copy._after_loop = self._after_loop
+        copy._error = self._error
         setattr(obj, self.coro.__name__, copy)
         return copy
 
