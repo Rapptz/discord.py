@@ -383,15 +383,20 @@ class Embed:
             The URL of the author icon. Only HTTP(S) is supported.
         """
 
-        self._author = {
-            'name': str(name)
-        }
+        if name is EmptyEmbed:
+            if url is not EmptyEmbed or icon_url is not EmptyEmbed:
+                raise ValueError("can't set author without name")
+            del self._author
+        else:
+            self._author = {
+                'name': str(name)
+            }
 
-        if url is not EmptyEmbed:
-            self._author['url'] = str(url)
+            if url is not EmptyEmbed:
+                self._author['url'] = str(url)
 
-        if icon_url is not EmptyEmbed:
-            self._author['icon_url'] = str(icon_url)
+            if icon_url is not EmptyEmbed:
+                self._author['icon_url'] = str(icon_url)
 
         return self
 
