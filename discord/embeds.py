@@ -373,6 +373,9 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` for `name` removes the author.
+
         Parameters
         -----------
         name: :class:`str`
