@@ -1204,7 +1204,7 @@ class Guild(Hashable):
         Forbidden
             You do not have access to the guild.
         HTTPException
-            Getting the guild failed.
+            Fetching the member failed.
 
         Returns
         --------
