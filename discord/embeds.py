@@ -374,7 +374,7 @@ class Embed:
         chaining.
 
         .. versionchanged:: 1.4
-            Passing :attr:`Empty` for `name` removes the author.
+            Passing :attr:`Empty` to all parameters removes the author.
 
         Parameters
         -----------
@@ -386,20 +386,19 @@ class Embed:
             The URL of the author icon. Only HTTP(S) is supported.
         """
 
-        if name is EmptyEmbed:
-            if url is not EmptyEmbed or icon_url is not EmptyEmbed:
-                raise ValueError("can't set author without name")
+        if all(param is EmptyEmbed for param in (name, url, icon_url)):
             del self._author
-        else:
-            self._author = {
-                'name': str(name)
-            }
+            return self
 
-            if url is not EmptyEmbed:
-                self._author['url'] = str(url)
+        self._author = {
+            'name': str(name)
+        }
 
-            if icon_url is not EmptyEmbed:
-                self._author['icon_url'] = str(icon_url)
+        if url is not EmptyEmbed:
+            self._author['url'] = str(url)
+
+        if icon_url is not EmptyEmbed:
+            self._author['icon_url'] = str(icon_url)
 
         return self
 
