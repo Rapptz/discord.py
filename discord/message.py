@@ -844,17 +844,13 @@ class Message:
         try:
             allowed_mentions = fields.pop('allowed_mentions')
         except KeyError:
-            allowed_mentions = self._state.allowed_mentions and self._state.allowed_mentions.to_dict()
+            pass
         else:
             if allowed_mentions is not None:
                 if self._state.allowed_mentions is not None:
                     allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
                 else:
                     allowed_mentions = allowed_mentions.to_dict()
-            else:
-                allowed_mentions = self._state.allowed_mentions and self._state.allowed_mentions.to_dict()
-        finally:
-            if allowed_mentions is not None:
                 fields['allowed_mentions'] = allowed_mentions
 
         if fields:
