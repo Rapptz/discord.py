@@ -319,7 +319,7 @@ class Cog(metaclass=CogMeta):
         This is similar to :func:`.on_command_error` except only applying
         to the commands inside this cog.
 
-        This function **can** be a coroutine.
+        This **must** be a coroutine.
 
         Parameters
         -----------
