@@ -37,6 +37,7 @@ from .role import Role
 from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient
+from .member import Member
 from . import utils
 
 class _Undefined:
@@ -418,25 +419,26 @@ class GuildChannel:
         category = self.guild.get_channel(self.category_id)
         return bool(category and category._overwrites == self._overwrites)
 
-    def permissions_for(self, member):
-        """Handles permission resolution for the current :class:`~discord.Member`.
+    def permissions_for(self, obj):
+        """Handles permission resolution for the current :class:`~discord.Member` or
+        :class:`~discord.Role`.
 
         This function takes into consideration the following cases:
 
         - Guild owner
         - Guild roles
         - Channel overrides
-        - Member overrides
+        - Member overrides (if applicable)
 
         Parameters
         ----------
-        member: :class:`~discord.Member`
-            The member to resolve permissions for.
+        obj: Union[:class:`~discord.Member`, :class:`~discord.Role`]
+            The member or role to resolve permissions for.
 
         Returns
         -------
         :class:`~discord.Permissions`
-            The resolved permissions for the member.
+            The resolved permissions for the member or role.
         """
 
         # The current cases can be explained as:
@@ -445,7 +447,7 @@ class GuildChannel:
         # After that, the applied roles that the user has in the channel
         # (or otherwise) are then OR'd together.
         # After the role permissions are resolved, the member permissions
-        # have to take into effect.
+        # (if obj is a member) have to take into effect.
         # After all that is done.. you have to do the following:
 
         # If manage permissions is True, then all permissions are set to True.
@@ -453,12 +455,15 @@ class GuildChannel:
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        if self.guild.owner_id == member.id:
+        if self.guild.owner_id == obj.id:
             return Permissions.all()
 
         default = self.guild.default_role
         base = Permissions(default.permissions.value)
-        roles = member.roles
+        if isinstance(obj, Member):
+            roles = obj.roles
+        else:
+            roles = [obj]
 
         # Apply guild roles that the member has.
         for role in roles:
@@ -486,23 +491,24 @@ class GuildChannel:
         # extra memory overhead. For now, I'll keep the set cast
         # Note that the member.roles accessor up top also creates a
         # temporary list
-        member_role_ids = {r.id for r in roles}
+        role_ids = {r.id for r in roles}
         denies = 0
         allows = 0
 
         # Apply channel specific role permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 'role' and overwrite.id in member_role_ids:
+            if overwrite.type == 'role' and overwrite.id in role_ids:
                 denies |= overwrite.deny
                 allows |= overwrite.allow
 
         base.handle_overwrite(allow=allows, deny=denies)
 
         # Apply member specific permission overwrites
-        for overwrite in remaining_overwrites:
-            if overwrite.type == 'member' and overwrite.id == member.id:
-                base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
-                break
+        if isinstance(obj, Member):
+            for overwrite in remaining_overwrites:
+                if overwrite.type == 'member' and overwrite.id == obj.id:
+                    base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
+                    break
 
         # if you can't send a message in a channel then you can't have certain
         # permissions as well
