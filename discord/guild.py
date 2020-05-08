@@ -1842,14 +1842,14 @@ class Guild(Hashable):
         Request members that belong to this guild whose username starts with
         the query given.
 
-        This is a websocket operation and can be slow.
-
         .. warning::
 
             Most bots do not need to use this. It's mainly a helper
             for bots who have disabled ``guild_subscriptions``.
 
         .. versionadded:: 1.3
+        .. versionchanged:: 1.4
+            Used the HTTP endpoint instead of the websocket. Ignored the cache parameter.
 
         Parameters
         -----------
@@ -1860,13 +1860,7 @@ class Guild(Hashable):
             The maximum number of members to send back. This must be
             a number between 1 and 1000.
         cache: :class:`bool`
-            Whether to cache the members internally. This makes operations
-            such as :meth:`get_member` work for those that matched.
-
-        Raises
-        -------
-        asyncio.TimeoutError
-            The query timed out waiting for the members.
+            Ignored for backwards compatibility.
 
         Returns
         --------
@@ -1874,4 +1868,6 @@ class Guild(Hashable):
             The list of members that have matched the query.
         """
         limit = limit or 5
-        return await self._state.query_members(self, query=query, limit=limit, cache=cache)
+        members = await self._state.http.query_members(self.id, query, limit)
+        state = self._state
+        return [Member(data=data, guild=self, state=state) for data in members]

@@ -654,6 +654,11 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
         return self.request(r, params=params)
 
+    def query_members(self, guild_id, query, limit):
+        params = dict(query=query, limit=limit)
+        r = Route('GET', '/guilds/{guild_id}/members/search', guild_id=guild_id)
+        return self.request(r, params=params)
+
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
