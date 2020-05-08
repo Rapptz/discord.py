@@ -41,7 +41,7 @@ extensions = [
     'exception_hierarchy'
 ]
 
-autodoc_member_order = 'bysource'
+autodoc_member_order = 'groupwise'
 
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
