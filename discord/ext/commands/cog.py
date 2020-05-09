@@ -312,7 +312,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
