@@ -218,6 +218,9 @@ class Role(Hashable):
         use this.
 
         All fields are optional.
+        
+        .. versionchanged:: 1.4
+            Can now pass ``int`` to ``colour`` keyword-only parameter.
 
         Parameters
         -----------
