@@ -373,9 +373,6 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
-        .. versionchanged:: 1.4
-            Passing :attr:`Empty` to all parameters removes the author.
-
         Parameters
         -----------
         name: :class:`str`
@@ -386,10 +383,6 @@ class Embed:
             The URL of the author icon. Only HTTP(S) is supported.
         """
 
-        if all(param is EmptyEmbed for param in (name, url, icon_url)):
-            del self._author
-            return self
-
         self._author = {
             'name': str(name)
         }
@@ -399,6 +392,21 @@ class Embed:
 
         if icon_url is not EmptyEmbed:
             self._author['icon_url'] = str(icon_url)
+
+        return self
+
+    def clear_author(self):
+        """Clears embed's author information.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        .. versionadded:: 1.4
+        """
+        try:
+            del self._author
+        except AttributeError:
+            pass
 
         return self
 
