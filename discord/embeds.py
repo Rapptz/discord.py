@@ -395,7 +395,7 @@ class Embed:
 
         return self
 
-    def clear_author(self):
+    def remove_author(self):
         """Clears embed's author information.
 
         This function returns the class instance to allow for fluent-style
