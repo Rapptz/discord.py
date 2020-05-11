@@ -747,7 +747,7 @@ class ConnectionState:
 
     async def _chunk_and_dispatch(self, guild, unavailable):
         chunks = list(self.chunks_needed(guild))
-        await self.chunker(guild)
+        await self.chunker(guild.id)
         if chunks:
             try:
                 await utils.sane_wait_for(chunks, timeout=len(chunks))
