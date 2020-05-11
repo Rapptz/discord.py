@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -40,8 +40,13 @@ log = logging.getLogger(__name__)
 
 async def json_or_text(response):
     text = await response.text(encoding='utf-8')
-    if response.headers['content-type'] == 'application/json':
-        return json.loads(text)
+    try:
+        if response.headers['content-type'] == 'application/json':
+            return json.loads(text)
+    except KeyError:
+        # Thanks Cloudflare
+        pass
+
     return text
 
 class Route:
@@ -179,7 +184,7 @@ class HTTPClient:
 
                     # we are being rate limited
                     if r.status == 429:
-                        if not isinstance(data, dict):
+                        if not r.headers.get('Via'):
                             # Banned by Cloudflare more than likely.
                             raise HTTPException(r, data)
 
@@ -305,7 +310,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload)
 
-    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None):
+    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None, allowed_mentions=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
 
@@ -321,12 +326,15 @@ class HTTPClient:
         if nonce:
             payload['nonce'] = nonce
 
+        if allowed_mentions:
+            payload['allowed_mentions'] = allowed_mentions
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None):
+    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None, allowed_mentions=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
@@ -337,6 +345,8 @@ class HTTPClient:
             payload['embed'] = embed
         if nonce:
             payload['nonce'] = nonce
+        if allowed_mentions:
+            payload['allowed_mentions'] = allowed_mentions
 
         form.add_field('payload_json', utils.to_json(payload))
         if len(files) == 1:
@@ -372,12 +382,6 @@ class HTTPClient:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
-    def suppress_message_embeds(self, channel_id, message_id, *, suppress):
-        payload = { 'suppress': suppress }
-        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/suppress-embeds',
-                  channel_id=channel_id, message_id=message_id)
-        return self.request(r, json=payload)
-
     def add_reaction(self, channel_id, message_id, emoji):
         r = Route('PUT', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
                   channel_id=channel_id, message_id=message_id, emoji=emoji)
@@ -408,6 +412,11 @@ class HTTPClient:
 
         return self.request(r)
 
+    def clear_single_reaction(self, channel_id, message_id, emoji):
+        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
+                   channel_id=channel_id, message_id=message_id, emoji=emoji)
+        return self.request(r)
+
     def get_message(self, channel_id, message_id):
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r)
@@ -429,6 +438,10 @@ class HTTPClient:
             params['around'] = around
 
         return self.request(Route('GET', '/channels/{channel_id}/messages', channel_id=channel_id), params=params)
+
+    def publish_message(self, channel_id, message_id):
+        return self.request(Route('POST', '/channels/{channel_id}/messages/{message_id}/crosspost',
+                                  channel_id=channel_id, message_id=message_id))
 
     def pin_message(self, channel_id, message_id):
         return self.request(Route('PUT', '/channels/{channel_id}/pins/{message_id}',
@@ -644,10 +657,11 @@ class HTTPClient:
     def get_member(self, guild_id, member_id):
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
-    def prune_members(self, guild_id, days, compute_prune_count, *, reason=None):
+    def prune_members(self, guild_id, days, compute_prune_count, roles, *, reason=None):
         params = {
             'days': days,
-            'compute_prune_count': 'true' if compute_prune_count else 'false'
+            'compute_prune_count': 'true' if compute_prune_count else 'false',
+            'include_roles': roles
         }
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params, reason=reason)
 

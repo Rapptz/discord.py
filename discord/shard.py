@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -126,38 +126,19 @@ class AutoShardedClient(Client):
             elif not isinstance(self.shard_ids, (list, tuple)):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
-        self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+        self._connection = AutoShardedConnectionState(dispatch=self.dispatch,
                                                       handlers=self._handlers, syncer=self._syncer,
                                                       http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
         self.shards = {}
+        self._connection._get_websocket = self._get_websocket
 
-        def _get_websocket(guild_id):
-            i = (guild_id >> 22) % self.shard_count
-            return self.shards[i].ws
-
-        self._connection._get_websocket = _get_websocket
-
-    async def _chunker(self, guild, *, shard_id=None):
-        try:
-            guild_id = guild.id
-            shard_id = shard_id or guild.shard_id
-        except AttributeError:
-            guild_id = [s.id for s in guild]
-
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
-
-        ws = self.shards[shard_id].ws
-        await ws.send_as_json(payload)
+    def _get_websocket(self, guild_id=None, *, shard_id=None):
+        if shard_id is None:
+            shard_id = (guild_id >> 22) % self.shard_count
+        return self.shards[shard_id].ws
 
     @property
     def latency(self):
@@ -251,6 +232,7 @@ class AutoShardedClient(Client):
         self._connection.shard_count = self.shard_count
 
         shard_ids = self.shard_ids if self.shard_ids else range(self.shard_count)
+        self._connection.shard_ids = shard_ids
 
         for shard_id in shard_ids:
             await self.launch_shard(gateway, shard_id)
@@ -289,7 +271,7 @@ class AutoShardedClient(Client):
             except Exception:
                 pass
 
-        to_close = [asyncio.ensure_future(shard.ws.close(), loop=self.loop) for shard in self.shards.values()]
+        to_close = [asyncio.ensure_future(shard.ws.close(code=1000), loop=self.loop) for shard in self.shards.values()]
         if to_close:
             await asyncio.wait(to_close)
 
@@ -300,10 +282,6 @@ class AutoShardedClient(Client):
 
         Changes the client's presence.
 
-        The activity parameter is a :class:`Activity` object (not a string) that represents
-        the activity being done currently. This could also be the slimmed down versions,
-        :class:`Game` and :class:`Streaming`.
-
         Example: ::
 
             game = discord.Game("with the API")
@@ -311,7 +289,7 @@ class AutoShardedClient(Client):
 
         Parameters
         ----------
-        activity: Optional[Union[:class:`Game`, :class:`Streaming`, :class:`Activity`]]
+        activity: Optional[:class:`BaseActivity`]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
             Indicates what status to change to. If ``None``, then
@@ -351,10 +329,11 @@ class AutoShardedClient(Client):
             await shard.ws.change_presence(activity=activity, status=status, afk=afk)
             guilds = [g for g in self._connection.guilds if g.shard_id == shard_id]
 
+        activities = () if activity is None else (activity,)
         for guild in guilds:
             me = guild.me
             if me is None:
                 continue
 
-            me.activities = (activity,)
+            me.activities = activities
             me.status = status_enum

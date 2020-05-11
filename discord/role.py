@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -161,7 +161,10 @@ class Role(Hashable):
         """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
         return Colour(self._colour)
 
-    color = colour
+    @property
+    def color(self):
+        """:class:`Colour`: Returns the role color. An alias exists under ``colour``."""
+        return self.colour
 
     @property
     def created_at(self):
@@ -215,6 +218,9 @@ class Role(Hashable):
         use this.
 
         All fields are optional.
+        
+        .. versionchanged:: 1.4
+            Can now pass ``int`` to ``colour`` keyword-only parameter.
 
         Parameters
         -----------
@@ -222,7 +228,7 @@ class Role(Hashable):
             The new role name to change to.
         permissions: :class:`Permissions`
             The new permissions to change to.
-        colour: :class:`Colour`
+        colour: Union[:class:`Colour`, :class:`int`]
             The new colour to change to. (aliased to color as well)
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
@@ -254,6 +260,9 @@ class Role(Hashable):
             colour = fields['colour']
         except KeyError:
             colour = fields.get('color', self.colour)
+        
+        if isinstance(colour, int):
+            colour = Colour(value=colour)
 
         payload = {
             'name': fields.get('name', self.name),

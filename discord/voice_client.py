@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -56,7 +56,6 @@ try:
     has_nacl = True
 except ImportError:
     has_nacl = False
-
 
 log = logging.getLogger(__name__)
 
@@ -207,6 +206,22 @@ class VoiceClient:
 
         self._handshake_complete.set()
 
+    @property
+    def latency(self):
+        """:class:`float`: Latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds.
+
+        This could be referred to as the Discord Voice WebSocket latency and is
+        an analogue of user's voice latencies as seen in the Discord client.
+        """
+        ws = self.ws
+        return float("inf") if not ws else ws.latency
+
+    @property
+    def average_latency(self):
+        """:class:`float`: Average of most recent 20 HEARTBEAT latencies in seconds."""
+        ws = self.ws
+        return float("inf") if not ws else ws.average_latency
+
     async def connect(self, *, reconnect=True, _tries=0, do_handshake=True):
         log.info('Connecting to voice...')
         try:
@@ -342,7 +357,6 @@ class VoiceClient:
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
 
@@ -359,7 +373,7 @@ class VoiceClient:
             The audio source we're reading from.
         after: Callable[[:class:`Exception`], Any]
             The finalizer that is called after the stream is exhausted.
-            This function must have a single parameter, ``error``, that 
+            This function must have a single parameter, ``error``, that
             denotes an optional exception that was raised during playing.
 
         Raises

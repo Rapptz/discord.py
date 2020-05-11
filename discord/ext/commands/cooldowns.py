@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,13 +26,17 @@ DEALINGS IN THE SOFTWARE.
 
 from discord.enums import Enum
 import time
+import asyncio
+from collections import deque
 
 from ...abc import PrivateChannel
+from .errors import MaxConcurrencyReached
 
 __all__ = (
     'BucketType',
     'Cooldown',
     'CooldownMapping',
+    'MaxConcurrency',
 )
 
 class BucketType(Enum):
@@ -43,6 +47,25 @@ class BucketType(Enum):
     member   = 4
     category = 5
     role     = 6
+
+    def get_key(self, msg):
+        if self is BucketType.user:
+            return msg.author.id
+        elif self is BucketType.guild:
+            return (msg.guild or msg.author).id
+        elif self is BucketType.channel:
+            return msg.channel.id
+        elif self is BucketType.member:
+            return ((msg.guild and msg.guild.id), msg.author.id)
+        elif self is BucketType.category:
+            return (msg.channel.category or msg.channel).id
+        elif self is BucketType.role:
+            # we return the channel id of a private-channel as there are only roles in guilds
+            # and that yields the same result as for a guild with only the @everyone role
+            # NOTE: PrivateChannel doesn't actually have an id attribute but we assume we are
+            # recieving a DMChannel or GroupChannel which inherit from PrivateChannel and do
+            return (msg.channel if isinstance(msg.channel, PrivateChannel) else msg.author.top_role).id
+
 
 class Cooldown:
     __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
@@ -119,23 +142,7 @@ class CooldownMapping:
         return cls(Cooldown(rate, per, type))
 
     def _bucket_key(self, msg):
-        bucket_type = self._cooldown.type
-        if bucket_type is BucketType.user:
-            return msg.author.id
-        elif bucket_type is BucketType.guild:
-            return (msg.guild or msg.author).id
-        elif bucket_type is BucketType.channel:
-            return msg.channel.id
-        elif bucket_type is BucketType.member:
-            return ((msg.guild and msg.guild.id), msg.author.id)
-        elif bucket_type is BucketType.category:
-            return (msg.channel.category or msg.channel).id
-        elif bucket_type is BucketType.role:
-            # we return the channel id of a private-channel as there are only roles in guilds
-            # and that yields the same result as for a guild with only the @everyone role
-            # NOTE: PrivateChannel doesn't actually have an id attribute but we assume we are
-            # recieving a DMChannel or GroupChannel which inherit from PrivateChannel and do
-            return (msg.channel if isinstance(msg.channel, PrivateChannel) else msg.author.top_role).id
+        return self._cooldown.type.get_key(msg)
 
     def _verify_cache_integrity(self, current=None):
         # we want to delete all cache objects that haven't been used
@@ -163,3 +170,114 @@ class CooldownMapping:
     def update_rate_limit(self, message, current=None):
         bucket = self.get_bucket(message, current)
         return bucket.update_rate_limit(current)
+
+class _Semaphore:
+    """This class is a version of a semaphore.
+
+    If you're wondering why asyncio.Semaphore isn't being used,
+    it's because it doesn't expose the internal value. This internal
+    value is necessary because I need to support both `wait=True` and
+    `wait=False`.
+
+    An asyncio.Queue could have been used to do this as well -- but it is
+    not as inefficient since internally that uses two queues and is a bit
+    overkill for what is basically a counter.
+    """
+
+    __slots__ = ('value', 'loop', '_waiters')
+
+    def __init__(self, number):
+        self.value = number
+        self.loop = asyncio.get_event_loop()
+        self._waiters = deque()
+
+    def __repr__(self):
+        return '<_Semaphore value={0.value} waiters={1}>'.format(self, len(self._waiters))
+
+    def locked(self):
+        return self.value == 0
+
+    def is_active(self):
+        return len(self._waiters) > 0
+
+    def wake_up(self):
+        while self._waiters:
+            future = self._waiters.popleft()
+            if not future.done():
+                future.set_result(None)
+                return
+
+    async def acquire(self, *, wait=False):
+        if not wait and self.value <= 0:
+            # signal that we're not acquiring
+            return False
+
+        while self.value <= 0:
+            future = self.loop.create_future()
+            self._waiters.append(future)
+            try:
+                await future
+            except:
+                future.cancel()
+                if self.value > 0 and not future.cancelled():
+                    self.wake_up()
+                raise
+
+        self.value -= 1
+        return True
+
+    def release(self):
+        self.value += 1
+        self.wake_up()
+
+class MaxConcurrency:
+    __slots__ = ('number', 'per', 'wait', '_mapping')
+
+    def __init__(self, number, *, per, wait):
+        self._mapping = {}
+        self.per = per
+        self.number = number
+        self.wait = wait
+
+        if number <= 0:
+            raise ValueError('max_concurrency \'number\' cannot be less than 1')
+
+        if not isinstance(per, BucketType):
+            raise TypeError('max_concurrency \'per\' must be of type BucketType not %r' % type(per))
+
+    def copy(self):
+        return self.__class__(self.number, per=self.per, wait=self.wait)
+
+    def __repr__(self):
+        return '<MaxConcurrency per={0.per!r} number={0.number} wait={0.wait}>'.format(self)
+
+    def get_key(self, message):
+        return self.per.get_key(message)
+
+    async def acquire(self, message):
+        key = self.get_key(message)
+
+        try:
+            sem = self._mapping[key]
+        except KeyError:
+            self._mapping[key] = sem = _Semaphore(self.number)
+
+        acquired = await sem.acquire(wait=self.wait)
+        if not acquired:
+            raise MaxConcurrencyReached(self.number, self.per)
+
+    async def release(self, message):
+        # Technically there's no reason for this function to be async
+        # But it might be more useful in the future
+        key = self.get_key(message)
+
+        try:
+            sem = self._mapping[key]
+        except KeyError:
+            # ...? peculiar
+            return
+        else:
+            sem.release()
+
+        if sem.value >= self.number and not sem.is_active():
+            del self._mapping[key]

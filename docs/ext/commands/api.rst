@@ -73,6 +73,7 @@ Command
 
 .. autoclass:: discord.ext.commands.Command
     :members:
+    :special-members: __call__
 
 .. autoclass:: discord.ext.commands.Group
     :members:
@@ -111,6 +112,38 @@ Help Commands
 .. autoclass:: discord.ext.commands.Paginator
     :members:
 
+Enums
+------
+
+.. class:: discord.ext.commands.BucketType
+
+    Specifies a type of bucket for, e.g. a cooldown.
+
+    .. attribute:: default
+
+        The default bucket operates on a global basis.
+    .. attribute:: user
+
+        The user bucket operates on a per-user basis.
+    .. attribute:: guild
+
+        The guild bucket operates on a per-guild basis.
+    .. attribute:: channel
+
+        The channel bucket operates on a per-channel basis.
+    .. attribute:: member
+
+        The member bucket operates on a per-member basis.
+    .. attribute:: category
+
+        The category bucket operates on a per-category basis.
+    .. attribute:: role
+
+        The role bucket operates on a per-role basis.
+
+        .. versionadded:: 1.3
+
+
 .. _ext_commands_api_checks:
 
 Checks
@@ -118,9 +151,13 @@ Checks
 
 .. autofunction:: discord.ext.commands.check
 
+.. autofunction:: discord.ext.commands.check_any
+
 .. autofunction:: discord.ext.commands.has_role
 
 .. autofunction:: discord.ext.commands.has_permissions
+
+.. autofunction:: discord.ext.commands.has_guild_permissions
 
 .. autofunction:: discord.ext.commands.has_any_role
 
@@ -128,9 +165,17 @@ Checks
 
 .. autofunction:: discord.ext.commands.bot_has_permissions
 
+.. autofunction:: discord.ext.commands.bot_has_guild_permissions
+
 .. autofunction:: discord.ext.commands.bot_has_any_role
 
 .. autofunction:: discord.ext.commands.cooldown
+
+.. autofunction:: discord.ext.commands.max_concurrency
+
+.. autofunction:: discord.ext.commands.before_invoke
+
+.. autofunction:: discord.ext.commands.after_invoke
 
 .. autofunction:: discord.ext.commands.guild_only
 
@@ -266,6 +311,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.CheckFailure
     :members:
 
+.. autoexception:: discord.ext.commands.CheckAnyFailure
+    :members:
+
 .. autoexception:: discord.ext.commands.CommandNotFound
     :members:
 
@@ -282,6 +330,9 @@ Exceptions
     :members:
 
 .. autoexception:: discord.ext.commands.CommandOnCooldown
+    :members:
+
+.. autoexception:: discord.ext.commands.MaxConcurrencyReached
     :members:
 
 .. autoexception:: discord.ext.commands.NotOwner
@@ -346,6 +397,7 @@ Exception Hierarchy
                     - :exc:`~.commands.ExpectedClosingQuoteError`
             - :exc:`~.commands.CommandNotFound`
             - :exc:`~.commands.CheckFailure`
+                - :exc:`~.commands.CheckAnyFailure`
                 - :exc:`~.commands.PrivateMessageOnly`
                 - :exc:`~.commands.NoPrivateMessage`
                 - :exc:`~.commands.NotOwner`
@@ -359,6 +411,7 @@ Exception Hierarchy
             - :exc:`~.commands.DisabledCommand`
             - :exc:`~.commands.CommandInvokeError`
             - :exc:`~.commands.CommandOnCooldown`
+            - :exc:`~.commands.MaxConcurrencyReached`
         - :exc:`~.commands.ExtensionError`
             - :exc:`~.commands.ExtensionAlreadyLoaded`
             - :exc:`~.commands.ExtensionNotLoaded`

@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .asset import Asset
-from .utils import parse_time, snowflake_time
+from .utils import parse_time, snowflake_time, _get_as_snowflake
+from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 from collections import namedtuple
@@ -228,8 +229,8 @@ class Invite(Hashable):
         How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
-    guild: Union[:class:`Guild`, :class:`PartialInviteGuild`]
-        The guild the invite is for.
+    guild: Optional[Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]]
+        The guild the invite is for. Can be ``None`` if it's from a group direct message.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
     created_at: :class:`datetime.datetime`
@@ -248,7 +249,7 @@ class Invite(Hashable):
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
-    channel: Union[:class:`abc.GuildChannel`, :class:`PartialInviteChannel`]
+    channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
     """
 
@@ -277,17 +278,43 @@ class Invite(Hashable):
 
     @classmethod
     def from_incomplete(cls, *, state, data):
-        guild_id = int(data['guild']['id'])
-        channel_id = int(data['channel']['id'])
-        guild = state._get_guild(guild_id)
-        if guild is not None:
-            channel = guild.get_channel(channel_id)
+        try:
+            guild_id = int(data['guild']['id'])
+        except KeyError:
+            # If we're here, then this is a group DM
+            guild = None
         else:
-            channel_data = data['channel']
-            guild_data = data['guild']
-            channel_type = try_enum(ChannelType, channel_data['type'])
-            channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
-            guild = PartialInviteGuild(state, guild_data, guild_id)
+            guild = state._get_guild(guild_id)
+            if guild is None:
+                # If it's not cached, then it has to be a partial guild
+                guild_data = data['guild']
+                guild = PartialInviteGuild(state, guild_data, guild_id)
+
+        # As far as I know, invites always need a channel
+        # So this should never raise.
+        channel_data = data['channel']
+        channel_id = int(channel_data['id'])
+        channel_type = try_enum(ChannelType, channel_data['type'])
+        channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
+        if guild is not None and not isinstance(guild, PartialInviteGuild):
+            # Upgrade the partial data if applicable
+            channel = guild.get_channel(channel_id) or channel
+
+        data['guild'] = guild
+        data['channel'] = channel
+        return cls(state=state, data=data)
+
+    @classmethod
+    def from_gateway(cls, *, state, data):
+        guild_id = _get_as_snowflake(data, 'guild_id')
+        guild = state._get_guild(guild_id)
+        channel_id = _get_as_snowflake(data, 'channel_id')
+        if guild is not None:
+            channel = guild.get_channel(channel_id) or Object(id=channel_id)
+        else:
+            guild = Object(id=guild_id)
+            channel = Object(id=channel_id)
+
         data['guild'] = guild
         data['channel'] = channel
         return cls(state=state, data=data)

@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -42,10 +42,11 @@ from .guild import Guild
 from .channel import _channel_factory
 from .enums import ChannelType
 from .member import Member
+from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
-from .activity import _ActivityTag, create_activity
+from .activity import BaseActivity, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
@@ -142,13 +143,17 @@ class Client:
         The total number of shards.
     fetch_offline_members: :class:`bool`
         Indicates if :func:`.on_ready` should be delayed to fetch all offline
-        members from the guilds the bot belongs to. If this is ``False``\, then
+        members from the guilds the client belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
-    activity: Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]]
+    activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
+    allowed_mentions: Optional[:class:`AllowedMentions`]
+        Control how the client handles mentions by default on every message sent.
+
+        .. versionadded:: 1.4
     heartbeat_timeout: :class:`float`
         The maximum numbers of seconds before timing out and restarting the
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
@@ -169,7 +174,7 @@ class Client:
                     - :func:`on_member_join`
                     - :func:`on_member_remove`
 
-                - Typing events will be disabled (:func:`on_typing_start`).
+                - Typing events will be disabled (:func:`on_typing`).
                 - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
                   This makes it difficult or impossible to do many things, for example:
 
@@ -218,13 +223,13 @@ class Client:
             'ready': self._handle_ready
         }
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
+        self._connection = ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
         self._closed = False
         self._ready = asyncio.Event()
-        self._connection._get_websocket = lambda g: self.ws
+        self._connection._get_websocket = self._get_websocket
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -232,25 +237,11 @@ class Client:
 
     # internals
 
+    def _get_websocket(self, guild_id=None, *, shard_id=None):
+        return self.ws
+
     async def _syncer(self, guilds):
         await self.ws.request_sync(guilds)
-
-    async def _chunker(self, guild):
-        try:
-            guild_id = guild.id
-        except AttributeError:
-            guild_id = [s.id for s in guild]
-
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
-
-        await self.ws.send_as_json(payload)
 
     def _handle_ready(self):
         self._ready.set()
@@ -283,7 +274,7 @@ class Client:
     def cached_messages(self):
         """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
         """
         return utils.SequenceProxy(self._connection._messages or [])
 
@@ -549,7 +540,7 @@ class Client:
                 pass
 
         if self.ws is not None and self.ws.open:
-            await self.ws.close()
+            await self.ws.close(code=1000)
 
         self._ready.clear()
 
@@ -647,7 +638,7 @@ class Client:
 
     @property
     def activity(self):
-        """Optional[Union[:class:`.Activity`, :class:`.Game`, :class:`.Streaming`]]: The activity being used upon
+        """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
         """
         return create_activity(self._connection._activity)
@@ -656,10 +647,27 @@ class Client:
     def activity(self, value):
         if value is None:
             self._connection._activity = None
-        elif isinstance(value, _ActivityTag):
+        elif isinstance(value, BaseActivity):
             self._connection._activity = value.to_dict()
         else:
-            raise TypeError('activity must be one of Game, Streaming, or Activity.')
+            raise TypeError('activity must derive from BaseActivity.')
+
+    @property
+    def allowed_mentions(self):
+        """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
+
+        .. versionadded:: 1.4
+        """
+        return self._connection.allowed_mentions
+
+    @allowed_mentions.setter
+    def allowed_mentions(self, value):
+        if value is None:
+            self._connection.allowed_mentions = value
+        elif isinstance(value, AllowedMentions):
+            self._connection.allowed_mentions = value
+        else:
+            raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
 
     # helpers/getters
 
@@ -904,10 +912,6 @@ class Client:
 
         Changes the client's presence.
 
-        The activity parameter is a :class:`.Activity` object (not a string) that represents
-        the activity being done currently. This could also be the slimmed down versions,
-        :class:`.Game` and :class:`.Streaming`.
-
         Example
         ---------
 
@@ -918,7 +922,7 @@ class Client:
 
         Parameters
         ----------
-        activity: Optional[Union[:class:`.Game`, :class:`.Streaming`, :class:`.Activity`]]
+        activity: Optional[:class:`.BaseActivity`]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`.Status`]
             Indicates what status to change to. If ``None``, then
@@ -951,7 +955,11 @@ class Client:
             if me is None:
                 continue
 
-            me.activities = (activity,)
+            if activity is not None:
+                me.activities = (activity,)
+            else:
+                me.activities = ()
+
             me.status = status_enum
 
     # Guild stuff
@@ -1287,7 +1295,7 @@ class Client:
 
             This method is an API call. For general usage, consider :meth:`get_channel` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Raises
         -------

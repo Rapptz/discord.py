@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -154,7 +154,10 @@ class Emoji(_EmojiTag):
         return self._state._get_guild(self.guild_id)
 
     def is_usable(self):
-        """:class:`bool`: Whether the bot can use this emoji."""
+        """:class:`bool`: Whether the bot can use this emoji.
+
+        .. versionadded:: 1.3
+        """
         if not self.available:
             return False
         if not self._roles:

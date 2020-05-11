@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -276,15 +276,21 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` removes the image.
+
         Parameters
         -----------
         url: :class:`str`
             The source URL for the image. Only HTTP(S) is supported.
         """
 
-        self._image = {
-            'url': str(url)
-        }
+        if url is EmptyEmbed:
+            del self._image
+        else:
+            self._image = {
+                'url': str(url)
+            }
 
         return self
 
@@ -309,15 +315,21 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` removes the thumbnail.
+
         Parameters
         -----------
         url: :class:`str`
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
-        self._thumbnail = {
-            'url': str(url)
-        }
+        if url is EmptyEmbed:
+            del self._thumbnail
+        else:
+            self._thumbnail = {
+                'url': str(url)
+            }
 
         return self
 
@@ -421,15 +433,15 @@ class Embed:
             self._fields = [field]
 
         return self
-   
+
     def insert_field_at(self, index, *, name, value, inline=True):
         """Inserts a field before a specified index to the embed.
-        
+
         This function returns the class instance to allow for fluent-style
         chaining.
-        
-        .. versionadded:: 1.2.0
-        
+
+        .. versionadded:: 1.2
+
         Parameters
         -----------
         index: :class:`int`

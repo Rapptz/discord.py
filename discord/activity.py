@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -29,13 +29,16 @@ import datetime
 from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
+from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
 
 __all__ = (
+    'BaseActivity',
     'Activity',
     'Streaming',
     'Game',
     'Spotify',
+    'CustomActivity',
 )
 
 """If curious, this is the current schema for an activity.
@@ -83,7 +86,24 @@ t.ActivityFlags = {
 }
 """
 
-class _ActivityTag:
+class BaseActivity:
+    """The base activity that all user-settable activities inherit from.
+    A user-settable activity is one that can be used in :meth:`Client.change_presence`.
+
+    The following types currently count as user-settable:
+
+    - :class:`Activity`
+    - :class:`Game`
+    - :class:`Streaming`
+    - :class:`CustomActivity`
+
+    Note that although these types are considered user-settable by the library,
+    Discord typically ignores certain combinations of activity depending on
+    what is currently set. This behaviour may change in the future so there are
+    no guarantees on whether Discord will actually let you set these types.
+
+    .. versionadded:: 1.3
+    """
     __slots__ = ('_created_at',)
 
     def __init__(self, **kwargs):
@@ -93,12 +113,12 @@ class _ActivityTag:
     def created_at(self):
         """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
-class Activity(_ActivityTag):
+class Activity(BaseActivity):
     """Represents an activity in Discord.
 
     This could be an activity such as streaming, playing, listening
@@ -146,10 +166,13 @@ class Activity(_ActivityTag):
 
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji that belongs to this activity.
     """
 
     __slots__ = ('state', 'details', '_created_at', 'timestamps', 'assets', 'party',
-                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url', 'application_id')
+                 'flags', 'sync_id', 'session_id', 'type', 'name', 'url',
+                 'application_id', 'emoji')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -165,6 +188,11 @@ class Activity(_ActivityTag):
         self.sync_id = kwargs.pop('sync_id', None)
         self.session_id = kwargs.pop('session_id', None)
         self.type = try_enum(ActivityType, kwargs.pop('type', -1))
+        emoji = kwargs.pop('emoji', None)
+        if emoji is not None:
+            self.emoji = PartialEmoji.from_dict(emoji)
+        else:
+            self.emoji = None
 
     def __repr__(self):
         attrs = (
@@ -174,6 +202,7 @@ class Activity(_ActivityTag):
             'details',
             'application_id',
             'session_id',
+            'emoji',
         )
         mapped = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in attrs)
         return '<Activity %s>' % mapped
@@ -190,6 +219,8 @@ class Activity(_ActivityTag):
 
             ret[attr] = value
         ret['type'] = int(self.type)
+        if self.emoji:
+            ret['emoji'] = self.emoji.to_dict()
         return ret
 
     @property
@@ -244,7 +275,7 @@ class Activity(_ActivityTag):
         return self.assets.get('small_text', None)
 
 
-class Game(_ActivityTag):
+class Game(BaseActivity):
     """A slimmed down version of :class:`Activity` that represents a Discord game.
 
     This is typically displayed via **Playing** on the official Discord client.
@@ -356,7 +387,7 @@ class Game(_ActivityTag):
     def __hash__(self):
         return hash(self.name)
 
-class Streaming(_ActivityTag):
+class Streaming(BaseActivity):
     """A slimmed down version of :class:`Activity` that represents a Discord streaming status.
 
     This is typically displayed via **Streaming** on the official Discord client.
@@ -383,12 +414,18 @@ class Streaming(_ActivityTag):
     -----------
     platform: :class:`str`
         Where the user is streaming from (ie. YouTube, Twitch).
+
+        .. versionadded:: 1.3
+
     name: Optional[:class:`str`]
         The stream's name.
     details: Optional[:class:`str`]
         Same as :attr:`name`
     game: Optional[:class:`str`]
         The game being streamed.
+
+        .. versionadded:: 1.3
+
     url: :class:`str`
         The stream's URL.
     assets: :class:`dict`
@@ -400,7 +437,7 @@ class Streaming(_ActivityTag):
     def __init__(self, *, name, url, **extra):
         super().__init__(**extra)
         self.platform = name
-        self.name = extra.pop('details', None)
+        self.name = extra.pop('details', name)
         self.game = extra.pop('state', None)
         self.url = url
         self.details = extra.pop('details', self.name) # compatibility
@@ -503,7 +540,7 @@ class Spotify:
     def created_at(self):
         """Optional[:class:`datetime.datetime`]: When the user started listening in UTC.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
         """
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
@@ -512,14 +549,14 @@ class Spotify:
     def colour(self):
         """Returns the Spotify integration colour, as a :class:`Colour`.
 
-        There is an alias for this named :meth:`color`"""
+        There is an alias for this named :attr:`color`"""
         return Colour(0x1db954)
 
     @property
     def color(self):
         """Returns the Spotify integration colour, as a :class:`Colour`.
 
-        There is an alias for this named :meth:`colour`"""
+        There is an alias for this named :attr:`colour`"""
         return self.colour
 
     def to_dict(self):
@@ -614,6 +651,96 @@ class Spotify:
         """:class:`str`: The party ID of the listening party."""
         return self._party.get('id', '')
 
+class CustomActivity(BaseActivity):
+    """Represents a Custom activity from Discord.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two activities are equal.
+
+        .. describe:: x != y
+
+            Checks if two activities are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the activity's hash.
+
+        .. describe:: str(x)
+
+            Returns the custom status text.
+
+    .. versionadded:: 1.3
+
+    Attributes
+    -----------
+    name: Optional[:class:`str`]
+        The custom activity's name.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji to pass to the activity, if any.
+    """
+
+    __slots__ = ('name', 'emoji', 'state')
+
+    def __init__(self, name, *, emoji=None, **extra):
+        self.name = name
+        self.state = extra.pop('state', None)
+        if self.name == 'Custom Status':
+            self.name = self.state
+
+        if emoji is None:
+            self.emoji = emoji
+        else:
+            self.emoji = PartialEmoji.from_dict(emoji)
+
+    @property
+    def type(self):
+        """Returns the activity's type. This is for compatibility with :class:`Activity`.
+
+        It always returns :attr:`ActivityType.custom`.
+        """
+        return ActivityType.custom
+
+    def to_dict(self):
+        if self.name == self.state:
+            o = {
+                'type': ActivityType.custom.value,
+                'state': self.name,
+                'name': 'Custom Status',
+            }
+        else:
+            o = {
+                'type': ActivityType.custom.value,
+                'name': self.name,
+            }
+
+        if self.emoji:
+            o['emoji'] = self.emoji.to_dict()
+        return o
+
+    def __eq__(self, other):
+        return (isinstance(other, CustomActivity) and other.name == self.name and other.emoji == self.emoji)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.name, str(self.emoji)))
+
+    def __str__(self):
+        if self.emoji:
+            if self.name:
+                return '%s %s' % (self.emoji, self.name)
+            return str(self.emoji)
+        else:
+            return str(self.name)
+
+    def __repr__(self):
+        return '<CustomActivity name={0.name!r} emoji={0.emoji!r}>'.format(self)
+
+
 def create_activity(data):
     if not data:
         return None
@@ -623,6 +750,13 @@ def create_activity(data):
         if 'application_id' in data or 'session_id' in data:
             return Activity(**data)
         return Game(**data)
+    elif game_type is ActivityType.custom:
+        try:
+            name = data.pop('name')
+        except KeyError:
+            return Activity(**data)
+        else:
+            return CustomActivity(name=name, **data)
     elif game_type is ActivityType.streaming:
         if 'url' in data:
             return Streaming(**data)

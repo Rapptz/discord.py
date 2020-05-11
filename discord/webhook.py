@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -127,7 +127,7 @@ class WebhookAdapter:
             multipart = {
                 'payload_json': utils.to_json(payload)
             }
-            for i, file in enumerate(files, start=1):
+            for i, file in enumerate(files):
                 multipart['file%i' % i] = (file.filename, file.fp, 'application/octet-stream')
             data = None
 
@@ -194,7 +194,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 file.reset(seek=tries)
 
             async with self.session.request(verb, url, headers=headers, data=data) as r:
-                response = await r.text(encoding='utf-8')
+                # Coerce empty strings to return None for hygiene purposes
+                response = (await r.text(encoding='utf-8')) or None
                 if r.headers['Content-Type'] == 'application/json':
                     response = json.loads(response)
 
@@ -275,7 +276,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
             r = self.session.request(verb, url, headers=headers, data=data, files=multipart)
             r.encoding = 'utf-8'
-            response = r.text
+            # Coerce empty responses to return None for hygiene purposes
+            response = r.text or None
 
             # compatibility with aiohttp
             r.status = r.status_code
@@ -355,7 +357,7 @@ class _PartialWebhookState:
         return _FriendlyHttpAttributeErrorHelper()
 
     def __getattr__(self, attr):
-        raise AttributeError('PartialWebhookState does not support {0:!r}.'.format(attr))
+        raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
 
 class Webhook:
     """Represents a Discord webhook.
@@ -404,6 +406,9 @@ class Webhook:
         The webhook's ID
     type: :class:`WebhookType`
         The type of the webhook.
+
+        .. versionadded:: 1.3
+
     token: Optional[:class:`str`]
         The authentication token of the webhook. If this is ``None``
         then the webhook cannot be used to make requests.
@@ -420,7 +425,7 @@ class Webhook:
         The default avatar of the webhook.
     """
 
-    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name', 
+    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
                  'avatar', 'token', '_state', '_adapter')
 
     def __init__(self, data, *, adapter, state=None):
@@ -683,7 +688,7 @@ class Webhook:
         return self._adapter.edit_webhook(**payload)
 
     def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
-                                    file=None, files=None, embed=None, embeds=None):
+                                    file=None, files=None, embed=None, embeds=None, allowed_mentions=None):
         """|maybecoro|
 
         Sends a message using the webhook.
@@ -727,6 +732,10 @@ class Webhook:
         embeds: List[:class:`Embed`]
             A list of embeds to send with the content. Maximum of 10. This cannot
             be mixed with the ``embed`` parameter.
+        allowed_mentions: :class:`AllowedMentions`
+            Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
 
         Raises
         --------
@@ -771,6 +780,16 @@ class Webhook:
             payload['avatar_url'] = str(avatar_url)
         if username:
             payload['username'] = username
+
+        previous_mentions = getattr(self._state, 'allowed_mentions', None)
+
+        if allowed_mentions:
+            if previous_mentions is not None:
+                payload['allowed_mentions'] = previous_mentions.merge(allowed_mentions).to_dict()
+            else:
+                payload['allowed_mentions'] = allowed_mentions.to_dict()
+        elif previous_mentions is not None:
+            payload['allowed_mentions'] = previous_mentions.to_dict()
 
         return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 

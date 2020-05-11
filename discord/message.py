@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -38,6 +38,11 @@ from .enums import MessageType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
+from .flags import MessageFlags
+from .file import File
+from .utils import escape_mentions
+from .guild import Guild
+
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -49,9 +54,9 @@ class Attachment:
     size: :class:`int`
         The attachment size in bytes.
     height: Optional[:class:`int`]
-        The attachment's height, in pixels. Only applicable to images.
+        The attachment's height, in pixels. Only applicable to images and videos.
     width: Optional[:class:`int`]
-        The attachment's width, in pixels. Only applicable to images.
+        The attachment's width, in pixels. Only applicable to images and videos.
     filename: :class:`str`
         The attachment's filename.
     url: :class:`str`
@@ -131,7 +136,7 @@ class Attachment:
 
         Retrieves the content of this attachment as a :class:`bytes` object.
 
-        .. versionadded:: 1.1.0
+        .. versionadded:: 1.1
 
         Parameters
         -----------
@@ -160,6 +165,44 @@ class Attachment:
         url = self.proxy_url if use_cached else self.url
         data = await self._http.get_from_cdn(url)
         return data
+
+    async def to_file(self, *, use_cached=False):
+        """|coro|
+
+        Converts the attachment into a :class:`File` suitable for sending via
+        :meth:`abc.Messageable.send`.
+
+        .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        use_cached: :class:`bool`
+            Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
+            the attachment. This will allow attachments to be saved after deletion
+            more often, compared to the regular URL which is generally deleted right
+            after the message is deleted. Note that this can still fail to download
+            deleted attachments if too much time has passed and it does not work
+            on some types of attachments.
+
+            .. versionadded:: 1.4
+
+        Raises
+        ------
+        HTTPException
+            Downloading the attachment failed.
+        Forbidden
+            You do not have permissions to access this attachment
+        NotFound
+            The attachment was deleted.
+
+        Returns
+        -------
+        :class:`File`
+            The attachment as a file suitable for sending.
+        """
+
+        data = await self.read(use_cached=use_cached)
+        return File(io.BytesIO(data), filename=self.filename)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -237,6 +280,11 @@ class Message:
         A list of attachments given to a message.
     pinned: :class:`bool`
         Specifies if the message is currently pinned.
+    flags: :class:`MessageFlags`
+        Extra features of the message.
+
+        .. versionadded:: 1.3
+
     reactions : List[:class:`Reaction`]
         Reactions to a message. Reactions can be either custom emoji or standard unicode emoji.
     activity: Optional[:class:`dict`]
@@ -263,7 +311,7 @@ class Message:
                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions',
                  'application', 'activity')
 
@@ -280,19 +328,20 @@ class Message:
         self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
         self.type = try_enum(MessageType, data['type'])
         self.pinned = data['pinned']
+        self.flags = MessageFlags._from_value(data.get('flags', 0))
         self.mention_everyone = data['mention_everyone']
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
                 getattr(self, '_handle_%s' % handler)(data[handler])
             except KeyError:
                 continue
 
     def __repr__(self):
-        return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r}>'.format(self)
+        return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
 
     def _try_patch(self, data, key, transform=None):
         try:
@@ -338,6 +387,18 @@ class Message:
 
         return reaction
 
+    def _clear_emoji(self, emoji):
+        to_check = str(emoji)
+        for index, reaction in enumerate(self.reactions):
+            if str(reaction.emoji) == to_check:
+                break
+        else:
+            # didn't find anything so just return
+            return
+
+        del self.reactions[index]
+        return reaction
+
     def _update(self, data):
         handlers = self._HANDLERS
         for key, value in data.items():
@@ -360,6 +421,9 @@ class Message:
 
     def _handle_pinned(self, value):
         self.pinned = value
+
+    def _handle_flags(self, value):
+        self.flags = MessageFlags._from_value(value)
 
     def _handle_application(self, value):
         self.application = value
@@ -390,7 +454,7 @@ class Message:
 
     def _handle_author(self, author):
         self.author = self._state.store_user(author)
-        if self.guild is not None:
+        if isinstance(self.guild, Guild):
             found = self.guild.get_member(self.author.id)
             if found is not None:
                 self.author = found
@@ -416,7 +480,7 @@ class Message:
         self.mentions = r = []
         guild = self.guild
         state = self._state
-        if guild is None:
+        if not isinstance(guild, Guild):
             self.mentions = [state.store_user(m) for m in mentions]
             return
 
@@ -430,7 +494,7 @@ class Message:
 
     def _handle_mention_roles(self, role_mentions):
         self.role_mentions = []
-        if self.guild is not None:
+        if isinstance(self.guild, Guild):
             for role_id in map(int, role_mentions):
                 role = self.guild.get_role(role_id)
                 if role is not None:
@@ -540,17 +604,7 @@ class Message:
 
         pattern = re.compile('|'.join(transformations.keys()))
         result = pattern.sub(repl, self.content)
-
-        transformations = {
-            '@everyone': '@\u200beveryone',
-            '@here': '@\u200bhere'
-        }
-
-        def repl2(obj):
-            return transformations.get(obj.group(0), '')
-
-        pattern = re.compile('|'.join(transformations.keys()))
-        return pattern.sub(repl2, result)
+        return escape_mentions(result)
 
     @property
     def created_at(self):
@@ -689,7 +743,7 @@ class Message:
         delete other people's messages, you need the :attr:`~Permissions.manage_messages`
         permission.
 
-        .. versionchanged:: 1.1.0
+        .. versionchanged:: 1.1
             Added the new ``delay`` keyword-only parameter.
 
         Parameters
@@ -702,6 +756,8 @@ class Message:
         ------
         Forbidden
             You do not have proper permissions to delete the message.
+        NotFound
+            The message was deleted already
         HTTPException
             Deleting the message failed.
         """
@@ -724,6 +780,9 @@ class Message:
 
         The content must be able to be transformed into a string via ``str(content)``.
 
+        .. versionchanged:: 1.3
+            The ``suppress`` keyword-only parameter was added.
+
         Parameters
         -----------
         content: Optional[:class:`str`]
@@ -741,6 +800,10 @@ class Message:
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -772,9 +835,23 @@ class Message:
         except KeyError:
             pass
         else:
-            await self._state.http.suppress_message_embeds(self.channel.id, self.id, suppress=suppress)
+             flags = MessageFlags._from_value(self.flags.value)
+             flags.suppress_embeds = suppress
+             fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
+
+        try:
+            allowed_mentions = fields.pop('allowed_mentions')
+        except KeyError:
+            pass
+        else:
+            if allowed_mentions is not None:
+                if self._state.allowed_mentions is not None:
+                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+                else:
+                    allowed_mentions = allowed_mentions.to_dict()
+                fields['allowed_mentions'] = allowed_mentions
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
@@ -782,6 +859,24 @@ class Message:
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
+
+    async def publish(self):
+        """|coro|
+
+        Publishes this message to your announcement channel.
+
+        If the message is not your own then the :attr:`~Permissions.manage_messages`
+        permission is needed.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to publish this message.
+        HTTPException
+            Publishing the message failed.
+        """
+
+        await self._state.http.publish_message(self.channel.id, self.id)
 
     async def pin(self):
         """|coro|
@@ -895,6 +990,37 @@ class Message:
             await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
         else:
             await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
+
+    async def clear_reaction(self, emoji):
+        """|coro|
+
+        Clears a specific reaction from the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to clear.
+
+        Raises
+        --------
+        HTTPException
+            Clearing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to clear the reaction.
+        NotFound
+            The emoji you specified was not found.
+        InvalidArgument
+            The emoji parameter is invalid.
+        """
+
+        emoji = self._emoji_reaction(emoji)
+        await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
 
     @staticmethod
     def _emoji_reaction(emoji):

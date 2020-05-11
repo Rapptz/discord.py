@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -312,14 +312,14 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
         This is similar to :func:`.on_command_error` except only applying
         to the commands inside this cog.
 
-        This function **can** be a coroutine.
+        This **must** be a coroutine.
 
         Parameters
         -----------

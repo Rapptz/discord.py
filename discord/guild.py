@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -45,123 +45,10 @@ from .iterators import AuditLogIterator, MemberIterator
 from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
+from .flags import SystemChannelFlags
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
-
-class _flag_descriptor:
-    def __init__(self, func):
-        self.flag = func(None)
-        self.__doc__ = func.__doc__
-
-    def __get__(self, instance, owner):
-        return instance._has_flag(self.flag)
-
-    def __set__(self, instance, value):
-        instance._set_flag(self.flag, value)
-
-def fill_with_flags(cls):
-    cls.VALID_FLAGS = {
-        name: value.flag
-        for name, value in cls.__dict__.items()
-        if isinstance(value, _flag_descriptor)
-    }
-
-    max_bits = max(cls.VALID_FLAGS.values()).bit_length()
-    cls.ALL_OFF_VALUE = -1 + (2 ** max_bits)
-    return cls
-
-@fill_with_flags
-class SystemChannelFlags:
-    r"""Wraps up a Discord system channel flag value.
-
-    Similar to :class:`Permissions`\, the properties provided are two way.
-    You can set and retrieve individual bits using the properties as if they
-    were regular bools. This allows you to edit the system flags easily.
-
-    To construct an object you can pass keyword arguments denoting the flags
-    to enable or disable.
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two flags are equal.
-        .. describe:: x != y
-
-            Checks if two flags are not equal.
-        .. describe:: hash(x)
-
-               Return the flag's hash.
-        .. describe:: iter(x)
-
-               Returns an iterator of ``(name, value)`` pairs. This allows it
-               to be, for example, constructed as a dict or a list of pairs.
-
-    Attributes
-    -----------
-    value: :class:`int`
-        The raw value. This value is a bit array field of a 53-bit integer
-        representing the currently available flags. You should query
-        flags via the properties rather than using this raw value.
-    """
-    __slots__ = ('value',)
-
-    def __init__(self, **kwargs):
-        self.value = self.ALL_OFF_VALUE
-        for key, value in kwargs.items():
-            if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
-            setattr(self, key, value)
-
-    @classmethod
-    def _from_value(cls, value):
-        self = cls.__new__(cls)
-        self.value = value
-        return self
-
-    def __eq__(self, other):
-        return isinstance(other, SystemChannelFlags) and self.value == other.value
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.value)
-
-    def __repr__(self):
-        return '<SystemChannelFlags value=%s>' % self.value
-
-    def __iter__(self):
-        for name, value in self.__class__.__dict__.items():
-            if isinstance(value, _flag_descriptor):
-                yield (name, self._has_flag(value.flag))
-
-    # For some reason the flags in the Discord API are "inverted"
-    # ergo, if they're set then it means "suppress" (off in the GUI toggle)
-    # Since this is counter-intuitive from an API perspective and annoying
-    # these will be inverted automatically
-
-    def _has_flag(self, o):
-        return (self.value & o) != o
-
-    def _set_flag(self, o, toggle):
-        if toggle is True:
-            self.value &= ~o
-        elif toggle is False:
-            self.value |= o
-        else:
-            raise TypeError('Value to set for SystemChannelFlags must be a bool.')
-
-    @_flag_descriptor
-    def join_notifications(self):
-        """:class:`bool`: Returns True if the system channel is used for member join notifications."""
-        return 1
-
-    @_flag_descriptor
-    def premium_subscriptions(self):
-        """:class:`bool`: Returns True if the system channel is used for Nitro boosting notifications."""
-        return 2
 
 
 class Guild(Hashable):
@@ -240,12 +127,14 @@ class Guild(Hashable):
         - ``PARTNERED``: Guild is a partnered server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
+        - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
         - ``COMMERCE``: Guild can sell things using store channels.
-        - ``PUBLIC``: Users can lurk in this guild via Server Discovery.
+        - ``PUBLIC``: Guild is a public guild.
         - ``NEWS``: Guild can create news channels.
         - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
         - ``PUBLIC_DISABLED``: Guild cannot be public.
+        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
@@ -257,6 +146,10 @@ class Guild(Hashable):
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
+    discovery_splash: :class:`str`
+        The guild's discovery splash.
+
+        .. versionadded:: 1.3
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -267,7 +160,7 @@ class Guild(Hashable):
                  '_voice_states', '_system_channel_id', 'default_notifications',
                  'description', 'max_presences', 'max_members', 'premium_tier',
                  'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale',)
+                 'preferred_locale', 'discovery_splash', '_rules_channel_id')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -329,6 +222,12 @@ class Guild(Hashable):
             self._voice_states[user_id] = after
 
         member = self.get_member(user_id)
+        if member is None:
+            try:
+                member = Member(data=data['member'], state=self._state, guild=self)
+            except KeyError:
+                member = None
+
         return member, before, after
 
     def _add_role(self, role):
@@ -358,7 +257,7 @@ class Guild(Hashable):
         # according to Stan, this is always available even if the guild is unavailable
         # I don't have this guarantee when someone updates the guild.
         member_count = guild.get('member_count', None)
-        if member_count:
+        if member_count is not None:
             self._member_count = member_count
 
         self.name = guild.get('name')
@@ -389,6 +288,8 @@ class Guild(Hashable):
         self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
+        self.discovery_splash = guild.get('discovery_splash')
+        self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -552,6 +453,18 @@ class Guild(Hashable):
         return SystemChannelFlags._from_value(self._system_channel_flags)
 
     @property
+    def rules_channel(self):
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for the rules.
+        Must be a discoverable guild.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 1.3
+        """
+        channel_id = self._rules_channel_id
+        return channel_id and self._channels.get(channel_id)
+
+    @property
     def emoji_limit(self):
         """:class:`int`: The maximum number of emoji slots this guild has."""
         more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
@@ -624,7 +537,7 @@ class Guild(Hashable):
 
     @property
     def owner(self):
-        """:class:`Member`: The member that owns the guild."""
+        """Optional[:class:`Member`]: The member that owns the guild."""
         return self.get_member(self.owner_id)
 
     @property
@@ -726,6 +639,41 @@ class Guild(Hashable):
             The resulting CDN asset.
         """
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+
+    @property
+    def discovery_splash_url(self):
+        """:class:`Asset`: Returns the guild's discovery splash asset.
+
+        .. versionadded:: 1.3
+        """
+        return self.discovery_splash_url_as()
+
+    def discovery_splash_url_as(self, *, format='webp', size=2048):
+        """Returns an :class:`Asset` for the guild's discovery splash.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
+        size must be a power of 2 between 16 and 4096.
+
+        .. versionadded:: 1.3
+
+        Parameters
+        -----------
+        format: :class:`str`
+            The format to attempt to convert the splash to.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_guild_image(self._state, self.id, self.discovery_splash, 'discovery-splashes', format=format, size=size)
 
     @property
     def member_count(self):
@@ -945,7 +893,7 @@ class Guild(Hashable):
         self._channels[channel.id] = channel
         return channel
 
-    async def create_category(self, name, *, overwrites=None, reason=None):
+    async def create_category(self, name, *, overwrites=None, reason=None, position=None):
         """|coro|
 
         Same as :meth:`create_text_channel` except makes a :class:`CategoryChannel` instead.
@@ -955,7 +903,7 @@ class Guild(Hashable):
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason)
+        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
@@ -1011,7 +959,7 @@ class Guild(Hashable):
             The new name of the guild.
         description: :class:`str`
             The new description of the guild. This is only available to guilds that
-            contain `VERIFIED` in :attr:`Guild.features`.
+            contain `PUBLIC` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
             and GIF for guilds with ``ANIMATED_ICON`` feature.
@@ -1102,12 +1050,10 @@ class Guild(Hashable):
         fields['banner'] = banner
         fields['splash'] = splash
 
-        try:
-            default_message_notifications = int(fields.pop('default_notifications'))
-        except (TypeError, KeyError):
-            pass
-        else:
-            fields['default_message_notifications'] = default_message_notifications
+        default_message_notifications = fields.get('default_notifications', self.default_notifications)
+        if not isinstance(default_message_notifications, NotificationLevel):
+            raise InvalidArgument('default_notifications field must be of type NotificationLevel')
+        fields['default_message_notifications'] = default_message_notifications.value
 
         try:
             afk_channel = fields.pop('afk_channel')
@@ -1166,7 +1112,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`channels` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Raises
         -------
@@ -1192,7 +1138,7 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
-    def fetch_members(self, *, limit=1, after=None):
+    def fetch_members(self, *, limit=1000, after=None):
         """|coro|
 
         Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
@@ -1201,15 +1147,15 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`members` instead.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         All parameters are optional.
 
         Parameters
         ----------
         limit: Optional[:class:`int`]
-            The number of members to retrieve.
-            Defaults to 1.
+            The number of members to retrieve. Defaults to 1000.
+            Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
@@ -1258,7 +1204,7 @@ class Guild(Hashable):
         Forbidden
             You do not have access to the guild.
         HTTPException
-            Getting the guild failed.
+            Fetching the member failed.
 
         Returns
         --------
@@ -1334,7 +1280,7 @@ class Guild(Hashable):
                          reason=e['reason'])
                 for e in data]
 
-    async def prune_members(self, *, days, compute_prune_count=True, reason=None):
+    async def prune_members(self, *, days, compute_prune_count=True, roles=None, reason=None):
         r"""|coro|
 
         Prunes the guild from its inactive members.
@@ -1348,6 +1294,11 @@ class Guild(Hashable):
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
 
+        To prune members that have specific roles see the ``roles`` parameter.
+
+        .. versionchanged:: 1.4
+            The ``roles`` keyword-only parameter was added.
+
         Parameters
         -----------
         days: :class:`int`
@@ -1359,6 +1310,9 @@ class Guild(Hashable):
             which makes it prone to timeouts in very large guilds. In order
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member 
+            has a role that is not specified, they'll be excluded.
 
         Raises
         -------
@@ -1379,7 +1333,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+
+        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
 
     async def webhooks(self):
@@ -1570,7 +1527,7 @@ class Guild(Hashable):
 
             This method is an API call. For general usage, consider :attr:`roles` instead.
 
-        .. versionadded:: 1.3.0
+        .. versionadded:: 1.3
 
         Raises
         -------
@@ -1739,8 +1696,7 @@ class Guild(Hashable):
 
         Returns the guild's special vanity invite.
 
-        The guild must be partnered, i.e. have 'VANITY_URL' in
-        :attr:`~Guild.features`.
+        The guild must have 'VANITY_URL' in :attr:`~Guild.features`.
 
         You must have the :attr:`~Permissions.manage_guild` permission to use
         this as well.

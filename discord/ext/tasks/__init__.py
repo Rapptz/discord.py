@@ -1,13 +1,14 @@
 import asyncio
+import datetime
 import aiohttp
 import websockets
 import discord
 import inspect
 import logging
+import sys
+import traceback
 
 from discord.backoff import ExponentialBackoff
-
-MAX_ASYNCIO_SECONDS = 3456000
 
 log = logging.getLogger(__name__)
 
@@ -45,27 +46,37 @@ class Loop:
             raise ValueError('count must be greater than 0 or None.')
 
         self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
+        self._last_iteration = None
+        self._next_iteration = None
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
 
-    async def _call_loop_function(self, name):
+    async def _call_loop_function(self, name, *args, **kwargs):
         coro = getattr(self, '_' + name)
         if coro is None:
             return
 
         if self._injected is not None:
-            await coro(self._injected)
+            await coro(self._injected, *args, **kwargs)
         else:
-            await coro()
+            await coro(*args, **kwargs)
 
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
+        sleep_until = discord.utils.sleep_until
+        self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
+            await asyncio.sleep(0) # allows canceling in before_loop
             while True:
+                self._last_iteration = self._next_iteration
+                self._next_iteration = self._get_next_sleep_time()
                 try:
                     await self.coro(*args, **kwargs)
+                    now = datetime.datetime.now(datetime.timezone.utc)
+                    if now > self._next_iteration:
+                        self._next_iteration = now
                 except self._valid_exception as exc:
                     if not self.reconnect:
                         raise
@@ -77,14 +88,14 @@ class Loop:
                     if self._current_loop == self.count:
                         break
 
-                    await asyncio.sleep(self._sleep)
+                    await sleep_until(self._next_iteration)
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
-        except Exception:
+        except Exception as exc:
             self._has_failed = True
-            log.exception('Internal background task failed.')
-            raise
+            await self._call_loop_function('error', exc)
+            raise exc
         finally:
             await self._call_loop_function('after_loop')
             self._is_being_cancelled = False
@@ -95,13 +106,32 @@ class Loop:
     def __get__(self, obj, objtype):
         if obj is None:
             return self
-        self._injected = obj
-        return self
+
+        copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
+                               count=self.count, reconnect=self.reconnect, loop=self.loop)
+        copy._injected = obj
+        copy._before_loop = self._before_loop
+        copy._after_loop = self._after_loop
+        copy._error = self._error
+        setattr(obj, self.coro.__name__, copy)
+        return copy
 
     @property
     def current_loop(self):
         """:class:`int`: The current iteration of the loop."""
         return self._current_loop
+
+    @property
+    def next_iteration(self):
+        """Optional[:class:`datetime.datetime`]: When the next iteration of the loop will occur.
+
+        .. versionadded:: 1.3
+        """
+        if self._task is None and self._sleep:
+            return None
+        elif self._task and self._task.done() or self._stop_next_iteration:
+            return None
+        return self._next_iteration
 
     def start(self, *args, **kwargs):
         r"""Starts the internal task in the event loop.
@@ -109,7 +139,7 @@ class Loop:
         Parameters
         ------------
         \*args
-            The arguments to to use.
+            The arguments to use.
         \*\*kwargs
             The keyword arguments to use.
 
@@ -149,7 +179,7 @@ class Loop:
             before stopping via :meth:`clear_exception_types` or
             use :meth:`cancel` instead.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
         """
         if self._task and not self._task.done():
             self._stop_next_iteration = True
@@ -252,9 +282,20 @@ class Loop:
     def failed(self):
         """:class:`bool`: Whether the internal task has failed.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
         """
         return self._has_failed
+
+    def is_running(self):
+        """:class:`bool`: Check if the task is currently running.
+
+        .. versionadded:: 1.4
+        """
+        return not bool(self._task.done()) if self._task else False
+
+    async def _error(self, exception):
+        print('Unhandled exception in internal background task {0.__name__!r}.'.format(self.coro), file=sys.stderr)
+        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     def before_loop(self, coro):
         """A decorator that registers a coroutine to be called before the loop starts running.
@@ -309,6 +350,35 @@ class Loop:
         self._after_loop = coro
         return coro
 
+    def error(self, coro):
+        """A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
+
+        The coroutine must take only one argument the exception raised (except ``self`` in a class context).
+
+        By default this prints to :data:`sys.stderr` however it could be
+        overridden to have a different implementation.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        ------------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register in the event of an unhandled exception.
+
+        Raises
+        -------
+        TypeError
+            The function was not a coroutine.
+        """
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+
+        self._error = coro
+        return coro
+
+    def _get_next_sleep_time(self):
+        return self._last_iteration + datetime.timedelta(seconds=self._sleep)
+
     def change_interval(self, *, seconds=0, minutes=0, hours=0):
         """Changes the interval for the sleep time.
 
@@ -317,7 +387,7 @@ class Loop:
             This only applies on the next loop iteration. If it is desirable for the change of interval
             to be applied right away, cancel the task with :meth:`cancel`.
 
-        .. versionadded:: 1.2.0
+        .. versionadded:: 1.2
 
         Parameters
         ------------
@@ -335,10 +405,6 @@ class Loop:
         """
 
         sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
-        if sleep >= MAX_ASYNCIO_SECONDS:
-            fmt = 'Total number of seconds exceeds asyncio imposed limit of {0} seconds.'
-            raise ValueError(fmt.format(MAX_ASYNCIO_SECONDS))
-
         if sleep < 0:
             raise ValueError('Total number of seconds cannot be less than zero.')
 
@@ -378,6 +444,13 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
         The function was not a coroutine.
     """
     def decorator(func):
-        return Loop(func, seconds=seconds, minutes=minutes, hours=hours,
-                          count=count, reconnect=reconnect, loop=loop)
+        kwargs = {
+            'seconds': seconds,
+            'minutes': minutes,
+            'hours': hours,
+            'count': count,
+            'reconnect': reconnect,
+            'loop': loop
+        }
+        return Loop(func, **kwargs)
     return decorator

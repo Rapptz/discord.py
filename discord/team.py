@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -49,6 +49,8 @@ class Team:
         The team's owner ID.
     members: List[:class:`TeamMember`]
         A list of the members in the team
+
+        .. versionadded:: 1.3
     """
     __slots__ = ('_state', 'id', 'name', 'icon', 'owner_id', 'members')
 
@@ -94,6 +96,8 @@ class TeamMember(BaseUser):
         .. describe:: str(x)
 
             Returns the team member's name with discriminator.
+
+    .. versionadded:: 1.3
 
     Attributes
     -------------

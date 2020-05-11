@@ -77,7 +77,7 @@ General
 General questions regarding library usage belong here.
 
 Where can I find usage examples?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Example code can be found in the `examples folder <https://github.com/Rapptz/discord.py/tree/master/examples>`_
 in the repository.
@@ -321,7 +321,7 @@ Quick example: ::
 
     Due to a Discord limitation, filenames may not include underscores.
 
-Is there an event for invites or audit log entries being created?
+Is there an event for audit log entries being created?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since Discord does not dispatch this information in the gateway, the library cannot provide this information.

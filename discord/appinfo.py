@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -44,6 +44,9 @@ class AppInfo:
         The application owner.
     team: Optional[:class:`Team`]
         The application's team.
+
+        .. versionadded:: 1.3
+
     icon: Optional[:class:`str`]
         The icon hash, if it exists.
     description: Optional[:class:`str`]
@@ -59,20 +62,37 @@ class AppInfo:
     summary: :class:`str`
         If this application is a game sold on Discord,
         this field will be the summary field for the store page of its primary SKU
+
+        .. versionadded:: 1.3
+
     verify_key: :class:`str`
         The base64 encoded key for the GameSDK's GetTicket
+
+        .. versionadded:: 1.3
+
     guild_id: Optional[:class:`int`]
         If this application is a game sold on Discord,
         this field will be the guild to which it has been linked
+
+        .. versionadded:: 1.3
+
     primary_sku_id: Optional[:class:`int`]
         If this application is a game sold on Discord,
         this field will be the id of the "Game SKU" that is created, if exists
+
+        .. versionadded:: 1.3
+
     slug: Optional[:class:`str`]
         If this application is a game sold on Discord,
         this field will be the URL slug that links to the store page
+
+        .. versionadded:: 1.3
+
     cover_image: Optional[:class:`str`]
         If this application is a game sold on Discord,
         this field will be the hash of the image on store embeds
+
+        .. versionadded:: 1.3
     """
     __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
                  'bot_public', 'bot_require_code_grant', 'owner', 'icon',
@@ -109,16 +129,25 @@ class AppInfo:
 
     @property
     def icon_url(self):
-        """:class:`.Asset`: Retrieves the application's icon asset."""
+        """:class:`.Asset`: Retrieves the application's icon asset.
+
+        .. versionadded:: 1.3
+        """
         return Asset._from_icon(self._state, self, 'app')
 
     @property
     def cover_image_url(self):
-        """:class:`.Asset`: Retrieves the cover image on a store embed."""
+        """:class:`.Asset`: Retrieves the cover image on a store embed.
+
+        .. versionadded:: 1.3
+        """
         return Asset._from_cover_image(self._state, self)
 
     @property
     def guild(self):
         """Optional[:class:`Guild`]: If this application is a game sold on Discord,
-        this field will be the guild to which it has been linked"""
+        this field will be the guild to which it has been linked
+
+        .. versionadded:: 1.3
+        """
         return self._state._get_guild(int(self.guild_id))

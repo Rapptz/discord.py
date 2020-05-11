@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -88,8 +88,8 @@ class PartialEmoji(_EmojiTag):
         return o
 
     @classmethod
-    def with_state(cls, state, *, animated, name, id=None):
-        self = cls(animated=animated, name=name, id=id)
+    def with_state(cls, state, *, name, animated=False, id=None):
+        self = cls(name=name, animated=animated, id=id)
         self._state = state
         return self
 
