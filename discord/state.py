@@ -36,7 +36,6 @@ import inspect
 import gc
 
 import os
-import binascii
 
 from .guild import Guild
 from .activity import BaseActivity
@@ -135,7 +134,7 @@ class ConnectionState:
         gc.collect()
 
     def get_nonce(self):
-        return binascii.hexlify(os.urandom(16)).decode('ascii')
+        return os.urandom(16).hex()
 
     def process_listeners(self, listener_type, argument, result):
         removed = []
