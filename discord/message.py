@@ -166,7 +166,7 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, *, use_cached=False):
+    async def to_file(self, *, use_cached=False, spoiler=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -185,6 +185,10 @@ class Attachment:
             on some types of attachments.
 
             .. versionadded:: 1.4
+        spoiler: :class:`bool`
+            Whether the file is a spoiler.
+            
+            .. versionadded:: 1.4
 
         Raises
         ------
@@ -202,7 +206,7 @@ class Attachment:
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename)
+        return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
