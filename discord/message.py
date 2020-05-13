@@ -166,7 +166,7 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, *, use_cached=False. spoiler=False):
+    async def to_file(self, *, use_cached=False, spoiler=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
