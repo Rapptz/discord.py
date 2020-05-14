@@ -5,7 +5,10 @@ from .cooldowns import CooldownMapping, BucketType, Cooldown
 from .cog import Cog
 from ._types import _BaseCommand
 
-from typing import Any, Optional, Union, Callable, Dict, Iterator, Coroutine, Type, ValuesView, List, TypeVar, Mapping, Generic, overload
+from typing import (
+    Any, Optional, Union, Callable, Dict, Iterator, Coroutine, Type, ValuesView, List, TypeVar, Mapping,
+    Tuple, Generic, overload
+)
 from typing_extensions import Protocol
 
 _CoroType = Callable[..., Coroutine[Any, Any, Any]]
@@ -31,7 +34,7 @@ class Command(_BaseCommand, Generic[_CT]):
     help: str
     brief: str
     usage: str
-    aliases: List[str]
+    aliases: Union[List[str], Tuple[str, ...]]
     enabled: bool
     parent: Optional[Command[_CT]]
     checks: List[_CheckPredicate[_CT]]
@@ -46,15 +49,16 @@ class Command(_BaseCommand, Generic[_CT]):
 
     def __init__(self, func: _CoroType, *, name: str = ..., enabled: bool = ...,
                  help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
-                 aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
+                 aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ..., hidden: bool = ...,
                  rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
                  checks: List[_CheckPredicate[_CT]] = ..., cooldown: Cooldown = ..., parent: _BaseCommand = ...,
                  cog: Optional[Cog[_CT]] = ...) -> None: ...
     def add_check(self, func: _CheckPredicate[_CT]) -> None: ...
     def remove_check(self, func: _CheckPredicate[_CT]) -> None: ...
     def update(self, *, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
-               usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-               rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...) -> None: ...
+               usage: Optional[str] = ..., aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ...,
+               hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+               cooldown_after_parsing: bool = ...) -> None: ...
     async def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
     def copy(self: _CMD) -> _CMD: ...
     async def dispatch_error(self, ctx: _CT, error: Exception) -> None: ...
@@ -100,12 +104,13 @@ class GroupMixin(Generic[_CT]):
     def walk_commands(self) -> Iterator[Command[_CT]]: ...
     def get_command(self, name: str) -> Optional[Command[_CT]]: ...
     def command(self, name: Optional[str] = ..., *, enabled: bool = ..., help: Optional[str] = ...,
-                brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
-                description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+                brief: Optional[str] = ..., usage: Optional[str] = ...,
+                aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ..., hidden: bool = ...,
+                rest_is_raw: bool = ..., ignore_extra: bool = ...,
                 cooldown_after_parsing: bool = ...) -> Callable[[_CoroType], Command[_CT]]: ...
     def group(self, name: str = ..., *, enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
-              usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-              rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+              usage: Optional[str] = ..., aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ...,
+              hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
               invoke_without_command: bool = ...,
               case_insensitive: bool = ...) -> Callable[[_CoroType], Group[_CT]]: ...
 
@@ -115,32 +120,35 @@ class Group(GroupMixin[_CT], Command[_CT]):
     invoke_without_command: bool
 
     def __init__(self, *, name: str = ..., enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
-                 usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-                 rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
-                 invoke_without_command: bool = ..., case_insensitive: bool = ...) -> None: ...
+                 usage: Optional[str] = ..., aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ...,
+                 hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+                 cooldown_after_parsing: bool = ..., invoke_without_command: bool = ...,
+                 case_insensitive: bool = ...) -> None: ...
     def copy(self: _G) -> _G: ...
 
 @overload
 def command(name: Optional[str] = ..., *, enabled: bool = ...,
-            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
-            description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
+            aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ..., hidden: bool = ...,
+            rest_is_raw: bool = ..., ignore_extra: bool = ...,
             cooldown_after_parsing: bool = ...) -> Callable[[_CoroType], Command[Any]]: ...
 @overload
 def command(name: Optional[str] = ..., cls: Optional[Type[Command[_CT]]] = ..., *, enabled: bool = ...,
-            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
-            description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
+            help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
+            aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ..., hidden: bool = ...,
+            rest_is_raw: bool = ..., ignore_extra: bool = ...,
             cooldown_after_parsing: bool = ...) -> Callable[[_CoroType], Command[_CT]]: ...
 @overload
 def group(name: str = ..., *, enabled: bool = ..., help: Optional[str] = ..., brief: Optional[str] = ...,
-          usage: Optional[str] = ..., aliases: List[str] = ..., description: str = ..., hidden: bool = ...,
-          rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+          usage: Optional[str] = ..., aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ...,
+          hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
           invoke_without_command: bool = ..., case_insensitive: bool = ...) -> Callable[[_CoroType], Group[Any]]: ...
 @overload
 def group(name: str = ..., *, cls: Optional[Type[Group[_CT]]] = ..., enabled: bool = ...,
-          help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ..., aliases: List[str] = ...,
-          description: str = ..., hidden: bool = ..., rest_is_raw: bool = ..., ignore_extra: bool = ...,
-          cooldown_after_parsing: bool = ..., invoke_without_command: bool = ...,
-          case_insensitive: bool = ...) -> Callable[[_CoroType], Group[Any]]: ...
+          help: Optional[str] = ..., brief: Optional[str] = ..., usage: Optional[str] = ...,
+          aliases: Union[List[str], Tuple[str, ...]] = ..., description: str = ..., hidden: bool = ...,
+          rest_is_raw: bool = ..., ignore_extra: bool = ..., cooldown_after_parsing: bool = ...,
+          invoke_without_command: bool = ..., case_insensitive: bool = ...) -> Callable[[_CoroType], Group[Any]]: ...
 def check(predicate: _CheckPredicate[_CT]) -> _CheckDecorator: ...
 def check_any(*checks: _CheckPredicate[_CT]) -> _CheckDecorator: ...
 def has_role(item: Union[int, str]) -> _CheckDecorator: ...

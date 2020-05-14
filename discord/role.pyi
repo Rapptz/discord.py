@@ -5,7 +5,7 @@ from .colour import Colour
 from .guild import Guild
 
 import datetime
-from typing import Any, List, Optional, overload
+from typing import Any, List, Optional, Union, overload
 
 class Role(Hashable):
     id: int
@@ -34,11 +34,11 @@ class Role(Hashable):
     @property
     def members(self) -> List[Member]: ...
     @overload
-    async def edit(self, *, name: str = ..., permissions: Permissions = ..., colour: Colour = ...,
+    async def edit(self, *, name: str = ..., permissions: Permissions = ..., colour: Union[Colour, int] = ...,
                    hoist: bool = ..., mentionable: bool = ..., position: int = ...,
                    reason: Optional[str] = ...) -> None: ...
     @overload
-    async def edit(self, *, name: str = ..., permissions: Permissions = ..., color: Colour = ...,
+    async def edit(self, *, name: str = ..., permissions: Permissions = ..., color: Union[Colour, int] = ...,
                    hoist: bool = ..., mentionable: bool = ..., position: int = ...,
                    reason: Optional[str] = ...) -> None: ...
     async def delete(self, *, reason: Optional[str] = ...) -> None: ...
