@@ -1050,12 +1050,10 @@ class Guild(Hashable):
         fields['banner'] = banner
         fields['splash'] = splash
 
-        try:
-            default_message_notifications = int(fields.pop('default_notifications'))
-        except (TypeError, KeyError):
-            pass
-        else:
-            fields['default_message_notifications'] = default_message_notifications
+        default_message_notifications = fields.get('default_notifications', self.default_notifications)
+        if not isinstance(default_message_notifications, NotificationLevel):
+            raise InvalidArgument('default_notifications field must be of type NotificationLevel')
+        fields['default_message_notifications'] = default_message_notifications.value
 
         try:
             afk_channel = fields.pop('afk_channel')
@@ -1206,7 +1204,7 @@ class Guild(Hashable):
         Forbidden
             You do not have access to the guild.
         HTTPException
-            Getting the guild failed.
+            Fetching the member failed.
 
         Returns
         --------

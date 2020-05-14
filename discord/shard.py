@@ -126,38 +126,19 @@ class AutoShardedClient(Client):
             elif not isinstance(self.shard_ids, (list, tuple)):
                 raise ClientException('shard_ids parameter must be a list or a tuple.')
 
-        self._connection = AutoShardedConnectionState(dispatch=self.dispatch, chunker=self._chunker,
+        self._connection = AutoShardedConnectionState(dispatch=self.dispatch,
                                                       handlers=self._handlers, syncer=self._syncer,
                                                       http=self.http, loop=self.loop, **kwargs)
 
         # instead of a single websocket, we have multiple
         # the key is the shard_id
         self.shards = {}
+        self._connection._get_websocket = self._get_websocket
 
-        def _get_websocket(guild_id):
-            i = (guild_id >> 22) % self.shard_count
-            return self.shards[i].ws
-
-        self._connection._get_websocket = _get_websocket
-
-    async def _chunker(self, guild, *, shard_id=None):
-        try:
-            guild_id = guild.id
-            shard_id = shard_id or guild.shard_id
-        except AttributeError:
-            guild_id = [s.id for s in guild]
-
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
-
-        ws = self.shards[shard_id].ws
-        await ws.send_as_json(payload)
+    def _get_websocket(self, guild_id=None, *, shard_id=None):
+        if shard_id is None:
+            shard_id = (guild_id >> 22) % self.shard_count
+        return self.shards[shard_id].ws
 
     @property
     def latency(self):

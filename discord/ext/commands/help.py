@@ -351,7 +351,7 @@ class HelpCommand(Generic[_CT]):
         # for this common use case rather than waste performance for the
         # odd one.
         pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name, self.context.prefix)
+        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.context.prefix)
 
     @property
     def invoked_with(self):

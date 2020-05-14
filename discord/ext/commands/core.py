@@ -150,7 +150,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
         then the first line of the long help text is used instead.
     usage: :class:`str`
         A replacement for arguments in the default help text.
-    aliases: :class:`list`
+    aliases: Union[:class:`list`, :class:`tuple`]
         The list of aliases the command can be invoked under.
     enabled: :class:`bool`
         A boolean that indicates if the command is currently enabled.
@@ -237,7 +237,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
         self.aliases = kwargs.get('aliases', [])
 
         if not isinstance(self.aliases, (list, tuple)):
-            raise TypeError("Aliases of a command must be a list of strings.")
+            raise TypeError("Aliases of a command must be a list or a tuple of strings.")
 
         self.description = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden = kwargs.get('hidden', False)
