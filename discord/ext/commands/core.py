@@ -1850,7 +1850,8 @@ def is_guild(item):
             guild = discord.utils.get(ctx.bot.guilds, id=item)
         else:
             guild = discord.utils.get(ctx.bot.guilds, name=item)
-        if guild is None:
+            
+        if ctx.guild != guild:
             raise NotGuild(item)
         return True
 
