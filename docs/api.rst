@@ -220,6 +220,10 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     to intercept payloads from the gateway and do something with it.
     
     .. note::
+        This event is considered extremely unstable due to the fact
+        that events could fire at any time and by the time the event
+        fires, the library might have already modified the payload.
+        
         This is only for the messages received from the client
         WebSocket. The voice WebSocket will not trigger this event.
      
