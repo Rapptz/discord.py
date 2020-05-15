@@ -1833,7 +1833,7 @@ def is_guild(item):
     return ``False``.
 
     This check raises one of two special exceptions, :exc:`.NotGuild` if the guild
-    does not match the onse specified, or :exc:`.NoPrivateMessage` if it is used in 
+    does not match the one specified, or :exc:`.NoPrivateMessage` if it is used in 
     a private message. Both inherit from :exc:`.CheckFailure`.
 
     Parameters
