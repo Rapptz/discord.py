@@ -210,6 +210,21 @@ to handle it, which defaults to print a traceback and ignoring the exception.
                     WebSocket library. It can be :class:`bytes` to denote a binary
                     message or :class:`str` to denote a regular text message.
 
+.. function:: on_socket_response(payload)
+    
+    Called after the socket data is decoded. This data is decoded
+    from discord's ETF format.
+    
+    This is useful for debugging purposes if you do not want to manually
+    decode the ETF through the on_socket_raw_send event or if you want
+    to intercept payloads from the gateway and do something with it.
+    
+    .. note::
+        This is only for the messages received from the client
+        WebSocket. The voice WebSocket will not trigger this event.
+     
+    :param payload: The websocket payload decoded into a :class `dictionary`.
+
 .. function:: on_typing(channel, user, when)
 
     Called when someone begins typing a message.
