@@ -1821,13 +1821,13 @@ def guild_only():
     return check(predicate)
 
 def is_guild(item):
-    """A :func:`.check` that is added that checks if the command is being invoked
-    in a guild specified via the name or ID specified.
+    """A :func:`.check` that checks if the command is being invoked in a guild
+    specified via a name or ID.
 
     If a string is specified, you must give the exact name of the guild, including
     caps and spelling.
 
-    If an integer is specified, you must give the exact snowflake ID of the guild.
+    If an integer is specified, you must provide the snowflake ID of the guild.
 
     If the message is invoked in a private message context then the check will
     return ``False``.
@@ -1847,7 +1847,7 @@ def is_guild(item):
             raise NoPrivateMessage()
 
         if isinstance(item, int):
-           guild = discord.utils.get(ctx.bot.guilds, id=item)
+            guild = discord.utils.get(ctx.bot.guilds, id=item)
         else:
             guild = discord.utils.get(ctx.bot.guilds, name=item)
         if guild is None:
