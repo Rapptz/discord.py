@@ -223,7 +223,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         This is only for the messages received from the client
         WebSocket. The voice WebSocket will not trigger this event.
      
-    :param payload: The websocket payload decoded into a :class `dictionary`.
+    :param payload: The websocket payload decoded into a :class:`dict`.
 
 .. function:: on_typing(channel, user, when)
 
