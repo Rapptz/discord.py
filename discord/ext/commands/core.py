@@ -58,6 +58,7 @@ __all__ = (
     'max_concurrency',
     'dm_only',
     'guild_only',
+    'is_guild',
     'is_owner',
     'is_nsfw',
     'has_guild_permissions',
@@ -1815,6 +1816,42 @@ def guild_only():
     def predicate(ctx):
         if ctx.guild is None:
             raise NoPrivateMessage()
+        return True
+
+    return check(predicate)
+
+def is_guild(item):
+    """A :func:`.check` that is added that checks if the command is being invoked
+    in a guild specified via the name or ID specified.
+
+    If a string is specified, you must give the exact name of the guild, including
+    caps and spelling.
+
+    If an integer is specified, you must give the exact snowflake ID of the guild.
+
+    If the message is invoked in a private message context then the check will
+    return ``False``.
+
+    This check raises one of two special exceptions, :exc:`.NotGuild` if the guild
+    does not match the onse specified, or :exc:`.NoPrivateMessage` if it is used in 
+    a private message. Both inherit from :exc:`.CheckFailure`.
+
+    Parameters
+    -----------
+    item: Union[:class:`int`, :class:`str`]
+        The name or ID of the guild to check.
+    """
+
+    def predicate(ctx):
+        if not isinstance(ctx.guild, discord.Guild):
+            raise NoPrivateMessage()
+
+        if isinstance(item, int):
+           guild = discord.utils.get(ctx.bot.guilds, id=item)
+        else:
+            guild = discord.utils.get(ctx.bot.guilds, name=item)
+        if guild is None:
+            raise NotGuild(item)
         return True
 
     return check(predicate)

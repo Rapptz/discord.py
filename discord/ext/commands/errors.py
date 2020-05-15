@@ -31,6 +31,7 @@ __all__ = (
     'CommandError',
     'MissingRequiredArgument',
     'BadArgument',
+    'NotGuild',
     'PrivateMessageOnly',
     'NoPrivateMessage',
     'CheckFailure',
@@ -174,6 +175,24 @@ class CheckAnyFailure(CheckFailure):
         self.checks = checks
         self.errors = errors
         super().__init__('You do not have permission to run this command.')
+
+class NotGuild(CheckFailure):
+    """Exception raised when the guild the command is invoked in, does not match the one required.
+
+    This inherits from :exc:`CheckFailure`
+
+    .. versionadded:: 1.3
+
+    Attributes
+    -----------
+    required_guild: Union[:class:`str`, :class:`int`]
+        The required guild the command can be ran in.
+        This is the parameter passed to :func:`~.commands.is_guild`.
+    """
+    def __init__(self, required_guild):
+        self.required_guild = required_guild
+        message = 'This command can only be ran in guild {0!r}'.format(required_guild)
+        super().__init__(message)
 
 class PrivateMessageOnly(CheckFailure):
     """Exception raised when an operation does not work outside of private
@@ -325,7 +344,6 @@ class MissingAnyRole(CheckFailure):
 
         message = "You are missing at least one of the required roles: {}".format(fmt)
         super().__init__(message)
-
 
 class BotMissingAnyRole(CheckFailure):
     """Exception raised when the bot's member lacks any of
