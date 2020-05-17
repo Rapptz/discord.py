@@ -187,10 +187,41 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         This is only for the messages received from the client
         WebSocket. The voice WebSocket will not trigger this event.
 
+    .. note::
+
+        Similar to :func:`on_socket_response` but the message will generally
+        be compressed.
+
+
     :param msg: The message passed in from the WebSocket library.
                 Could be :class:`bytes` for a binary message or :class:`str`
                 for a regular message.
     :type msg: Union[:class:`bytes`, :class:`str`]
+
+.. function:: on_socket_response(msg)
+
+    Called whenever a message is received from the WebSocket, after
+    being decompressed but before being parsed.
+    This event is always dispatched when a message is
+    received and the passed data is not processed in any way.
+
+    This is only really useful for grabbing the WebSocket stream and
+    debugging purposes.
+
+    .. note::
+
+        This is only for the messages received from the client
+        WebSocket. The voice WebSocket will not trigger this event.
+
+    .. note::
+
+        Similar to :func:`on_socket_raw_receive` but the message will be decompressed.
+
+    .. versionchanged:: 2.0
+        This event receives a json-encoded :class:`str` of the message instead of a :class:`dict`
+
+    :param msg: The decompressed message passed in from the WebSocket library.
+    :type msg: :class:`str`
 
 .. function:: on_socket_raw_send(payload)
 
