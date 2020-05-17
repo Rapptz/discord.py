@@ -320,15 +320,9 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                c_type = c['type']
-                if c_type in (ChannelType.text.value, ChannelType.news.value):
-                    self._add_channel(TextChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.voice.value:
-                    self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.category.value:
-                    self._add_channel(CategoryChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.store.value:
-                    self._add_channel(StoreChannel(guild=self, data=c, state=self._state))
+                factory, ch_type = _channel_factory(c['type'])
+                if factory:
+                    self._add_channel(factory(guild=self, data=c, state=self._state))
 
     @property
     def channels(self):
