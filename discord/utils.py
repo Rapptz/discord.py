@@ -427,7 +427,7 @@ def resolve_invite(invite):
         The invite code.
     """
     from .invite import Invite  # circular import
-    if isinstance(invite, Invite) or isinstance(invite, Object):
+    if isinstance(invite, (Invite, Object)):
         return invite.id
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
