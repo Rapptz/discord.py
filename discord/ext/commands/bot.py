@@ -890,6 +890,8 @@ class BotBase(GroupMixin):
             try:
                 if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
+                else:
+                    raise errors.CheckFailure('The global check once functions failed.')
             except errors.CommandError as exc:
                 await ctx.command.dispatch_error(ctx, exc)
             else:

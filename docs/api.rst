@@ -1053,6 +1053,12 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`extreme`.
 
+    .. attribute:: very_high
+
+        An alias for :attr:`extreme`.
+
+        .. versionadded:: 1.4
+
 .. class:: NotificationLevel
 
     Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default.

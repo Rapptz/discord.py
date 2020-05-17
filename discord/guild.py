@@ -257,7 +257,7 @@ class Guild(Hashable):
         # according to Stan, this is always available even if the guild is unavailable
         # I don't have this guarantee when someone updates the guild.
         member_count = guild.get('member_count', None)
-        if member_count:
+        if member_count is not None:
             self._member_count = member_count
 
         self.name = guild.get('name')
@@ -537,7 +537,7 @@ class Guild(Hashable):
 
     @property
     def owner(self):
-        """:class:`Member`: The member that owns the guild."""
+        """Optional[:class:`Member`]: The member that owns the guild."""
         return self.get_member(self.owner_id)
 
     @property
@@ -1050,12 +1050,10 @@ class Guild(Hashable):
         fields['banner'] = banner
         fields['splash'] = splash
 
-        try:
-            default_message_notifications = int(fields.pop('default_notifications'))
-        except (TypeError, KeyError):
-            pass
-        else:
-            fields['default_message_notifications'] = default_message_notifications
+        default_message_notifications = fields.get('default_notifications', self.default_notifications)
+        if not isinstance(default_message_notifications, NotificationLevel):
+            raise InvalidArgument('default_notifications field must be of type NotificationLevel')
+        fields['default_message_notifications'] = default_message_notifications.value
 
         try:
             afk_channel = fields.pop('afk_channel')
@@ -1206,7 +1204,7 @@ class Guild(Hashable):
         Forbidden
             You do not have access to the guild.
         HTTPException
-            Getting the guild failed.
+            Fetching the member failed.
 
         Returns
         --------
@@ -1282,7 +1280,7 @@ class Guild(Hashable):
                          reason=e['reason'])
                 for e in data]
 
-    async def prune_members(self, *, days, compute_prune_count=True, reason=None):
+    async def prune_members(self, *, days, compute_prune_count=True, roles=None, reason=None):
         r"""|coro|
 
         Prunes the guild from its inactive members.
@@ -1296,6 +1294,11 @@ class Guild(Hashable):
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
 
+        To prune members that have specific roles see the ``roles`` parameter.
+
+        .. versionchanged:: 1.4
+            The ``roles`` keyword-only parameter was added.
+
         Parameters
         -----------
         days: :class:`int`
@@ -1307,6 +1310,9 @@ class Guild(Hashable):
             which makes it prone to timeouts in very large guilds. In order
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member 
+            has a role that is not specified, they'll be excluded.
 
         Raises
         -------
@@ -1327,7 +1333,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, reason=reason)
+        if roles:
+            roles = [role.id for role in roles]
+
+        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
 
     async def webhooks(self):

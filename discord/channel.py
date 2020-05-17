@@ -791,17 +791,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             Editing the category failed.
         """
 
-        try:
-            position = options.pop('position')
-        except KeyError:
-            pass
-        else:
-            await self._move(position, reason=reason)
-            self.position = position
-
-        if options:
-            data = await self._state.http.edit_channel(self.id, reason=reason, **options)
-            self._update(self.guild, data)
+        await self._edit(options=options, reason=reason)
 
     @property
     def channels(self):
