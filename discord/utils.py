@@ -438,10 +438,10 @@ def resolve_invite(invite):
 
 def resolve_template(code):
     from .template import Template # circular import
-    if isinstance(code, Template) or isinstance(code, Object):
+    if isinstance(code, (Template, Object)):
         return template.id
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.new|app\.com\/templates)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/templates)\/(.+)'
         m = re.match(rx, code)
         if m:
             return m.group(1)

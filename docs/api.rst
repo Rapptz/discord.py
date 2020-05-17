@@ -2484,39 +2484,6 @@ Invite
 .. autoclass:: Invite()
     :members:
 
-TemplateChannel
-~~~~~~~~~~~~~~~~
-
-.. autoclass:: TemplateChannel()
-    :members:
-
-TemplateTextChannel
-~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: TemplateTextChannel()
-    :members:
-    :inherited-members:
-
-TemplateVoiceChannel
-~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: TemplateVoiceChannel()
-    :members:
-    :inherited-members:
-
-TemplateCategoryChannel
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: TemplateCategoryChannel()
-    :members:
-    :inherited-members:
-
-TemplateGuild
-~~~~~~~~~~~~~~
-
-.. autoclass:: TemplateGuild()
-    :members:
-
 Template
 ~~~~~~~~~
 
