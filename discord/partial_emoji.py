@@ -61,7 +61,7 @@ class PartialEmoji(_EmojiTag):
         The custom emoji name, if applicable, or the unicode codepoint
         of the non-custom emoji. This can be ``None`` if the emoji
         got deleted (e.g. removing a reaction with a deleted emoji).
-    animated: :class:`bool`
+    animated: Optional[:class:`bool`]
         Whether the emoji is animated or not.
     id: Optional[:class:`int`]
         The ID of the custom emoji, if applicable.
