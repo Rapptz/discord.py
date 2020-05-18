@@ -1486,6 +1486,8 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_guild` permission to
         do this.
 
+        .. versionadded:: 1.4
+
         Parameters
         -----------
         type: :class:`str`
@@ -1509,6 +1511,8 @@ class Guild(Hashable):
 
         You must have the :attr:`~Permissions.manage_guild` permission to
         do this.
+
+        .. versionadded:: 1.4
 
         Raises
         -------

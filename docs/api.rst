@@ -480,6 +480,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_guild_integrations_update(guild)
 
+    .. versionadded:: 1.4
+
     Called whenever an integration is created, modified, or removed from a guild.
 
     :param guild: The guild that had its integrations updated.

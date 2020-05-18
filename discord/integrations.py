@@ -34,6 +34,8 @@ from .enums import try_enum, ExpireBehaviour
 class IntegrationAccount(namedtuple('IntegrationAccount', 'id name')):
     """Represents an integration account.
 
+    .. versionadded:: 1.4
+
     Attributes
     -----------
     id: :class:`int`
@@ -49,6 +51,8 @@ class IntegrationAccount(namedtuple('IntegrationAccount', 'id name')):
 
 class Integration:
     """Represents a guild integration.
+
+    .. versionadded:: 1.4
 
     Attributes
     -----------
