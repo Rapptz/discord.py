@@ -204,8 +204,10 @@ class Widget:
         channels = {channel.id: channel for channel in self.channels}
         for member in data.get('members', []):
             connected_channel = _get_as_snowflake(member, 'channel_id')
-            if connected_channel:
+            if connected_channel in channels:
                 connected_channel = channels[connected_channel]
+            else:
+                connected_channel = WidgetChannel(id=connected_channel, name=None, position=None)
 
             self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
 
