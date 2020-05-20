@@ -56,9 +56,9 @@ class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
     -----------
     id: :class:`int`
         The channel's ID.
-    name: :class:`str`
+    name: Optional[:class:`str`]
         The channel's name.
-    position: :class:`int`
+    position: Optional[:class:`int`]
         The channel's position
     """
     __slots__ = ()
@@ -232,7 +232,7 @@ class Widget:
 
     @property
     def invite_url(self):
-        """Optiona[:class:`str`]: The invite URL for the guild, if available."""
+        """Optional[:class:`str`]: The invite URL for the guild, if available."""
         return self._invite
 
     async def fetch_invite(self, *, with_counts=True):
