@@ -113,7 +113,7 @@ class WebhookAdapter:
         finally:
             cleanup()
 
-    def execute_webhook(self, *, payload, wait=False, file=None, files=None):
+    def execute_webhook(self, *, payload, wait=False, file=None, files=None, headers=None):
         cleanup = None
         if file is not None:
             multipart = {
@@ -145,7 +145,7 @@ class WebhookAdapter:
         url = '%s?wait=%d' % (self._request_url, wait)
         maybe_coro = None
         try:
-            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
+            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass, headers=headers)
         finally:
             if maybe_coro is not None and cleanup is not None:
                 if not asyncio.iscoroutine(maybe_coro):
@@ -173,8 +173,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
-        headers = {}
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None, headers=None):
+        headers = headers or {}
         data = None
         files = files or []
         if payload:
@@ -259,8 +259,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None, *, files=None):
-        headers = {}
+    def request(self, verb, url, payload=None, multipart=None, *, files=None, headers=None):
+        headers = headers or {}
         data = None
         files = files or []
         if payload:
@@ -791,7 +791,17 @@ class Webhook:
         elif previous_mentions is not None:
             payload['allowed_mentions'] = previous_mentions.to_dict()
 
-        return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
+        # Adding auth to unlock extended emoji powers
+        try:
+            if self._state.is_bot:
+                headers = {'authorization': f'Bot {self._state.http.token}'}
+            else:
+                headers = {'authorization': f'Bearer {self._state.http.token}'}
+        # State is probably partial
+        except AttributeError:
+            headers = {}
+
+        return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload, headers=headers)
 
     def execute(self, *args, **kwargs):
         """An alias for :meth:`~.Webhook.send`."""
