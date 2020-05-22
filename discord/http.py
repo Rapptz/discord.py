@@ -620,7 +620,8 @@ class HTTPClient:
                       'afk_channel_id', 'splash', 'verification_level',
                       'system_channel_id', 'default_message_notifications',
                       'description', 'explicit_content_filter', 'banner',
-                      'system_channel_flags')
+                      'system_channel_flags', 'rules_channel_id',
+                      'public_updates_channel_id')
 
         payload = {
             k: v for k, v in fields.items() if k in valid_keys
