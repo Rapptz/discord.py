@@ -1581,7 +1581,7 @@ def has_any_role(*items):
 
     Parameters
     -----------
-    items: List[Union[:class:`str`, :class:`int`]]
+    items: List[Union[:class:`str`, :class:`int`, :class:`list`, :class:`tuple`]]
         An argument list of names or IDs to check that the member has roles wise.
 
     Example
