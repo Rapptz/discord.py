@@ -1599,8 +1599,13 @@ def has_any_role(*items):
             raise NoPrivateMessage()
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
-        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
-            return True
+        for item in items:
+            if isinstance(item, (list, tuple)):
+                for subitem in item:
+                    if getter(id=subitem) is not None if isinstance(subitem, int) else getter(name=subitem) is not None:
+                        return True
+            if getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None:
+                return True
         raise MissingAnyRole(items)
 
     return check(predicate)
@@ -1654,8 +1659,13 @@ def bot_has_any_role(*items):
 
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
-        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
-            return True
+        for item in items:
+            if isinstance(item, (list, tuple)):
+                for subitem in item:
+                    if getter(id=subitem) is not None if isinstance(subitem, int) else getter(name=subitem) is not None:
+                        return True
+            if getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None:
+                return True
         raise BotMissingAnyRole(items)
     return check(predicate)
 
