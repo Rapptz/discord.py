@@ -222,7 +222,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         type: :class:`ChannelType`
             Change the type of this text channel. Currently, only conversion between
             :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This 
-            is only available to guilds that contain `NEWS` in :attr:`Guild.features`.
+            is only available to guilds that contain ``NEWS`` in :attr:`Guild.features`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`dict`

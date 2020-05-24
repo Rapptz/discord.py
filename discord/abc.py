@@ -281,10 +281,14 @@ class GuildChannel:
                 perms.append(payload)
             options['permission_overwrites'] = perms
 
-        ch_type = options.get('type', self.type)
-        if not isinstance(ch_type, ChannelType):
-            raise InvalidArgument('type field must be of type ChannelType')
-        options['type'] = ch_type.value
+        try:
+            ch_type = options['type']
+        except KeyError:
+            pass
+        else:
+            if not isinstance(ch_type, ChannelType):
+                raise InvalidArgument('type field must be of type ChannelType')
+            options['type'] = ch_type.value
 
         if options:
             data = await self._state.http.edit_channel(self.id, reason=reason, **options)
