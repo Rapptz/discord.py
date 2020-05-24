@@ -104,7 +104,7 @@ class TeamMember(BaseUser):
     name: :class:`str`
         The team member's username.
     id: :class:`int`
-        The team member's unique ID.
+        The team member's unique Discord user ID.
     discriminator: :class:`str`
         The team member's discriminator. This is given when the username has conflicts.
     avatar: Optional[:class:`str`]
