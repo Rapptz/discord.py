@@ -159,6 +159,11 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
+    guild_ready_timeout: :class:`float`
+        The maximum number of seconds to wait for the GUILD_CREATE stream to end before
+        preparing the member cache and firing READY. The default timeout is 2 seconds.
+
+        .. versionadded:: 1.4
     guild_subscriptions: :class:`bool`
         Whether to dispatching of presence or typing events. Defaults to ``True``.
 

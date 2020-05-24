@@ -80,6 +80,10 @@ class ConnectionState:
         self._ready_task = None
         self._fetch_offline = options.get('fetch_offline_members', True)
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
+        self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
+        if self.guild_ready_timeout < 0:
+            raise ValueError('guild_ready_timeout cannot be negative')
+
         self.guild_subscriptions = options.get('guild_subscriptions', True)
         allowed_mentions = options.get('allowed_mentions')
 
@@ -369,10 +373,10 @@ class ConnectionState:
             # only real bots wait for GUILD_CREATE streaming
             if self.is_bot:
                 while True:
-                    # this snippet of code is basically waiting 2 seconds
+                    # this snippet of code is basically waiting N seconds
                     # until the last GUILD_CREATE was sent
                     try:
-                        await asyncio.wait_for(launch.wait(), timeout=2.0)
+                        await asyncio.wait_for(launch.wait(), timeout=self.guild_ready_timeout)
                     except asyncio.TimeoutError:
                         break
                     else:
@@ -1086,10 +1090,10 @@ class AutoShardedConnectionState(ConnectionState):
         await self.shards_launched.wait()
         launch = self._ready_state.launch
         while True:
-            # this snippet of code is basically waiting 2 * shard_ids seconds
+            # this snippet of code is basically waiting N seconds
             # until the last GUILD_CREATE was sent
             try:
-                await asyncio.wait_for(launch.wait(), timeout=2.0 * len(self.shard_ids))
+                await asyncio.wait_for(launch.wait(), timeout=self.guild_ready_timeout)
             except asyncio.TimeoutError:
                 break
             else:
