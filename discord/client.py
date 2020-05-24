@@ -406,7 +406,7 @@ class Client:
         .. warning::
 
             Logging on with a user token is against the Discord
-            `Terms of Service <https://support.discordapp.com/hc/en-us/articles/115002192352>`_
+            `Terms of Service <https://support.discord.com/hc/en-us/articles/115002192352>`_
             and doing so might potentially get your account banned.
             Use this at your own risk.
 

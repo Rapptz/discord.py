@@ -50,7 +50,7 @@ async def json_or_text(response):
     return text
 
 class Route:
-    BASE = 'https://discordapp.com/api/v7'
+    BASE = 'https://discord.com/api/v7'
 
     def __init__(self, method, path, **parameters):
         self.path = path
