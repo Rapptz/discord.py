@@ -96,7 +96,7 @@ class KeepAliveHandler(threading.Thread):
                 try:
                     f.result()
                 except Exception:
-                    pass
+                    log.exception('An error occurred while stopping the gateway. Ignoring.')
                 finally:
                     self.stop()
                     return
@@ -500,7 +500,7 @@ class DiscordWebSocket:
             The websocket connection was terminated for unhandled reasons.
         """
         try:
-            msg = await self.socket.receive()
+            msg = await self.socket.receive(timeout=self._max_heartbeat_timeout)
             if msg.type is aiohttp.WSMsgType.TEXT:
                 await self.received_message(msg.data)
             elif msg.type is aiohttp.WSMsgType.BINARY:
@@ -511,11 +511,15 @@ class DiscordWebSocket:
             elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.CLOSE):
                 log.debug('Received %s', msg)
                 raise WebSocketClosure
-        except WebSocketClosure:
+        except (asyncio.TimeoutError, WebSocketClosure) as e:
             # Ensure the keep alive handler is closed
             if self._keep_alive:
                 self._keep_alive.stop()
                 self._keep_alive = None
+
+            if isinstance(e, asyncio.TimeoutError):
+                log.info('Timed out receiving packet. Attempting a reconnect.')
+                raise ReconnectWebSocket(self.shard_id) from None
 
             if self._can_handle_close():
                 log.info('Websocket closed with %s, attempting a reconnect.', self.socket.close_code)
@@ -819,7 +823,7 @@ class DiscordVoiceWebSocket:
         elif msg.type is aiohttp.WSMsgType.ERROR:
             log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data
-        elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE):
+        elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING):
             log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None)
 
