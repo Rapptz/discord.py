@@ -538,7 +538,9 @@ div.code-block-caption {
 @media screen and (max-width: 870px) {
 
   div.document {
+    margin: 46px 0 0 0;
     width: auto;
+    max-width: none;
   }
 
   div.documentwrapper {
@@ -551,7 +553,7 @@ div.code-block-caption {
 
   div.body {
     min-height: 0;
-    padding: 0 20px 30px 20px;
+    padding: 0 0 30px 10px;
   }
 
   div.footer {
@@ -569,6 +571,10 @@ div.code-block-caption {
 
   div.footer a:hover {
     color: #fff;
+  }
+
+  table.docutils td {
+    word-break: break-all;
   }
 
   div.sphinxsidebar {
