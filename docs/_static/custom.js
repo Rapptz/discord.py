@@ -27,5 +27,13 @@ $(document).ready(function () {
       activeLink = $('.sphinxsidebar a[href="#' + currentSection.attr('id') + '"]');
       activeLink.parent().addClass('active');
     }
+
+    const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
+    tables.forEach(table => {
+      let element = document.getElementById(table.getAttribute('data-move-to-id'));
+      let parent = element.parentNode;
+      // insert ourselves after the element
+      parent.insertBefore(table, element.nextSibling);
+    });
   });
 });

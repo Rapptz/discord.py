@@ -278,6 +278,12 @@ div.attention, div.warning, div.caution, div.seealso {
   border: 1px solid #fbe091;
 }
 
+dl.field-list > dd {
+  margin-top: 3px;
+  margin-bottom: 10px;
+  margin-left: 20px;
+}
+
 /* no disgusting background in the FAQ */
 div.topic {
   background-color: transparent;
@@ -350,6 +356,25 @@ div.helpful > p.admonition-title:after {
 
 .exception-hierarchy-content ul {
   list-style: '»' !important;
+}
+
+/* attribute tables */
+.py-attribute-table {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 2em;
+  padding-top: 16px;
+}
+
+.py-attribute-table-column > span {
+  font-weight: bold;
+}
+
+div.body .py-attribute-table-column > ul {
+  list-style: none;
+  margin: 4px 0px;
+  padding-left: 12px;
 }
 
 pre {
