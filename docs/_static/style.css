@@ -22,8 +22,8 @@ p {
 }
 
 div.document {
-  margin: 10px auto 0 auto;
-  max-width: 1200px; /* page width */
+  margin: 46px auto 0 auto;
+  max-width: 62.5%; /* page width */
 }
 
 div.body {
@@ -60,7 +60,17 @@ div.footer a {
 
 div.related {
   padding: 10px 10px;
-  width: auto;
+  width: 100%;
+  position: fixed;
+  top: 0;
+}
+
+div.related li.right:nth-of-type(1) {
+  padding-right: 13px;
+}
+
+.py-attribute-table {
+  flex-wrap: wrap;
 }
 
 div.sphinxsidebar {
@@ -526,10 +536,14 @@ div.code-block-caption {
 }
 
 @media screen and (max-width: 870px) {
+  div.related {
+    position: relative;
+  }
 
   div.document {
+    margin: 10px 0 0 0;
     width: auto;
-    margin: 0;
+    max-width: none;
   }
 
   div.documentwrapper {
@@ -542,7 +556,7 @@ div.code-block-caption {
 
   div.body {
     min-height: 0;
-    padding: 0 20px 30px 20px;
+    padding: 0 0 30px 10px;
   }
 
   div.footer {
@@ -560,6 +574,10 @@ div.code-block-caption {
 
   div.footer a:hover {
     color: #fff;
+  }
+
+  table.docutils td {
+    word-break: break-all;
   }
 
   div.sphinxsidebar {
