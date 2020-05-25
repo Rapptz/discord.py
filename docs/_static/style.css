@@ -22,7 +22,7 @@ p {
 }
 
 div.document {
-  margin: 10px auto 0 auto;
+  margin: 46px auto 0 auto;
   max-width: 1200px; /* page width */
 }
 
@@ -60,7 +60,17 @@ div.footer a {
 
 div.related {
   padding: 10px 10px;
-  width: auto;
+  width: 100%;
+  position: fixed;
+  top: 0;
+}
+
+div.related li.right:nth-of-type(1) {
+  padding-right: 13px;
+}
+
+.py-attribute-table {
+  flex-wrap: wrap;
 }
 
 div.sphinxsidebar {
@@ -529,7 +539,6 @@ div.code-block-caption {
 
   div.document {
     width: auto;
-    margin: 0;
   }
 
   div.documentwrapper {
