@@ -536,9 +536,12 @@ div.code-block-caption {
 }
 
 @media screen and (max-width: 870px) {
+  div.related {
+    position: relative;
+  }
 
   div.document {
-    margin: 46px 0 0 0;
+    margin: 10px 0 0 0;
     width: auto;
     max-width: none;
   }
