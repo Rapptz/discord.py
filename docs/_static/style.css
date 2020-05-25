@@ -23,7 +23,7 @@ p {
 
 div.document {
   margin: 46px auto 0 auto;
-  max-width: 1200px; /* page width */
+  max-width: 62.5%; /* page width */
 }
 
 div.body {
