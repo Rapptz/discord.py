@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  var sections = $('div.section');
+  var sections = $("div.section");
   var activeLink = null;
   var bottomHeightThreshold = $(document).height() - 30;
 
@@ -7,10 +7,9 @@ $(document).ready(function () {
     var distanceFromTop = $(this).scrollTop();
     var currentSection = null;
 
-    if(distanceFromTop + window.innerHeight > bottomHeightThreshold) {
+    if (distanceFromTop + window.innerHeight > bottomHeightThreshold) {
       currentSection = $(sections[sections.length - 1]);
-    }
-    else {
+    } else {
       sections.each(function () {
         var section = $(this);
         if (section.offset().top - 1 < distanceFromTop) {
@@ -20,19 +19,24 @@ $(document).ready(function () {
     }
 
     if (activeLink) {
-      activeLink.parent().removeClass('active');
+      activeLink.parent().removeClass("active");
     }
 
     if (currentSection) {
-      activeLink = $('.sphinxsidebar a[href="#' + currentSection.attr('id') + '"]');
-      activeLink.parent().addClass('active');
+      activeLink = $(
+        '.sphinxsidebar a[href="#' + currentSection.attr("id") + '"]'
+      );
+      activeLink.parent().addClass("active");
     }
-
   });
 
-  const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
-  tables.forEach(table => {
-    let element = document.getElementById(table.getAttribute('data-move-to-id'));
+  const tables = document.querySelectorAll(
+    ".py-attribute-table[data-move-to-id]"
+  );
+  tables.forEach((table) => {
+    let element = document.getElementById(
+      table.getAttribute("data-move-to-id")
+    );
     let parent = element.parentNode;
     // insert ourselves after the element
     parent.insertBefore(table, element.nextSibling);
