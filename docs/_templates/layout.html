@@ -10,11 +10,28 @@
 
 {%- block relbar2 %}{% endblock %}
 
+{%- block rootrellink %}
+  {# Perhaps override the relbar() macro to place this on the right side of the link list? #}
+  <li class="right"{% if rellinks %} style="margin-right: 10px"{% endif %}>
+    <a href="javascript:;" title="settings" accesskey="S" onclick="settings.show();">settings</a>{{ reldelim2 }}</li>
+  {{ super() }}
+{% endblock %}
+
 {% block header %}
   {{ super() }}
   {% if pagename == 'index' %}
   <div class="indexwrapper">
   {% endif %}
+{% endblock %}
+
+{%- block content %}
+  <div id="settings" class="modal" style="display: none;" onclick="if (event.target == this){ settings.hide(); }">
+    <div class="modal-content">
+      <h1>Settings</h1>
+      <!-- TODO: ADD OPTIONS HERE -->
+    </div>
+  </div>
+  {{ super() }}
 {% endblock %}
 
 

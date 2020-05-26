@@ -1,5 +1,9 @@
+var settings;
+
 $(document).ready(function () {
   var sections = $('div.section');
+  settings = $('div#settings.modal');
+
   var activeLink = null;
   var bottomHeightThreshold = $(document).height() - 30;
 
