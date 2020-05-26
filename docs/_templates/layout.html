@@ -6,6 +6,11 @@
 {%- block extrahead %}
   {{ super() }}
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta property="og:title" content="discord.py {{ version }} - {{ title }}" />
+  <meta property="og:description" content="discord.py is a modern, easy to use, feature-rich, and async ready API wrapper for Discord." />
+  <meta property="og:url" content="https://discordpy.readthedocs.io/" />
+  <meta property="og:image" content="/_static/logo.png" />
+  <meta name="theme-color" content="#3879b0">
 {% endblock %}
 
 {%- block relbar2 %}{% endblock %}
