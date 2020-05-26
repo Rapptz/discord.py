@@ -618,3 +618,21 @@ div.code-block-caption {
     border-left: none;
   }
 }
+
+.relative-copy {
+  position: relative;
+}
+
+.copy {
+  cursor: pointer;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  border: 1px solid #C6C9CB;
+  border-style: solid;
+  border-width: 1px;
+  font-family: monospace;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  border-radius: 0px 3px 0px 0px;
+}
