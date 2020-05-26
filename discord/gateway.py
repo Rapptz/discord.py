@@ -549,12 +549,12 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         
         if user_ids:
             payload['d']['user_ids'] = user_ids
+        else:
+            payload['d']['query'] = ''
         
         if query:
             payload['d']['query'] = query
 
-        if not query and not user_ids:
-            payload['d']['query'] = ''
 
         await self.send_as_json(payload)
 
