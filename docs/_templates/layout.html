@@ -12,7 +12,7 @@
 
 {%- block rootrellink %}
   {# Perhaps override the relbar() macro to place this on the right side of the link list? #}
-  <li class="right"{% if rellinks %} style="margin-right: 10px"{% endif %}>
+  <li class="right"{% if not rellinks %} style="margin-right: 10px"{% endif %}>
     <a href="javascript:;" title="settings" accesskey="S" onclick="settings.show();">settings</a>{{ reldelim2 }}</li>
   {{ super() }}
 {% endblock %}
