@@ -142,7 +142,7 @@ class Client:
     shard_count: Optional[:class:`int`]
         The total number of shards.
     fetch_offline_members: :class:`bool`
-        Indicates if :meth`.on_ready` should be delayed to fetch all offline
+        Indicates if :meth:`.on_ready` should be delayed to fetch all offline
         members from the guilds the client belongs to. If this is ``False``\, then
         no offline members are received and :meth:`request_offline_members`
         must be used to fetch the offline members of the guild.
@@ -168,13 +168,13 @@ class Client:
 
             If this is set to ``False`` then the following features will be disabled:
 
-                - No user related updates (:meth`on_user_update` will not dispatch)
+                - No user related updates (:meth:`on_user_update` will not dispatch)
                 - All member related events will be disabled.
-                    - :meth`on_member_update`
-                    - :meth`on_member_join`
-                    - :meth`on_member_remove`
+                    - :meth:`on_member_update`
+                    - :meth:`on_member_join`
+                    - :meth:`on_member_remove`
 
-                - Typing events will be disabled (:meth`on_typing`).
+                - Typing events will be disabled (:meth:`on_typing`).
                 - If ``fetch_offline_members`` is set to ``False`` then the user cache will not exist.
                   This makes it difficult or impossible to do many things, for example:
 
@@ -1372,7 +1372,7 @@ class Client:
 
     async def on_shard_ready(self, shard_id):
         """|coro|
-        Similar to :meth`on_ready` except used by :class:`~discord.AutoShardedClient`
+        Similar to :meth:`on_ready` except used by :class:`~discord.AutoShardedClient`
         to denote when a particular shard ID has become ready.
 
         Parameters
@@ -1528,7 +1528,7 @@ class Client:
         or the client is participating in high traffic guilds.
 
         If this occurs increase the :attr:`Client.max_messages` attribute
-        or use the :meth`on_raw_bulk_message_delete` event instead.
+        or use the :meth:`on_raw_bulk_message_delete` event instead.
 
         Parameters
         ------------
@@ -1538,7 +1538,7 @@ class Client:
 
     async def on_raw_message_delete(self, payload):
         """|coro|
-        Called when a message is deleted. Unlike :meth`on_message_delete`, this is
+        Called when a message is deleted. Unlike :meth:`on_message_delete`, this is
         called regardless of the message being in the internal message cache or not.
 
         If the message is found in the message cache,
@@ -1552,7 +1552,7 @@ class Client:
 
     async def on_raw_bulk_message_delete(self, payload):
         """|coro|
-        Called when a bulk delete is triggered. Unlike :meth`on_bulk_message_delete`, this is
+        Called when a bulk delete is triggered. Unlike :meth:`on_bulk_message_delete`, this is
         called regardless of the messages being in the internal message cache or not.
 
         If the messages are found in the message cache,
@@ -1572,7 +1572,7 @@ class Client:
         or the client is participating in high traffic guilds.
 
         If this occurs increase the :attr:`Client.max_messages` attribute
-        or use the :meth`on_raw_message_edit` event instead.
+        or use the :meth:`on_raw_message_edit` event instead.
 
         The following non-exhaustive cases trigger this event:
 
@@ -1595,7 +1595,7 @@ class Client:
 
     async def on_raw_message_edit(self, payload):
         """|coro|
-        Called when a message is edited. Unlike :meth`on_message_edit`, this is called
+        Called when a message is edited. Unlike :meth:`on_message_edit`, this is called
         regardless of the state of the internal message cache.
 
         If the message is found in the message cache,
@@ -1617,9 +1617,9 @@ class Client:
 
     async def on_reaction_add(self, reaction, user):
         """|coro|
-        Called when a message has a reaction added to it. Similar to :meth`on_message_edit`,
+        Called when a message has a reaction added to it. Similar to :meth:`on_message_edit`,
         if the message is not found in the internal message cache, then this
-        event will not be called. Consider using :meth`on_raw_reaction_add` instead.
+        event will not be called. Consider using :meth:`on_raw_reaction_add` instead.
 
         .. note::
 
@@ -1635,7 +1635,7 @@ class Client:
 
     async def on_raw_reaction_add(self, payload):
         """|coro|
-        Called when a message has a reaction added. Unlike :meth`on_reaction_add`, this is
+        Called when a message has a reaction added. Unlike :meth:`on_reaction_add`, this is
         called regardless of the state of the internal message cache.
 
         Parameters
@@ -1664,7 +1664,7 @@ class Client:
 
     async def on_raw_reaction_remove(self, payload):
         """|coro|
-        Called when a message has a reaction removed. Unlike :meth`on_reaction_remove`, this is
+        Called when a message has a reaction removed. Unlike :meth:`on_reaction_remove`, this is
         called regardless of the state of the internal message cache.
 
         Parameters
@@ -1675,9 +1675,9 @@ class Client:
 
     async def on_reaction_clear(self, message, reactions):
         """|coro|
-        Called when a message has all its reactions removed from it. Similar to :meth`on_message_edit`,
+        Called when a message has all its reactions removed from it. Similar to :meth:`on_message_edit`,
         if the message is not found in the internal message cache, then this event
-        will not be called. Consider using :meth`on_raw_reaction_clear` instead.
+        will not be called. Consider using :meth:`on_raw_reaction_clear` instead.
 
         Parameters
         ------------
@@ -1689,7 +1689,7 @@ class Client:
 
     async def on_raw_reaction_clear(self, payload):
         """|coro|
-        Called when a message has all its reactions removed. Unlike :meth`on_reaction_clear`,
+        Called when a message has all its reactions removed. Unlike :meth:`on_reaction_clear`,
         this is called regardless of the state of the internal message cache.
 
         Parameters
@@ -1700,9 +1700,9 @@ class Client:
 
     async def on_reaction_clear_emoji(self, reaction):
         """|coro|
-        Called when a message has a specific reaction removed from it. Similar to :meth`on_message_edit`,
+        Called when a message has a specific reaction removed from it. Similar to :meth:`on_message_edit`,
         if the message is not found in the internal message cache, then this event
-        will not be called. Consider using :meth`on_raw_reaction_clear_emoji` instead.
+        will not be called. Consider using :meth:`on_raw_reaction_clear_emoji` instead.
 
         .. versionadded:: 1.3
 
@@ -1715,7 +1715,7 @@ class Client:
     async def on_raw_reaction_clear_emoji(self, payload):
         """|coro|
         Called when a message has a specific reaction removed from it.
-        Unlike :meth`on_reaction_clear_emoji` this is called
+        Unlike :meth:`on_reaction_clear_emoji` this is called
         regardless of the state of the internal message cache.
 
         .. versionadded:: 1.3
