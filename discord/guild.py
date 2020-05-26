@@ -1909,6 +1909,7 @@ class Guild(Hashable):
             such as :meth:`get_member` work for those that matched.
         user_ids: List[:class:`int`]
             List of user IDs to search for. If the user ID is not in the guild then it won't be returned.
+
             .. versionadded:: 1.4
 
 

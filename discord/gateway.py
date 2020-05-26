@@ -535,7 +535,7 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         }
         await self.send_as_json(payload)
 
-    async def request_chunks(self, guild_id, query, limit, *, user_ids=None, nonce=None):
+    async def request_chunks(self, guild_id, query=None, *, limit, user_ids=None, nonce=None):
         payload = {
             'op': self.REQUEST_MEMBERS,
             'd': {
@@ -549,10 +549,8 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
         
         if user_ids:
             payload['d']['user_ids'] = user_ids
-        else:
-            payload['d']['query'] = ''
         
-        if query:
+        if query is not None:
             payload['d']['query'] = query
 
 
