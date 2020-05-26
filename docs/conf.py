@@ -320,5 +320,6 @@ texinfo_documents = [
 
 def setup(app):
   app.add_js_file('custom.js')
+  app.add_js_file('copy.js')
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
