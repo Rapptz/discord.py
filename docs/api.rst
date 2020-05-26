@@ -129,119 +129,119 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     In order to turn a function into a coroutine they must be ``async def``
     functions.
 
-.. autofunction:: Client.on_connect
+.. autofunction:: discord.Client.on_connect
 
-.. autofunction:: Client.on_disconnect
+.. autofunction:: discord.Client.on_disconnect
 
-.. autofunction:: Client.on_ready
+.. autofunction:: discord.Client.on_ready
 
-.. autofunction:: Client.on_shard_ready
+.. autofunction:: discord.Client.on_shard_ready
 
-.. autofunction:: Client.on_resumed
+.. autofunction:: discord.Client.on_resumed
 
-.. autofunction:: Client.on_error
+.. autofunction:: discord.Client.on_error
 
-.. autofunction:: Client.on_socket_raw_receive
+.. autofunction:: discord.Client.on_socket_raw_receive
 
-.. autofunction:: Client.on_socket_raw_send
+.. autofunction:: discord.Client.on_socket_raw_send
 
-.. autofunction:: Client.on_typing
+.. autofunction:: discord.Client.on_typing
 
-.. autofunction:: Client.on_message
+.. autofunction:: discord.Client.on_message
 
-.. autofunction:: Client.on_message_delete
+.. autofunction:: discord.Client.on_message_delete
 
-.. autofunction:: Client.on_bulk_message_delete
+.. autofunction:: discord.Client.on_bulk_message_delete
 
-.. autofunction:: Client.on_raw_message_delete
+.. autofunction:: discord.Client.on_raw_message_delete
 
-.. autofunction:: Client.on_raw_bulk_message_delete
+.. autofunction:: discord.Client.on_raw_bulk_message_delete
 
-.. autofunction:: Client.on_message_edit
+.. autofunction:: discord.Client.on_message_edit
 
-.. autofunction:: Client.on_raw_message_edit
+.. autofunction:: discord.Client.on_raw_message_edit
 
-.. autofunction:: Client.on_reaction_add
+.. autofunction:: discord.Client.on_reaction_add
 
-.. autofunction:: Client.on_raw_reaction_add
+.. autofunction:: discord.Client.on_raw_reaction_add
 
-.. autofunction:: Client.on_reaction_remove
+.. autofunction:: discord.Client.on_reaction_remove
 
-.. autofunction:: Client.on_raw_reaction_remove
+.. autofunction:: discord.Client.on_raw_reaction_remove
 
-.. autofunction:: Client.on_reaction_clear
+.. autofunction:: discord.Client.on_reaction_clear
 
-.. autofunction:: Client.on_raw_reaction_clear
+.. autofunction:: discord.Client.on_raw_reaction_clear
 
-.. autofunction:: Client.on_reaction_clear_emoji
+.. autofunction:: discord.Client.on_reaction_clear_emoji
 
-.. autofunction:: Client.on_raw_reaction_clear_emoji
+.. autofunction:: discord.Client.on_raw_reaction_clear_emoji
 
-.. autofunction:: Client.on_private_channel_delete
+.. autofunction:: discord.Client.on_private_channel_delete
 
-.. autofunction:: Client.on_private_channel_create
+.. autofunction:: discord.Client.on_private_channel_create
 
-.. autofunction:: Client.on_private_channel_update
+.. autofunction:: discord.Client.on_private_channel_update
 
-.. autofunction:: Client.on_private_channel_pins_update
+.. autofunction:: discord.Client.on_private_channel_pins_update
 
-.. autofunction:: Client.on_guild_channel_delete
+.. autofunction:: discord.Client.on_guild_channel_delete
 
-.. autofunction:: Client.on_guild_channel_create
+.. autofunction:: discord.Client.on_guild_channel_create
 
-.. autofunction:: Client.on_guild_channel_update
+.. autofunction:: discord.Client.on_guild_channel_update
 
-.. autofunction:: Client.on_guild_channel_pins_update
+.. autofunction:: discord.Client.on_guild_channel_pins_update
 
-.. autofunction:: Client.on_guild_integrations_update
+.. autofunction:: discord.Client.on_guild_integrations_update
 
-.. autofunction:: Client.on_webhooks_update
+.. autofunction:: discord.Client.on_webhooks_update
 
-.. autofunction:: Client.on_member_join
+.. autofunction:: discord.Client.on_member_join
 
-.. autofunction:: Client.on_member_remove
+.. autofunction:: discord.Client.on_member_remove
 
-.. autofunction:: Client.on_member_update
+.. autofunction:: discord.Client.on_member_update
 
-.. autofunction:: Client.on_user_update
+.. autofunction:: discord.Client.on_user_update
 
-.. autofunction:: Client.on_guild_join
+.. autofunction:: discord.Client.on_guild_join
 
-.. autofunction:: Client.on_guild_remove
+.. autofunction:: discord.Client.on_guild_remove
 
-.. autofunction:: Client.on_guild_update
+.. autofunction:: discord.Client.on_guild_update
 
-.. autofunction:: Client.on_guild_role_create
+.. autofunction:: discord.Client.on_guild_role_create
 
-.. autofunction:: Client.on_guild_role_delete
+.. autofunction:: discord.Client.on_guild_role_delete
 
-.. autofunction:: Client.on_guild_role_update
+.. autofunction:: discord.Client.on_guild_role_update
 
-.. autofunction:: Client.on_guild_emojis_update
+.. autofunction:: discord.Client.on_guild_emojis_update
 
-.. autofunction:: Client.on_guild_available
+.. autofunction:: discord.Client.on_guild_available
 
-.. autofunction:: Client.on_guild_unavailable
+.. autofunction:: discord.Client.on_guild_unavailable
 
-.. autofunction:: Client.on_voice_state_update
+.. autofunction:: discord.Client.on_voice_state_update
 
-.. autofunction:: Client.on_member_ban
+.. autofunction:: discord.Client.on_member_ban
 
-.. autofunction:: Client.on_member_unban
+.. autofunction:: discord.Client.on_member_unban
 
-.. autofunction:: Client.on_invite_create
+.. autofunction:: discord.Client.on_invite_create
 
-.. autofunction:: Client.on_invite_delete
+.. autofunction:: discord.Client.on_invite_delete
 
-.. autofunction:: Client.on_group_join
+.. autofunction:: discord.Client.on_group_join
 
-.. autofunction:: Client.on_group_remove
+.. autofunction:: discord.Client.on_group_remove
 
-.. autofunction:: Client.on_relationship_add
+.. autofunction:: discord.Client.on_relationship_add
 
-.. autofunction:: Client.on_relationship_remove
+.. autofunction:: discord.Client.on_relationship_remove
 
-.. autofunction:: Client.on_relationship_update
+.. autofunction:: discord.Client.on_relationship_update
 
 
 .. _discord-api-utils:
