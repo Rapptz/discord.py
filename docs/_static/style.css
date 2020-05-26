@@ -78,6 +78,21 @@ div.modal-content {
   cursor: initial;
 }
 
+div.modal-content > span.close {
+  color: #888;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+div.modal-content > span.close:hover,
+div.modal-content > span.close:focus {
+  color: #444;
+}
+
 div.related {
   padding: 10px 10px;
   width: 100%;
