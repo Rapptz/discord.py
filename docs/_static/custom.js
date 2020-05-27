@@ -64,4 +64,4 @@ document.addEventListener('keydown', (event) => {
   if (event.keyCode == 27 && activeModal) {
     closeModal(activeModal);
   }
-})
+});
