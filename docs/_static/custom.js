@@ -21,19 +21,24 @@ function openModal(modal) {
 
 function updateSetting(element) {
   localStorage.setItem(element.name, element.checked);
-}
-
-function setFont(useSans) {
-  if (useSans) {
-    document.body.classList.add('sans');
-  } else {
-    document.body.classList.remove('sans');
+  if (element.name in settings) {
+    settings[element.name](element.checked);
   }
 }
 
-const settings = [['useSansFont', setFont]];
+function getBodyClassToggle(className) {
+  function toggleBodyClass(add) {
+    document.body.classList.toggle(className, add);
+  }
+  return toggleBodyClass;
+}
+
+const settings = {
+  useSansFont: getBodyClassToggle('sans')
+};
 
 document.addEventListener('DOMContentLoaded', () => {
+
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('div.section');
   settingsModal = document.querySelector('div#settings.modal')
@@ -46,15 +51,20 @@ document.addEventListener('DOMContentLoaded', () => {
     parent.insertBefore(table, element.nextSibling);
   });
 
-  settings.forEach(([settingName, settingFunction]) => {
-    let settingValue = JSON.parse(localStorage.getItem(settingName));
-    settingFunction(settingValue);
-    let element = document.querySelector(`input[name=${settingName}]`);
-    if (element) {
-      element.checked = settingValue === true;
+  Object.entries(settings).forEach(([name, setter]) => {
+    let value = JSON.parse(localStorage.getItem(name));
+
+    try {
+      setter(value);
+      let element = document.querySelector(`input[name=${name}]`);
+      if (element) {
+        element.checked = value === true;
+      }
+    } catch (error) {
+      console.error(`Failed to apply setting "${name}" With value:`, value);
+      console.error(error);
     }
   });
-
 });
 
 window.addEventListener('scroll', () => {

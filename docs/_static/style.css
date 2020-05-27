@@ -100,7 +100,6 @@ div.modal-content > span.close:focus {
 label.toggle {
   position: relative;
   float: right;
-  display: inline-block;
   width: 42px;
   height: 24px;
 }
