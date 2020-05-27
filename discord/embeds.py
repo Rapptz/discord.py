@@ -130,7 +130,7 @@ class Embed:
 
         You can find out about this format in the `official Discord documentation`__.
 
-        .. _DiscordDocs: https://discordapp.com/developers/docs/resources/channel#embed-object
+        .. _DiscordDocs: https://discord.com/developers/docs/resources/channel#embed-object
 
         __ DiscordDocs_
 
@@ -276,15 +276,21 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` removes the image.
+
         Parameters
         -----------
         url: :class:`str`
             The source URL for the image. Only HTTP(S) is supported.
         """
 
-        self._image = {
-            'url': str(url)
-        }
+        if url is EmptyEmbed:
+            del self._image
+        else:
+            self._image = {
+                'url': str(url)
+            }
 
         return self
 
@@ -309,15 +315,21 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.4
+            Passing :attr:`Empty` removes the thumbnail.
+
         Parameters
         -----------
         url: :class:`str`
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
-        self._thumbnail = {
-            'url': str(url)
-        }
+        if url is EmptyEmbed:
+            del self._thumbnail
+        else:
+            self._thumbnail = {
+                'url': str(url)
+            }
 
         return self
 
@@ -380,6 +392,21 @@ class Embed:
 
         if icon_url is not EmptyEmbed:
             self._author['icon_url'] = str(icon_url)
+
+        return self
+
+    def remove_author(self):
+        """Clears embed's author information.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        .. versionadded:: 1.4
+        """
+        try:
+            del self._author
+        except AttributeError:
+            pass
 
         return self
 

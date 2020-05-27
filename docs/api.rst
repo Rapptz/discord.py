@@ -328,7 +328,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     it can be accessed via :attr:`RawMessageUpdateEvent.cached_message`
 
     Due to the inherently raw nature of this event, the data parameter coincides with
-    the raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_.
+    the raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_.
 
     Since the data payload can be partial, care must be taken when accessing stuff in the dictionary.
     One example of a common case of partial data is when the ``'content'`` key is inaccessible. This
@@ -1052,6 +1052,12 @@ of :class:`enum.Enum`.
     .. attribute:: double_table_flip
 
         An alias for :attr:`extreme`.
+
+    .. attribute:: very_high
+
+        An alias for :attr:`extreme`.
+
+        .. versionadded:: 1.4
 
 .. class:: NotificationLevel
 

@@ -144,7 +144,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     redirect_uri: :class:`str`
         An optional valid redirect URI.
     """
-    url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
+    url = 'https://discord.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
     if guild is not None:
@@ -427,7 +427,7 @@ def resolve_invite(invite):
         The invite code.
     """
     from .invite import Invite  # circular import
-    if isinstance(invite, Invite) or isinstance(invite, Object):
+    if isinstance(invite, (Invite, Object)):
         return invite.id
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'

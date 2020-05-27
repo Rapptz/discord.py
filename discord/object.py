@@ -62,7 +62,12 @@ class Object(Hashable):
     """
 
     def __init__(self, id):
-        self.id = id
+        try:
+            id = int(id)
+        except ValueError:
+            raise TypeError('id parameter must be convertable to int not {0.__class__!r}'.format(id)) from None
+        else:
+            self.id = id
 
     def __repr__(self):
         return '<Object id=%r>' % self.id

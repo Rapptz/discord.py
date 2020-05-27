@@ -223,13 +223,13 @@ class Client:
             'ready': self._handle_ready
         }
 
-        self._connection = ConnectionState(dispatch=self.dispatch, chunker=self._chunker, handlers=self._handlers,
+        self._connection = ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
                                            syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
         self._closed = False
         self._ready = asyncio.Event()
-        self._connection._get_websocket = lambda g: self.ws
+        self._connection._get_websocket = self._get_websocket
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -237,25 +237,11 @@ class Client:
 
     # internals
 
+    def _get_websocket(self, guild_id=None, *, shard_id=None):
+        return self.ws
+
     async def _syncer(self, guilds):
         await self.ws.request_sync(guilds)
-
-    async def _chunker(self, guild):
-        try:
-            guild_id = guild.id
-        except AttributeError:
-            guild_id = [s.id for s in guild]
-
-        payload = {
-            'op': 8,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0
-            }
-        }
-
-        await self.ws.send_as_json(payload)
 
     def _handle_ready(self):
         self._ready.set()
@@ -420,7 +406,7 @@ class Client:
         .. warning::
 
             Logging on with a user token is against the Discord
-            `Terms of Service <https://support.discordapp.com/hc/en-us/articles/115002192352>`_
+            `Terms of Service <https://support.discord.com/hc/en-us/articles/115002192352>`_
             and doing so might potentially get your account banned.
             Use this at your own risk.
 

@@ -221,6 +221,7 @@ class VerificationLevel(Enum):
     table_flip        = 3
     extreme           = 4
     double_table_flip = 4
+    very_high         = 4
 
     def __str__(self):
         return self.name
