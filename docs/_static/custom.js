@@ -1,13 +1,13 @@
 'use-strict';
 
 let activeLink = null;
-let bottomHeightThreshold, sections, tables;
+let bottomHeightThreshold, sections;
 
 document.addEventListener('DOMContentLoaded', () => {
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('div.section');
 
-  tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
+  const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
   tables.forEach(table => {
     let element = document.getElementById(table.getAttribute('data-move-to-id'));
     let parent = element.parentNode;
