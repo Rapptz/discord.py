@@ -1,8 +1,10 @@
+var activeModal = null;
 var settings;
+
 
 $(document).ready(function () {
   var sections = $('div.section');
-  settings = $('div#settings.modal');
+  settings = document.querySelector('div#settings.modal');
 
   var activeLink = null;
   var bottomHeightThreshold = $(document).height() - 30;
@@ -11,7 +13,7 @@ $(document).ready(function () {
     var distanceFromTop = $(this).scrollTop();
     var currentSection = null;
 
-    if(distanceFromTop + window.innerHeight > bottomHeightThreshold) {
+    if (distanceFromTop + window.innerHeight > bottomHeightThreshold) {
       currentSection = $(sections[sections.length - 1]);
     }
     else {
@@ -42,3 +44,23 @@ $(document).ready(function () {
     parent.insertBefore(table, element.nextSibling);
   });
 });
+
+function closeModal(modal) {
+  activeModal = null;
+  modal.style.display = 'none';
+}
+
+function openModal(modal) {
+  if (activeModal) {
+    closeModal(activeModal);
+  }
+
+  activeModal = modal;
+  modal.style.removeProperty('display');
+}
+
+document.addEventListener('keydown', (event) => {
+  if (event.keyCode == 27 && activeModal) {
+    closeModal(activeModal);
+  }
+})
