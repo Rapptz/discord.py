@@ -263,69 +263,68 @@ class PublicUserFlags(BaseFlags):
     @flag_value
     def staff(self):
         """:class:`bool`: Returns ``True`` if the user is a Discord Employee."""
-        return UserFlags.staff
+        return UserFlags.staff.value
 
     @flag_value
     def partner(self):
         """:class:`bool`: Returns ``True`` if the user is a Discord Partner."""
-        return UserFlags.partner
+        return UserFlags.partner.value
 
     @flag_value
     def hypesquad(self):
         """:class:`bool`: Returns ``True`` if the user is a HypeSquad Events member."""
-        return UserFlags.hypesquad
+        return UserFlags.hypesquad.value
 
     @flag_value
     def bug_hunter(self):
         """:class:`bool`: Returns ``True`` if the user is a Bug Hunter"""
-        return UserFlags.bug_hunter
+        return UserFlags.bug_hunter.value
 
     @flag_value
     def hypesquad_bravery(self):
         """:class:`bool`: Returns ``True`` if the user is a HypeSquad Bravery member."""
-        return UserFlags.hypesquad_bravery
+        return UserFlags.hypesquad_bravery.value
 
     @flag_value
     def hypesquad_brilliance(self):
         """:class:`bool`: Returns ``True`` if the user is a HypeSquad Brilliance member."""
-        return UserFlags.hypesquad_brilliance
+        return UserFlags.hypesquad_brilliance.value
 
     @flag_value
     def hypesquad_balance(self):
         """:class:`bool`: Returns ``True`` if the user is a HypeSquad Balance member."""
-        return UserFlags.hypesquad_balance
+        return UserFlags.hypesquad_balance.value
 
     @flag_value
     def early_supporter(self):
         """:class:`bool`: Returns ``True`` if the user is an Early Supporter."""
-        return UserFlags.early_supporter
+        return UserFlags.early_supporter.value
 
     @flag_value
     def team_user(self):
         """:class:`bool`: Returns ``True`` if the user is a Team User."""
-        return UserFlags.team_user
+        return UserFlags.team_user.value
 
     @flag_value
     def system(self):
         """:class:`bool`: Returns ``True`` if the user is a system user (i.e. represents Discord officially)."""
-        return UserFlags.system
+        return UserFlags.system.value
 
     @flag_value
     def bug_hunter_level_2(self):
         """:class:`bool`: Returns ``True`` if the user is a Bug Hunter Level 2"""
-        return UserFlags.bug_hunter_level_2
+        return UserFlags.bug_hunter_level_2.value
 
     @flag_value
     def verified_bot(self):
         """:class:`bool`: Returns ``True`` if the user is a Verified Bot."""
-        return UserFlags.verified_bot
+        return UserFlags.verified_bot.value
 
     @flag_value
     def verified_bot_developer(self):
         """:class:`bool`: Returns ``True`` if the user is a Verified Bot Developer."""
-        return UserFlags.verified_bot_developer
+        return UserFlags.verified_bot_developer.value
 
-    @flag_value
     def all(self):
         """List[:class:`UserFlags`]: Returns all public flags the user has."""
-        return [public_flag for public_flag in UserFlags if self.has_flag(public_flag)]
+        return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]
