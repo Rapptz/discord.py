@@ -99,7 +99,7 @@ Bot Example
     bot = commands.Bot(command_prefix='>')
 
     @bot.command()
-    async def ping(ctx):
+    async def ping(ctx: commands.Context):
         await ctx.send('pong')
 
     bot.run('token')
