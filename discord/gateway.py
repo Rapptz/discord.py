@@ -546,10 +546,10 @@ class DiscordWebSocket(websockets.client.WebSocketClientProtocol):
 
         if nonce:
             payload['d']['nonce'] = nonce
-        
+
         if user_ids:
             payload['d']['user_ids'] = user_ids
-        
+
         if query is not None:
             payload['d']['query'] = query
 
