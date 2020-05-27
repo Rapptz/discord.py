@@ -24,7 +24,7 @@ function updateSetting(element) {
 }
 
 function setFont(useSans) {
-  if (useSans === true) {
+  if (useSans) {
     document.body.classList.add('sans');
   } else {
     document.body.classList.remove('sans');
