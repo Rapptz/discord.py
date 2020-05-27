@@ -13,7 +13,7 @@
 {%- block rootrellink %}
   {# Perhaps override the relbar() macro to place this on the right side of the link list? #}
   <li class="right"{% if not rellinks %} style="margin-right: 10px"{% endif %}>
-    <a href="javascript:;" title="settings" accesskey="S" onclick="openModal(settings);">settings</a>{{ reldelim2 }}</li>
+    <a title="settings" accesskey="S" onclick="openModal(settingsModal);">settings</a>{{ reldelim2 }}</li>
   {{ super() }}
 {% endblock %}
 
@@ -25,11 +25,20 @@
 {% endblock %}
 
 {%- block content %}
-  <div id="settings" class="modal" style="display: none;" onclick="if (event.target == this){ closeModal(settings); }">
+  <div id="settings" class="modal" style="display: none;" onclick="if (event.target == this){ closeModal(settingsModal); }">
     <div class="modal-content">
-      <span class="close" onclick="closeModal(settings);" title="Close">&times;</span>
+      <span class="close" onclick="closeModal(settingsModal);" title="Close">&times;</span>
       <h1>Settings</h1>
-      <!-- TODO: ADD OPTIONS HERE -->
+
+      <div class='setting'>
+        <h3>Use a sans-serif font:
+          <label class="toggle" title="Use a sans serif font? Your system font will be used, falling back to `sans-serif`.">
+            <input type="checkbox" name="useSansFont" onclick="updateSetting(this);">
+            <span class="toggle-slider"></span>
+          </label>
+        </h3>
+      </div>
+
     </div>
   </div>
   {{ super() }}
