@@ -1,11 +1,16 @@
-const COPY = "Copy";
-const COPIED = "Copied!";
+const COPY = "fa-copy";
+const COPIED = "fa-clipboard-check";
 
 const copy = async (obj) => {
-  await navigator.clipboard.writeText(obj.children[1].innerText);
-
-  obj.children[0].textContent = COPIED;
-  setTimeout(() => (obj.children[0].textContent = COPY), 2500);
+  // <div><span class="copy">  <i class="fas ...">the icon element</i>  </span><pre> code </pre></div>
+  await navigator.clipboard.writeText(obj.children[1].innerText).then(
+    () => {
+      let icon = obj.children[0].children[0];
+      icon.className = icon.className.replace(COPY, COPIED);
+      setTimeout(() => (icon.className = icon.className.replace(COPIED, COPY)), 2500);
+    },
+    (r) => alert('Could not copy codeblock:\n' + r.toString())
+  );
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -14,9 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
   for (let codeblock of allCodeblocks) {
       codeblock.parentNode.className += " relative-copy";
       let copyEl = document.createElement("span");
-      copyEl.onclick = () => copy(codeblock);
+      copyEl.addEventListener('click', () => copy(codeblock));
       copyEl.className = "copy";
-      copyEl.textContent = COPY;
+
+      let copyIcon = document.createElement("i");
+      copyIcon.className = "fas " + COPY;
+      copyEl.append(copyIcon);
+
       codeblock.prepend(copyEl);
   }
 });

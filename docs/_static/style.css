@@ -626,13 +626,21 @@ div.code-block-caption {
 .copy {
   cursor: pointer;
   position: absolute;
+  width: 16px;
+  height: 16px;
   top: 0px;
   right: 0px;
   border: 1px solid #C6C9CB;
-  border-style: solid;
-  border-width: 1px;
+  line-height: 0.8em;
+  font-size: 0.9em;
   font-family: monospace;
   padding-left: 0.2em;
   padding-right: 0.2em;
   border-radius: 0px 3px 0px 0px;
+  text-align: center;
+}
+
+.copy i {
+  display: inline;
+  vertical-align: middle;
 }
