@@ -1,11 +1,28 @@
 'use-strict';
 
+let activeModal = null;
 let activeLink = null;
 let bottomHeightThreshold, sections;
+let settings;
+
+function closeModal(modal) {
+  activeModal = null;
+  modal.style.display = 'none';
+}
+
+function openModal(modal) {
+  if (activeModal) {
+    closeModal(activeModal);
+  }
+
+  activeModal = modal;
+  modal.style.removeProperty('display');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('div.section');
+  settings = document.querySelector('div#settings.modal')
 
   const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
   tables.forEach(table => {
@@ -25,7 +42,7 @@ window.addEventListener('scroll', () => {
   else {
     sections.forEach(section => {
       let rect = section.getBoundingClientRect();
-      if (rect.top + document.body.scrollTop - 1 < window.scrollY) {
+      if (rect.top + document.body.offsetTop < 1) {
         currentSection = section;
       }
     });
@@ -37,7 +54,14 @@ window.addEventListener('scroll', () => {
 
   if (currentSection) {
     activeLink = document.querySelector(`.sphinxsidebar a[href="#${currentSection.id}"]`);
-    activeLink.parentElement.classList.add('active');
+    if (activeLink) {
+      activeLink.parentElement.classList.add('active');
+    }
   }
+});
 
+document.addEventListener('keydown', (event) => {
+  if (event.keyCode == 27 && activeModal) {
+    closeModal(activeModal);
+  }
 });
