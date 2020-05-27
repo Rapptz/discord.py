@@ -1,8 +1,8 @@
 const COPY = "Copy";
 const COPIED = "Copied!";
 
-var copy = (obj) => {
-  navigator.clipboard.writeText(obj.children[1].innerText);
+const copy = async (obj) => {
+  await navigator.clipboard.writeText(obj.children[1].innerText);
 
   obj.children[0].textContent = COPIED;
   setTimeout(() => (obj.children[0].textContent = COPY), 2500);
