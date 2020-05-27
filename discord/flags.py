@@ -24,10 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from .enums import UserFlags
+
 __all__ = (
     'SystemChannelFlags',
     'MessageFlags',
+    'PublicUserFlags'
 )
+
 
 class flag_value:
     def __init__(self, func):
@@ -39,6 +43,7 @@ class flag_value:
 
     def __set__(self, instance, value):
         instance._set_flag(self.flag, value)
+
 
 def fill_with_flags(*, inverted=False):
     def decorator(cls):
@@ -55,7 +60,9 @@ def fill_with_flags(*, inverted=False):
             cls.DEFAULT_VALUE = 0
 
         return cls
+
     return decorator
+
 
 # n.b. flags must inherit from this and use the decorator above
 class BaseFlags:
@@ -101,6 +108,7 @@ class BaseFlags:
             self.value &= ~o
         else:
             raise TypeError('Value to set for %s must be a bool.' % self.__class__.__name__)
+
 
 @fill_with_flags(inverted=True)
 class SystemChannelFlags(BaseFlags):
@@ -225,3 +233,99 @@ class MessageFlags(BaseFlags):
         An urgent message is one sent by Discord Trust and Safety.
         """
         return 16
+
+
+@fill_with_flags()
+class PublicUserFlags(BaseFlags):
+    r"""Wraps up the Discord User Public flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two PublicUserFlags are equal.
+        .. describe:: x != y
+
+            Checks if two PublicUserFlags are not equal.
+
+    .. versionadded:: 1.4
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def staff(self):
+        """:class:`bool`: Returns ``True`` if the user is a Discord Employee."""
+        return UserFlags.staff
+
+    @flag_value
+    def partner(self):
+        """:class:`bool`: Returns ``True`` if the user is a Discord Partner."""
+        return UserFlags.partner
+
+    @flag_value
+    def hypesquad(self):
+        """:class:`bool`: Returns ``True`` if the user is a HypeSquad Events member."""
+        return UserFlags.hypesquad
+
+    @flag_value
+    def bug_hunter(self):
+        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter"""
+        return UserFlags.bug_hunter
+
+    @flag_value
+    def hypesquad_bravery(self):
+        """:class:`bool`: Returns ``True`` if the user is a HypeSquad Bravery member."""
+        return UserFlags.hypesquad_bravery
+
+    @flag_value
+    def hypesquad_brilliance(self):
+        """:class:`bool`: Returns ``True`` if the user is a HypeSquad Brilliance member."""
+        return UserFlags.hypesquad_brilliance
+
+    @flag_value
+    def hypesquad_balance(self):
+        """:class:`bool`: Returns ``True`` if the user is a HypeSquad Balance member."""
+        return UserFlags.hypesquad_balance
+
+    @flag_value
+    def early_supporter(self):
+        """:class:`bool`: Returns ``True`` if the user is an Early Supporter."""
+        return UserFlags.early_supporter
+
+    @flag_value
+    def team_user(self):
+        """:class:`bool`: Returns ``True`` if the user is a Team User."""
+        return UserFlags.team_user
+
+    @flag_value
+    def system(self):
+        """:class:`bool`: Returns ``True`` if the user is a system user (i.e. represents Discord officially)."""
+        return UserFlags.system
+
+    @flag_value
+    def bug_hunter_level_2(self):
+        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter Level 2"""
+        return UserFlags.bug_hunter_level_2
+
+    @flag_value
+    def verified_bot(self):
+        """:class:`bool`: Returns ``True`` if the user is a Verified Bot."""
+        return UserFlags.verified_bot
+
+    @flag_value
+    def verified_bot_developer(self):
+        """:class:`bool`: Returns ``True`` if the user is a Verified Bot Developer."""
+        return UserFlags.verified_bot_developer
+
+    @flag_value
+    def all(self):
+        """List[:class:`UserFlags`]: Returns all public flags the user has."""
+        return [public_flag for public_flag in UserFlags if self.has_flag(public_flag)]
