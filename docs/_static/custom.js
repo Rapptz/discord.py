@@ -1,49 +1,9 @@
-var activeModal = null;
-var settings;
+'use-strict';
 
-
-$(document).ready(function () {
-  var sections = $('div.section');
-  settings = document.querySelector('div#settings.modal');
-
-  var activeLink = null;
-  var bottomHeightThreshold = $(document).height() - 30;
-
-  $(window).scroll(function (event) {
-    var distanceFromTop = $(this).scrollTop();
-    var currentSection = null;
-
-    if (distanceFromTop + window.innerHeight > bottomHeightThreshold) {
-      currentSection = $(sections[sections.length - 1]);
-    }
-    else {
-      sections.each(function () {
-        var section = $(this);
-        if (section.offset().top - 1 < distanceFromTop) {
-          currentSection = section;
-        }
-      });
-    }
-
-    if (activeLink) {
-      activeLink.parent().removeClass('active');
-    }
-
-    if (currentSection) {
-      activeLink = $('.sphinxsidebar a[href="#' + currentSection.attr('id') + '"]');
-      activeLink.parent().addClass('active');
-    }
-
-  });
-
-  const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
-  tables.forEach(table => {
-    let element = document.getElementById(table.getAttribute('data-move-to-id'));
-    let parent = element.parentNode;
-    // insert ourselves after the element
-    parent.insertBefore(table, element.nextSibling);
-  });
-});
+let activeModal = null;
+let activeLink = null;
+let bottomHeightThreshold, sections;
+let settings;
 
 function closeModal(modal) {
   activeModal = null;
@@ -58,6 +18,47 @@ function openModal(modal) {
   activeModal = modal;
   modal.style.removeProperty('display');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  bottomHeightThreshold = document.documentElement.scrollHeight - 30;
+  sections = document.querySelectorAll('div.section');
+  settings = document.querySelector('div#settings.modal')
+
+  const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
+  tables.forEach(table => {
+    let element = document.getElementById(table.getAttribute('data-move-to-id'));
+    let parent = element.parentNode;
+    // insert ourselves after the element
+    parent.insertBefore(table, element.nextSibling);
+  });
+});
+
+window.addEventListener('scroll', () => {
+  let currentSection = null;
+
+  if (window.scrollY + window.innerHeight > bottomHeightThreshold) {
+    currentSection = sections[sections.length - 1];
+  }
+  else {
+    sections.forEach(section => {
+      let rect = section.getBoundingClientRect();
+      if (rect.top + document.body.offsetTop < 1) {
+        currentSection = section;
+      }
+    });
+  }
+
+  if (activeLink) {
+    activeLink.parentElement.classList.remove('active');
+  }
+
+  if (currentSection) {
+    activeLink = document.querySelector(`.sphinxsidebar a[href="#${currentSection.id}"]`);
+    if (activeLink) {
+      activeLink.parentElement.classList.add('active');
+    }
+  }
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.keyCode == 27 && activeModal) {
