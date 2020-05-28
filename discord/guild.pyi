@@ -46,6 +46,7 @@ class Guild(Hashable):
     unavailable: bool
     max_presences: Optional[int]
     max_members: Optional[int]
+    max_video_channel_users: Optional[int]
     banner: Optional[str]
     description: Optional[str]
     mfa_level: int
@@ -81,6 +82,8 @@ class Guild(Hashable):
     def system_channel_flags(self) -> SystemChannelFlags: ...
     @property
     def rules_channel(self) -> Optional[TextChannel]: ...
+    @property
+    def public_updates_channel(self) -> Optional[TextChannel]: ...
     @property
     def emoji_limit(self) -> int: ...
     @property
@@ -147,7 +150,9 @@ class Guild(Hashable):
                    default_notifications: NotificationLevel = ...,
                    explicit_content_filter: ContentFilter = ...,
                    vanity_code: str = ..., system_channel: Optional[TextChannel] = ...,
-                   system_channel_flags: SystemChannelFlags = ...) -> None: ...
+                   system_channel_flags: SystemChannelFlags = ...,
+                   rules_channel: Optional[TextChannel] = ...,
+                   public_updates_channel: Optional[TextChannel] = ...) -> None: ...
     async def fetch_channels(self) -> List[Union[TextChannel, VoiceChannel, StoreChannel, CategoryChannel]]: ...
     async def fetch_members(self, *, limit: Optional[int] = ...,
                             after: Optional[Union[Snowflake, datetime.datetime]] = ...) -> MemberIterator: ...
