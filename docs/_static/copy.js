@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
       let copyEl = document.createElement("span");
       copyEl.addEventListener('click', () => copy(codeblock));
       copyEl.className = "copy";
+      copyEl.setAttribute("aria-label", "Copy Code");
+      copyEl.setAttribute("title", "Copy Code");
 
       let copyIcon = document.createElement("i");
       copyIcon.className = "fas " + COPY;
