@@ -161,6 +161,7 @@ class VoiceClient:
         guild_id, channel_id = self.channel._get_voice_state_pair()
         self._handshake_complete.clear()
         await self.main_ws.voice_state(guild_id, None, self_mute=True)
+        self._handshaking = False
 
         log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', channel_id, guild_id)
         if remove:
