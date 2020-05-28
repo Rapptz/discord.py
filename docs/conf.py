@@ -234,6 +234,11 @@ html_static_path = ['_static']
 # implements a search results scorer. If empty, the default will be used.
 html_search_scorer = '_static/scorer.js'
 
+html_js_files = [
+  'custom.js',
+  'copy.js',
+]
+
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'discord.pydoc'
 
@@ -319,7 +324,5 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 def setup(app):
-  app.add_js_file('custom.js')
-  app.add_js_file('copy.js')
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
