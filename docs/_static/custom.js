@@ -4,6 +4,8 @@ let activeModal = null;
 let activeLink = null;
 let bottomHeightThreshold, sections;
 let settingsModal;
+let hamburgerToggle;
+let sidebar;
 
 function closeModal(modal) {
   activeModal = null;
@@ -41,7 +43,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('div.section');
-  settingsModal = document.querySelector('div#settings.modal')
+  settingsModal = document.querySelector('div#settings.modal');
+  hamburgerToggle = document.getElementById("hamburger-toggle");
+  sidebar = document.getElementById("sidebar");
+
+  sidebar.addEventListener("click", (e) => {
+    // If we click a navigation, close the hamburger menu
+    if (e.target.tagName == "A" && sidebar.classList.contains("sidebar-toggle")) {
+      sidebar.classList.remove("sidebar-toggle");
+      let button = hamburgerToggle.firstElementChild;
+      button.classList.remove("fa-times");
+      button.classList.add("fa-bars");
+
+      // Scroll a little up to actually see the header
+      // Note: this is generally around ~55px
+      // A proper solution is getComputedStyle but it can be slow
+      // Instead let's just rely on this quirk and call it a day
+      // This has to be done after the browser actually processes
+      // the section movement
+      setTimeout(() => window.scrollBy(0, -100), 75);
+    }
+  })
+
+  hamburgerToggle.addEventListener("click", (e) => {
+    sidebar.classList.toggle("sidebar-toggle");
+    let button = hamburgerToggle.firstElementChild;
+    const isHamburger = button.classList.contains("fa-bars");
+    button.classList.toggle("fa-bars", !isHamburger);
+    button.classList.toggle("fa-times", isHamburger);
+  });
 
   const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
   tables.forEach(table => {

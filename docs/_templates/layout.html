@@ -1,59 +1,118 @@
-{%- extends "basic/layout.html" %}
-
-{% set show_source = False %}
-{% set style = 'style.css' %}
-
-{%- block extrahead %}
-  {{ super() }}
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-{% endblock %}
-
-{%- block relbar2 %}{% endblock %}
-
-{%- block rootrellink %}
-  {# Perhaps override the relbar() macro to place this on the right side of the link list? #}
-  <li class="right"{% if not rellinks %} style="margin-right: 10px"{% endif %}>
-    <a title="settings" accesskey="S" onclick="openModal(settingsModal);">settings</a>{{ reldelim2 }}</li>
-  {{ super() }}
-{% endblock %}
-
-{% block header %}
-  {{ super() }}
-  {% if pagename == 'index' %}
-  <div class="indexwrapper">
-  {% endif %}
-{% endblock %}
-
-{%- block content %}
-  <div id="settings" class="modal" style="display: none;" onclick="if (event.target == this){ closeModal(settingsModal); }">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal(settingsModal);" title="Close">&times;</span>
-      <h1>Settings</h1>
-
-      <div class='setting'>
-        <h3>Use a sans-serif font:
-          <label class="toggle" title="Use a sans serif font? Your system font will be used, falling back to `sans-serif`.">
-            <input type="checkbox" name="useSansFont" onclick="updateSetting(this);">
-            <span class="toggle-slider"></span>
-          </label>
-        </h3>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title|striptags|e }}{{ titlesuffix }}</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ pathto('_static/style.css', 1)|e }}" type="text/css" />
+  <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
+  {%- block css %}
+  {%- for css in css_files %}
+    {%- if css|attr("filename") %}
+  {{ css_tag(css) }}
+    {%- else %}
+  <link rel="stylesheet" href="{{ pathto(css, 1)|e }}" type="text/css" />
+    {%- endif %}
+  {%- endfor %}
+  {%- endblock %}
+  {%- block scripts %}
+  <script id="documentation_options" data-url_root="{{ pathto('', 1) }}" src="{{ pathto('_static/documentation_options.js', 1) }}"></script>
+  {%- for js in script_files %}
+  {{ js_tag(js) }}
+  {%- endfor %}
+  {%- endblock %}
+  {%- if pageurl %}
+  <link rel="canonical" href="{{ pageurl|e }}" />
+  {%- endif %}
+  {%- if favicon %}
+  <link rel="shortcut icon" href="{{ pathto('_static/' + favicon, 1)|e }}"/>
+  {%- endif %}
+  {%- block linktags %}
+  {%- if hasdoc('about') %}
+  <link rel="author" title="{{ _('About these documents') }}" href="{{ pathto('about') }}" />
+  {%- endif %}
+  {%- if hasdoc('genindex') %}
+  <link rel="index" title="{{ _('Index') }}" href="{{ pathto('genindex') }}" />
+  {%- endif %}
+  {%- if hasdoc('search') %}
+  <link rel="search" title="{{ _('Search') }}" href="{{ pathto('search') }}" />
+  {%- endif %}
+  {%- if hasdoc('copyright') %}
+  <link rel="copyright" title="{{ _('Copyright') }}" href="{{ pathto('copyright') }}" />
+  {%- endif %}
+  {%- if next %}
+  <link rel="next" title="{{ next.title|striptags|e }}" href="{{ next.link|e }}" />
+  {%- endif %}
+  {%- if prev %}
+  <link rel="prev" title="{{ prev.title|striptags|e }}" href="{{ prev.link|e }}" />
+  {%- endif %}
+  {%- endblock %}
+  {%- block extrahead %} {% endblock %}
+</head>
+<body>
+{%- block header %}{% endblock %}
+  <div class="main-grid">
+    {#- The relative links component #}
+    <header class="grid-item">
+      <nav>
+        {%- for rellink in rellinks %}
+        <a href="{{ pathto(rellink[0])|e }}" title="{{ rellink[1]|striptags|e }}"
+           {{ accesskey(rellink[2]) }}>{{ rellink[3] }}</a> |
+        {%- endfor %}
+        <a title="settings" accesskey="S" onclick="openModal(settingsModal);">settings</a>
+        {#- No breadcrumbs. But if they're gonna appear they'll be here #}
+      </nav>
+    </header>
+    {#- The sidebar component #}
+    <aside class="grid-item">
+      <div id="hamburger-toggle">
+        <i class="fa fa-bars"></i>
       </div>
+      <div id="sidebar">
+        {#- This is manually unrolled from the original layout #}
+        {%- include "localtoc.html" %}
+        {%- include "searchbox.html" %}
+      </div>
+    </aside>
+    {#- The actual body of the contents #}
+    <main class="grid-item">
+      <div id="settings" class="modal" style="display: none;" onclick="if (event.target == this){ closeModal(settingsModal); }">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal(settingsModal);" title="Close">&times;</span>
+          <h1>Settings</h1>
 
-    </div>
-  </div>
-  {{ super() }}
-{% endblock %}
+          <div class='setting'>
+            <h3>Use a sans-serif font:
+              <label class="toggle" title="Use a sans serif font? Your system font will be used, falling back to `sans-serif`.">
+                <input type="checkbox" name="useSansFont" onclick="updateSetting(this);">
+                <span class="toggle-slider"></span>
+              </label>
+            </h3>
+          </div>
 
-
+        </div>
+      </div>
+      {% block body %} {% endblock %}
+    </main>
 {%- block footer %}
-  <div class="footer">
-    &copy; Copyright {{ copyright }}.
-    {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx-doc.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
+    <footer class="grid-item">
+    {%- if show_copyright %}
+      {%- if hasdoc('copyright') %}
+        {% trans path=pathto('copyright'), copyright=copyright|e %}&#169; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+      {%- else %}
+        {% trans copyright=copyright|e %}&#169; Copyright {{ copyright }}.{% endtrans %}
+      {%- endif %}
+    {%- endif %}
+    {%- if last_updated %}
+      {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+    {%- endif %}
+    {%- if show_sphinx %}
+      {% trans sphinx_version=sphinx_version|e %}Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
+    {%- endif %}
+    </footer>
+{%- endblock %}
   </div>
-  {% if pagename == 'index' %}
-  </div>
-  {% endif %}
-
   {%- if READTHEDOCS %}
   <script>
     if (typeof READTHEDOCS_DATA !== 'undefined') {
@@ -62,6 +121,7 @@
         }
         READTHEDOCS_DATA.features.docsearch_disabled = true;
       }
-    </script>
+  </script>
   {%- endif %}
-{%- endblock %}
+</body>
+</html>
