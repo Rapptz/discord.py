@@ -56,7 +56,7 @@
     {#- The relative links component #}
     <header class="grid-item">
       <nav>
-        {%- for rellink in rellinks %}
+        {%- for rellink in rellinks | reverse %}
         <a href="{{ pathto(rellink[0])|e }}" title="{{ rellink[1]|striptags|e }}"
            {{ accesskey(rellink[2]) }}>{{ rellink[3] }}</a> |
         {%- endfor %}
