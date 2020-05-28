@@ -91,6 +91,15 @@
             </h3>
           </div>
 
+          <div class='setting'>
+            <h3>Enable dark theme:
+              <label class="toggle" title="Enable the dark theme.">
+                <input type="checkbox" name="useDarkTheme" onclick="updateSetting(this);">
+                <span class="toggle-slider"></span>
+              </label>
+            </h3>
+          </div>
+
         </div>
       </div>
       {% block body %} {% endblock %}
