@@ -235,6 +235,7 @@ div.modal-content {
   border-radius: 4px;
   margin: 20% auto;
   width: 40%;
+  min-width: 350px;
   cursor: initial;
 }
 
@@ -395,6 +396,11 @@ main p,
 main dd,
 main li {
   line-height: 1.4em;
+}
+
+main img {
+  width: 100%;
+  max-width: 500px;
 }
 
 /* weird margins */
