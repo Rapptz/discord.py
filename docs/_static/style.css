@@ -267,8 +267,7 @@ div.modal-content > span.close:focus {
   border: 1px solid var(--codeblock-border);
   line-height: 0.8em;
   font-size: 0.9em;
-  padding-left: 0.2em;
-  padding-right: 0.2em;
+  padding: 0.2em 0.5em;
   border-bottom-left-radius: 4px;
   text-align: center;
 }
