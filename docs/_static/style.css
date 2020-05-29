@@ -18,6 +18,8 @@ Historically however, thanks to:
 
 /* CSS variables would go here */
 :root {
+  --font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
+
   --main-background: #fff;
   --link-text: #2591c4;
   --link-hover-text: #0b3a44;
@@ -60,10 +62,73 @@ Historically however, thanks to:
   --table-border: #ddd;
   --mobile-active-toc: ;
   --active-toc: #dbdbdb;
+  --scrollbar: rgba(0,0,0,0.2);
+  --scrollbar-hover: rgba(0,0,0,0.4);
+}
+
+:root[data-font="sans"] {
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --main-background: #303030;
+  --link-text: #2591c4;
+  --link-hover-text: #3b6a74;
+  --text-normal: #fff;
+  --mobile-nav-background: #424242;
+  --mobile-nav-text: #fff;
+  --mobile-nav-hover-text: #fff;
+  --mobile-nav-header-text: #fff;
+  --nav-background: #303030;
+  --nav-text: rgba(255,255,255,0.7);
+  --nav-hover-text: rgba(255,255,255,0.5);
+  --nav-header-text: rgba(255,255,255,0.87);
+  --search-border: #ccc;
+  --footer-text: #555;
+  --footer-link: #444;
+  --hr-border: #b1b4b6;
+  --main-big-headers-text: rgba(255,255,255,0.87);
+  --main-big-headers-border: #ddd;
+  --main-h5-header-text: #000;
+  --main-h6-header-text: #777;
+  --main-h4-header-border: #e5e5e5;
+  --header-link: #3e4349;
+  --header-link-hover-text: #fff;
+  --note-background: #424242;
+  --note-border: #222222;
+  --warning-background: #424242;
+  --warning-border: #aaaa22;
+  --error-background:  #424242;
+  --error-border: #aa2222;
+  --helpful-background: #424242;
+  --helpful-border: #22aaaa;
+  --codeblock-background: #222222;
+  --codeblock-border: #424242;
+  --codeblock-text: rgba(255,255,255,0.7);
+  --inline-code-background: #212121;
+  --xref-code-background: transparent;
+  --api-entry-background: #212121;
+  --table-header-background: #f5f5f5;
+  --table-text: #000;
+  --table-border: #ddd;
+  --mobile-active-toc: ;
+  --active-toc: #dbdbdb;
+  --scrollbar: rgba(0,0,0,0.5);
+  --scrollbar-hover: rgba(0,0,0,0.7);
+}
+
+img[src$="snake_dark.svg"]  {
+  display: none;
+}
+:root[data-theme="dark"] img[src$="snake.svg"] {
+  display: none;
+}
+:root[data-theme="dark"] img[src$="snake_dark.svg"] {
+  display: initial;
 }
 
 body {
-  font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
+  font-family: var(--font-family);
   font-size: 16px;
   margin: 0;
   padding: 0;
@@ -72,8 +137,23 @@ body {
   color: var(--text-normal);
 }
 
-body.sans {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+/* Scrollbar related */
+
+body::-webkit-scrollbar,
+#sidebar::-webkit-scrollbar {
+  width: 1em;
+}
+ 
+body::-webkit-scrollbar-thumb,
+#sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar);
+  border-radius: 0.5em;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+#sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-hover);
 }
 
 /* grid related */
@@ -235,6 +315,7 @@ div.modal-content {
   border-radius: 4px;
   margin: 20% auto;
   width: 40%;
+  min-width: 350px;
   cursor: initial;
 }
 
@@ -395,6 +476,11 @@ main p,
 main dd,
 main li {
   line-height: 1.4em;
+}
+
+main img {
+  width: 100%;
+  max-width: 500px;
 }
 
 /* weird margins */
