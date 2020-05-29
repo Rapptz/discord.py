@@ -9,7 +9,7 @@ let sidebar;
 
 function closeModal(modal) {
   activeModal = null;
-  modal.style.display = 'none';
+  modal.hidden = true;
 }
 
 function openModal(modal) {
@@ -18,7 +18,7 @@ function openModal(modal) {
   }
 
   activeModal = modal;
-  modal.style.removeProperty('display');
+  modal.hidden = false;
 }
 
 function updateSetting(element) {
@@ -30,7 +30,11 @@ function updateSetting(element) {
 
 function getRootAttributeToggle(attributeName, valueName) {
   function toggleRootAttribute(set) {
-    document.documentElement.setAttribute(`data-${attributeName}`, set ? valueName : null);
+    if (set) {
+      document.documentElement.setAttribute(`data-${attributeName}`, valueName);
+    } else {
+      document.documentElement.removeAttribute(`data-${attributeName}`);
+    }
   }
   return toggleRootAttribute;
 }
