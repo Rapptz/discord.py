@@ -140,21 +140,19 @@ body {
 
 /* Scrollbar related */
 
-body::-webkit-scrollbar,
 #sidebar::-webkit-scrollbar {
-  width: 1em;
+  width: 0.5em;
 }
  
-body::-webkit-scrollbar-thumb,
 #sidebar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar);
-  border-radius: 0.5em;
+  border-radius: 0.25em;
 }
 
-body::-webkit-scrollbar-thumb:hover,
 #sidebar::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-hover);
 }
+
 
 /* grid related */
 
