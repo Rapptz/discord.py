@@ -6,7 +6,7 @@
   <title>{{ title|striptags|e }}{{ titlesuffix }}</title>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
   <link rel="stylesheet" href="{{ pathto('_static/style.css', 1)|e }}" type="text/css" />
-  <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
+  <link rel="stylesheet" href="{{ pathto('_static/codeblocks.css', 1) }}" type="text/css" />
   {%- block css %}
   {%- for css in css_files %}
     {%- if css|attr("filename") %}
