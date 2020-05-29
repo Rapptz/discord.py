@@ -53,7 +53,7 @@ class WebhookAdapter:
         The webhook that owns this adapter.
     """
 
-    BASE = 'https://discordapp.com/api/v7'
+    BASE = 'https://discord.com/api/v7'
 
     def _prepare(self, webhook):
         self._webhook_id = webhook.id
@@ -454,7 +454,7 @@ class Webhook:
     @property
     def url(self):
         """Returns the webhook's url."""
-        return 'https://discordapp.com/api/webhooks/{}/{}'.format(self.id, self.token)
+        return 'https://discord.com/api/webhooks/{}/{}'.format(self.id, self.token)
 
     @classmethod
     def partial(cls, id, token, *, adapter):
@@ -504,7 +504,7 @@ class Webhook:
             The URL is invalid.
         """
 
-        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
+        m = re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         data = m.groupdict()

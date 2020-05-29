@@ -103,6 +103,10 @@ class Guild(Hashable):
         The maximum amount of presences for the guild.
     max_members: Optional[:class:`int`]
         The maximum amount of members for the guild.
+    max_video_channel_users: Optional[:class:`int`]
+        The maximum amount of users in a video channel.
+
+        .. versionadded:: 1.4
     banner: Optional[:class:`str`]
         The guild's banner.
     description: Optional[:class:`str`]
@@ -158,9 +162,10 @@ class Guild(Hashable):
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
-                 'description', 'max_presences', 'max_members', 'premium_tier',
-                 'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale', 'discovery_splash', '_rules_channel_id')
+                 'description', 'max_presences', 'max_members', 'max_video_channel_users',
+                 'premium_tier', 'premium_subscription_count', '_system_channel_flags',
+                 'preferred_locale', 'discovery_splash', '_rules_channel_id',
+                 '_public_updates_channel_id')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -284,12 +289,14 @@ class Guild(Hashable):
         self.description = guild.get('description')
         self.max_presences = guild.get('max_presences')
         self.max_members = guild.get('max_members')
+        self.max_video_channel_users = guild.get('max_video_channel_users')
         self.premium_tier = guild.get('premium_tier', 0)
         self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
         self.discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
+        self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -320,15 +327,9 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                c_type = c['type']
-                if c_type in (ChannelType.text.value, ChannelType.news.value):
-                    self._add_channel(TextChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.voice.value:
-                    self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.category.value:
-                    self._add_channel(CategoryChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.store.value:
-                    self._add_channel(StoreChannel(guild=self, data=c, state=self._state))
+                factory, ch_type = _channel_factory(c['type'])
+                if factory:
+                    self._add_channel(factory(guild=self, data=c, state=self._state))
 
     @property
     def channels(self):
@@ -462,6 +463,19 @@ class Guild(Hashable):
         .. versionadded:: 1.3
         """
         channel_id = self._rules_channel_id
+        return channel_id and self._channels.get(channel_id)
+
+    @property
+    def public_updates_channel(self):
+        """Optional[:class:`TextChannel`]: Return's the guild's channel where admins and
+        moderators of the guilds receive notices from Discord. This is only available to
+        guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 1.4
+        """
+        channel_id = self._public_updates_channel_id
         return channel_id and self._channels.get(channel_id)
 
     @property
@@ -953,16 +967,19 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_guild` permission
         to edit the guild.
 
+        .. versionchanged:: 1.4
+            The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
+
         Parameters
         ----------
         name: :class:`str`
             The new name of the guild.
         description: :class:`str`
             The new description of the guild. This is only available to guilds that
-            contain `PUBLIC` in :attr:`Guild.features`.
+            contain ``PUBLIC`` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
-            and GIF for guilds with ``ANIMATED_ICON`` feature.
+            and GIF This is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
@@ -970,8 +987,8 @@ class Guild(Hashable):
         splash: :class:`bytes`
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
-            splash. Only available for partnered guilds with ``INVITE_SPLASH``
-            feature.
+            splash. This is only available to guilds that contain ``INVITE_SPLASH``
+            in :attr:`Guild.features`.
         region: :class:`VoiceRegion`
             The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
@@ -993,6 +1010,14 @@ class Guild(Hashable):
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
         system_channel_flags: :class:`SystemChannelFlags`
             The new system channel settings to use with the new system channel.
+        rules_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for rules. This is only available to
+            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
+            channel.
+        public_updates_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for public updates from Discord. This is only available to
+            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
+            public updates channel.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -1101,6 +1126,26 @@ class Guild(Hashable):
             raise InvalidArgument('system_channel_flags field must be of type SystemChannelFlags')
 
         fields['system_channel_flags'] = system_channel_flags.value
+
+        try:
+            rules_channel = fields.pop('rules_channel')
+        except KeyError:
+            pass
+        else:
+            if rules_channel is None:
+                fields['rules_channel_id'] = rules_channel
+            else:
+                fields['rules_channel_id'] = rules_channel.id
+
+        try:
+            public_updates_channel = fields.pop('public_updates_channel')
+        except KeyError:
+            pass
+        else:
+            if rules_channel is None:
+                fields['public_updates_channel_id'] = rules_channel
+            else:
+                fields['public_updates_channel_id'] = rules_channel.id
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def fetch_channels(self):
@@ -1311,7 +1356,7 @@ class Guild(Hashable):
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
         roles: Optional[List[:class:`abc.Snowflake`]]
-            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member 
+            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member
             has a role that is not specified, they'll be excluded.
 
         Raises
@@ -1696,7 +1741,7 @@ class Guild(Hashable):
 
         Returns the guild's special vanity invite.
 
-        The guild must have 'VANITY_URL' in :attr:`~Guild.features`.
+        The guild must have ``VANITY_URL`` in :attr:`~Guild.features`.
 
         You must have the :attr:`~Permissions.manage_guild` permission to use
         this as well.

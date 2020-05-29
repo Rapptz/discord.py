@@ -203,7 +203,7 @@ class FFmpegPCMAudio(FFmpegAudio):
 
     def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
         args = []
-        subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': source if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -293,7 +293,7 @@ class FFmpegOpusAudio(FFmpegAudio):
                  pipe=False, stderr=None, before_options=None, options=None):
 
         args = []
-        subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': source if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))

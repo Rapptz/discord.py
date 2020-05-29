@@ -166,7 +166,7 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, *, use_cached=False):
+    async def to_file(self, *, use_cached=False, spoiler=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -185,6 +185,10 @@ class Attachment:
             on some types of attachments.
 
             .. versionadded:: 1.4
+        spoiler: :class:`bool`
+            Whether the file is a spoiler.
+            
+            .. versionadded:: 1.4
 
         Raises
         ------
@@ -202,7 +206,7 @@ class Attachment:
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename)
+        return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -620,7 +624,7 @@ class Message:
     def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+        return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
