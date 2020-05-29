@@ -351,7 +351,8 @@ async def sleep_until(when, result=None):
     Parameters
     -----------
     when: :class:`datetime.datetime`
-        The timestamp in which to sleep until.
+        The timestamp in which to sleep until. If the datetime is naive then
+        it is assumed to be in UTC.
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
