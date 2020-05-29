@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     parent.insertBefore(table, element.nextSibling);
   });
 
-  Object.entries(settings).forEach(([name,]) => {
+  Object.keys(settings).forEach(name => {
     let value = JSON.parse(localStorage.getItem(name));
     let element = document.querySelector(`input[name=${name}]`);
     if (element) {
