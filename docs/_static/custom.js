@@ -28,16 +28,27 @@ function updateSetting(element) {
   }
 }
 
-function getBodyClassToggle(className) {
-  function toggleBodyClass(add) {
-    document.body.classList.toggle(className, add);
+function getRootAttributeToggle(attributeName, valueName) {
+  function toggleRootAttribute(set) {
+    document.documentElement.setAttribute(`data-${attributeName}`, set ? valueName : null);
   }
-  return toggleBodyClass;
+  return toggleRootAttribute;
 }
 
 const settings = {
-  useSansFont: getBodyClassToggle('sans')
+  useSansFont: getRootAttributeToggle('font', 'sans'),
+  useDarkTheme: getRootAttributeToggle('theme', 'dark')
 };
+
+Object.entries(settings).forEach(([name, setter]) => {
+  let value = JSON.parse(localStorage.getItem(name));
+  try {
+    setter(value);
+  } catch (error) {
+    console.error(`Failed to apply setting "${name}" With value:`, value);
+    console.error(error);
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -81,18 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
     parent.insertBefore(table, element.nextSibling);
   });
 
-  Object.entries(settings).forEach(([name, setter]) => {
+  Object.keys(settings).forEach(name => {
     let value = JSON.parse(localStorage.getItem(name));
-
-    try {
-      setter(value);
-      let element = document.querySelector(`input[name=${name}]`);
-      if (element) {
-        element.checked = value === true;
-      }
-    } catch (error) {
-      console.error(`Failed to apply setting "${name}" With value:`, value);
-      console.error(error);
+    let element = document.querySelector(`input[name=${name}]`);
+    if (element) {
+      element.checked = value === true;
     }
   });
 });
