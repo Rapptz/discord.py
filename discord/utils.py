@@ -342,7 +342,7 @@ async def sane_wait_for(futures, *, timeout):
 async def sleep_until(when, result=None):
     """|coro|
 
-    Sleep until a specified time.
+    Sleep until a specified time in UTC.
 
     If the time supplied is in the past this function will yield instantly.
 
@@ -351,7 +351,7 @@ async def sleep_until(when, result=None):
     Parameters
     -----------
     when: :class:`datetime.datetime`
-        The timestamp in which to sleep until.
+        The timestamp in UTC to sleep until.
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
