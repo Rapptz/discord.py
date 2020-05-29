@@ -77,31 +77,6 @@
     </aside>
     {#- The actual body of the contents #}
     <main class="grid-item">
-      <div id="settings" class="modal" style="display: none;" onclick="if (event.target == this){ closeModal(settingsModal); }">
-        <div class="modal-content">
-          <span class="close" onclick="closeModal(settingsModal);" title="Close">&times;</span>
-          <h1>Settings</h1>
-
-          <div class='setting'>
-            <h3>Use a sans-serif font:
-              <label class="toggle" title="Use a sans serif font? Your system font will be used, falling back to `sans-serif`.">
-                <input type="checkbox" name="useSansFont" onclick="updateSetting(this);">
-                <span class="toggle-slider"></span>
-              </label>
-            </h3>
-          </div>
-
-          <div class='setting'>
-            <h3>Enable dark theme:
-              <label class="toggle" title="Enable the dark theme.">
-                <input type="checkbox" name="useDarkTheme" onclick="updateSetting(this);">
-                <span class="toggle-slider"></span>
-              </label>
-            </h3>
-          </div>
-
-        </div>
-      </div>
       {% block body %} {% endblock %}
     </main>
 {%- block footer %}
@@ -132,5 +107,33 @@
       }
   </script>
   {%- endif %}
+
+  <div id="settings" class="modal" onclick="if (event.target == this){ closeModal(settingsModal); }" hidden>
+    <div class="modal-content">
+      <span class="close" onclick="closeModal(settingsModal);" title="Close">&times;</span>
+      <h1>Settings</h1>
+
+      <div class='setting'>
+        <h3>Use a sans-serif font:
+          <label class="toggle"
+            title="Use a sans serif font? Your system font will be used, falling back to `sans-serif`.">
+            <input type="checkbox" name="useSansFont" onclick="updateSetting(this);">
+            <span class="toggle-slider"></span>
+          </label>
+        </h3>
+      </div>
+
+      <div class='setting'>
+        <h3>Enable dark theme:
+          <label class="toggle" title="Enable the dark theme.">
+            <input type="checkbox" name="useDarkTheme" onclick="updateSetting(this);">
+            <span class="toggle-slider"></span>
+          </label>
+        </h3>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>

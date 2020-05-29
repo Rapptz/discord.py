@@ -303,7 +303,7 @@ div.modal {
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   background-color: rgba(0,0,0,0.4);
   cursor: pointer;
 }
@@ -332,6 +332,10 @@ div.modal-content > span.close {
 div.modal-content > span.close:hover,
 div.modal-content > span.close:focus {
   color: #444;
+}
+
+div.modal input {
+  cursor: pointer;
 }
 
 /* copy button */
