@@ -334,6 +334,10 @@ div.modal-content > span.close:focus {
   color: #444;
 }
 
+div.modal input {
+  cursor: pointer;
+}
+
 /* copy button */
 
 .relative-copy {
