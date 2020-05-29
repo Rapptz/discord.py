@@ -143,7 +143,7 @@ body {
 #sidebar::-webkit-scrollbar {
   width: 0.5em;
 }
- 
+
 #sidebar::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar);
   border-radius: 0.25em;
@@ -216,6 +216,7 @@ aside {
   position: sticky;
   background-color: var(--mobile-nav-background);
   color: var(--mobile-nav-text);
+  z-index: 2;
 }
 
 aside h3 {
@@ -348,11 +349,13 @@ div.modal input {
   top: 0px;
   right: 0px;
   border: 1px solid var(--codeblock-border);
-  line-height: 0.8em;
-  font-size: 0.9em;
+  font-size: 0.875em;
   padding: 0.2em 0.5em;
   border-bottom-left-radius: 4px;
-  text-align: center;
+}
+
+.copy > .fa-clipboard-check {
+  padding: 0 0.875px;
 }
 
 /* -- body styles --------------------------------------------------------- */
