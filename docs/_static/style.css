@@ -124,7 +124,7 @@ img[src$="snake_dark.svg"]  {
   display: none;
 }
 :root[data-theme="dark"] img[src$="snake_dark.svg"] {
-  display: initial;
+  display: inherit;
 }
 
 body {
@@ -818,3 +818,20 @@ div.code-block-caption {
   }
 }
 
+@media screen and (min-width: 1200px) {
+  .main-grid {
+    /* 62.5% width => multiple of 5/8 content */
+    /* sidebar takes up 20% of the inner area */
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-areas:
+      "s s h h h h h h h h h h h h h h"
+      "s s . . . c c c c c c c c . . ."
+      "s s f f f f f f f f f f f f f f"
+  }
+
+  main img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
