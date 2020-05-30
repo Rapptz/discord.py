@@ -71,8 +71,23 @@
       </div>
       <div id="sidebar">
         {#- This is manually unrolled from the original layout #}
+        <div id="searchbox" role="search">
+          <h3>Quick search</h3>
+          <div class="searchformwrapper">
+            <form class="search" action="search.html" method="get">
+              <input type="text" name="q" />
+              <button type="submit">
+                <i class="fas fa-search"></i>
+              </button>
+              <input type="hidden" name="check_keywords" value="yes" />
+              <input type="hidden" name="area" value="default" />
+            </form>
+          </div>
+        </div>
+        <script type="text/javascript">
+          $("#searchbox").show(0);
+        </script>
         {%- include "localtoc.html" %}
-        {%- include "searchbox.html" %}
       </div>
     </aside>
     {#- The actual body of the contents #}
