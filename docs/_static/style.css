@@ -271,13 +271,13 @@ aside h3 {
 
 /* search button stuff */
 
-.searchformwrapper > form input {
+.searchformwrapper > form input, button {
   border: 1px solid var(--search-border);
   padding: 0.25em;
   flex-grow: 2;
 }
 
-.searchformwrapper > form input[type="submit"] {
+.searchformwrapper > form button[type="submit"] {
   border-left: none;
   margin-right: 0.5em;
   flex-grow: 8;
