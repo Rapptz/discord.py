@@ -1,5 +1,16 @@
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.environment.adapters.indexentries import IndexEntries
+from sphinx.writers.html5 import HTML5Translator
+
+class DPYHTML5Translator(HTML5Translator):
+    def visit_section(self, node):
+        self.section_level += 1
+        self.body.append(
+            self.starttag(node, 'section'))
+
+    def depart_section(self, node):
+        self.section_level -= 1
+        self.body.append('</section>\n')
 
 class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
     # This is mostly copy pasted from Sphinx.
@@ -43,4 +54,5 @@ def get_builder(app):
         return type(original.__name__, injected_mro, {'name': 'readthedocs'})
 
 def setup(app):
+    app.set_translator('html', DPYHTML5Translator, override=True)
     app.add_builder(get_builder(app), override=True)
