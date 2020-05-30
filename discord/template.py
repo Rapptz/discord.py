@@ -71,7 +71,7 @@ class Template:
         The source guild.
     """
 
-    def __init__(self, *, state, data, custom=False):
+    def __init__(self, *, state, data):
         self._state = state
 
         self.code = data['code']
@@ -92,7 +92,8 @@ class Template:
         self.source_guild = Guild(data=source_serialised, state=state)
 
     def __repr__(self):
-        return '<Template code={0.code!r} uses={0.uses} name={0.name!r} creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
+        return '<Template code={0.code!r} uses={0.uses} name={0.name!r}' \
+               ' creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
 
     async def create_guild(self, name, region=None, icon=None):
         """|coro|
