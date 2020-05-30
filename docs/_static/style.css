@@ -225,8 +225,13 @@ aside h3 {
   font-weight: normal;
 }
 
-.fa-bars, .fa-times {
+#settings-toggle {
+  float: right;
+}
+
+.fa-bars, .fa-times, .fa-cog {
   font-size: 2em;
+  cursor: pointer;
 }
 
 .sidebar-toggle {
@@ -321,9 +326,7 @@ div.modal-content {
 div.modal-content > span.close {
   color: #888;
   float: right;
-  font-size: 24px;
   font-weight: bold;
-  cursor: pointer;
   -moz-user-select: none;
   -webkit-user-select: none;
 }
@@ -813,8 +816,9 @@ div.code-block-caption {
     color: var(--nav-hover-text);
   }
 
-  #hamburger-toggle {
+  #hamburger-toggle, #settings-toggle {
     display: none;
+
   }
 }
 
