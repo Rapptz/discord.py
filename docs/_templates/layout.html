@@ -56,19 +56,22 @@
     {#- The relative links component #}
     <header class="grid-item">
       <nav>
-        {%- for rellink in rellinks | reverse %}
+        <!--{%- for rellink in rellinks | reverse %}
         <a href="{{ pathto(rellink[0])|e }}" title="{{ rellink[1]|striptags|e }}"
            {{ accesskey(rellink[2]) }}>{{ rellink[3] }}</a> |
-        {%- endfor %}
-        <a title="settings" accesskey="S" onclick="openModal(settingsModal);">settings</a>
+        {%- endfor %}-->
+        <a title="settings" accesskey="S" onclick="openModal(settingsModal);"><i class='fas fa-cog'></i></a>
         {#- No breadcrumbs. But if they're gonna appear they'll be here #}
       </nav>
     </header>
     {#- The sidebar component #}
     <aside class="grid-item">
-      <div id="hamburger-toggle">
+      <span id="hamburger-toggle">
         <i class="fa fa-bars"></i>
-      </div>
+      </span>
+      <span id="settings-toggle" onclick="openModal(settingsModal);">
+        <i class='fas fa-cog'></i>
+      </span>
       <div id="sidebar">
         {#- This is manually unrolled from the original layout #}
         <div id="searchbox" role="search">
@@ -125,7 +128,7 @@
 
   <div id="settings" class="modal" onclick="if (event.target == this){ closeModal(settingsModal); }" hidden>
     <div class="modal-content">
-      <span class="close" onclick="closeModal(settingsModal);" title="Close">&times;</span>
+      <span class="close" onclick="closeModal(settingsModal);" title="Close"><i class='fas fa-times'></i></span>
       <h1>Settings</h1>
 
       <div class='setting'>
