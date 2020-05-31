@@ -19,7 +19,12 @@ Historically however, thanks to:
 /* CSS variables would go here */
 :root {
   --font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
-
+  --primary-accent: #0a0a0a;
+  --secondary-accent: #171717;
+  --primary-text: #fff;
+  --secondary-text: #fff;
+  --settings: #fff;
+  --settings-hover: #ccc;
   --main-background: #fff;
   --link-text: #2591c4;
   --link-hover-text: #0b3a44;
@@ -32,7 +37,12 @@ Historically however, thanks to:
   --nav-text: #444;
   --nav-hover-text: #444;
   --nav-header-text: #333;
-  --search-border: #ccc;
+  --search-border: #5a5a5c;
+  --search-background: #171717;
+  --search-text: #fff;
+  --search-focus: #3399ff;
+  --search-button: #b1b1b1;
+  --search-button-hover: #686868;
   --footer-text: #555;
   --footer-link: #444;
   --hr-border: #b1b4b6;
@@ -83,7 +93,6 @@ Historically however, thanks to:
   --nav-text: rgba(255,255,255,0.7);
   --nav-hover-text: rgba(255,255,255,0.5);
   --nav-header-text: rgba(255,255,255,0.87);
-  --search-border: #ccc;
   --footer-text: #555;
   --footer-link: #444;
   --hr-border: #b1b4b6;
@@ -161,9 +170,10 @@ body {
   min-height: 100%;
   grid-auto-rows: min-content auto min-content;
   grid-template-areas:
-    "h"
+    "n"
     "s"
     "c"
+    "h"
     "f";
 }
 
@@ -187,9 +197,38 @@ a:hover {
 
 header {
   grid-area: h;
-  font-size: 90%;
-  /* does not show up on mobile */
+  background-color: var(--main-background);
+  color: var(--primary-text);
+}
+
+header > nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+header > nav > a {
+  color: var(--primary-text);
+}
+
+.main-heading {
   display: none;
+}
+
+.sub-header {
+  grid-area: n;
+  background-color: var(--secondary-accent);
+  color: var(--secondary-text);
+  /* not shown on mobile */
+  display: none;
+}
+
+.sub-header > .settings {
+  color: var(--settings);
+}
+
+.sub-header > .settings:hover {
+  color: var(--settings-hover);
 }
 
 /* footer stuff */
@@ -276,16 +315,65 @@ aside h3 {
 
 /* search button stuff */
 
-.searchformwrapper > form input, button {
-  border: 1px solid var(--search-border);
-  padding: 0.25em;
-  flex-grow: 2;
+.searchwrapper {
+  display: flex;
+  align-items: stretch;
 }
 
-.searchformwrapper > form button[type="submit"] {
+.searchwrapper > input[type=search] {
+  font-family: "Roboto", Corbel, Avenir, "Lucida Grande", "Lucida Sans", sans-serif;
+  font-size: 1em;
+}
+
+.searchwrapper > input[type=search],
+.searchwrapper > button[type=submit] {
+  background-color: var(--search-background);
+  border: none;
+  color: var(--search-text);
+  padding: 0.5em;
+  min-height: 2.5em;
+  flex: 9;
+}
+
+.searchwrapper {
+  border-bottom: 1px solid var(--search-border);
+}
+
+.searchwrapper:focus-within {
+  border-bottom: 1px solid var(--search-focus);
+}
+
+/* .searchwrapper > input[type=search] {
+  border: 1px solid var(--search-border);
+  border-right: none;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.searchwrapper > input[type=search]:focus,
+button[type=submit]:focus ~ input[type=search] {
+  border: 1px solid var(--search-focus);
+  border-right: none;
+} */
+
+.searchwrapper > button[type=submit] {
+  color: var(--search-button);
+  /* border: 1px solid var(--search-border); */
+  /* border-left: none; */
+  /* border-bottom-right-radius: 4px; */
+  /* border-top-right-radius: 4px; */
+  cursor: pointer;
+  flex: 1;
+}
+
+/* .searchwrapper > button[type=submit]:focus,
+input[type=search]:focus ~ button[type=submit] {
+  border: 1px solid var(--search-focus);
   border-left: none;
-  margin-right: 0.5em;
-  flex-grow: 8;
+} */
+
+.searchwrapper > button[type=submit]:hover {
+  background-color: var(--search-border);
 }
 
 /* main content area */
@@ -752,7 +840,7 @@ table.docutils tbody tr td ol.last {
 }
 
 /* hide the welcome text */
-div#welcome-to-discord-py > h1 {
+section#welcome-to-discord-py > h1 {
   display: none;
 }
 
@@ -773,12 +861,31 @@ div.code-block-caption {
   .main-grid {
     grid-template-areas:
       "h h h h h h"
+      "n n n n n n"
       "s c c c c c"
       "s f f f f f";
   }
 
   header {
+    background-color: var(--primary-accent);
+  }
+
+  header > nav {
+    justify-content: flex-end;
+  }
+
+  .main-heading {
+    margin-right: auto;
     display: unset;
+  }
+
+  header > nav a:not(.main-heading) {
+    margin: 0 0.5em;
+  }
+
+  .sub-header {
+    display: flex;
+    align-items: center;
   }
 
   aside {
@@ -790,10 +897,6 @@ div.code-block-caption {
 
   aside h3 {
     color: var(--nav-header-text);
-  }
-
-  header > nav {
-    float: right;
   }
 
   #sidebar {
@@ -828,9 +931,37 @@ div.code-block-caption {
     /* sidebar takes up 20% of the inner area */
     grid-template-columns: repeat(16, 1fr);
     grid-template-areas:
-      "s s h h h h h h h h h h h h h h"
+      "h h h h h h h h h h h h h h h h"
+      "n n n n n n n n n n n n n n n n"
       "s s . . . c c c c c c c c . . ."
       "s s f f f f f f f f f f f f f f"
+  }
+
+  header > nav {
+    margin-left: 18.75%;
+    margin-right: 18.75%;
+  }
+
+  .sub-header > label {
+    margin-left: 18.75%;
+    margin-right: 1em;
+  }
+
+  .sub-header > select {
+    margin-right: auto;
+  }
+
+  .sub-header > .settings {
+    margin-right: 18.75%;
+    margin-left: 1em;
+  }
+
+  .sub-header > .search {
+    width: 20%;
+  }
+
+  .sub-header .fa-cog {
+    font-size: 1.5em;
   }
 
   main img {
