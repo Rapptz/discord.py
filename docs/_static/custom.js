@@ -61,7 +61,7 @@ Object.entries(settings).forEach(([name, setter]) => {
 document.addEventListener('DOMContentLoaded', () => {
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
-  sections = document.querySelectorAll('div.section');
+  sections = document.querySelectorAll('section');
   settingsModal = document.querySelector('div#settings.modal');
   hamburgerToggle = document.getElementById("hamburger-toggle");
   sidebar = document.getElementById("sidebar");
@@ -129,7 +129,7 @@ window.addEventListener('scroll', () => {
   }
 
   if (currentSection) {
-    activeLink = document.querySelector(`.sphinxsidebar a[href="#${currentSection.id}"]`);
+    activeLink = document.querySelector(`#sidebar a[href="#${currentSection.id}"]`);
     if (activeLink) {
       activeLink.parentElement.classList.add('active');
     }
