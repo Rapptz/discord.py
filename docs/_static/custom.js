@@ -21,6 +21,10 @@ function openModal(modal) {
   modal.hidden = false;
 }
 
+function changeDocumentation(element) {
+  window.location = element.value;
+}
+
 function updateSetting(element) {
   localStorage.setItem(element.name, element.checked);
   if (element.name in settings) {

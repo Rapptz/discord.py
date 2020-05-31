@@ -53,43 +53,48 @@
 <body>
 {%- block header %}{% endblock %}
   <div class="main-grid">
-    {#- The relative links component #}
+    {#- The main navigation header #}
     <header class="grid-item">
       <nav>
-        <!--{%- for rellink in rellinks | reverse %}
-        <a href="{{ pathto(rellink[0])|e }}" title="{{ rellink[1]|striptags|e }}"
-           {{ accesskey(rellink[2]) }}>{{ rellink[3] }}</a> |
-        {%- endfor %}-->
-        <a title="settings" accesskey="S" onclick="openModal(settingsModal);"><i class='fas fa-cog'></i></a>
-        {#- No breadcrumbs. But if they're gonna appear they'll be here #}
+        <a href="{{ pathto(master_doc)|e }}" class="main-heading">discord.py</a>
+        <a href="https://github.com/Rapptz/discord.py">GitHub</a>
+        <a href="{{ discord_invite }}">{{ _('Discord') }}</a>
+        <a href="{{ pathto('faq') }}">FAQ</a>
+        {#- If we have more links we can put them here #}
       </nav>
     </header>
+    {#- The sub-header with search and extension related selection #}
+    <div class="sub-header grid-item">
+      <label for="documentation_select">{{ _('View Documentation For') }}</label>
+      <select id="documentation_select" onchange="changeDocumentation(this)">
+        {%- if pagename is prefixedwith 'ext/' %}
+        <option value="{{ pathto(master_doc)|e }}">discord</option>
+        {%- else %}
+        <option value="{{ pathto(pagename) }}" selected>discord</option>
+        {%- endif %}
+        {%- for ext, p in discord_extensions %}
+        <option value="{{ pathto(p + '/index')|e }}" {% if pagename is prefixedwith p %}selected{% endif %}>{{ ext }}</option>
+        {%- endfor %}
+      </select>
+      <form role="search" class="search" action="search.html" method="get">
+        <div class="searchwrapper">
+          <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
+          <button type="submit">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </form>
+      <a accesskey="S" class="settings" onclick="openModal(settingsModal);"><i class='fas fa-cog'></i></a>
+    </div>
     {#- The sidebar component #}
     <aside class="grid-item">
       <span id="hamburger-toggle">
         <i class="fa fa-bars"></i>
       </span>
-      <span id="settings-toggle" onclick="openModal(settingsModal);">
+      <span id="settings-toggle" class="settings" onclick="openModal(settingsModal);">
         <i class='fas fa-cog'></i>
       </span>
       <div id="sidebar">
-        {#- This is manually unrolled from the original layout #}
-        <div id="searchbox" role="search">
-          <h3>Quick search</h3>
-          <div class="searchformwrapper">
-            <form class="search" action="search.html" method="get">
-              <input type="text" name="q" />
-              <button type="submit">
-                <i class="fas fa-search"></i>
-              </button>
-              <input type="hidden" name="check_keywords" value="yes" />
-              <input type="hidden" name="area" value="default" />
-            </form>
-          </div>
-        </div>
-        <script type="text/javascript">
-          $("#searchbox").show(0);
-        </script>
         {%- include "localtoc.html" %}
       </div>
     </aside>

@@ -144,6 +144,14 @@ html_experimental_html5_writer = True
 # a list of builtin themes.
 html_theme = 'basic'
 
+html_context = {
+  'discord_invite': 'https://discord.gg/r3sSKJJ',
+  'discord_extensions': [
+    ('discord.ext.commands', 'ext/commands'),
+    ('discord.ext.tasks', 'ext/tasks'),
+  ],
+}
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -326,3 +334,4 @@ texinfo_documents = [
 def setup(app):
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
+    app.config.html_context['discord_invite'] = 'https://discord.gg/nXzj3dg'

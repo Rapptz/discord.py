@@ -42,6 +42,12 @@ class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
         else:
             self.handle_page('genindex', genindexcontext, 'genindex.html')
 
+
+def add_custom_jinja2(app):
+    env = app.builder.templates.environment
+    env.tests['prefixedwith'] = str.startswith
+    env.tests['suffixedwith'] = str.endswith
+
 def get_builder(app):
     """This is necessary because RTD injects their own for some reason."""
     try:
@@ -56,3 +62,4 @@ def get_builder(app):
 def setup(app):
     app.set_translator('html', DPYHTML5Translator, override=True)
     app.add_builder(get_builder(app), override=True)
+    app.connect('builder-inited', add_custom_jinja2)
