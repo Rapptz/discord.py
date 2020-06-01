@@ -747,7 +747,11 @@ class ConnectionState:
 
     async def _chunk_and_dispatch(self, guild, unavailable):
         chunks = list(self.chunks_needed(guild))
-        await self.chunker(guild.id)
+        if guild.shard_id is None:
+            await self.chunker(guild.id)
+        else:
+            await self.chunker(guild.id, shard_id=guild.shard_id)
+  
         if chunks:
             try:
                 await utils.sane_wait_for(chunks, timeout=len(chunks))
