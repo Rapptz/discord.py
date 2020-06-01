@@ -134,7 +134,7 @@ class BaseUser(_BaseUser):
 
     @property
     def public_flags(self):
-        """:class:`PublicFlags`: The publicly available flags the user has."""
+        """:class:`PublicUserFlags`: The publicly available flags the user has."""
         return PublicUserFlags._from_value(self._public_flags)
 
     @property
