@@ -663,7 +663,7 @@ class HTTPClient:
         params = {
             'days': days,
             'compute_prune_count': 'true' if compute_prune_count else 'false',
-            'include_roles': roles
+            'include_roles': json.dumps(roles)
         }
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params, reason=reason)
 
