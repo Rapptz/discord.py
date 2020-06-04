@@ -146,7 +146,7 @@ class Guild(Hashable):
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
     premium_subscription_count: :class:`int`
-        How many users have currently "boosted" this guild.
+        The number of "boosts" this guild currently has.
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
@@ -1881,7 +1881,7 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
-    async def query_members(self, query, *, limit=5, cache=True):
+    async def query_members(self, query=None, *, limit=5, user_ids=None, cache=True):
         """|coro|
 
         Request members that belong to this guild whose username starts with
@@ -1907,6 +1907,11 @@ class Guild(Hashable):
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
+        user_ids: List[:class:`int`]
+            List of user IDs to search for. If the user ID is not in the guild then it won't be returned.
+
+            .. versionadded:: 1.4
+
 
         Raises
         -------
@@ -1918,5 +1923,11 @@ class Guild(Hashable):
         List[:class:`Member`]
             The list of members that have matched the query.
         """
+        if user_ids is not None and query is not None:
+            raise TypeError('Cannot pass both query and user_ids')
+
+        if user_ids is None and query is None:
+            raise TypeError('Must pass either query or user_ids')
+
         limit = limit or 5
-        return await self._state.query_members(self, query=query, limit=limit, cache=cache)
+        return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)

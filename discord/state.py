@@ -326,7 +326,7 @@ class ConnectionState:
             else:
                 log.info('Finished requesting guild member chunks for %d guilds.', len(guilds))
 
-    async def query_members(self, guild, query, limit, cache):
+    async def query_members(self, guild, query, limit, user_ids, cache):
         guild_id = guild.id
         ws = self._get_websocket(guild_id)
         if ws is None:
@@ -341,7 +341,7 @@ class ConnectionState:
         future = self.receive_member_query(guild_id, nonce)
         try:
             # start the query operation
-            await ws.request_chunks(guild_id, query, limit, nonce=nonce)
+            await ws.request_chunks(guild_id, query=query, limit=limit, user_ids=user_ids, nonce=nonce)
             members = await asyncio.wait_for(future, timeout=5.0)
 
             if cache:
