@@ -179,6 +179,9 @@ class UserFlags(Enum):
     early_supporter: int
     team_user: int
     system: int
+    bug_hunter_level_2: int
+    verified_bot: int
+    verified_bot_developer: int
 
 class ActivityType(Enum):
     unknown: int
