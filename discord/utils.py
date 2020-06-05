@@ -431,7 +431,7 @@ def resolve_invite(invite):
     if isinstance(invite, (Invite, Object)):
         return invite.id
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
         m = re.match(rx, invite)
         if m:
             return m.group(1)
