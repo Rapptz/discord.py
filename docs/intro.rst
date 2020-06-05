@@ -44,7 +44,7 @@ For a Debian-based system, the following command will get these dependencies:
 
 .. code-block:: shell
 
-    $ apt install libffi-dev libnacl-dev python3-dev
+    $ apt install libffi-dev libnacl-dev python3-dev python3-venv
 
 Remember to check your permissions!
 
