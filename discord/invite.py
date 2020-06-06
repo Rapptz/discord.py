@@ -162,7 +162,7 @@ class PartialInviteGuild:
     def icon_url_as(self, *, format=None, static_format='webp', size=1024):
         """The same operation as :meth:`Guild.icon_url_as`."""
         return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
-    
+
     @property
     def banner_url(self):
         """:class:`Asset`: Returns the guild's banner asset."""
