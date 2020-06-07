@@ -36,6 +36,7 @@ from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .enums import try_enum, WebhookType
 from .user import BaseUser, User
 from .asset import Asset
+from .mixins import Hashable
 
 __all__ = (
     'WebhookAdapter',
@@ -359,7 +360,7 @@ class _PartialWebhookState:
     def __getattr__(self, attr):
         raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
 
-class Webhook:
+class Webhook(Hashable):
     """Represents a Discord webhook.
 
     Webhooks are a form to send messages to channels in Discord without a
