@@ -1048,8 +1048,8 @@ class AutoShardedConnectionState(ConnectionState):
         self._ready_task = None
         self.shard_ids = ()
 
-    async def chunker(self, guild_id, query='', limit=0, *, shard_id, nonce=None):
-        ws = self._get_websocket(shard_id=shard_id)
+    async def chunker(self, guild_id, query='', limit=0, *, shard_id=None, nonce=None):
+        ws = self._get_websocket(guild_id, shard_id=shard_id)
         await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
 
     async def request_offline_members(self, guilds, *, shard_id):
