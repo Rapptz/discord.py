@@ -70,7 +70,7 @@ Historically however, thanks to:
   --table-header-background: #f5f5f5;
   --table-text: #000;
   --table-border: #ddd;
-  --mobile-active-toc: ;
+  --mobile-active-toc: #212121;
   --active-toc: #dbdbdb;
   --scrollbar: rgba(0,0,0,0.2);
   --scrollbar-hover: rgba(0,0,0,0.4);
@@ -120,8 +120,8 @@ Historically however, thanks to:
   --table-header-background: #f5f5f5;
   --table-text: #000;
   --table-border: #ddd;
-  --mobile-active-toc: ;
-  --active-toc: #dbdbdb;
+  --mobile-active-toc: #212121;
+  --active-toc: #212121;
   --scrollbar: rgba(0,0,0,0.5);
   --scrollbar-hover: rgba(0,0,0,0.7);
 }
@@ -912,7 +912,9 @@ div.code-block-caption {
   }
 
   .active {
-    color: var(--active-toc);
+    background-color: var(--active-toc);
+    border-left: none;
+    position: relative;
   }
 
   #sidebar a:hover {
