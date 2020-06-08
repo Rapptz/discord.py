@@ -11,7 +11,9 @@ from .channel import (
     CategoryChannel as CategoryChannel, StoreChannel as StoreChannel, GroupChannel as GroupChannel
 )
 from .guild import Guild as Guild
-from .flags import SystemChannelFlags as SystemChannelFlags, MessageFlags as MessageFlags
+from .flags import (
+    SystemChannelFlags as SystemChannelFlags, MessageFlags as MessageFlags, PublicUserFlags as PublicUserFlags
+)
 from .relationship import Relationship as Relationship
 from .member import Member as Member, VoiceState as VoiceState
 from .message import Message as Message, Attachment as Attachment
