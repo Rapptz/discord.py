@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import inspect
 import copy
+import types
 from ._types import _BaseCommand
 
 __all__ = (
@@ -205,7 +206,7 @@ class Cog(metaclass=CogMeta):
     @property
     def command_attrs(self):
         """:class:`dict`: Returns the commands attributes applied for the cog."""
-        return self.__cog_settings__
+        return types.MappingProxyType(self.__cog_settings__)
 
     @property
     def description(self):
