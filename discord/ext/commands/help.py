@@ -798,6 +798,11 @@ class HelpCommand:
         if cmd is None:
             string = await maybe_coro(self.command_not_found, self.remove_mentions(keys[0]))
             return await self.send_error_message(string)
+        
+        # maybe it has a prefix at the beginning
+        prefix_length = len(self.context.prefix)
+        if keys[0][:prefix_length] == self.context.prefix:
+            keys[0] = keys[0][prefix_length:]
 
         for key in keys[1:]:
             try:
