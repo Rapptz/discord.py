@@ -440,7 +440,9 @@ def resolve_invite(invite):
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
                                      for c in ('*', '`', '_', '~', '|'))
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s)' % _MARKDOWN_ESCAPE_SUBREGEX)
+_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+
+_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON))
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
     r"""A helper function that escapes Discord's markdown.
@@ -476,7 +478,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
                 return is_url
             return '\\' + groupdict['markdown']
 
-        regex = r'(?P<markdown>[_\\~|\*`]|>(?:>>)?\s)'
+        regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
         if ignore_links:
             regex = '(?:%s|%s)' % (url_regex, regex)
         return re.sub(regex, replacement, text)
