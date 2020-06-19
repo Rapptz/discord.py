@@ -601,7 +601,5 @@ class CommandRegistrationError(ClientException):
     def __init__(self, name, *, alias_conflict=False):
         self.name = name
         self.alias_conflict = alias_conflict
-        if alias_conflict:
-            super().__init__('The alias {} is already an existing command or alias.'.format(name))
-        else:
-            super().__init__('Command {} is already registered.'.format(name))
+        type_ = 'alias' if alias_conflict else 'command'
+        super().__init__('The {} {} is already an existing command or alias.'.format(type_, name))
