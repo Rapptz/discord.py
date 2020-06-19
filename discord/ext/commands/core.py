@@ -1095,12 +1095,12 @@ class GroupMixin:
             command.parent = self
 
         if command.name in self.all_commands:
-            raise discord.ClientException('Command {0.name} is already registered.'.format(command))
+            raise CommandRegistrationError(command.name)
 
         self.all_commands[command.name] = command
         for alias in command.aliases:
             if alias in self.all_commands:
-                raise discord.ClientException('The alias {} is already an existing command or alias.'.format(alias))
+                raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
     def remove_command(self, name):
