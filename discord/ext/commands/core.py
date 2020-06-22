@@ -1075,6 +1075,9 @@ class GroupMixin:
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
         :meth:`~.GroupMixin.group` shortcut decorators are used instead.
 
+        .. versionchanged:: 1.4
+             Raise :exc:`.CommandRegistrationError` instead of generic :exc:`.ClientException`
+
         Parameters
         -----------
         command: :class:`Command`
@@ -1082,8 +1085,8 @@ class GroupMixin:
 
         Raises
         -------
-        :exc:`.ClientException`
-            If the command is already registered.
+        :exc:`.CommandRegistrationError`
+            If the command or its alias is already registered by different command.
         TypeError
             If the command passed is not a subclass of :class:`.Command`.
         """

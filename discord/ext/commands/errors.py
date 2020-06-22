@@ -591,6 +591,8 @@ class CommandRegistrationError(ClientException):
 
     This inherits from :exc:`ClientException`
 
+    .. versionadded:: 1.4
+
     Attributes
     ----------
     name: :class:`str`
