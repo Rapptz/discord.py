@@ -146,7 +146,7 @@ class Guild(Hashable):
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
     premium_subscription_count: :class:`int`
-        How many users have currently "boosted" this guild.
+        The number of "boosts" this guild currently has.
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.

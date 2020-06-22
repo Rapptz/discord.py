@@ -400,6 +400,9 @@ class UserFlags(Enum):
     early_supporter = 512
     team_user = 1024
     system = 4096
+    bug_hunter_level_2 = 16384
+    verified_bot = 65536
+    verified_bot_developer = 131072
 
 class ActivityType(Enum):
     unknown = -1

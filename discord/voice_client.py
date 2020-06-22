@@ -202,6 +202,7 @@ class VoiceClient:
         if self._handshake_complete.is_set():
             # terminate the websocket and handle the reconnect loop if necessary.
             self._handshake_complete.clear()
+            self._handshaking = False
             await self.ws.close(4000)
             return
 

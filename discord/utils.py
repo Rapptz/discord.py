@@ -351,7 +351,8 @@ async def sleep_until(when, result=None):
     Parameters
     -----------
     when: :class:`datetime.datetime`
-        The timestamp in which to sleep until.
+        The timestamp in which to sleep until. If the datetime is naive then
+        it is assumed to be in UTC.
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
@@ -430,7 +431,7 @@ def resolve_invite(invite):
     if isinstance(invite, (Invite, Object)):
         return invite.id
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
         m = re.match(rx, invite)
         if m:
             return m.group(1)
@@ -439,7 +440,9 @@ def resolve_invite(invite):
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
                                      for c in ('*', '`', '_', '~', '|'))
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s)' % _MARKDOWN_ESCAPE_SUBREGEX)
+_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+
+_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON))
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
     r"""A helper function that escapes Discord's markdown.
@@ -475,7 +478,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
                 return is_url
             return '\\' + groupdict['markdown']
 
-        regex = r'(?P<markdown>[_\\~|\*`]|>(?:>>)?\s)'
+        regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
         if ignore_links:
             regex = '(?:%s|%s)' % (url_regex, regex)
         return re.sub(regex, replacement, text)

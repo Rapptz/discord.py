@@ -197,6 +197,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionchanged:: 1.3
             The ``overwrites`` keyword-only parameter was added.
 
+        .. versionchanged:: 1.4
+            The ``type`` keyword-only parameter was added.
+
         Parameters
         ----------
         name: :class:`str`
@@ -216,6 +219,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this channel, in seconds.
             A value of `0` disables slowmode. The maximum value possible is `21600`.
+        type: :class:`ChannelType`
+            Change the type of this text channel. Currently, only conversion between
+            :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This 
+            is only available to guilds that contain ``NEWS`` in :attr:`Guild.features`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`dict`
