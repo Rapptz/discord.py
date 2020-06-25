@@ -48,18 +48,20 @@ def add_custom_jinja2(app):
     env.tests['prefixedwith'] = str.startswith
     env.tests['suffixedwith'] = str.endswith
 
-def get_builder(app):
+def add_builders(app):
     """This is necessary because RTD injects their own for some reason."""
     try:
         original = app.registry.builders['readthedocs']
     except KeyError:
-        return DPYStandaloneHTMLBuilder
+        app.set_translator('html', DPYHTML5Translator, override=True)
+        app.add_builder(DPYStandaloneHTMLBuilder, override=True)
     else:
         injected_mro = tuple(base if base is not StandaloneHTMLBuilder else DPYStandaloneHTMLBuilder
                              for base in original.mro()[1:])
-        return type(original.__name__, injected_mro, {'name': 'readthedocs'})
+        new_builder = type(original.__name__, injected_mro, {'name': 'readthedocs'})
+        app.set_translator('readthedocs', DPYHTML5Translator, override=True)
+        app.add_builder(new_builder, override=True)
 
 def setup(app):
-    app.set_translator('html', DPYHTML5Translator, override=True)
-    app.add_builder(get_builder(app), override=True)
+    add_builders(app)
     app.connect('builder-inited', add_custom_jinja2)
