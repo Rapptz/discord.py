@@ -74,6 +74,9 @@ Historically however, thanks to:
   --active-toc: #dbdbdb;
   --scrollbar: rgba(0,0,0,0.2);
   --scrollbar-hover: rgba(0,0,0,0.4);
+  --rtd-ad-border: #bfbfbf;
+  --rtd-ad-background: #eeeeee;
+  --rtd-ad-text-rgb: 64, 64, 64;
 }
 
 :root[data-font="sans"] {
@@ -124,6 +127,9 @@ Historically however, thanks to:
   --active-toc: #212121;
   --scrollbar: rgba(0,0,0,0.5);
   --scrollbar-hover: rgba(0,0,0,0.7);
+  --rtd-ad-border: #333333;
+  --rtd-ad-background: #404040;
+  --rtd-ad-text-rgb: 221, 221, 221;
 }
 
 img[src$="snake_dark.svg"]  {
@@ -842,6 +848,21 @@ table.docutils tbody tr td ol.last {
 /* hide the welcome text */
 section#welcome-to-discord-py > h1 {
   display: none;
+}
+
+/* make the RTD ad look a little less jarring */
+
+.ethical-fixedfooter {
+  background-color: var(--rtd-ad-background) !important;
+  border-top: 1px solid var(--rtd-ad-border) !important;
+}
+
+.ethical-fixedfooter a {
+  color: rgb(var(--rtd-ad-text-rgb)) !important;
+}
+
+.ethical-callout a {
+  color: rgba(var(--rtd-ad-text-rgb), 0.7) !important;
 }
 
 .active {
