@@ -524,7 +524,7 @@ class PCMVolumeTransformer(AudioSource):
 
     @property
     def volume(self):
-        """Retrieves or sets the volume as a floating point percentage (e.g. 1.0 for 100%)."""
+        """Retrieves or sets the volume as a floating point percentage (e.g. ``1.0`` for 100%)."""
         return self._volume
 
     @volume.setter

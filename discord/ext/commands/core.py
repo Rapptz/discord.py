@@ -1124,7 +1124,7 @@ class GroupMixin:
         --------
         Optional[:class:`.Command`]
             The command that was removed. If the name is not valid then
-            `None` is returned instead.
+            ``None`` is returned instead.
         """
         command = self.all_commands.pop(name, None)
 
