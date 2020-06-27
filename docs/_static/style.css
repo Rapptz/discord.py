@@ -282,6 +282,16 @@ aside h3 {
   font-weight: normal;
 }
 
+.collapsible-arrow {
+  float: right;
+  padding-right: 5px;
+  padding-top: 5px;
+}
+
+.collapsible-arrow:hover {
+  cursor: pointer;
+}
+
 #settings-toggle {
   float: right;
 }
@@ -320,7 +330,7 @@ aside h3 {
 }
 
 #sidebar ul ul {
-  list-style: none;
+  list-style: square;
   margin: 0em;
   margin-left: 1.5em;
 }
