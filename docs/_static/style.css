@@ -948,7 +948,7 @@ div.code-block-caption {
     bottom: 0;
     right: 0;
     width: calc(100% + 0.5em);
-    border-radius: 8px;
+    border-radius: 4px;
     z-index: -1;
   }
 
