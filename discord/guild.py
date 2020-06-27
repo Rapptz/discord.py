@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 
 from . import utils
 from .role import Role
@@ -406,9 +406,10 @@ class Guild(Hashable):
         List[Tuple[Optional[:class:`CategoryChannel`], List[:class:`abc.GuildChannel`]]]:
             The categories and their associated channels.
         """
-        grouped = defaultdict(list)
+        grouped = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
+                grouped[channel.id] = []
                 continue
 
             grouped[channel.category_id].append(channel)
