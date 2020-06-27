@@ -615,7 +615,7 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """:class:`Command`: Retrieves the parents of this command.
+        """List[:class:`Command`]: Retrieves the parents of this command.
 
         If the command has no parents then it returns an empty :class:`list`.
 
@@ -927,7 +927,7 @@ class Command(_BaseCommand):
 
     @property
     def cog_name(self):
-        """:class:`str`: The name of the cog this command belongs to. None otherwise."""
+        """Optional[:class:`str`]: The name of the cog this command belongs to, if any."""
         return type(self.cog).__cog_name__ if self.cog is not None else None
 
     @property
@@ -1123,7 +1123,7 @@ class GroupMixin:
 
         Returns
         --------
-        :class:`.Command` or subclass
+        Optional[:class:`.Command`]
             The command that was removed. If the name is not valid then
             `None` is returned instead.
         """
@@ -1170,7 +1170,7 @@ class GroupMixin:
 
         Returns
         --------
-        :class:`Command` or subclass
+        Optional[:class:`Command`]
             The command that was requested. If not found, returns ``None``.
         """
 
@@ -1224,7 +1224,7 @@ class Group(GroupMixin, Command):
 
     Attributes
     -----------
-    invoke_without_command: Optional[:class:`bool`]
+    invoke_without_command: :class:`bool`
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -1233,7 +1233,7 @@ class Group(GroupMixin, Command):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
-    case_insensitive: Optional[:class:`bool`]
+    case_insensitive: :class:`bool`
         Indicates if the group's commands should be case insensitive.
         Defaults to ``False``.
     """

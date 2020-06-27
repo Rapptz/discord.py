@@ -744,7 +744,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Member`
+        Optional[:class:`Member`]
             The member in this guild with the associated name. If not found
             then ``None`` is returned.
         """
