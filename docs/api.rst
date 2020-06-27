@@ -1783,6 +1783,34 @@ of :class:`enum.Enum`.
 
         Represents a webhook that is internally managed by Discord, used for following channels.
 
+.. class:: DefaultAvatar
+
+    Represents the default avatar of a Discord :class:`User`
+
+    .. attribute:: blurple
+
+        Represents the default avatar with the color blurple.
+        See also :attr:`Colour.blurple`
+    .. attribute:: grey
+
+        Represents the default avatar with the color grey.
+        See also :attr:`Colour.greyple`
+    .. attribute:: gray
+
+        An alias for :attr:`grey`.
+    .. attribute:: green
+
+        Represents the default avatar with the color green.
+        See also :attr:`Colour.green`
+    .. attribute:: orange
+
+        Represents the default avatar with the color orange.
+        See also :attr:`Colour.orange`
+    .. attribute:: red
+
+        Represents the default avatar with the color red.
+        See also :attr:`Colour.red`
+
 Async Iterator
 ----------------
 
