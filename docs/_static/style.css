@@ -742,6 +742,8 @@ pre, code {
 
 code {
   background-color: var(--inline-code-background);
+  padding: .15em;
+  border-radius: 3px;
 }
 
 code.descname {
