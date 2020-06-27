@@ -255,7 +255,7 @@ footer a {
 aside {
   grid-area: s;
   font-size: 14px;
-  line-height: 1.5em;
+  line-height: 1.75em;
   top: 0;
   position: -webkit-sticky; /* safari */
   position: sticky;
@@ -303,7 +303,7 @@ aside h3 {
 
 #sidebar ul {
   list-style: none;
-  margin: 1em 1em 2em 0;
+  margin: 1em 2em 2em 1em;
   padding: 0;
 }
 
@@ -926,6 +926,7 @@ div.code-block-caption {
     top: 1em;
     height: calc(100vh - 1em);
     overflow-y: auto;
+    margin: 1em;
   }
 
   #sidebar a {
@@ -933,9 +934,22 @@ div.code-block-caption {
   }
 
   .active {
-    background-color: var(--active-toc);
+    background-color: transparent;
     border-left: none;
     position: relative;
+  }
+
+  .active::before {
+    content: "";
+    display: inline-block;
+    background-color: var(--active-toc);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: calc(100% + 0.5em);
+    border-radius: 4px;
+    z-index: -1;
   }
 
   #sidebar a:hover {
