@@ -2017,9 +2017,11 @@ this goal, it must make use of a couple of data classes that aid in this goal.
     on the action being done, check the documentation for :class:`AuditLogAction`,
     otherwise check the documentation below for all attributes that are possible.
 
-    .. describe:: iter(diff)
+    .. container:: operations
 
-        Returns an iterator over (attribute, value) tuple of this diff.
+        .. describe:: iter(diff)
+
+            Returns an iterator over (attribute, value) tuple of this diff.
 
     .. attribute:: name
 
