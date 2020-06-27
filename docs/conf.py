@@ -245,6 +245,7 @@ html_search_scorer = '_static/scorer.js'
 html_js_files = [
   'custom.js',
   'copy.js',
+  'sidebar.js'
 ]
 
 # Output file base name for HTML help builder.
