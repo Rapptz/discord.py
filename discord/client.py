@@ -1021,6 +1021,27 @@ class Client:
         return GuildIterator(self, limit=limit, before=before, after=after)
 
     async def fetch_template(self, code):
+        """|coro|
+
+        Gets a :class:`.Template` from a discord.new URL or code.
+
+        Parameters
+        -----------
+        code: :class:`str`
+            The Discord Template Code or URL (must be a discord.new URL).
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            The template is invalid.
+        :exc:`.HTTPException`
+            Getting the template failed.
+
+        Returns
+        --------
+        :class:`.Template`
+            The template from the URL/code.
+        """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
         return Template(data=data, state=self._connection)
@@ -1078,6 +1099,8 @@ class Client:
             for more details on what is expected.
         code: Optional[:class:`str`]
             The code for a template to create the guild with.
+
+            .. versionadded:: 1.4
 
         Raises
         ------
