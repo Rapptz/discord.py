@@ -140,18 +140,18 @@ class Integration:
             ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
         """
         try:
-            expire_behavior = fields['expire_behaviour']
+            expire_behaviour = fields['expire_behaviour']
         except KeyError:
-            expire_behavior = fields.get('expire_behavior', self.expire_behaviour)
+            expire_behaviour = fields.get('expire_behavior', self.expire_behaviour)
 
-        if not isinstance(expire_behavior, ExpireBehaviour):
+        if not isinstance(expire_behaviour, ExpireBehaviour):
             raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
 
         expire_grace_period = fields.get('expire_grace_period', self.expire_grace_period)
 
         payload = {
-            'expire_behavior': expire_behavior.value,
-            'expire_grace_period': expire_grace_period.value,
+            'expire_behavior': expire_behaviour.value,
+            'expire_grace_period': expire_grace_period,
         }
 
         enable_emoticons = fields.get('enable_emoticons')
@@ -182,7 +182,6 @@ class Integration:
             Syncing the integration failed.
         """
         await self._state.http.sync_integration(self.guild.id, self.id)
-
         self.synced_at = datetime.datetime.utcnow()
 
     async def delete(self):
