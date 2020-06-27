@@ -806,7 +806,6 @@ dd {
 
 table.docutils {
   width: 100%;
-  table-layout: fixed;
 }
 
 table.docutils.footnote {
@@ -831,7 +830,6 @@ table.docutils tbody tr td {
   border-top: solid 1px var(--table-border);
   padding: 7px 5px;
   vertical-align: top;
-  overflow-wrap: break-word;
 }
 table.docutils tbody tr:last-child th,
 table.docutils tbody tr:last-child td {
