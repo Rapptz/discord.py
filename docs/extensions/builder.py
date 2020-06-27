@@ -12,6 +12,14 @@ class DPYHTML5Translator(HTML5Translator):
         self.section_level -= 1
         self.body.append('</section>\n')
 
+    def visit_table(self, node):
+        self.body.append('<div class="table-wrapper">')
+        super().visit_table(node)
+
+    def depart_table(self, node):
+        super().depart_table(node)
+        self.body.append('</div>')
+
 class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
     # This is mostly copy pasted from Sphinx.
     def write_genindex(self) -> None:

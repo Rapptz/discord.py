@@ -804,6 +804,10 @@ dd {
   background-color: var(--api-entry-background);
 }
 
+.table-wrapper {
+  overflow-x: auto;
+}
+
 table.docutils {
   width: 100%;
 }
