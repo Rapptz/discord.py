@@ -176,8 +176,8 @@ body {
   min-height: 100%;
   grid-auto-rows: min-content auto min-content;
   grid-template-areas:
-    "n"
     "s"
+    "n"
     "c"
     "h"
     "f";
@@ -225,7 +225,20 @@ header > nav > a {
   grid-area: n;
   background-color: var(--secondary-accent);
   color: var(--secondary-text);
-  /* not shown on mobile */
+}
+
+/* these aren't shown on mobile */
+
+.sub-header > label {
+  display: none;
+}
+
+.sub-header > select {
+  display: none;
+}
+
+.sub-header > .settings {
+  color: var(--settings);
   display: none;
 }
 
@@ -907,6 +920,18 @@ div.code-block-caption {
   .sub-header {
     display: flex;
     align-items: center;
+  }
+
+  .sub-header > label {
+    display: initial;
+  }
+
+  .sub-header > select {
+    display: initial;
+  }
+
+  .sub-header > .settings {
+    display: initial;
   }
 
   aside {
