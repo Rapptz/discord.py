@@ -589,7 +589,7 @@ class CommandRegistrationError(ClientException):
     """An exception raised when the command can't be added
     because the name is already taken by a different command.
 
-    This inherits from :exc:`ClientException`
+    This inherits from :exc:`discord.ClientException`
 
     .. versionadded:: 1.4
 
