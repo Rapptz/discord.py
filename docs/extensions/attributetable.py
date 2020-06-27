@@ -147,6 +147,7 @@ def get_class_results(lookup, modulename, name, fullname):
     groups = OrderedDict([
         ('Attributes', []),
         ('Coroutines', []),
+        ('Classmethods', []),
         ('Methods', []),
         ('Decorators', []),
     ])
@@ -166,6 +167,8 @@ def get_class_results(lookup, modulename, name, fullname):
             doc = value.__doc__ or ''
             if inspect.iscoroutinefunction(value) or doc.startswith('|coro|'):
                 key = 'Coroutines'
+            elif isinstance(value, classmethod):
+                key = 'Classmethods'
             elif inspect.isfunction(value):
                 if doc.startswith(('A decorator', 'A shortcut decorator')):
                     # finicky but surprisingly consistent
