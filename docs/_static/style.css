@@ -892,6 +892,10 @@ div.code-block-caption {
 /* desktop stuff */
 
 @media screen and (min-width: 600px) {
+  .grid-item {
+    max-width: unset;
+  }
+
   .main-grid {
     grid-template-areas:
       "h h h h h h"
@@ -928,6 +932,7 @@ div.code-block-caption {
 
   .sub-header > select {
     display: initial;
+    margin-right: auto;
   }
 
   .sub-header > .settings {
@@ -1007,10 +1012,6 @@ div.code-block-caption {
   .sub-header > label {
     margin-left: 18.75%;
     margin-right: 1em;
-  }
-
-  .sub-header > select {
-    margin-right: auto;
   }
 
   .sub-header > .settings {
