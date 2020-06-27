@@ -231,6 +231,7 @@ header > nav > a {
 
 .sub-header > label {
   display: none;
+  margin-right: 1em;
 }
 
 .sub-header > select {
@@ -240,10 +241,8 @@ header > nav > a {
 .sub-header > .settings {
   color: var(--settings);
   display: none;
-}
-
-.sub-header > .settings {
-  color: var(--settings);
+  margin-left: 1em;
+  margin-right: 0.5em;
 }
 
 .sub-header > .settings:hover {
