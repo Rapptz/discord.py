@@ -1053,7 +1053,7 @@ class GroupMixin:
     Attributes
     -----------
     all_commands: :class:`dict`
-        A mapping of command name to :class:`.Command` or subclass
+        A mapping of command name to :class:`.Command`
         objects.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``.
@@ -1076,8 +1076,7 @@ class GroupMixin:
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`.Command` or its subclasses into the internal list
-        of commands.
+        """Adds a :class:`.Command` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
         :meth:`~.GroupMixin.group` shortcut decorators are used instead.
@@ -1111,7 +1110,7 @@ class GroupMixin:
             self.all_commands[alias] = command
 
     def remove_command(self, name):
-        """Remove a :class:`.Command` or subclasses from the internal list
+        """Remove a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to remove aliases.
@@ -1154,7 +1153,7 @@ class GroupMixin:
                 yield from command.walk_commands()
 
     def get_command(self, name):
-        """Get a :class:`.Command` or subclasses from the internal list
+        """Get a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to get aliases.
@@ -1869,7 +1868,6 @@ def is_nsfw():
 
 def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`.Command`
-    or its subclasses.
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based

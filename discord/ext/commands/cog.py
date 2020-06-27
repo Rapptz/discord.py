@@ -72,7 +72,7 @@ class CogMeta(type):
         The cog name. By default, it is the name of the class with no modification.
     command_attrs: :class:`dict`
         A list of attributes to apply to every command inside this cog. The dictionary
-        is passed into the :class:`Command` (or its subclass) options at ``__init__``.
+        is passed into the :class:`Command` options at ``__init__``.
         If you specify attributes inside the command attribute in the class, it will
         override the one specified inside this attribute. For example:
 

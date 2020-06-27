@@ -108,7 +108,7 @@ class Context(discord.abc.Messageable):
         Parameters
         -----------
         command: :class:`.Command`
-            A command or subclass of a command that is going to be called.
+            The command that is going to be called.
         \*args
             The arguments to to use.
         \*\*kwargs
