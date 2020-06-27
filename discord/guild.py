@@ -1591,7 +1591,7 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
-    async def edit_role_positions(self, *, positions, reason=None):
+    async def edit_role_positions(self, positions, *, reason=None):
         """|coro|
         
         Bulk edits a list of :class:`Role` in the guild.
