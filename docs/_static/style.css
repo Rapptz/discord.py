@@ -752,6 +752,8 @@ pre, code {
 
 code {
   background-color: var(--inline-code-background);
+  padding: .15em;
+  border-radius: 3px;
 }
 
 code.descname {
@@ -812,9 +814,12 @@ dd {
   background-color: var(--api-entry-background);
 }
 
+.table-wrapper {
+  overflow-x: auto;
+}
+
 table.docutils {
   width: 100%;
-  table-layout: fixed;
 }
 
 table.docutils.footnote {
@@ -839,7 +844,6 @@ table.docutils tbody tr td {
   border-top: solid 1px var(--table-border);
   padding: 7px 5px;
   vertical-align: top;
-  overflow-wrap: break-word;
 }
 table.docutils tbody tr:last-child th,
 table.docutils tbody tr:last-child td {
