@@ -224,7 +224,8 @@ class VoiceClient:
     def average_latency(self):
         """:class:`float`: Average of most recent 20 HEARTBEAT latencies in seconds.
         
-        .. versionadded:: 1.4"""
+        .. versionadded:: 1.4
+        """
         ws = self.ws
         return float("inf") if not ws else ws.average_latency
 
