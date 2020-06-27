@@ -131,7 +131,7 @@ def process_attributetable(app, doctree, fromdocname):
         for label, subitems in groups.items():
             if not subitems:
                 continue
-            table.append(class_results_to_node(label, subitems))
+            table.append(class_results_to_node(label, sorted(subitems)))
 
         table['python-class'] = fullname
 
