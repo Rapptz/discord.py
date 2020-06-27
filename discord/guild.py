@@ -412,7 +412,10 @@ class Guild(Hashable):
                 grouped[channel.id] = []
                 continue
 
-            grouped[channel.category_id].append(channel)
+            try:
+                grouped[channel.category_id].append(channel)
+            except KeyError:
+                grouped[channel.category_id] = [channel]
 
         def key(t):
             k, v = t
