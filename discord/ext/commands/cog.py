@@ -188,12 +188,16 @@ class Cog(metaclass=CogMeta):
         return self
 
     def get_commands(self):
-        r"""Returns a :class:`list` of :class:`.Command`\s that are
-        defined inside this cog.
+        r"""
+        Returns
+        --------
+        List[:class:`.Command`]
+            A :class:`list` of :class:`.Command`\s that are
+            defined inside this cog.
 
-        .. note::
+            .. note::
 
-            This does not include subcommands.
+                This does not include subcommands.
         """
         return [c for c in self.__cog_commands__ if c.parent is None]
 
@@ -221,7 +225,13 @@ class Cog(metaclass=CogMeta):
                     yield from command.walk_commands()
 
     def get_listeners(self):
-        """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog."""
+        """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog.
+
+        Returns
+        --------
+        List[Tuple[:class:`str`, :ref:`coroutine <coroutine>`]]
+            The listeners defined in this cog.
+        """
         return [(name, getattr(self, method_name)) for name, method_name in self.__cog_listeners__]
 
     @classmethod

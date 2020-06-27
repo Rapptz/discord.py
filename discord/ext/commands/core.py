@@ -147,7 +147,7 @@ class Command(_BaseCommand):
         then the first line of the long help text is used instead.
     usage: :class:`str`
         A replacement for arguments in the default help text.
-    aliases: Union[:class:`list`, :class:`tuple`]
+    aliases: Union[List[:class:`str`], Tuple[:class:`str`]]
         The list of aliases the command can be invoked under.
     enabled: :class:`bool`
         A boolean that indicates if the command is currently enabled.
@@ -384,7 +384,13 @@ class Command(_BaseCommand):
         return other
 
     def copy(self):
-        """Creates a copy of this command."""
+        """Creates a copy of this command.
+
+        Returns
+        --------
+        :class:`Command`
+            A new instance of this command.
+        """
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         return self._ensure_assignment_on_copy(ret)
 
@@ -574,7 +580,8 @@ class Command(_BaseCommand):
 
     @property
     def clean_params(self):
-        """Retrieves the parameter OrderedDict without the context or self parameters.
+        """OrderedDict[:class:`str`, :class:`inspect.Parameter`]:
+        Retrieves the parameter OrderedDict without the context or self parameters.
 
         Useful for inspecting signature.
         """
@@ -626,7 +633,7 @@ class Command(_BaseCommand):
 
     @property
     def root_parent(self):
-        """Retrieves the root parent of this command.
+        """Optional[:class:`Command`]: Retrieves the root parent of this command.
 
         If the command has no parents then it returns ``None``.
 
@@ -1235,7 +1242,13 @@ class Group(GroupMixin, Command):
         super().__init__(*args, **attrs)
 
     def copy(self):
-        """Creates a copy of this :class:`Group`."""
+        """Creates a copy of this :class:`Group`.
+
+        Returns
+        --------
+        :class:`Group`
+            A new instance of this group.
+        """
         ret = super().copy()
         for cmd in self.commands:
             ret.add_command(cmd.copy())

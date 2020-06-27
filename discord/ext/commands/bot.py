@@ -513,6 +513,11 @@ class BotBase(GroupMixin):
             The name of the cog you are requesting.
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
+
+        Returns
+        --------
+        Optional[:class:`Cog`]
+            The cog that was requested. If not found, returns ``None``.
         """
         return self.__cogs.get(name)
 

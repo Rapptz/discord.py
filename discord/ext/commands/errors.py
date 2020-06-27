@@ -90,7 +90,7 @@ class ConversionError(CommandError):
     ----------
     converter: :class:`discord.ext.commands.Converter`
         The converter that failed.
-    original
+    original: :exc:`Exception`
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """

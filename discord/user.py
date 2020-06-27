@@ -139,7 +139,7 @@ class BaseUser(_BaseUser):
 
     @property
     def avatar_url(self):
-        """Returns an :class:`Asset` for the avatar the user has.
+        """:class:`Asset`: Returns an :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
@@ -717,7 +717,7 @@ class User(BaseUser, discord.abc.Messageable):
 
     @property
     def relationship(self):
-        """Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise.
+        """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise.
 
         .. note::
 

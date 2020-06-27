@@ -143,6 +143,11 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
         The guild to pre-select in the authorization screen, if available.
     redirect_uri: :class:`str`
         An optional valid redirect URI.
+
+    Returns
+    --------
+    :class:`str`
+        The OAuth2 URL for inviting the bot into guilds.
     """
     url = 'https://discord.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
     if permissions is not None:
@@ -156,7 +161,16 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
 
 
 def snowflake_time(id):
-    """Returns the creation date in UTC of a Discord snowflake ID."""
+    """
+    Parameters
+    -----------
+    id: :class:`int`
+        The snowflake ID.
+
+    Returns
+    --------
+    :class:`datetime.datetime`
+        The creation date in UTC of a Discord snowflake ID."""
     return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
 
 def time_snowflake(datetime_obj, high=False):

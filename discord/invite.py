@@ -163,7 +163,13 @@ class PartialInviteGuild:
         return bool(self.icon and self.icon.startswith('a_'))
 
     def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """The same operation as :meth:`Guild.icon_url_as`."""
+        """The same operation as :meth:`Guild.icon_url_as`.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
         return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
@@ -172,7 +178,13 @@ class PartialInviteGuild:
         return self.banner_url_as()
 
     def banner_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.banner_url_as`."""
+        """The same operation as :meth:`Guild.banner_url_as`.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
         return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
@@ -181,7 +193,13 @@ class PartialInviteGuild:
         return self.splash_url_as()
 
     def splash_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.splash_url_as`."""
+        """The same operation as :meth:`Guild.splash_url_as`.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
 
 class Invite(Hashable):

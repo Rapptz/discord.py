@@ -86,7 +86,7 @@ class Permissions(BaseFlags):
 
     Attributes
     -----------
-    value
+    value: :class:`int`
         The raw value. This value is a bit array field of a 53-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
