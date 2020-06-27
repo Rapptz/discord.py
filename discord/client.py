@@ -654,7 +654,7 @@ class Client:
 
     @property
     def allowed_mentions(self):
-        """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
+        """Optional[:class:`~discord.AllowedMentions`]: The allowed mention configuration.
 
         .. versionadded:: 1.4
         """
