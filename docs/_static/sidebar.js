@@ -8,22 +8,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (next && next.tagName === "UL") {
             let icon = document.createElement('span');
             icon.className = 'fas fa-chevron-down collapsible-arrow';
+            ref.classList.add('ref-internal-padding')
+            if (next.parentElement.tagName == "LI") {
+                next.parentElement.classList.add('no-list-style')
+            }
             icon.addEventListener('click', () => {
                 if (icon.classList.contains('fa-chevron-down')) {
-                    icon.classList.remove('fa-chevron-down'); // safari doesn't support .replace yet(!)
-                    icon.classList.add('fa-chevron-left');
-                    let children = icon.nextElementSibling; 
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                    let children = icon.nextElementSibling.nextElementSibling; 
                     // <arrow><heading> 
-                    // --> <arrow><children>
+                    // --> <square><children>
                     children.style.display = "none";
                 } else {
-                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.remove('fa-chevron-right');
                     icon.classList.add('fa-chevron-down');
-                    let children = icon.nextElementSibling; 
+                    let children = icon.nextElementSibling.nextElementSibling; 
                     children.style.display = "block";
                 }
             })
-            ref.parentNode.insertBefore(icon, ref.nextElementSibling);
+            ref.parentNode.insertBefore(icon, ref);
         }
     }
 });

@@ -283,13 +283,15 @@ aside h3 {
 }
 
 .collapsible-arrow {
-  float: right;
   padding-right: 5px;
   padding-top: 5px;
+  left: -18px;
+  position: relative;
 }
 
-.collapsible-arrow:hover {
-  cursor: pointer;
+.ref-internal-padding {
+  position: relative;
+  left: -20px;
 }
 
 #settings-toggle {
