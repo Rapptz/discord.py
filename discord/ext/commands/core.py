@@ -142,9 +142,8 @@ class Command(_BaseCommand):
         The coroutine that is executed when the command is called.
     help: :class:`str`
         The long help text for the command.
-    brief: :class:`str`
-        The short help text for the command. If this is not specified
-        then the first line of the long help text is used instead.
+    brief: Optional[:class:`str`]
+        The short help text for the command.
     usage: :class:`str`
         A replacement for arguments in the default help text.
     aliases: Union[:class:`list`, :class:`tuple`]
