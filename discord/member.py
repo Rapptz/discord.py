@@ -382,6 +382,19 @@ class Member(discord.abc.Messageable, _BaseUser):
         if self.activities:
             return self.activities[0]
 
+    def has_role(self, role):
+        """
+        Checks if a member has the specified role.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        role: :class:`Role`
+            The role to check if the member has.
+        """
+        return self._roles.has(role.id)
+
     def mentioned_in(self, message):
         """Checks if the member is mentioned in the specified message.
 
