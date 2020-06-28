@@ -6,7 +6,7 @@
   <title>{{ title|striptags|e }}{{ titlesuffix }}</title>
   {%- block extrahead %} {% endblock %}
   <!-- end extra head -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="{{ pathto('_static/style.css', 1)|e }}" type="text/css" />
   <link rel="stylesheet" href="{{ pathto('_static/codeblocks.css', 1) }}" type="text/css" />
   {%- block css %}
@@ -81,19 +81,19 @@
         <div class="searchwrapper">
           <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
           <button type="submit">
-            <i class="fas fa-search"></i>
+            <span class="material-icons">search</span>
           </button>
         </div>
       </form>
-      <a accesskey="S" class="settings" onclick="openModal(settingsModal);"><i class='fas fa-cog'></i></a>
+      <a accesskey="S" class="settings" onclick="openModal(settingsModal);"><span class="material-icons">settings</span></a>
     </div>
     {#- The sidebar component #}
     <aside class="grid-item">
       <span id="hamburger-toggle">
-        <i class="fa fa-bars"></i>
+        <span class="material-icons">menu</span>
       </span>
       <span id="settings-toggle" class="settings" onclick="openModal(settingsModal);">
-        <i class='fas fa-cog'></i>
+        <span class="material-icons">settings</span>
       </span>
       <div id="sidebar">
         {%- include "localtoc.html" %}
@@ -134,7 +134,9 @@
 
   <div id="settings" class="modal" onclick="if (event.target == this){ closeModal(settingsModal); }" hidden>
     <div class="modal-content">
-      <span class="close" onclick="closeModal(settingsModal);" title="Close"><i class='fas fa-times'></i></span>
+      <span class="close" onclick="closeModal(settingsModal);" title="Close">
+        <span class="material-icons">close</span>
+      </span>
       <h1>Settings</h1>
 
       <div class='setting'>
