@@ -300,6 +300,9 @@ aside {
   background-color: var(--mobile-nav-background);
   color: var(--mobile-nav-text);
   z-index: 2;
+  max-height: 100vh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 aside h3 {
@@ -318,7 +321,7 @@ aside h3 {
 }
 
 .sidebar-toggle {
-  display: initial !important;
+  display: unset !important;
 }
 
 #sidebar {
@@ -987,6 +990,9 @@ div.code-block-caption {
     position: initial;
     background-color: var(--nav-background);
     color: var(--nav-text);
+    max-height: unset;
+    overflow-y: unset;
+    overscroll-behavior-y: unset;
   }
 
   aside h3 {
