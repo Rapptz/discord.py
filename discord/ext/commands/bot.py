@@ -215,7 +215,7 @@ class BotBase(GroupMixin):
             The function that was used as a global check.
         call_once: :class:`bool`
             If the function should only be called once per
-            :meth:`Command.invoke` call.
+            :meth:`.Command.invoke` call.
         """
 
         if call_once:
@@ -248,7 +248,7 @@ class BotBase(GroupMixin):
         r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
-        per :meth:`Command.invoke` call.
+        per :meth:`.Command.invoke` call.
 
         Regular global checks are called whenever a command is called
         or :meth:`.Command.can_run` is called. This type of check
