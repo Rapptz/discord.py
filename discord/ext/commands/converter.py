@@ -557,7 +557,7 @@ class _Greedy:
             raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
 
         if getattr(converter, '__origin__', None) is typing.Union and type(None) in converter.__args__:
-            raise TypeError('Greedy[Optional] is invalid.')
+            raise TypeError('Greedy[%r] is invalid.' % converter)
 
         return self.__class__(converter=converter)
 
