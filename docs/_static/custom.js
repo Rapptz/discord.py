@@ -58,6 +58,13 @@ Object.entries(settings).forEach(([name, setter]) => {
   }
 });
 
+if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  updateSetting({checked: e.matches, name: 'theme'})
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  updateSetting({checked: e.matches, name: 'theme'})
+});
+
 document.addEventListener('DOMContentLoaded', () => {
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
