@@ -53,7 +53,7 @@ class Snowflake(metaclass=abc.ABCMeta):
     abstract base class.
 
     If you want to create a snowflake on your own, consider using
-    :class:`Object`.
+    :class:`.Object`.
 
     Attributes
     -----------
@@ -597,7 +597,7 @@ class GuildChannel:
         target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
             The member or role to overwrite permissions for.
         overwrite: Optional[:class:`~discord.PermissionOverwrite`]
-            The permissions to allow and deny to the target, or `None` to
+            The permissions to allow and deny to the target, or ``None`` to
             delete the overwrite.
         \*\*permissions
             A keyword argument list of permissions to set for ease of use.
@@ -700,10 +700,10 @@ class GuildChannel:
         ------------
         max_age: :class:`int`
             How long the invite should last in seconds. If it's 0 then the invite
-            doesn't expire. Defaults to 0.
+            doesn't expire. Defaults to ``0``.
         max_uses: :class:`int`
             How many uses the invite could be used for. If it's 0 then there
-            are unlimited uses. Defaults to 0.
+            are unlimited uses. Defaults to ``0``.
         temporary: :class:`bool`
             Denotes that the invite grants temporary membership
             (i.e. they get kicked after they disconnect). Defaults to ``False``.

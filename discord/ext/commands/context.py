@@ -52,16 +52,14 @@ class Context(discord.abc.Messageable):
         :func:`on_command_error` event then this dict could be incomplete.
     prefix: :class:`str`
         The prefix that was used to invoke the command.
-    command
-        The command (i.e. :class:`.Command` or its subclasses) that is being
-        invoked currently.
+    command: :class:`Command`
+        The command that is being invoked currently.
     invoked_with: :class:`str`
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
-    invoked_subcommand
-        The subcommand (i.e. :class:`.Command` or its subclasses) that was
-        invoked. If no valid subcommand was invoked then this is equal to
-        ``None``.
+    invoked_subcommand: :class:`Command`
+        The subcommand that was invoked.
+        If no valid subcommand was invoked then this is equal to ``None``.
     subcommand_passed: Optional[:class:`str`]
         The string that was attempted to call a subcommand. This does not have
         to point to a valid registered subcommand and could just point to a
@@ -110,7 +108,7 @@ class Context(discord.abc.Messageable):
         Parameters
         -----------
         command: :class:`.Command`
-            A command or subclass of a command that is going to be called.
+            The command that is going to be called.
         \*args
             The arguments to to use.
         \*\*kwargs
@@ -188,7 +186,7 @@ class Context(discord.abc.Messageable):
 
     @property
     def valid(self):
-        """Checks if the invocation context is valid to be invoked with."""
+        """:class:`bool`: Checks if the invocation context is valid to be invoked with."""
         return self.prefix is not None and self.command is not None
 
     async def _get_channel(self):
@@ -196,7 +194,7 @@ class Context(discord.abc.Messageable):
 
     @property
     def cog(self):
-        """Returns the cog associated with this context's command. None if it does not exist."""
+        """:class:`.Cog`: Returns the cog associated with this context's command. None if it does not exist."""
 
         if self.command is None:
             return None
@@ -204,22 +202,28 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def guild(self):
-        """Returns the guild associated with this context's command. None if not available."""
+        """Optional[:class:`.Guild`]: Returns the guild associated with this context's command. None if not available."""
         return self.message.guild
 
     @discord.utils.cached_property
     def channel(self):
-        """Returns the channel associated with this context's command. Shorthand for :attr:`.Message.channel`."""
+        """:class:`.TextChannel`:
+        Returns the channel associated with this context's command. Shorthand for :attr:`.Message.channel`.
+        """
         return self.message.channel
 
     @discord.utils.cached_property
     def author(self):
-        """Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`"""
+        """Union[:class:`~discord.User`, :class:`.Member`]:
+        Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`
+        """
         return self.message.author
 
     @discord.utils.cached_property
     def me(self):
-        """Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts."""
+        """Union[:class:`.Member`, :class:`.ClientUser`]:
+        Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts.
+        """
         return self.guild.me if self.guild is not None else self.bot.user
 
     @property

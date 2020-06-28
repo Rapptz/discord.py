@@ -362,7 +362,7 @@ class Guild(Hashable):
 
     @property
     def me(self):
-        """Similar to :attr:`Client.user` except an instance of :class:`Member`.
+        """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
         self_id = self._state.user.id
@@ -370,7 +370,7 @@ class Guild(Hashable):
 
     @property
     def voice_client(self):
-        """Returns the :class:`VoiceClient` associated with this guild, if any."""
+        """Optional[:class:`VoiceClient`:] Returns the :class:`VoiceClient` associated with this guild, if any."""
         return self._state._get_voice_client(self.id)
 
     @property
@@ -526,7 +526,7 @@ class Guild(Hashable):
 
     @property
     def roles(self):
-        """Returns a :class:`list` of the guild's roles in hierarchy order.
+        """List[:class:`Role`]: Returns a :class:`list` of the guild's roles in hierarchy order.
 
         The first element of this list will be the lowest role in the
         hierarchy.
@@ -550,7 +550,7 @@ class Guild(Hashable):
 
     @property
     def default_role(self):
-        """Gets the @everyone role that all members have by default."""
+        """:class:`Role`: Gets the @everyone role that all members have by default."""
         return self.get_role(self.id)
 
     @property
@@ -695,12 +695,12 @@ class Guild(Hashable):
 
     @property
     def member_count(self):
-        """Returns the true member count regardless of it being loaded fully or not."""
+        """:class:`int`: Returns the true member count regardless of it being loaded fully or not."""
         return self._member_count
 
     @property
     def chunked(self):
-        """Returns a boolean indicating if the guild is "chunked".
+        """:class:`bool`: Returns a boolean indicating if the guild is "chunked".
 
         A chunked guild means that :attr:`member_count` is equal to the
         number of members stored in the internal :attr:`members` cache.
@@ -748,7 +748,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Member`
+        Optional[:class:`Member`]
             The member in this guild with the associated name. If not found
             then ``None`` is returned.
         """
@@ -903,6 +903,11 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+
+        Returns
+        -------
+        :class:`VoiceChannel`
+            The channel that was just created.
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
@@ -920,6 +925,11 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
+
+        Returns
+        -------
+        :class:`CategoryChannel`
+            The channel that was just created.
         """
         data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         channel = CategoryChannel(state=self._state, guild=self, data=data)

@@ -93,7 +93,7 @@ Cogs
 .. autoclass:: discord.ext.commands.CogMeta
     :members:
 
-.. _ext_commands_api_formatters:
+.. _ext_commands_help_command:
 
 Help Commands
 -----------------

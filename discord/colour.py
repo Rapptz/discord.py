@@ -114,7 +114,7 @@ class Colour:
 
     @classmethod
     def default(cls):
-        """A factory method that returns a :class:`Colour` with a value of 0."""
+        """A factory method that returns a :class:`Colour` with a value of ``0``."""
         return cls(0)
 
     @classmethod

@@ -123,10 +123,10 @@ class Client:
     -----------
     max_messages: Optional[:class:`int`]
         The maximum number of messages to store in the internal message cache.
-        This defaults to 1000. Passing in ``None`` disables the message cache.
+        This defaults to ``1000``. Passing in ``None`` disables the message cache.
 
         .. versionchanged:: 1.3
-            Allow disabling the message cache and change the default size to 1000.
+            Allow disabling the message cache and change the default size to ``1000``.
     loop: Optional[:class:`asyncio.AbstractEventLoop`]
         The :class:`asyncio.AbstractEventLoop` to use for asynchronous operations.
         Defaults to ``None``, in which case the default event loop is used via
@@ -138,7 +138,7 @@ class Client:
     proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
         An object that represents proxy HTTP Basic Authorization.
     shard_id: Optional[:class:`int`]
-        Integer starting at 0 and less than :attr:`.shard_count`.
+        Integer starting at ``0`` and less than :attr:`.shard_count`.
     shard_count: Optional[:class:`int`]
         The total number of shards.
     fetch_offline_members: :class:`bool`
@@ -257,7 +257,7 @@ class Client:
 
     @property
     def user(self):
-        """Optional[:class:`.ClientUser`]: Represents the connected client. None if not logged in."""
+        """Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in."""
         return self._connection.user
 
     @property
@@ -654,7 +654,7 @@ class Client:
 
     @property
     def allowed_mentions(self):
-        """Optional[:class:`AllowedMentions`]: The allowed mention configuration.
+        """Optional[:class:`~discord.AllowedMentions`]: The allowed mention configuration.
 
         .. versionadded:: 1.4
         """
@@ -999,7 +999,7 @@ class Client:
             The number of guilds to retrieve.
             If ``None``, it retrieves every guild you have access to. Note, however,
             that this would make it a slow operation.
-            Defaults to 100.
+            Defaults to ``100``.
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
             If a date is provided it must be a timezone-naive datetime representing UTC time.

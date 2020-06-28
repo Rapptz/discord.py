@@ -635,7 +635,7 @@ class Message:
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
-        r"""A property that returns the content that is rendered
+        r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
         In the case of :attr:`MessageType.default`\, this just returns the
