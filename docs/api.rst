@@ -814,7 +814,7 @@ Profile
 
         An example entry can be seen below: ::
 
-            {type: "twitch", id: "92473777", name: "discordapp"}
+            {"type": "twitch", "id": "92473777", "name": "discordapp"}
 
         :type: List[Dict[:class:`str`, :class:`str`]]
 
