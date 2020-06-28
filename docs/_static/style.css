@@ -329,9 +329,10 @@ aside h3 {
   float: right;
 }
 
-.fa-bars, .fa-times, .fa-cog {
-  font-size: 2em;
+aside .material-icons,
+.settings > .material-icons {
   cursor: pointer;
+  font-size: 2em;
 }
 
 .sidebar-toggle {
@@ -504,10 +505,7 @@ div.modal input {
   font-size: 0.875em;
   padding: 0.2em 0.5em;
   border-bottom-left-radius: 4px;
-}
-
-.copy > .fa-clipboard-check {
-  padding: 0 0.875px;
+  display: flex;
 }
 
 /* -- body styles --------------------------------------------------------- */
@@ -1129,10 +1127,6 @@ div.code-block-caption {
 
   .sub-header > .search {
     width: 20%;
-  }
-
-  .sub-header .fa-cog {
-    font-size: 1.5em;
   }
 
   .py-attribute-table-column:not(:first-child) {

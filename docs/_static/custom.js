@@ -71,8 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.tagName == "A" && sidebar.classList.contains("sidebar-toggle")) {
       sidebar.classList.remove("sidebar-toggle");
       let button = hamburgerToggle.firstElementChild;
-      button.classList.remove("fa-times");
-      button.classList.add("fa-bars");
+      button.textContent = "menu";
 
       // Scroll a little up to actually see the header
       // Note: this is generally around ~55px
@@ -87,9 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
   hamburgerToggle.addEventListener("click", (e) => {
     sidebar.classList.toggle("sidebar-toggle");
     let button = hamburgerToggle.firstElementChild;
-    const isHamburger = button.classList.contains("fa-bars");
-    button.classList.toggle("fa-bars", !isHamburger);
-    button.classList.toggle("fa-times", isHamburger);
+    if (button.textContent == "menu") {
+      button.textContent = "close";
+    }
+    else {
+      button.textContent = "menu";
+    }
   });
 
   const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
