@@ -326,7 +326,7 @@ class ConnectionState:
             else:
                 log.info('Finished requesting guild member chunks for %d guilds.', len(guilds))
 
-    async def query_members(self, guild, query, limit, cache):
+    async def query_members(self, guild, query, limit, user_ids, cache):
         guild_id = guild.id
         ws = self._get_websocket(guild_id)
         if ws is None:
@@ -341,7 +341,7 @@ class ConnectionState:
         future = self.receive_member_query(guild_id, nonce)
         try:
             # start the query operation
-            await ws.request_chunks(guild_id, query, limit, nonce=nonce)
+            await ws.request_chunks(guild_id, query=query, limit=limit, user_ids=user_ids, nonce=nonce)
             members = await asyncio.wait_for(future, timeout=5.0)
 
             if cache:
@@ -747,7 +747,7 @@ class ConnectionState:
 
     async def _chunk_and_dispatch(self, guild, unavailable):
         chunks = list(self.chunks_needed(guild))
-        await self.chunker(guild)
+        await self.chunker(guild.id)
         if chunks:
             try:
                 await utils.sane_wait_for(chunks, timeout=len(chunks))
@@ -1048,8 +1048,8 @@ class AutoShardedConnectionState(ConnectionState):
         self._ready_task = None
         self.shard_ids = ()
 
-    async def chunker(self, guild_id, query='', limit=0, *, shard_id, nonce=None):
-        ws = self._get_websocket(shard_id=shard_id)
+    async def chunker(self, guild_id, query='', limit=0, *, shard_id=None, nonce=None):
+        ws = self._get_websocket(guild_id, shard_id=shard_id)
         await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
 
     async def request_offline_members(self, guilds, *, shard_id):

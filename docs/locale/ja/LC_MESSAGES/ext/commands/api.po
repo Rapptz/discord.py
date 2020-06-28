@@ -1525,7 +1525,7 @@ msgstr ""
 #: discord.ext.commands.Bot.login:9 of
 msgid ""
 "Logging on with a user token is against the Discord `Terms of Service "
-"<https://support.discordapp.com/hc/en-us/articles/115002192352>`_ and "
+"<https://support.discord.com/hc/en-us/articles/115002192352>`_ and "
 "doing so might potentially get your account banned. Use this at your own "
 "risk."
 msgstr ""

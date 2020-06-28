@@ -328,7 +328,7 @@ They will be enumerated here.
 
     - Use :attr:`Client.emojis` instead.
 
-` ``Client.messages``
+- ``Client.messages``
 
     - Use read-only :attr:`Client.cached_messages` instead.
 

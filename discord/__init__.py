@@ -28,7 +28,7 @@ from .partial_emoji import PartialEmoji
 from .activity import *
 from .channel import *
 from .guild import Guild
-from .flags import SystemChannelFlags, MessageFlags
+from .flags import *
 from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import Message, Attachment
@@ -41,6 +41,7 @@ from .file import File
 from .colour import Color, Colour
 from .integrations import Integration, IntegrationAccount
 from .invite import Invite, PartialInviteChannel, PartialInviteGuild
+from .template import Template
 from .widget import Widget, WidgetMember, WidgetChannel
 from .object import Object
 from .reaction import Reaction

@@ -31,6 +31,11 @@ class File:
     """A parameter object used for :meth:`abc.Messageable.send`
     for sending file objects.
 
+    .. note::
+
+        File objects are single use and are not meant to be reused in
+        multiple :meth:`abc.Messageable.send`\s.
+
     Attributes
     -----------
     fp: Union[:class:`str`, :class:`io.BufferedIOBase`]

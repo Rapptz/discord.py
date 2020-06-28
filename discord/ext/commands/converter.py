@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import re
 import inspect
+import typing
 
 import discord
 
@@ -194,7 +195,7 @@ class MessageConverter(Converter):
     async def convert(self, ctx, argument):
         id_regex = re.compile(r'^(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
         link_regex = re.compile(
-            r'^https?://(?:(ptb|canary)\.)?discordapp\.com/channels/'
+            r'^https?://(?:(ptb|canary)\.)?discord(?:app)?\.com/channels/'
             r'(?:([0-9]{15,21})|(@me))'
             r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
         )
@@ -554,6 +555,9 @@ class _Greedy:
 
         if converter is str or converter is type(None) or converter is _Greedy:
             raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+
+        if getattr(converter, '__origin__', None) is typing.Union and type(None) in converter.__args__:
+            raise TypeError('Greedy[%r] is invalid.' % converter)
 
         return self.__class__(converter=converter)
 

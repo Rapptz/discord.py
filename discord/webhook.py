@@ -53,7 +53,7 @@ class WebhookAdapter:
         The webhook that owns this adapter.
     """
 
-    BASE = 'https://discordapp.com/api/v7'
+    BASE = 'https://discord.com/api/v7'
 
     def _prepare(self, webhook):
         self._webhook_id = webhook.id
@@ -453,14 +453,12 @@ class Webhook:
 
     @property
     def url(self):
-        """Returns the webhook's url."""
-        return 'https://discordapp.com/api/webhooks/{}/{}'.format(self.id, self.token)
+        """:class:`str` : Returns the webhook's url."""
+        return 'https://discord.com/api/webhooks/{}/{}'.format(self.id, self.token)
 
     @classmethod
     def partial(cls, id, token, *, adapter):
         """Creates a partial :class:`Webhook`.
-
-        A partial webhook is just a webhook object with an ID and a token.
 
         Parameters
         -----------
@@ -472,6 +470,12 @@ class Webhook:
             The webhook adapter to use when sending requests. This is
             typically :class:`AsyncWebhookAdapter` for :doc:`aiohttp <aio:index>` or
             :class:`RequestsWebhookAdapter` for :doc:`req:index`.
+
+        Returns
+        --------
+        :class:`Webhook`
+            A partial :class:`Webhook`.
+            A partial webhook is just a webhook object with an ID and a token.
         """
 
         if not isinstance(adapter, WebhookAdapter):
@@ -502,9 +506,15 @@ class Webhook:
         -------
         InvalidArgument
             The URL is invalid.
+
+        Returns
+        --------
+        :class:`Webhook`
+            A partial :class:`Webhook`.
+            A partial webhook is just a webhook object with an ID and a token.
         """
 
-        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
+        m = re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         data = m.groupdict()
@@ -560,7 +570,7 @@ class Webhook:
 
     @property
     def avatar_url(self):
-        """Returns an :class:`Asset` for the avatar the webhook has.
+        """:class:`Asset`: Returns an :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
         the default avatar is returned instead.
