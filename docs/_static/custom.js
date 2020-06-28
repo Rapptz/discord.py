@@ -25,8 +25,11 @@ function changeDocumentation(element) {
   window.location = element.value;
 }
 
-function updateSetting(element) {
+function updateSetting(element, userOverrided=true) {
   localStorage.setItem(element.name, element.checked);
+  if (userOverrided) {
+    localStorage.setItem('userOverridedSettings', userOverrided);
+  }
   if (element.name in settings) {
     settings[element.name](element.checked);
   }
@@ -58,12 +61,18 @@ Object.entries(settings).forEach(([name, setter]) => {
   }
 });
 
-if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  updateSetting({checked: e.matches, name: 'theme'})
+function checkColorScheme(matchedMedia, first=false) {
+  let userOverrided = localStorage.getItem('userOverridedSettings')
+  if (!userOverrided) {
+    updateSetting({checked: matchedMedia.matches, name: 'useDarkTheme'}, false)
+    if (first) {
+      matchedMedia.addEventListener('change', checkColorScheme);
+    }
+  }
 }
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-  updateSetting({checked: e.matches, name: 'theme'})
-});
+
+let matchedMedia = window.matchMedia('(prefers-color-scheme: dark)')
+checkColorScheme(matchedMedia, true)
 
 document.addEventListener('DOMContentLoaded', () => {
 
