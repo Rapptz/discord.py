@@ -480,6 +480,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_guild_integrations_update(guild)
 
+    .. versionadded:: 1.4
+
     Called whenever an integration is created, modified, or removed from a guild.
 
     :param guild: The guild that had its integrations updated.
@@ -1670,7 +1672,6 @@ of :class:`enum.Enum`.
 
         The action is the update of something.
 
-
 .. class:: RelationshipType
 
     Specifies the type of :class:`Relationship`.
@@ -1810,6 +1811,24 @@ of :class:`enum.Enum`.
 
         Represents a webhook that is internally managed by Discord, used for following channels.
 
+.. class:: ExpireBehaviour
+
+    Represents the behaviour the :class:`Integration` should perform
+    when a user's subscription has finished.
+
+    There is an alias for this called ``ExpireBehavior``.
+
+    .. versionadded:: 1.4
+
+    .. attribute:: remove_role
+
+        This will remove the :attr:`Integration.role` from the user
+        when their subscription is finished.
+
+    .. attribute:: kick
+
+        This will kick the user when their subscription is finished.
+
 .. class:: DefaultAvatar
 
     Represents the default avatar of a Discord :class:`User`
@@ -1837,6 +1856,7 @@ of :class:`enum.Enum`.
 
         Represents the default avatar with the color red.
         See also :attr:`Colour.red`
+
 
 Async Iterator
 ----------------
@@ -2506,6 +2526,15 @@ Guild
 
     .. automethod:: audit_logs
         :async-for:
+
+Integration
+~~~~~~~~~~~~
+
+.. autoclass:: Integration()
+    :members:
+
+.. autoclass:: IntegrationAccount()
+    :members:
 
 Member
 ~~~~~~

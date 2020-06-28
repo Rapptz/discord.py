@@ -712,6 +712,38 @@ class HTTPClient:
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
 
+    def get_all_integrations(self, guild_id):
+        r = Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id)
+
+        return self.request(r)
+
+    def create_integration(self, guild_id, type, id):
+        payload = {
+            'type': type,
+            'id': id
+        }
+
+        r = Route('POST', '/guilds/{guild_id}/integrations', guild_id=guild_id)
+        return self.request(r, json=payload)
+
+    def edit_integration(self, guild_id, integration_id, **payload):
+        r = Route('PATCH', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id,
+                  integration_id=integration_id)
+
+        return self.request(r, json=payload)
+
+    def sync_integration(self, guild_id, integration_id):
+        r = Route('POST', '/guilds/{guild_id}/integrations/{integration_id}/sync', guild_id=guild_id,
+                  integration_id=integration_id)
+
+        return self.request(r)
+
+    def delete_integration(self, guild_id, integration_id):
+        r = Route('DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id,
+                  integration_id=integration_id)
+
+        return self.request(r)
+
     def get_audit_logs(self, guild_id, limit=100, before=None, after=None, user_id=None, action_type=None):
         params = {'limit': limit}
         if before:

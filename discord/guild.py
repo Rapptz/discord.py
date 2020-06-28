@@ -46,6 +46,8 @@ from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
+from .integrations import Integration
+
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -1514,6 +1516,100 @@ class Guild(Hashable):
 
             This method is an API call.
             For general usage, consider iterating over :attr:`emojis` instead.
+
+        Parameters
+        -------------
+        emoji_id: :class:`int`
+            The emoji's ID.
+
+        Raises
+        ---------
+        NotFound
+            The emoji requested could not be found.
+        HTTPException
+            An error occurred fetching the emoji.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The retrieved emoji.
+        """
+        data = await self._state.http.get_custom_emoji(self.id, emoji_id)
+        return Emoji(guild=self, state=self._state, data=data)
+
+    async def create_integration(self, *, type, id):
+        """|coro|
+
+        Attaches an integration to the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        type: :class:`str`
+            The integration type (e.g. Twitch).
+        id: :class:`int`
+            The integration ID.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to create the integration.
+        HTTPException
+            The account could not be found.
+        """
+        await self._state.http.create_integration(self.id, type, id)
+
+    async def integrations(self):
+        """|coro|
+
+        Returns a list of all integrations attached to the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to create the integration.
+        HTTPException
+            Fetching the integrations failed.
+
+        Returns
+        --------
+        List[:class:`Integration`]
+            The list of integrations that are attached to the guild.
+        """
+        data = await self._state.http.get_all_integrations(self.id)
+        return [Integration(guild=self, data=d) for d in data]
+
+    async def fetch_emojis(self):
+        """|coro|
+
+        Retrieves all custom :class:`Emoji`s from the guild.
+
+        Raises
+        ---------
+        HTTPException
+            An error occurred fetching the emojis.
+
+        Returns
+        --------
+        List[:class:`Emoji`]
+            The retrieved emojis.
+        """
+        data = await self._state.http.get_all_custom_emojis(self.id)
+        return [Emoji(guild=self, state=self._state, data=d) for d in data]
+
+    async def fetch_emoji(self, emoji_id):
+        """|coro|
+
+        Retrieves a custom :class:`Emoji` from the guild.
 
         Parameters
         -------------

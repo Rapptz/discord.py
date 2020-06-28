@@ -39,6 +39,7 @@ from .permissions import Permissions, PermissionOverwrite
 from .role import Role
 from .file import File
 from .colour import Color, Colour
+from .integrations import Integration, IntegrationAccount
 from .invite import Invite, PartialInviteChannel, PartialInviteGuild
 from .template import Template
 from .widget import Widget, WidgetMember, WidgetChannel
