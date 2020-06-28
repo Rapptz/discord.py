@@ -377,6 +377,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ExtensionNotFound
     :members:
 
+.. autoexception:: discord.ext.commands.CommandRegistrationError
+    :members:
+
 
 Exception Hierarchy
 +++++++++++++++++++++
@@ -418,3 +421,5 @@ Exception Hierarchy
             - :exc:`~.commands.NoEntryPointError`
             - :exc:`~.commands.ExtensionFailed`
             - :exc:`~.commands.ExtensionNotFound`
+    - :exc:`~.ClientException`
+        - :exc:`~.commands.CommandRegistrationError`

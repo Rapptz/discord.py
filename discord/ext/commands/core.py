@@ -1080,6 +1080,9 @@ class GroupMixin:
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
         :meth:`~.GroupMixin.group` shortcut decorators are used instead.
 
+        .. versionchanged:: 1.4
+             Raise :exc:`.CommandRegistrationError` instead of generic :exc:`.ClientException`
+
         Parameters
         -----------
         command: :class:`Command`
@@ -1087,8 +1090,8 @@ class GroupMixin:
 
         Raises
         -------
-        :exc:`.ClientException`
-            If the command is already registered.
+        :exc:`.CommandRegistrationError`
+            If the command or its alias is already registered by different command.
         TypeError
             If the command passed is not a subclass of :class:`.Command`.
         """
@@ -1100,12 +1103,12 @@ class GroupMixin:
             command.parent = self
 
         if command.name in self.all_commands:
-            raise discord.ClientException('Command {0.name} is already registered.'.format(command))
+            raise CommandRegistrationError(command.name)
 
         self.all_commands[command.name] = command
         for alias in command.aliases:
             if alias in self.all_commands:
-                raise discord.ClientException('The alias {} is already an existing command or alias.'.format(alias))
+                raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
     def remove_command(self, name):
