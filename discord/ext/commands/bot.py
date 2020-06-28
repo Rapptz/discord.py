@@ -996,11 +996,11 @@ class Bot(BotBase, discord.Client):
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.
     owner_ids: Optional[Collection[:class:`int`]]
-        The user IDs that owns the bot. This is similar to `owner_id`.
+        The user IDs that owns the bot. This is similar to :attr:`owner_id`.
         If this is not set and the application is team based, then it is
         fetched automatically using :meth:`~.Bot.application_info`.
         For performance reasons it is recommended to use a :class:`set`
-        for the collection. You cannot set both `owner_id` and `owner_ids`.
+        for the collection. You cannot set both ``owner_id`` and ``owner_ids``.
 
         .. versionadded:: 1.3
     """
