@@ -214,7 +214,7 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def author(self):
-        """Union[:class:`.User`, :class:`.Member`]:
+        """Union[:class:`~discord.User`, :class:`.Member`]:
         Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`
         """
         return self.message.author
