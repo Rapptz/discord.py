@@ -1765,6 +1765,72 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
+    async def edit_role_positions(self, positions, *, reason=None):
+        """|coro|
+        
+        Bulk edits a list of :class:`Role` in the guild.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Example:
+
+        .. code-block:: python3
+
+            positions = {
+                bots_role: 1, # penultimate role
+                tester_role: 2,
+                admin_role: 6
+            }
+
+            await guild.edit_role_positions(positions=positions)
+
+        Parameters
+        -----------
+        positions
+            A :class:`dict` of :class:`Role` to :class:`int` to change the positions
+            of each given role.
+        reason: Optional[:class:`str`]
+            The reason for editing the role positions. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to move the roles.
+        HTTPException
+            Moving the roles failed.
+        InvalidArgument
+            An invalid keyword argument was given.
+
+        Returns
+        --------
+        List[:class:`Role`]
+            A list of all the roles in the guild.
+        """
+        if not isinstance(positions, dict):
+            raise InvalidArgument('positions parameter expects a dict.')
+
+        role_positions = []
+        for role, position in positions.items():
+
+            payload = {
+                'id': role.id,
+                'position': position
+            }
+
+            role_positions.append(payload)
+
+        data = await self._state.http.move_role_position(self.id, role_positions, reason=reason)
+        roles = []
+        for d in data:
+            role = Role(guild=self, data=d, state=self._state)
+            roles.append(role)
+            self._roles[role.id] = role
+
+        return roles
+
     async def kick(self, user, *, reason=None):
         """|coro|
 
