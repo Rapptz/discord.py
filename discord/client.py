@@ -37,6 +37,7 @@ import websockets
 from .user import User, Profile
 from .asset import Asset
 from .invite import Invite
+from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .channel import _channel_factory
@@ -1019,6 +1020,32 @@ class Client:
         """
         return GuildIterator(self, limit=limit, before=before, after=after)
 
+    async def fetch_template(self, code):
+        """|coro|
+
+        Gets a :class:`.Template` from a discord.new URL or code.
+
+        Parameters
+        -----------
+        code: :class:`str`
+            The Discord Template Code or URL (must be a discord.new URL).
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            The template is invalid.
+        :exc:`.HTTPException`
+            Getting the template failed.
+
+        Returns
+        --------
+        :class:`.Template`
+            The template from the URL/code.
+        """
+        code = utils.resolve_template(code)
+        data = await self.http.get_template(code)
+        return Template(data=data, state=self._connection)
+
     async def fetch_guild(self, guild_id):
         """|coro|
 
@@ -1053,7 +1080,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None):
+    async def create_guild(self, name, region=None, icon=None, *, code=None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1070,6 +1097,10 @@ class Client:
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
+        code: Optional[:class:`str`]
+            The code for a template to create the guild with.
+
+            .. versionadded:: 1.4
 
         Raises
         ------
@@ -1092,7 +1123,10 @@ class Client:
         else:
             region = region.value
 
-        data = await self.http.create_guild(name, region, icon)
+        if code:
+            data = await self.http.create_from_template(code, name, region, icon)
+        else:
+            data = await self.http.create_guild(name, region, icon)
         return Guild(data=data, state=self._connection)
 
     # Invite management

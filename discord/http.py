@@ -630,6 +630,17 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
+    def get_template(self, code):
+        return self.request(Route('GET', '/guilds/templates/{code}', code=code))
+    
+    def create_from_template(self, code, name, region, icon):
+        payload = {
+            'name': name,
+            'icon': icon,
+            'region': region
+        }
+        return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
+
     def get_bans(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 

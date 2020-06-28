@@ -2625,6 +2625,12 @@ Invite
 .. autoclass:: Invite()
     :members:
 
+Template
+~~~~~~~~~
+
+.. autoclass:: Template()
+    :members:
+
 WidgetChannel
 ~~~~~~~~~~~~~~~
 

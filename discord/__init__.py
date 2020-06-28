@@ -40,6 +40,7 @@ from .role import Role
 from .file import File
 from .colour import Color, Colour
 from .invite import Invite, PartialInviteChannel, PartialInviteGuild
+from .template import Template
 from .widget import Widget, WidgetMember, WidgetChannel
 from .object import Object
 from .reaction import Reaction
