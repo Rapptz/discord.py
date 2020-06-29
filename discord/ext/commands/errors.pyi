@@ -1,4 +1,4 @@
-from discord.errors import DiscordException
+from discord.errors import ClientException, DiscordException
 from discord import Permissions, abc
 from inspect import Parameter
 
@@ -138,3 +138,8 @@ class ExtensionNotFound(ExtensionError):
     original: ImportError
 
     def __init__(self, name: str, original: Optional[ImportError] = ...) -> None: ...
+
+class CommandRegistrationError(ClientException):
+    alias_conflict: bool
+
+    def __init__(self, name: str, *, alias_conflict: bool = ...) -> None: ...

@@ -210,6 +210,12 @@ class WebhookType(Enum):
     incoming: int
     channel_follower: int
 
+class ExpireBehaviour(Enum):
+    remove_role: int
+    kick: int
+
+ExpireBehavior = ExpireBehaviour
+
 _EnumType = TypeVar('_EnumType', bound=Enum)
 
 @overload

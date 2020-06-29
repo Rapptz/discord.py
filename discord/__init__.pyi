@@ -24,7 +24,9 @@ from .permissions import Permissions as Permissions, PermissionOverwrite as Perm
 from .role import Role as Role
 from .file import File as File
 from .colour import Color as Color, Colour as Colour
+from .integrations import Integration as Integration, IntegrationAccount as IntegrationAccount
 from .invite import Invite as Invite
+from .template import Template as Template
 from .widget import Widget as Widget, WidgetMember as WidgetMember, WidgetChannel as WidgetChannel
 from .object import Object as Object
 from .reaction import Reaction as Reaction

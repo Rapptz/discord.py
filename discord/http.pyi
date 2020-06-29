@@ -417,6 +417,39 @@ class _WidgetDict(_BaseWidgetDict, total=False):
     channels: List[_WidgetChannelDict]
     members: List[_WidgetMemberDict]
 
+class _BaseTemplateDict(TypedDict):
+    code: str
+    usage_count: int
+    name: str
+    description: str
+    source_guild_id: int
+    serialized_source_guild: _GuildDict
+
+class _TemplateDict(_BaseTemplateDict, total=False):
+    creator: _UserDict
+    created_at: str
+    updated_at: str
+
+class _IntegrationAccountDict(TypedDict):
+    id: int
+    name: str
+
+class _BaseIntegrationDict(TypedDict):
+    id: int
+    name: str
+    type: str
+    enabled: bool
+    syncing: bool
+    role_id: bool
+    expire_behavior: int
+    expire_grace_period: int
+    user: _UserDict
+    account: _IntegrationAccountDict
+    synced_at: str
+
+class _IntegrationDict(_BaseIntegrationDict, total=False):
+    enable_emoticons: bool
+
 async def json_or_text(response: Any) -> Any: ...
 
 class Route:
@@ -530,6 +563,8 @@ class HTTPClient:
     def create_guild(self, name: str, region: str, icon: str) -> Coroutine[Any, Any, _GuildDict]: ...
     def edit_guild(self, guild_id: int, *, reason: Optional[str] = ...,
                    **fields: Any) -> Coroutine[Any, Any, _GuildDict]: ...
+    def get_template(self, code: str) -> Coroutine[Any, Any, _TemplateDict]: ...
+    def create_from_template(self, code: str, name: str, region: str, icon: str) -> Coroutine[Any, Any, _GuildDict]: ...
     def get_bans(self, guild_id: int) -> Coroutine[Any, Any, List[_GuildBanDict]]: ...
     def get_ban(self, user_id: int, guild_id: int) -> Coroutine[Any, Any, _GuildBanDict]: ...
     def get_vanity_code(self, guild_id: int) -> Coroutine[Any, Any, _InviteDict]: ...
@@ -549,6 +584,11 @@ class HTTPClient:
                             reason: Optional[str] = ...) -> Coroutine[Any, Any, None]: ...
     def edit_custom_emoji(self, guild_id: int, emoji_id: int, *, name: str, roles: Optional[List[int]] = ...,
                           reason: Optional[str] = ...) -> Coroutine[Any, Any, _EmojiDict]: ...
+    def get_all_integrations(self, guild_id: int) -> Coroutine[Any, Any, List[_IntegrationDict]]: ...
+    def create_integration(self, guild_id: int, type: str, id: int) -> Coroutine[Any, Any, None]: ...
+    def edit_integration(self, guild_id: int, integration_id: int, **payload: Any) -> Coroutine[Any, Any, None]: ...
+    def sync_integration(self, guild_id: int, integration_id: int) -> Coroutine[Any, Any, None]: ...
+    def delete_integration(self, guild_id: int, integration_id: int) -> Coroutine[Any, Any, None]: ...
     def get_audit_logs(self, guild_id: int, limit: int = ..., before: Optional[int] = ...,
                        after: Optional[int] = ..., user_id: Optional[int] = ...,
                        action_type: Optional[int] = ...) -> Coroutine[Any, Any, _AuditLogDict]: ...
