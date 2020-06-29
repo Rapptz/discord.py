@@ -54,7 +54,7 @@ class WebhookAdapter:
         The webhook that owns this adapter.
     """
 
-    BASE = 'https://discord.com/api/v7'
+    BASE = 'https://discordapp.com/api/v7'
 
     def _prepare(self, webhook):
         self._webhook_id = webhook.id
@@ -114,7 +114,7 @@ class WebhookAdapter:
         finally:
             cleanup()
 
-    def execute_webhook(self, *, payload, wait=False, file=None, files=None):
+    def execute_webhook(self, *, payload, wait=False, file=None, files=None, headers=None):
         cleanup = None
         if file is not None:
             multipart = {
@@ -146,7 +146,7 @@ class WebhookAdapter:
         url = '%s?wait=%d' % (self._request_url, wait)
         maybe_coro = None
         try:
-            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
+            maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass, headers=headers)
         finally:
             if maybe_coro is not None and cleanup is not None:
                 if not asyncio.iscoroutine(maybe_coro):
@@ -174,8 +174,8 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
-        headers = {}
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None, headers=None):
+        headers = headers or {}
         data = None
         files = files or []
         if payload:
@@ -260,8 +260,8 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None, *, files=None):
-        headers = {}
+    def request(self, verb, url, payload=None, multipart=None, *, files=None, headers=None):
+        headers = headers or {}
         data = None
         files = files or []
         if payload:
@@ -401,6 +401,24 @@ class Webhook(Hashable):
         webhook = Webhook.partial(123456, 'abcdefg', adapter=RequestsWebhookAdapter())
         webhook.send('Hello World', username='Foo')
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two webhooks are equal.
+
+        .. describe:: x != y
+
+            Checks if two webhooks are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the webhooks's hash.
+
+        .. describe:: str(x)
+
+            Returns the webhooks's name.
+
     Attributes
     ------------
     id: :class:`int`
@@ -452,10 +470,13 @@ class Webhook(Hashable):
     def __repr__(self):
         return '<Webhook id=%r>' % self.id
 
+    def __str__(self):
+        return self.name
+
     @property
     def url(self):
         """Returns the webhook's url."""
-        return 'https://discord.com/api/webhooks/{}/{}'.format(self.id, self.token)
+        return 'https://discordapp.com/api/webhooks/{}/{}'.format(self.id, self.token)
 
     @classmethod
     def partial(cls, id, token, *, adapter):
@@ -505,7 +526,7 @@ class Webhook(Hashable):
             The URL is invalid.
         """
 
-        m = re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
+        m = re.search(r'discordapp.com/api/webhooks/(?P<id>[0-9]{17,21})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         data = m.groupdict()
@@ -792,7 +813,17 @@ class Webhook(Hashable):
         elif previous_mentions is not None:
             payload['allowed_mentions'] = previous_mentions.to_dict()
 
-        return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
+        # Adding auth to unlock extended emoji powers
+        try:
+            if self._state.is_bot:
+                headers = {'authorization': f'Bot {self._state.http.token}'}
+            else:
+                headers = {'authorization': f'Bearer {self._state.http.token}'}
+        # State is probably partial
+        except AttributeError:
+            headers = {}
+
+        return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload, headers=headers)
 
     def execute(self, *args, **kwargs):
         """An alias for :meth:`~.Webhook.send`."""
