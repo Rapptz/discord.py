@@ -1027,7 +1027,7 @@ class Client:
 
         Parameters
         -----------
-        code: :class:`str`
+        code: Union[:class:`.Template`, :class:`str`]
             The Discord Template Code or URL (must be a discord.new URL).
 
         Raises
@@ -1144,7 +1144,7 @@ class Client:
 
         Parameters
         -----------
-        url: :class:`str`
+        url: Union[:class:`.Invite`, :class:`str`]
             The Discord invite ID or URL (must be a discord.gg URL).
         with_counts: :class:`bool`
             Whether to include count information in the invite. This fills the

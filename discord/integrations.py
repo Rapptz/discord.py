@@ -70,7 +70,7 @@ class Integration:
         Where the integration is currently syncing.
     role: :class:`Role`
         The role which the integration uses for subscribers.
-    enable_emoticons: :class:`bool`
+    enable_emoticons: Optional[:class:`bool`]
         Whether emoticons should be synced for this integration (currently twitch only).
     expire_behaviour: :class:`ExpireBehaviour`
         The behaviour of expiring subscribers. Aliased to ``expire_behavior`` as well.

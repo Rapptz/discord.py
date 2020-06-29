@@ -442,8 +442,8 @@ def resolve_invite(invite):
         The invite code.
     """
     from .invite import Invite  # circular import
-    if isinstance(invite, (Invite, Object)):
-        return invite.id
+    if isinstance(invite, Invite):
+        return invite.code
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
         m = re.match(rx, invite)
@@ -453,8 +453,8 @@ def resolve_invite(invite):
 
 def resolve_template(code):
     from .template import Template # circular import
-    if isinstance(code, (Template, Object)):
-        return template.id
+    if isinstance(code, Template):
+        return template.code
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
         m = re.match(rx, code)
