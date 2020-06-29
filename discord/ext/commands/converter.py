@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 
 import re
 import inspect
+import typing
 
 import discord
 
@@ -554,6 +555,9 @@ class _Greedy:
 
         if converter is str or converter is type(None) or converter is _Greedy:
             raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+
+        if getattr(converter, '__origin__', None) is typing.Union and type(None) in converter.__args__:
+            raise TypeError('Greedy[%r] is invalid.' % converter)
 
         return self.__class__(converter=converter)
 

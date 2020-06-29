@@ -293,7 +293,8 @@ class Loop:
         """
         return not bool(self._task.done()) if self._task else False
 
-    async def _error(self, exception):
+    async def _error(self, *args):
+        exception = args[-1]
         print('Unhandled exception in internal background task {0.__name__!r}.'.format(self.coro), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 

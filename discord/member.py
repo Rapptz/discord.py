@@ -413,8 +413,13 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        channel: :class:`Channel`
+        channel: :class:`abc.GuildChannel`
             The channel to check your permissions for.
+
+        Returns
+        -------
+        :class:`Permissions`
+            The resolved permissions for the member.
         """
         return channel.permissions_for(self)
 
@@ -433,7 +438,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def guild_permissions(self):
-        """Returns the member's guild permissions.
+        """:class:`Permissions`: Returns the member's guild permissions.
 
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the

@@ -835,6 +835,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
+
+        Returns
+        -------
+        :class:`TextChannel`
+            The channel that was just created.
         """
         return await self.guild.create_text_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
@@ -842,6 +847,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
+
+        Returns
+        -------
+        :class:`VoiceChannel`
+            The channel that was just created.
         """
         return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
@@ -1026,7 +1036,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     @property
     def created_at(self):
-        """Returns the direct message channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, user=None):

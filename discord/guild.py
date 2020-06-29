@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 
 from . import utils
 from .role import Role
@@ -46,6 +46,8 @@ from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
+from .integrations import Integration
+
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -362,7 +364,7 @@ class Guild(Hashable):
 
     @property
     def me(self):
-        """Similar to :attr:`Client.user` except an instance of :class:`Member`.
+        """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
         self_id = self._state.user.id
@@ -370,7 +372,7 @@ class Guild(Hashable):
 
     @property
     def voice_client(self):
-        """Returns the :class:`VoiceClient` associated with this guild, if any."""
+        """Optional[:class:`VoiceClient`:] Returns the :class:`VoiceClient` associated with this guild, if any."""
         return self._state._get_voice_client(self.id)
 
     @property
@@ -406,12 +408,16 @@ class Guild(Hashable):
         List[Tuple[Optional[:class:`CategoryChannel`], List[:class:`abc.GuildChannel`]]]:
             The categories and their associated channels.
         """
-        grouped = defaultdict(list)
+        grouped = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
+                grouped[channel.id] = []
                 continue
 
-            grouped[channel.category_id].append(channel)
+            try:
+                grouped[channel.category_id].append(channel)
+            except KeyError:
+                grouped[channel.category_id] = [channel]
 
         def key(t):
             k, v = t
@@ -522,7 +528,7 @@ class Guild(Hashable):
 
     @property
     def roles(self):
-        """Returns a :class:`list` of the guild's roles in hierarchy order.
+        """List[:class:`Role`]: Returns a :class:`list` of the guild's roles in hierarchy order.
 
         The first element of this list will be the lowest role in the
         hierarchy.
@@ -546,7 +552,7 @@ class Guild(Hashable):
 
     @property
     def default_role(self):
-        """Gets the @everyone role that all members have by default."""
+        """:class:`Role`: Gets the @everyone role that all members have by default."""
         return self.get_role(self.id)
 
     @property
@@ -691,12 +697,12 @@ class Guild(Hashable):
 
     @property
     def member_count(self):
-        """Returns the true member count regardless of it being loaded fully or not."""
+        """:class:`int`: Returns the true member count regardless of it being loaded fully or not."""
         return self._member_count
 
     @property
     def chunked(self):
-        """Returns a boolean indicating if the guild is "chunked".
+        """:class:`bool`: Returns a boolean indicating if the guild is "chunked".
 
         A chunked guild means that :attr:`member_count` is equal to the
         number of members stored in the internal :attr:`members` cache.
@@ -744,7 +750,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Member`
+        Optional[:class:`Member`]
             The member in this guild with the associated name. If not found
             then ``None`` is returned.
         """
@@ -899,6 +905,11 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+
+        Returns
+        -------
+        :class:`VoiceChannel`
+            The channel that was just created.
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
@@ -916,6 +927,11 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
+
+        Returns
+        -------
+        :class:`CategoryChannel`
+            The channel that was just created.
         """
         data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
@@ -1379,7 +1395,7 @@ class Guild(Hashable):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
         if roles:
-            roles = [role.id for role in roles]
+            roles = [str(role.id) for role in roles]
 
         data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
@@ -1500,6 +1516,100 @@ class Guild(Hashable):
 
             This method is an API call.
             For general usage, consider iterating over :attr:`emojis` instead.
+
+        Parameters
+        -------------
+        emoji_id: :class:`int`
+            The emoji's ID.
+
+        Raises
+        ---------
+        NotFound
+            The emoji requested could not be found.
+        HTTPException
+            An error occurred fetching the emoji.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The retrieved emoji.
+        """
+        data = await self._state.http.get_custom_emoji(self.id, emoji_id)
+        return Emoji(guild=self, state=self._state, data=data)
+
+    async def create_integration(self, *, type, id):
+        """|coro|
+
+        Attaches an integration to the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        type: :class:`str`
+            The integration type (e.g. Twitch).
+        id: :class:`int`
+            The integration ID.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to create the integration.
+        HTTPException
+            The account could not be found.
+        """
+        await self._state.http.create_integration(self.id, type, id)
+
+    async def integrations(self):
+        """|coro|
+
+        Returns a list of all integrations attached to the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to create the integration.
+        HTTPException
+            Fetching the integrations failed.
+
+        Returns
+        --------
+        List[:class:`Integration`]
+            The list of integrations that are attached to the guild.
+        """
+        data = await self._state.http.get_all_integrations(self.id)
+        return [Integration(guild=self, data=d) for d in data]
+
+    async def fetch_emojis(self):
+        """|coro|
+
+        Retrieves all custom :class:`Emoji`s from the guild.
+
+        Raises
+        ---------
+        HTTPException
+            An error occurred fetching the emojis.
+
+        Returns
+        --------
+        List[:class:`Emoji`]
+            The retrieved emojis.
+        """
+        data = await self._state.http.get_all_custom_emojis(self.id)
+        return [Emoji(guild=self, state=self._state, data=d) for d in data]
+
+    async def fetch_emoji(self, emoji_id):
+        """|coro|
+
+        Retrieves a custom :class:`Emoji` from the guild.
 
         Parameters
         -------------
@@ -1654,6 +1764,72 @@ class Guild(Hashable):
 
         # TODO: add to cache
         return role
+
+    async def edit_role_positions(self, positions, *, reason=None):
+        """|coro|
+        
+        Bulk edits a list of :class:`Role` in the guild.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Example:
+
+        .. code-block:: python3
+
+            positions = {
+                bots_role: 1, # penultimate role
+                tester_role: 2,
+                admin_role: 6
+            }
+
+            await guild.edit_role_positions(positions=positions)
+
+        Parameters
+        -----------
+        positions
+            A :class:`dict` of :class:`Role` to :class:`int` to change the positions
+            of each given role.
+        reason: Optional[:class:`str`]
+            The reason for editing the role positions. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to move the roles.
+        HTTPException
+            Moving the roles failed.
+        InvalidArgument
+            An invalid keyword argument was given.
+
+        Returns
+        --------
+        List[:class:`Role`]
+            A list of all the roles in the guild.
+        """
+        if not isinstance(positions, dict):
+            raise InvalidArgument('positions parameter expects a dict.')
+
+        role_positions = []
+        for role, position in positions.items():
+
+            payload = {
+                'id': role.id,
+                'position': position
+            }
+
+            role_positions.append(payload)
+
+        data = await self._state.http.move_role_position(self.id, role_positions, reason=reason)
+        roles = []
+        for d in data:
+            role = Role(guild=self, data=d, state=self._state)
+            roles.append(role)
+            self._roles[role.id] = role
+
+        return roles
 
     async def kick(self, user, *, reason=None):
         """|coro|

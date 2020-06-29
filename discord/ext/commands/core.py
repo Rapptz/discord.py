@@ -145,12 +145,11 @@ class Command(_BaseCommand, typing.Generic[_CT]):
         The coroutine that is executed when the command is called.
     help: :class:`str`
         The long help text for the command.
-    brief: :class:`str`
-        The short help text for the command. If this is not specified
-        then the first line of the long help text is used instead.
+    brief: Optional[:class:`str`]
+        The short help text for the command.
     usage: :class:`str`
         A replacement for arguments in the default help text.
-    aliases: Union[:class:`list`, :class:`tuple`]
+    aliases: Union[List[:class:`str`], Tuple[:class:`str`]]
         The list of aliases the command can be invoked under.
     enabled: :class:`bool`
         A boolean that indicates if the command is currently enabled.
@@ -387,7 +386,13 @@ class Command(_BaseCommand, typing.Generic[_CT]):
         return other
 
     def copy(self):
-        """Creates a copy of this command."""
+        """Creates a copy of this command.
+
+        Returns
+        --------
+        :class:`Command`
+            A new instance of this command.
+        """
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         return self._ensure_assignment_on_copy(ret)
 
@@ -577,7 +582,8 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
     @property
     def clean_params(self):
-        """Retrieves the parameter OrderedDict without the context or self parameters.
+        """OrderedDict[:class:`str`, :class:`inspect.Parameter`]:
+        Retrieves the parameter OrderedDict without the context or self parameters.
 
         Useful for inspecting signature.
         """
@@ -611,7 +617,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
     @property
     def parents(self):
-        """:class:`Command`: Retrieves the parents of this command.
+        """List[:class:`Command`]: Retrieves the parents of this command.
 
         If the command has no parents then it returns an empty :class:`list`.
 
@@ -629,7 +635,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
     @property
     def root_parent(self):
-        """Retrieves the root parent of this command.
+        """Optional[:class:`Command`]: Retrieves the root parent of this command.
 
         If the command has no parents then it returns ``None``.
 
@@ -923,7 +929,7 @@ class Command(_BaseCommand, typing.Generic[_CT]):
 
     @property
     def cog_name(self):
-        """:class:`str`: The name of the cog this command belongs to. None otherwise."""
+        """Optional[:class:`str`]: The name of the cog this command belongs to, if any."""
         return type(self.cog).__cog_name__ if self.cog is not None else None
 
     @property
@@ -1049,7 +1055,7 @@ class GroupMixin(typing.Generic[_CT]):
     Attributes
     -----------
     all_commands: :class:`dict`
-        A mapping of command name to :class:`.Command` or subclass
+        A mapping of command name to :class:`.Command`
         objects.
     case_insensitive: :class:`bool`
         Whether the commands should be case insensitive. Defaults to ``False``.
@@ -1072,11 +1078,13 @@ class GroupMixin(typing.Generic[_CT]):
             self.remove_command(command.name)
 
     def add_command(self, command):
-        """Adds a :class:`.Command` or its subclasses into the internal list
-        of commands.
+        """Adds a :class:`.Command` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
         :meth:`~.GroupMixin.group` shortcut decorators are used instead.
+
+        .. versionchanged:: 1.4
+             Raise :exc:`.CommandRegistrationError` instead of generic :exc:`.ClientException`
 
         Parameters
         -----------
@@ -1085,8 +1093,8 @@ class GroupMixin(typing.Generic[_CT]):
 
         Raises
         -------
-        :exc:`.ClientException`
-            If the command is already registered.
+        :exc:`.CommandRegistrationError`
+            If the command or its alias is already registered by different command.
         TypeError
             If the command passed is not a subclass of :class:`.Command`.
         """
@@ -1098,16 +1106,16 @@ class GroupMixin(typing.Generic[_CT]):
             command.parent = self
 
         if command.name in self.all_commands:
-            raise discord.ClientException('Command {0.name} is already registered.'.format(command))
+            raise CommandRegistrationError(command.name)
 
         self.all_commands[command.name] = command
         for alias in command.aliases:
             if alias in self.all_commands:
-                raise discord.ClientException('The alias {} is already an existing command or alias.'.format(alias))
+                raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
     def remove_command(self, name):
-        """Remove a :class:`.Command` or subclasses from the internal list
+        """Remove a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to remove aliases.
@@ -1119,9 +1127,9 @@ class GroupMixin(typing.Generic[_CT]):
 
         Returns
         --------
-        :class:`.Command` or subclass
+        Optional[:class:`.Command`]
             The command that was removed. If the name is not valid then
-            `None` is returned instead.
+            ``None`` is returned instead.
         """
         command = self.all_commands.pop(name, None)
 
@@ -1150,7 +1158,7 @@ class GroupMixin(typing.Generic[_CT]):
                 yield from command.walk_commands()
 
     def get_command(self, name):
-        """Get a :class:`.Command` or subclasses from the internal list
+        """Get a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to get aliases.
@@ -1166,7 +1174,7 @@ class GroupMixin(typing.Generic[_CT]):
 
         Returns
         --------
-        :class:`Command` or subclass
+        Optional[:class:`Command`]
             The command that was requested. If not found, returns ``None``.
         """
 
@@ -1220,7 +1228,7 @@ class Group(GroupMixin[_CT], Command[_CT]):
 
     Attributes
     -----------
-    invoke_without_command: Optional[:class:`bool`]
+    invoke_without_command: :class:`bool`
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
         making it an error handling function to tell the user that
@@ -1229,7 +1237,7 @@ class Group(GroupMixin[_CT], Command[_CT]):
         the group callback will always be invoked first. This means
         that the checks and the parsing dictated by its parameters
         will be executed. Defaults to ``False``.
-    case_insensitive: Optional[:class:`bool`]
+    case_insensitive: :class:`bool`
         Indicates if the group's commands should be case insensitive.
         Defaults to ``False``.
     """
@@ -1238,7 +1246,13 @@ class Group(GroupMixin[_CT], Command[_CT]):
         super().__init__(*args, **attrs)
 
     def copy(self):
-        """Creates a copy of this :class:`Group`."""
+        """Creates a copy of this :class:`Group`.
+
+        Returns
+        --------
+        :class:`Group`
+            A new instance of this group.
+        """
         ret = super().copy()
         for cmd in self.commands:
             ret.add_command(cmd.copy())
@@ -1859,7 +1873,6 @@ def is_nsfw():
 
 def cooldown(rate, per, type=BucketType.default):
     """A decorator that adds a cooldown to a :class:`.Command`
-    or its subclasses.
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
