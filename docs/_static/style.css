@@ -212,9 +212,9 @@ body {
   grid-auto-rows: min-content auto min-content;
   grid-template-areas:
     "s"
+    "h"
     "n"
     "c"
-    "h"
     "f";
 }
 
@@ -238,18 +238,26 @@ a:hover {
 
 header {
   grid-area: h;
-  background-color: var(--main-background);
+  background-color: var(--grey-6);
   color: var(--main-text);
 }
 
 header > nav {
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: flex-end;
 }
 
 header > nav > a {
   color: var(--white);
+}
+
+.main-heading {
+  margin-right: auto;
+}
+
+header > nav a:not(.main-heading) {
+  margin: 0 0.5em;
 }
 
 header > nav > a:hover {
@@ -257,14 +265,11 @@ header > nav > a:hover {
   text-decoration: underline;
 }
 
-.main-heading {
-  display: none;
-}
-
 .sub-header {
   grid-area: n;
   background-color: var(--grey-6);
   color: var(--white);
+  display: none;
 }
 
 /* these aren't shown on mobile */
@@ -1007,21 +1012,12 @@ div.code-block-caption {
       "s f f f f f";
   }
 
+  .mobile-only {
+    display: none;
+  }
+
   header {
     background-color: var(--black);
-  }
-
-  header > nav {
-    justify-content: flex-end;
-  }
-
-  .main-heading {
-    margin-right: auto;
-    display: unset;
-  }
-
-  header > nav a:not(.main-heading) {
-    margin: 0 0.5em;
   }
 
   .sub-header {
@@ -1060,7 +1056,7 @@ div.code-block-caption {
     display: inline-block;
     position: sticky;
     top: 1em;
-    height: calc(100vh - 1em);
+    max-height: calc(100vh - 1em);
     overflow-y: auto;
     margin: 1em;
   }
