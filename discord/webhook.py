@@ -402,15 +402,22 @@ class Webhook(Hashable):
         webhook.send('Hello World', username='Foo')
 
     .. container:: operations
+    
         .. describe:: x == y
+        
             Checks if two webhooks are equal.
+            
         .. describe:: x != y
+        
             Checks if two webhooks are not equal.
+            
         .. describe:: hash(x)
+        
             Returns the webhooks's hash.
-        .. describe:: str(x)
-            Returns the webhooks's name.
-
+            
+    .. versionchanged:: 1.4
+        Webhooks are now comparable and hashable.
+    
     Attributes
     ------------
     id: :class:`int`
@@ -462,9 +469,6 @@ class Webhook(Hashable):
     def __repr__(self):
         return '<Webhook id=%r>' % self.id
 
-    def __str__(self):
-        return self.name
-    
     @property
     def url(self):
         """:class:`str` : Returns the webhook's url."""
