@@ -88,7 +88,7 @@ class Guild(Hashable):
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. None if it doesn't exist.
+        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     icon: Optional[:class:`str`]
         The guild's icon.
     id: :class:`int`
