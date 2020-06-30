@@ -373,7 +373,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     @property
     def activity(self):
         """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
-        activity the user is currently doing. Could be None if no activity is being done.
+        activity the user is currently doing. Could be ``None`` if no activity is being done.
 
         .. note::
 
