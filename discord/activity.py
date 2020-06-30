@@ -420,7 +420,7 @@ class Streaming(BaseActivity):
     name: Optional[:class:`str`]
         The stream's name.
     details: Optional[:class:`str`]
-        Same as :attr:`name`
+        An alias for :attr:`name`
     game: Optional[:class:`str`]
         The game being streamed.
 
