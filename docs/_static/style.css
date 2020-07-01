@@ -29,6 +29,7 @@ Historically however, thanks to:
   --grey-5: #5c5c5c;
   --grey-6: #333333;
   --grey-7: #292929;
+  --grey-8: #1c1c1c;
   --black: #0a0a0a;
 
   --blue: #3399ff;
@@ -36,10 +37,6 @@ Historically however, thanks to:
   --cyan-1: #22acca;
   --cyan-2: #1c8fa8;
   --cyan-3: #167286;
-  --yellow: #cccc00;
-  --light-yellow: #ffffcc;
-  --red: #cc0033;
-  --light-red: #ffccd9;
 
   /* theme gets built on these base colours */
   --settings: var(--white);
@@ -72,12 +69,13 @@ Historically however, thanks to:
   --main-h4-header-border: var(--grey-4);
   --header-link: var(--grey-6);
   --header-link-hover-text: var(--white);
-  --note-background: var(--grey-3);
-  --note-border: var(--grey-4);
-  --warning-background: var(--light-yellow);
-  --warning-border: var(--yellow);
-  --error-background:  var(--light-red);
-  --error-border: var(--red);
+  --admonition-background: var(--grey-2);
+  --note-background: #95caff;
+  --note-border: var(--blue);
+  --warning-background: #ffe9ad;
+  --warning-border: #ffc937;
+  --error-background: #ffd1d0;
+  --error-border: #ff4b47;
   --helpful-background: var(--light-blue);
   --helpful-border: var(--blue);
   --codeblock-background: var(--grey-2);
@@ -133,12 +131,13 @@ Historically however, thanks to:
   --main-h4-header-border: var(--grey-2);
   --header-link: var(--grey-2);
   --header-link-hover-text: var(--grey-6);
-  --note-background: var(--grey-6);
-  --note-border: var(--black);
-  --warning-background: var(--light-yellow);
-  --warning-border: var(--yellow);
-  --error-background:  var(--light-red);
-  --error-border: var(--red);
+  --admonition-background: var(--grey-8);
+  --note-background: #0f51b9;
+  --note-border: var(--blue);
+  --warning-background: #cd4800;
+  --warning-border: #ff9800;
+  --error-background:  #b71c1c;
+  --error-border: #f44336;
   --helpful-background: var(--light-blue);
   --helpful-border: var(--blue);
   --codeblock-background: var(--grey-6);
@@ -635,7 +634,7 @@ main ol > li::before {
 main p,
 main dd,
 main li {
-  line-height: 1.4em;
+  line-height: 1.4;
 }
 
 main img {
@@ -654,34 +653,94 @@ li > blockquote {
 
 /* admonitions */
 div.admonition {
-  padding: 0.8em;
+  padding: 0 0.8em;
+  padding-bottom: 0.8em;
   margin: 0.8em 0;
+  border-radius: 2.5px;
+  border-left-width: 4px;
+  border-left-style: solid;
+  background-color: var(--admonition-background);
 }
 
 p.admonition-title {
-  display: inline;
   font-weight: bold;
-  margin-right: 0.5em;
+  margin: 0 -0.8rem;
+  padding: 0.4rem 0.6rem 0.4rem 2.5rem;
+  position: relative;
 }
 
-p.admonition-title::after {
-  content: ':';
-}
-
-div.admonition p.admonition-title + p {
-  display: inline;
+p.admonition-title::before {
+  font: normal normal normal 24px/1 'Material Icons';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  left: 9.6px;
 }
 
 div.important, div.note, div.hint, div.tip {
-  background-color: var(--note-background);
-  border: 1px solid var(--note-border);
-  color: var(--note-text, var(--main-text));
+  border-left-color: var(--note-border);
 }
 
-div.attention, div.warning, div.caution, div.seealso {
+div.important > p.admonition-title,
+div.note > p.admonition-title,
+div.hint > p.admonition-title,
+div.tip > p.admonition-title {
+  background-color: var(--note-background);
+}
+
+div.important > p.admonition-title::before,
+div.note > p.admonition-title::before,
+div.hint > p.admonition-title::before,
+div.tip > p.admonition-title::before {
+  content: '\0e88e';
+  color: var(--note-border);
+}
+
+div.attention, div.warning, div.caution {
+  border-left-color: var(--warning-border);
+}
+
+div.attention > p.admonition-title,
+div.warning > p.admonition-title,
+div.caution > p.admonition-title {
   background-color: var(--warning-background);
-  border: 1px solid var(--warning-border);
-  color: var(--warning-text, var(--main-text));
+}
+
+div.attention > p.admonition-title::before,
+div.warning > p.admonition-title::before,
+div.caution > p.admonition-title::before {
+  content: '\0e002';
+  color: var(--warning-border);
+}
+
+div.danger, div.error {
+  border-left-color: var(--error-border);
+}
+
+div.danger > p.admonition-title,
+div.error > p.admonition-title {
+  background-color: var(--error-background);
+}
+
+div.danger > p.admonition-title::before,
+div.error > p.admonition-title::before {
+  content: '\0e000';
+  color: var(--error-border);
+}
+
+/* helpful admonitions */
+div.helpful {
+  border-left-color: var(--helpful-border);
+}
+
+div.helpful > p.admonition-title {
+  background-color: var(--helpful-background);
+}
+
+div.helpful > p.admonition-title::before {
+  content: '\0e873';
+  color: var(--helpful-border);
 }
 
 dl.field-list > dd {
@@ -716,29 +775,6 @@ dl.field-list {
 a.reference.internal > strong {
   font-weight: unset;
   font-family: monospace;
-}
-
-div.danger, div.error {
-  background-color: var(--error-background);
-  border: 1px solid var(--error-border);
-  color: var(--error-text, var(--main-text));
-}
-
-/* helpful admonitions */
-div.helpful {
-  background-color: var(--helpful-background);
-  border: 1px solid var(--helpful-border);
-  color: var(--helpful-text, var(--main-text));
-}
-
-div.helpful > p.admonition-title {
-  display: block;
-  margin-top: 0px;
-  margin-bottom: 0.5em;
-}
-
-div.helpful > p.admonition-title::after {
-  content: unset;
 }
 
 /* exception hierarchy */
