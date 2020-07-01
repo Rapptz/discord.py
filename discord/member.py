@@ -60,7 +60,7 @@ class VoiceState:
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
     channel: Optional[:class:`VoiceChannel`]
-        The voice channel that the user is currently connected to. None if the user
+        The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
 
@@ -373,7 +373,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     @property
     def activity(self):
         """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
-        activity the user is currently doing. Could be None if no activity is being done.
+        activity the user is currently doing. Could be ``None`` if no activity is being done.
 
         .. note::
 

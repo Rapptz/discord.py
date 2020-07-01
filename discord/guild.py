@@ -88,7 +88,7 @@ class Guild(Hashable):
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. None if it doesn't exist.
+        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     icon: Optional[:class:`str`]
         The guild's icon.
     id: :class:`int`
@@ -98,7 +98,7 @@ class Guild(Hashable):
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Guild.id` is slim and they might
-        all be None. It is best to not do anything with the guild if it is unavailable.
+        all be ``None``. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
     max_presences: Optional[:class:`int`]
