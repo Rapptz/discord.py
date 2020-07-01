@@ -2065,7 +2065,7 @@ class Guild(Hashable):
         limit = limit or 5
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)
 
-    async def change_voice_state(self, channel, *, self_mute, self_deaf):
+    async def change_voice_state(self, channel, *, self_mute=False, self_deaf=False):
         """|coro|
 
         Changes client's voice state in the guild.
