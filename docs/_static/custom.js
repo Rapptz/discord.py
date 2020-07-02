@@ -44,7 +44,7 @@ function getRootAttributeToggle(attributeName, valueName) {
 }
 
 const settings = {
-  useSansFont: getRootAttributeToggle('font', 'sans'),
+  useSerifFont: getRootAttributeToggle('font', 'serif'),
   useDarkTheme: getRootAttributeToggle('theme', 'dark')
 };
 
