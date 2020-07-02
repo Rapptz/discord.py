@@ -25,21 +25,21 @@ function changeDocumentation(element) {
   window.location = element.value;
 }
 
-function updateSetting(element, userOverrided=true) {
+function updateSetting(element) {
   localStorage.setItem(element.name, element.checked);
-  if (userOverrided) {
-    localStorage.setItem('userOverridedSettings', userOverrided);
-  }
   if (element.name in settings) {
     settings[element.name](element.checked);
   }
 }
 
-function getRootAttributeToggle(attributeName, valueName) {
+function getRootAttributeToggle(attributeName, valueName, defaultCallback) {
   function toggleRootAttribute(set) {
-    if (set) {
+    if (set === "true") {
       document.documentElement.setAttribute(`data-${attributeName}`, valueName);
-    } else {
+    } else if (set === "default") {
+      document.documentElement.setAttribute(`data-${attributeName}`, defaultCallback());
+    }
+    else {
       document.documentElement.removeAttribute(`data-${attributeName}`);
     }
   }
@@ -47,12 +47,16 @@ function getRootAttributeToggle(attributeName, valueName) {
 }
 
 const settings = {
-  useSansFont: getRootAttributeToggle('font', 'sans'),
-  useDarkTheme: getRootAttributeToggle('theme', 'dark')
+  useSansFont: getRootAttributeToggle('font', 'sans', () => 'sans'),
+  useDarkTheme: getRootAttributeToggle('theme', 'dark', () => {
+    let matchedMedia = window.matchMedia('(prefers-color-scheme: dark)')
+
+    return matchedMedia.matches ? 'dark' : 'light'
+  })
 };
 
 Object.entries(settings).forEach(([name, setter]) => {
-  let value = JSON.parse(localStorage.getItem(name));
+  let value = localStorage.getItem(name);
   try {
     setter(value);
   } catch (error) {
@@ -60,19 +64,6 @@ Object.entries(settings).forEach(([name, setter]) => {
     console.error(error);
   }
 });
-
-function checkColorScheme(matchedMedia, first=false) {
-  let userOverrided = localStorage.getItem('userOverridedSettings')
-  if (!userOverrided) {
-    updateSetting({checked: matchedMedia.matches, name: 'useDarkTheme'}, false)
-    if (first) {
-      matchedMedia.addEventListener('change', checkColorScheme);
-    }
-  }
-}
-
-let matchedMedia = window.matchMedia('(prefers-color-scheme: dark)')
-checkColorScheme(matchedMedia, true)
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -117,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   Object.keys(settings).forEach(name => {
-    let value = JSON.parse(localStorage.getItem(name));
+    let value = localStorage.getItem(name);
     let element = document.querySelector(`input[name=${name}]`);
     if (element) {
       element.checked = value === true;
