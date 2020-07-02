@@ -18,7 +18,7 @@ Historically however, thanks to:
 
 /* CSS variables would go here */
 :root {
-  --font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
   /* base palette */
   --white: #ffffff;
@@ -104,8 +104,8 @@ Historically however, thanks to:
   --attribute-table-badge: var(--grey-7);
 }
 
-:root[data-font="sans"] {
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+:root[data-font="serif"] {
+  --font-family: 'Georgia', 'Yu Gothic', 'Noto Sans CJK JP Regular', serif;
 }
 
 :root[data-theme="dark"] {
