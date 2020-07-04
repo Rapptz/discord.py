@@ -69,7 +69,7 @@ class Template:
         When the template was created.
     updated_at: :class:`datetime.datetime`
         When the template was last updated (referred to as "last synced" in the client).
-    source_guild: :class:`TemplateGuild`
+    source_guild: :class:`Guild`
         The source guild.
     """
 
