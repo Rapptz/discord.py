@@ -2174,7 +2174,7 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
         +---+---------------------------------+
         | 0 | A guild text channel.           |
-        +===+=================================+
+        +---+---------------------------------+
         | 1 | A direct message channel.       |
         +---+---------------------------------+
         | 2 | A guild voice channel.          |
