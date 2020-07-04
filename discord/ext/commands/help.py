@@ -24,14 +24,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import itertools
 import copy
 import functools
-import inspect
+import itertools
 import re
-import discord.utils
 
-from .core import Group, Command
+import discord.utils
+from .core import Command, Group
 from .errors import CommandError
 
 __all__ = (

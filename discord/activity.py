@@ -27,8 +27,8 @@ DEALINGS IN THE SOFTWARE.
 import datetime
 
 from .asset import Asset
-from .enums import ActivityType, try_enum
 from .colour import Colour
+from .enums import ActivityType, try_enum
 from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
 

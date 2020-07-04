@@ -27,12 +27,12 @@ DEALINGS IN THE SOFTWARE.
 from collections import namedtuple
 
 import discord.abc
-from .flags import PublicUserFlags
-from .utils import snowflake_time, _bytes_to_base64_data, parse_time
-from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, PremiumType, try_enum
-from .errors import ClientException
-from .colour import Colour
 from .asset import Asset
+from .colour import Colour
+from .enums import DefaultAvatar, HypeSquadHouse, PremiumType, RelationshipType, UserFlags, try_enum
+from .errors import ClientException
+from .flags import PublicUserFlags
+from .utils import _bytes_to_base64_data, parse_time, snowflake_time
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()

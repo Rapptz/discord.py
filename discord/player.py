@@ -24,21 +24,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import threading
-import traceback
-import subprocess
-import audioop
 import asyncio
-import logging
-import shlex
-import time
+import audioop
 import json
-import sys
+import logging
 import re
+import shlex
+import subprocess
+import sys
+import threading
+import time
+import traceback
 
 from .errors import ClientException
-from .opus import Encoder as OpusEncoder
 from .oggparse import OggStream
+from .opus import Encoder as OpusEncoder
 
 log = logging.getLogger(__name__)
 

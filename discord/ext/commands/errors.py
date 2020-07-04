@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from discord.errors import ClientException, DiscordException
+from discord import ClientException, DiscordException
 
 
 __all__ = (

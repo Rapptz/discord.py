@@ -24,11 +24,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from . import utils, enums
-from .object import Object
-from .permissions import PermissionOverwrite, Permissions
+from . import enums, utils
 from .colour import Colour
 from .invite import Invite
+from .object import Object
+from .permissions import PermissionOverwrite, Permissions
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)

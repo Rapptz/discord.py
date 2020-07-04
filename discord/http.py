@@ -28,13 +28,13 @@ import asyncio
 import json
 import logging
 import sys
-from urllib.parse import quote as _uriquote
 import weakref
+from urllib.parse import quote as _uriquote
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
 from . import __version__, utils
+from .errors import Forbidden, GatewayNotFound, HTTPException, LoginFailure, NotFound
 
 log = logging.getLogger(__name__)
 

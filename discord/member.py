@@ -28,14 +28,13 @@ import itertools
 from operator import attrgetter
 
 import discord.abc
-
 from . import utils
-from .user import BaseUser, User
 from .activity import create_activity
-from .permissions import Permissions
-from .enums import Status, try_enum, UserFlags, HypeSquadHouse
 from .colour import Colour
+from .enums import Status, try_enum
 from .object import Object
+from .permissions import Permissions
+from .user import BaseUser, User
 
 class VoiceState:
     """Represents a Discord user's voice state.

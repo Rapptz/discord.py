@@ -25,9 +25,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from . import utils
-from .user import BaseUser
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
+from .user import BaseUser
 
 __all__ = (
     'Team',

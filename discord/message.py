@@ -26,22 +26,22 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import datetime
-import re
 import io
+import re
 
 from . import utils
-from .reaction import Reaction
-from .emoji import Emoji
-from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
-from .member import Member
-from .flags import MessageFlags
+from .emoji import Emoji
+from .enums import MessageType, try_enum
+from .errors import ClientException, HTTPException, InvalidArgument
 from .file import File
-from .utils import escape_mentions
+from .flags import MessageFlags
 from .guild import Guild
+from .member import Member
+from .partial_emoji import PartialEmoji
+from .reaction import Reaction
+from .utils import escape_mentions
 
 
 class Attachment:

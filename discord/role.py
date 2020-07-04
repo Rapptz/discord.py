@@ -24,10 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .permissions import Permissions
-from .errors import InvalidArgument
 from .colour import Colour
+from .errors import InvalidArgument
 from .mixins import Hashable
+from .permissions import Permissions
 from .utils import snowflake_time
 
 class Role(Hashable):

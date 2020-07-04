@@ -24,8 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .asset import Asset
 from . import utils
+from .asset import Asset
 from .partial_emoji import _EmojiTag
 from .user import User
 

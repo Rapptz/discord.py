@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .flags import BaseFlags, flag_value, fill_with_flags
+from .flags import BaseFlags, fill_with_flags, flag_value
 
 __all__ = (
     'Permissions',

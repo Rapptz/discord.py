@@ -26,21 +26,19 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import collections
-import inspect
 import importlib.util
+import inspect
 import sys
 import traceback
-import re
 import types
 
 import discord
-
-from .core import GroupMixin, Command
-from .view import StringView
-from .context import Context
 from . import errors
-from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
+from .context import Context
+from .core import GroupMixin
+from .help import DefaultHelpCommand, HelpCommand
+from .view import StringView
 
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.

@@ -25,16 +25,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-from collections import namedtuple, deque
 import concurrent.futures
 import json
 import logging
 import struct
 import sys
-import time
 import threading
+import time
 import traceback
 import zlib
+from collections import deque, namedtuple
 
 import websockets
 

@@ -10,11 +10,11 @@ An extension module to facilitate creation of bot commands.
 :license: MIT, see LICENSE for more details.
 """
 
-from .bot import Bot, AutoShardedBot, when_mentioned, when_mentioned_or
+from .bot import AutoShardedBot, Bot, when_mentioned, when_mentioned_or
+from .cog import *
 from .context import Context
+from .converter import *
+from .cooldowns import *
 from .core import *
 from .errors import *
 from .help import *
-from .converter import *
-from .cooldowns import *
-from .cog import *

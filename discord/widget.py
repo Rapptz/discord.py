@@ -24,12 +24,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import snowflake_time, _get_as_snowflake, resolve_invite
-from .user import BaseUser
-from .activity import create_activity
-from .invite import Invite
-from .enums import Status, try_enum
 from collections import namedtuple
+
+from .activity import create_activity
+from .enums import Status, try_enum
+from .invite import Invite
+from .user import BaseUser
+from .utils import _get_as_snowflake, resolve_invite, snowflake_time
 
 class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
     """Represents a "partial" widget channel.

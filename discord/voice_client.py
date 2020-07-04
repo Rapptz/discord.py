@@ -40,15 +40,15 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-import socket
 import logging
+import socket
 import struct
 import threading
 
 from . import opus
 from .backoff import ExponentialBackoff
-from .gateway import *
 from .errors import ClientException, ConnectionClosed
+from .gateway import *
 from .player import AudioPlayer, AudioSource
 
 try:

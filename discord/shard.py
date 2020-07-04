@@ -30,12 +30,12 @@ import logging
 
 import websockets
 
-from .state import AutoShardedConnectionState
-from .client import Client
-from .gateway import *
-from .errors import ClientException, InvalidArgument
 from . import utils
+from .client import Client
 from .enums import Status
+from .errors import ClientException, InvalidArgument
+from .gateway import *
+from .state import AutoShardedConnectionState
 
 log = logging.getLogger(__name__)
 

@@ -26,15 +26,16 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import datetime
-import aiohttp
-import websockets
-import discord
 import inspect
 import logging
 import sys
 import traceback
 
-from discord.backoff import ExponentialBackoff
+import aiohttp
+import websockets
+
+import discord
+from ...backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 

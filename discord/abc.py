@@ -25,20 +25,20 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import abc
-import copy
 import asyncio
+import copy
 from collections import namedtuple
 
-from .iterators import HistoryIterator
+from . import utils
 from .context_managers import Typing
 from .enums import ChannelType
-from .errors import InvalidArgument, ClientException, HTTPException
+from .errors import ClientException, InvalidArgument
+from .file import File
+from .invite import Invite
+from .iterators import HistoryIterator
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
-from .invite import Invite
-from .file import File
 from .voice_client import VoiceClient
-from . import utils
 
 class _Undefined:
     def __repr__(self):

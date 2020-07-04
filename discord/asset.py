@@ -25,9 +25,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import io
-from .errors import DiscordException
-from .errors import InvalidArgument
+
 from . import utils
+from .errors import DiscordException, InvalidArgument
 
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}

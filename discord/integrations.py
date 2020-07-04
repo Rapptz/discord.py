@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
 
 import datetime
 from collections import namedtuple
-from .utils import _get_as_snowflake, get, parse_time
-from .user import User
+
+from .enums import ExpireBehaviour, try_enum
 from .errors import InvalidArgument
-from .enums import try_enum, ExpireBehaviour
+from .user import User
+from .utils import _get_as_snowflake, get, parse_time
 
 class IntegrationAccount(namedtuple('IntegrationAccount', 'id name')):
     """Represents an integration account.

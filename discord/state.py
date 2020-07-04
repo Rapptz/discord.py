@@ -25,35 +25,33 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-from collections import deque, namedtuple, OrderedDict
 import copy
 import datetime
+import gc
+import inspect
 import itertools
 import logging
 import math
-import weakref
-import inspect
-import gc
-
 import os
+import weakref
+from collections import OrderedDict, deque, namedtuple
 
-from .guild import Guild
-from .activity import BaseActivity
-from .user import User, ClientUser
-from .emoji import Emoji
-from .mentions import AllowedMentions
-from .partial_emoji import PartialEmoji
-from .message import Message
-from .relationship import Relationship
-from .channel import *
-from .raw_models import *
-from .member import Member
-from .role import Role
-from .enums import ChannelType, try_enum, Status, Enum
 from . import utils
-from .embeds import Embed
-from .object import Object
+from .activity import BaseActivity
+from .channel import *
+from .emoji import Emoji
+from .enums import ChannelType, Enum, Status, try_enum
+from .guild import Guild
 from .invite import Invite
+from .member import Member
+from .mentions import AllowedMentions
+from .message import Message
+from .object import Object
+from .partial_emoji import PartialEmoji
+from .raw_models import *
+from .relationship import Relationship
+from .role import Role
+from .user import ClientUser, User
 
 class ListenerType(Enum):
     chunk = 0

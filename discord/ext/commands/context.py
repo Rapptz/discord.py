@@ -24,8 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import discord.abc
-import discord.utils
+import discord
 
 class Context(discord.abc.Messageable):
     r"""Represents the context in which a command is being invoked under.

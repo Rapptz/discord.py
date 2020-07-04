@@ -27,10 +27,10 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import datetime
 
-from .errors import NoMoreItems
-from .utils import DISCORD_EPOCH, time_snowflake, maybe_coroutine
-from .object import Object
 from .audit_logs import AuditLogEntry
+from .errors import NoMoreItems
+from .object import Object
+from .utils import maybe_coroutine, time_snowflake
 
 OLDEST_OBJECT = Object(id=0)
 
