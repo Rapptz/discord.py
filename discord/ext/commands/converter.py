@@ -87,6 +87,13 @@ class Converter:
             The invocation context that the argument is being used in.
         argument: :class:`str`
             The argument that is being converted.
+
+        Raises
+        -------
+        :exc:`.CommandError`
+            A generic exception occurred when converting the argument.
+        :exc:`.BadArgument`
+            The converter failed to convert the argument.
         """
         raise NotImplementedError('Derived classes need to implement this.')
 
@@ -180,6 +187,7 @@ class UserConverter(IDConverter):
             raise BadArgument('User "{}" not found'.format(argument))
 
         return result
+
 class MessageConverter(Converter):
     """Converts to a :class:`discord.Message`.
 
