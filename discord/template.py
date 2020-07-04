@@ -84,7 +84,7 @@ class Template:
     code: :class:`str`
         The template code.
     uses: :class:`int`
-        How many time the template has been used.
+        How many times the template has been used.
     name: :class:`str`
         The name of the template.
     description: :class:`str`
@@ -95,7 +95,7 @@ class Template:
         When the template was created.
     updated_at: :class:`datetime.datetime`
         When the template was last updated (referred to as "last synced" in the client).
-    source_guild: :class:`TemplateGuild`
+    source_guild: :class:`Guild`
         The source guild.
     """
 
