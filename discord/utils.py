@@ -429,7 +429,7 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
 
 def resolve_invite(invite):
     """
-    Resolves an invite from a :class:`~discord.Invite`, URL or ID.
+    Resolves an invite from a :class:`~discord.Invite`, URL or code.
 
     Parameters
     -----------
@@ -453,7 +453,7 @@ def resolve_invite(invite):
 
 def resolve_template(code):
     """
-    Resolves a template code from a :class:`~discord.Template`, URL or ID.
+    Resolves a template code from a :class:`~discord.Template`, URL or code.
 
     .. versionadded:: 1.4
 
