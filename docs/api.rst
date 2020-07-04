@@ -2172,21 +2172,23 @@ this goal, it must make use of a couple of data classes that aid in this goal.
 
         If the type is an :class:`int`, then it is one of the following:
 
-        +-----+---------------------------------+
-        | `0` | A guild text channel.           |
-        +-----+---------------------------------+
-        | `1` | A direct message channel.       |
-        +-----+---------------------------------+
-        | `2` | A guild voice channel.          |
-        +-----+---------------------------------+
-        | `3` | A group direct message channel. |
-        +-----+---------------------------------+
-        | `4` | A guild category channel.       |
-        +-----+---------------------------------+
-        | `5` | A guild news channel.           |
-        +-----+---------------------------------+
-        | `6` | A guild store channel.          |
-        +-----+---------------------------------+
+        +-------+---------------------------------+
+        | value | meaning                         + 
+        +=======+=================================+
+        |  `0`  | A guild text channel.           |
+        +-------+---------------------------------+
+        |  `1`  | A direct message channel.       |
+        +-------+---------------------------------+
+        |  `2`  | A guild voice channel.          |
+        +-------+---------------------------------+
+        |  `3`  | A group direct message channel. |
+        +-------+---------------------------------+
+        |  `4`  | A guild category channel.       |
+        +-------+---------------------------------+
+        |  `5`  | A guild news channel.           |
+        +-------+---------------------------------+
+        |  `6`  | A guild store channel.          |
+        +-------+---------------------------------+
 
         If the type is a :class:`str`, then it is a type of permission overwrite which
         can be either ``'role'`` or ``'member'``.
