@@ -155,7 +155,7 @@ class Paginator:
 
     @property
     def pages(self):
-        """Returns the rendered list of pages."""
+        """class:`list`: Returns the rendered list of pages."""
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
             self.close_page()

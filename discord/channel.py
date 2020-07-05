@@ -82,7 +82,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     topic: Optional[:class:`str`]
-        The channel's topic. None if it doesn't exist.
+        The channel's topic. ``None`` if it doesn't exist.
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
@@ -197,6 +197,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionchanged:: 1.3
             The ``overwrites`` keyword-only parameter was added.
 
+        .. versionchanged:: 1.4
+            The ``type`` keyword-only parameter was added.
+
         Parameters
         ----------
         name: :class:`str`
@@ -216,6 +219,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this channel, in seconds.
             A value of `0` disables slowmode. The maximum value possible is `21600`.
+        type: :class:`ChannelType`
+            Change the type of this text channel. Currently, only conversion between
+            :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This 
+            is only available to guilds that contain ``NEWS`` in :attr:`Guild.features`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`dict`
@@ -464,7 +471,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
-    async def follow(self, *, destination):
+    async def follow(self, *, destination, reason=None):
         """
         Follows a channel using a webhook.
 
@@ -481,6 +488,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         -----------
         destination: :class:`TextChannel`
             The channel you would like to follow from.
+        reason: Optional[:class:`str`]
+            The reason for following the channel. Shows up on the destination guild's audit log.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -501,7 +512,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if not isinstance(destination, TextChannel):
             raise InvalidArgument('Expected TextChannel received {0.__name__}'.format(type(destination)))
 
-        data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id)
+        data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id, reason=reason)
         return Webhook._as_follower(data, channel=destination, user=self._state.user)
 
 class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
@@ -828,6 +839,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
+
+        Returns
+        -------
+        :class:`TextChannel`
+            The channel that was just created.
         """
         return await self.guild.create_text_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
@@ -835,6 +851,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
+
+        Returns
+        -------
+        :class:`VoiceChannel`
+            The channel that was just created.
         """
         return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
@@ -1019,7 +1040,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     @property
     def created_at(self):
-        """Returns the direct message channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, user=None):

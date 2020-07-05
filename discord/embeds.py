@@ -130,7 +130,7 @@ class Embed:
 
         You can find out about this format in the `official Discord documentation`__.
 
-        .. _DiscordDocs: https://discordapp.com/developers/docs/resources/channel#embed-object
+        .. _DiscordDocs: https://discord.com/developers/docs/resources/channel#embed-object
 
         __ DiscordDocs_
 
@@ -224,7 +224,7 @@ class Embed:
 
     @property
     def footer(self):
-        """Returns an ``EmbedProxy`` denoting the footer contents.
+        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the footer contents.
 
         See :meth:`set_footer` for possible values you can access.
 
@@ -257,7 +257,7 @@ class Embed:
 
     @property
     def image(self):
-        """Returns an ``EmbedProxy`` denoting the image contents.
+        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the image contents.
 
         Possible attributes you can access are:
 
@@ -296,7 +296,7 @@ class Embed:
 
     @property
     def thumbnail(self):
-        """Returns an ``EmbedProxy`` denoting the thumbnail contents.
+        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the thumbnail contents.
 
         Possible attributes you can access are:
 
@@ -335,7 +335,7 @@ class Embed:
 
     @property
     def video(self):
-        """Returns an ``EmbedProxy`` denoting the video contents.
+        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the video contents.
 
         Possible attributes include:
 
@@ -349,7 +349,7 @@ class Embed:
 
     @property
     def provider(self):
-        """Returns an ``EmbedProxy`` denoting the provider contents.
+        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the provider contents.
 
         The only attributes that might be accessed are ``name`` and ``url``.
 
@@ -359,7 +359,7 @@ class Embed:
 
     @property
     def author(self):
-        """Returns an ``EmbedProxy`` denoting the author contents.
+        """Union[:class:`EmbedProxy`, :attr:`Empty`]: Returns an ``EmbedProxy`` denoting the author contents.
 
         See :meth:`set_author` for possible values you can access.
 
@@ -395,9 +395,24 @@ class Embed:
 
         return self
 
+    def remove_author(self):
+        """Clears embed's author information.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        .. versionadded:: 1.4
+        """
+        try:
+            del self._author
+        except AttributeError:
+            pass
+
+        return self
+
     @property
     def fields(self):
-        """Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
+        """Union[List[:class:`EmbedProxy`], :attr:`Empty`]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 

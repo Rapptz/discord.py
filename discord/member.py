@@ -33,7 +33,7 @@ from . import utils
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import Status, try_enum, UserFlags, HypeSquadHouse
 from .colour import Colour
 from .object import Object
 
@@ -60,7 +60,7 @@ class VoiceState:
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
     channel: Optional[:class:`VoiceChannel`]
-        The voice channel that the user is currently connected to. None if the user
+        The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
 
@@ -161,7 +161,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         Nitro boost on the guild, if available. This could be ``None``.
     """
 
-    __slots__ = ('_roles', '_cs_roles', 'joined_at', 'premium_since', '_client_status',
+    __slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status',
                  'activities', 'guild', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
@@ -234,11 +234,6 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.activities = member.activities
         self._state = member._state
 
-        try:
-            del self._cs_roles
-        except AttributeError:
-            pass
-
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
         self._user = member._user
@@ -250,10 +245,6 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _update_roles(self, data):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
-        try:
-            del self._cs_roles
-        except AttributeError:
-            pass
 
     def _update(self, data):
         # the nickname change is optional,
@@ -344,7 +335,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         return self.colour
 
-    @utils.cached_slot_property('_cs_roles')
+    @property
     def roles(self):
         """List[:class:`Role`]: A :class:`list` of :class:`Role` that the member belongs to. Note
         that the first element of this list is always the default '@everyone'
@@ -382,7 +373,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     @property
     def activity(self):
         """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
-        activity the user is currently doing. Could be None if no activity is being done.
+        activity the user is currently doing. Could be ``None`` if no activity is being done.
 
         .. note::
 
@@ -422,8 +413,13 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         Parameters
         -----------
-        channel: :class:`Channel`
+        channel: :class:`abc.GuildChannel`
             The channel to check your permissions for.
+
+        Returns
+        -------
+        :class:`Permissions`
+            The resolved permissions for the member.
         """
         return channel.permissions_for(self)
 
@@ -434,11 +430,15 @@ class Member(discord.abc.Messageable, _BaseUser):
         This is useful for figuring where a member stands in the role
         hierarchy chain.
         """
-        return self.roles[-1]
+        guild = self.guild
+        if len(self._roles) == 0:
+            return guild.default_role
+        
+        return max(guild.get_role(rid) or guild.default_role for rid in self._roles)
 
     @property
     def guild_permissions(self):
-        """Returns the member's guild permissions.
+        """:class:`Permissions`: Returns the member's guild permissions.
 
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the

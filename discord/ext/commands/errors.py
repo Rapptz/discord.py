@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from discord.errors import DiscordException
+from discord.errors import ClientException, DiscordException
 
 
 __all__ = (
@@ -62,6 +62,7 @@ __all__ = (
     'NoEntryPointError',
     'ExtensionFailed',
     'ExtensionNotFound',
+    'CommandRegistrationError',
 )
 
 class CommandError(DiscordException):
@@ -90,7 +91,7 @@ class ConversionError(CommandError):
     ----------
     converter: :class:`discord.ext.commands.Converter`
         The converter that failed.
-    original
+    original: :exc:`Exception`
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
@@ -583,3 +584,24 @@ class ExtensionNotFound(ExtensionError):
         self.original = None
         fmt = 'Extension {0!r} could not be loaded.'
         super().__init__(fmt.format(name), name=name)
+
+class CommandRegistrationError(ClientException):
+    """An exception raised when the command can't be added
+    because the name is already taken by a different command.
+
+    This inherits from :exc:`discord.ClientException`
+
+    .. versionadded:: 1.4
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The command name that had the error.
+    alias_conflict: :class:`bool`
+        Whether the name that conflicts is an alias of the command we try to add.
+    """
+    def __init__(self, name, *, alias_conflict=False):
+        self.name = name
+        self.alias_conflict = alias_conflict
+        type_ = 'alias' if alias_conflict else 'command'
+        super().__init__('The {} {} is already an existing command or alias.'.format(type_, name))
