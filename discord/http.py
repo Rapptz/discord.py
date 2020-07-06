@@ -673,9 +673,11 @@ class HTTPClient:
     def prune_members(self, guild_id, days, compute_prune_count, roles, *, reason=None):
         payload = {
             'days': days,
-            'compute_prune_count': 'true' if compute_prune_count else 'false',
-            'include_roles': ', '.join(roles)
+            'compute_prune_count': 'true' if compute_prune_count else 'false'
         }
+        if roles:
+            payload['include_roles'] = ', '.join(roles)
+
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
     def estimate_pruned_members(self, guild_id, days):
