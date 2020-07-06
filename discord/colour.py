@@ -28,7 +28,7 @@ import colorsys
 
 class Colour:
     """Represents a Discord role colour. This class is similar
-    to an (red, green, blue) :class:`tuple`.
+    to a (red, green, blue) :class:`tuple`.
 
     There is an alias for this called Color.
 

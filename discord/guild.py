@@ -88,7 +88,7 @@ class Guild(Hashable):
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. None if it doesn't exist.
+        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     icon: Optional[:class:`str`]
         The guild's icon.
     id: :class:`int`
@@ -98,7 +98,7 @@ class Guild(Hashable):
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Guild.id` is slim and they might
-        all be None. It is best to not do anything with the guild if it is unavailable.
+        all be ``None``. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
     max_presences: Optional[:class:`int`]
@@ -372,7 +372,7 @@ class Guild(Hashable):
 
     @property
     def voice_client(self):
-        """Optional[:class:`VoiceClient`:] Returns the :class:`VoiceClient` associated with this guild, if any."""
+        """Optional[:class:`VoiceClient`]: Returns the :class:`VoiceClient` associated with this guild, if any."""
         return self._state._get_voice_client(self.id)
 
     @property
@@ -1485,58 +1485,6 @@ class Guild(Hashable):
 
         return result
 
-    async def fetch_emojis(self):
-        r"""|coro|
-
-        Retrieves all custom :class:`Emoji`\s from the guild.
-
-        .. note::
-
-            This method is an API call. For general usage, consider :attr:`emojis` instead.
-
-        Raises
-        ---------
-        HTTPException
-            An error occurred fetching the emojis.
-
-        Returns
-        --------
-        List[:class:`Emoji`]
-            The retrieved emojis.
-        """
-        data = await self._state.http.get_all_custom_emojis(self.id)
-        return [Emoji(guild=self, state=self._state, data=d) for d in data]
-
-    async def fetch_emoji(self, emoji_id):
-        """|coro|
-
-        Retrieves a custom :class:`Emoji` from the guild.
-
-        .. note::
-
-            This method is an API call.
-            For general usage, consider iterating over :attr:`emojis` instead.
-
-        Parameters
-        -------------
-        emoji_id: :class:`int`
-            The emoji's ID.
-
-        Raises
-        ---------
-        NotFound
-            The emoji requested could not be found.
-        HTTPException
-            An error occurred fetching the emoji.
-
-        Returns
-        --------
-        :class:`Emoji`
-            The retrieved emoji.
-        """
-        data = await self._state.http.get_custom_emoji(self.id, emoji_id)
-        return Emoji(guild=self, state=self._state, data=data)
-
     async def create_integration(self, *, type, id):
         """|coro|
 
@@ -1589,9 +1537,13 @@ class Guild(Hashable):
         return [Integration(guild=self, data=d) for d in data]
 
     async def fetch_emojis(self):
-        """|coro|
+        r"""|coro|
 
-        Retrieves all custom :class:`Emoji`s from the guild.
+        Retrieves all custom :class:`Emoji`\s from the guild.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`emojis` instead.
 
         Raises
         ---------
@@ -1610,6 +1562,11 @@ class Guild(Hashable):
         """|coro|
 
         Retrieves a custom :class:`Emoji` from the guild.
+
+        .. note::
+
+            This method is an API call.
+            For general usage, consider iterating over :attr:`emojis` instead.
 
         Parameters
         -------------

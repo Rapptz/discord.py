@@ -156,7 +156,7 @@ class PartialInviteGuild:
         return self.icon_url_as()
     
     def is_icon_animated(self):
-        """:class:`bool`: Returns True if the guild has an animated icon.
+        """:class:`bool`: Returns ``True`` if the guild has an animated icon.
 
         .. versionadded:: 1.4
         """

@@ -28,6 +28,7 @@ import asyncio
 import json
 import time
 import re
+from urllib.parse import quote as _uriquote
 
 import aiohttp
 
@@ -36,6 +37,7 @@ from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
 from .enums import try_enum, WebhookType
 from .user import BaseUser, User
 from .asset import Asset
+from .mixins import Hashable
 
 __all__ = (
     'WebhookAdapter',
@@ -83,11 +85,11 @@ class WebhookAdapter:
         """
         raise NotImplementedError()
 
-    def delete_webhook(self):
-        return self.request('DELETE', self._request_url)
+    def delete_webhook(self, *, reason=None):
+        return self.request('DELETE', self._request_url, reason=reason)
 
-    def edit_webhook(self, **payload):
-        return self.request('PATCH', self._request_url, payload=payload)
+    def edit_webhook(self, *, reason=None, **payload):
+        return self.request('PATCH', self._request_url, payload=payload, reason=reason)
 
     def handle_execution_response(self, data, *, wait):
         """Transforms the webhook execution response into something
@@ -173,13 +175,16 @@ class AsyncWebhookAdapter(WebhookAdapter):
         self.session = session
         self.loop = asyncio.get_event_loop()
 
-    async def request(self, verb, url, payload=None, multipart=None, *, files=None):
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None, reason=None):
         headers = {}
         data = None
         files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
+        
+        if reason:
+            headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         if multipart:
             data = aiohttp.FormData()
@@ -259,13 +264,16 @@ class RequestsWebhookAdapter(WebhookAdapter):
         self.session = session or requests
         self.sleep = sleep
 
-    def request(self, verb, url, payload=None, multipart=None, *, files=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None, reason=None):
         headers = {}
         data = None
         files = files or []
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
+    
+        if reason:
+            headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         if multipart is not None:
             data = {'payload_json': multipart.pop('payload_json')}
@@ -359,7 +367,7 @@ class _PartialWebhookState:
     def __getattr__(self, attr):
         raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
 
-class Webhook:
+class Webhook(Hashable):
     """Represents a Discord webhook.
 
     Webhooks are a form to send messages to channels in Discord without a
@@ -400,6 +408,23 @@ class Webhook:
         webhook = Webhook.partial(123456, 'abcdefg', adapter=RequestsWebhookAdapter())
         webhook.send('Hello World', username='Foo')
 
+    .. container:: operations
+    
+        .. describe:: x == y
+        
+            Checks if two webhooks are equal.
+            
+        .. describe:: x != y
+        
+            Checks if two webhooks are not equal.
+            
+        .. describe:: hash(x)
+        
+            Returns the webhooks's hash.
+            
+    .. versionchanged:: 1.4
+        Webhooks are now comparable and hashable.
+    
     Attributes
     ------------
     id: :class:`int`
@@ -622,13 +647,20 @@ class Webhook:
         url = '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
         return Asset(self._state, url)
 
-    def delete(self):
+    def delete(self, *, reason=None):
         """|maybecoro|
 
         Deletes this Webhook.
 
         If the webhook is constructed with a :class:`RequestsWebhookAdapter` then this is
         not a coroutine.
+
+        Parameters
+        ------------
+        reason: Optional[:class:`str`]
+            The reason for deleting this webhook. Shows up on the audit log.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -644,9 +676,9 @@ class Webhook:
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        return self._adapter.delete_webhook()
+        return self._adapter.delete_webhook(reason=reason)
 
-    def edit(self, **kwargs):
+    def edit(self, *, reason=None, **kwargs):
         """|maybecoro|
 
         Edits this Webhook.
@@ -655,11 +687,15 @@ class Webhook:
         not a coroutine.
 
         Parameters
-        -------------
+        ------------
         name: Optional[:class:`str`]
             The webhook's new default name.
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's new default avatar.
+        reason: Optional[:class:`str`]
+            The reason for deleting this webhook. Shows up on the audit log.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -695,7 +731,7 @@ class Webhook:
             else:
                 payload['avatar'] = None
 
-        return self._adapter.edit_webhook(**payload)
+        return self._adapter.edit_webhook(reason=reason, **payload)
 
     def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
                                     file=None, files=None, embed=None, embeds=None, allowed_mentions=None):

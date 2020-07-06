@@ -443,13 +443,13 @@ class HTTPClient:
         return self.request(Route('POST', '/channels/{channel_id}/messages/{message_id}/crosspost',
                                   channel_id=channel_id, message_id=message_id))
 
-    def pin_message(self, channel_id, message_id):
+    def pin_message(self, channel_id, message_id, reason=None):
         return self.request(Route('PUT', '/channels/{channel_id}/pins/{message_id}',
-                                  channel_id=channel_id, message_id=message_id))
+                                  channel_id=channel_id, message_id=message_id), reason=reason)
 
-    def unpin_message(self, channel_id, message_id):
+    def unpin_message(self, channel_id, message_id, reason=None):
         return self.request(Route('DELETE', '/channels/{channel_id}/pins/{message_id}',
-                                  channel_id=channel_id, message_id=message_id))
+                                  channel_id=channel_id, message_id=message_id), reason=reason)
 
     def pins_from(self, channel_id):
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
@@ -578,11 +578,11 @@ class HTTPClient:
     def get_webhook(self, webhook_id):
         return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
 
-    def follow_webhook(self, channel_id, webhook_channel_id):
+    def follow_webhook(self, channel_id, webhook_channel_id, reason=None):
         payload = {
             'webhook_channel_id': str(webhook_channel_id)
         }
-        return self.request(Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload)
+        return self.request(Route('POST', '/channels/{channel_id}/followers', channel_id=channel_id), json=payload, reason=reason)
 
     # Guild management
 

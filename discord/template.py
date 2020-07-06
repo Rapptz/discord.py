@@ -55,7 +55,7 @@ class Template:
 
     Attributes
     -----------
-    code: :code:`str`
+    code: :class:`str`
         The template code.
     uses: :class:`int`
         How many time the template has been used.
