@@ -180,7 +180,7 @@ class FFmpegPCMAudio(FFmpegAudio):
     ------------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to PCM bytes.
-        If ``pipe`` is True then this is a file-like object that is
+        If ``pipe`` is ``True`` then this is a file-like object that is
         passed to the stdin of ffmpeg.
     executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
