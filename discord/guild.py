@@ -905,6 +905,15 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+            
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
 
         Returns
         -------
@@ -927,6 +936,15 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
+            
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
 
         Returns
         -------
