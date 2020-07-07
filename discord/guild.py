@@ -905,6 +905,11 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+            
+        Raises
+        ------
+        InvalidArgument
+            The permission overwrite information is not in proper form.
 
         Returns
         -------
