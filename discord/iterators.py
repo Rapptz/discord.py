@@ -182,7 +182,7 @@ class HistoryIterator(_AsyncIterator):
     `after` parameter to the newest message received. If messages are not
     reversed, they will be out of order (99-0, 199-100, so on)
 
-    A note that if both before and after are specified, before is ignored by the
+    A note that if both `before` and `after` are specified, `before` is ignored by the
     messages endpoint.
 
     Parameters
@@ -200,7 +200,7 @@ class HistoryIterator(_AsyncIterator):
         limit is an even number, this will return at most limit+1 messages.
     oldest_first: Optional[:class:`bool`]
         If set to ``True``, return messages in oldest->newest order. Defaults to
-        True if ``after`` is specified, otherwise ``False``.
+        ``True`` if `after` is specified, otherwise ``False``.
     """
 
     def __init__(self, messageable, limit,
@@ -471,7 +471,7 @@ class GuildIterator(_AsyncIterator):
     parameter to the newest guild received, If guilds are not reversed, they
     will be out of order (99-0, 199-100, so on)
 
-    Not that if both before and after are specified, before is ignored by the
+    Not that if both `before` and `after` are specified, `before` is ignored by the
     guilds endpoint.
 
     Parameters
