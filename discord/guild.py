@@ -1961,7 +1961,7 @@ class Guild(Hashable):
             Retrieve entries after this date or entry.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
         oldest_first: :class:`bool`
-            If set to ``True``, return entries in oldest->newest order. Defaults to True if
+            If set to ``True``, return entries in oldest->newest order. Defaults to ``True`` if
             ``after`` is specified, otherwise ``False``.
         user: :class:`abc.Snowflake`
             The moderator to filter entries from.
