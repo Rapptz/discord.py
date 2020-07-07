@@ -173,16 +173,16 @@ class HistoryIterator(_AsyncIterator):
     """Iterator for receiving a channel's message history.
 
     The messages endpoint has two behaviours we care about here:
-    If `before` is specified, the messages endpoint returns the `limit`
-    newest messages before `before`, sorted with newest first. For filling over
-    100 messages, update the `before` parameter to the oldest message received.
+    If ``before`` is specified, the messages endpoint returns the `limit`
+    newest messages before ``before``, sorted with newest first. For filling over
+    100 messages, update the ``before`` parameter to the oldest message received.
     Messages will be returned in order by time.
-    If `after` is specified, it returns the `limit` oldest messages after
-    `after`, sorted with newest first. For filling over 100 messages, update the
-    `after` parameter to the newest message received. If messages are not
+    If ``after`` is specified, it returns the ``limit`` oldest messages after
+    ``after``, sorted with newest first. For filling over 100 messages, update the
+    ``after`` parameter to the newest message received. If messages are not
     reversed, they will be out of order (99-0, 199-100, so on)
 
-    A note that if both before and after are specified, before is ignored by the
+    A note that if both ``before`` and ``after`` are specified, ``before`` is ignored by the
     messages endpoint.
 
     Parameters
@@ -200,7 +200,7 @@ class HistoryIterator(_AsyncIterator):
         limit is an even number, this will return at most limit+1 messages.
     oldest_first: Optional[:class:`bool`]
         If set to ``True``, return messages in oldest->newest order. Defaults to
-        True if ``after`` is specified, otherwise ``False``.
+        ``True`` if `after` is specified, otherwise ``False``.
     """
 
     def __init__(self, messageable, limit,
@@ -462,16 +462,16 @@ class GuildIterator(_AsyncIterator):
 
     The guilds endpoint has the same two behaviours as described
     in :class:`HistoryIterator`:
-    If `before` is specified, the guilds endpoint returns the `limit`
-    newest guilds before `before`, sorted with newest first. For filling over
-    100 guilds, update the `before` parameter to the oldest guild received.
+    If ``before`` is specified, the guilds endpoint returns the ``limit``
+    newest guilds before ``before``, sorted with newest first. For filling over
+    100 guilds, update the ``before`` parameter to the oldest guild received.
     Guilds will be returned in order by time.
-    If `after` is specified, it returns the `limit` oldest guilds after `after`,
-    sorted with newest first. For filling over 100 guilds, update the `after`
+    If `after` is specified, it returns the ``limit`` oldest guilds after ``after``,
+    sorted with newest first. For filling over 100 guilds, update the ``after``
     parameter to the newest guild received, If guilds are not reversed, they
     will be out of order (99-0, 199-100, so on)
 
-    Not that if both before and after are specified, before is ignored by the
+    Not that if both ``before`` and ``after`` are specified, ``before`` is ignored by the
     guilds endpoint.
 
     Parameters

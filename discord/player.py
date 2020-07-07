@@ -180,7 +180,7 @@ class FFmpegPCMAudio(FFmpegAudio):
     ------------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to PCM bytes.
-        If ``pipe`` is True then this is a file-like object that is
+        If ``pipe`` is ``True`` then this is a file-like object that is
         passed to the stdin of ffmpeg.
     executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
@@ -253,7 +253,7 @@ class FFmpegOpusAudio(FFmpegAudio):
     ------------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to Opus bytes.
-        If ``pipe`` is True then this is a file-like object that is
+        If ``pipe`` is ``True`` then this is a file-like object that is
         passed to the stdin of ffmpeg.
     bitrate: :class:`int`
         The bitrate in kbps to encode the output to.  Defaults to ``128``.
