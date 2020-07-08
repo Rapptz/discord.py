@@ -9,7 +9,7 @@ The following is a set of guidelines for contributing to the repository. These a
 Generally speaking questions are better suited in our resources below.
 
 - The official support server: https://discord.gg/r3sSKJJ
-- The Discord API server under #python_discord-py: https://discord.gg/discord-api
+- The Discord API server under #python_discord-py: https://discord.gg/api
 - [The FAQ in the documentation](https://discordpy.readthedocs.io/en/latest/faq.html)
 - [StackOverflow's `discord.py` tag](https://stackoverflow.com/questions/tagged/discord.py)
 
