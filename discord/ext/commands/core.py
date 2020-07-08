@@ -426,7 +426,7 @@ class Command(_BaseCommand):
             ctx.bot.dispatch('command_error', ctx, error)
 
     async def _actual_conversion(self, ctx, converter, argument, param):
-        converter = ctx.bot.default_converters.get(converter, converter)
+        converter = ctx.bot._default_converters.get(converter, converter)
 
         if converter is bool:
             return _convert_to_bool(argument)

@@ -95,7 +95,8 @@ class _DefaultRepr:
 _default = _DefaultRepr()
 
 class BotBase(GroupMixin):
-    def __init__(self, command_prefix, help_command=_default, description=None, **options):
+    def __init__(self, command_prefix, help_command=_default, description=None,
+                 default_converters={}, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events = {}
@@ -106,7 +107,9 @@ class BotBase(GroupMixin):
         self._before_invoke = None
         self._after_invoke = None
         self._help_command = None
-        self.default_converters = converters.DEFAULT_DISCORD_CONVERTERS.copy()
+        self._default_converters = {
+            **converters.DEFAULT_DISCORD_CONVERTERS.copy(), **default_converters
+        }
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())
@@ -982,6 +985,9 @@ class Bot(BotBase, discord.Client):
         Whether the commands should be case insensitive. Defaults to ``False``. This
         attribute does not carry over to groups. You must set it to every group if
         you require group commands to be case insensitive as well.
+    default_converters: :class:`dict`
+        A mapping from type to converter. These globally override the default
+        converters.
     description: :class:`str`
         The content prefixed into the default help message.
     self_bot: :class:`bool`
