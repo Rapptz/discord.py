@@ -33,6 +33,7 @@ import discord
 from .errors import BadArgument, NoPrivateMessage
 
 __all__ = (
+    'DEFAULT_DISCORD_CONVERTERS',
     'Converter',
     'MemberConverter',
     'UserConverter',
@@ -50,6 +51,21 @@ __all__ = (
     'clean_content',
     'Greedy',
 )
+
+DEFAULT_DISCORD_CONVERTERS = {
+    discord.Member: MemberConverter,
+    discord.User: UserConverter,
+    discord.Message: MessageConverter,
+    discord.TextChannel: TextChannelConverter,
+    discord.Invite: InviteConverter,
+    discord.Role: RoleConverter,
+    discord.Game: GameConverter,
+    discord.Colour: ColourConverter,
+    discord.VoiceChannel: VoiceChannelConverter,
+    discord.Emoji: EmojiConverter,
+    discord.PartialEmoji: PartialEmojiConverter,
+    discord.CategoryChannel: CategoryChannelConverter,
+}
 
 def _get_from_guilds(bot, getter, argument):
     result = None

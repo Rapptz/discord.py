@@ -38,7 +38,7 @@ import discord
 from .core import GroupMixin, Command
 from .view import StringView
 from .context import Context
-from . import errors
+from . import errors, converters
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
@@ -106,6 +106,7 @@ class BotBase(GroupMixin):
         self._before_invoke = None
         self._after_invoke = None
         self._help_command = None
+        self.default_converters = converters.DEFAULT_DISCORD_CONVERTERS.copy()
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())

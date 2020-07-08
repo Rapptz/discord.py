@@ -426,16 +426,10 @@ class Command(_BaseCommand):
             ctx.bot.dispatch('command_error', ctx, error)
 
     async def _actual_conversion(self, ctx, converter, argument, param):
+        converter = ctx.bot.default_converters.get(converter, converter)
+
         if converter is bool:
             return _convert_to_bool(argument)
-
-        try:
-            module = converter.__module__
-        except AttributeError:
-            pass
-        else:
-            if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
-                converter = getattr(converters, converter.__name__ + 'Converter', converter)
 
         try:
             if inspect.isclass(converter):

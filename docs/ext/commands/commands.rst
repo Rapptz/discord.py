@@ -557,6 +557,28 @@ This command can be invoked any of the following ways:
 
 .. _ext_commands_error_handler:
 
+Globally Overriding Default Converters
+++++++++++++++++++++++++++++++++++++++
+
+The default converters used by the bot can be globally overriden by using the `.Bot.default_converters` dict. This may
+be useful if there needs to be a globally consistent change to how arguments are parsed. This includes Discord model
+converters. For example, to alter how `time.deltatime` is parsed globally using `pytimeparse.parse`:
+
+.. code-block:: python3
+
+    import pytimeparse
+
+    class CustomDeltaTimeConverter(commands.Converter):
+        async def convert(self, ctx, argument):
+            return time.timedelta(pytimeparse.parse(argument))
+
+    bot.default_converters[time.deltatime] = CustomDeltaTimeConverter
+
+    @bot.command()
+    async def remind(ctx, time: time.deltatime, *, reminder: str):
+        ...
+
+
 Error Handling
 ----------------
 
