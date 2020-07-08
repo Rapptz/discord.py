@@ -111,4 +111,4 @@ examplesディレクトリに更に多くのサンプルがあります。
 
 - `ドキュメント <https://discordpy.readthedocs.io/ja/latest/index.html>`_
 - `公式Discordサーバー <https://discord.gg/nXzj3dg>`_
-- `Discord API <https://discord.gg/discord-api>`_
+- `Discord API <https://discord.gg/api>`_
