@@ -177,6 +177,33 @@ class BotBase(GroupMixin):
         print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
+    # global converter registration.
+
+    def converter(self, cls):
+        r"""A decorator that sets a global converter for a given type. This will
+        alter how arguments are parsed by default across all of the bot's
+        commands.
+
+        .. note::
+
+            Setting this multiple times for the same type will result in only
+            the most recent one being used.
+
+        Example
+        ---------
+
+        .. code-block:: python3
+
+            @bot.converter(class=int)
+            def custom_int_converter(arg):
+                return int(arg) + 100
+
+        """
+        def inner(func):
+            self.set_converter(cls, func)
+            return func
+        return inner
+
     # global check registration
 
     def check(self, func):
@@ -206,6 +233,38 @@ class BotBase(GroupMixin):
         """
         self.add_check(func)
         return func
+
+    def set_converter(self, cls, converter):
+        """Assigns a global default converter for a given type. This will
+        override any previous converter set.
+
+        This is the non-decorator interface to :meth:`.converter`.
+
+        Parameters
+        -----------
+        cls
+            The type of the arguments to apply the converter to.
+        converter:
+            The converter function or `.converter.Converter` subclass to use for
+            argument parsing.
+        """
+        self._default_converters[cls] = converter
+
+    def reset_converter(self, cls):
+        """Resetss the global converter to the original default.
+
+        Parameters
+        -----------
+        cls
+            The function to remove from the global checks.
+        """
+        if cls not in self._default_converters:
+            return
+        try:
+            self._default_converters[cls] = \
+                converters.DEFAULT_DISCORD_CONVERTERS[cls]
+        except KeyError:
+            del self._default_converters[cls]
 
     def add_check(self, func, *, call_once=False):
         """Adds a global check to the bot.
