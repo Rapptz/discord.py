@@ -871,6 +871,7 @@ pre {
 pre, code {
   font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
   font-size: 0.9em;
+  overflow-wrap: break-word;
 }
 
 code {
