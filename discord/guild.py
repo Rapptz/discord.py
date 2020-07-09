@@ -908,6 +908,10 @@ class Guild(Hashable):
             
         Raises
         ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
         InvalidArgument
             The permission overwrite information is not in proper form.
 
@@ -932,6 +936,15 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
+            
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
 
         Returns
         -------
