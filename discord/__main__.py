@@ -65,6 +65,7 @@ import config
 class Bot(commands.{base}):
     def __init__(self, **kwargs):
         super().__init__(command_prefix=commands.when_mentioned_or('{prefix}'), **kwargs)
+        {nohelp}
         for cog in config.cogs:
             try:
                 self.load_extension(cog)
@@ -222,7 +223,8 @@ def newbot(parser, args):
     try:
         with open(str(new_directory / 'bot.py'), 'w', encoding='utf-8') as fp:
             base = 'Bot' if not args.sharded else 'AutoShardedBot'
-            fp.write(bot_template.format(base=base, prefix=args.prefix))
+            nohelp = 'self.remove_command("help")' if args.remove_help else ''
+            fp.write(bot_template.format(base=base, prefix=args.prefix, nohelp=nohelp))
     except OSError as exc:
         parser.error('could not create bot file ({})'.format(exc))
 
@@ -276,6 +278,7 @@ def add_newbot_args(subparser):
     parser.add_argument('--prefix', help='the bot prefix (default: $)', default='$', metavar='<prefix>')
     parser.add_argument('--sharded', help='whether to use AutoShardedBot', action='store_true')
     parser.add_argument('--no-git', help='do not create a .gitignore file', action='store_true', dest='no_git')
+    parser.add_argument('--remove-help', help='remove the default bot help command', action='store_true')
 
 def add_newcog_args(subparser):
     parser = subparser.add_parser('newcog', help='creates a new cog template quickly')
