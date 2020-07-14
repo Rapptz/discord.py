@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2019 Rapptz
+Copyright (c) 2015-2020 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -71,7 +71,7 @@ class Asset:
     @classmethod
     def _from_avatar(cls, state, user, *, format=None, static_format='webp', size=1024):
         if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format is not None and format not in VALID_AVATAR_FORMATS:
             raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
         if format == "gif" and not user.is_avatar_animated():
@@ -96,6 +96,14 @@ class Asset:
         return cls(state, url)
 
     @classmethod
+    def _from_cover_image(cls, state, obj):
+        if obj.cover_image is None:
+            return cls(state)
+
+        url = 'https://cdn.discordapp.com/app-assets/{0.id}/store/{0.cover_image}.jpg'.format(obj)
+        return cls(state, url)
+
+    @classmethod
     def _from_guild_image(cls, state, id, hash, key, *, format='webp', size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
@@ -103,11 +111,30 @@ class Asset:
             raise InvalidArgument("format must be one of {}".format(VALID_STATIC_FORMATS))
 
         if hash is None:
-            return Asset(state)
+            return cls(state)
 
         url = 'https://cdn.discordapp.com/{key}/{0}/{1}.{2}?size={3}'
         return cls(state, url.format(id, hash, format, size, key=key))
-    
+
+    @classmethod
+    def _from_guild_icon(cls, state, guild, *, format=None, static_format='webp', size=1024):
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not guild.is_icon_animated():
+            raise InvalidArgument("non animated guild icons do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+
+        if guild.icon is None:
+            return cls(state)
+
+        if format is None:
+            format = 'gif' if guild.is_icon_animated() else static_format
+
+        return cls(state, 'https://cdn.discordapp.com/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
+
     @classmethod
     def _from_widget_image(cls, state, id, *, style='shield'):
         if style not in VALID_WIDGET_IMAGE_STYLES:
@@ -115,6 +142,7 @@ class Asset:
 
         url = 'https://discordapp.com/api/v6/guilds/{0}/widget.png?style={style}'
         return cls(state, url.format(id, style=style))
+
 
     def __str__(self):
         return self._url if self._url is not None else ''
@@ -139,31 +167,59 @@ class Asset:
     def __hash__(self):
         return hash(self._url)
 
+    async def read(self):
+        """|coro|
+
+        Retrieves the content of this asset as a :class:`bytes` object.
+
+        .. warning::
+
+            :class:`PartialEmoji` won't have a connection state if user created,
+            and a URL won't be present if a custom image isn't associated with
+            the asset, e.g. a guild with no custom icon.
+
+        .. versionadded:: 1.1
+
+        Raises
+        ------
+        DiscordException
+            There was no valid URL or internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+
+        Returns
+        -------
+        :class:`bytes`
+            The content of the asset.
+        """
+        if not self._url:
+            raise DiscordException('Invalid asset (no URL provided)')
+
+        if self._state is None:
+            raise DiscordException('Invalid state (no ConnectionState provided)')
+
+        return await self._state.http.get_from_cdn(self._url)
+
     async def save(self, fp, *, seek_begin=True):
         """|coro|
 
         Saves this asset into a file-like object.
 
         Parameters
-        -----------
+        ----------
         fp: Union[BinaryIO, :class:`os.PathLike`]
             Same as in :meth:`Attachment.save`.
         seek_begin: :class:`bool`
             Same as in :meth:`Attachment.save`.
 
         Raises
-        --------
+        ------
         DiscordException
             There was no valid URL or internal connection state.
-
-            .. note::
-
-                :class:`PartialEmoji` will not have a state if you make
-                your own instance via ``PartialEmoji(animated=False, name='x', id=2345678)``.
-
-                The URL will not be provided if there is no custom image.
         HTTPException
-            Saving the asset failed.
+            Downloading the asset failed.
         NotFound
             The asset was deleted.
 
@@ -172,13 +228,8 @@ class Asset:
         :class:`int`
             The number of bytes written.
         """
-        if not self._url:
-            raise DiscordException('Invalid asset (no URL provided)')
 
-        if self._state is None:
-            raise DiscordException('Invalid state (no ConnectionState provided)')
-
-        data = await self._state.http.get_from_cdn(self._url)
+        data = await self.read()
         if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
