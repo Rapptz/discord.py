@@ -113,6 +113,11 @@ class Context(discord.abc.Messageable):
             The arguments to to use.
         \*\*kwargs
             The keyword arguments to use.
+
+        Raises
+        -------
+        TypeError
+            The command argument to invoke is missing.
         """
 
         try:
@@ -154,6 +159,11 @@ class Context(discord.abc.Messageable):
             Whether to start the call chain from the very beginning
             or where we left off (i.e. the command that caused the error).
             The default is to start where we left off.
+
+        Raises
+        -------
+        ValueError
+            The context to reinvoke is not valid.
         """
         cmd = self.command
         view = self.view
