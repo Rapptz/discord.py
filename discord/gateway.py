@@ -164,14 +164,9 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         self.latency = ack_time - self._last_send
         self.recent_ack_latencies.append(self.latency)
 
-# Monkey patch certain things from the aiohttp websocket code
-# Check this whenever we update dependencies.
-OLD_CLOSE = aiohttp.ClientWebSocketResponse.close
-
-async def _new_ws_close(self, *, code: int = 4000, message: bytes = b'') -> bool:
-    return await OLD_CLOSE(self, code=code, message=message)
-
-aiohttp.ClientWebSocketResponse.close = _new_ws_close
+class DiscordClientWebSocketResponse(aiohttp.ClientWebSocketResponse):
+    async def close(self, *, code: int = 4000, message: bytes = b'') -> bool:
+        return await super().close(code=code, message=message)
 
 class DiscordWebSocket:
     """Implements a WebSocket for Discord's gateway v6.
