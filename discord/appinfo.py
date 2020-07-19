@@ -151,3 +151,11 @@ class AppInfo:
         .. versionadded:: 1.3
         """
         return self._state._get_guild(int(self.guild_id))
+    
+    @property
+    def user(self)
+        """Optional[:class:`ClientUser`]: If this application is a game sold on Discord.
+
+        .. versionadded:: 1.3
+        """
+        return self
