@@ -1062,6 +1062,17 @@ class AutoShardedConnectionState(ConnectionState):
         self.shard_ids = ()
         self.shards_launched = asyncio.Event()
 
+    def _update_message_references(self):
+        for msg in self._messages:
+            if not msg.guild:
+                continue
+
+            new_guild = self._get_guild(msg.guild.id)
+            if new_guild is not None and new_guild is not msg.guild:
+                channel_id = msg.channel.id
+                channel = new_guild.get_channel(channel_id) or Object(id=channel_id)
+                msg._rebind_channel_reference(channel)
+
     async def chunker(self, guild_id, query='', limit=0, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)
         await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
@@ -1141,12 +1152,24 @@ class AutoShardedConnectionState(ConnectionState):
             if guild.large:
                 guilds.append((guild, guild.unavailable))
 
+        if self._messages:
+            self._update_message_references()
+
         for pm in data.get('private_channels', []):
             factory, _ = _channel_factory(pm['type'])
             self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         self.dispatch('shard_connect', data['__shard_id__'])
+
+        # Much like clear(), if we have a massive deallocation
+        # then it's better to explicitly call the GC
+        # Note that in the original ready parsing code this was done
+        # implicitly via clear() but in the auto sharded client clearing
+        # the cache would have the consequence of clearing data on other
+        # shards as well.
+        gc.collect()
+
         if self._ready_task is None:
             self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
 
