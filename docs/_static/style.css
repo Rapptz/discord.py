@@ -1093,7 +1093,7 @@ div.code-block-caption {
     display: inline-block;
     position: sticky;
     top: 1em;
-    max-height: calc(100vh - 1em);
+    max-height: calc(100vh - 2em);
     overflow-y: auto;
     margin: 1em;
   }
