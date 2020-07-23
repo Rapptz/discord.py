@@ -7,6 +7,11 @@ let settingsModal;
 let hamburgerToggle;
 let sidebar;
 
+function resizeSidebar() {
+  let rect = sidebar.getBoundingClientRect();
+  sidebar.style.height = `calc(100vh - 1em - ${rect.top + document.body.offsetTop}px)`;
+}
+
 function closeModal(modal) {
   activeModal = null;
   modal.hidden = true;
@@ -65,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
   settingsModal = document.querySelector('div#settings.modal');
   hamburgerToggle = document.getElementById("hamburger-toggle");
   sidebar = document.getElementById("sidebar");
+
+  resizeSidebar();
 
   sidebar.addEventListener("click", (e) => {
     // If we click a navigation, close the hamburger menu
@@ -136,6 +143,8 @@ window.addEventListener('scroll', () => {
       activeLink.parentElement.classList.add('active');
     }
   }
+
+  resizeSidebar();
 });
 
 document.addEventListener('keydown', (event) => {
