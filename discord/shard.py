@@ -45,6 +45,7 @@ class EventType:
     reconnect = 1
     resume = 2
     identify = 3
+    terminate = 4
 
 class EventItem:
     __slots__ = ('type', 'shard', 'error')
@@ -139,6 +140,11 @@ class Shard:
             except self._handled_exceptions as e:
                 await self._handle_disconnect(e)
                 break
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self._queue.put_nowait(EventItem(EventType.terminate, self, e))
+                break
 
     async def reidentify(self, exc):
         self._cancel_task()
@@ -151,6 +157,10 @@ class Shard:
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
+        except asyncio.CancelledError:
+            return
+        except Exception as e:
+            self._queue.put_nowait(EventItem(EventType.terminate, self, e))
         else:
             self.launch()
 
@@ -161,6 +171,10 @@ class Shard:
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
+        except asyncio.CancelledError:
+            return
+        except Exception as e:
+            self._queue.put_nowait(EventItem(EventType.terminate, self, e))
         else:
             self.launch()
 
@@ -312,6 +326,9 @@ class AutoShardedClient(Client):
                 await item.shard.reidentify(item.error)
             elif item.type == EventType.reconnect:
                 await item.shard.reconnect()
+            elif item.type == EventType.terminate:
+                await self.close()
+                raise item.error
 
     async def close(self):
         """|coro|
