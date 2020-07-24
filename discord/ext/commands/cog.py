@@ -296,10 +296,6 @@ class Cog(metaclass=CogMeta):
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
-        Note that when using this function, context sent from a group command
-        may only parse the parent command and not the subcommands due to it
-        being invoked once per :meth:`.Command.invoke` call.
-
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
         """

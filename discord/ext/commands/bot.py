@@ -257,6 +257,12 @@ class BotBase(GroupMixin):
 
         .. note::
 
+            When using this function the :class:`.Context` sent to a group subcommand
+            may only parse the parent command and not the subcommands due to it
+            being invoked once per :meth:`.Bot.invoke` call.
+
+        .. note::
+
             This function can either be a regular function or a coroutine.
 
         Similar to a command :func:`.check`\, this takes a single parameter
