@@ -75,6 +75,9 @@ class Separator:
         self.key = key
         self.strip_ws = strip_ws
 
+    def __repr__(self):
+        return '<Separator key={0.key!r} strip_ws={0.strip_ws}>'.format(self)
+
 class Encapsulator:
     """An argument qualifier, which acts as a drop-in replacement for quotes.
 
@@ -108,6 +111,8 @@ class Encapsulator:
     def __contains__(self, item):
         return item in self._all_keys
 
+    def __repr__(self):
+        return '<Encapsulator keys={0!r}>'.format(self._all_keys)
 
 class StringView:
     def __init__(self, buffer):
@@ -127,7 +132,12 @@ class StringView:
         return self.index >= self.end
 
     def is_separator(self, c):
-        return c.isspace() if self.separator.key is None else c == self.separator.key
+        key = self.separator.key
+        if key is None:
+            return c.isspace()
+        if self.separator.strip_ws:
+            return c.isspace() or c == key
+        return c == key
 
     def undo(self):
         self.index = self.previous
