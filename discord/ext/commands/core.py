@@ -53,7 +53,7 @@ from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
-from .view import Separator, Encapsulator
+from .view import Separator, Quotation
 
 
 if TYPE_CHECKING:
@@ -277,9 +277,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
 
         .. versionadded:: 2.0
-    qualifier: Union[:class:`Separator`, :class:`Encapsulator`]
-        The qualifier for how arguments should be delimited. By default, it is
+    separator: :class:`Separator`
+        The separator which separates each argument. By default, it is a whitespace
         :class:`Separator`.
+    quotation: :class:`Quotation`
+        The quotations for each argument. By default, it is ``None``.
+
     """
     __original_kwargs__: Dict[str, Any]
 
@@ -388,7 +391,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
-        self.qualifier = kwargs.pop('qualifier', Separator())
+        self.separator = kwargs.pop('separator', Separator())
+        self.quotation = kwargs.pop('quotation', None)
 
     @property
     def callback(self) -> Union[
@@ -710,11 +714,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         view = ctx.view
         iterator = iter(self.params.items())
-        qual = ctx.command.qualifier
-        if isinstance(qual, Separator):
-            view.separator = qual
-        elif isinstance(qual, Encapsulator):
-            view.encapsulator = qual
+        view.separator = ctx.command.separator
+        view.quotation = ctx.command.quotation
 
         if self.cog is not None:
             # we have 'self' as the first parameter so just advance
@@ -1080,9 +1081,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             else:
                 result.append(f'<{name}>')
 
-        result.append(self.qualifier.key.join(result_params))
+        if self.quotation:
+            result = ["%s%s%s" % (self.quotation.start, r, self.quotation.end) for r in result]
 
-        return ' '.join(result)
+        return self.separator.key.join(result)
 
     async def can_run(self, ctx: Context) -> bool:
         """|coro|

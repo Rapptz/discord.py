@@ -361,7 +361,7 @@ Qualifiers
 
 .. autoclass:: discord.ext.commands.Separator
 
-.. autoclass:: discord.ext.commands.Encapsulator
+.. autoclass:: discord.ext.commands.Quotation
 
 .. _ext_commands_api_converters:
 

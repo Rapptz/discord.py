@@ -57,11 +57,15 @@ class Separator:
 
         # ?foo a b, c, d, e
 
-        @bot.command(qualifier=Separator('|', strip_ws=False))
+        # -> "a b,c,d,e"
+        # trailing whitespace is stripped by default.
+
+        @bot.command(separator=Separator('|', strip_ws=False))
         async def bar(ctx, *c):
             await ctx.send(','.join(c))
 
-        # ?bar a b test | c | e | f
+        # ?bar a b test | c |  e  | f
+        # -> "a b test , c ,  e  , f"
 
     Attributes
     -----------
@@ -78,22 +82,24 @@ class Separator:
     def __repr__(self):
         return '<Separator key={0.key!r} strip_ws={0.strip_ws}>'.format(self)
 
-class Encapsulator:
+class Quotation:
     """An argument qualifier, which acts as a drop-in replacement for quotes.
 
     .. code-block:: python3
 
-        @bot.command(qualifier=Encapsulator('-'))
+        @bot.command(quotation=Quotation('-'))
         async def foo(ctx, *c):
-            await ctx.send(', '.join(c))
+            await ctx.send(','.join(c))
 
         # ?foo -a b c- b
+        # -> a b c,b
 
-        @bot.command(qualifier=Encapsulator('(', ')'))
+        @bot.command(quotation=Quotation('(', ')'))
         async def bar(ctx, *c):
-            await ctx.send(', '.join(c))
+            await ctx.send(','.join(c))
 
         # ?bar a b (c d e) f g
+        # -> a,b,c d e,f,g
 
     Attributes
     -----------
@@ -112,7 +118,7 @@ class Encapsulator:
         return item in self._all_keys
 
     def __repr__(self):
-        return '<Encapsulator keys={0!r}>'.format(self._all_keys)
+        return '<Quotation keys={0!r}>'.format(self._all_keys)
 
 class StringView:
     def __init__(self, buffer):
@@ -121,7 +127,7 @@ class StringView:
         self.end = len(buffer)
         self.previous = 0
         self.separator = Separator()
-        self.encapsulator = None
+        self.quotation = None
 
     @property
     def current(self):
@@ -132,6 +138,12 @@ class StringView:
         return self.index >= self.end
 
     def is_separator(self, c):
+        key = self.separator.key
+        if key is None:
+            return c.isspace()
+        return c == key
+
+    def is_space(self, c):
         key = self.separator.key
         if key is None:
             return c.isspace()
@@ -147,7 +159,7 @@ class StringView:
         while not self.eof:
             try:
                 current = self.buffer[self.index + pos]
-                if not self.is_separator(current):
+                if not self.is_space(current):
                     break
                 pos += 1
             except IndexError:
@@ -208,10 +220,10 @@ class StringView:
             return None
 
         close_quote = None
-        if self.encapsulator is None:
+        if self.quotation is None:
             close_quote = _quotes.get(current)
-        elif current == self.encapsulator.start:
-            close_quote = self.encapsulator.end
+        elif current == self.quotation.start:
+            close_quote = self.quotation.end
 
         is_quoted = bool(close_quote)
         if is_quoted:
@@ -256,7 +268,7 @@ class StringView:
                     result.append(current)
                 continue
 
-            allowed_quotes = self.encapsulator or _all_quotes
+            allowed_quotes = self.quotation or _all_quotes
             if not is_quoted and current in _quotes:
                 # we aren't quoted
                 raise UnexpectedQuoteError(current)
