@@ -1039,7 +1039,6 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return ''
 
         result = []
-        result_params = []
         for name, param in params.items():
             greedy = isinstance(param.annotation, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument

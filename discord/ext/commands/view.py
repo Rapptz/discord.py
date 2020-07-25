@@ -65,7 +65,7 @@ class Separator:
             await ctx.send(','.join(c))
 
         # ?bar a b test | c |  e  | f
-        # -> "a b test , c ,  e  , f"
+        # -> " a b test , c ,  e  , f"
 
     Attributes
     -----------
@@ -92,14 +92,14 @@ class Quotation:
             await ctx.send(','.join(c))
 
         # ?foo -a b c- b
-        # -> a b c,b
+        # -> "a b c,b"
 
         @bot.command(quotation=Quotation('(', ')'))
         async def bar(ctx, *c):
             await ctx.send(','.join(c))
 
         # ?bar a b (c d e) f g
-        # -> a,b,c d e,f,g
+        # -> "a,b,c d e,f,g"
 
     Attributes
     -----------
