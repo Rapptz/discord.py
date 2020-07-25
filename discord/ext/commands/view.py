@@ -76,6 +76,8 @@ class Separator:
         it is ``True``.
     """
     def __init__(self, key=None, *, strip_ws=True):
+        if key == '':
+            raise ValueError('The separator must be a non-empty string or None.')
         self.key = key
         self.strip_ws = strip_ws
 
@@ -112,7 +114,10 @@ class Quotation:
     def __init__(self, start, end=None):
         self.start = start
         self.end = end or start
-        self._all_keys = [self.start, self.end]
+        self._all_keys = (self.start, self.end)
+
+        if not self.start or not self.end:
+            raise ValueError('Quotations must be a non-empty string.')
 
     def __contains__(self, item):
         return item in self._all_keys
