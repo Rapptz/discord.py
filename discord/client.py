@@ -744,6 +744,11 @@ class Client:
     def get_guild(self, id):
         """Returns a guild with the given ID.
 
+        .. note::
+        
+            When using this method, :attr:`.Guild.max_members` will return ``None``. 
+            Using :meth:`.Client.fetch_guild` will provide this attribute. 
+
         Parameters
         -----------
         id: :class:`int`
