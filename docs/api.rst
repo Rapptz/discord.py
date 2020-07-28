@@ -117,6 +117,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The warnings on :func:`on_ready` also apply.
 
+.. function:: on_shard_connect(shard_id)
+
+    Similar to :func:`on_connect` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has connected to Discord.
+
+    .. versionadded:: 1.4
+
+    :param shard_id: The shard ID that has connected.
+    :type shard_id: :class:`int`
+
 .. function:: on_disconnect()
 
     Called when the client has disconnected from Discord. This could happen either through
@@ -124,6 +134,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     one way or the other.
 
     This function can be called many times.
+
+.. function:: on_shard_disconnect(shard_id)
+
+    Similar to :func:`on_disconnect` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has disconnected from Discord.
+
+    .. versionadded:: 1.4
+
+    :param shard_id: The shard ID that has disconnected.
+    :type shard_id: :class:`int`
 
 .. function:: on_ready()
 
@@ -148,6 +168,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_resumed()
 
     Called when the client has resumed a session.
+
+.. function:: on_shard_resumed(shard_id)
+
+    Similar to :func:`on_resumed` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has resumed a session.
+
+    .. versionadded:: 1.4
+
+    :param shard_id: The shard ID that has resumed.
+    :type shard_id: :class:`int`
 
 .. function:: on_error(event, \*args, \*\*kwargs)
 
@@ -203,7 +233,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     .. note::
 
-        This is only for the messages received from the client
+        This is only for the messages sent from the client
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param payload: The message that is about to be passed on to the
@@ -2726,7 +2756,7 @@ Data Classes
 Some classes are just there to be data containers, this lists them.
 
 Unlike :ref:`models <discord_api_models>` you are allowed to create
-these yourself, even if they can also be used to hold attributes.
+most of these yourself, even if they can also be used to hold attributes.
 
 Nearly all classes here have :ref:`py:slots` defined which means that it is
 impossible to have dynamic attributes to the data classes.
@@ -2807,22 +2837,28 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
+ShardInfo
+~~~~~~~~~~~
+
+.. autoclass:: ShardInfo()
+    :members:
+
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: SystemChannelFlags
+.. autoclass:: SystemChannelFlags()
     :members:
 
 MessageFlags
 ~~~~~~~~~~~~
 
-.. autoclass:: MessageFlags
+.. autoclass:: MessageFlags()
     :members:
 
 PublicUserFlags
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: PublicUserFlags
+.. autoclass:: PublicUserFlags()
     :members:
 
 

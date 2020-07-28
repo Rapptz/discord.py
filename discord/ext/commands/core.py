@@ -1183,6 +1183,8 @@ class GroupMixin(typing.Generic[_CT]):
             return self.all_commands.get(name)
 
         names = name.split()
+        if not names:
+            return None
         obj = self.all_commands.get(names[0])
         if not isinstance(obj, GroupMixin):
             return obj

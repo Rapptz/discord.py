@@ -905,6 +905,15 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+            
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
 
         Returns
         -------
@@ -927,6 +936,15 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
+            
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
 
         Returns
         -------
@@ -1961,7 +1979,7 @@ class Guild(Hashable):
             Retrieve entries after this date or entry.
             If a date is provided it must be a timezone-naive datetime representing UTC time.
         oldest_first: :class:`bool`
-            If set to ``True``, return entries in oldest->newest order. Defaults to True if
+            If set to ``True``, return entries in oldest->newest order. Defaults to ``True`` if
             ``after`` is specified, otherwise ``False``.
         user: :class:`abc.Snowflake`
             The moderator to filter entries from.
@@ -2064,3 +2082,23 @@ class Guild(Hashable):
 
         limit = limit or 5
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)
+
+    async def change_voice_state(self, *, channel, self_mute=False, self_deaf=False):
+        """|coro|
+
+        Changes client's voice state in the guild.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        channel: Optional[:class:`VoiceChannel`]
+            Channel the client wants to join. Use ``None`` to disconnect.
+        self_mute: :class:`bool`
+            Indicates if the client should be self-muted.
+        self_deaf: :class:`bool`
+            Indicates if the client should be self-deafened.
+        """
+        ws = self._state._get_websocket(self.id)
+        channel_id = channel.id if channel else None
+        await ws.voice_state(self.id, channel_id, self_mute, self_deaf)

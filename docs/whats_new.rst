@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p3p4:
+
+v1.3.4
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix an issue with channel overwrites causing multiple issues including crashes (:issue:`5109`)
+
 .. _vp1p3p3:
 
 v1.3.3

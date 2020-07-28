@@ -49,7 +49,7 @@ from . import utils, opus, abc
 from .enums import *
 from .embeds import Embed
 from .mentions import AllowedMentions
-from .shard import AutoShardedClient
+from .shard import AutoShardedClient, ShardInfo
 from .player import *
 from .webhook import *
 from .voice_client import VoiceClient

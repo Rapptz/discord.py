@@ -32,7 +32,6 @@ import sys
 import traceback
 
 import aiohttp
-import websockets
 
 from .user import User, Profile
 from .asset import Asset
@@ -160,6 +159,11 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
+    guild_ready_timeout: :class:`float`
+        The maximum number of seconds to wait for the GUILD_CREATE stream to end before
+        preparing the member cache and firing READY. The default timeout is 2 seconds.
+
+        .. versionadded:: 1.4
     guild_subscriptions: :class:`bool`
         Whether to dispatching of presence or typing events. Defaults to ``True``.
 
@@ -224,8 +228,12 @@ class Client:
             'ready': self._handle_ready
         }
 
+        self._hooks = {
+            'before_identify': self._call_before_identify_hook
+        }
+
         self._connection = ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
+                                           hooks=self._hooks, syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
         self._connection.shard_count = self.shard_count
         self._closed = False
@@ -395,6 +403,36 @@ class Client:
 
         await self._connection.request_offline_members(guilds)
 
+    # hooks
+
+    async def _call_before_identify_hook(self, shard_id, *, initial=False):
+        # This hook is an internal hook that actually calls the public one.
+        # It allows the library to have its own hook without stepping on the
+        # toes of those who need to override their own hook.
+        await self.before_identify_hook(shard_id, initial=initial)
+
+    async def before_identify_hook(self, shard_id, *, initial=False):
+        """|coro|
+
+        A hook that is called before IDENTIFYing a session. This is useful
+        if you wish to have more control over the synchronization of multiple
+        IDENTIFYing clients.
+
+        The default implementation sleeps for 5 seconds.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        ------------
+        shard_id: :class:`int`
+            The shard ID that requested being IDENTIFY'd
+        initial: :class:`bool`
+            Whether this IDENTIFY is the first initial IDENTIFY.
+        """
+
+        if not initial:
+            await asyncio.sleep(5.0)
+
     # login state management
 
     async def login(self, token, *, bot=True):
@@ -447,19 +485,6 @@ class Client:
         """
         await self.close()
 
-    async def _connect(self):
-        coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
-        self.ws = await asyncio.wait_for(coro, timeout=180.0)
-        while True:
-            try:
-                await self.ws.poll_event()
-            except ResumeWebSocket:
-                log.info('Got a request to RESUME the websocket.')
-                self.dispatch('disconnect')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
-                                                    sequence=self.ws.sequence, resume=True)
-                self.ws = await asyncio.wait_for(coro, timeout=180.0)
-
     async def connect(self, *, reconnect=True):
         """|coro|
 
@@ -486,17 +511,28 @@ class Client:
         """
 
         backoff = ExponentialBackoff()
+        ws_params = {
+            'initial': True,
+            'shard_id': self.shard_id,
+        }
         while not self.is_closed():
             try:
-                await self._connect()
+                coro = DiscordWebSocket.from_client(self, **ws_params)
+                self.ws = await asyncio.wait_for(coro, timeout=60.0)
+                ws_params['initial'] = False
+                while True:
+                    await self.ws.poll_event()
+            except ReconnectWebSocket as e:
+                log.info('Got a request to %s the websocket.', e.op)
+                self.dispatch('disconnect')
+                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
+                continue
             except (OSError,
                     HTTPException,
                     GatewayNotFound,
                     ConnectionClosed,
                     aiohttp.ClientError,
-                    asyncio.TimeoutError,
-                    websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as exc:
+                    asyncio.TimeoutError) as exc:
 
                 self.dispatch('disconnect')
                 if not reconnect:
@@ -508,6 +544,11 @@ class Client:
 
                 if self.is_closed():
                     return
+
+                # If we get connection reset by peer then try to RESUME
+                if isinstance(exc, OSError) and exc.errno in (54, 10054):
+                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)
+                    continue
 
                 # We should only get this when an unhandled close code happens,
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
@@ -521,6 +562,10 @@ class Client:
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in %.2fs", retry)
                 await asyncio.sleep(retry)
+                # Always try to RESUME the connection
+                # If the connection is not RESUME-able then the gateway will invalidate the session.
+                # This is apparently what the official Discord client does.
+                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
 
     async def close(self):
         """|coro|
@@ -629,7 +674,11 @@ class Client:
             _cleanup_loop(loop)
 
         if not future.cancelled():
-            return future.result()
+            try:
+                return future.result()
+            except KeyboardInterrupt:
+                # I am unsure why this gets raised here but suppress it anyway
+                return None
 
     # properties
 
