@@ -516,7 +516,7 @@ class BotBase(GroupMixin):
         existing = self.__cogs.get(cog_name)
 
         if existing:
-            raise discord.ClientException('The cog {0.__cog_name__} is already loaded.'.format(existing))
+            raise discord.ClientException('a cog with name {0.__cog_name__} is already loaded'.format(existing))
 
         cog = cog._inject(self)
         self.__cogs[cog_name] = cog
