@@ -1,5 +1,5 @@
 import aiohttp
-import websockets
+import aiohttp.web_ws
 
 from typing import Optional, Dict, Any, Union
 
@@ -35,4 +35,4 @@ class ConnectionClosed(ClientException):
     reason: str
     shard_id: Optional[int]
 
-    def __init__(self, original: websockets.exceptions.ConnectionClosed, *, shard_id: Optional[int]) -> None: ...
+    def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, shard_id: Optional[int]) -> None: ...
