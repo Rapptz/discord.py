@@ -39,6 +39,7 @@ signal_ctl: Final[_SignalCtl]
 class Encoder:
     SAMPLING_RATE: ClassVar[int]
     CHANNELS: ClassVar[int]
+    FRAME_LENGTH: ClassVar[int]
     SAMPLE_SIZE: ClassVar[int]
     SAMPLES_PER_FRAME: ClassVar[int]
     FRAME_SIZE: ClassVar[int]

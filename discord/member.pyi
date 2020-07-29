@@ -12,6 +12,7 @@ from .guild import Guild
 from .relationship import Relationship
 from .user import Profile, User
 from .asset import Asset
+from .flags import PublicUserFlags
 
 from typing import Any, Optional, Union, List, Tuple
 
@@ -41,6 +42,8 @@ class Member(discord.abc.Messageable, discord.abc.User):
     bot: bool
     system: bool
 
+    @property
+    def public_flags(self) -> PublicUserFlags: ...
     @property
     def avatar_url(self) -> Asset: ...
     def is_avatar_animated(self) -> bool: ...

@@ -21,7 +21,7 @@ from .emoji import Emoji
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
-from typing import List, Optional, Tuple, Dict, Union, NamedTuple, Any, Iterator, Iterable
+from typing import List, Optional, Tuple, Dict, Union, NamedTuple, Any, Iterator, Iterable, overload
 from typing_extensions import Literal
 
 _VALID_STATIC_ICON_FORMATS = Literal['jpeg', 'jpg', 'webp', 'png']
@@ -187,7 +187,10 @@ class Guild(Hashable):
                    oldest_first: Optional[bool] = ..., user: Optional[Snowflake] = ...,
                    action: Optional[AuditLogAction] = ...) -> AuditLogIterator: ...
     async def widget(self) -> Widget: ...
-    async def query_members(self, query: str, *, limit: int = ..., user_ids: Optional[List[int]] = ...,
+    @overload
+    async def query_members(self, query: str, *, limit: int = ..., cache: bool = ...) -> List[Member]: ...
+    @overload
+    async def query_members(self, *, limit: int = ..., user_ids: Optional[List[int]] = ...,
                             cache: bool = ...) -> List[Member]: ...
     async def change_voice_state(self, *, channel: Optional[VoiceChannel], self_mute: bool = ...,
                                  self_deaf: bool = ...) -> None: ...
