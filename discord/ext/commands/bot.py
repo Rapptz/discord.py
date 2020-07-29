@@ -489,6 +489,11 @@ class BotBase(GroupMixin):
 
         A cog is a class that has its own event listeners and commands.
 
+        .. versionchanged:: 1.4
+
+            :exc:`.ClientException` is raised when a cog with the same name
+            is already loaded.
+
         Parameters
         -----------
         cog: :class:`.Cog`
@@ -500,13 +505,21 @@ class BotBase(GroupMixin):
             The cog does not inherit from :class:`.Cog`.
         CommandError
             An error happened during loading.
+        .ClientException
+            A cog with the same name is already loaded.
         """
 
         if not isinstance(cog, Cog):
             raise TypeError('cogs must derive from Cog')
 
+        cog_name = cog.__cog_name__
+        existing = self.__cogs.get(cog_name)
+
+        if existing:
+            raise discord.ClientException('The cog {0.__cog_name__} is already loaded.'.format(existing))
+
         cog = cog._inject(self)
-        self.__cogs[cog.__cog_name__] = cog
+        self.__cogs[cog_name] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
