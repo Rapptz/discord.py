@@ -43,6 +43,7 @@ __all__ = (
     'CommandOnCooldown',
     'MaxConcurrencyReached',
     'NotOwner',
+    'NotGuildOwner',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -62,7 +63,7 @@ __all__ = (
     'NoEntryPointError',
     'ExtensionFailed',
     'ExtensionNotFound',
-    'CommandRegistrationError',
+    'CommandRegistrationError'
 )
 
 class CommandError(DiscordException):
@@ -197,6 +198,13 @@ class NoPrivateMessage(CheckFailure):
 
 class NotOwner(CheckFailure):
     """Exception raised when the message author is not the owner of the bot.
+
+    This inherits from :exc:`CheckFailure`
+    """
+    pass
+
+class NotGuildOwner(CheckFailure):
+    """Exception raised when the message author is not the owner of the context guild.
 
     This inherits from :exc:`CheckFailure`
     """
