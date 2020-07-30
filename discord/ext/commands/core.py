@@ -61,7 +61,8 @@ __all__ = (
     'is_owner',
     'is_nsfw',
     'has_guild_permissions',
-    'bot_has_guild_permissions'
+    'bot_has_guild_permissions',
+    'is_guild_owner'
 )
 
 def wrap_callback(coro):
@@ -1848,6 +1849,28 @@ def is_owner():
     async def predicate(ctx):
         if not await ctx.bot.is_owner(ctx.author):
             raise NotOwner('You do not own this bot.')
+        return True
+
+    return check(predicate)
+
+def is_guild_owner():
+    """A :func:`.check` that checks if the person invoking this command is the
+    owner of a guild.
+
+    If this check is called in a DM context, it will raise an
+    exception, :exc:`.NoPrivateMessage`.
+
+    This check raises a special exception, :exc:`.NotGuildOwner` that is derived
+    from :exc:`.CheckFailure`.
+    """
+
+    def predicate(ctx):
+        if ctx.guild is None:
+            raise NoPrivateMessage
+
+        if ctx.author.id != ctx.guild.owner_id:
+            raise NotGuildOwner('You do not own this guild.')
+
         return True
 
     return check(predicate)
