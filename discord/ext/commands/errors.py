@@ -380,10 +380,13 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
+    on_guild: :class:`bool`
+        If the lookup was done using guild permissions.
     missing_perms: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
+    def __init__(self, on_guild, missing_perms, *args):
+        self.on_guild = on_guild
         self.missing_perms = missing_perms
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
@@ -403,10 +406,13 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
+    on_guild: :class:`bool`
+        If the lookup was done using guild permissions.
     missing_perms: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
+    def __init__(self, on_guild, missing_perms, *args):
+        self.on_guild = on_guild
         self.missing_perms = missing_perms
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
@@ -416,6 +422,58 @@ class BotMissingPermissions(CheckFailure):
         else:
             fmt = ' and '.join(missing)
         message = 'Bot requires {} permission(s) to run this command.'.format(fmt)
+        super().__init__(message, *args)
+
+class MissingAnyPermissions(CheckFailure):
+    """Exception raised when the command invoker doesn't have any of the permissions specified
+    to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    Attributes
+    -----------
+    on_guild: :class:`bool`
+        If the lookup was done using guild permissions.
+    missing_perms: :class:`list`
+        The required permissions that are missing.
+    """
+    def __init__(self, on_guild, missing_perms, *args):
+        self.on_guild = on_guild
+        self.missing_perms = missing_perms
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = 'You are missing at least one of the required permissions to run this command: {}'.format(fmt)
+        super().__init__(message, *args)
+
+class BotMissingAnyPermissions(CheckFailure):
+    """Exception raised when the bot's member doesn't have any of the permissions specified
+    to run a command.
+
+    This inherits from :exc:`CheckFailure`
+
+    Attributes
+    -----------
+    on_guild: :class:`bool`
+        If the lookup was done using guild permissions.
+    missing_perms: :class:`list`
+        The required permissions that are missing.
+    """
+    def __init__(self, on_guild, missing_perms, *args):
+        self.on_guild = on_guild
+        self.missing_perms = missing_perms
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = 'Bot requires at lease one of the required permissions to run this command: {}'.format(fmt)
         super().__init__(message, *args)
 
 class BadUnionArgument(UserInputError):
