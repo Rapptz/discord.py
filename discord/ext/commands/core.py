@@ -1675,129 +1675,140 @@ def bot_has_any_role(*items):
         raise BotMissingAnyRole(items)
     return check(predicate)
 
-def has_permissions(**perms):
+def has_permissions(on_guild=False, **perms):
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
-
-    Note that this check operates on the current channel permissions, not the
-    guild wide permissions.
-
+    If `on_guild=False`, this check operates on the current channel permissions.
+    If `on_guild=True`, it operates on guild wide permissions. Default to `False`.
     The permissions passed in must be exactly like the properties shown under
     :class:`.discord.Permissions`.
-
     This check raises a special exception, :exc:`.MissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
-
     Parameters
     ------------
     perms
         An argument list of permissions to check for.
-
     Example
     ---------
-
     .. code-block:: python3
-
         @bot.command()
         @commands.has_permissions(manage_messages=True)
         async def test(ctx):
             await ctx.send('You can manage messages.')
-
     """
+
+    if not isinstance(on_guild, bool):
+        raise TypeError('on_guild attribute must be boolean.')
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
         raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
 
     def predicate(ctx):
+        if on_guild and not ctx.guild:
+            raise NoPrivateMessage
+
         ch = ctx.channel
-        permissions = ch.permissions_for(ctx.author)
+        permissions = ctx.author.guild_permissions if on_guild else ch.permissions_for(ctx.author)
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
         if not missing:
             return True
 
-        raise MissingPermissions(missing)
+        raise MissingPermissions(on_guild, missing)
 
     return check(predicate)
 
-def bot_has_permissions(**perms):
+def bot_has_permissions(on_guild=False, **perms):
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
-
     This check raises a special exception, :exc:`.BotMissingPermissions`
     that is inherited from :exc:`.CheckFailure`.
     """
 
+    if not isinstance(on_guild, bool):
+        raise TypeError('on_guild attribute must be boolean.')
+
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
         raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
 
     def predicate(ctx):
+        if on_guild and not ctx.guild:
+            raise NoPrivateMessage
+
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
-        permissions = ctx.channel.permissions_for(me)
+        permissions = ctx.me.guild_permissions if on_guild else ctx.channel.permissions_for(me)
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
         if not missing:
             return True
 
-        raise BotMissingPermissions(missing)
+        raise BotMissingPermissions(on_guild, missing)
 
     return check(predicate)
 
-def has_guild_permissions(**perms):
-    """Similar to :func:`.has_permissions`, but operates on guild wide
-    permissions instead of the current channel permissions.
-
-    If this check is called in a DM context, it will raise an
-    exception, :exc:`.NoPrivateMessage`.
-
-    .. versionadded:: 1.3
+def has_any_permissions(on_guild=False, **perms):
+    """Similar to :func:`.has_permissions` except checks if the member has at
+    least one of the permissions listed.
+    This check raises a special exception, :exc:`.MissingAnyPermissions`
+    that is inherited from :exc:`.CheckFailure`.
     """
+
+    if not isinstance(on_guild, bool):
+        raise TypeError('on_guild attribute must be boolean.')
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
         raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
 
     def predicate(ctx):
-        if not ctx.guild:
+        if on_guild and not ctx.guild:
             raise NoPrivateMessage
 
-        permissions = ctx.author.guild_permissions
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+        ch = ctx.channel
+        permissions = ctx.author.guild_permissions if on_guild else ch.permissions_for(ctx.author)
 
-        if not missing:
+        has_any = any(perm for perm, value in perms.items() if getattr(permissions, perm) != value)
+
+        if has_any:
             return True
 
-        raise MissingPermissions(missing)
+        raise MissingAnyPermissions(on_guild, perms.keys())
 
     return check(predicate)
 
-def bot_has_guild_permissions(**perms):
-    """Similar to :func:`.has_guild_permissions`, but checks the bot
-    members guild permissions.
-
-    .. versionadded:: 1.3
+def bot_has_any_permissions(on_guild=False, **perms):
+    """Similar to :func:`.has_any_permissions` except checks if the bot itself has
+    at least one of the permissions listed.
+    This check raises a special exception, :exc:`.BotMissingAnyPermissions`
+    that is inherited from :exc:`.CheckFailure`.
     """
+
+    if not isinstance(on_guild, bool):
+        raise TypeError('on_guild attribute must be boolean.')
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
         raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
 
     def predicate(ctx):
-        if not ctx.guild:
+        if on_guild and not ctx.guild:
             raise NoPrivateMessage
 
-        permissions = ctx.me.guild_permissions
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+        guild = ctx.guild
+        me = guild.me if guild is not None else ctx.bot.user
+        permissions = ctx.me.guild_permissions if on_guild else ctx.channel.permissions_for(me)
 
-        if not missing:
+        has_any = any(perm for perm, value in perms.items() if getattr(permissions, perm) != value)
+
+        if has_any:
             return True
 
-        raise BotMissingPermissions(missing)
+        raise BotMissingAnyPermissions(on_guild, perms.keys())
 
     return check(predicate)
 
