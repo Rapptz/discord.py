@@ -60,8 +60,8 @@ __all__ = (
     'guild_only',
     'is_owner',
     'is_nsfw',
-    'has_guild_permissions',
-    'bot_has_guild_permissions'
+    'has_any_permissions',
+    'bot_has_any_permissions'
 )
 
 def wrap_callback(coro):
