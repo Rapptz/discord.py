@@ -49,6 +49,8 @@ __all__ = (
     'BotMissingAnyRole',
     'MissingPermissions',
     'BotMissingPermissions',
+    'MissingAnyPermissions',
+    'BotMissingAnyPermissions',
     'NSFWChannelRequired',
     'ConversionError',
     'BadUnionArgument',
