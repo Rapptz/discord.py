@@ -1,0 +1,1 @@
+Document the fact that data classes use __slots__.

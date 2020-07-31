@@ -1,0 +1,82 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-06-22 09:35-0400\n"
+"PO-Revision-Date: 2019-06-28 11:14\n"
+"Last-Translator: Danny Y (rapptz)\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: crowdin.com\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /ext/commands/extensions.pot\n"
+"Language: ja_JP\n"
+
+#: ../../ext/commands/extensions.rst:6
+msgid "Extensions"
+msgstr "エクステンション"
+
+#: ../../ext/commands/extensions.rst:8
+msgid "There comes a time in the bot development when you want to extend the bot functionality at run-time and quickly unload and reload code (also called hot-reloading). The command framework comes with this ability built-in, with a concept called **extensions**."
+msgstr "Bot開発ではBotを起動している間にコードを素早くアンロードし、再度ロードし直したい (ホットリロードとも呼ばれます) という時があります。コマンドフレームワークでは **エクステンション** と呼ばれる概念でこの機能が組み込まれています。"
+
+#: ../../ext/commands/extensions.rst:11
+msgid "Primer"
+msgstr "はじめに"
+
+#: ../../ext/commands/extensions.rst:13
+msgid "An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension."
+msgstr "その中核となるエクステンションは ``setup`` というエントリポイントを持つPythonファイルです。このsetupは通常のPython関数である必要があります (コルーチンではありません)。この関数はエクステンションをロードする :class:`~.commands.Bot` を受け取るための単一のパラメータを持ちます。"
+
+#: ../../ext/commands/extensions.rst:15
+msgid "An example extension looks like this:"
+msgstr "エクステンションの例は以下のとおりです:"
+
+#: ../../ext/commands/extensions.rst:17
+msgid "hello.py"
+msgstr "hello.py"
+
+#: ../../ext/commands/extensions.rst:30
+msgid "In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.commands.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``."
+msgstr "この例では単純なコマンドを実装しており、エクステンションがロードされることでこのコマンドがBotに追加されます。最後にこのエクステンションをロードする必要があります。ロードには :meth:`.commands.Bot.load_extension` を実行します。このエクステンションを読み込むために ``bot.load_extension('hello')`` を実行します。"
+
+#: ../../ext/commands/extensions.rst:32
+msgid "Cogs"
+msgstr "コグ"
+
+#: ../../ext/commands/extensions.rst:35
+msgid "Extensions are usually used in conjunction with cogs. To read more about them, check out the documentation, :ref:`ext_commands_cogs`."
+msgstr "エクステンションは通常、コグと組み合わせて使用します。詳細については :ref:`ext_commands_cogs` のドキュメントを参照してください。"
+
+#: ../../ext/commands/extensions.rst:39
+msgid "Extension paths are ultimately similar to the import mechanism. What this means is that if there is a folder, then it must be dot-qualified. For example to load an extension in ``plugins/hello.py`` then we use the string ``plugins.hello``."
+msgstr "エクステンションのパスは究極的にはimportのメカニズムと似ています。これはフォルダ等がある場合、それをドットで区切らなければならないということです。例えば ``plugins/hello.py`` というエクステンションをロードする場合は、 ``plugins.hello`` という文字列を使います。"
+
+#: ../../ext/commands/extensions.rst:42
+msgid "Reloading"
+msgstr "リロード"
+
+#: ../../ext/commands/extensions.rst:44
+msgid "When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`Bot.reload_extension`."
+msgstr "エクステンションを更新し、その参照を再読込したい場合のために、ライブラリには :meth:`Bot.reload_extension` が用意されています。"
+
+#: ../../ext/commands/extensions.rst:50
+msgid "Once the extension reloads, any changes that we did will be applied. This is useful if we want to add or remove functionality without restarting our bot. If an error occurred during the reloading process, the bot will pretend as if the reload never happened."
+msgstr "エクステンションを再読込すると、その変更が適用されます。Botを再起動せずに機能の追加や削除を行いたい場合に便利です。再読込処理中にエラーが発生した場合、Botは再読込処理をする前の状態に戻ります。"
+
+#: ../../ext/commands/extensions.rst:53
+msgid "Cleaning Up"
+msgstr "クリーンアップ"
+
+#: ../../ext/commands/extensions.rst:55
+msgid "Although rare, sometimes an extension needs to clean-up or know when it's being unloaded. For cases like these, there is another entry point named ``teardown`` which is similar to ``setup`` except called when the extension is unloaded."
+msgstr "稀ではありますが、エクステンションにクリーンアップが必要だったり、いつアンロードするかを確認したい場合があります。このために ``setup`` に似たエクステンションがアンロードされるときに呼び出される ``teardown`` というエントリポイントが用意されています。"
+
+#: ../../ext/commands/extensions.rst:57
+msgid "basic_ext.py"
+msgstr "basic_ext.py"
+
