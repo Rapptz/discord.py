@@ -1718,7 +1718,7 @@ def has_permissions(**perms):
         if not missing:
             return True
 
-        raise MissingPermissions(missing)
+        raise MissingPermissions(missing, on_guild=False)
 
     return check(predicate)
 
@@ -1744,7 +1744,7 @@ def bot_has_permissions(**perms):
         if not missing:
             return True
 
-        raise BotMissingPermissions(missing)
+        raise BotMissingPermissions(missing, on_guild=False)
 
     return check(predicate)
 
@@ -1772,7 +1772,7 @@ def has_guild_permissions(**perms):
         if not missing:
             return True
 
-        raise MissingPermissions(missing)
+        raise MissingPermissions(missing, on_guild=True)
 
     return check(predicate)
 
@@ -1797,7 +1797,7 @@ def bot_has_guild_permissions(**perms):
         if not missing:
             return True
 
-        raise BotMissingPermissions(missing)
+        raise BotMissingPermissions(missing, on_guild=True)
 
     return check(predicate)
 
