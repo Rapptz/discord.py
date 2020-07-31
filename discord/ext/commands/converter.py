@@ -51,6 +51,7 @@ __all__ = (
     'Greedy',
 )
 
+
 def _get_from_guilds(bot, getter, argument):
     result = None
     for guild in bot.guilds:
@@ -59,7 +60,9 @@ def _get_from_guilds(bot, getter, argument):
             return result
     return result
 
+
 _utils_get = discord.utils.get
+
 
 class Converter:
     """The base class of custom converters that require the :class:`.Context`
@@ -87,7 +90,6 @@ class Converter:
             The invocation context that the argument is being used in.
         argument: :class:`str`
             The argument that is being converted.
-
         Raises
         -------
         :exc:`.CommandError`
@@ -97,6 +99,7 @@ class Converter:
         """
         raise NotImplementedError('Derived classes need to implement this.')
 
+
 class IDConverter(Converter):
     def __init__(self):
         self._id_regex = re.compile(r'([0-9]{15,21})$')
@@ -105,24 +108,26 @@ class IDConverter(Converter):
     def _get_id_match(self, argument):
         return self._id_regex.match(argument)
 
+
 class MemberConverter(IDConverter):
     """Converts to a :class:`~discord.Member`.
-
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
-
+    All lookups are via the local guild and an API call is made if necessary.
+    If in a DM context, then the lookup is done by the global cache.
     The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
-    5. Lookup by nickname
+    If an ID is not found
+    1. Look through cache for a matching name#discrim.
+    2. Look through cache for a matching name.
+    3. Look through cache for a matching nickname
+    If an ID is found 
+    1. Look through cache for matching ID stripped of its mention.
+    If ID is found and not in a DM context
+    1. Fetch the Member with an API call using the ID stripped of its mention.
     """
 
     async def convert(self, ctx, argument):
         bot = ctx.bot
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(
+            r'<@!?([0-9]+)>$', argument)
         guild = ctx.guild
         result = None
         if match is None:
@@ -134,26 +139,37 @@ class MemberConverter(IDConverter):
         else:
             user_id = int(match.group(1))
             if guild:
-                result = guild.get_member(user_id) or _utils_get(ctx.message.mentions, id=user_id)
+                result = guild.get_member(user_id) or _utils_get(
+                    ctx.message.mentions, id=user_id)
+
             else:
                 result = _get_from_guilds(bot, 'get_member', user_id)
+
+            if guild:
+                if result is None:
+                    try:
+                        result = await guild.fetch_member(user_id)
+                    except discord.NotFound:
+                        pass
+                    except discord.Forbidden:
+                        raise BadArgument('Missing required permissions to fetch member "{}"'.format(user_id))
 
         if result is None:
             raise BadArgument('Member "{}" not found'.format(argument))
 
         return result
 
+
 class UserConverter(IDConverter):
-    """Converts to a :class:`~discord.User`.
-
-    All lookups are via the global user cache.
-
+    """Converts to a :class:`~discord.Member`.
+    All lookups are via global user cache and an API call is made if necessary.
     The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
+    If an ID is not found
+    1. Look through cache for a matching name#discrim.
+    2. Look through cache for a matching name.
+    If an ID is found 
+    1. Look through cache for a matching ID stripped of its mention.
+    2. Fetch the User with an API call using the ID stripped of its mention.
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -162,7 +178,13 @@ class UserConverter(IDConverter):
 
         if match is not None:
             user_id = int(match.group(1))
-            result = ctx.bot.get_user(user_id) or _utils_get(ctx.message.mentions, id=user_id)
+            result = ctx.bot.get_user(user_id) or _utils_get(
+                ctx.message.mentions, id=user_id)
+            if result is None:
+                try:
+                    result = await ctx.bot.fetch_user(user_id)
+                except discord.NotFound:
+                    pass
         else:
             arg = argument
 
@@ -188,13 +210,11 @@ class UserConverter(IDConverter):
 
         return result
 
+
 class MessageConverter(Converter):
     """Converts to a :class:`discord.Message`.
-
     .. versionadded:: 1.1
-
     The lookup strategy is as follows (in order):
-
     1. Lookup by "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
     2. Lookup by message ID (the message **must** be in the context channel)
     3. Lookup by message URL
@@ -209,33 +229,43 @@ class MessageConverter(Converter):
         )
         match = id_regex.match(argument) or link_regex.match(argument)
         if not match:
-            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+            raise BadArgument('Message "{}" not found.'.format(argument))
         message_id = int(match.group("message_id"))
-        channel_id = match.group("channel_id")
+        channel_id = int(match.group("channel_id"))
         message = ctx.bot._connection._get_message(message_id)
         if message:
             return message
-        channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
-        if not channel:
-            raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
+        if channel_id:
+            channel = ctx.bot.get_channel(channel_id)
+            if channel is None:
+                try:
+                    channel = await ctx.bot.fetch_channel(channel_id)
+                except discord.NotFound:
+                    raise BadArgument(
+                        'TextChannel "{}" not found.'.format(channel_id))
+                except discord.Forbidden:
+                    raise BadArgument(
+                        'Missing required permissions to fetch TextChannel "{}"'.format(channel_id))
+        else:
+            channel = ctx.channel
         try:
             return await channel.fetch_message(message_id)
         except discord.NotFound:
-            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+            raise BadArgument('Message "{}" not found.'.format(argument))
         except discord.Forbidden:
-            raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+            raise BadArgument('Can\'t read messages in TextChannel "{}"'.format(channel_id))
+
 
 class TextChannelConverter(IDConverter):
     """Converts to a :class:`~discord.TextChannel`.
-
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
-
+    All lookups are via the local guild and an API call is made if necessary.
+    If in a DM context, then the lookup is done by the global cache.
     The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name
+    If an ID is not found
+    1. Look through cache for a matching name.
+    If an ID is found 
+    1. Look through cache for a matching ID stripped of its mention.
+    2. Fetch the TextChannel with an API call using the ID stripped of its mention.
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -258,23 +288,30 @@ class TextChannelConverter(IDConverter):
                 result = guild.get_channel(channel_id)
             else:
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
+            if result is None:
+                try:
+                    result = await bot.fetch_channel(channel_id)
+                except discord.NotFound:
+                    pass
+                except discord.Forbidden:
+                    raise BadArgument('Missing required permissions to fetch TextChannel "{}"'.format(channel_id))
 
         if not isinstance(result, discord.TextChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise BadArgument('TextChannel "{}" not found.'.format(argument))
 
         return result
 
+
 class VoiceChannelConverter(IDConverter):
     """Converts to a :class:`~discord.VoiceChannel`.
-
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
-
+    All lookups are via the local guild and an API call is made if necessary. 
+    If in a DM context, then the lookup is done by the global cache.
     The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name
+    If an ID is not found
+    1. Look through cache for a matching name.
+    If an ID is found 
+    1. Look through cache for a matching ID stripped of its mention.
+    2. Fetch the TextChannel with an API call using the ID stripped of its mention.
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -296,23 +333,30 @@ class VoiceChannelConverter(IDConverter):
                 result = guild.get_channel(channel_id)
             else:
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
+            if result is None:
+                try:
+                    result = await bot.fetch_channel(channel_id)
+                except discord.NotFound:
+                    pass
+                except discord.Forbidden:
+                    raise BadArgument('Missing required permissions to fetch VoiceChannel "{}"'.format(channel_id))
 
         if not isinstance(result, discord.VoiceChannel):
             raise BadArgument('Channel "{}" not found.'.format(argument))
 
         return result
 
+
 class CategoryChannelConverter(IDConverter):
     """Converts to a :class:`~discord.CategoryChannel`.
-
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
-
+    All lookups are via the local guild and an API call is made if necessary. 
+    If in a DM context, then the lookup is done by the global cache.
     The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name
+    If an ID is not found
+    1. Look through cache for a matching name.
+    If an ID is found 
+    1. Look through cache for a matching ID stripped of its mention.
+    2. Fetch the TextChannel with an API call using the ID stripped of its mention.
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -335,22 +379,29 @@ class CategoryChannelConverter(IDConverter):
                 result = guild.get_channel(channel_id)
             else:
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
+            if result is None:
+                try:
+                    result = await bot.fetch_channel(channel_id)
+                except discord.NotFound:
+                    pass
+                except discord.Forbidden:
+                    raise BadArgument(
+                        'Missing required permisssions to fetch CategoryChannel "{}"'.format(channel_id))
 
         if not isinstance(result, discord.CategoryChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise BadArgument(
+                'CategoryChannel "{}" not found.'.format(argument))
 
         return result
 
+
 class ColourConverter(Converter):
     """Converts to a :class:`~discord.Colour`.
-
     The following formats are accepted:
-
     - ``0x<hex>``
     - ``#<hex>``
     - ``0x#<hex>``
     - Any of the ``classmethod`` in :class:`Colour`
-
         - The ``_`` in the name can be optionally replaced with spaces.
     """
     async def convert(self, ctx, argument):
@@ -370,14 +421,12 @@ class ColourConverter(Converter):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return method()
 
+
 class RoleConverter(IDConverter):
     """Converts to a :class:`~discord.Role`.
-
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
-
     The lookup strategy is as follows (in order):
-
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
@@ -390,6 +439,7 @@ class RoleConverter(IDConverter):
         match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
         if match:
             result = guild.get_role(int(match.group(1)))
+
         else:
             result = discord.utils.get(guild._roles.values(), name=argument)
 
@@ -397,14 +447,15 @@ class RoleConverter(IDConverter):
             raise BadArgument('Role "{}" not found.'.format(argument))
         return result
 
+
 class GameConverter(Converter):
     """Converts to :class:`~discord.Game`."""
     async def convert(self, ctx, argument):
         return discord.Game(name=argument)
 
+
 class InviteConverter(Converter):
     """Converts to a :class:`~discord.Invite`.
-
     This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
     """
     async def convert(self, ctx, argument):
@@ -414,17 +465,18 @@ class InviteConverter(Converter):
         except Exception as exc:
             raise BadArgument('Invite is invalid or expired') from exc
 
+
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.
-
     All lookups are done for the local guild first, if available. If that lookup
-    fails, then it checks the client's global cache.
-
-    The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by extracting ID from the emoji.
-    3. Lookup by name
+    fails, then it checks the client's global cache if that also fails an API call is made.
+    The lookup strategy is as follows (in order) 
+    If an ID is not found
+    1. Look through cache for a matching name
+    If an ID is found
+    1. Look torough cache for a matching ID extracted from the emoji.
+    If an ID is found and not in a DM context
+    1. Fetch the Emoji with an API call using the ID extracted from the emoji.
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
@@ -449,14 +501,21 @@ class EmojiConverter(IDConverter):
             if result is None:
                 result = discord.utils.get(bot.emojis, id=emoji_id)
 
+            if guild:
+                if result is None:
+                    try:
+                        result = await guild.fetch_emoji(emoji_id)
+                    except discord.NotFound:
+                        pass
+
         if result is None:
             raise BadArgument('Emoji "{}" not found.'.format(argument))
 
         return result
 
+
 class PartialEmojiConverter(Converter):
     """Converts to a :class:`~discord.PartialEmoji`.
-
     This is done by extracting the animated flag, name and ID from the emoji.
     """
     async def convert(self, ctx, argument):
@@ -467,17 +526,16 @@ class PartialEmojiConverter(Converter):
             emoji_name = match.group(2)
             emoji_id = int(match.group(3))
 
-            return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name,
-                                                   id=emoji_id)
+            return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name, id=emoji_id)
 
-        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+        raise BadArgument(
+            'Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of
     said content.
-
     This behaves similarly to :attr:`~discord.Message.clean_content`.
-
     Attributes
     ------------
     fix_channel_mentions: :class:`bool`
@@ -487,6 +545,7 @@ class clean_content(Converter):
     escape_markdown: :class:`bool`
         Whether to also escape special markdown characters.
     """
+
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False):
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
@@ -511,7 +570,6 @@ class clean_content(Converter):
             def resolve_member(id, *, _get=ctx.bot.get_user):
                 m = _get(id)
                 return '@' + m.name if m else '@deleted-user'
-
 
         transformations.update(
             ('<@%s>' % member_id, resolve_member(member_id))
@@ -545,6 +603,7 @@ class clean_content(Converter):
         # Completely ensure no mentions escape:
         return discord.utils.escape_mentions(result)
 
+
 class _Greedy:
     __slots__ = ('converter',)
 
@@ -559,7 +618,8 @@ class _Greedy:
         converter = params[0]
 
         if not (callable(converter) or isinstance(converter, Converter) or hasattr(converter, '__origin__')):
-            raise TypeError('Greedy[...] expects a type or a Converter instance.')
+            raise TypeError(
+                'Greedy[...] expects a type or a Converter instance.')
 
         if converter is str or converter is type(None) or converter is _Greedy:
             raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
@@ -568,5 +628,6 @@ class _Greedy:
             raise TypeError('Greedy[%r] is invalid.' % converter)
 
         return self.__class__(converter=converter)
+
 
 Greedy = _Greedy()
