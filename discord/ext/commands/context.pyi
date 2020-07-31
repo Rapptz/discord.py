@@ -11,15 +11,25 @@ _C = TypeVar('_C', bound=Context)
 
 class Context(discord.abc.Messageable):
     message: discord.Message
-    bot: Bot[Any]
     args: List[Any]
     kwargs: Dict[str, Any]
     prefix: str
-    command: Command[Any]
     invoked_with: Optional[str]
-    invoked_subcommand: Optional[Command[Any]]
     subcommand_passed: Optional[str]
     command_failed: bool
+
+    @property
+    def bot(self: _C) -> Bot[_C]: ...
+    @bot.setter
+    def bot(self: _C, __bot: Bot[_C]) -> None: ...
+    @property
+    def command(self: _C) -> Command[_C]: ...
+    @command.setter
+    def command(self: _C, __command: Command[_C]) -> None: ...
+    @property
+    def invoked_subcommand(self: _C) -> Optional[Command[_C]]: ...
+    @invoked_subcommand.setter
+    def invoked_subcommand(self: _C, __invoked_subcommand: Optional[Command[_C]]) -> None: ...
 
     async def invoke(self, __command: Command[_C], *args: Any, **kwargs: Any) -> Any: ...
     async def reinvoke(self, *, call_hooks: bool = ..., restart: bool = ...) -> None: ...

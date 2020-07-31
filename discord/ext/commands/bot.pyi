@@ -36,7 +36,7 @@ class BotBase(GroupMixin[_CT]):
                  description: Optional[str] = ..., **options: Any) -> None: ...
     def dispatch(self, __event_name: str, *args: Any, **kwargs: Any) -> None: ...
     async def close(self) -> None: ...
-    async def on_command_error(self, context: Any, exception: Exception) -> None: ...
+    async def on_command_error(self, context: _CT, exception: Exception) -> None: ...
     def check(self, func: _C) -> _C: ...
     def add_check(self, func: _CoroType, *, call_once: bool = ...) -> None: ...
     def remove_check(self, func: _CoroType, *, call_once: bool = ...) -> None: ...
@@ -68,23 +68,23 @@ class BotBase(GroupMixin[_CT]):
     async def on_message(self, message: discord.Message) -> None: ...
 
 class Bot(BotBase[_CT], discord.Client):
-    def __init__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,
-                 description: Optional[str] = ..., *,
-                 case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
-                 shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
-                 connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
-                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
-                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
-                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
-                 heartbeat_timeout: float = ..., **options: Any) -> None: ...
+    def __new__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[Context]] = ...,
+                description: Optional[str] = ..., *,
+                case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
+                shard_id: Optional[int] = ..., shard_count: Optional[int] = ...,
+                connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
+                proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
+                activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                heartbeat_timeout: float = ..., **options: Any) -> Bot[Context]: ...
 
 class AutoShardedBot(BotBase[_CT], discord.AutoShardedClient):
-    def __init__(self, command_prefix: _CommandPrefix, help_command: Optional[HelpCommand[_CT]] = ...,
-                 description: Optional[str] = ..., *,
-                 case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
-                 shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
-                 connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
-                 proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
-                 fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
-                 activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
-                 heartbeat_timeout: float = ..., **options: Any) -> None: ...
+    def __new__(self, command_prefix: _CommandPrefix, help_command: HelpCommand[Context],
+                description: Optional[str] = ..., *,
+                case_insensitive: bool = ..., loop: Optional[asyncio.AbstractEventLoop] = ...,
+                shard_ids: Optional[Union[List[int], Tuple[int]]] = ..., shard_count: Optional[int] = ...,
+                connector: aiohttp.BaseConnector = ..., proxy: Optional[str] = ...,
+                proxy_auth: Optional[aiohttp.BasicAuth] = ..., max_messages: Optional[int] = ...,
+                fetch_offline_members: bool = ..., status: Optional[discord.Status] = ...,
+                activity: Optional[Union[discord.Activity, discord.Game, discord.Streaming]] = ...,
+                heartbeat_timeout: float = ..., **options: Any) -> AutoShardedBot[Context]: ...
