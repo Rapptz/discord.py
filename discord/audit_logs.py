@@ -40,7 +40,7 @@ def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
 def _transform_permissions(entry, data):
-    return Permissions(data)
+    return Permissions(int(data))
 
 def _transform_color(entry, data):
     return Colour(data)
@@ -67,8 +67,8 @@ def _transform_inviter_id(entry, data):
 def _transform_overwrites(entry, data):
     overwrites = []
     for elem in data:
-        allow = Permissions(elem['allow'])
-        deny = Permissions(elem['deny'])
+        allow = Permissions(int(elem['allow_new']))
+        deny = Permissions(int(elem['deny_new']))
         ow = PermissionOverwrite.from_pair(allow, deny)
 
         ow_type = elem['type']

@@ -140,7 +140,7 @@ class Role(Hashable):
 
     def _update(self, data):
         self.name = data['name']
-        self._permissions = data.get('permissions', 0)
+        self._permissions = int(data.get('permissions_new', 0))
         self.position = data.get('position', 0)
         self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)
@@ -218,7 +218,7 @@ class Role(Hashable):
         use this.
 
         All fields are optional.
-        
+
         .. versionchanged:: 1.4
             Can now pass ``int`` to ``colour`` keyword-only parameter.
 
@@ -260,7 +260,7 @@ class Role(Hashable):
             colour = fields['colour']
         except KeyError:
             colour = fields.get('color', self.colour)
-        
+
         if isinstance(colour, int):
             colour = Colour(value=colour)
 
