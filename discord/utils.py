@@ -469,7 +469,7 @@ def resolve_template(code):
     """
     from .template import Template # circular import
     if isinstance(code, Template):
-        return template.code
+        return code.code
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
         m = re.match(rx, code)
