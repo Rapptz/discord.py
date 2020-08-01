@@ -1257,7 +1257,7 @@ msgstr ""
 
 #: discord.ext.commands.Bot.get_channel:4 discord.ext.commands.Bot.get_emoji:3
 #: discord.ext.commands.Bot.get_guild:3 discord.ext.commands.Bot.get_user:3 of
-msgid "If not found, returns ``None``."
+msgid "If not found, returns ``None``. This method uses cache meaning a mutual guild is required see :meth:`fetch_user`"
 msgstr ""
 
 #: discord.ext.commands.Bot.get_cog:1 of
