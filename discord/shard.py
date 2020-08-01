@@ -46,6 +46,7 @@ class EventType:
     resume = 2
     identify = 3
     terminate = 4
+    clean_close = 5
 
 class EventItem:
     __slots__ = ('type', 'shard', 'error')
@@ -411,6 +412,8 @@ class AutoShardedClient(Client):
             elif item.type == EventType.terminate:
                 await self.close()
                 raise item.error
+            elif item.type == EventType.clean_close:
+                return
 
     async def close(self):
         """|coro|
@@ -433,6 +436,7 @@ class AutoShardedClient(Client):
             await asyncio.wait(to_close)
 
         await self.http.close()
+        self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
     async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
         """|coro|
