@@ -104,7 +104,11 @@ class Guild(Hashable):
     max_presences: Optional[:class:`int`]
         The maximum amount of presences for the guild.
     max_members: Optional[:class:`int`]
-        The maximum amount of members for the guild.
+        The maximum amount of members for the guild. 
+
+        .. note::
+        
+            This attribute is only available via :meth:`.Client.fetch_guild`.
     max_video_channel_users: Optional[:class:`int`]
         The maximum amount of users in a video channel.
 
