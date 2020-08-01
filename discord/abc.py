@@ -482,11 +482,14 @@ class GuildChannel:
 
         default = self.guild.default_role
         base = Permissions(default.permissions.value)
-        roles = member.roles
+        roles = member._roles
+        get_role = self.guild.get_role
 
         # Apply guild roles that the member has.
-        for role in roles:
-            base.value |= role.permissions.value
+        for role_id in roles:
+            role = get_role(role_id)
+            if role is not None:
+                base.value |= role._permissions
 
         # Guild-wide Administrator -> True for everything
         # Bypass all channel-specific overrides
@@ -504,19 +507,12 @@ class GuildChannel:
         except IndexError:
             remaining_overwrites = self._overwrites
 
-        # not sure if doing member._roles.get(...) is better than the
-        # set approach. While this is O(N) to re-create into a set for O(1)
-        # the direct approach would just be O(log n) for searching with no
-        # extra memory overhead. For now, I'll keep the set cast
-        # Note that the member.roles accessor up top also creates a
-        # temporary list
-        member_role_ids = {r.id for r in roles}
         denies = 0
         allows = 0
 
         # Apply channel specific role permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 'role' and overwrite.id in member_role_ids:
+            if overwrite.type == 'role' and roles.has(overwrite.id):
                 denies |= overwrite.deny
                 allows |= overwrite.allow
 
