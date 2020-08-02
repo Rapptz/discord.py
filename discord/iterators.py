@@ -157,7 +157,7 @@ class ReactionIterator(_AsyncIterator):
                 self.limit -= retrieve
                 self.after = Object(id=int(data[-1]['id']))
 
-            if self.guild is None:
+            if self.guild is None or isinstance(self.guild, Object):
                 for element in reversed(data):
                     await self.users.put(User(state=self.state, data=element))
             else:
