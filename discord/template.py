@@ -163,4 +163,4 @@ class Template:
             region = region.value
 
         data = await self._state.http.create_from_template(self.code, name, region, icon)
-        return Guild(data=data, state=self._sate)
+        return Guild(data=data, state=self._state)
