@@ -155,7 +155,7 @@ class Paginator:
 
     @property
     def pages(self):
-        """Returns the rendered list of pages."""
+        """class:`list`: Returns the rendered list of pages."""
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
             self.close_page()
@@ -345,7 +345,7 @@ class HelpCommand:
         # for this common use case rather than waste performance for the
         # odd one.
         pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name, self.context.prefix)
+        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.context.prefix)
 
     @property
     def invoked_with(self):

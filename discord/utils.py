@@ -143,8 +143,13 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
         The guild to pre-select in the authorization screen, if available.
     redirect_uri: :class:`str`
         An optional valid redirect URI.
+
+    Returns
+    --------
+    :class:`str`
+        The OAuth2 URL for inviting the bot into guilds.
     """
-    url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
+    url = 'https://discord.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
     if guild is not None:
@@ -156,7 +161,16 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
 
 
 def snowflake_time(id):
-    """Returns the creation date in UTC of a Discord snowflake ID."""
+    """
+    Parameters
+    -----------
+    id: :class:`int`
+        The snowflake ID.
+
+    Returns
+    --------
+    :class:`datetime.datetime`
+        The creation date in UTC of a Discord snowflake ID."""
     return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
 
 def time_snowflake(datetime_obj, high=False):
@@ -351,7 +365,8 @@ async def sleep_until(when, result=None):
     Parameters
     -----------
     when: :class:`datetime.datetime`
-        The timestamp in which to sleep until.
+        The timestamp in which to sleep until. If the datetime is naive then
+        it is assumed to be in UTC.
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
@@ -414,11 +429,11 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
 
 def resolve_invite(invite):
     """
-    Resolves an invite from a :class:`~discord.Invite`, URL or ID
+    Resolves an invite from a :class:`~discord.Invite`, URL or code.
 
     Parameters
     -----------
-    invite: Union[:class:`~discord.Invite`, :class:`~discord.Object`, :class:`str`]
+    invite: Union[:class:`~discord.Invite`, :class:`str`]
         The invite.
 
     Returns
@@ -427,19 +442,47 @@ def resolve_invite(invite):
         The invite code.
     """
     from .invite import Invite  # circular import
-    if isinstance(invite, Invite) or isinstance(invite, Object):
-        return invite.id
+    if isinstance(invite, Invite):
+        return invite.code
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
         m = re.match(rx, invite)
         if m:
             return m.group(1)
     return invite
 
+def resolve_template(code):
+    """
+    Resolves a template code from a :class:`~discord.Template`, URL or code.
+
+    .. versionadded:: 1.4
+
+    Parameters
+    -----------
+    code: Union[:class:`~discord.Template`, :class:`str`]
+        The code.
+
+    Returns
+    --------
+    :class:`str`
+        The template code.
+    """
+    from .template import Template # circular import
+    if isinstance(code, Template):
+        return template.code
+    else:
+        rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
+        m = re.match(rx, code)
+        if m:
+            return m.group(1)
+    return code
+
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
                                      for c in ('*', '`', '_', '~', '|'))
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s)' % _MARKDOWN_ESCAPE_SUBREGEX)
+_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+
+_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON))
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
     r"""A helper function that escapes Discord's markdown.
@@ -475,7 +518,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
                 return is_url
             return '\\' + groupdict['markdown']
 
-        regex = r'(?P<markdown>[_\\~|\*`]|>(?:>>)?\s)'
+        regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
         if ignore_links:
             regex = '(?:%s|%s)' % (url_regex, regex)
         return re.sub(regex, replacement, text)

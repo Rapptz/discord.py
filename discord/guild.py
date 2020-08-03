@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import copy
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 
 from . import utils
 from .role import Role
@@ -46,6 +46,8 @@ from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
+from .integrations import Integration
+
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -86,7 +88,7 @@ class Guild(Hashable):
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. None if it doesn't exist.
+        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     icon: Optional[:class:`str`]
         The guild's icon.
     id: :class:`int`
@@ -96,13 +98,17 @@ class Guild(Hashable):
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :meth:`Guild.id` is slim and they might
-        all be None. It is best to not do anything with the guild if it is unavailable.
+        all be ``None``. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
     max_presences: Optional[:class:`int`]
         The maximum amount of presences for the guild.
     max_members: Optional[:class:`int`]
         The maximum amount of members for the guild.
+    max_video_channel_users: Optional[:class:`int`]
+        The maximum amount of users in a video channel.
+
+        .. versionadded:: 1.4
     banner: Optional[:class:`str`]
         The guild's banner.
     description: Optional[:class:`str`]
@@ -142,7 +148,7 @@ class Guild(Hashable):
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
     premium_subscription_count: :class:`int`
-        How many users have currently "boosted" this guild.
+        The number of "boosts" this guild currently has.
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
@@ -158,9 +164,10 @@ class Guild(Hashable):
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
-                 'description', 'max_presences', 'max_members', 'premium_tier',
-                 'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale', 'discovery_splash', '_rules_channel_id')
+                 'description', 'max_presences', 'max_members', 'max_video_channel_users',
+                 'premium_tier', 'premium_subscription_count', '_system_channel_flags',
+                 'preferred_locale', 'discovery_splash', '_rules_channel_id',
+                 '_public_updates_channel_id')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -284,12 +291,14 @@ class Guild(Hashable):
         self.description = guild.get('description')
         self.max_presences = guild.get('max_presences')
         self.max_members = guild.get('max_members')
+        self.max_video_channel_users = guild.get('max_video_channel_users')
         self.premium_tier = guild.get('premium_tier', 0)
         self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
         self.discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
+        self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
 
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -320,15 +329,9 @@ class Guild(Hashable):
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
-                c_type = c['type']
-                if c_type in (ChannelType.text.value, ChannelType.news.value):
-                    self._add_channel(TextChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.voice.value:
-                    self._add_channel(VoiceChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.category.value:
-                    self._add_channel(CategoryChannel(guild=self, data=c, state=self._state))
-                elif c_type == ChannelType.store.value:
-                    self._add_channel(StoreChannel(guild=self, data=c, state=self._state))
+                factory, ch_type = _channel_factory(c['type'])
+                if factory:
+                    self._add_channel(factory(guild=self, data=c, state=self._state))
 
     @property
     def channels(self):
@@ -361,7 +364,7 @@ class Guild(Hashable):
 
     @property
     def me(self):
-        """Similar to :attr:`Client.user` except an instance of :class:`Member`.
+        """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
         self_id = self._state.user.id
@@ -369,7 +372,7 @@ class Guild(Hashable):
 
     @property
     def voice_client(self):
-        """Returns the :class:`VoiceClient` associated with this guild, if any."""
+        """Optional[:class:`VoiceClient`]: Returns the :class:`VoiceClient` associated with this guild, if any."""
         return self._state._get_voice_client(self.id)
 
     @property
@@ -405,12 +408,16 @@ class Guild(Hashable):
         List[Tuple[Optional[:class:`CategoryChannel`], List[:class:`abc.GuildChannel`]]]:
             The categories and their associated channels.
         """
-        grouped = defaultdict(list)
+        grouped = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
+                grouped[channel.id] = []
                 continue
 
-            grouped[channel.category_id].append(channel)
+            try:
+                grouped[channel.category_id].append(channel)
+            except KeyError:
+                grouped[channel.category_id] = [channel]
 
         def key(t):
             k, v = t
@@ -465,6 +472,19 @@ class Guild(Hashable):
         return channel_id and self._channels.get(channel_id)
 
     @property
+    def public_updates_channel(self):
+        """Optional[:class:`TextChannel`]: Return's the guild's channel where admins and
+        moderators of the guilds receive notices from Discord. This is only available to
+        guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 1.4
+        """
+        channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)
+
+    @property
     def emoji_limit(self):
         """:class:`int`: The maximum number of emoji slots this guild has."""
         more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
@@ -508,7 +528,7 @@ class Guild(Hashable):
 
     @property
     def roles(self):
-        """Returns a :class:`list` of the guild's roles in hierarchy order.
+        """List[:class:`Role`]: Returns a :class:`list` of the guild's roles in hierarchy order.
 
         The first element of this list will be the lowest role in the
         hierarchy.
@@ -532,7 +552,7 @@ class Guild(Hashable):
 
     @property
     def default_role(self):
-        """Gets the @everyone role that all members have by default."""
+        """:class:`Role`: Gets the @everyone role that all members have by default."""
         return self.get_role(self.id)
 
     @property
@@ -677,12 +697,12 @@ class Guild(Hashable):
 
     @property
     def member_count(self):
-        """Returns the true member count regardless of it being loaded fully or not."""
+        """:class:`int`: Returns the true member count regardless of it being loaded fully or not."""
         return self._member_count
 
     @property
     def chunked(self):
-        """Returns a boolean indicating if the guild is "chunked".
+        """:class:`bool`: Returns a boolean indicating if the guild is "chunked".
 
         A chunked guild means that :attr:`member_count` is equal to the
         number of members stored in the internal :attr:`members` cache.
@@ -730,7 +750,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Member`
+        Optional[:class:`Member`]
             The member in this guild with the associated name. If not found
             then ``None`` is returned.
         """
@@ -885,6 +905,11 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+
+        Returns
+        -------
+        :class:`VoiceChannel`
+            The channel that was just created.
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
@@ -902,6 +927,11 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
+
+        Returns
+        -------
+        :class:`CategoryChannel`
+            The channel that was just created.
         """
         data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         channel = CategoryChannel(state=self._state, guild=self, data=data)
@@ -953,16 +983,19 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_guild` permission
         to edit the guild.
 
+        .. versionchanged:: 1.4
+            The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
+
         Parameters
         ----------
         name: :class:`str`
             The new name of the guild.
         description: :class:`str`
             The new description of the guild. This is only available to guilds that
-            contain `PUBLIC` in :attr:`Guild.features`.
+            contain ``PUBLIC`` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
-            and GIF for guilds with ``ANIMATED_ICON`` feature.
+            and GIF This is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
@@ -970,8 +1003,8 @@ class Guild(Hashable):
         splash: :class:`bytes`
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
-            splash. Only available for partnered guilds with ``INVITE_SPLASH``
-            feature.
+            splash. This is only available to guilds that contain ``INVITE_SPLASH``
+            in :attr:`Guild.features`.
         region: :class:`VoiceRegion`
             The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
@@ -993,6 +1026,14 @@ class Guild(Hashable):
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
         system_channel_flags: :class:`SystemChannelFlags`
             The new system channel settings to use with the new system channel.
+        rules_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for rules. This is only available to
+            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
+            channel.
+        public_updates_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for public updates from Discord. This is only available to
+            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
+            public updates channel.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -1050,12 +1091,10 @@ class Guild(Hashable):
         fields['banner'] = banner
         fields['splash'] = splash
 
-        try:
-            default_message_notifications = int(fields.pop('default_notifications'))
-        except (TypeError, KeyError):
-            pass
-        else:
-            fields['default_message_notifications'] = default_message_notifications
+        default_message_notifications = fields.get('default_notifications', self.default_notifications)
+        if not isinstance(default_message_notifications, NotificationLevel):
+            raise InvalidArgument('default_notifications field must be of type NotificationLevel')
+        fields['default_message_notifications'] = default_message_notifications.value
 
         try:
             afk_channel = fields.pop('afk_channel')
@@ -1103,6 +1142,26 @@ class Guild(Hashable):
             raise InvalidArgument('system_channel_flags field must be of type SystemChannelFlags')
 
         fields['system_channel_flags'] = system_channel_flags.value
+
+        try:
+            rules_channel = fields.pop('rules_channel')
+        except KeyError:
+            pass
+        else:
+            if rules_channel is None:
+                fields['rules_channel_id'] = rules_channel
+            else:
+                fields['rules_channel_id'] = rules_channel.id
+
+        try:
+            public_updates_channel = fields.pop('public_updates_channel')
+        except KeyError:
+            pass
+        else:
+            if rules_channel is None:
+                fields['public_updates_channel_id'] = rules_channel
+            else:
+                fields['public_updates_channel_id'] = rules_channel.id
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def fetch_channels(self):
@@ -1206,7 +1265,7 @@ class Guild(Hashable):
         Forbidden
             You do not have access to the guild.
         HTTPException
-            Getting the guild failed.
+            Fetching the member failed.
 
         Returns
         --------
@@ -1282,7 +1341,7 @@ class Guild(Hashable):
                          reason=e['reason'])
                 for e in data]
 
-    async def prune_members(self, *, days, compute_prune_count=True, reason=None):
+    async def prune_members(self, *, days, compute_prune_count=True, roles=None, reason=None):
         r"""|coro|
 
         Prunes the guild from its inactive members.
@@ -1296,6 +1355,11 @@ class Guild(Hashable):
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
 
+        To prune members that have specific roles see the ``roles`` parameter.
+
+        .. versionchanged:: 1.4
+            The ``roles`` keyword-only parameter was added.
+
         Parameters
         -----------
         days: :class:`int`
@@ -1307,6 +1371,9 @@ class Guild(Hashable):
             which makes it prone to timeouts in very large guilds. In order
             to prevent timeouts, you must set this to ``False``. If this is
             set to ``False``\, then this function will always return ``None``.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member
+            has a role that is not specified, they'll be excluded.
 
         Raises
         -------
@@ -1327,7 +1394,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, reason=reason)
+        if roles:
+            roles = [str(role.id) for role in roles]
+
+        data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
 
     async def webhooks(self):
@@ -1414,6 +1484,57 @@ class Guild(Hashable):
             result.append(Invite(state=self._state, data=invite))
 
         return result
+
+    async def create_integration(self, *, type, id):
+        """|coro|
+
+        Attaches an integration to the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        type: :class:`str`
+            The integration type (e.g. Twitch).
+        id: :class:`int`
+            The integration ID.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to create the integration.
+        HTTPException
+            The account could not be found.
+        """
+        await self._state.http.create_integration(self.id, type, id)
+
+    async def integrations(self):
+        """|coro|
+
+        Returns a list of all integrations attached to the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to create the integration.
+        HTTPException
+            Fetching the integrations failed.
+
+        Returns
+        --------
+        List[:class:`Integration`]
+            The list of integrations that are attached to the guild.
+        """
+        data = await self._state.http.get_all_integrations(self.id)
+        return [Integration(guild=self, data=d) for d in data]
 
     async def fetch_emojis(self):
         r"""|coro|
@@ -1601,6 +1722,72 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
+    async def edit_role_positions(self, positions, *, reason=None):
+        """|coro|
+        
+        Bulk edits a list of :class:`Role` in the guild.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        do this.
+
+        .. versionadded:: 1.4
+
+        Example:
+
+        .. code-block:: python3
+
+            positions = {
+                bots_role: 1, # penultimate role
+                tester_role: 2,
+                admin_role: 6
+            }
+
+            await guild.edit_role_positions(positions=positions)
+
+        Parameters
+        -----------
+        positions
+            A :class:`dict` of :class:`Role` to :class:`int` to change the positions
+            of each given role.
+        reason: Optional[:class:`str`]
+            The reason for editing the role positions. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to move the roles.
+        HTTPException
+            Moving the roles failed.
+        InvalidArgument
+            An invalid keyword argument was given.
+
+        Returns
+        --------
+        List[:class:`Role`]
+            A list of all the roles in the guild.
+        """
+        if not isinstance(positions, dict):
+            raise InvalidArgument('positions parameter expects a dict.')
+
+        role_positions = []
+        for role, position in positions.items():
+
+            payload = {
+                'id': role.id,
+                'position': position
+            }
+
+            role_positions.append(payload)
+
+        data = await self._state.http.move_role_position(self.id, role_positions, reason=reason)
+        roles = []
+        for d in data:
+            role = Role(guild=self, data=d, state=self._state)
+            roles.append(role)
+            self._roles[role.id] = role
+
+        return roles
+
     async def kick(self, user, *, reason=None):
         """|coro|
 
@@ -1687,7 +1874,7 @@ class Guild(Hashable):
 
         Returns the guild's special vanity invite.
 
-        The guild must have 'VANITY_URL' in :attr:`~Guild.features`.
+        The guild must have ``VANITY_URL`` in :attr:`~Guild.features`.
 
         You must have the :attr:`~Permissions.manage_guild` permission to use
         this as well.
@@ -1827,7 +2014,7 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
-    async def query_members(self, query, *, limit=5, cache=True):
+    async def query_members(self, query=None, *, limit=5, user_ids=None, cache=True):
         """|coro|
 
         Request members that belong to this guild whose username starts with
@@ -1853,6 +2040,11 @@ class Guild(Hashable):
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
+        user_ids: List[:class:`int`]
+            List of user IDs to search for. If the user ID is not in the guild then it won't be returned.
+
+            .. versionadded:: 1.4
+
 
         Raises
         -------
@@ -1864,5 +2056,11 @@ class Guild(Hashable):
         List[:class:`Member`]
             The list of members that have matched the query.
         """
+        if user_ids is not None and query is not None:
+            raise TypeError('Cannot pass both query and user_ids')
+
+        if user_ids is None and query is None:
+            raise TypeError('Must pass either query or user_ids')
+
         limit = limit or 5
-        return await self._state.query_members(self, query=query, limit=limit, cache=cache)
+        return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)

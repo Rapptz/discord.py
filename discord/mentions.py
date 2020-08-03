@@ -96,3 +96,6 @@ class AllowedMentions:
         users = self.users if other.users is default else other.users
         roles = self.roles if other.roles is default else other.roles
         return AllowedMentions(everyone=everyone, roles=roles, users=users)
+
+    def __repr__(self):
+        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles})'.format(self)

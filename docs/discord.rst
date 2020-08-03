@@ -7,8 +7,8 @@ In order to work with the library and the Discord API in general, we must first 
 
 Creating a Bot account is a pretty straightforward process.
 
-1. Make sure you're logged on to the `Discord website <https://discordapp.com>`_.
-2. Navigate to the `application page <https://discordapp.com/developers/applications>`_
+1. Make sure you're logged on to the `Discord website <https://discord.com>`_.
+2. Navigate to the `application page <https://discord.com/developers/applications>`_
 3. Click on the "New Application" button.
 
     .. image:: /images/discord_create_app_button.png
@@ -61,8 +61,8 @@ So you've made a Bot User but it's not actually in any server.
 
 If you want to invite your bot you must create an invite URL for it.
 
-1. Make sure you're logged on to the `Discord website <https://discordapp.com>`_.
-2. Navigate to the `application page <https://discordapp.com/developers/applications>`_
+1. Make sure you're logged on to the `Discord website <https://discord.com>`_.
+2. Navigate to the `application page <https://discord.com/developers/applications>`_
 3. Click on your bot's page.
 4. Go to the "OAuth2" tab.
 
@@ -78,7 +78,7 @@ If you want to invite your bot you must create an invite URL for it.
 
     - Please be aware of the consequences of requiring your bot to have the "Administrator" permission.
 
-    - Bot owners must have 2FA enabled for certain actions and permissions when added in servers that have Server-Wide 2FA enabled. Check the `2FA support page <https://support.discordapp.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ for more information.
+    - Bot owners must have 2FA enabled for certain actions and permissions when added in servers that have Server-Wide 2FA enabled. Check the `2FA support page <https://support.discord.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ for more information.
 
     .. image:: /images/discord_oauth2_perms.png
         :alt: The permission checkboxes with some permissions checked.

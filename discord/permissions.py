@@ -86,7 +86,7 @@ class Permissions(BaseFlags):
 
     Attributes
     -----------
-    value
+    value: :class:`int`
         The raw value. This value is a bit array field of a 53-bit integer
         representing the currently available permissions. You should query
         permissions via the properties rather than using this raw value.
@@ -148,7 +148,7 @@ class Permissions(BaseFlags):
     @classmethod
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
-        permissions set to True."""
+        permissions set to ``True``."""
         return cls(0b01111111111111111111111111111111)
 
     @classmethod

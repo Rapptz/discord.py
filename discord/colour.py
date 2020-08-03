@@ -28,7 +28,7 @@ import colorsys
 
 class Colour:
     """Represents a Discord role colour. This class is similar
-    to an (red, green, blue) :class:`tuple`.
+    to a (red, green, blue) :class:`tuple`.
 
     There is an alias for this called Color.
 
@@ -114,7 +114,7 @@ class Colour:
 
     @classmethod
     def default(cls):
-        """A factory method that returns a :class:`Colour` with a value of 0."""
+        """A factory method that returns a :class:`Colour` with a value of ``0``."""
         return cls(0)
 
     @classmethod

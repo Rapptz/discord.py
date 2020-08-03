@@ -328,7 +328,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     it can be accessed via :attr:`RawMessageUpdateEvent.cached_message`
 
     Due to the inherently raw nature of this event, the data parameter coincides with
-    the raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_.
+    the raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_.
 
     Since the data payload can be partial, care must be taken when accessing stuff in the dictionary.
     One example of a common case of partial data is when the ``'content'`` key is inaccessible. This
@@ -479,6 +479,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
 .. function:: on_guild_integrations_update(guild)
+
+    .. versionadded:: 1.4
 
     Called whenever an integration is created, modified, or removed from a guild.
 
@@ -727,6 +729,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.resolve_invite
 
+.. autofunction:: discord.utils.resolve_template
+
 .. autofunction:: discord.utils.sleep_until
 
 Profile
@@ -739,9 +743,13 @@ Profile
     .. attribute:: user
 
         The :class:`User` the profile belongs to.
+
+        :type: :class:`User`
     .. attribute:: premium
 
         A boolean indicating if the user has premium (i.e. Discord Nitro).
+
+        :type: :class:`bool`
     .. attribute:: nitro
 
         An alias for :attr:`premium`.
@@ -749,29 +757,45 @@ Profile
 
         A naive UTC datetime indicating how long the user has been premium since.
         This could be ``None`` if not applicable.
+
+        :type: :class:`datetime.datetime`
     .. attribute:: staff
 
         A boolean indicating if the user is Discord Staff.
+
+        :type: :class:`bool`
     .. attribute:: partner
 
         A boolean indicating if the user is a Discord Partner.
+
+        :type: :class:`bool`
     .. attribute:: bug_hunter
 
         A boolean indicating if the user is a Bug Hunter.
+
+        :type: :class:`bool`
     .. attribute:: early_supporter
 
         A boolean indicating if the user has had premium before 10 October, 2018.
+
+        :type: :class:`bool`
     .. attribute:: hypesquad
 
         A boolean indicating if the user is in Discord HypeSquad.
+
+        :type: :class:`bool`
     .. attribute:: hypesquad_houses
 
         A list of :class:`HypeSquadHouse` that the user is in.
+
+        :type: List[:class:`HypeSquadHouse`]
     .. attribute:: team_user
 
         A boolean indicating if the user is in part of a team.
 
         .. versionadded:: 1.3
+
+        :type: :class:`bool`
 
     .. attribute:: system
 
@@ -779,17 +803,24 @@ Profile
 
         .. versionadded:: 1.3
 
+        :type: :class:`bool`
+
     .. attribute:: mutual_guilds
 
         A list of :class:`Guild` that the :class:`ClientUser` shares with this
         user.
+
+        :type: List[:class:`Guild`]
+
     .. attribute:: connected_accounts
 
         A list of dict objects indicating the accounts the user has connected.
 
         An example entry can be seen below: ::
 
-            {type: "twitch", id: "92473777", name: "discordapp"}
+            {"type": "twitch", "id": "92473777", "name": "discordapp"}
+
+        :type: List[Dict[:class:`str`, :class:`str`]]
 
 .. _discord-api-enums:
 
@@ -1643,7 +1674,6 @@ of :class:`enum.Enum`.
 
         The action is the update of something.
 
-
 .. class:: RelationshipType
 
     Specifies the type of :class:`Relationship`.
@@ -1783,6 +1813,53 @@ of :class:`enum.Enum`.
 
         Represents a webhook that is internally managed by Discord, used for following channels.
 
+.. class:: ExpireBehaviour
+
+    Represents the behaviour the :class:`Integration` should perform
+    when a user's subscription has finished.
+
+    There is an alias for this called ``ExpireBehavior``.
+
+    .. versionadded:: 1.4
+
+    .. attribute:: remove_role
+
+        This will remove the :attr:`Integration.role` from the user
+        when their subscription is finished.
+
+    .. attribute:: kick
+
+        This will kick the user when their subscription is finished.
+
+.. class:: DefaultAvatar
+
+    Represents the default avatar of a Discord :class:`User`
+
+    .. attribute:: blurple
+
+        Represents the default avatar with the color blurple.
+        See also :attr:`Colour.blurple`
+    .. attribute:: grey
+
+        Represents the default avatar with the color grey.
+        See also :attr:`Colour.greyple`
+    .. attribute:: gray
+
+        An alias for :attr:`grey`.
+    .. attribute:: green
+
+        Represents the default avatar with the color green.
+        See also :attr:`Colour.green`
+    .. attribute:: orange
+
+        Represents the default avatar with the color orange.
+        See also :attr:`Colour.orange`
+    .. attribute:: red
+
+        Represents the default avatar with the color red.
+        See also :attr:`Colour.red`
+
+
 Async Iterator
 ----------------
 
@@ -1873,7 +1950,7 @@ Certain utilities make working with async iterators easier, detailed below.
                 message_length = len(content)
 
         :param func: The function to call on every element. Could be a |coroutine_link|_.
-        :return: An async iterator.
+        :rtype: :class:`AsyncIterator`
 
     .. method:: filter(predicate)
 
@@ -1890,7 +1967,7 @@ Certain utilities make working with async iterators easier, detailed below.
                 ...
 
         :param predicate: The predicate to call on every element. Could be a |coroutine_link|_.
-        :return: An async iterator.
+        :rtype: :class:`AsyncIterator`
 
 .. _discord-api-audit-logs:
 
@@ -1962,102 +2039,138 @@ this goal, it must make use of a couple of data classes that aid in this goal.
     on the action being done, check the documentation for :class:`AuditLogAction`,
     otherwise check the documentation below for all attributes that are possible.
 
-    .. describe:: iter(diff)
+    .. container:: operations
 
-        Returns an iterator over (attribute, value) tuple of this diff.
+        .. describe:: iter(diff)
+
+            Returns an iterator over (attribute, value) tuple of this diff.
 
     .. attribute:: name
 
-        :class:`str` – A name of something.
+        A name of something.
+
+        :type: :class:`str`
 
     .. attribute:: icon
 
-        :class:`str` – A guild's icon hash. See also :attr:`Guild.icon`.
+        A guild's icon hash. See also :attr:`Guild.icon`.
+
+        :type: :class:`str`
 
     .. attribute:: splash
 
-        :class:`str` – The guild's invite splash hash. See also :attr:`Guild.splash`.
+        The guild's invite splash hash. See also :attr:`Guild.splash`.
+
+        :type: :class:`str`
 
     .. attribute:: owner
 
-        Union[:class:`Member`, :class:`User`] – The guild's owner. See also :attr:`Guild.owner`
+        The guild's owner. See also :attr:`Guild.owner`
+
+        :type: Union[:class:`Member`, :class:`User`]
 
     .. attribute:: region
 
-        :class:`VoiceRegion` – The guild's voice region. See also :attr:`Guild.region`.
+        The guild's voice region. See also :attr:`Guild.region`.
+
+        :type: :class:`VoiceRegion`
 
     .. attribute:: afk_channel
 
-        Union[:class:`VoiceChannel`, :class:`Object`] – The guild's AFK channel.
+        The guild's AFK channel.
 
         If this could not be found, then it falls back to a :class:`Object`
         with the ID being set.
 
         See :attr:`Guild.afk_channel`.
 
+        :type: Union[:class:`VoiceChannel`, :class:`Object`]
+
     .. attribute:: system_channel
 
-        Union[:class:`TextChannel`, :class:`Object`] – The guild's system channel.
+        The guild's system channel.
 
         If this could not be found, then it falls back to a :class:`Object`
         with the ID being set.
 
         See :attr:`Guild.system_channel`.
 
+        :type: Union[:class:`TextChannel`, :class:`Object`]
+
     .. attribute:: afk_timeout
 
-        :class:`int` – The guild's AFK timeout. See :attr:`Guild.afk_timeout`.
+        The guild's AFK timeout. See :attr:`Guild.afk_timeout`.
+
+        :type: :class:`int`
 
     .. attribute:: mfa_level
 
-        :class:`int` - The guild's MFA level. See :attr:`Guild.mfa_level`.
+        The guild's MFA level. See :attr:`Guild.mfa_level`.
+
+        :type: :class:`int`
 
     .. attribute:: widget_enabled
 
-        :class:`bool` – The guild's widget has been enabled or disabled.
+        The guild's widget has been enabled or disabled.
+
+        :type: :class:`bool`
 
     .. attribute:: widget_channel
 
-        Union[:class:`TextChannel`, :class:`Object`] – The widget's channel.
+        The widget's channel.
 
         If this could not be found then it falls back to a :class:`Object`
         with the ID being set.
 
+        :type: Union[:class:`TextChannel`, :class:`Object`]
+
     .. attribute:: verification_level
 
-        :class:`VerificationLevel` – The guild's verification level.
+        The guild's verification level.
 
         See also :attr:`Guild.verification_level`.
 
+        :type: :class:`VerificationLevel`
+
     .. attribute:: default_notifications
 
-        :class:`NotificationLevel` – The guild's default notification level.
+        The guild's default notification level.
 
         See also :attr:`Guild.default_notifications`.
 
+        :type: :class:`NotificationLevel`
+
     .. attribute:: explicit_content_filter
 
-        :class:`ContentFilter` – The guild's content filter.
+        The guild's content filter.
 
         See also :attr:`Guild.explicit_content_filter`.
 
+        :type: :class:`ContentFilter`
+
     .. attribute:: default_message_notifications
 
-        :class:`int` – The guild's default message notification setting.
+        The guild's default message notification setting.
+
+        :type: :class:`int`
 
     .. attribute:: vanity_url_code
 
-        :class:`str` – The guild's vanity URL.
+        The guild's vanity URL.
 
         See also :meth:`Guild.vanity_invite` and :meth:`Guild.edit`.
 
+        :type: :class:`str`
+
     .. attribute:: position
 
-        :class:`int` – The position of a :class:`Role` or :class:`abc.GuildChannel`.
+        The position of a :class:`Role` or :class:`abc.GuildChannel`.
+
+        :type: :class:`int`
 
     .. attribute:: type
 
-        Union[:class:`int`, :class:`str`] – The type of channel or channel permission overwrite.
+        The type of channel or channel permission overwrite.
 
         If the type is an :class:`int`, then it is a type of channel which can be either
         ``0`` to indicate a text channel or ``1`` to indicate a voice channel.
@@ -2065,22 +2178,27 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         If the type is a :class:`str`, then it is a type of permission overwrite which
         can be either ``'role'`` or ``'member'``.
 
+        :type: Union[:class:`int`, :class:`str`]
+
     .. attribute:: topic
 
-        :class:`str` – The topic of a :class:`TextChannel`.
+        The topic of a :class:`TextChannel`.
 
         See also :attr:`TextChannel.topic`.
 
+        :type: :class:`str`
+
     .. attribute:: bitrate
 
-        :class:`int` – The bitrate of a :class:`VoiceChannel`.
+        The bitrate of a :class:`VoiceChannel`.
 
         See also :attr:`VoiceChannel.bitrate`.
 
+        :type: :class:`int`
+
     .. attribute:: overwrites
 
-        List[Tuple[target, :class:`PermissionOverwrite`]] – A list of
-        permission overwrite tuples that represents a target and a
+        A list of permission overwrite tuples that represents a target and a
         :class:`PermissionOverwrite` for said target.
 
         The first element is the object being targeted, which can either
@@ -2089,121 +2207,160 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         a ``type`` attribute set to either ``'role'`` or ``'member'`` to help
         decide what type of ID it is.
 
+        :type: List[Tuple[target, :class:`PermissionOverwrite`]]
+
     .. attribute:: roles
 
-        List[Union[:class:`Role`, :class:`Object`]] – A list of roles being added or removed
-        from a member.
+        A list of roles being added or removed from a member.
 
         If a role is not found then it is a :class:`Object` with the ID and name being
         filled in.
 
+        :type: List[Union[:class:`Role`, :class:`Object`]]
+
     .. attribute:: nick
 
-        Optional[:class:`str`] – The nickname of a member.
+        The nickname of a member.
 
         See also :attr:`Member.nick`
 
+        :type: Optional[:class:`str`]
+
     .. attribute:: deaf
 
-        :class:`bool` – Whether the member is being server deafened.
+        Whether the member is being server deafened.
 
         See also :attr:`VoiceState.deaf`.
 
+        :type: :class:`bool`
+
     .. attribute:: mute
 
-        :class:`bool` – Whether the member is being server muted.
+        Whether the member is being server muted.
 
         See also :attr:`VoiceState.mute`.
 
+        :type: :class:`bool`
+
     .. attribute:: permissions
 
-        :class:`Permissions` – The permissions of a role.
+        The permissions of a role.
 
         See also :attr:`Role.permissions`.
+
+        :type: :class:`Permissions`
 
     .. attribute:: colour
                    color
 
-        :class:`Colour` – The colour of a role.
+        The colour of a role.
 
         See also :attr:`Role.colour`
 
+        :type: :class:`Colour`
+
     .. attribute:: hoist
 
-        :class:`bool` – Whether the role is being hoisted or not.
+        Whether the role is being hoisted or not.
 
         See also :attr:`Role.hoist`
 
+        :type: :class:`bool`
+
     .. attribute:: mentionable
 
-        :class:`bool` – Whether the role is mentionable or not.
+        Whether the role is mentionable or not.
 
         See also :attr:`Role.mentionable`
 
+        :type: :class:`bool`
+
     .. attribute:: code
 
-        :class:`str` – The invite's code.
+        The invite's code.
 
         See also :attr:`Invite.code`
 
+        :type: :class:`str`
+
     .. attribute:: channel
 
-        Union[:class:`abc.GuildChannel`, :class:`Object`] – A guild channel.
+        A guild channel.
 
         If the channel is not found then it is a :class:`Object` with the ID
         being set. In some cases the channel name is also set.
 
+        :type: Union[:class:`abc.GuildChannel`, :class:`Object`]
+
     .. attribute:: inviter
 
-        :class:`User` – The user who created the invite.
+        The user who created the invite.
 
         See also :attr:`Invite.inviter`.
 
+        :type: :class:`User`
+
     .. attribute:: max_uses
 
-        :class:`int` – The invite's max uses.
+        The invite's max uses.
 
         See also :attr:`Invite.max_uses`.
 
+        :type: :class:`int`
+
     .. attribute:: uses
 
-        :class:`int` – The invite's current uses.
+        The invite's current uses.
 
         See also :attr:`Invite.uses`.
 
+        :type: :class:`int`
+
     .. attribute:: max_age
 
-        :class:`int` – The invite's max age in seconds.
+        The invite's max age in seconds.
 
         See also :attr:`Invite.max_age`.
 
+        :type: :class:`int`
+
     .. attribute:: temporary
 
-        :class:`bool` – If the invite is a temporary invite.
+        If the invite is a temporary invite.
 
         See also :attr:`Invite.temporary`.
+
+        :type: :class:`bool`
 
     .. attribute:: allow
                    deny
 
-        :class:`Permissions` – The permissions being allowed or denied.
+        The permissions being allowed or denied.
+
+        :type: :class:`Permissions`
 
     .. attribute:: id
 
-        :class:`int` – The ID of the object being changed.
+        The ID of the object being changed.
+
+        :type: :class:`int`
 
     .. attribute:: avatar
 
-        :class:`str` – The avatar hash of a member.
+        The avatar hash of a member.
 
         See also :attr:`User.avatar`.
 
+        :type: :class:`str`
+
     .. attribute:: slowmode_delay
 
-        :class:`int` – The number of seconds members have to wait before
+        The number of seconds members have to wait before
         sending another message in the channel.
 
         See also :attr:`TextChannel.slowmode_delay`.
+
+        :type: :class:`int`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
@@ -2372,6 +2529,15 @@ Guild
     .. automethod:: audit_logs
         :async-for:
 
+Integration
+~~~~~~~~~~~~
+
+.. autoclass:: Integration()
+    :members:
+
+.. autoclass:: IntegrationAccount()
+    :members:
+
 Member
 ~~~~~~
 
@@ -2488,6 +2654,12 @@ Invite
 ~~~~~~~
 
 .. autoclass:: Invite()
+    :members:
+
+Template
+~~~~~~~~~
+
+.. autoclass:: Template()
     :members:
 
 WidgetChannel
@@ -2645,6 +2817,12 @@ MessageFlags
 ~~~~~~~~~~~~
 
 .. autoclass:: MessageFlags
+    :members:
+
+PublicUserFlags
+~~~~~~~~~~~~~~~
+
+.. autoclass:: PublicUserFlags
     :members:
 
 

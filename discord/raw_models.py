@@ -95,7 +95,7 @@ class RawMessageUpdateEvent(_RawReprMixin):
         .. versionadded:: 1.3
 
     data: :class:`dict`
-        The raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
+        The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache.
     """

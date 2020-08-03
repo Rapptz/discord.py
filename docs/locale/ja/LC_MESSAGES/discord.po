@@ -30,13 +30,13 @@ msgstr "Botのアカウント作成はとても簡単です。"
 
 #: ../../discord.rst:10
 #: ../../discord.rst:64
-msgid "Make sure you're logged on to the `Discord website <https://discordapp.com>`_."
-msgstr "まずは `Discordのウェブサイト <https://discordapp.com>`_ にログインしてください。"
+msgid "Make sure you're logged on to the `Discord website <https://discord.com>`_."
+msgstr "まずは `Discordのウェブサイト <https://discord.com>`_ にログインしてください。"
 
 #: ../../discord.rst:11
 #: ../../discord.rst:65
-msgid "Navigate to the `application page <https://discordapp.com/developers/applications>`_"
-msgstr "`アプリケーションページ <https://discordapp.com/developers/applications>`_ に移動します。"
+msgid "Navigate to the `application page <https://discord.com/developers/applications>`_"
+msgstr "`アプリケーションページ <https://discord.com/developers/applications>`_ に移動します。"
 
 #: ../../discord.rst:12
 msgid "Click on the \"New Application\" button."
@@ -119,8 +119,8 @@ msgid "Please be aware of the consequences of requiring your bot to have the \"A
 msgstr "Botに「管理者」権限を要求させることによる影響は認識しておきましょう。"
 
 #: ../../discord.rst:81
-msgid "Bot owners must have 2FA enabled for certain actions and permissions when added in servers that have Server-Wide 2FA enabled. Check the `2FA support page <https://support.discordapp.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ for more information."
-msgstr "二段階認証が有効になっているサーバーにBotが追加された場合、Botの所有者は特定の動作と権限のために二段階認証を有効化させなければいけません。詳細は `二段階認証のサポートページ <https://support.discordapp.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ を参照してください。"
+msgid "Bot owners must have 2FA enabled for certain actions and permissions when added in servers that have Server-Wide 2FA enabled. Check the `2FA support page <https://support.discord.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ for more information."
+msgstr "二段階認証が有効になっているサーバーにBotが追加された場合、Botの所有者は特定の動作と権限のために二段階認証を有効化させなければいけません。詳細は `二段階認証のサポートページ <https://support.discord.com/hc/en-us/articles/219576828-Setting-up-Two-Factor-Authentication>`_ を参照してください。"
 
 #: ../../discord.rst:86
 msgid "Now the resulting URL can be used to add your bot to a server. Copy and paste the URL into your browser, choose a server to invite the bot to, and click \"Authorize\"."

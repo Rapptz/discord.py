@@ -215,7 +215,7 @@ class BotBase(GroupMixin):
             The function that was used as a global check.
         call_once: :class:`bool`
             If the function should only be called once per
-            :meth:`Command.invoke` call.
+            :meth:`.Command.invoke` call.
         """
 
         if call_once:
@@ -248,7 +248,7 @@ class BotBase(GroupMixin):
         r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
-        per :meth:`Command.invoke` call.
+        per :meth:`.Command.invoke` call.
 
         Regular global checks are called whenever a command is called
         or :meth:`.Command.can_run` is called. This type of check
@@ -513,6 +513,11 @@ class BotBase(GroupMixin):
             The name of the cog you are requesting.
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
+
+        Returns
+        --------
+        Optional[:class:`Cog`]
+            The cog that was requested. If not found, returns ``None``.
         """
         return self.__cogs.get(name)
 
@@ -991,11 +996,11 @@ class Bot(BotBase, discord.Client):
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.
     owner_ids: Optional[Collection[:class:`int`]]
-        The user IDs that owns the bot. This is similar to `owner_id`.
+        The user IDs that owns the bot. This is similar to :attr:`owner_id`.
         If this is not set and the application is team based, then it is
         fetched automatically using :meth:`~.Bot.application_info`.
         For performance reasons it is recommended to use a :class:`set`
-        for the collection. You cannot set both `owner_id` and `owner_ids`.
+        for the collection. You cannot set both ``owner_id`` and ``owner_ids``.
 
         .. versionadded:: 1.3
     """

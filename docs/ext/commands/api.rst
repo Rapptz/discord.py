@@ -93,7 +93,7 @@ Cogs
 .. autoclass:: discord.ext.commands.CogMeta
     :members:
 
-.. _ext_commands_api_formatters:
+.. _ext_commands_help_command:
 
 Help Commands
 -----------------
@@ -377,6 +377,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ExtensionNotFound
     :members:
 
+.. autoexception:: discord.ext.commands.CommandRegistrationError
+    :members:
+
 
 Exception Hierarchy
 +++++++++++++++++++++
@@ -418,3 +421,5 @@ Exception Hierarchy
             - :exc:`~.commands.NoEntryPointError`
             - :exc:`~.commands.ExtensionFailed`
             - :exc:`~.commands.ExtensionNotFound`
+    - :exc:`~.ClientException`
+        - :exc:`~.commands.CommandRegistrationError`

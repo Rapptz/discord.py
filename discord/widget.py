@@ -204,8 +204,10 @@ class Widget:
         channels = {channel.id: channel for channel in self.channels}
         for member in data.get('members', []):
             connected_channel = _get_as_snowflake(member, 'channel_id')
-            if connected_channel:
+            if connected_channel in channels:
                 connected_channel = channels[connected_channel]
+            elif connected_channel:
+                connected_channel = WidgetChannel(id=connected_channel, name='', position=0)
 
             self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
 
@@ -226,11 +228,11 @@ class Widget:
     @property
     def json_url(self):
         """:class:`str`: The JSON URL of the widget."""
-        return "https://discordapp.com/api/guilds/{0.id}/widget.json".format(self)
+        return "https://discord.com/api/guilds/{0.id}/widget.json".format(self)
 
     @property
     def invite_url(self):
-        """Optiona[:class:`str`]: The invite URL for the guild, if available."""
+        """Optional[:class:`str`]: The invite URL for the guild, if available."""
         return self._invite
 
     async def fetch_invite(self, *, with_counts=True):

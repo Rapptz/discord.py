@@ -166,7 +166,7 @@ class Attachment:
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, use_cached=False):
+    async def to_file(self, *, use_cached=False, spoiler=False):
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -184,6 +184,12 @@ class Attachment:
             deleted attachments if too much time has passed and it does not work
             on some types of attachments.
 
+            .. versionadded:: 1.4
+        spoiler: :class:`bool`
+            Whether the file is a spoiler.
+
+            .. versionadded:: 1.4
+
         Raises
         ------
         HTTPException
@@ -200,7 +206,7 @@ class Attachment:
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename)
+        return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -618,7 +624,7 @@ class Message:
     def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discordapp.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+        return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
@@ -629,7 +635,7 @@ class Message:
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
-        r"""A property that returns the content that is rendered
+        r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
         In the case of :attr:`MessageType.default`\, this just returns the
@@ -657,45 +663,19 @@ class Message:
 
         if self.type is MessageType.new_member:
             formats = [
-                "{0} just joined the server - glhf!",
-                "{0} just joined. Everyone, look busy!",
-                "{0} just joined. Can I get a heal?",
-                "{0} joined your party.",
-                "{0} joined. You must construct additional pylons.",
-                "Ermagherd. {0} is here.",
-                "Welcome, {0}. Stay awhile and listen.",
-                "Welcome, {0}. We were expecting you ( ͡° ͜ʖ ͡°)",
+                "{0} joined the party.",
+                "{0} is here.",
                 "Welcome, {0}. We hope you brought pizza.",
-                "Welcome {0}. Leave your weapons by the door.",
                 "A wild {0} appeared.",
-                "Swoooosh. {0} just landed.",
-                "Brace yourselves. {0} just joined the server.",
-                "{0} just joined... or did they?",
-                "{0} just arrived. Seems OP - please nerf.",
+                "{0} just landed.",
                 "{0} just slid into the server.",
-                "A {0} has spawned in the server.",
-                "Big {0} showed up!",
-                "Where’s {0}? In the server!",
-                "{0} hopped into the server. Kangaroo!!",
-                "{0} just showed up. Hold my beer.",
-                "Challenger approaching - {0} has appeared!",
-                "It's a bird! It's a plane! Nevermind, it's just {0}.",
-                "It's {0}! Praise the sun! \\[T]/",
-                "Never gonna give {0} up. Never gonna let {0} down.",
-                "{0} has joined the battle bus.",
-                "Cheers, love! {0}'s here!",
-                "Hey! Listen! {0} has joined!",
-                "We've been expecting you {0}",
-                "It's dangerous to go alone, take {0}!",
-                "{0} has joined the server! It's super effective!",
-                "Cheers, love! {0} is here!",
-                "{0} is here, as the prophecy foretold.",
-                "{0} has arrived. Party's over.",
-                "Ready player {0}",
-                "{0} is here to kick butt and chew bubblegum. And {0} is all out of gum.",
-                "Hello. Is it {0} you're looking for?",
-                "{0} has joined. Stay a while and listen!",
-                "Roses are red, violets are blue, {0} joined this server with you",
+                "{0} just showed up!",
+                "Welcome {0}. Say hi!",
+                "{0} hopped into the server.",
+                "Everyone welcome {0}!",
+                "Glad you're here, {0}.",
+                "Good to see you, {0}.",
+                "Yay you made it, {0}!",
             ]
 
             # manually reconstruct the epoch with millisecond precision, because
@@ -798,6 +778,10 @@ class Message:
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -835,6 +819,18 @@ class Message:
 
         delete_after = fields.pop('delete_after', None)
 
+        try:
+            allowed_mentions = fields.pop('allowed_mentions')
+        except KeyError:
+            pass
+        else:
+            if allowed_mentions is not None:
+                if self._state.allowed_mentions is not None:
+                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+                else:
+                    allowed_mentions = allowed_mentions.to_dict()
+                fields['allowed_mentions'] = allowed_mentions
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
             self._update(data)
@@ -860,13 +856,20 @@ class Message:
 
         await self._state.http.publish_message(self.channel.id, self.id)
 
-    async def pin(self):
+    async def pin(self, *, reason=None):
         """|coro|
 
         Pins the message.
 
         You must have the :attr:`~Permissions.manage_messages` permission to do
         this in a non-private channel context.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for pinning the message. Shows up on the audit log.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -879,16 +882,23 @@ class Message:
             having more than 50 pinned messages.
         """
 
-        await self._state.http.pin_message(self.channel.id, self.id)
+        await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
         self.pinned = True
 
-    async def unpin(self):
+    async def unpin(self, *, reason=None):
         """|coro|
 
         Unpins the message.
 
         You must have the :attr:`~Permissions.manage_messages` permission to do
         this in a non-private channel context.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for pinning the message. Shows up on the audit log.
+
+            .. versionadded:: 1.4
 
         Raises
         -------
@@ -900,7 +910,7 @@ class Message:
             Unpinning the message failed.
         """
 
-        await self._state.http.unpin_message(self.channel.id, self.id)
+        await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
         self.pinned = False
 
     async def add_reaction(self, emoji):
