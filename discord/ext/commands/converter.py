@@ -46,6 +46,7 @@ __all__ = (
     'EmojiConverter',
     'PartialEmojiConverter',
     'CategoryChannelConverter',
+    'GuildConverter',
     'IDConverter',
     'clean_content',
     'Greedy',
@@ -395,6 +396,31 @@ class RoleConverter(IDConverter):
 
         if result is None:
             raise BadArgument('Role "{}" not found.'.format(argument))
+        return result
+
+class GuildConverter(IDConverter):
+    """Converts to a :class:`~discord.Guild`.
+
+    All lookups are done via the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by name
+    """
+    async def convert(self, ctx, argument):
+        bot = ctx.bot
+        match = self._get_id_match(argument)
+
+        if match is not None:
+            guild_id = int(match.group(1))
+            result = bot.get_guild(guild_id)
+
+        else:
+            result = discord.utils.get(bot.guilds, name=argument)
+
+        if result is None:
+            raise BadArgument('Guild "{}" not found.'.format(argument))
         return result
 
 class GameConverter(Converter):
