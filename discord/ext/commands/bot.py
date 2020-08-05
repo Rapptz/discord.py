@@ -135,6 +135,8 @@ class BotBase(GroupMixin):
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())
         self.strip_after_prefix = options.get('strip_after_prefix', False)
+        self.command_separator = options.get('command_separator', None)
+        self.command_quotation = options.get('command_quotation', None)
 
         if self.owner_id and self.owner_ids:
             raise TypeError('Both owner_id and owner_ids are set.')

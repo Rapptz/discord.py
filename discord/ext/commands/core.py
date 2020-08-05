@@ -391,7 +391,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
-        self.separator = kwargs.pop('separator', Separator())
+        self.separator = kwargs.pop('separator', None) or Separator()
         self.quotation = kwargs.pop('quotation', None)
 
     @property
@@ -714,8 +714,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         view = ctx.view
         iterator = iter(self.params.items())
-        view.separator = ctx.command.separator
-        view.quotation = ctx.command.quotation
+        view.separator = self._get_separator(ctx)
+        view.quotation = self._get_quotation(ctx)  
 
         if self.cog is not None:
             # we have 'self' as the first parameter so just advance
@@ -1027,6 +1027,18 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     def _is_typing_optional(self, annotation: Union[T, Optional[T]]) -> TypeGuard[Optional[T]]:
         return getattr(annotation, '__origin__', None) is Union and type(None) in annotation.__args__  # type: ignore
+
+    def _get_separator(self, ctx):
+        if ctx.command.separator:
+            if ctx.bot.command_separator and not ctx.command.separator.key:
+                return ctx.bot.command_separator
+            return ctx.command.separator
+    
+    def _get_quotation(self, ctx):
+        if ctx.command.quotation:
+            return ctx.command.quotation
+        elif ctx.bot.command_quotation:
+            return ctx.bot.command_quotation
 
     @property
     def signature(self) -> str:
