@@ -86,7 +86,8 @@ class Integration:
 
     __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
                  'syncing', 'role', 'expire_behaviour', 'expire_behavior',
-                 'expire_grace_period', 'synced_at', 'user', 'account')
+                 'expire_grace_period', 'synced_at', 'user', 'account',
+                 'enable_emoticons', '_role_id')
 
     def __init__(self, *, data, guild):
         self.guild = guild
@@ -161,7 +162,7 @@ class Integration:
 
         await self._state.http.edit_integration(self.guild.id, self.id, **payload)
 
-        self.expire_behaviour = expire_behavior
+        self.expire_behaviour = expire_behaviour
         self.expire_behavior = self.expire_behaviour
         self.expire_grace_period = expire_grace_period
         self.enable_emoticons = enable_emoticons
