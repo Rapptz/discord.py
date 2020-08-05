@@ -165,7 +165,7 @@ class Client:
 
         .. versionadded:: 1.4
     guild_subscriptions: :class:`bool`
-        Whether to dispatching of presence or typing events. Defaults to ``True``.
+        Whether to dispatch presence or typing events. Defaults to ``True``.
 
         .. versionadded:: 1.3
 
