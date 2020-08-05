@@ -187,8 +187,9 @@ class VoiceClient:
                         'If timeout occurred considering raising the timeout and reconnecting.')
             return
 
-        self.endpoint = endpoint.replace(':80', '')
-        self.endpoint_ip = socket.gethostbyname(self.endpoint)
+        self.endpoint, _, _ = endpoint.rpartition(':')
+        # This gets set later
+        self.endpoint_ip = None
 
         if self.socket:
             try:
@@ -214,7 +215,7 @@ class VoiceClient:
 
         This could be referred to as the Discord Voice WebSocket latency and is
         an analogue of user's voice latencies as seen in the Discord client.
-        
+
         .. versionadded:: 1.4
         """
         ws = self.ws
@@ -223,7 +224,7 @@ class VoiceClient:
     @property
     def average_latency(self):
         """:class:`float`: Average of most recent 20 HEARTBEAT latencies in seconds.
-        
+
         .. versionadded:: 1.4
         """
         ws = self.ws
