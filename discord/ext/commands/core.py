@@ -826,6 +826,7 @@ class Command(_BaseCommand):
         # since we're in a regular command (and not a group) then
         # the invoked subcommand is None.
         ctx.invoked_subcommand = None
+        ctx.subcommand_passed = None
         injected = hooked_wrapped_callback(self, ctx, self.callback)
         await injected(*ctx.args, **ctx.kwargs)
 
@@ -1259,6 +1260,7 @@ class Group(GroupMixin, Command):
 
     async def invoke(self, ctx):
         ctx.invoked_subcommand = None
+        ctx.subcommand_passed = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
             await self.prepare(ctx)
