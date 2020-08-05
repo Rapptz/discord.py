@@ -911,6 +911,40 @@ of :class:`enum.Enum`.
         The system message denoting that an announcement channel has been followed.
 
         .. versionadded:: 1.3
+    .. attribute:: guild_stream
+
+        The system message denoting that a member is streaming in the guild.
+
+        .. versionadded:: 1.4
+    .. attribute:: guild_discovery_disqualified
+
+        The system message denoting that the guild is no longer eligible for Server
+        Discovery.
+
+        .. versionadded:: 1.4
+    .. attribute:: guild_discovery_requalified
+
+        The system message denoting that the guild has become eligible again for Server
+        Discovery.
+
+        .. versionadded:: 1.4
+    .. attribute:: guild_discovery_grace_period_initial_warning
+    
+        The system message denoting that the guild has failed to meet the Server
+        Discovery requirements for one week.
+
+        .. versionadded:: 1.4
+    .. attribute:: guild_discovery_grace_period_final_warning
+
+        The system message denoting that the guild has failed to meet the Server
+        Discovery requirements for 3 weeks in a row.
+    
+        .. versionadded:: 1.4
+    .. attribute:: thread_created
+
+        The system message denoting that a member has started a thread.
+
+        .. versionadded:: 1.4
 
 .. class:: ActivityType
 
