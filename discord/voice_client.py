@@ -187,7 +187,7 @@ class VoiceClient:
                         'If timeout occurred considering raising the timeout and reconnecting.')
             return
 
-        self.endpoint = endpoint.replace(':80', '')
+        self.endpoint = endpoint.replace(':80', '').replace(':443','')
         self.endpoint_ip = socket.gethostbyname(self.endpoint)
 
         if self.socket:
