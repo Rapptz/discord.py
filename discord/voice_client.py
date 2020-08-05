@@ -188,6 +188,10 @@ class VoiceClient:
             return
 
         self.endpoint, _, _ = endpoint.rpartition(':')
+        if self.endpoint.startswith('wss://'):
+            # Just in case, strip it off since we're going to add it later
+            self.endpoint = self.endpoint[6:]
+
         # This gets set later
         self.endpoint_ip = None
 
