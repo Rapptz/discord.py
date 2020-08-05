@@ -29,7 +29,7 @@ from .enums import VoiceRegion
 from .guild import Guild
 
 __all__ = (
-    'Template'
+    'Template',
 )
 
 class _FriendlyHttpAttributeErrorHelper:
