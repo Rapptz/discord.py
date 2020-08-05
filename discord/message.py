@@ -711,6 +711,24 @@ class Message:
 
         if self.type is MessageType.channel_follow_add:
             return '{0.author.name} has added {0.content} to this channel'.format(self)
+        
+        if self.type is MessageType.guild_stream:
+            return '{0.author.name} is live! Now streaming {0.author.activity.name}'.format(self)
+
+        if self.type is MessageType.guild_discovery_disqualified:
+            return 'This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.'
+
+        if self.type is MessageType.guild_discovery_requalified:
+            return 'This server is eligible for Server Discovery again and has been automatically relisted!'
+
+        if self.type is MessageType.guild_discovery_grace_period_initial_warning:
+            return 'This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.'
+
+        if self.type is MessageType.guild_discovery_grave_period_final_warning:
+            return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
+        
+        if self.type is MessageType.thread_created:
+            return '{0.author.name} started a thread'.format(self)
 
     async def delete(self, *, delay=None):
         """|coro|
