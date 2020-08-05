@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time, _get_as_snowflake
+from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data
 from .enums import VoiceRegion
 from .guild import Guild
 
