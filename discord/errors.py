@@ -159,10 +159,10 @@ class ConnectionClosed(ClientException):
     shard_id: Optional[:class:`int`]
         The shard ID that got closed if applicable.
     """
-    def __init__(self, socket, *, shard_id):
+    def __init__(self, socket, *, shard_id, code=None):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
-        self.code = socket.close_code
+        self.code = code or socket.close_code
         # aiohttp doesn't seem to consistently provide close reason
         self.reason = ''
         self.shard_id = shard_id
