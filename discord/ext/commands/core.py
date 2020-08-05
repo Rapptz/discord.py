@@ -805,7 +805,8 @@ class Command(_BaseCommand):
             return False
 
         bucket = self._buckets.get_bucket(ctx.message)
-        return bucket.get_tokens() == 0
+        current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+        return bucket.get_tokens(current) == 0
 
     def reset_cooldown(self, ctx):
         """Resets the cooldown on this command.
@@ -818,6 +819,29 @@ class Command(_BaseCommand):
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
+
+    def get_cooldown_retry_after(self, ctx):
+        """Retrieves the amount of seconds before this command can be tried again.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context to retrieve the cooldown from.
+
+        Returns
+        --------
+        :class:`float`
+            The amount of time left on this command's cooldown in seconds.
+            If this is ``0.0`` then the command isn't on cooldown.
+        """
+        if self._buckets.valid:
+            bucket = self._buckets.get_bucket(ctx.message)
+            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            return bucket.get_retry_after(current)
+
+        return 0.0
 
     async def invoke(self, ctx):
         await self.prepare(ctx)
