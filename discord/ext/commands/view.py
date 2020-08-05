@@ -112,13 +112,43 @@ class Quotation:
         it will be set as the same key as ``start``.
     """
     def __init__(self, start, end=None):
-        self.start = start
-        self.end = end or start
-        self._all_keys = (self.start, self.end)
+        self._keys = {start: start or end}
+        self._all_keys = None
 
-        if not self.start or not self.end:
-            raise ValueError('Quotations must be a non-empty string.')
+        for s, e in self._keys.items():
+            if not s or not e:
+                raise ValueError('Quotations must be a non-empty string.')
 
+    @property
+    def all_keys(self):
+        if not self._all_keys:
+            self._all_keys = set(self._keys.keys()) | set(self._keys.values())
+        return self._all_keys
+
+    @classmethod
+    def from_pairs(cls, *pairs):
+        """Creates a Quotation that can accept pairs of quotes as tuples or lists.
+
+        .. code-block:: python3
+
+            @bot.command(quotation=Quotation.from_pairs(('(', ')'), ('[', ']'), ('{', '}')))
+            async def foo(ctx, *c):
+                await ctx.send(','.join(c))
+        """
+        self = None
+        for s, e in pairs:
+            if self is None:
+                self = cls(s, e)
+            else:
+                if not s or not e:
+                    raise ValueError('Quotations must be a non-empty string.')
+                
+                self._keys[s] = e
+        return self
+
+    def get(self, key):
+        return self._keys.get(key)
+    
     def __contains__(self, item):
         return item in self._all_keys
 
@@ -224,11 +254,8 @@ class StringView:
         if current is None:
             return None
 
-        close_quote = None
-        if self.quotation is None:
-            close_quote = _quotes.get(current)
-        elif current == self.quotation.start:
-            close_quote = self.quotation.end
+        quotation = self.quotation or _quotes
+        close_quote = quotation.get(current)
 
         is_quoted = bool(close_quote)
         if is_quoted:
