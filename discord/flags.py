@@ -233,6 +233,14 @@ class MessageFlags(BaseFlags):
         An urgent message is one sent by Discord Trust and Safety.
         """
         return 16
+    
+    @flag_value
+    def has_thread(self):
+        """:class:`bool`: Returns ``True`` if the source message has threads starting from it.
+        
+        .. versionadded:: 1.4
+        """
+        return 32
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
