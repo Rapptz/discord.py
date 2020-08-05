@@ -52,7 +52,6 @@ class Loop:
         self._injected = None
         self._valid_exception = (
             OSError,
-            discord.HTTPException,
             discord.GatewayNotFound,
             discord.ConnectionClosed,
             aiohttp.ClientError,
