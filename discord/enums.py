@@ -157,6 +157,7 @@ class ChannelType(Enum):
     category = 4
     news     = 5
     store    = 6
+    thread   = 7
 
     def __str__(self):
         return self.name

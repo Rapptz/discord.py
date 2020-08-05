@@ -890,6 +890,12 @@ of :class:`enum.Enum`.
 
         A guild store channel.
 
+    .. attribute:: thread
+
+        A thread channel. Used when creating a thread from a message.
+
+        .. versionadded:: 1.4
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
