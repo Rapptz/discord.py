@@ -693,7 +693,7 @@ class Webhook(Hashable):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the webhook's new default avatar.
         reason: Optional[:class:`str`]
-            The reason for deleting this webhook. Shows up on the audit log.
+            The reason for editing this webhook. Shows up on the audit log.
 
             .. versionadded:: 1.4
 
