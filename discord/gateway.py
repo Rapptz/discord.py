@@ -522,7 +522,7 @@ class DiscordWebSocket:
             if self._can_handle_close():
                 log.info('Websocket closed with %s, attempting a reconnect.', code)
                 raise ReconnectWebSocket(self.shard_id) from None
-            elif self.socket.close_code is not None:
+            else:
                 log.info('Websocket closed with %s, cannot reconnect.', code)
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
 
