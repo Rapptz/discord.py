@@ -904,7 +904,7 @@ class Message:
         Parameters
         -----------
         reason: Optional[:class:`str`]
-            The reason for pinning the message. Shows up on the audit log.
+            The reason for unpinning the message. Shows up on the audit log.
 
             .. versionadded:: 1.4
 
