@@ -17,6 +17,8 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-2020 Rapptz'
 __version__ = '1.4.0'
 
+__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+
 from collections import namedtuple
 import logging
 
