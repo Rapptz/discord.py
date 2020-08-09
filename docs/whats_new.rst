@@ -11,6 +11,18 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p4p1:
+
+v1.4.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Properly terminate the connection when :meth:`Client.close` is called (:issue:`5207`)
+- Fix error being raised when clearing embed author or image when it was already cleared (:issue:`5210`, :issue:`5212`)
+- Fix ``__path__`` to allow editable extensions (:issue:`5213`)
+
 .. _vp1p4p0:
 
 v1.4.0
