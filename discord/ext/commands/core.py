@@ -1225,8 +1225,8 @@ class GroupMixin:
 
         Returns
         --------
-        :class:`Command`
-            The created Command object
+        Callable[..., :class:`Command`]
+            A decorator that converts the provided method into a Command, adds it to the bot, then returns it
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
