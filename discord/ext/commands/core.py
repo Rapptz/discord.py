@@ -1222,6 +1222,11 @@ class GroupMixin:
     def command(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
+
+        Returns
+        --------
+        :class:`Command`
+            The created Command object
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
