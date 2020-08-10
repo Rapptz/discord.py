@@ -54,6 +54,9 @@ Voice
 .. autoclass:: VoiceClient()
     :members:
 
+.. autoclass:: VoiceProtocol
+    :members:
+
 .. autoclass:: AudioSource
     :members:
 
