@@ -238,6 +238,7 @@ class Client:
         self._closed = False
         self._ready = asyncio.Event()
         self._connection._get_websocket = self._get_websocket
+        self._connection._get_client = lambda: self
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -299,7 +300,10 @@ class Client:
 
     @property
     def voice_clients(self):
-        """List[:class:`.VoiceClient`]: Represents a list of voice connections."""
+        """List[:class:`.VoiceProtocol`]: Represents a list of voice connections.
+
+        These are usually :class:`.VoiceClient` instances.
+        """
         return self._connection.voice_clients
 
     def is_ready(self):

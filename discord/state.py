@@ -63,6 +63,12 @@ Listener = namedtuple('Listener', ('type', 'future', 'predicate'))
 log = logging.getLogger(__name__)
 ReadyState = namedtuple('ReadyState', ('launch', 'guilds'))
 
+async def logging_coroutine(coroutine, *, info):
+    try:
+        await coroutine
+    except Exception:
+        log.exception('Exception occurred during %s', info)
+
 class ConnectionState:
     def __init__(self, *, dispatch, handlers, hooks, syncer, http, loop, **options):
         self.loop = loop
@@ -939,9 +945,8 @@ class ConnectionState:
             if int(data['user_id']) == self.user.id:
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
-                    ch = guild.get_channel(channel_id)
-                    if ch is not None:
-                        voice.channel = ch
+                    coro = voice.on_voice_state_update(data)
+                    asyncio.ensure_future(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
 
             member, before, after = guild._update_voice_state(data, channel_id)
             if member is not None:
@@ -962,7 +967,8 @@ class ConnectionState:
 
         vc = self._get_voice_client(key_id)
         if vc is not None:
-            asyncio.ensure_future(vc._create_socket(key_id, data))
+            coro = vc.on_voice_server_update(data)
+            asyncio.ensure_future(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
     def parse_typing_start(self, data):
         channel, guild = self._get_guild_channel(data)

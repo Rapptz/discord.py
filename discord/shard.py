@@ -292,6 +292,7 @@ class AutoShardedClient(Client):
         # the key is the shard_id
         self.__shards = {}
         self._connection._get_websocket = self._get_websocket
+        self._connection._get_client = lambda: self
         self.__queue = asyncio.PriorityQueue()
 
     def _get_websocket(self, guild_id=None, *, shard_id=None):
