@@ -633,8 +633,8 @@ class DiscordVoiceWebSocket:
         Sent only. Tells the client to resume its session.
     HELLO
         Receive only. Tells you that your websocket connection was acknowledged.
-    INVALIDATE_SESSION
-        Sent only. Tells you that your RESUME request has failed and to re-IDENTIFY.
+    RESUMED
+        Sent only. Tells you that your RESUME request has succeeded.
     CLIENT_CONNECT
         Indicates a user has connected to voice.
     CLIENT_DISCONNECT
@@ -650,7 +650,7 @@ class DiscordVoiceWebSocket:
     HEARTBEAT_ACK       = 6
     RESUME              = 7
     HELLO               = 8
-    INVALIDATE_SESSION  = 9
+    RESUMED             = 9
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
 
@@ -753,9 +753,8 @@ class DiscordVoiceWebSocket:
             await self.initial_connection(data)
         elif op == self.HEARTBEAT_ACK:
             self._keep_alive.ack()
-        elif op == self.INVALIDATE_SESSION:
-            log.info('Voice RESUME failed.')
-            await self.identify()
+        elif op == self.RESUMED:
+            log.info('Voice RESUME succeeded.')
         elif op == self.SESSION_DESCRIPTION:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
@@ -771,7 +770,9 @@ class DiscordVoiceWebSocket:
         state.endpoint_ip = data['ip']
 
         packet = bytearray(70)
-        struct.pack_into('>I', packet, 0, state.ssrc)
+        struct.pack_into('>H', packet, 0, 1) # 1 = Send
+        struct.pack_into('>H', packet, 2, 70) # 70 = Length
+        struct.pack_into('>I', packet, 4, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
         recv = await self.loop.sock_recv(state.socket, 70)
         log.debug('received packet in initial_connection: %s', recv)
@@ -791,8 +792,6 @@ class DiscordVoiceWebSocket:
         mode = modes[0]
         await self.select_protocol(state.ip, state.port, mode)
         log.info('selected the voice protocol for use (%s)', mode)
-
-        await self.client_connect()
 
     @property
     def latency(self):

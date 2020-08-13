@@ -121,10 +121,14 @@ class VoiceProtocol:
 
         An abstract method called when the client initiates the connection request.
 
-        When a connection is requested initially, the library calls the following functions
-        in order:
+        When a connection is requested initially, the library calls the constructor
+        under ``__init__`` and then calls :meth:`connect`. If :meth:`connect` fails at
+        some point then :meth:`disconnect` is called.
 
-        - ``__init__``
+        Within this method, to start the voice connection flow it is recommended to
+        use :meth:`Guild.change_voice_state` to start the flow. After which,
+        :meth:`on_voice_server_update` and :meth:`on_voice_state_update` will be called.
+        The order that these two are called is unspecified.
 
         Parameters
         ------------
