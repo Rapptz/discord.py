@@ -1189,7 +1189,7 @@ class Client:
 
             If the invite is for a guild you have not joined, the guild and channel
             attributes of the returned :class:`.Invite` will be :class:`.PartialInviteGuild` and
-            :class:`PartialInviteChannel` respectively.
+            :class:`.PartialInviteChannel` respectively.
 
         Parameters
         -----------
