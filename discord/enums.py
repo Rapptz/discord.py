@@ -193,6 +193,7 @@ class VoiceRegion(Enum):
     russia        = 'russia'
     japan         = 'japan'
     southafrica   = 'southafrica'
+    south_korea   = 'south-korea'
     india         = 'india'
     europe        = 'europe'
     dubai         = 'dubai'

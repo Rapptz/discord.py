@@ -1045,6 +1045,9 @@ of :class:`enum.Enum`.
     .. attribute:: southafrica
 
         The South Africa region.
+    .. attribute:: south_korea
+
+        The South Korea region.
     .. attribute:: sydney
 
         The Sydney region.
