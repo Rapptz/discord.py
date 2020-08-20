@@ -93,9 +93,11 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw `voice state payload`_.
+            The raw `voice state payload`__.
 
-        .. _voice state payload: https://discord.com/developers/docs/resources/voice#voice-state-object
+            .. _voice_state_update_payload: https://discord.com/developers/docs/resources/voice#voice-state-object
+            
+            __ voice_state_update_payload_
         """
         raise NotImplementedError
 
@@ -110,9 +112,9 @@ class VoiceProtocol:
         data: :class:`dict`
             The raw `voice server update payload`__.
 
-            .. _VSU: https://discord.com/developers/docs/topics/gateway#voice-server-update-voice-server-update-event-fields
+            .. _voice_server_update_payload: https://discord.com/developers/docs/topics/gateway#voice-server-update-voice-server-update-event-fields
 
-            __ VSU_
+            __ voice_server_update_payload_
         """
         raise NotImplementedError
 
