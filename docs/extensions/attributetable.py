@@ -165,7 +165,7 @@ def process_attributetable(app, doctree, fromdocname):
 
 def get_class_results(lookup, modulename, name, fullname):
     module = importlib.import_module(modulename)
-    cls_dict = getattr(module, name).__dict__
+    cls = getattr(module, name)
 
     groups = OrderedDict([
         (_('Attributes'), []),
@@ -183,7 +183,7 @@ def get_class_results(lookup, modulename, name, fullname):
         badge = None
         label = attr
 
-        value = cls_dict.get(attr)
+        value = getattr(cls, attr, None)
         if value is not None:
             doc = value.__doc__ or ''
             if inspect.iscoroutinefunction(value) or doc.startswith('|coro|'):
