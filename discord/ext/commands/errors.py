@@ -43,6 +43,16 @@ __all__ = (
     'CommandOnCooldown',
     'MaxConcurrencyReached',
     'NotOwner',
+    'MessageNotFound',
+    'MemberNotFound',
+    'UserNotFound',
+    'ChannelNotFound',
+    'ChannelNotReadable',
+    'ColourInvalid',
+    'RoleNotFound',
+    'InviteInvalid',
+    'EmojiNotFound',
+    'PartialEmojiNotFound',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -201,6 +211,98 @@ class NotOwner(CheckFailure):
     This inherits from :exc:`CheckFailure`
     """
     pass
+
+class MemberNotFound(BadArgument):
+    """Exception raised when the member provided was not found in the bot's
+    cache.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, member):
+        self.member = member
+        super().__init__('Member "{}" not found.'.format(member))
+
+class UserNotFound(BadArgument):
+    """Exception raised when the user provided was not found in the bot's
+    cache.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, user):
+        self.user = user
+        super().__init__('User "{}" not found.'.format(user))
+
+class MessageNotFound(BadArgument):
+    """Exception raised when the message provided was not found in the channel.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, msg):
+        self.msg = msg
+        super().__init__('Message "{}" not found.'.format(msg))
+
+class ChannelNotReadable(BadArgument):
+    """Exception raised when the bot does not have permission to read messages
+    in the channel.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, channel):
+        self.channel = channel
+        super().__init__("Can't read messages in {}.".format(channel.mention))
+
+class ChannelNotFound(BadArgument):
+    """Exception raised when the bot can not find the channel.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, channel):
+        self.channel = channel
+        super().__init__('Channel "{}" not found.'.format(channel))
+
+class ColourInvalid(BadArgument):
+    """Exception raised when the colour is not valid.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, colour):
+        self.colour = colour
+        super().__init__('Colour "{}" is invalid.'.format(colour))
+
+class RoleNotFound(BadArgument):
+    """Exception raised when the bot can not find the role.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, role):
+        self.role = role
+        super().__init__('Role "{}" not found.'.format(role))
+
+class InviteInvalid(BadArgument):
+    """Exception raised when the invite is invalid or expired.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self):
+        super().__init__('Invite is invalid or expired.')
+
+class EmojiNotFound(BadArgument):
+    """Exception raised when the bot can not find the emoji.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, emoji):
+        self.emoji = emoji
+        super().__init__('Emoji "{}" not found.'.format(emoji))
+
+class PartialEmojiNotFound(BadArgument):
+    """Exception raised when the emoji provided does not match the correct format.
+
+    This inherits from :exc:`BadArgument`
+    """
+    def __init__(self, emoji):
+        self.emoji = emoji
+        super().__init__('Couldn\'t convert "{}" to PartialEmoji.'.format(emoji))
 
 class DisabledCommand(CommandError):
     """Exception raised when the command being invoked is disabled.

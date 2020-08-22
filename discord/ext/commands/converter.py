@@ -30,7 +30,7 @@ import typing
 
 import discord
 
-from .errors import BadArgument, NoPrivateMessage
+from .errors import *
 
 __all__ = (
     'Converter',
@@ -139,7 +139,7 @@ class MemberConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
         if result is None:
-            raise BadArgument('Member "{}" not found'.format(argument))
+            raise MemberNotFound(argument)
 
         return result
 
@@ -184,7 +184,7 @@ class UserConverter(IDConverter):
             result = discord.utils.find(predicate, state._users.values())
 
         if result is None:
-            raise BadArgument('User "{}" not found'.format(argument))
+            raise UserNotFound(argument)
 
         return result
 
@@ -209,7 +209,7 @@ class MessageConverter(Converter):
         )
         match = id_regex.match(argument) or link_regex.match(argument)
         if not match:
-            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+            raise MessageNotFound(argument)
         message_id = int(match.group("message_id"))
         channel_id = match.group("channel_id")
         message = ctx.bot._connection._get_message(message_id)
@@ -217,13 +217,13 @@ class MessageConverter(Converter):
             return message
         channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
         if not channel:
-            raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
+            raise ChannelNotFound(channel_id)
         try:
             return await channel.fetch_message(message_id)
         except discord.NotFound:
-            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+            raise MessageNotFound(argument)
         except discord.Forbidden:
-            raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+            raise ChannelNotReadable(channel)
 
 class TextChannelConverter(IDConverter):
     """Converts to a :class:`~discord.TextChannel`.
@@ -260,7 +260,7 @@ class TextChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.TextChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ChannelNotFound(argument)
 
         return result
 
@@ -298,7 +298,7 @@ class VoiceChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.VoiceChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ChannelNotFound(argument)
 
         return result
 
@@ -337,7 +337,7 @@ class CategoryChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.CategoryChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ChannelNotFound(argument)
 
         return result
 
@@ -361,13 +361,13 @@ class ColourConverter(Converter):
         try:
             value = int(arg, base=16)
             if not (0 <= value <= 0xFFFFFF):
-                raise BadArgument('Colour "{}" is invalid.'.format(arg))
+                raise ColourInvalid(arg)
             return discord.Colour(value=value)
         except ValueError:
             arg = arg.replace(' ', '_')
             method = getattr(discord.Colour, arg, None)
             if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-                raise BadArgument('Colour "{}" is invalid.'.format(arg))
+                raise ColourInvalid(arg)
             return method()
 
 class RoleConverter(IDConverter):
@@ -394,7 +394,7 @@ class RoleConverter(IDConverter):
             result = discord.utils.get(guild._roles.values(), name=argument)
 
         if result is None:
-            raise BadArgument('Role "{}" not found.'.format(argument))
+            raise RoleNotFound(argument)
         return result
 
 class GameConverter(Converter):
@@ -412,7 +412,7 @@ class InviteConverter(Converter):
             invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
-            raise BadArgument('Invite is invalid or expired') from exc
+            raise InviteInvalid() from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.
@@ -450,7 +450,7 @@ class EmojiConverter(IDConverter):
                 result = discord.utils.get(bot.emojis, id=emoji_id)
 
         if result is None:
-            raise BadArgument('Emoji "{}" not found.'.format(argument))
+            raise EmojiNotFound(argument)
 
         return result
 
@@ -470,7 +470,7 @@ class PartialEmojiConverter(Converter):
             return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name,
                                                    id=emoji_id)
 
-        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+        raise PartialEmojiNotFound(argument)
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of

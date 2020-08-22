@@ -338,6 +338,36 @@ Exceptions
 .. autoexception:: discord.ext.commands.NotOwner
     :members:
 
+.. autoexception:: discord.ext.commands.MessageNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.MemberNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.UserNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.ChannelNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.ChannelNotReadable
+    :members:
+
+.. autoexception:: discord.ext.commands.ColourInvalid
+    :members:
+
+.. autoexception:: discord.ext.commands.RoleNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.InviteInvalid
+    :members:
+
+.. autoexception:: discord.ext.commands.EmojiNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.PartialEmojiNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.MissingPermissions
     :members:
 
@@ -404,6 +434,16 @@ Exception Hierarchy
                 - :exc:`~.commands.PrivateMessageOnly`
                 - :exc:`~.commands.NoPrivateMessage`
                 - :exc:`~.commands.NotOwner`
+                - :exc:`~.commands.MessageNotFound`
+                - :exc:`~.commands.MemberNotFound`
+                - :exc:`~.commands.UserNotFound`
+                - :exc:`~.commands.ChannelNotFound`
+                - :exc:`~.commands.ChannelNotReadable`
+                - :exc:`~.commands.ColourInvalid`
+                - :exc:`~.commands.RoleNotFound`
+                - :exc:`~.commands.InviteInvalid`
+                - :exc:`~.commands.EmojiNotFound`
+                - :exc:`~.commands.PartialEmojiNotFound`
                 - :exc:`~.commands.MissingPermissions`
                 - :exc:`~.commands.BotMissingPermissions`
                 - :exc:`~.commands.MissingRole`
