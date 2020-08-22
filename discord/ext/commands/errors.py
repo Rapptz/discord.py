@@ -296,7 +296,8 @@ class EmojiNotFound(BadArgument):
         super().__init__('Emoji "{}" not found.'.format(emoji))
 
 class PartialEmojiNotFound(BadArgument):
-    """Exception raised when the emoji provided does not match the correct format.
+    """Exception raised when the emoji provided does not match the correct
+    format.
 
     This inherits from :exc:`BadArgument`
     """
