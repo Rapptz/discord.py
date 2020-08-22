@@ -104,10 +104,10 @@ class Guild(Hashable):
     max_presences: Optional[:class:`int`]
         The maximum amount of presences for the guild.
     max_members: Optional[:class:`int`]
-        The maximum amount of members for the guild. 
+        The maximum amount of members for the guild.
 
         .. note::
-        
+
             This attribute is only available via :meth:`.Client.fetch_guild`.
     max_video_channel_users: Optional[:class:`int`]
         The maximum amount of users in a video channel.
@@ -415,7 +415,7 @@ class Guild(Hashable):
         grouped = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
-                grouped[channel.id] = []
+                grouped.setdefault(channel.id, [])
                 continue
 
             try:
@@ -909,7 +909,7 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
-            
+
         Raises
         ------
         Forbidden
@@ -940,7 +940,7 @@ class Guild(Hashable):
 
             The ``category`` parameter is not supported in this function since categories
             cannot have categories.
-            
+
         Raises
         ------
         Forbidden
@@ -1746,7 +1746,7 @@ class Guild(Hashable):
 
     async def edit_role_positions(self, positions, *, reason=None):
         """|coro|
-        
+
         Bulk edits a list of :class:`Role` in the guild.
 
         You must have the :attr:`~Permissions.manage_roles` permission to
