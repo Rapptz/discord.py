@@ -911,7 +911,7 @@ class BotBase(GroupMixin):
             exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
             self.dispatch('command_error', ctx, exc)
 
-    async def process_commands(self, message):
+    async def process_commands(self, message, cls=Context):
         """|coro|
 
         This function processes the commands that have been registered
@@ -932,11 +932,16 @@ class BotBase(GroupMixin):
         -----------
         message: :class:`discord.Message`
             The message to process commands for.
+        cls
+            The factory class that will be used to create the context.
+            By default, this is :class:`.Context`. Should a custom
+            class be provided, it must be similar enough to :class:`.Context`\'s
+            interface.
         """
         if message.author.bot:
             return
 
-        ctx = await self.get_context(message)
+        ctx = await self.get_context(message, cls=cls)
         await self.invoke(ctx)
 
     async def on_message(self, message):
