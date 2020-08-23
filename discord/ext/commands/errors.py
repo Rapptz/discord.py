@@ -52,7 +52,7 @@ __all__ = (
     'RoleNotFound',
     'InvalidInvite',
     'EmojiNotFound',
-    'PartialEmojiNotFound',
+    'PartialEmojiConversionFailure',
     'InvalidBoolean',
     'MissingRole',
     'BotMissingRole',
@@ -360,7 +360,7 @@ class EmojiNotFound(BadArgument):
         self.emoji = emoji
         super().__init__('Emoji "{}" not found.'.format(emoji))
 
-class PartialEmojiNotFound(BadArgument):
+class PartialEmojiConversionFailure(BadArgument):
     """Exception raised when the emoji provided does not match the correct
     format.
 

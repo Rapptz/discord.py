@@ -490,7 +490,7 @@ class PartialEmojiConverter(Converter):
     This is done by extracting the animated flag, name and ID from the emoji.
 
     .. versionchanged:: 1.5
-         Raise :exc:`.PartialEmojiNotFound` instead of generic :exc:`.BadArgument`
+         Raise :exc:`.PartialEmojiConversionFailure` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
@@ -503,7 +503,7 @@ class PartialEmojiConverter(Converter):
             return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name,
                                                    id=emoji_id)
 
-        raise PartialEmojiNotFound(argument)
+        raise PartialEmojiConversionFailure(argument)
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of

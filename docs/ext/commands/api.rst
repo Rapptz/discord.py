@@ -365,7 +365,7 @@ Exceptions
 .. autoexception:: discord.ext.commands.EmojiNotFound
     :members:
 
-.. autoexception:: discord.ext.commands.PartialEmojiNotFound
+.. autoexception:: discord.ext.commands.PartialEmojiConversionFailure
     :members:
 
 .. autoexception:: discord.ext.commands.MissingPermissions
@@ -432,7 +432,7 @@ Exception Hierarchy
                     - :exc:`~.commands.RoleNotFound`
                     - :exc:`~.commands.InvalidInvite`
                     - :exc:`~.commands.EmojiNotFound`
-                    - :exc:`~.commands.PartialEmojiNotFound`
+                    - :exc:`~.commands.PartialEmojiConversionFailure`
                 - :exc:`~.commands.BadUnionArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`
