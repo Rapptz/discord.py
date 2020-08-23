@@ -53,6 +53,7 @@ __all__ = (
     'InvalidInvite',
     'EmojiNotFound',
     'PartialEmojiNotFound',
+    'InvalidBoolean',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -375,6 +376,22 @@ class PartialEmojiNotFound(BadArgument):
     def __init__(self, emoji):
         self.emoji = emoji
         super().__init__('Couldn\'t convert "{}" to PartialEmoji.'.format(emoji))
+
+class InvalidBoolean(BadArgument):
+    """Exception raised when a boolean argument was not convertable.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    arg: :class:`str`
+        The boolean argument supplied by the caller that is not in the predefined list
+    """
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('{} is not a recognised boolean option'.format(arg))
 
 class DisabledCommand(CommandError):
     """Exception raised when the command being invoked is disabled.
