@@ -361,13 +361,13 @@ class ColourConverter(Converter):
         try:
             value = int(arg, base=16)
             if not (0 <= value <= 0xFFFFFF):
-                raise ColourInvalid(arg)
+                raise InvalidColour(arg)
             return discord.Colour(value=value)
         except ValueError:
             arg = arg.replace(' ', '_')
             method = getattr(discord.Colour, arg, None)
             if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-                raise ColourInvalid(arg)
+                raise InvalidColour(arg)
             return method()
 
 class RoleConverter(IDConverter):
@@ -412,7 +412,7 @@ class InviteConverter(Converter):
             invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
-            raise InviteInvalid() from exc
+            raise InvalidInvite() from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.
