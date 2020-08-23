@@ -217,6 +217,13 @@ class MemberNotFound(BadArgument):
     cache.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    member: :class:`str`
+        The member supplied by the caller that was not found
     """
     def __init__(self, member):
         self.member = member
@@ -227,6 +234,13 @@ class UserNotFound(BadArgument):
     cache.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    user: :class:`str`
+        The user supplied by the caller that was not found
     """
     def __init__(self, user):
         self.user = user
@@ -236,6 +250,13 @@ class MessageNotFound(BadArgument):
     """Exception raised when the message provided was not found in the channel.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    message: :class:`str`
+        The message supplied by the caller that was not found
     """
     def __init__(self, msg):
         self.msg = msg
@@ -246,6 +267,13 @@ class ChannelNotReadable(BadArgument):
     in the channel.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    channel: :class:`Channel`
+        The channel supplied by the caller that was not readable
     """
     def __init__(self, channel):
         self.channel = channel
@@ -255,6 +283,13 @@ class ChannelNotFound(BadArgument):
     """Exception raised when the bot can not find the channel.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    channel: :class:`str`
+        The channel supplied by the caller that was not found
     """
     def __init__(self, channel):
         self.channel = channel
@@ -264,6 +299,13 @@ class InvalidColour(BadArgument):
     """Exception raised when the colour is not valid.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    colour: :class:`str`
+        The colour supplied by the caller that was not valid
     """
     def __init__(self, colour):
         self.colour = colour
@@ -279,6 +321,13 @@ class RoleNotFound(BadArgument):
     """Exception raised when the bot can not find the role.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    role: :class:`str`
+        The role supplied by the caller that was not found
     """
     def __init__(self, role):
         self.role = role
@@ -288,6 +337,8 @@ class InvalidInvite(BadArgument):
     """Exception raised when the invite is invalid or expired.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
     """
     def __init__(self):
         super().__init__('Invite is invalid or expired.')
@@ -296,6 +347,13 @@ class EmojiNotFound(BadArgument):
     """Exception raised when the bot can not find the emoji.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    emoji: :class:`str`
+        The emoji supplied by the caller that was not found
     """
     def __init__(self, emoji):
         self.emoji = emoji
@@ -306,6 +364,13 @@ class PartialEmojiNotFound(BadArgument):
     format.
 
     This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    emoji: :class:`str`
+        The emoji supplied by the caller that did not match the regex
     """
     def __init__(self, emoji):
         self.emoji = emoji
