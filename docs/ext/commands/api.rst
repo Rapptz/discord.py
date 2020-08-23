@@ -353,13 +353,13 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
-.. autoexception:: discord.ext.commands.ColourInvalid
+.. autoexception:: discord.ext.commands.InvalidColour
     :members:
 
 .. autoexception:: discord.ext.commands.RoleNotFound
     :members:
 
-.. autoexception:: discord.ext.commands.InviteInvalid
+.. autoexception:: discord.ext.commands.InvalidInvite
     :members:
 
 .. autoexception:: discord.ext.commands.EmojiNotFound
@@ -423,6 +423,16 @@ Exception Hierarchy
                 - :exc:`~.commands.MissingRequiredArgument`
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
+                    - :exc:`~.commands.MessageNotFound`
+                    - :exc:`~.commands.MemberNotFound`
+                    - :exc:`~.commands.UserNotFound`
+                    - :exc:`~.commands.ChannelNotFound`
+                    - :exc:`~.commands.ChannelNotReadable`
+                    - :exc:`~.commands.InvalidColour`
+                    - :exc:`~.commands.RoleNotFound`
+                    - :exc:`~.commands.InvalidInvite`
+                    - :exc:`~.commands.EmojiNotFound`
+                    - :exc:`~.commands.PartialEmojiNotFound`
                 - :exc:`~.commands.BadUnionArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`
@@ -434,16 +444,6 @@ Exception Hierarchy
                 - :exc:`~.commands.PrivateMessageOnly`
                 - :exc:`~.commands.NoPrivateMessage`
                 - :exc:`~.commands.NotOwner`
-                - :exc:`~.commands.MessageNotFound`
-                - :exc:`~.commands.MemberNotFound`
-                - :exc:`~.commands.UserNotFound`
-                - :exc:`~.commands.ChannelNotFound`
-                - :exc:`~.commands.ChannelNotReadable`
-                - :exc:`~.commands.ColourInvalid`
-                - :exc:`~.commands.RoleNotFound`
-                - :exc:`~.commands.InviteInvalid`
-                - :exc:`~.commands.EmojiNotFound`
-                - :exc:`~.commands.PartialEmojiNotFound`
                 - :exc:`~.commands.MissingPermissions`
                 - :exc:`~.commands.BotMissingPermissions`
                 - :exc:`~.commands.MissingRole`
