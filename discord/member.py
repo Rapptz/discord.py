@@ -643,7 +643,9 @@ class Member(discord.abc.Messageable, _BaseUser):
     async def remove_roles(self, *roles, reason=None, atomic=True):
         r"""|coro|
 
-        Removes :class:`Role`\s from this member.
+        Removes :class:`Role`\s from this member. This is an idempotent operation: it will not throw
+        an error even if the user does not have the role to be removed, and can be called 
+        multiple times without special concern.
 
         You must have the :attr:`~Permissions.manage_roles` permission to
         use this.
