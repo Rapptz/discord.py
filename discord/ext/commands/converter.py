@@ -118,6 +118,9 @@ class MemberConverter(IDConverter):
     3. Lookup by name#discrim
     4. Lookup by name
     5. Lookup by nickname
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
     """
 
     async def convert(self, ctx, argument):
@@ -154,6 +157,9 @@ class UserConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name#discrim
     4. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -198,6 +204,9 @@ class MessageConverter(Converter):
     1. Lookup by "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
     2. Lookup by message ID (the message **must** be in the context channel)
     3. Lookup by message URL
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound`, `MessageNotFound` or `ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
 
     async def convert(self, ctx, argument):
@@ -236,6 +245,9 @@ class TextChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -275,6 +287,9 @@ class VoiceChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -313,6 +328,9 @@ class CategoryChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -352,6 +370,9 @@ class ColourConverter(Converter):
     - Any of the ``classmethod`` in :class:`Colour`
 
         - The ``_`` in the name can be optionally replaced with spaces.
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.InvalidColour` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         arg = argument.replace('0x', '').lower()
@@ -381,6 +402,9 @@ class RoleConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.RoleNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         guild = ctx.guild
@@ -406,6 +430,9 @@ class InviteConverter(Converter):
     """Converts to a :class:`~discord.Invite`.
 
     This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.InvalidInvite` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         try:
@@ -425,6 +452,9 @@ class EmojiConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by extracting ID from the emoji.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.EmojiNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
@@ -458,6 +488,9 @@ class PartialEmojiConverter(Converter):
     """Converts to a :class:`~discord.PartialEmoji`.
 
     This is done by extracting the animated flag, name and ID from the emoji.
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.PartialEmojiNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
