@@ -274,7 +274,7 @@ class GuildChannel:
             await self._move(position, parent_id=parent_id, lock_permissions=lock_permissions, reason=reason)
 
         overwrites = options.get('overwrites', None)
-        if overwrites:
+        if overwrites is not None:
             perms = []
             for target, perm in overwrites.items():
                 if not isinstance(perm, PermissionOverwrite):
