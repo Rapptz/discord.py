@@ -764,7 +764,8 @@ class Command(_BaseCommand):
 
     def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
-            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            dt = ctx.message.edited_at or ctx.message.created_at
+            current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             bucket = self._buckets.get_bucket(ctx.message, current)
             retry_after = bucket.update_rate_limit(current)
             if retry_after:
@@ -805,7 +806,8 @@ class Command(_BaseCommand):
             return False
 
         bucket = self._buckets.get_bucket(ctx.message)
-        current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+        dt = ctx.message.edited_at or ctx.message.created_at
+        current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
         return bucket.get_tokens(current) == 0
 
     def reset_cooldown(self, ctx):
@@ -838,7 +840,8 @@ class Command(_BaseCommand):
         """
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
-            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            dt = ctx.message.edited_at or ctx.message.created_at
+            current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             return bucket.get_retry_after(current)
 
         return 0.0
