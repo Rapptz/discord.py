@@ -152,7 +152,7 @@ class VoiceClient:
         try:
             await asyncio.wait_for(self._handshake_complete.wait(), timeout=self.timeout)
         except asyncio.TimeoutError:
-            await self.terminate_handshake(remove=True)
+            await self.terminate_handshake()
             raise
 
         log.info('Voice handshake complete. Endpoint found %s (IP: %s)', self.endpoint, self.endpoint_ip)
