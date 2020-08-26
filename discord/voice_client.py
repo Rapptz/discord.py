@@ -96,7 +96,7 @@ class VoiceProtocol:
             The raw `voice state payload`__.
 
             .. _voice_state_update_payload: https://discord.com/developers/docs/resources/voice#voice-state-object
-            
+
             __ voice_state_update_payload_
         """
         raise NotImplementedError
@@ -252,8 +252,12 @@ class VoiceClient(VoiceProtocol):
 
         if not self._handshaking:
             # If we're done handshaking then we just need to update ourselves
-            guild = self.guild
-            self.channel = channel_id and guild and guild.get_channel(int(channel_id))
+            if channel_id is None:
+                # We're being disconnected so cleanup
+                await self.disconnect()
+            else:
+                guild = self.guild
+                self.channel = channel_id and guild and guild.get_channel(int(channel_id))
         else:
             self._voice_state_complete.set()
 
