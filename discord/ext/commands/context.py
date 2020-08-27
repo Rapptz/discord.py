@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 import discord.abc
 import discord.utils
 
+from ...message import Message
+
 class Context(discord.abc.Messageable):
     r"""Represents the context in which a command is being invoked under.
 
@@ -322,3 +324,8 @@ class Context(discord.abc.Messageable):
                 return None
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
+
+    async def reply(self, *args, **kwargs):
+        return self.message.reply(*args, **kwargs)
+
+    reply.__doc__ = Message.reply.__doc__

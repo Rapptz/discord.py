@@ -1073,3 +1073,35 @@ class Message:
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
+
+    async def reply(self, content='', *, mention=True, **kwargs):
+        """|coro|
+
+        Replies to a message using the Discord reply feature.
+
+        .. versionadded:: 1.5
+
+        Parameters
+        ------------
+        content: :class:`str`
+            The content of the message to send.
+        mention: :class:`bool`
+            Indicates if the reply should mention the message author, defaults to True.
+        **kwargs:
+            All keyword arguments for :meth:`~discord.abc.Messageable.send` can be used here.
+
+        Raises
+        --------
+        Exceptions raised by :meth:`~discord.abc.Messageable.send` are propegated by this function.
+
+        Returns
+        ---------
+        :class:`~discord.Message`
+            The message that was sent.
+        """
+        if mention:
+            reply_message = 'Replying to {0.author.mention} from {0.jump_url}\n'.format(self)
+        else:
+            reply_message = 'Replying to {0.jump_url}\n'.format(self)
+
+        await self.send(reply_message + content, **kwargs)
