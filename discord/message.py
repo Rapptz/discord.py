@@ -28,6 +28,7 @@ import asyncio
 import datetime
 import re
 import io
+import textwrap
 
 from . import utils
 from .reaction import Reaction
@@ -642,7 +643,7 @@ class Message:
         else:
             text = self.system_content
 
-        return "\n".join(["> {line}".format(line) for line in text.splitlines()])
+        return textwrap.indent(text, "> ", lambda line: True)
 
 
     def is_system(self):
