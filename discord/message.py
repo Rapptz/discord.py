@@ -1104,4 +1104,4 @@ class Message:
         else:
             reply_message = 'Replying to {0.jump_url}\n'.format(self)
 
-        await self.send(reply_message + content, **kwargs)
+        await self.channel.send(reply_message + content, **kwargs)
