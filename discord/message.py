@@ -634,6 +634,11 @@ class Message:
         guild_id = getattr(self.guild, 'id', '@me')
         return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
 
+    @property
+    def quote(self):
+        """:class:`str`: Returns a string formatted as a quote, without the author mention."""
+        return "\n".join(["> {line}".format(line) for line in self.content.splitlines()])
+
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
 
