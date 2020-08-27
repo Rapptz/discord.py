@@ -637,7 +637,13 @@ class Message:
     @property
     def quote(self):
         """:class:`str`: Returns a string formatted as a quote, without the author mention."""
-        return "\n".join(["> {line}".format(line) for line in self.content.splitlines()])
+        if self.type is MessageType.default:
+            text = self.clean_content
+        else:
+            text = self.system_content
+
+        return "\n".join(["> {line}".format(line) for line in text.splitlines()])
+
 
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
