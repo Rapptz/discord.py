@@ -66,6 +66,31 @@ class WebSocketClosure(Exception):
 
 EventListener = namedtuple('EventListener', 'predicate event result future')
 
+class GatewayRatelimiter:
+    def __init__(self, count=120, per=60.0):
+        self.max = count
+        self.remaining = count
+        self.window = 0.0
+        self.per = per
+
+    def get_delay(self):
+        current = time.time()
+
+        if current > self.window + self.per:
+            self.remaining = self.max
+
+        if self.remaining == self.max:
+            self.window = current
+
+        if self.remaining == 0:
+            return self.per - (current - self.window)
+
+        self.remaining -= 1
+        if self.remaining == 0:
+            self.window = current
+
+        return 0.0
+
 class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
         ws = kwargs.pop('ws', None)
@@ -240,6 +265,7 @@ class DiscordWebSocket:
         self._zlib = zlib.decompressobj()
         self._buffer = bytearray()
         self._close_code = None
+        self._rate_limiter = GatewayRatelimiter()
 
     @property
     def open(self):
@@ -532,6 +558,11 @@ class DiscordWebSocket:
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
 
     async def send(self, data):
+        delay = self._rate_limiter.get_delay()
+        if delay:
+            log.warning('WebSocket is ratelimited, waiting %.2f seconds', delay)
+            await asyncio.sleep(delay)
+
         self._dispatch('socket_raw_send', data)
         await self.socket.send_str(data)
 
