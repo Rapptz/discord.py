@@ -1,13 +1,13 @@
-const COPY = "fa-copy";
-const COPIED = "fa-clipboard-check";
+const COPY = "content_copy";
+const COPIED = "done";
 
 const copy = async (obj) => {
-  // <div><span class="copy">  <i class="fas ...">the icon element</i>  </span><pre> code </pre></div>
+  // <span class="copy"><span class="material-icons">{{text}}</span></span>
   await navigator.clipboard.writeText(obj.children[1].innerText).then(
     () => {
       let icon = obj.children[0].children[0];
-      icon.className = icon.className.replace(COPY, COPIED);
-      setTimeout(() => (icon.className = icon.className.replace(COPIED, COPY)), 2500);
+      icon.textContent = COPIED;
+      setTimeout(() => (icon.textContent = COPY), 2500);
     },
     (r) => alert('Could not copy codeblock:\n' + r.toString())
   );
@@ -24,8 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
       copyEl.setAttribute("aria-label", "Copy Code");
       copyEl.setAttribute("title", "Copy Code");
 
-      let copyIcon = document.createElement("i");
-      copyIcon.className = "fas " + COPY;
+      let copyIcon = document.createElement("span");
+      copyIcon.className = "material-icons";
+      copyIcon.textContent = COPY;
       copyEl.append(copyIcon);
 
       codeblock.prepend(copyEl);

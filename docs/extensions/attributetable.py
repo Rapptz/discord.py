@@ -3,7 +3,7 @@ from sphinx.locale import _
 from docutils import nodes
 from sphinx import addnodes
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 import importlib
 import inspect
 import os
@@ -21,6 +21,12 @@ class attributetabletitle(nodes.TextElement):
 class attributetableplaceholder(nodes.General, nodes.Element):
     pass
 
+class attributetablebadge(nodes.TextElement):
+    pass
+
+class attributetable_item(nodes.Part, nodes.Element):
+    pass
+
 def visit_attributetable_node(self, node):
     self.body.append('<div class="py-attribute-table" data-move-to-id="%s">' % node['python-class'])
 
@@ -30,6 +36,16 @@ def visit_attributetablecolumn_node(self, node):
 def visit_attributetabletitle_node(self, node):
     self.body.append(self.starttag(node, 'span'))
 
+def visit_attributetablebadge_node(self, node):
+    attributes = {
+        'class': 'py-attribute-table-badge',
+        'title': node['badge-type'],
+    }
+    self.body.append(self.starttag(node, 'span', **attributes))
+
+def visit_attributetable_item_node(self, node):
+    self.body.append(self.starttag(node, 'li', CLASS='py-attribute-table-entry'))
+
 def depart_attributetable_node(self, node):
     self.body.append('</div>')
 
@@ -38,6 +54,12 @@ def depart_attributetablecolumn_node(self, node):
 
 def depart_attributetabletitle_node(self, node):
     self.body.append('</span>')
+
+def depart_attributetablebadge_node(self, node):
+    self.body.append('</span>')
+
+def depart_attributetable_item_node(self, node):
+    self.body.append('</li>')
 
 _name_parser_regex = re.compile(r'(?P<module>[\w.]+\.)?(?P<name>\w+)')
 
@@ -68,22 +90,20 @@ class PyAttributeTable(SphinxDirective):
             <div class="py-attribute-table-column">
                 <span>_('Attributes')</span>
                 <ul>
-                    <li><a href="..."></li>
-                </ul>
-            </div>
-            <div class="py-attribute-table-column">
-                <span>_('Coroutines')</span>
-                <ul>
-                    <li><a href="..."></li>
+                    <li>
+                        <a href="...">
+                    </li>
                 </ul>
             </div>
             <div class="py-attribute-table-column">
                 <span>_('Methods')</span>
                 <ul>
-                    <li><a href="..."></li>
+                    <li>
+                        <a href="..."></a>
+                        <span class="py-attribute-badge" title="decorator">D</span>
+                    </li>
                 </ul>
             </div>
-            ...
         </div>
 
         However, since this requires the tree to be complete
@@ -120,6 +140,9 @@ def build_lookup_table(env):
 
     return result
 
+
+TableElement = namedtuple('TableElement', 'fullname label badge')
+
 def process_attributetable(app, doctree, fromdocname):
     env = app.builder.env
 
@@ -131,7 +154,7 @@ def process_attributetable(app, doctree, fromdocname):
         for label, subitems in groups.items():
             if not subitems:
                 continue
-            table.append(class_results_to_node(label, sorted(subitems)))
+            table.append(class_results_to_node(label, sorted(subitems, key=lambda c: c.label)))
 
         table['python-class'] = fullname
 
@@ -142,14 +165,11 @@ def process_attributetable(app, doctree, fromdocname):
 
 def get_class_results(lookup, modulename, name, fullname):
     module = importlib.import_module(modulename)
-    cls_dict = getattr(module, name).__dict__
+    cls = getattr(module, name)
 
     groups = OrderedDict([
-        ('Attributes', []),
-        ('Coroutines', []),
-        ('Classmethods', []),
-        ('Methods', []),
-        ('Decorators', []),
+        (_('Attributes'), []),
+        (_('Methods'), []),
     ])
 
     try:
@@ -159,38 +179,50 @@ def get_class_results(lookup, modulename, name, fullname):
 
     for attr in members:
         attrlookup = '%s.%s' % (fullname, attr)
-        key = 'Attributes'
+        key = _('Attributes')
+        badge = None
         label = attr
 
-        value = cls_dict.get(attr)
+        value = getattr(cls, attr, None)
         if value is not None:
             doc = value.__doc__ or ''
             if inspect.iscoroutinefunction(value) or doc.startswith('|coro|'):
-                key = 'Coroutines'
+                key = _('Methods')
+                badge = attributetablebadge('async', 'async')
+                badge['badge-type'] = _('coroutine')
             elif isinstance(value, classmethod):
-                key = 'Classmethods'
+                key = _('Methods')
+                label = '%s.%s' % (name, attr)
+                badge = attributetablebadge('cls', 'cls')
+                badge['badge-type'] = _('classmethod')
             elif inspect.isfunction(value):
                 if doc.startswith(('A decorator', 'A shortcut decorator')):
                     # finicky but surprisingly consistent
-                    key = 'Decorators'
+                    badge = attributetablebadge('@', '@')
+                    badge['badge-type'] = _('decorator')
+                    key = _('Methods')
                 else:
-                    key = 'Methods'
+                    key = _('Methods')
+                    badge = attributetablebadge('def', 'def')
+                    badge['badge-type'] = _('method')
 
-        groups[key].append((attrlookup, label))
+        groups[key].append(TableElement(fullname=attrlookup, label=label, badge=badge))
 
     return groups
 
 def class_results_to_node(key, elements):
     title = attributetabletitle(key, key)
     ul = nodes.bullet_list('')
-    for fullname, label in elements:
+    for element in elements:
         ref = nodes.reference('', '', internal=True,
-                                      refuri='#' + fullname,
+                                      refuri='#' + element.fullname,
                                       anchorname='',
-                                      *[nodes.Text(label)])
+                                      *[nodes.Text(element.label)])
         para = addnodes.compact_paragraph('', '', ref)
-        item = nodes.list_item('', para)
-        ul.append(item)
+        if element.badge is not None:
+            ul.append(attributetable_item('', element.badge, para))
+        else:
+            ul.append(attributetable_item('', para))
 
     return attributetablecolumn('', title, ul)
 
@@ -199,5 +231,7 @@ def setup(app):
     app.add_node(attributetable, html=(visit_attributetable_node, depart_attributetable_node))
     app.add_node(attributetablecolumn, html=(visit_attributetablecolumn_node, depart_attributetablecolumn_node))
     app.add_node(attributetabletitle, html=(visit_attributetabletitle_node, depart_attributetabletitle_node))
+    app.add_node(attributetablebadge, html=(visit_attributetablebadge_node, depart_attributetablebadge_node))
+    app.add_node(attributetable_item, html=(visit_attributetable_item_node, depart_attributetable_item_node))
     app.add_node(attributetableplaceholder)
     app.connect('doctree-resolved', process_attributetable)
