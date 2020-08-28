@@ -89,6 +89,7 @@ class Loop:
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
         sleep_until = discord.utils.sleep_until
+        self._last_iteration_failed = False
         self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
             await asyncio.sleep(0) # allows canceling in before_loop
