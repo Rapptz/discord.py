@@ -97,6 +97,7 @@ class Sidebar {
 }
 
 function getCurrentSection() {
+  let currentSection;
   if (window.scrollY + window.innerHeight > bottomHeightThreshold) {
     currentSection = sections[sections.length - 1];
   }
