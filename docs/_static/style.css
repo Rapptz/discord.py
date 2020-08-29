@@ -233,13 +233,17 @@ a:hover {
 
 /* headers */
 
-header {
+header.grid-item {
   grid-area: h;
-  background-color: var(--sub-header-background);
   color: var(--main-text);
+  position: relative;
+  z-index: 1;
+  padding: 0;
 }
 
 header > nav {
+  background-color: var(--sub-header-background);
+  padding: 0.8em;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -249,33 +253,26 @@ header > nav a {
   color: var(--white);
 }
 
-header > nav > .container {
-  display: inline-block;
-  position: relative;
-}
-
-header > nav .icons,
-header > nav .mobile-only.search {
-  display: inline-block;
-}
-
-header > nav .mobile-only.search {
-  overflow: hidden;
+header > nav.mobile-only {
+  width: 100%;
   position: absolute;
+  top: 0;
   right: 0;
-  top: -0.5em;
-  z-index: 2;
-  transition: width 1.5s ease-in-out;
-  width: 0px;
+  z-index: -1;
+  padding-top: 0;
+  transition: top 1s ease-in-out;
 }
 
-header > nav .icons > a {
-  float: right;
+header > nav.mobile-only .search {
+  width: 100%;
+}
+
+header > nav.mobile-only .search-wrapper {
+  background-color: var(--sub-header-background);
 }
 
 .main-heading {
   margin-right: auto;
-  padding-right: 2em;
 }
 
 header > nav a:not(.main-heading) {
@@ -1111,6 +1108,10 @@ div.code-block-caption {
 
   header {
     background-color: var(--black);
+  }
+
+  header > nav {
+    background-color: unset;
   }
 
   .sub-header {

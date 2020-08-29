@@ -5,7 +5,8 @@ let activeLink = null;
 let bottomHeightThreshold, sections;
 let hamburgerToggle;
 let sidebar;
-let mobileSearch;
+let mobileSearchBox;
+let mobileSearchBar;
 let openSearchButton;
 let closeSearchButton;
 
@@ -31,13 +32,14 @@ function openModal(modal) {
 function openSearch() {
   openSearchButton.hidden = true;
   closeSearchButton.hidden = false;
-  mobileSearch.style.width = "50vw";
+  mobileSearchBox.style.top = "100%";
+  mobileSearchBar.focus();
 }
 
 function closeSearch() {
   openSearchButton.hidden = false;
   closeSearchButton.hidden = true;
-  mobileSearch.style.width = "0px";
+  mobileSearchBox.style.top = "0";
 }
 
 function changeDocumentation(element) {
@@ -50,7 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
   sidebar = document.getElementById('sidebar');
-  mobileSearch = document.querySelector('nav .mobile-only.search');
+  mobileSearchBox = document.querySelector('nav.mobile-only');
+  mobileSearchBar = document.querySelector('nav.mobile-only input[type="search"]');
   openSearchButton = document.getElementById('open-search');
   closeSearchButton = document.getElementById('close-search');
 
