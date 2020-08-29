@@ -289,6 +289,11 @@ header > nav > a:hover {
   margin-right: 0.5em;
 }
 
+.setting h3 {
+  display: inline-block;
+  margin-left: 2em;
+}
+
 .sub-header > .settings:hover {
   color: var(--settings-hover);
 }
