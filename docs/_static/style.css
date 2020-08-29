@@ -20,30 +20,31 @@ Historically however, thanks to:
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
-  /* base palette */
+  /* palette goes here */
   --white: #ffffff;
-  --grey-1: #ebebeb;
-  --grey-2: #e0e0e0;
-  --grey-3: #d6d6d6;
-  --grey-4: #848484;
-  --grey-5: #5c5c5c;
-  --grey-6: #333333;
-  --grey-7: #292929;
-  --grey-8: #1c1c1c;
-  --black: #0a0a0a;
+  --grey-1: #f9f9fa;
+  --grey-1-8: rgba(249, 249, 250, 0.8);
+  --grey-2: #ededf0;
+  --grey-3: #d7d7db;
+  --grey-4: #b1b1b3;
+  --grey-5: #737373;
+  --grey-6: #4a4a4f;
+  --grey-7: #38383d;
+  --grey-8: #2a2a2e;
+  --black: #0c0c0d;
 
-  --blue: #3399ff;
-  --light-blue: #d0e7ff;
-  --cyan-1: #22acca;
-  --cyan-2: #1c8fa8;
-  --cyan-3: #167286;
+  --blue-1: #3399ff;
+  --blue-2: #0a84ff;
+  --blue-3: #0060df;
+  --blue-4: #003eaa;
+  --blue-5: #002275;
+  --blue-6: #000f40;
 
-  /* theme gets built on these base colours */
-  --settings: var(--white);
-  --settings-hover: var(--grey-1);
+  --settings: var(--grey-1);
+  --settings-hover: var(--grey-1-8);
   --main-background: var(--grey-1);
-  --link-text: var(--cyan-2);
-  --link-hover-text: var(--cyan-3);
+  --link-text: var(--blue-2);
+  --link-hover-text: var(--blue-6);
   --main-text: var(--black);
   --mobile-nav-background: var(--black);
   --mobile-nav-text: var(--white);
@@ -53,12 +54,12 @@ Historically however, thanks to:
   --nav-text: var(--grey-6);
   --nav-hover-text: var(--grey-6);
   --nav-header-text: var(--black);
+  --sub-header-background: var(--grey-6);
   --search-border: var(--grey-4);
-  --search-background: var(--grey-6);
   --search-text: var(--white);
-  --search-focus: var(--blue);
-  --search-button: var(--white);
-  --search-button-hover: var(--grey-1);
+  --search-focus: var(--blue-1);
+  --search-button: var(--grey-1);
+  --search-button-hover: var(--grey-1-8);
   --footer-text: var(--grey-5);
   --footer-link: var(--grey-6);
   --hr-border: var(--grey-2);
@@ -70,24 +71,28 @@ Historically however, thanks to:
   --header-link: var(--grey-6);
   --header-link-hover-text: var(--white);
   --admonition-background: var(--grey-2);
-  --note-background: #95caff;
-  --note-border: var(--blue);
-  --warning-background: #ffe9ad;
-  --warning-border: #ffc937;
-  --error-background: #ffd1d0;
-  --error-border: #ff4b47;
-  --helpful-background: var(--light-blue);
-  --helpful-border: var(--blue);
+  --note-background: var(--blue-1);
+  --note-border: var(--blue-1);
+  --note-text: var(--white);
+  --warning-background: #ffe900;
+  --warning-border: #ffe900;
+  --warning-text: var(--black);
+  --error-background: #d70022;
+  --error-border: #d70022;
+  --error-text: var(--white);
+  --helpful-background: #00c8d7;
+  --helpful-border: #00c8d7;
+  --helpful-text: var(--black);
   --codeblock-background: var(--grey-2);
   --codeblock-border: var(--grey-4);
   --codeblock-text: var(--grey-6);
-  --inline-code-background: var(--grey-2);
+  --inline-code-background: var(--grey-3);
   --xref-code-background: transparent;
   --api-entry-background: var(--grey-2);
   --table-header-background: var(--grey-3);
   --table-text: var(--black);
   --table-border: var(--grey-4);
-  --mobile-active-toc: var(--grey-6);
+  --mobile-active-toc: var(--grey-7);
   --active-toc: var(--grey-3);
   --scrollbar: rgba(0,0,0,0.2);
   --scrollbar-hover: rgba(0,0,0,0.4);
@@ -98,9 +103,9 @@ Historically however, thanks to:
   --attribute-table-title: var(--grey-6);
   --attribute-table-entry-border: var(--grey-3);
   --attribute-table-entry-text: var(--grey-5);
-  --attribute-table-entry-hover-border: var(--blue);
+  --attribute-table-entry-hover-border: var(--blue-2);
   --attribute-table-entry-hover-background: var(--grey-2);
-  --attribute-table-entry-hover-text: var(--blue);
+  --attribute-table-entry-hover-text: var(--blue-2);
   --attribute-table-badge: var(--grey-7);
 }
 
@@ -110,14 +115,12 @@ Historically however, thanks to:
 
 :root[data-theme="dark"] {
   --main-background: var(--grey-7);
-  --link-text: var(--cyan-1);
-  --link-hover-text: var(--cyan-1);
+  --link-text: var(--blue-1);
+  --link-hover-text: var(--blue-2);
   --main-text: var(--white);
-  --mobile-nav-background: var(--grey-5);
-  --mobile-nav-text: var(--white);
-  --mobile-nav-hover-text: var(--white);
-  --mobile-nav-header-text: var(--white);
-  --nav-background: var(--grey-7);
+  --sub-header-background: var(--grey-8);
+  --search-border: var(--grey-5);
+  --nav-background: var(--main-background);
   --nav-text: var(--grey-1);
   --nav-hover-text: var(--grey-2);
   --nav-header-text: var(--white);
@@ -132,14 +135,18 @@ Historically however, thanks to:
   --header-link: var(--grey-2);
   --header-link-hover-text: var(--grey-6);
   --admonition-background: var(--grey-8);
-  --note-background: #0f51b9;
-  --note-border: var(--blue);
-  --warning-background: #cd4800;
-  --warning-border: #ff9800;
-  --error-background:  #b71c1c;
-  --error-border: #f44336;
-  --helpful-background: var(--light-blue);
-  --helpful-border: var(--blue);
+  --note-background: var(--blue-3);
+  --note-border: var(--blue-3);
+  --note-text: var(--white);
+  --warning-background: #d7b600;
+  --warning-border: #d7b600;
+  --warning-text: var(--black);
+  --error-background:  #d70022;
+  --error-border: #d70022;
+  --error-text: var(--white);
+  --helpful-background: #008ea4;
+  --helpful-border: #008ea4;
+  --helpful-text: var(--white);
   --codeblock-background: var(--grey-6);
   --codeblock-border: var(--black);
   --codeblock-text: var(--grey-1);
@@ -149,7 +156,6 @@ Historically however, thanks to:
   --table-header-background: var(--grey-6);
   --table-text: var(--grey-1);
   --table-border: var(--grey-4);
-  --mobile-active-toc: var(--grey-6);
   --active-toc: var(--grey-6);
   --scrollbar: rgba(0,0,0,0.5);
   --scrollbar-hover: rgba(0,0,0,0.7);
@@ -160,9 +166,9 @@ Historically however, thanks to:
   --attribute-table-title: var(--grey-3);
   --attribute-table-entry-border: var(--grey-5);
   --attribute-table-entry-text: var(--grey-3);
-  --attribute-table-entry-hover-border: var(--blue);
+  --attribute-table-entry-hover-border: var(--blue-1);
   --attribute-table-entry-hover-background: var(--grey-6);
-  --attribute-table-entry-hover-text: var(--blue);
+  --attribute-table-entry-hover-text: var(--blue-1);
   --attribute-table-badge: var(--grey-4);
 }
 
@@ -237,7 +243,7 @@ a:hover {
 
 header {
   grid-area: h;
-  background-color: var(--grey-6);
+  background-color: var(--sub-header-background);
   color: var(--main-text);
 }
 
@@ -260,13 +266,13 @@ header > nav a:not(.main-heading) {
 }
 
 header > nav > a:hover {
-  color: var(--white);
+  color: var(--grey-1-8);
   text-decoration: underline;
 }
 
 .sub-header {
   grid-area: n;
-  background-color: var(--grey-6);
+  background-color: var(--sub-header-background);
   color: var(--white);
   display: none;
 }
@@ -416,7 +422,7 @@ aside .material-icons,
 
 .searchwrapper > input[type=search],
 .searchwrapper > button[type=submit] {
-  background-color: var(--search-background);
+  background-color: var(--sub-header-background);
   border: none;
   color: var(--search-text);
   padding: 0.5em;
@@ -463,6 +469,7 @@ input[type=search]:focus ~ button[type=submit] {
 
 .searchwrapper > button[type=submit]:hover {
   background-color: var(--search-border);
+  color: var(--search-button-hover);
 }
 
 /* main content area */
@@ -710,6 +717,7 @@ div.note > p.admonition-title,
 div.hint > p.admonition-title,
 div.tip > p.admonition-title {
   background-color: var(--note-background);
+  color: var(--note-text);
 }
 
 div.important > p.admonition-title::before,
@@ -717,7 +725,6 @@ div.note > p.admonition-title::before,
 div.hint > p.admonition-title::before,
 div.tip > p.admonition-title::before {
   content: '\0e88e';
-  color: var(--note-border);
 }
 
 div.attention, div.warning, div.caution {
@@ -728,13 +735,13 @@ div.attention > p.admonition-title,
 div.warning > p.admonition-title,
 div.caution > p.admonition-title {
   background-color: var(--warning-background);
+  color: var(--warning-text);
 }
 
 div.attention > p.admonition-title::before,
 div.warning > p.admonition-title::before,
 div.caution > p.admonition-title::before {
   content: '\0e002';
-  color: var(--warning-border);
 }
 
 div.danger, div.error {
@@ -744,12 +751,12 @@ div.danger, div.error {
 div.danger > p.admonition-title,
 div.error > p.admonition-title {
   background-color: var(--error-background);
+  color: var(--error-text);
 }
 
 div.danger > p.admonition-title::before,
 div.error > p.admonition-title::before {
   content: '\0e000';
-  color: var(--error-border);
 }
 
 /* helpful admonitions */
@@ -759,11 +766,11 @@ div.helpful {
 
 div.helpful > p.admonition-title {
   background-color: var(--helpful-background);
+  color: var(--helpful-text);
 }
 
 div.helpful > p.admonition-title::before {
   content: '\0e873';
-  color: var(--helpful-border);
 }
 
 dl.field-list > dd {
@@ -911,6 +918,11 @@ code.descname {
 
 code.descclassname {
   background-color: transparent;
+  padding-right: 0;
+}
+
+code.descclassname + code.descname {
+  padding-left: 0;
 }
 
 code.xref, a code {

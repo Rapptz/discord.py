@@ -70,8 +70,8 @@
 .highlight .il { color: #40a070 } /* Literal.Number.Integer.Long */
 
 /* dark theme: modified "native" */
-:root[data-theme="dark"] .highlight pre { background-color: #404040 }
-:root[data-theme="dark"] .highlight .hll { background-color: #404040 }
+:root[data-theme="dark"] .highlight pre { background-color: #2a2a2e }
+:root[data-theme="dark"] .highlight .hll { background-color: #2a2a2e }
 :root[data-theme="dark"] .highlight .c { color: #999999; font-style: italic } /* Comment */
 :root[data-theme="dark"] .highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
 :root[data-theme="dark"] .highlight .g { color: #d0d0d0 } /* Generic */
