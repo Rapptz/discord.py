@@ -110,6 +110,7 @@ function getCurrentSection() {
       });
     }
   }
+  return currentSection;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
