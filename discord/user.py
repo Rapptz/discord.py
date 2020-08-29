@@ -430,6 +430,14 @@ class ClientUser(BaseUser):
             Only applicable to user accounts.
         username: :class:`str`
             The new username you wish to change to.
+
+        .. note::
+
+            The new username cannot be ``discordtag``, ``everyone``, or ``here``.
+
+        .. warning ::
+            There is a strict ratelimit of changing your username of twice per 30 minutes.
+
         avatar: :class:`bytes`
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.

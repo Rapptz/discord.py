@@ -1802,11 +1802,11 @@ of :class:`enum.Enum`.
 
     .. attribute:: nitro
 
-        Represents the Discord Nitro with Nitro-exclusive games.
+        Represents the Discord Nitro that includes 2 "boosts" and more "perks" than the classic version.
 
     .. attribute:: nitro_classic
 
-        Represents the Discord Nitro with no Nitro-exclusive games.
+        Represents the Discord Nitro that does not include 2 "boosts".
 
 
 .. class:: Theme
