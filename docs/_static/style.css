@@ -72,16 +72,12 @@ Historically however, thanks to:
   --header-link-hover-text: var(--white);
   --admonition-background: var(--grey-2);
   --note-background: var(--blue-1);
-  --note-border: var(--blue-1);
   --note-text: var(--white);
   --warning-background: #ffe900;
-  --warning-border: #ffe900;
   --warning-text: var(--black);
   --error-background: #d70022;
-  --error-border: #d70022;
   --error-text: var(--white);
   --helpful-background: #00c8d7;
-  --helpful-border: #00c8d7;
   --helpful-text: var(--black);
   --codeblock-background: var(--grey-2);
   --codeblock-border: var(--grey-4);
@@ -136,21 +132,17 @@ Historically however, thanks to:
   --header-link-hover-text: var(--grey-6);
   --admonition-background: var(--grey-8);
   --note-background: var(--blue-3);
-  --note-border: var(--blue-3);
   --note-text: var(--white);
   --warning-background: #d7b600;
-  --warning-border: #d7b600;
   --warning-text: var(--black);
   --error-background:  #d70022;
-  --error-border: #d70022;
   --error-text: var(--white);
   --helpful-background: #008ea4;
-  --helpful-border: #008ea4;
   --helpful-text: var(--white);
   --codeblock-background: var(--grey-6);
   --codeblock-border: var(--black);
   --codeblock-text: var(--grey-1);
-  --inline-code-background: var(--black);
+  --inline-code-background: var(--grey-8);
   --xref-code-background: transparent;
   --api-entry-background: var(--grey-6);
   --table-header-background: var(--grey-6);
@@ -713,7 +705,7 @@ p.admonition-title::before {
 }
 
 div.important, div.note, div.hint, div.tip {
-  border-left-color: var(--note-border);
+  border-left-color: var(--note-background);
 }
 
 div.important > p.admonition-title,
@@ -732,7 +724,7 @@ div.tip > p.admonition-title::before {
 }
 
 div.attention, div.warning, div.caution {
-  border-left-color: var(--warning-border);
+  border-left-color: var(--warning-background);
 }
 
 div.attention > p.admonition-title,
@@ -749,7 +741,7 @@ div.caution > p.admonition-title::before {
 }
 
 div.danger, div.error {
-  border-left-color: var(--error-border);
+  border-left-color: var(--error-background);
 }
 
 div.danger > p.admonition-title,
@@ -765,7 +757,7 @@ div.error > p.admonition-title::before {
 
 /* helpful admonitions */
 div.helpful {
-  border-left-color: var(--helpful-border);
+  border-left-color: var(--helpful-background);
 }
 
 div.helpful > p.admonition-title {
