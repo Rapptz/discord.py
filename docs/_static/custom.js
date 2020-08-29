@@ -31,16 +31,19 @@ function changeDocumentation(element) {
 }
 
 function updateSetting(element) {
+  let value;
   switch (element.type) {
     case "checkbox":
       localStorage.setItem(element.name, element.checked);
+      value = element.checked;
       break;
     case "radio":
       localStorage.setItem(element.name, `"${element.value}"`);
+      value = element.value;
       break;
   }
   if (element.name in settings) {
-    settings[element.name]["setter"](element.value);
+    settings[element.name]["setter"](value);
   }
 }
 
