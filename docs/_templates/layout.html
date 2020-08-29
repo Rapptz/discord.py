@@ -141,6 +141,7 @@
       </span>
       <h1>Settings</h1>
 
+      <h2>Font</h2>
       <div class='setting'>
         <h3>Use a serif font:
           <label class="toggle"
@@ -151,12 +152,25 @@
         </h3>
       </div>
 
+      <h2>Theme</h2>
       <div class='setting'>
-        <h3>Enable dark theme:
-          <label class="toggle" title="Enable the dark theme.">
-            <input type="checkbox" name="useDarkTheme" onclick="updateSetting(this);">
-            <span class="toggle-slider"></span>
+        <h3>
+          <label class="toggle" title="Set your theme">
+            <input type="radio" name="setTheme" onclick="updateSetting(this);" value="automatic" checked>
           </label>
+          Automatic
+        </h3>
+        <h3>
+          <label class="toggle" title="Use a serif font? Your system font will be used, falling back to serif.">
+            <input type="radio" name="setTheme" onclick="updateSetting(this);" value="light">
+          </label>
+          Light
+        </h3>
+        <h3>
+          <label class="toggle" title="Use a serif font? Your system font will be used, falling back to serif.">
+            <input type="radio" name="setTheme" onclick="updateSetting(this);" value="dark">
+          </label>
+          Dark
         </h3>
       </div>
 
