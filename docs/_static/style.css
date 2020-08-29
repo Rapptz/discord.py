@@ -329,6 +329,20 @@ aside h3 {
   font-weight: normal;
 }
 
+.collapsible-arrow {
+  font-size: 1.5em!important;
+  left: -1.166em;
+  top: 0.25em;
+  user-select: none;
+  position: relative;
+  line-height: 0.5em;
+}
+
+.ref-internal-padding {
+  position: relative;
+  left: -20px;
+}
+
 #settings-toggle {
   float: right;
 }
@@ -371,6 +385,10 @@ aside .material-icons,
   list-style: square;
   margin: 0em;
   margin-left: 1.5em;
+}
+
+#sidebar li.no-list-style {
+  list-style: none;
 }
 
 #sidebar form {
@@ -1095,6 +1113,7 @@ div.code-block-caption {
     top: 1em;
     max-height: calc(100vh - 2em);
     overflow-y: auto;
+    min-width: max-content;
     margin: 1em;
   }
 

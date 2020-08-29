@@ -125,12 +125,14 @@ window.addEventListener('scroll', () => {
     currentSection = sections[sections.length - 1];
   }
   else {
-    sections.forEach(section => {
-      let rect = section.getBoundingClientRect();
-      if (rect.top + document.body.offsetTop < 1) {
-        currentSection = section;
-      }
-    });
+    if (sections) {
+      sections.forEach(section => {
+        let rect = section.getBoundingClientRect();
+        if (rect.top + document.body.offsetTop < 1) {
+          currentSection = section;
+        }
+      });
+    }
   }
 
   if (activeLink) {
@@ -140,6 +142,12 @@ window.addEventListener('scroll', () => {
   if (currentSection) {
     activeLink = document.querySelector(`#sidebar a[href="#${currentSection.id}"]`);
     if (activeLink) {
+      let headingChildren = activeLink.parentElement.parentElement;
+      let heading = headingChildren.previousElementSibling.previousElementSibling;
+      
+      if (heading && headingChildren.style.display === "none") {
+        activeLink = heading;
+      }
       activeLink.parentElement.classList.add('active');
     }
   }
