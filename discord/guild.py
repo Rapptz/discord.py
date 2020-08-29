@@ -1690,6 +1690,13 @@ class Guild(Hashable):
         -----------
         name: :class:`str`
             The role name. Defaults to 'new role'.
+
+            .. note ::
+
+                The role name cannot be longer than 100 characters.
+                If you try to create a role with a name longer than that,
+                it will lead to an HTTPException.
+
         permissions: :class:`Permissions`
             The permissions to have. Defaults to no permissions.
         colour: :class:`Colour`
