@@ -118,9 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
   sidebar = new Sidebar(document.getElementById('sidebar'));
   sidebar.resize();
   sidebar.createCollapsableSections();
+
+  window.addEventListener('scroll', () => {
+    sidebar.setActiveLink(getCurrentSection());
+    sidebar.resize();
+  });
 });
 
-window.addEventListener('scroll', () => {
-  sidebar.setActiveLink(getCurrentSection());
-  sidebar.resize();
-});
