@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.keyCode == 27 && activeModal) {
+  if (event.code == "Escape" && activeModal) {
     activeModal.close();
   }
 });
