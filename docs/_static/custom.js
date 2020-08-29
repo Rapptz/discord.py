@@ -1,49 +1,52 @@
 'use-strict';
 
 let activeModal = null;
-let activeLink = null;
 let bottomHeightThreshold, sections;
 let hamburgerToggle;
+let mobileSearch;
 let sidebar;
-let mobileSearchBox;
-let mobileSearchBar;
-let openSearchButton;
-let closeSearchButton;
 
-function resizeSidebar() {
-  let rect = sidebar.getBoundingClientRect();
-  sidebar.style.height = `calc(100vh - 1em - ${rect.top + document.body.offsetTop}px)`;
-}
-
-function closeModal(modal) {
-  activeModal = null;
-  modal.hidden = true;
-}
-
-function openModal(modal) {
-  if (activeModal) {
-    closeModal(activeModal);
+class Modal {
+  constructor(element) {
+    this.element = element;
   }
 
-  activeModal = modal;
-  modal.hidden = false;
+  close() {
+    activeModal = null;
+    this.element.hidden = true;
+  }
+
+  open() {
+    if (activeModal) {
+      activeModal.close();
+    }
+    activeModal = this;
+    this.element.hidden = false;
+  }
 }
 
-function openSearch() {
-  openSearchButton.hidden = true;
-  closeSearchButton.hidden = false;
-  mobileSearchBox.style.top = "100%";
-  mobileSearchBar.focus();
-}
+class Search {
 
-function closeSearch() {
-  openSearchButton.hidden = false;
-  closeSearchButton.hidden = true;
-  mobileSearchBox.style.top = "0";
-}
+  constructor(box, bar, openButton, closeButton) {
+    this.box = box;
+    this.bar = bar;
+    this.openButton = openButton;
+    this.closeButton = closeButton;
+  }
 
-function changeDocumentation(element) {
-  window.location = element.value;
+  open() {
+    this.openButton.hidden = true;
+    this.closeButton.hidden = false;
+    this.box.style.top = "100%";
+    this.bar.focus();
+  }
+
+  close() {
+    this.openButton.hidden = false;
+    this.closeButton.hidden = true;
+    this.box.style.top = "0";
+  }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -51,33 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
-  sidebar = document.getElementById('sidebar');
-  mobileSearchBox = document.querySelector('nav.mobile-only');
-  mobileSearchBar = document.querySelector('nav.mobile-only input[type="search"]');
-  openSearchButton = document.getElementById('open-search');
-  closeSearchButton = document.getElementById('close-search');
 
-  resizeSidebar();
-
-  sidebar.addEventListener('click', (e) => {
-    // If we click a navigation, close the hamburger menu
-    if (e.target.tagName == 'A' && sidebar.classList.contains('sidebar-toggle')) {
-      sidebar.classList.remove('sidebar-toggle');
-      let button = hamburgerToggle.firstElementChild;
-      button.textContent = 'menu';
-
-      // Scroll a little up to actually see the header
-      // Note: this is generally around ~55px
-      // A proper solution is getComputedStyle but it can be slow
-      // Instead let's just rely on this quirk and call it a day
-      // This has to be done after the browser actually processes
-      // the section movement
-      setTimeout(() => window.scrollBy(0, -100), 75);
-    }
-  })
+  mobileSearch = new Search(
+    document.querySelector('nav.mobile-only'),
+    document.querySelector('nav.mobile-only input[type="search"]'),
+    document.getElementById('open-search'),
+    document.getElementById('close-search'),
+  );
 
   hamburgerToggle.addEventListener('click', (e) => {
-    sidebar.classList.toggle('sidebar-toggle');
+    sidebar.element.classList.toggle('sidebar-toggle');
     let button = hamburgerToggle.firstElementChild;
     if (button.textContent == 'menu') {
       button.textContent = 'close';
@@ -96,45 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-window.addEventListener('scroll', () => {
-  let currentSection = null;
-
-  if (window.scrollY + window.innerHeight > bottomHeightThreshold) {
-    currentSection = sections[sections.length - 1];
-  }
-  else {
-    if (sections) {
-      sections.forEach(section => {
-        let rect = section.getBoundingClientRect();
-        if (rect.top + document.body.offsetTop < 1) {
-          currentSection = section;
-        }
-      });
-    }
-  }
-
-  if (activeLink) {
-    activeLink.parentElement.classList.remove('active');
-  }
-
-  if (currentSection) {
-    activeLink = document.querySelector(`#sidebar a[href="#${currentSection.id}"]`);
-    if (activeLink) {
-      let headingChildren = activeLink.parentElement.parentElement;
-      let heading = headingChildren.previousElementSibling.previousElementSibling;
-
-      if (heading && headingChildren.style.display === 'none') {
-        activeLink = heading;
-      }
-      activeLink.parentElement.classList.add('active');
-    }
-  }
-
-  resizeSidebar();
-});
-
 document.addEventListener('keydown', (event) => {
   if (event.keyCode == 27 && activeModal) {
-    closeModal(activeModal);
+    activeModal.close();
   }
 });

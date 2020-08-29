@@ -2,26 +2,60 @@
 
 let settingsModal;
 
-function updateSetting(element) {
-  let value;
-  switch (element.type) {
-    case 'checkbox':
-      localStorage.setItem(element.name, element.checked);
-      value = element.checked;
-      break;
-    case 'radio':
-      localStorage.setItem(element.name, `"${element.value}"`);
-      value = element.value;
-      break;
+class Setting {
+  constructor(name, defaultValue, setter) {
+    this.name = name;
+    this.defaultValue = defaultValue;
+    this.setValue = setter;
   }
-  if (element.name in settings) {
-    settings[element.name]['setter'](value);
+
+  setElement() {
+    throw new TypeError('Abstract methods should be implemented.');
   }
+
+  load() {
+    let value = JSON.parse(localStorage.getItem(this.name));
+    this.value = value === null ? this.defaultValue : value;
+    try {
+      this.setValue(value);
+    } catch (error) {
+      console.error(`Failed to apply setting "${this.name}" With value:`, this.value);
+      console.error(error);
+    }
+  }
+
+  update() {
+    throw new TypeError('Abstract methods should be implemented.');
+  }
+
 }
 
-function LoadSetting(name, defaultValue) {
-  let value = JSON.parse(localStorage.getItem(name));
-  return value === null ? defaultValue : value;
+class CheckboxSetting extends Setting {
+
+  setElement() {
+    let element = document.querySelector(`input[name=${this.name}]`);
+    element.checked = this.value;
+  }
+
+  update(element) {
+    localStorage.setItem(this.name, element.checked);
+    this.setValue(element.checked);
+  }
+
+}
+
+class RadioSetting extends Setting {
+
+  setElement() {
+    let element = document.querySelector(`input[name=${this.name}][value=${this.value}]`);
+    element.checked = true;
+  }
+
+  update(element) {
+    localStorage.setItem(this.name, `"${element.value}"`);
+    this.setValue(element.value);
+  }
+
 }
 
 function getRootAttributeToggle(attributeName, valueName) {
@@ -48,44 +82,25 @@ function setTheme(value) {
   }
 }
 
-const settings = {
-  useSerifFont: {
-    settingType: 'checkbox',
-    defaultValue: false,
-    setter: getRootAttributeToggle('font', 'serif')
-  },
-  setTheme: {
-    settingType: 'radio',
-    defaultValue: 'automatic',
-    setter: setTheme
-  }
-};
+const settings = [
+  new CheckboxSetting('useSerifFont', false, getRootAttributeToggle('font', 'serif')),
+  new RadioSetting('setTheme', 'automatic', setTheme)
+]
 
-Object.entries(settings).forEach(([name, setting]) => {
-  let { defaultValue, setter, ..._ } = setting;
-  let value = LoadSetting(name, defaultValue);
-  try {
-    setter(value);
-  } catch (error) {
-    console.error(`Failed to apply setting "${name}" With value:`, value);
-    console.error(error);
+function updateSetting(element) {
+  let setting = settings.find((s) => s.name == element.name);
+  if (setting) {
+    setting.update(element);
   }
-});
+}
+
+for (const setting of settings) {
+  setting.load();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  settingsModal = document.querySelector('div#settings.modal');
-
-  Object.entries(settings).forEach(([name, setting]) => {
-    let { settingType, defaultValue, ..._ } = setting;
-    let value = LoadSetting(name, defaultValue);
-    if (settingType === 'checkbox') {
-      let element = document.querySelector(`input[name=${name}]`);
-      element.checked = value;
-    } else {
-      let element = document.querySelector(`input[name=${name}][value=${value}]`);
-      element.checked = true;
-    }
-  });
-
+  settingsModal = new Modal(document.querySelector('div#settings.modal'));
+  for (const setting of settings) {
+    setting.setElement();
+  }
 });

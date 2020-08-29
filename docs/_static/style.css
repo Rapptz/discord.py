@@ -260,7 +260,7 @@ header > nav.mobile-only {
   right: 0;
   z-index: -1;
   padding-top: 0;
-  transition: top 1s ease-in-out;
+  transition: top 0.5s ease-in-out;
 }
 
 header > nav.mobile-only .search {
@@ -431,6 +431,8 @@ aside .material-icons,
 
 .search-wrapper > input[type=search] {
   font-family: "Roboto", Corbel, Avenir, "Lucida Grande", "Lucida Sans", sans-serif;
+  outline: none;
+  appearance: none;
   font-size: 1em;
 }
 

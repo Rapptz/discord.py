@@ -63,11 +63,11 @@
         <a href="{{ discord_invite }}" title="{{ _('Discord') }}"><span class="material-icons custom-icons">discord</span></a>
         <a href="{{ pathto('faq') }}" title="FAQ"><span class="material-icons">help_center</span></a>
         {#- If we have more links we can put them here #}
-        <a onclick="openSearch();" title="{{ _('Search') }}" id="open-search" class="mobile-only"><span class="material-icons">search</span></a>
-        <a onclick="closeSearch();" title="{{ _('Close') }}" id="close-search" class="mobile-only" hidden><span class="material-icons">close</span></a>
+        <a onclick="mobileSearch.open();" title="{{ _('Search') }}" id="open-search" class="mobile-only"><span class="material-icons">search</span></a>
+        <a onclick="mobileSearch.close();" title="{{ _('Close') }}" id="close-search" class="mobile-only" hidden><span class="material-icons">close</span></a>
       </nav>
       <nav class="mobile-only">
-        <form role="search" class="search action="search.html" method="get">
+        <form role="search" class="search" action="search.html" method="get">
           <div class="search-wrapper">
             <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
             <button type="submit">
@@ -80,7 +80,7 @@
     {#- The sub-header with search and extension related selection #}
     <div class="sub-header grid-item">
       <label for="documentation_select">{{ _('View Documentation For') }}</label>
-      <select id="documentation_select" onchange="changeDocumentation(this)">
+      <select id="documentation_select" onchange="window.location = this.value;">
         {%- if pagename is prefixedwith 'ext/' %}
         <option value="{{ pathto(master_doc)|e }}">discord</option>
         {%- else %}
@@ -98,14 +98,14 @@
           </button>
         </div>
       </form>
-      <a accesskey="S" class="settings" onclick="openModal(settingsModal);"><span class="material-icons">settings</span></a>
+      <a accesskey="S" class="settings" onclick="settingsModal.open();"><span class="material-icons">settings</span></a>
     </div>
     {#- The sidebar component #}
     <aside class="grid-item">
       <span id="hamburger-toggle">
         <span class="material-icons">menu</span>
       </span>
-      <span id="settings-toggle" class="settings" onclick="openModal(settingsModal);">
+      <span id="settings-toggle" class="settings" onclick="settingsModal.open();">
         <span class="material-icons">settings</span>
       </span>
       <div id="sidebar">
@@ -145,9 +145,9 @@
   </script>
   {%- endif %}
 
-  <div id="settings" class="modal" onclick="if (event.target == this){ closeModal(settingsModal); }" hidden>
+  <div id="settings" class="modal" onclick="if (event.target == this){ settingsModal.close(); }" hidden>
     <div class="modal-content">
-      <span class="close" onclick="closeModal(settingsModal);" title="Close">
+      <span class="close" onclick="settingsModal.close();" title="Close">
         <span class="material-icons">close</span>
       </span>
       <h1>Settings</h1>

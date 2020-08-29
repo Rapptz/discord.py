@@ -17,18 +17,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let allCodeblocks = document.querySelectorAll("div[class='highlight']");
 
   for (let codeblock of allCodeblocks) {
-      codeblock.parentNode.className += " relative-copy";
-      let copyEl = document.createElement("span");
-      copyEl.addEventListener('click', () => copy(codeblock));
-      copyEl.className = "copy";
-      copyEl.setAttribute("aria-label", "Copy Code");
-      copyEl.setAttribute("title", "Copy Code");
+    codeblock.parentNode.className += " relative-copy";
+    let copyEl = document.createElement("span");
+    copyEl.addEventListener('click', () => copy(codeblock));
+    copyEl.className = "copy";
+    copyEl.setAttribute("aria-label", "Copy Code");
+    copyEl.setAttribute("title", "Copy Code");
 
-      let copyIcon = document.createElement("span");
-      copyIcon.className = "material-icons";
-      copyIcon.textContent = COPY;
-      copyEl.append(copyIcon);
+    let copyIcon = document.createElement("span");
+    copyIcon.className = "material-icons";
+    copyIcon.textContent = COPY;
+    copyEl.append(copyIcon);
 
-      codeblock.prepend(copyEl);
+    codeblock.prepend(copyEl);
   }
 });
