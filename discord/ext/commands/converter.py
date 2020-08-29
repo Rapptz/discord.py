@@ -42,6 +42,7 @@ __all__ = (
     'RoleConverter',
     'GameConverter',
     'ColourConverter',
+    'ColorConverter',
     'VoiceChannelConverter',
     'EmojiConverter',
     'PartialEmojiConverter',
@@ -344,6 +345,8 @@ class CategoryChannelConverter(IDConverter):
 class ColourConverter(Converter):
     """Converts to a :class:`~discord.Colour`.
 
+    There is an alias for this called ColorConverter.
+
     The following formats are accepted:
 
     - ``0x<hex>``
@@ -369,6 +372,8 @@ class ColourConverter(Converter):
             if arg.startswith('from_') or method is None or not inspect.ismethod(method):
                 raise BadArgument('Colour "{}" is invalid.'.format(arg))
             return method()
+
+ColorConverter = ColourConverter
 
 class RoleConverter(IDConverter):
     """Converts to a :class:`~discord.Role`.
