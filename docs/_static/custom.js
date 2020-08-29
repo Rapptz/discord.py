@@ -27,11 +27,11 @@ class Modal {
 
 class Search {
 
-  constructor(box, bar, openButton, closeButton) {
-    this.box = box;
-    this.bar = bar;
-    this.openButton = openButton;
-    this.closeButton = closeButton;
+  constructor() {
+    this.box = document.querySelector('nav.mobile-only');
+    this.bar = document.querySelector('nav.mobile-only input[type="search"]');
+    this.openButton = document.getElementById('open-search');
+    this.closeButton = document.getElementById('close-search');
   }
 
   open() {
@@ -50,17 +50,11 @@ class Search {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  mobileSearch = new Search();
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
-
-  mobileSearch = new Search(
-    document.querySelector('nav.mobile-only'),
-    document.querySelector('nav.mobile-only input[type="search"]'),
-    document.getElementById('open-search'),
-    document.getElementById('close-search'),
-  );
 
   hamburgerToggle.addEventListener('click', (e) => {
     sidebar.element.classList.toggle('sidebar-toggle');
