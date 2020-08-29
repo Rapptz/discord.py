@@ -344,6 +344,9 @@ class Message:
             except KeyError:
                 continue
 
+    def __str__(self):
+        return self.content
+
     def __repr__(self):
         return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
 
