@@ -244,6 +244,7 @@ html_search_scorer = '_static/scorer.js'
 
 html_js_files = [
   'custom.js',
+  'settings.js',
   'copy.js',
   'sidebar.js'
 ]

@@ -245,12 +245,37 @@ header > nav {
   justify-content: flex-end;
 }
 
-header > nav > a {
+header > nav a {
   color: var(--white);
+}
+
+header > nav > .container {
+  display: inline-block;
+  position: relative;
+}
+
+header > nav .icons,
+header > nav .mobile-only.search {
+  display: inline-block;
+}
+
+header > nav .mobile-only.search {
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: -0.5em;
+  z-index: 2;
+  transition: width 1.5s ease-in-out;
+  width: 0px;
+}
+
+header > nav .icons > a {
+  float: right;
 }
 
 .main-heading {
   margin-right: auto;
+  padding-right: 2em;
 }
 
 header > nav a:not(.main-heading) {
@@ -402,18 +427,18 @@ aside .material-icons,
 
 /* search button stuff */
 
-.searchwrapper {
+.search-wrapper {
   display: flex;
   align-items: stretch;
 }
 
-.searchwrapper > input[type=search] {
+.search-wrapper > input[type=search] {
   font-family: "Roboto", Corbel, Avenir, "Lucida Grande", "Lucida Sans", sans-serif;
   font-size: 1em;
 }
 
-.searchwrapper > input[type=search],
-.searchwrapper > button[type=submit] {
+.search-wrapper > input[type=search],
+.search-wrapper > button[type=submit] {
   background-color: var(--sub-header-background);
   border: none;
   color: var(--search-text);
@@ -422,28 +447,28 @@ aside .material-icons,
   flex: 9;
 }
 
-.searchwrapper {
+.search-wrapper {
   border-bottom: 1px solid var(--search-border);
 }
 
-.searchwrapper:focus-within {
+.search-wrapper:focus-within {
   border-bottom: 1px solid var(--search-focus);
 }
 
-/* .searchwrapper > input[type=search] {
+/* .search-wrapper > input[type=search] {
   border: 1px solid var(--search-border);
   border-right: none;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
 }
 
-.searchwrapper > input[type=search]:focus,
+.search-wrapper > input[type=search]:focus,
 button[type=submit]:focus ~ input[type=search] {
   border: 1px solid var(--search-focus);
   border-right: none;
 } */
 
-.searchwrapper > button[type=submit] {
+.search-wrapper > button[type=submit] {
   color: var(--search-button);
   /* border: 1px solid var(--search-border); */
   /* border-left: none; */
@@ -453,13 +478,13 @@ button[type=submit]:focus ~ input[type=search] {
   flex: 1;
 }
 
-/* .searchwrapper > button[type=submit]:focus,
+/* .search-wrapper > button[type=submit]:focus,
 input[type=search]:focus ~ button[type=submit] {
   border: 1px solid var(--search-focus);
   border-left: none;
 } */
 
-.searchwrapper > button[type=submit]:hover {
+.search-wrapper > button[type=submit]:hover {
   background-color: var(--search-border);
   color: var(--search-button-hover);
 }

@@ -3,9 +3,11 @@
 let activeModal = null;
 let activeLink = null;
 let bottomHeightThreshold, sections;
-let settingsModal;
 let hamburgerToggle;
 let sidebar;
+let mobileSearch;
+let openSearchButton;
+let closeSearchButton;
 
 function resizeSidebar() {
   let rect = sidebar.getBoundingClientRect();
@@ -26,96 +28,40 @@ function openModal(modal) {
   modal.hidden = false;
 }
 
+function openSearch() {
+  openSearchButton.hidden = true;
+  closeSearchButton.hidden = false;
+  mobileSearch.style.width = "50vw";
+}
+
+function closeSearch() {
+  openSearchButton.hidden = false;
+  closeSearchButton.hidden = true;
+  mobileSearch.style.width = "0px";
+}
+
 function changeDocumentation(element) {
   window.location = element.value;
 }
-
-function updateSetting(element) {
-  let value;
-  switch (element.type) {
-    case "checkbox":
-      localStorage.setItem(element.name, element.checked);
-      value = element.checked;
-      break;
-    case "radio":
-      localStorage.setItem(element.name, `"${element.value}"`);
-      value = element.value;
-      break;
-  }
-  if (element.name in settings) {
-    settings[element.name]["setter"](value);
-  }
-}
-
-function LoadSetting(name, defaultValue) {
-  let value = JSON.parse(localStorage.getItem(name));
-  return value === null ? defaultValue : value;
-}
-
-function getRootAttributeToggle(attributeName, valueName) {
-  function toggleRootAttribute(set) {
-    if (set) {
-      document.documentElement.setAttribute(`data-${attributeName}`, valueName);
-    } else {
-      document.documentElement.removeAttribute(`data-${attributeName}`);
-    }
-  }
-  return toggleRootAttribute;
-}
-
-function setTheme(value) {
-  if (value === "automatic") {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.setAttribute(`data-theme`, "dark");
-    } else{
-      document.documentElement.setAttribute(`data-theme`, "light");
-    }
-  }
-  else {
-    document.documentElement.setAttribute(`data-theme`, value);
-  }
-}
-
-const settings = {
-  useSerifFont: {
-    settingType: "checkbox",
-    defaultValue: false,
-    setter: getRootAttributeToggle('font', 'serif')
-  },
-  setTheme: {
-    settingType: "radio",
-    defaultValue: "automatic",
-    setter: setTheme
-  }
-};
-
-Object.entries(settings).forEach(([name, setting]) => {
-  let { defaultValue, setter, ..._ } = setting;
-  let value = LoadSetting(name, defaultValue);
-  try {
-    setter(value);
-  } catch (error) {
-    console.error(`Failed to apply setting "${name}" With value:`, value);
-    console.error(error);
-  }
-});
 
 document.addEventListener('DOMContentLoaded', () => {
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('section');
-  settingsModal = document.querySelector('div#settings.modal');
-  hamburgerToggle = document.getElementById("hamburger-toggle");
-  sidebar = document.getElementById("sidebar");
+  hamburgerToggle = document.getElementById('hamburger-toggle');
+  sidebar = document.getElementById('sidebar');
+  mobileSearch = document.querySelector('nav .mobile-only.search');
+  openSearchButton = document.getElementById('open-search');
+  closeSearchButton = document.getElementById('close-search');
 
   resizeSidebar();
 
-  sidebar.addEventListener("click", (e) => {
+  sidebar.addEventListener('click', (e) => {
     // If we click a navigation, close the hamburger menu
-    if (e.target.tagName == "A" && sidebar.classList.contains("sidebar-toggle")) {
-      sidebar.classList.remove("sidebar-toggle");
+    if (e.target.tagName == 'A' && sidebar.classList.contains('sidebar-toggle')) {
+      sidebar.classList.remove('sidebar-toggle');
       let button = hamburgerToggle.firstElementChild;
-      button.textContent = "menu";
+      button.textContent = 'menu';
 
       // Scroll a little up to actually see the header
       // Note: this is generally around ~55px
@@ -127,14 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })
 
-  hamburgerToggle.addEventListener("click", (e) => {
-    sidebar.classList.toggle("sidebar-toggle");
+  hamburgerToggle.addEventListener('click', (e) => {
+    sidebar.classList.toggle('sidebar-toggle');
     let button = hamburgerToggle.firstElementChild;
-    if (button.textContent == "menu") {
-      button.textContent = "close";
+    if (button.textContent == 'menu') {
+      button.textContent = 'close';
     }
     else {
-      button.textContent = "menu";
+      button.textContent = 'menu';
     }
   });
 
@@ -144,18 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let parent = element.parentNode;
     // insert ourselves after the element
     parent.insertBefore(table, element.nextSibling);
-  });
-
-  Object.entries(settings).forEach(([name, setting]) => {
-    let { settingType, defaultValue, ..._ } = setting;
-    let value = LoadSetting(name, defaultValue);
-    if (settingType === "checkbox") {
-      let element = document.querySelector(`input[name=${name}]`);
-      element.checked = value;
-    } else {
-      let element = document.querySelector(`input[name=${name}][value=${value}]`);
-      element.checked = true;
-    }
   });
 });
 
@@ -186,7 +120,7 @@ window.addEventListener('scroll', () => {
       let headingChildren = activeLink.parentElement.parentElement;
       let heading = headingChildren.previousElementSibling.previousElementSibling;
 
-      if (heading && headingChildren.style.display === "none") {
+      if (heading && headingChildren.style.display === 'none') {
         activeLink = heading;
       }
       activeLink.parentElement.classList.add('active');
