@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 from collections import namedtuple
 import logging
+import os
 import signal
 import sys
 import traceback
@@ -679,6 +680,50 @@ class Client:
             except KeyboardInterrupt:
                 # I am unsure why this gets raised here but suppress it anyway
                 return None
+
+    def run_from_file(self, filename, *args, **kwargs):
+        """Wrapper around :meth:`run` method. Specfiy filename to load the token from.
+        The file should be a regular textfile with a single line containing only the token.
+
+        .. warning::
+
+            This function must be the last function to call due to the fact that it
+            is blocking. That means that registration of events or anything being
+            called after this function call will not execute until it returns.
+
+        Parameters
+        -----------
+        filename: :class:`str`
+            The filename to load the token from.
+
+        Raises
+        ------
+        :exc:`FileNotFoundError`
+            Token file does not exist.
+        """
+        with open(filename, 'r') as f:
+            self.run(f.read().strip(), *args, **kwargs)
+
+    def run_from_env(self, envvar='DISCORDPY_TOKEN', *args, **kwargs):
+        """Wrapper around :meth:`run` method. Loads the token from the environment variable named by envvar.
+
+        .. warning::
+
+            This function must be the last function to call due to the fact that it
+            is blocking. That means that registration of events or anything being
+            called after this function call will not execute until it returns.
+
+        Parameters
+        -----------
+        envvar: :class:`str`
+            The name of the environment variable to fetch the token from.
+
+        Raises
+        ------
+        :exc:`KeyError`
+            Environment variable does not exist.
+        """
+        self.run(os.environ[envvar], *args, **kwargs)
 
     # properties
 
