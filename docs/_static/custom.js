@@ -14,7 +14,7 @@ function resizeSidebar() {
 
 function closeModal(modal) {
   activeModal = null;
-  modal.hidden = true;
+  modal.style.display = 'none'
 }
 
 function openModal(modal) {
@@ -23,7 +23,7 @@ function openModal(modal) {
   }
 
   activeModal = modal;
-  modal.hidden = false;
+  modal.style.display = 'flex'
 }
 
 function changeDocumentation(element) {

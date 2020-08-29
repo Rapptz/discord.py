@@ -486,6 +486,7 @@ div.modal {
   overflow: hidden;
   background-color: rgba(0,0,0,0.4);
   cursor: pointer;
+  display: none;
 }
 
 div.modal-content {
@@ -493,10 +494,11 @@ div.modal-content {
   box-shadow: 0 2px 8px rgba(0,0,0,0.54);
   padding: 24px;
   border-radius: 4px;
-  margin: 20% auto;
-  width: 40%;
+  max-width: 40%;
   min-width: 350px;
   cursor: initial;
+  flex: 1;
+  margin: auto;
 }
 
 div.modal-content > span.close {
@@ -505,6 +507,7 @@ div.modal-content > span.close {
   font-weight: bold;
   -moz-user-select: none;
   -webkit-user-select: none;
+  cursor: pointer;
 }
 
 div.modal-content > span.close:hover,
