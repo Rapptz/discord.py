@@ -614,6 +614,10 @@ div.code-block-caption:hover > a.headerlink {
     visibility: visible;
 }
 
+.versionmodified {
+  font-style: italic;
+}
+
 main ul {
   list-style: disc;
   margin: 1em 0;
