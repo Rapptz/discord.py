@@ -13,7 +13,7 @@ class Modal {
 
   close() {
     activeModal = null;
-    this.element.hidden = true;
+    this.element.style.display = 'none'
   }
 
   open() {
@@ -21,7 +21,7 @@ class Modal {
       activeModal.close();
     }
     activeModal = this;
-    this.element.hidden = false;
+    this.element.style.display = 'flex'
   }
 }
 
