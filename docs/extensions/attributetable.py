@@ -183,7 +183,11 @@ def get_class_results(lookup, modulename, name, fullname):
         badge = None
         label = attr
 
-        value = getattr(cls, attr, None)
+        for base in cls.__mro__:
+            value = base.__dict__.get(attr)
+            if value is not None:
+                break
+
         if value is not None:
             doc = value.__doc__ or ''
             if inspect.iscoroutinefunction(value) or doc.startswith('|coro|'):
