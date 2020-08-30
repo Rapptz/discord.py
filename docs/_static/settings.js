@@ -17,7 +17,7 @@ class Setting {
     let value = JSON.parse(localStorage.getItem(this.name));
     this.value = value === null ? this.defaultValue : value;
     try {
-      this.setValue(value);
+      this.setValue(this.value);
     } catch (error) {
       console.error(`Failed to apply setting "${this.name}" With value:`, this.value);
       console.error(error);
