@@ -41,9 +41,9 @@ class Sidebar {
 
         icon.addEventListener('click', () => {
           if (icon.classList.contains('expanded')) {
-            collapseSection(icon);
+            this.collapseSection(icon);
           } else {
-            expandSection(icon);
+            this.expandSection(icon);
           }
         })
 
@@ -63,7 +63,7 @@ class Sidebar {
     icon.classList.add('collapsed');
     icon.innerText = 'chevron_right';
     let children = icon.nextElementSibling.nextElementSibling;
-    // <arrow><heading> 
+    // <arrow><heading>
     // --> <square><children>
     children.style.display = "none";
   }
