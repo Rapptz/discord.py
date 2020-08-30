@@ -23,32 +23,34 @@ class Sidebar {
 
   createCollapsableSections() {
     let toc = this.element.querySelector('ul');
-    let allReferences = toc.querySelectorAll('a.reference.internal:not([href="#"])');
+    if (toc) {
+      let allReferences = toc.querySelectorAll('a.reference.internal:not([href="#"])');
 
-    for (let ref of allReferences) {
+      for (let ref of allReferences) {
 
-      let next = ref.nextElementSibling;
+        let next = ref.nextElementSibling;
 
-      if (next && next.tagName === "UL") {
+        if (next && next.tagName === "UL") {
 
-        let icon = document.createElement('span');
-        icon.className = 'material-icons collapsible-arrow expanded';
-        icon.innerText = 'expand_more';
+          let icon = document.createElement('span');
+          icon.className = 'material-icons collapsible-arrow expanded';
+          icon.innerText = 'expand_more';
 
-        if (next.parentElement.tagName == "LI") {
-          next.parentElement.classList.add('no-list-style')
-        }
-
-        icon.addEventListener('click', () => {
-          if (icon.classList.contains('expanded')) {
-            this.collapseSection(icon);
-          } else {
-            this.expandSection(icon);
+          if (next.parentElement.tagName == "LI") {
+            next.parentElement.classList.add('no-list-style')
           }
-        })
 
-        ref.classList.add('ref-internal-padding')
-        ref.parentNode.insertBefore(icon, ref);
+          icon.addEventListener('click', () => {
+            if (icon.classList.contains('expanded')) {
+              this.collapseSection(icon);
+            } else {
+              this.expandSection(icon);
+            }
+          })
+
+          ref.classList.add('ref-internal-padding')
+          ref.parentNode.insertBefore(icon, ref);
+        }
       }
     }
   }
