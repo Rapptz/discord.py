@@ -23,6 +23,9 @@ class Sidebar {
 
   createCollapsableSections() {
     let toc = this.element.querySelector('ul');
+    if (!toc) {
+      return
+    }
     let allReferences = toc.querySelectorAll('a.reference.internal:not([href="#"])');
 
     for (let ref of allReferences) {
