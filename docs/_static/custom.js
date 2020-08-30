@@ -25,7 +25,7 @@ class Modal {
   }
 }
 
-class Search {
+class SearchBar {
 
   constructor() {
     this.box = document.querySelector('nav.mobile-only');
@@ -50,7 +50,7 @@ class Search {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  mobileSearch = new Search();
+  mobileSearch = new SearchBar();
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('section');
