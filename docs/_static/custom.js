@@ -56,16 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
 
-  hamburgerToggle.addEventListener('click', (e) => {
-    sidebar.element.classList.toggle('sidebar-toggle');
-    let button = hamburgerToggle.firstElementChild;
-    if (button.textContent == 'menu') {
-      button.textContent = 'close';
-    }
-    else {
-      button.textContent = 'menu';
-    }
-  });
+  if (hamburgerToggle) {
+    hamburgerToggle.addEventListener('click', (e) => {
+      sidebar.element.classList.toggle('sidebar-toggle');
+      let button = hamburgerToggle.firstElementChild;
+      if (button.textContent == 'menu') {
+        button.textContent = 'close';
+      }
+      else {
+        button.textContent = 'menu';
+      }
+    });
+  }
 
   const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
   tables.forEach(table => {
