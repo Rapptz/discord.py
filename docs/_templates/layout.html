@@ -102,9 +102,11 @@
     </div>
     {#- The sidebar component #}
     <aside class="grid-item">
+      {%- if display_toc %}
       <span id="hamburger-toggle">
         <span class="material-icons">menu</span>
       </span>
+      {%- endif %}
       <span id="settings-toggle" class="settings" onclick="settingsModal.open();">
         <span class="material-icons">settings</span>
       </span>
