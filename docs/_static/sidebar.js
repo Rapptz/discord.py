@@ -67,14 +67,14 @@ class Sidebar {
     let children = icon.nextElementSibling.nextElementSibling;
     // <arrow><heading>
     // --> <square><children>
-    setTimeout(() => children.style.display = "none", 100)
+    setTimeout(() => children.style.display = "none", 75)
   }
 
   expandSection(icon) {
     icon.classList.remove('collapse');
     icon.classList.add('expanded');
     let children = icon.nextElementSibling.nextElementSibling;
-    setTimeout(() => children.style.display = "block", 100)
+    setTimeout(() => children.style.display = "block", 75)
   }
 
   setActiveLink(section) {
