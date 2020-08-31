@@ -223,12 +223,12 @@ class MemberNotFound(BadArgument):
 
     Attributes
     -----------
-    member: :class:`str`
+    arg: :class:`str`
         The member supplied by the caller that was not found
     """
-    def __init__(self, member):
-        self.member = member
-        super().__init__('Member "{}" not found.'.format(member))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Member "{}" not found.'.format(arg))
 
 class UserNotFound(BadArgument):
     """Exception raised when the user provided was not found in the bot's
@@ -240,12 +240,12 @@ class UserNotFound(BadArgument):
 
     Attributes
     -----------
-    user: :class:`str`
+    arg: :class:`str`
         The user supplied by the caller that was not found
     """
-    def __init__(self, user):
-        self.user = user
-        super().__init__('User "{}" not found.'.format(user))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('User "{}" not found.'.format(arg))
 
 class MessageNotFound(BadArgument):
     """Exception raised when the message provided was not found in the channel.
@@ -256,12 +256,12 @@ class MessageNotFound(BadArgument):
 
     Attributes
     -----------
-    message: :class:`str`
+    arg: :class:`str`
         The message supplied by the caller that was not found
     """
-    def __init__(self, msg):
-        self.msg = msg
-        super().__init__('Message "{}" not found.'.format(msg))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Message "{}" not found.'.format(arg))
 
 class ChannelNotReadable(BadArgument):
     """Exception raised when the bot does not have permission to read messages
@@ -273,12 +273,12 @@ class ChannelNotReadable(BadArgument):
 
     Attributes
     -----------
-    channel: :class:`Channel`
+    arg: :class:`Channel`
         The channel supplied by the caller that was not readable
     """
-    def __init__(self, channel):
-        self.channel = channel
-        super().__init__("Can't read messages in {}.".format(channel.mention))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__("Can't read messages in {}.".format(arg.mention))
 
 class ChannelNotFound(BadArgument):
     """Exception raised when the bot can not find the channel.
@@ -292,9 +292,9 @@ class ChannelNotFound(BadArgument):
     channel: :class:`str`
         The channel supplied by the caller that was not found
     """
-    def __init__(self, channel):
-        self.channel = channel
-        super().__init__('Channel "{}" not found.'.format(channel))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Channel "{}" not found.'.format(arg))
 
 class BadColourArgument(BadArgument):
     """Exception raised when the colour is not valid.
@@ -305,16 +305,12 @@ class BadColourArgument(BadArgument):
 
     Attributes
     -----------
-    colour: :class:`str`
+    arg: :class:`str`
         The colour supplied by the caller that was not valid
     """
-    def __init__(self, colour):
-        self.colour = colour
-        super().__init__('Colour "{}" is invalid.'.format(colour))
-
-    @property
-    def color(self):
-        return self.colour
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Colour "{}" is invalid.'.format(arg))
 
 BadColorArgument = BadColourArgument
 
@@ -327,12 +323,12 @@ class RoleNotFound(BadArgument):
 
     Attributes
     -----------
-    role: :class:`str`
+    arg: :class:`str`
         The role supplied by the caller that was not found
     """
-    def __init__(self, role):
-        self.role = role
-        super().__init__('Role "{}" not found.'.format(role))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Role "{}" not found.'.format(arg))
 
 class BadInviteArgument(BadArgument):
     """Exception raised when the invite is invalid or expired.
@@ -353,12 +349,12 @@ class EmojiNotFound(BadArgument):
 
     Attributes
     -----------
-    emoji: :class:`str`
+    arg: :class:`str`
         The emoji supplied by the caller that was not found
     """
-    def __init__(self, emoji):
-        self.emoji = emoji
-        super().__init__('Emoji "{}" not found.'.format(emoji))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Emoji "{}" not found.'.format(arg))
 
 class PartialEmojiConversionFailure(BadArgument):
     """Exception raised when the emoji provided does not match the correct
@@ -370,12 +366,12 @@ class PartialEmojiConversionFailure(BadArgument):
 
     Attributes
     -----------
-    emoji: :class:`str`
+    arg: :class:`str`
         The emoji supplied by the caller that did not match the regex
     """
-    def __init__(self, emoji):
-        self.emoji = emoji
-        super().__init__('Couldn\'t convert "{}" to PartialEmoji.'.format(emoji))
+    def __init__(self, arg):
+        self.arg = arg
+        super().__init__('Couldn\'t convert "{}" to PartialEmoji.'.format(arg))
 
 class InvalidBoolean(BadArgument):
     """Exception raised when a boolean argument was not convertable.
