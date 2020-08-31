@@ -101,6 +101,12 @@ class Colour:
         """Tuple[:class:`int`, :class:`int`, :class:`int`]: Returns an (r, g, b) tuple representing the colour."""
         return (self.r, self.g, self.b)
 
+    def to_hex(self):
+        """:class:`str`: Returns the hex format for the colour.
+        .. versionadded:: 1.5
+        """
+        return '#{:0>6x}'.format(self.value)
+
     @classmethod
     def from_rgb(cls, r, g, b):
         """Constructs a :class:`Colour` from an RGB tuple."""
@@ -111,6 +117,13 @@ class Colour:
         """Constructs a :class:`Colour` from an HSV tuple."""
         rgb = colorsys.hsv_to_rgb(h, s, v)
         return cls.from_rgb(*(int(x * 255) for x in rgb))
+
+    @classmethod
+    def from_hex(cls, hexa):
+        """Constructs a :class:`Colour` from hex format.
+        .. versionadded:: 1.5
+        """
+        return cls(int(hexa.strip("#"), base=16))
 
     @classmethod
     def default(cls):
