@@ -245,7 +245,12 @@ class Colour:
 
     @classmethod
     def greyple(cls):
-        """A factory method that returns a :class:`Colour` with a value of ``0x99aab5``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x99aab5``.
+        .. versionchanged:: 1.5
+            Added grayple alias.
+        """
         return cls(0x99aab5)
+
+    grayple = greyple
 
 Color = Colour
