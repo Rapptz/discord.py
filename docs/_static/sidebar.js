@@ -64,19 +64,17 @@ class Sidebar {
   collapseSection(icon) {
     icon.classList.remove('expanded');
     icon.classList.add('collapsed');
-    icon.innerText = 'chevron_right';
     let children = icon.nextElementSibling.nextElementSibling;
     // <arrow><heading>
     // --> <square><children>
-    children.style.display = "none";
+    setTimeout(() => children.style.display = "none", 100)
   }
 
   expandSection(icon) {
     icon.classList.remove('collapse');
     icon.classList.add('expanded');
-    icon.innerText = 'expand_more';
     let children = icon.nextElementSibling.nextElementSibling;
-    children.style.display = "block";
+    setTimeout(() => children.style.display = "block", 100)
   }
 
   setActiveLink(section) {
@@ -127,4 +125,3 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebar.resize();
   });
 });
-

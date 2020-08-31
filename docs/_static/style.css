@@ -361,6 +361,13 @@ aside h3 {
   user-select: none;
   position: relative;
   line-height: 0.5em;
+  transition: transform 0.5s;
+  transform: rotate(0deg);
+}
+
+.expanded {
+  transition: transform 0.5s;
+  transform: rotate(-90deg);
 }
 
 .ref-internal-padding {
