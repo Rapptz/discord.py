@@ -48,9 +48,9 @@ __all__ = (
     'UserNotFound',
     'ChannelNotFound',
     'ChannelNotReadable',
-    'InvalidColour',
+    'BadColourArgument',
     'RoleNotFound',
-    'InvalidInvite',
+    'BadInviteArgument',
     'EmojiNotFound',
     'PartialEmojiConversionFailure',
     'InvalidBoolean',
@@ -296,7 +296,7 @@ class ChannelNotFound(BadArgument):
         self.channel = channel
         super().__init__('Channel "{}" not found.'.format(channel))
 
-class InvalidColour(BadArgument):
+class BadColourArgument(BadArgument):
     """Exception raised when the colour is not valid.
 
     This inherits from :exc:`BadArgument`
@@ -316,7 +316,7 @@ class InvalidColour(BadArgument):
     def color(self):
         return self.colour
 
-InvalidColor = InvalidColour
+BadColorArgument = BadColourArgument
 
 class RoleNotFound(BadArgument):
     """Exception raised when the bot can not find the role.
@@ -334,7 +334,7 @@ class RoleNotFound(BadArgument):
         self.role = role
         super().__init__('Role "{}" not found.'.format(role))
 
-class InvalidInvite(BadArgument):
+class BadInviteArgument(BadArgument):
     """Exception raised when the invite is invalid or expired.
 
     This inherits from :exc:`BadArgument`

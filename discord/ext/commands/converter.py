@@ -372,7 +372,7 @@ class ColourConverter(Converter):
         - The ``_`` in the name can be optionally replaced with spaces.
 
     .. versionchanged:: 1.5
-         Raise :exc:`.InvalidColour` instead of generic :exc:`.BadArgument`
+         Raise :exc:`.BadColourArgument` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         arg = argument.replace('0x', '').lower()
@@ -382,13 +382,13 @@ class ColourConverter(Converter):
         try:
             value = int(arg, base=16)
             if not (0 <= value <= 0xFFFFFF):
-                raise InvalidColour(arg)
+                raise BadColourArgument(arg)
             return discord.Colour(value=value)
         except ValueError:
             arg = arg.replace(' ', '_')
             method = getattr(discord.Colour, arg, None)
             if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-                raise InvalidColour(arg)
+                raise BadColourArgument(arg)
             return method()
 
 class RoleConverter(IDConverter):
@@ -432,14 +432,14 @@ class InviteConverter(Converter):
     This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
 
     .. versionchanged:: 1.5
-         Raise :exc:`.InvalidInvite` instead of generic :exc:`.BadArgument`
+         Raise :exc:`.BadInviteArgument` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         try:
             invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
-            raise InvalidInvite() from exc
+            raise BadInviteArgument() from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.

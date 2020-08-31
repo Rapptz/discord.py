@@ -431,12 +431,12 @@ Exception Hierarchy
                     - :exc:`~.commands.UserNotFound`
                     - :exc:`~.commands.ChannelNotFound`
                     - :exc:`~.commands.ChannelNotReadable`
-                    - :exc:`~.commands.InvalidColour`
+                    - :exc:`~.commands.BadColourArgument`
                     - :exc:`~.commands.RoleNotFound`
-                    - :exc:`~.commands.InvalidInvite`
+                    - :exc:`~.commands.BadInviteArgument`
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
-                    - :exc:`~.commands.InvalidBoolean`
+                    - :exc:`~.commands.BadBooleanArgument`
                 - :exc:`~.commands.BadUnionArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`
