@@ -710,7 +710,7 @@ div.admonition {
   padding-bottom: 0.8em;
   margin: 0.8em 0;
   border-radius: 2.5px;
-  border-left-width: 4px;
+  border-left-width: 6px;
   border-left-style: solid;
   background-color: var(--admonition-background);
 }
