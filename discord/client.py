@@ -657,7 +657,8 @@ class Client:
             try:
                 await self.start(*args, **kwargs)
             finally:
-                await self.close()
+                if not self.is_closed():
+                    await self.close()
 
         def stop_loop_on_completion(f):
             loop.stop()
