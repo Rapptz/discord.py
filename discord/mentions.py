@@ -68,6 +68,16 @@ class AllowedMentions:
         self.users = users
         self.roles = roles
 
+    @classmethod
+    def all(cls):
+        """A factory method that returns a :class:`AllowedMentions` with all fields set to ``True``"""
+        return cls(everyone=True, users=True, roles=True)
+
+    @classmethod
+    def none(cls):
+        """A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``"""
+        return cls(everyone=False, users=False, roles=False)
+
     def to_dict(self):
         parse = []
         data = {}
