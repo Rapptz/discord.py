@@ -70,12 +70,18 @@ class AllowedMentions:
 
     @classmethod
     def all(cls):
-        """A factory method that returns a :class:`AllowedMentions` with all fields explicitly set to ``True``"""
+        """A factory method that returns a :class:`AllowedMentions` with all fields explicitly set to ``True``
+
+        .. versionadded:: 1.5
+        """
         return cls(everyone=True, users=True, roles=True)
 
     @classmethod
     def none(cls):
-        """A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``"""
+        """A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``
+
+        .. versionadded:: 1.5
+        """
         return cls(everyone=False, users=False, roles=False)
 
     def to_dict(self):
