@@ -263,6 +263,7 @@ class Colour:
     @classmethod
     def white(cls):
         """A factory method that returns a :class:`Colour` with a value of ``0xffffff``.
+
         .. versionadded:: 1.5
         """
         return cls(0xffffff)
