@@ -368,7 +368,7 @@ Exceptions
 .. autoexception:: discord.ext.commands.PartialEmojiConversionFailure
     :members:
 
-.. autoexception:: discord.ext.commands.InvalidBoolean
+.. autoexception:: discord.ext.commands.BadBooleanArgument
     :members:
 
 .. autoexception:: discord.ext.commands.MissingPermissions

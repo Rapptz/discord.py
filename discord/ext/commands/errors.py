@@ -373,7 +373,7 @@ class PartialEmojiConversionFailure(BadArgument):
         self.arg = arg
         super().__init__('Couldn\'t convert "{}" to PartialEmoji.'.format(arg))
 
-class InvalidBoolean(BadArgument):
+class BadBooleanArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
 
     This inherits from :exc:`BadArgument`
