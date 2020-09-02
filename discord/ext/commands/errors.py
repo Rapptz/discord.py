@@ -53,7 +53,7 @@ __all__ = (
     'BadInviteArgument',
     'EmojiNotFound',
     'PartialEmojiConversionFailure',
-    'InvalidBoolean',
+    'BadBooleanArgument',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
