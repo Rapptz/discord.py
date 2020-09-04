@@ -2045,11 +2045,6 @@ class Guild(Hashable):
 
         This is a websocket operation and can be slow.
 
-        .. warning::
-
-            Most bots do not need to use this. It's mainly a helper
-            for bots who have disabled ``guild_subscriptions``.
-
         .. versionadded:: 1.3
 
         Parameters
@@ -2059,7 +2054,7 @@ class Guild(Hashable):
             requests all members.
         limit: :class:`int`
             The maximum number of members to send back. This must be
-            a number between 1 and 1000.
+            a number between 1 and 100.
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
@@ -2073,19 +2068,26 @@ class Guild(Hashable):
         -------
         asyncio.TimeoutError
             The query timed out waiting for the members.
+        ValueError
+            Invalid parameters were passed to the function
 
         Returns
         --------
         List[:class:`Member`]
             The list of members that have matched the query.
         """
+
+        if query is None:
+            if query == '':
+                raise ValueError('Cannot pass empty query string.')
+
+            if user_ids is None:
+                raise ValueError('Must pass either query or user_ids')
+
         if user_ids is not None and query is not None:
-            raise TypeError('Cannot pass both query and user_ids')
+            raise ValueError('Cannot pass both query and user_ids')
 
-        if user_ids is None and query is None:
-            raise TypeError('Must pass either query or user_ids')
-
-        limit = limit or 5
+        limit = min(100, limit or 5)
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)
 
     async def change_voice_state(self, *, channel, self_mute=False, self_deaf=False):
