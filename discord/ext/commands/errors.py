@@ -53,7 +53,7 @@ __all__ = (
     'BadInviteArgument',
     'EmojiNotFound',
     'PartialEmojiConversionFailure',
-    'BadBooleanArgument',
+    'BadBoolArgument',
     'MissingRole',
     'BotMissingRole',
     'MissingAnyRole',
@@ -373,7 +373,7 @@ class PartialEmojiConversionFailure(BadArgument):
         self.argument = argument
         super().__init__('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
 
-class BadBooleanArgument(BadArgument):
+class BadBoolArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
 
     This inherits from :exc:`BadArgument`
