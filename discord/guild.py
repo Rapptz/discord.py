@@ -138,6 +138,7 @@ class Guild(Hashable):
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
+        - ``COMMUNITY``: Guild is a community server.
         - ``COMMERCE``: Guild can sell things using store channels.
         - ``PUBLIC``: Guild is a public guild.
         - ``NEWS``: Guild can create news channels.
