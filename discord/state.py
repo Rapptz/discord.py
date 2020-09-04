@@ -569,7 +569,7 @@ class ConnectionState:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
         guild = self._get_guild(guild_id)
         if guild is None:
-            log.warning('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+            log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
         user = data['user']
@@ -637,14 +637,14 @@ class ConnectionState:
                 channel._update(guild, data)
                 self.dispatch('guild_channel_update', old_channel, channel)
             else:
-                log.warning('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
+                log.debug('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
         else:
-            log.warning('CHANNEL_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+            log.debug('CHANNEL_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_channel_create(self, data):
         factory, ch_type = _channel_factory(data['type'])
         if factory is None:
-            log.warning('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
+            log.debug('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
             return
 
         channel = None
@@ -663,14 +663,14 @@ class ConnectionState:
                 guild._add_channel(channel)
                 self.dispatch('guild_channel_create', channel)
             else:
-                log.warning('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+                log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
                 return
 
     def parse_channel_pins_update(self, data):
         channel_id = int(data['channel_id'])
         channel = self.get_channel(channel_id)
         if channel is None:
-            log.warning('CHANNEL_PINS_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
+            log.debug('CHANNEL_PINS_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
             return
 
         last_pin = utils.parse_time(data['last_pin_timestamp']) if data['last_pin_timestamp'] else None
@@ -704,7 +704,7 @@ class ConnectionState:
     def parse_guild_member_add(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
-            log.warning('GUILD_MEMBER_ADD referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_MEMBER_ADD referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
         member = Member(guild=guild, data=data, state=self)
@@ -723,14 +723,14 @@ class ConnectionState:
                 guild._remove_member(member)
                 self.dispatch('member_remove', member)
         else:
-            log.warning('GUILD_MEMBER_REMOVE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_MEMBER_REMOVE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_member_update(self, data):
         guild = self._get_guild(int(data['guild_id']))
         user = data['user']
         user_id = int(user['id'])
         if guild is None:
-            log.warning('GUILD_MEMBER_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_MEMBER_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
         member = guild.get_member(user_id)
@@ -739,12 +739,12 @@ class ConnectionState:
             member._update(data)
             self.dispatch('member_update', old_member, member)
         else:
-            log.warning('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Discarding.', user_id)
+            log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Discarding.', user_id)
 
     def parse_guild_emojis_update(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
-            log.warning('GUILD_EMOJIS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_EMOJIS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
         before_emojis = guild.emojis
@@ -830,12 +830,12 @@ class ConnectionState:
             guild._from_data(data)
             self.dispatch('guild_update', old_guild, guild)
         else:
-            log.warning('GUILD_UPDATE referencing an unknown guild ID: %s. Discarding.', data['id'])
+            log.debug('GUILD_UPDATE referencing an unknown guild ID: %s. Discarding.', data['id'])
 
     def parse_guild_delete(self, data):
         guild = self._get_guild(int(data['id']))
         if guild is None:
-            log.warning('GUILD_DELETE referencing an unknown guild ID: %s. Discarding.', data['id'])
+            log.debug('GUILD_DELETE referencing an unknown guild ID: %s. Discarding.', data['id'])
             return
 
         if data.get('unavailable', False) and guild is not None:
@@ -878,7 +878,7 @@ class ConnectionState:
     def parse_guild_role_create(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
-            log.warning('GUILD_ROLE_CREATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_ROLE_CREATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
         role_data = data['role']
@@ -897,7 +897,7 @@ class ConnectionState:
             else:
                 self.dispatch('guild_role_delete', role)
         else:
-            log.warning('GUILD_ROLE_DELETE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_ROLE_DELETE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_role_update(self, data):
         guild = self._get_guild(int(data['guild_id']))
@@ -910,7 +910,7 @@ class ConnectionState:
                 role._update(role_data)
                 self.dispatch('guild_role_update', old_role, role)
         else:
-            log.warning('GUILD_ROLE_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_ROLE_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_members_chunk(self, data):
         guild_id = int(data['guild_id'])
@@ -931,14 +931,14 @@ class ConnectionState:
         if guild is not None:
             self.dispatch('guild_integrations_update', guild)
         else:
-            log.warning('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            log.debug('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_webhooks_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
         if channel is not None:
             self.dispatch('webhooks_update', channel)
         else:
-            log.warning('WEBHOOKS_UPDATE referencing an unknown channel ID: %s. Discarding.', data['channel_id'])
+            log.debug('WEBHOOKS_UPDATE referencing an unknown channel ID: %s. Discarding.', data['channel_id'])
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -955,7 +955,7 @@ class ConnectionState:
             if member is not None:
                 self.dispatch('voice_state_update', member, before, after)
             else:
-                log.warning('VOICE_STATE_UPDATE referencing an unknown member ID: %s. Discarding.', data['user_id'])
+                log.debug('VOICE_STATE_UPDATE referencing an unknown member ID: %s. Discarding.', data['user_id'])
         else:
             # in here we're either at private or group calls
             call = self._calls.get(channel_id)
