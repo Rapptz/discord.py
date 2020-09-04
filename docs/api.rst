@@ -903,6 +903,15 @@ of :class:`enum.Enum`.
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
 
+    .. container:: operations
+    
+      .. describe:: x == y
+
+          Checks if two messages are equal.
+      .. describe:: x != y
+
+          Checks if two messages are not equal.
+
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
