@@ -692,8 +692,12 @@ class ConnectionState:
 
         member = guild.get_member(user_id)
         if member is not None:
-            old_member = copy.copy(member)
+            old_member = Member._copy(member)
             member._update(data)
+            user_update = member._update_inner_user(user)
+            if user_update:
+                self.dispatch('user_update', user_update[0], user_update[1])
+
             self.dispatch('member_update', old_member, member)
         else:
             log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Discarding.', user_id)

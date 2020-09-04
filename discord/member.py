@@ -266,16 +266,19 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._client_status[None] = data['status']
 
         if len(user) > 1:
-            u = self._user
-            original = (u.name, u.avatar, u.discriminator)
-            # These keys seem to always be available
-            modified = (user['username'], user['avatar'], user['discriminator'])
-            if original != modified:
-                to_return = User._copy(self._user)
-                u.name, u.avatar, u.discriminator = modified
-                # Signal to dispatch on_user_update
-                return to_return, u
+            return self._update_inner_user(user)
         return False
+
+    def _update_inner_user(self, user):
+        u = self._user
+        original = (u.name, u.avatar, u.discriminator)
+        # These keys seem to always be available
+        modified = (user['username'], user['avatar'], user['discriminator'])
+        if original != modified:
+            to_return = User._copy(self._user)
+            u.name, u.avatar, u.discriminator = modified
+            # Signal to dispatch on_user_update
+            return to_return, u
 
     @property
     def status(self):
@@ -433,7 +436,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         guild = self.guild
         if len(self._roles) == 0:
             return guild.default_role
-        
+
         return max(guild.get_role(rid) or guild.default_role for rid in self._roles)
 
     @property
