@@ -30,7 +30,7 @@ import typing
 
 import discord
 
-from .errors import BadArgument, NoPrivateMessage
+from .errors import *
 
 __all__ = (
     'Converter',
@@ -119,6 +119,9 @@ class MemberConverter(IDConverter):
     3. Lookup by name#discrim
     4. Lookup by name
     5. Lookup by nickname
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
     """
 
     async def convert(self, ctx, argument):
@@ -140,7 +143,7 @@ class MemberConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
         if result is None:
-            raise BadArgument('Member "{}" not found'.format(argument))
+            raise MemberNotFound(argument)
 
         return result
 
@@ -155,6 +158,9 @@ class UserConverter(IDConverter):
     2. Lookup by mention.
     3. Lookup by name#discrim
     4. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -185,7 +191,7 @@ class UserConverter(IDConverter):
             result = discord.utils.find(predicate, state._users.values())
 
         if result is None:
-            raise BadArgument('User "{}" not found'.format(argument))
+            raise UserNotFound(argument)
 
         return result
 
@@ -199,6 +205,9 @@ class MessageConverter(Converter):
     1. Lookup by "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
     2. Lookup by message ID (the message **must** be in the context channel)
     3. Lookup by message URL
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound`, `MessageNotFound` or `ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
 
     async def convert(self, ctx, argument):
@@ -210,7 +219,7 @@ class MessageConverter(Converter):
         )
         match = id_regex.match(argument) or link_regex.match(argument)
         if not match:
-            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+            raise MessageNotFound(argument)
         message_id = int(match.group("message_id"))
         channel_id = match.group("channel_id")
         message = ctx.bot._connection._get_message(message_id)
@@ -218,13 +227,13 @@ class MessageConverter(Converter):
             return message
         channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
         if not channel:
-            raise BadArgument('Channel "{channel}" not found.'.format(channel=channel_id))
+            raise ChannelNotFound(channel_id)
         try:
             return await channel.fetch_message(message_id)
         except discord.NotFound:
-            raise BadArgument('Message "{msg}" not found.'.format(msg=argument))
+            raise MessageNotFound(argument)
         except discord.Forbidden:
-            raise BadArgument("Can't read messages in {channel}".format(channel=channel.mention))
+            raise ChannelNotReadable(channel)
 
 class TextChannelConverter(IDConverter):
     """Converts to a :class:`~discord.TextChannel`.
@@ -237,6 +246,9 @@ class TextChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -261,7 +273,7 @@ class TextChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.TextChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ChannelNotFound(argument)
 
         return result
 
@@ -276,6 +288,9 @@ class VoiceChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -299,7 +314,7 @@ class VoiceChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.VoiceChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ChannelNotFound(argument)
 
         return result
 
@@ -314,6 +329,9 @@ class CategoryChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
@@ -338,7 +356,7 @@ class CategoryChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.CategoryChannel):
-            raise BadArgument('Channel "{}" not found.'.format(argument))
+            raise ChannelNotFound(argument)
 
         return result
 
@@ -355,6 +373,9 @@ class ColourConverter(Converter):
     - Any of the ``classmethod`` in :class:`Colour`
 
         - The ``_`` in the name can be optionally replaced with spaces.
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.BadColourArgument` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         arg = argument.replace('0x', '').lower()
@@ -364,13 +385,13 @@ class ColourConverter(Converter):
         try:
             value = int(arg, base=16)
             if not (0 <= value <= 0xFFFFFF):
-                raise BadArgument('Colour "{}" is invalid.'.format(arg))
+                raise BadColourArgument(arg)
             return discord.Colour(value=value)
         except ValueError:
             arg = arg.replace(' ', '_')
             method = getattr(discord.Colour, arg, None)
             if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-                raise BadArgument('Colour "{}" is invalid.'.format(arg))
+                raise BadColourArgument(arg)
             return method()
 
 ColorConverter = ColourConverter
@@ -386,6 +407,9 @@ class RoleConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.RoleNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         guild = ctx.guild
@@ -399,7 +423,7 @@ class RoleConverter(IDConverter):
             result = discord.utils.get(guild._roles.values(), name=argument)
 
         if result is None:
-            raise BadArgument('Role "{}" not found.'.format(argument))
+            raise RoleNotFound(argument)
         return result
 
 class GameConverter(Converter):
@@ -411,13 +435,16 @@ class InviteConverter(Converter):
     """Converts to a :class:`~discord.Invite`.
 
     This is done via an HTTP request using :meth:`.Bot.fetch_invite`.
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.BadInviteArgument` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         try:
             invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
-            raise BadArgument('Invite is invalid or expired') from exc
+            raise BadInviteArgument() from exc
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.
@@ -430,6 +457,9 @@ class EmojiConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by extracting ID from the emoji.
     3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.EmojiNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
@@ -455,7 +485,7 @@ class EmojiConverter(IDConverter):
                 result = discord.utils.get(bot.emojis, id=emoji_id)
 
         if result is None:
-            raise BadArgument('Emoji "{}" not found.'.format(argument))
+            raise EmojiNotFound(argument)
 
         return result
 
@@ -463,6 +493,9 @@ class PartialEmojiConverter(Converter):
     """Converts to a :class:`~discord.PartialEmoji`.
 
     This is done by extracting the animated flag, name and ID from the emoji.
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.PartialEmojiConversionFailure` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
@@ -475,7 +508,7 @@ class PartialEmojiConverter(Converter):
             return discord.PartialEmoji.with_state(ctx.bot._connection, animated=emoji_animated, name=emoji_name,
                                                    id=emoji_id)
 
-        raise BadArgument('Couldn\'t convert "{}" to PartialEmoji.'.format(argument))
+        raise PartialEmojiConversionFailure(argument)
 
 class clean_content(Converter):
     """Converts the argument to mention scrubbed version of

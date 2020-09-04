@@ -338,6 +338,39 @@ Exceptions
 .. autoexception:: discord.ext.commands.NotOwner
     :members:
 
+.. autoexception:: discord.ext.commands.MessageNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.MemberNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.UserNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.ChannelNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.ChannelNotReadable
+    :members:
+
+.. autoexception:: discord.ext.commands.InvalidColour
+    :members:
+
+.. autoexception:: discord.ext.commands.RoleNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.InvalidInvite
+    :members:
+
+.. autoexception:: discord.ext.commands.EmojiNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.PartialEmojiConversionFailure
+    :members:
+
+.. autoexception:: discord.ext.commands.BadBooleanArgument
+    :members:
+
 .. autoexception:: discord.ext.commands.MissingPermissions
     :members:
 
@@ -393,6 +426,17 @@ Exception Hierarchy
                 - :exc:`~.commands.MissingRequiredArgument`
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
+                    - :exc:`~.commands.MessageNotFound`
+                    - :exc:`~.commands.MemberNotFound`
+                    - :exc:`~.commands.UserNotFound`
+                    - :exc:`~.commands.ChannelNotFound`
+                    - :exc:`~.commands.ChannelNotReadable`
+                    - :exc:`~.commands.BadColourArgument`
+                    - :exc:`~.commands.RoleNotFound`
+                    - :exc:`~.commands.BadInviteArgument`
+                    - :exc:`~.commands.EmojiNotFound`
+                    - :exc:`~.commands.PartialEmojiConversionFailure`
+                    - :exc:`~.commands.BadBooleanArgument`
                 - :exc:`~.commands.BadUnionArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`

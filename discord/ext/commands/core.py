@@ -107,7 +107,7 @@ def _convert_to_bool(argument):
     elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
         return False
     else:
-        raise BadArgument(lowered + ' is not a recognised boolean option')
+        raise BadBooleanArgument(lowered)
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
