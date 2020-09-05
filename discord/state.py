@@ -763,12 +763,9 @@ class ConnectionState:
             return
 
         # check if it requires chunking
-        if guild.large:
-            # since we're not waiting for 'useful' READY we'll just
-            # do the chunk request here if wanted
-            if self._fetch_offline:
-                asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
-                return
+        if self._fetch_offline:
+            asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
+            return
 
         # Dispatch available if newly available
         if unavailable is False:
