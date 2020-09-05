@@ -297,6 +297,10 @@ class ConnectionState:
         self._add_guild(guild)
         return guild
 
+    def _guild_needs_chunking(self, guild):
+        # If presences are enabled then we get back the old guild.large behaviour
+        return self._fetch_offline and not guild.chunked and not (self._intents.presences and not guild.large)
+
     def _get_guild_channel(self, data):
         channel_id = int(data['channel_id'])
         try:
@@ -350,7 +354,8 @@ class ConnectionState:
                     except asyncio.TimeoutError:
                         break
                     else:
-                        if self._fetch_offline:
+
+                        if self._guild_needs_chunking(guild):
                             future = await self.chunk_guild(guild, wait=False)
                             states.append((guild, future))
                         else:
@@ -775,7 +780,7 @@ class ConnectionState:
             return
 
         # check if it requires chunking
-        if self._fetch_offline:
+        if self._guild_needs_chunking(guild):
             asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
             return
 
@@ -1047,7 +1052,7 @@ class AutoShardedConnectionState(ConnectionState):
             except asyncio.TimeoutError:
                 break
             else:
-                if self._fetch_offline:
+                if self._guild_needs_chunking(guild):
                     # Chunk the guild in the background while we wait for GUILD_CREATE streaming
                     future = asyncio.ensure_future(self.chunk_guild(guild))
                 else:
