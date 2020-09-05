@@ -73,6 +73,8 @@ class GatewayRatelimiter:
         self.remaining = count
         self.window = 0.0
         self.per = per
+        self.lock = asyncio.Lock()
+        self.shard_id = None
 
     def get_delay(self):
         current = time.time()
@@ -91,6 +93,14 @@ class GatewayRatelimiter:
             self.window = current
 
         return 0.0
+
+    async def block(self):
+        async with self.lock:
+            delta = self.get_delay()
+            if delta:
+                log.warning('WebSocket in shard ID %s is ratelimited, waiting %.2f seconds', self.shard_id, delta)
+                await asyncio.sleep(delta)
+
 
 class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
@@ -291,6 +301,7 @@ class DiscordWebSocket:
         ws.call_hooks = client._connection.call_hooks
         ws._initial_identify = initial
         ws.shard_id = shard_id
+        ws._rate_limiter.shard_id = shard_id
         ws.shard_count = client._connection.shard_count
         ws.session_id = session
         ws.sequence = sequence
@@ -559,11 +570,7 @@ class DiscordWebSocket:
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
 
     async def send(self, data):
-        delay = self._rate_limiter.get_delay()
-        if delay:
-            log.warning('WebSocket in shard ID %s is ratelimited, waiting %.2f seconds', self.shard_id, delay)
-            await asyncio.sleep(delay)
-
+        await self._rate_limiter.block()
         self._dispatch('socket_raw_send', data)
         await self.socket.send_str(data)
 
