@@ -727,6 +727,10 @@ p.admonition-title {
   margin: 0 -0.8rem;
   padding: 0.4rem 0.6rem 0.4rem 2.5rem;
   position: relative;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 p.admonition-title::before {
