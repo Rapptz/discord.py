@@ -354,7 +354,6 @@ class ConnectionState:
                     except asyncio.TimeoutError:
                         break
                     else:
-
                         if self._guild_needs_chunking(guild):
                             future = await self.chunk_guild(guild, wait=False)
                             states.append((guild, future))
@@ -1044,6 +1043,8 @@ class AutoShardedConnectionState(ConnectionState):
     async def _delay_ready(self):
         await self.shards_launched.wait()
         processed = []
+        max_concurrency = len(self.shard_ids) * 2
+        current_bucket = []
         while True:
             # this snippet of code is basically waiting N seconds
             # until the last GUILD_CREATE was sent
@@ -1053,8 +1054,19 @@ class AutoShardedConnectionState(ConnectionState):
                 break
             else:
                 if self._guild_needs_chunking(guild):
+                    log.debug('Guild ID %d requires chunking, will be done in the background.', guild.id)
+                    if len(current_bucket) >= max_concurrency:
+                        try:
+                            await utils.sane_wait_for(current_bucket, timeout=max_concurrency * 10)
+                        except asyncio.TimeoutError:
+                            fmt = 'Shard ID %s failed to wait for chunks from a sub-bucket with length %d'
+                            log.warning(fmt, self.shard_id, len(current_bucket))
+                        finally:
+                            current_bucket = []
+
                     # Chunk the guild in the background while we wait for GUILD_CREATE streaming
                     future = asyncio.ensure_future(self.chunk_guild(guild))
+                    current_bucket.append(future)
                 else:
                     future = self.loop.create_future()
                     future.set_result(True)
