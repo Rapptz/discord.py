@@ -353,13 +353,7 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
-.. autoexception:: discord.ext.commands.InvalidColour
-    :members:
-
 .. autoexception:: discord.ext.commands.RoleNotFound
-    :members:
-
-.. autoexception:: discord.ext.commands.InvalidInvite
     :members:
 
 .. autoexception:: discord.ext.commands.EmojiNotFound
