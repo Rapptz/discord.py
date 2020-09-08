@@ -747,7 +747,7 @@ class ConnectionState:
         self._chunk_requests.append(request)
         await self.chunker(guild.id, nonce=request.nonce)
         if wait:
-            await request.future
+            return await request.future
         return request.future
 
     async def _chunk_and_dispatch(self, guild, unavailable):
@@ -1057,7 +1057,7 @@ class AutoShardedConnectionState(ConnectionState):
                     log.debug('Guild ID %d requires chunking, will be done in the background.', guild.id)
                     if len(current_bucket) >= max_concurrency:
                         try:
-                            await utils.sane_wait_for(current_bucket, timeout=max_concurrency * 10)
+                            await utils.sane_wait_for(current_bucket, timeout=max_concurrency * 70.0)
                         except asyncio.TimeoutError:
                             fmt = 'Shard ID %s failed to wait for chunks from a sub-bucket with length %d'
                             log.warning(fmt, self.shard_id, len(current_bucket))
