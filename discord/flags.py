@@ -348,6 +348,8 @@ class Intents(BaseFlags):
     A default instance of this class has everything enabled except :attr:`presences`
     and :attr:`members`.
 
+    .. versionadded:: 1.5
+
     .. container:: operations
 
         .. describe:: x == y
