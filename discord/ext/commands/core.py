@@ -716,7 +716,7 @@ class Command(_BaseCommand):
         cog = self.cog
         if self._before_invoke is not None:
             # should be cog if @commands.before_invoke is used
-            instance = getattr(self.before_invoke, '__self__', self.cog)
+            instance = getattr(self._before_invoke, '__self__', self.cog)
             # __self__ only exists for methods, not functions
             # however, if @command.before_invoke is used, it will be a function
             if instance:
