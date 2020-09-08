@@ -345,7 +345,8 @@ class Intents(BaseFlags):
     run your bot. To make use of this, it is passed to the ``intents`` keyword
     argument of :class:`Client`.
 
-    A default instance of this class has everything enabled except :attr:`presences`.
+    A default instance of this class has everything enabled except :attr:`presences`
+    and :attr:`members`.
 
     .. container:: operations
 
@@ -374,10 +375,11 @@ class Intents(BaseFlags):
 
     def __init__(self, **kwargs):
         # Change the default value to everything being enabled
-        # except presences
+        # except presences and members
         bits = max(self.VALID_FLAGS.values()).bit_length()
         self.value = (1 << bits) - 1
         self.presences = False
+        self.members = False
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError('%r is not a valid flag name.' % key)
@@ -425,6 +427,12 @@ class Intents(BaseFlags):
         - :func:`on_member_join`
         - :func:`on_member_remove`
         - :func:`on_member_update` (nickname, roles)
+        - :func:`on_user_update`
+
+        .. note::
+
+            Currently, this requires opting in explicitly via the dev portal as well.
+            Bots in over 100 guilds will need to apply to Discord for verification.
         """
         return 1 << 1
 
@@ -497,12 +505,11 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_member_update` (activities, status)
-        - :func:`on_user_update`
 
         .. note::
 
             Currently, this requires opting in explicitly via the dev portal as well.
-            Bots in over 100 guilds will need to apply to Discord for approval.
+            Bots in over 100 guilds will need to apply to Discord for verification.
         """
         return 1 << 8
 
