@@ -724,18 +724,14 @@ class Command(_BaseCommand):
         # first, call the command local hook:
         cog = self.cog
         if self._before_invoke is not None:
-            try:
-                instance = self._before_invoke.__self__
-                # should be cog if @commands.before_invoke is used
-            except AttributeError:
-                # __self__ only exists for methods, not functions
-                # however, if @command.before_invoke is used, it will be a function
-                if self.cog:
-                    await self._before_invoke(cog, ctx)
-                else:
-                    await self._before_invoke(ctx)
-            else:
+            # should be cog if @commands.before_invoke is used
+            instance = getattr(self._before_invoke, '__self__', cog)
+            # __self__ only exists for methods, not functions
+            # however, if @command.before_invoke is used, it will be a function
+            if instance:
                 await self._before_invoke(instance, ctx)
+            else:
+                await self._before_invoke(ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -751,15 +747,11 @@ class Command(_BaseCommand):
     async def call_after_hooks(self, ctx):
         cog = self.cog
         if self._after_invoke is not None:
-            try:
-                instance = self._after_invoke.__self__
-            except AttributeError:
-                if self.cog:
-                    await self._after_invoke(cog, ctx)
-                else:
-                    await self._after_invoke(ctx)
+            instance = getattr(self._after_invoke, '__self__', cog)
+            if instance:
+                    await self._after_invoke(instance, ctx)
             else:
-                await self._after_invoke(instance, ctx)
+                await self._after_invoke(ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
