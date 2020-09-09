@@ -229,7 +229,7 @@ class MessageConverter(Converter):
         if not channel:
             raise ChannelNotFound(channel_id)
         try:
-            return await channel.fetch_message(message_id)
+            return await channel.fetch_message_fast(message_id)
         except discord.NotFound:
             raise MessageNotFound(argument)
         except discord.Forbidden:
