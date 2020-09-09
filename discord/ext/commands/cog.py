@@ -385,7 +385,7 @@ class Cog(metaclass=CogMeta):
                 except Exception as e:
                     # undo our additions
                     for to_undo in self.__cog_commands__[:index]:
-                        bot.remove_command(to_undo)
+                        bot.remove_command(to_undo.name)
                     raise e
 
         # check if we're overriding the default
