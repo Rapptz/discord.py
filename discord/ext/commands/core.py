@@ -738,15 +738,11 @@ class Command(_BaseCommand):
     async def call_after_hooks(self, ctx):
         cog = self.cog
         if self._after_invoke is not None:
-            try:
-                instance = self._after_invoke.__self__
-            except AttributeError:
-                if self.cog:
-                    await self._after_invoke(cog, ctx)
-                else:
-                    await self._after_invoke(ctx)
+            instance = getattr(self._after_invoke, '__self__', cog)
+            if instance:
+                    await self._after_invoke(instance, ctx)
             else:
-                await self._after_invoke(instance, ctx)
+                await self._after_invoke(ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
