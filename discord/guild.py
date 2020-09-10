@@ -416,7 +416,8 @@ class Guild(Hashable):
         grouped = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
-                grouped.setdefault(channel.id, [])
+                # As dictionary keys are defined below (On KeyError),
+                # we can safely skip category channels.
                 continue
 
             try:
