@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import logging
 import asyncio
 import json
 import time
@@ -45,6 +46,8 @@ __all__ = (
     'RequestsWebhookAdapter',
     'Webhook',
 )
+
+log = logging.getLogger(__name__)
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -182,7 +185,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
-        
+
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
@@ -194,11 +197,14 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 else:
                     data.add_field(key, value)
 
+        base_url = url.replace(self._request_url, '/') or '/'
+        _id = self._webhook_id
         for tries in range(5):
             for file in files:
                 file.reset(seek=tries)
 
             async with self.session.request(verb, url, headers=headers, data=data) as r:
+                log.debug('Webhook ID %s with %s %s has returned status code %s', _id, verb, base_url, r.status)
                 # Coerce empty strings to return None for hygiene purposes
                 response = (await r.text(encoding='utf-8')) or None
                 if r.headers['Content-Type'] == 'application/json':
@@ -208,6 +214,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 remaining = r.headers.get('X-Ratelimit-Remaining')
                 if remaining == '0' and r.status != 429:
                     delta = utils._parse_ratelimit_header(r)
+                    log.debug('Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', _id, delta)
                     await asyncio.sleep(delta)
 
                 if 300 > r.status >= 200:
@@ -216,6 +223,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
                 # we are being rate limited
                 if r.status == 429:
                     retry_after = response['retry_after'] / 1000.0
+                    log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', _id, retry_after)
                     await asyncio.sleep(retry_after)
                     continue
 
@@ -271,13 +279,15 @@ class RequestsWebhookAdapter(WebhookAdapter):
         if payload:
             headers['Content-Type'] = 'application/json'
             data = utils.to_json(payload)
-    
+
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         if multipart is not None:
             data = {'payload_json': multipart.pop('payload_json')}
 
+        base_url = url.replace(self._request_url, '/') or '/'
+        _id = self._webhook_id
         for tries in range(5):
             for file in files:
                 file.reset(seek=tries)
@@ -290,6 +300,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
             # compatibility with aiohttp
             r.status = r.status_code
 
+            log.debug('Webhook ID %s with %s %s has returned status code %s', _id, verb, base_url, r.status)
             if r.headers['Content-Type'] == 'application/json':
                 response = json.loads(response)
 
@@ -297,6 +308,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
             remaining = r.headers.get('X-Ratelimit-Remaining')
             if remaining == '0' and r.status != 429 and self.sleep:
                 delta = utils._parse_ratelimit_header(r)
+                log.debug('Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', _id, delta)
                 time.sleep(delta)
 
             if 300 > r.status >= 200:
@@ -306,6 +318,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
             if r.status == 429:
                 if self.sleep:
                     retry_after = response['retry_after'] / 1000.0
+                    log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', _id, retry_after)
                     time.sleep(retry_after)
                     continue
                 else:
@@ -409,22 +422,22 @@ class Webhook(Hashable):
         webhook.send('Hello World', username='Foo')
 
     .. container:: operations
-    
+
         .. describe:: x == y
-        
+
             Checks if two webhooks are equal.
-            
+
         .. describe:: x != y
-        
+
             Checks if two webhooks are not equal.
-            
+
         .. describe:: hash(x)
-        
+
             Returns the webhooks's hash.
-            
+
     .. versionchanged:: 1.4
         Webhooks are now comparable and hashable.
-    
+
     Attributes
     ------------
     id: :class:`int`
