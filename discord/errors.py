@@ -122,6 +122,14 @@ class NotFound(HTTPException):
     """
     pass
 
+class DiscordServerError(HTTPException):
+    """Exception that's thrown for when a 500 range status code occurs.
+
+    Subclass of :exc:`HTTPException`.
+
+    .. versionadded:: 1.5
+    """
+    pass
 
 class InvalidData(ClientException):
     """Exception that's raised when the library encounters unknown

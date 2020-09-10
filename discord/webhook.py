@@ -34,7 +34,7 @@ from urllib.parse import quote as _uriquote
 import aiohttp
 
 from . import utils
-from .errors import InvalidArgument, HTTPException, Forbidden, NotFound
+from .errors import InvalidArgument, HTTPException, Forbidden, NotFound, DiscordServerError
 from .enums import try_enum, WebhookType
 from .user import BaseUser, User
 from .asset import Asset
@@ -241,7 +241,10 @@ class AsyncWebhookAdapter(WebhookAdapter):
                     raise NotFound(r, response)
                 else:
                     raise HTTPException(r, response)
+
         # no more retries
+        if r.status >= 500:
+            raise DiscordServerError(r, response)
         raise HTTPException(r, response)
 
     async def handle_execution_response(self, response, *, wait):
@@ -342,7 +345,10 @@ class RequestsWebhookAdapter(WebhookAdapter):
                 raise NotFound(r, response)
             else:
                 raise HTTPException(r, response)
+
         # no more retries
+        if r.status >= 500:
+            raise DiscordServerError(r, response)
         raise HTTPException(r, response)
 
     def handle_execution_response(self, response, *, wait):

@@ -33,7 +33,7 @@ import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
 from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 
@@ -252,6 +252,9 @@ class HTTPClient:
                     raise
 
             # We've run out of retries, raise.
+            if r.status >= 500:
+                raise DiscordServerError(r, data)
+
             raise HTTPException(r, data)
 
     async def get_from_cdn(self, url):
@@ -659,7 +662,7 @@ class HTTPClient:
 
     def get_template(self, code):
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
-    
+
     def create_from_template(self, code, name, region, icon):
         payload = {
             'name': name,

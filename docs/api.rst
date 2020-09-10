@@ -904,7 +904,7 @@ of :class:`enum.Enum`.
     is to be interpreted as a system message or a regular message.
 
     .. container:: operations
-    
+
       .. describe:: x == y
 
           Checks if two messages are equal.
@@ -2902,6 +2902,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: NotFound
 
+.. autoexception:: DiscordServerError
+
 .. autoexception:: InvalidData
 
 .. autoexception:: InvalidArgument
@@ -2931,3 +2933,4 @@ Exception Hierarchy
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
                 - :exc:`NotFound`
+                - :exc:`DiscordServerError`
