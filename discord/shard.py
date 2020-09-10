@@ -346,6 +346,10 @@ class AutoShardedClient(Client):
         in the guild is larger than 250. You can check if a guild is large
         if :attr:`Guild.large` is ``True``.
 
+        .. warning::
+
+            This method is deprecated.
+
         Parameters
         -----------
         \*guilds: :class:`Guild`
@@ -354,15 +358,15 @@ class AutoShardedClient(Client):
         Raises
         -------
         InvalidArgument
-            If any guild is unavailable or not large in the collection.
+            If any guild is unavailable in the collection.
         """
-        if any(not g.large or g.unavailable for g in guilds):
+        if any(g.unavailable for g in guilds):
             raise InvalidArgument('An unavailable or non-large guild was passed.')
 
         _guilds = sorted(guilds, key=lambda g: g.shard_id)
         for shard_id, sub_guilds in itertools.groupby(_guilds, key=lambda g: g.shard_id):
-            sub_guilds = list(sub_guilds)
-            await self._connection.request_offline_members(sub_guilds, shard_id=shard_id)
+            for guild in sub_guilds:
+                await self._connection.chunk_guild(guild)
 
     async def launch_shard(self, gateway, shard_id, *, initial=False):
         try:

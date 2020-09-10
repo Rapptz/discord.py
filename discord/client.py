@@ -392,6 +392,10 @@ class Client:
         in the guild is larger than 250. You can check if a guild is large
         if :attr:`.Guild.large` is ``True``.
 
+        .. warning::
+
+            This method is deprecated.
+
         Parameters
         -----------
         \*guilds: :class:`.Guild`
@@ -400,12 +404,13 @@ class Client:
         Raises
         -------
         :exc:`.InvalidArgument`
-            If any guild is unavailable or not large in the collection.
+            If any guild is unavailable in the collection.
         """
-        if any(not g.large or g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
+        if any(g.unavailable for g in guilds):
+            raise InvalidArgument('An unavailable guild was passed.')
 
-        await self._connection.request_offline_members(guilds)
+        for guild in guilds:
+            await self._connection.chunk_guild(guild)
 
     # hooks
 
