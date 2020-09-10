@@ -2037,6 +2037,23 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
+    async def chunk(self, *, cache=True):
+        """|coro|
+
+        Requests all members that belong to this guild. In order to use this,
+        :meth:`Intents.members` must be enabled.
+
+        This is a websocket operation and can be slow.
+
+        .. versionadded:: 1.5
+
+        Parameters
+        -----------
+        cache: :class:`bool`
+            Whether to cache the members as well.
+        """
+        return await self._state.chunk_guild(self, cache=cache)
+
     async def query_members(self, query=None, *, limit=5, user_ids=None, cache=True):
         """|coro|
 
@@ -2049,16 +2066,15 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        query: :class:`str`
-            The string that the username's start with. An empty string
-            requests all members.
+        query: Optional[:class:`str`]
+            The string that the username's start with.
         limit: :class:`int`
             The maximum number of members to send back. This must be
-            a number between 1 and 100.
+            a number between 5 and 100.
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
-        user_ids: List[:class:`int`]
+        user_ids: Optional[List[:class:`int`]]
             List of user IDs to search for. If the user ID is not in the guild then it won't be returned.
 
             .. versionadded:: 1.4
