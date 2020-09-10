@@ -305,9 +305,12 @@ class Guild(Hashable):
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
 
+        cache_members = self._state._cache_members
+        self_id = self._state.self_id
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
-            self._add_member(member)
+            if cache_members or member.id == self_id:
+                self._add_member(member)
 
         self._sync(guild)
         self._large = None if member_count is None else self._member_count >= 250
