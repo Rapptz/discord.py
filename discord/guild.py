@@ -2054,7 +2054,16 @@ class Guild(Hashable):
         -----------
         cache: :class:`bool`
             Whether to cache the members as well.
+
+        Raises
+        -------
+        ClientException
+            The members intent is not enabled.
         """
+
+        if not self._state._intents.members:
+            raise ClientException('Intents.members must be enabled to use this.')
+
         return await self._state.chunk_guild(self, cache=cache)
 
     async def query_members(self, query=None, *, limit=5, user_ids=None, cache=True):
