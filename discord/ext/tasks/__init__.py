@@ -45,7 +45,7 @@ class Loop:
     def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
         self.coro = coro
         self.reconnect = reconnect
-        self.loop = loop or asyncio.get_event_loop()
+        self.loop = loop
         self.count = count
         self._current_loop = 0
         self._task = None
@@ -186,6 +186,9 @@ class Loop:
 
         if self._injected is not None:
             args = (self._injected, *args)
+
+        if self.loop is None:
+            self.loop = asyncio.get_event_loop()
 
         self._task = self.loop.create_task(self._loop(*args, **kwargs))
         return self._task
