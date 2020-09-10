@@ -679,7 +679,7 @@ class GuildChannel:
         Clones this channel. This creates a channel with the same properties
         as this channel.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
+        You must have the :attr:`~discord.Permissions.manage_channels` permission to
         do this.
 
         .. versionadded:: 1.1
