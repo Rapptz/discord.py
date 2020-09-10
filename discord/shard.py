@@ -333,6 +333,7 @@ class AutoShardedClient(Client):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return { shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items() }
 
+    @utils.deprecated('Guild.chunk')
     async def request_offline_members(self, *guilds):
         r"""|coro|
 
@@ -348,7 +349,7 @@ class AutoShardedClient(Client):
 
         .. warning::
 
-            This method is deprecated.
+            This method is deprecated. Use :meth:`Guild.chunk` instead.
 
         Parameters
         -----------

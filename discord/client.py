@@ -379,6 +379,7 @@ class Client:
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
 
+    @utils.deprecated('Guild.chunk')
     async def request_offline_members(self, *guilds):
         r"""|coro|
 
@@ -394,7 +395,7 @@ class Client:
 
         .. warning::
 
-            This method is deprecated.
+            This method is deprecated. Use :meth:`Guild.chunk` instead.
 
         Parameters
         -----------
