@@ -398,12 +398,14 @@ class DiscordWebSocket:
                 raise ReconnectWebSocket(self.shard_id)
 
             if op == self.HEARTBEAT_ACK:
-                self._keep_alive.ack()
+                if self._keep_alive:
+                    self._keep_alive.ack()
                 return
 
             if op == self.HEARTBEAT:
-                beat = self._keep_alive.get_payload()
-                await self.send_as_json(beat)
+                if self._keep_alive:
+                    beat = self._keep_alive.get_payload()
+                    await self.send_as_json(beat)
                 return
 
             if op == self.HELLO:
