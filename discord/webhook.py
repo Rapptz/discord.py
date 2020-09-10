@@ -215,6 +215,10 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
                 # we are being rate limited
                 if r.status == 429:
+                    if not r.headers.get('Via'):
+                        # Banned by Cloudflare more than likely.
+                        raise HTTPException(r, data)
+
                     retry_after = response['retry_after'] / 1000.0
                     await asyncio.sleep(retry_after)
                     continue
@@ -305,6 +309,10 @@ class RequestsWebhookAdapter(WebhookAdapter):
             # we are being rate limited
             if r.status == 429:
                 if self.sleep:
+                    if not r.headers.get('Via'):
+                        # Banned by Cloudflare more than likely.
+                        raise HTTPException(r, data)
+
                     retry_after = response['retry_after'] / 1000.0
                     time.sleep(retry_after)
                     continue
