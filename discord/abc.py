@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import abc
+import sys
 import copy
 import asyncio
 
@@ -169,7 +170,7 @@ class _Overwrites:
         self.id = kwargs.pop('id')
         self.allow = kwargs.pop('allow', 0)
         self.deny = kwargs.pop('deny', 0)
-        self.type = kwargs.pop('type')
+        self.type = sys.intern(kwargs.pop('type'))
 
     def _asdict(self):
         return {
