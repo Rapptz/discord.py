@@ -34,7 +34,15 @@ from .state import AutoShardedConnectionState
 from .client import Client
 from .backoff import ExponentialBackoff
 from .gateway import *
-from .errors import ClientException, InvalidArgument, HTTPException, GatewayNotFound, ConnectionClosed
+from .errors import (
+    ClientException,
+    InvalidArgument,
+    HTTPException,
+    GatewayNotFound,
+    ConnectionClosed,
+    PrivilegedIntentsRequired,
+)
+
 from . import utils
 from .enums import Status
 
@@ -125,6 +133,9 @@ class Shard:
             return
 
         if isinstance(e, ConnectionClosed):
+            if e.code == 4014:
+                self._queue_put(EventItem(EventType.terminate, self, PrivilegedIntentsRequired(self.id)))
+                return
             if e.code != 1000:
                 self._queue_put(EventItem(EventType.close, self, e))
                 return
@@ -407,8 +418,11 @@ class AutoShardedClient(Client):
             item = await self.__queue.get()
             if item.type == EventType.close:
                 await self.close()
-                if isinstance(item.error, ConnectionClosed) and item.error.code != 1000:
-                    raise item.error
+                if isinstance(item.error, ConnectionClosed):
+                    if item.error.code != 1000:
+                        raise item.error
+                    if item.error.code == 4014:
+                        raise PrivilegedIntentsRequired(item.shard.id) from None
                 return
             elif item.type in (EventType.identify, EventType.resume):
                 await item.shard.reidentify(item.error)

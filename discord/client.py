@@ -570,6 +570,8 @@ class Client:
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
                 # regardless and rely on is_closed instead
                 if isinstance(exc, ConnectionClosed):
+                    if exc.code == 4014:
+                        raise PrivilegedIntentsRequired(exc.shard_id) from None
                     if exc.code != 1000:
                         await self.close()
                         raise
