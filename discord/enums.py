@@ -51,7 +51,7 @@ __all__ = (
     'Theme',
     'WebhookType',
     'ExpireBehaviour',
-    'ExpireBehavior'
+    'ExpireBehavior',
 )
 
 def _create_value_cls(name):
