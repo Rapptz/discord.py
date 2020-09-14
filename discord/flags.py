@@ -31,6 +31,7 @@ __all__ = (
     'MessageFlags',
     'PublicUserFlags',
     'Intents',
+    'MemberCacheFlags',
 )
 
 class flag_value:
@@ -651,3 +652,128 @@ class Intents(BaseFlags):
         - :func:`on_typing` (only for DMs)
         """
         return 1 << 14
+
+@fill_with_flags()
+class MemberCacheFlags(BaseFlags):
+    """Controls the library's cache policy when it comes to members.
+
+    This allows for finer grained control over what members are cached.
+    For more information, check :attr:`Client.member_cache_flags`. Note
+    that the bot's own member is always cached.
+
+    Due to a quirk in how Discord works, in order to ensure proper cleanup
+    of cache resources it is recommended to have :attr:`Intents.members`
+    enabled. Otherwise the library cannot know when a member leaves a guild and
+    is thus unable to cleanup after itself.
+
+    To construct an object you can pass keyword arguments denoting the flags
+    to enable or disable.
+
+    The default value is all flags enabled.
+
+    .. versionadded:: 1.5
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two flags are equal.
+        .. describe:: x != y
+
+            Checks if two flags are not equal.
+        .. describe:: hash(x)
+
+               Return the flag's hash.
+        .. describe:: iter(x)
+
+               Returns an iterator of ``(name, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    def __init__(self, **kwargs):
+        bits = max(self.VALID_FLAGS.values()).bit_length()
+        self.value = (1 << bits) - 1
+        for key, value in kwargs.items():
+            if key not in self.VALID_FLAGS:
+                raise TypeError('%r is not a valid flag name.' % key)
+            setattr(self, key, value)
+
+    @classmethod
+    def all(cls):
+        """A factory method that creates a :class:`MemberCacheFlags` with everything enabled."""
+        bits = max(cls.VALID_FLAGS.values()).bit_length()
+        value = (1 << bits) - 1
+        self = cls.__new__(cls)
+        self.value = value
+        return self
+
+    @classmethod
+    def none(cls):
+        """A factory method that creates a :class:`MemberCacheFlags` with everything disabled."""
+        self = cls.__new__(cls)
+        self.value = self.DEFAULT_VALUE
+        return self
+
+    @flag_value
+    def online(self):
+        """:class:`bool`: Whether to cache members with a status.
+
+        For example, members that are part of the initial ``GUILD_CREATE``
+        or become online at a later point. This requires :attr:`Intents.presences`.
+
+        Members that go offline are no longer cached.
+        """
+        return 1
+
+    @flag_value
+    def voice(self):
+        """:class:`bool`: Whether to cache members that are in voice.
+
+        This requires :attr:`Intents.voice_states`.
+
+        Members that leave voice are no longer cached.
+        """
+        return 2
+
+    @flag_value
+    def joined(self):
+        """:class:`bool`: Whether to cache members that joined the guild
+        or are chunked as part of the initial log in flow.
+
+        This requires :attr:`Intents.members`.
+
+        Members that leave the guild are no longer cached.
+        """
+        return 4
+
+    def _verify_intents(self, intents):
+        if self.online and not intents.presences:
+            raise ValueError('MemberCacheFlags.online requires Intents.presences enabled')
+
+        if self.voice and not intents.voice_states:
+            raise ValueError('MemberCacheFlags.voice requires Intents.voice_states')
+
+        if self.joined and not intents.members:
+            raise ValueError('MemberCacheFlags.joined requires Intents.members')
+
+        if not self.joined and self.voice and self.online:
+            msg = 'MemberCacheFlags.voice and MemberCacheFlags.online require MemberCacheFlags.joined ' \
+                  'to properly evict members from the cache.'
+            raise ValueError(msg)
+
+    @property
+    def _voice_only(self):
+        return self.value == 2
+
+    @property
+    def _online_only(self):
+        return self.value == 1
+

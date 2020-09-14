@@ -142,9 +142,14 @@ class Client:
     shard_count: Optional[:class:`int`]
         The total number of shards.
     intents: :class:`Intents`
-        A list of intents that you want to enable for the session. This is a way of
+        The intents that you want to enable for the session. This is a way of
         disabling and enabling certain gateway events from triggering and being sent.
-        Currently, if no intents are passed then you will receive all data.
+
+        .. versionadded:: 1.5
+    member_cache_flags: :class:`MemberCacheFlags`
+        Allows for finer control over how the library caches members.
+
+        .. versionadded:: 1.5
     fetch_offline_members: :class:`bool`
         Indicates if :func:`.on_ready` should be delayed to fetch all offline
         members from the guilds the client belongs to. If this is ``False``\, then

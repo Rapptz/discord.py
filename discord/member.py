@@ -285,6 +285,14 @@ class Member(discord.abc.Messageable, _BaseUser):
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
         return try_enum(Status, self._client_status[None])
 
+    @property
+    def raw_status(self):
+        """:class:`str`: The member's overall status as a string value.
+
+        .. versionadded:: 1.5
+        """
+        return self._client_status[None]
+
     @status.setter
     def status(self, value):
         # internal use only

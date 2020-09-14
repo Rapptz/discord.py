@@ -51,7 +51,7 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
-from .flags import Intents
+from .flags import Intents, MemberCacheFlags
 from .embeds import Embed
 from .object import Object
 from .invite import Invite
@@ -110,8 +110,6 @@ class ConnectionState:
             raise TypeError('allowed_mentions parameter must be AllowedMentions')
 
         self.allowed_mentions = allowed_mentions
-        # Only disable cache if both fetch_offline and guild_subscriptions are off.
-        self._cache_members = (self._fetch_offline or self.guild_subscriptions)
         self._chunk_requests = []
 
         activity = options.get('activity', None)
@@ -136,6 +134,16 @@ class ConnectionState:
             if not intents.members and self._fetch_offline:
                 raise ValueError('Intents.members has be enabled to fetch offline members.')
 
+        cache_flags = options.get('member_cache_flags', None)
+        if cache_flags is None:
+            cache_flags = MemberCacheFlags.all()
+        else:
+            if not isinstance(cache_flags, MemberCacheFlags):
+                raise TypeError('member_cache_flags parameter must be MemberCacheFlags not %r' % type(cache_flags))
+
+        cache_flags._verify_intents(intents)
+
+        self._member_cache_flags = cache_flags
         self._activity = activity
         self._status = status
         self._intents = intents
@@ -558,6 +566,7 @@ class ConnectionState:
         user = data['user']
         member_id = int(user['id'])
         member = guild.get_member(member_id)
+        flags = self._member_cache_flags
         if member is None:
             if 'username' not in user:
                 # sometimes we receive 'incomplete' member data post-removal.
@@ -565,12 +574,16 @@ class ConnectionState:
                 return
 
             member, old_member = Member._from_presence_update(guild=guild, data=data, state=self)
-            guild._add_member(member)
+            if flags.online or (flags._online_only and member.raw_status != 'offline'):
+                guild._add_member(member)
         else:
             old_member = Member._copy(member)
             user_update = member._presence_update(data=data, user=user)
             if user_update:
                 self.dispatch('user_update', user_update[0], user_update[1])
+
+            if flags._online_only and member.raw_status == 'offline':
+                guild._remove_member(member)
 
         self.dispatch('member_update', old_member, member)
 
@@ -691,7 +704,7 @@ class ConnectionState:
             return
 
         member = Member(guild=guild, data=data, state=self)
-        if self._cache_members:
+        if self._member_cache_flags.joined:
             guild._add_member(member)
         guild._member_count += 1
         self.dispatch('member_join', member)
@@ -754,7 +767,7 @@ class ConnectionState:
         return self._add_guild_from_data(data)
 
     async def chunk_guild(self, guild, *, wait=True, cache=None):
-        cache = cache or self._cache_members
+        cache = cache or self._member_cache_flags.joined
         future = self.loop.create_future()
         request = ChunkRequest(guild.id, future, self._get_guild, cache=cache)
         self._chunk_requests.append(request)
@@ -920,6 +933,7 @@ class ConnectionState:
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = utils._get_as_snowflake(data, 'channel_id')
+        flags = self._member_cache_flags
         if guild is not None:
             if int(data['user_id']) == self.user.id:
                 voice = self._get_voice_client(guild.id)
@@ -930,6 +944,13 @@ class ConnectionState:
 
             member, before, after = guild._update_voice_state(data, channel_id)
             if member is not None:
+                if flags.voice:
+                    if channel_id is None and flags.value == MemberCacheFlags.voice.flag:
+                        # Only remove from cache iff we only have the voice flag enabled
+                        guild._remove_member(member)
+                    else:
+                        guild._add_member(member)
+
                 self.dispatch('voice_state_update', member, before, after)
             else:
                 log.debug('VOICE_STATE_UPDATE referencing an unknown member ID: %s. Discarding.', data['user_id'])

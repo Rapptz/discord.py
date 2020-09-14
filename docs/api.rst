@@ -2803,6 +2803,18 @@ AllowedMentions
 .. autoclass:: AllowedMentions
     :members:
 
+Intents
+~~~~~~~~~~
+
+.. autoclass:: Intents
+    :members:
+
+MemberCacheFlags
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MemberCacheFlags
+    :members:
+
 File
 ~~~~~
 
