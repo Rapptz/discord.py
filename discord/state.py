@@ -139,6 +139,8 @@ class ConnectionState:
 
             if not intents.members and self._fetch_offline:
                 raise ValueError('Intents.members has be enabled to fetch offline members.')
+        else:
+            intents = Intents()
 
         cache_flags = options.get('member_cache_flags', None)
         if cache_flags is None:
