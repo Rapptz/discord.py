@@ -983,7 +983,7 @@ class Messageable(metaclass=abc.ABCMeta):
         Raises
         --------
         ~discord.NotFound
-            The specified channel was not found.
+            The specified message was not found.
         ~discord.Forbidden
             You do not have permissions to get channel message history.
         ~discord.HTTPException
