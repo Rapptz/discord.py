@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import itertools
+import sys
 from operator import attrgetter
 
 import discord.abc
@@ -215,10 +216,10 @@ class Member(discord.abc.Messageable, _BaseUser):
         clone = cls(data=data, guild=guild, state=state)
         to_return = cls(data=data, guild=guild, state=state)
         to_return._client_status = {
-            key: value
+            sys.intern(key): sys.intern(value)
             for key, value in data.get('client_status', {}).items()
         }
-        to_return._client_status[None] = data['status']
+        to_return._client_status[None] = sys.intern(data['status'])
         return to_return, clone
 
     @classmethod
@@ -260,10 +261,10 @@ class Member(discord.abc.Messageable, _BaseUser):
     def _presence_update(self, data, user):
         self.activities = tuple(map(create_activity, data.get('activities', [])))
         self._client_status = {
-            key: value
+            sys.intern(key): sys.intern(value)
             for key, value in data.get('client_status', {}).items()
         }
-        self._client_status[None] = data['status']
+        self._client_status[None] = sys.intern(data['status'])
 
         if len(user) > 1:
             return self._update_inner_user(user)
