@@ -1092,7 +1092,7 @@ class Message:
 
         Raises
         --------
-        Exceptions raised by :meth:`~discord.abc.Messageable.send` are propegated by this function.
+        Exceptions raised by :meth:`~discord.abc.Messageable.send` are propagated by this function.
 
         Returns
         ---------
