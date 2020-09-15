@@ -754,6 +754,32 @@ class MemberCacheFlags(BaseFlags):
         """
         return 4
 
+    @classmethod
+    def from_intents(cls, intents):
+        """A factory method that creates a :class:`MemberCacheFlags` based on
+        the currently selected :class:`Intents`.
+
+        Parameters
+        ------------
+        intents: :class:`Intents`
+            The intents to select from.
+
+        Returns
+        ---------
+        :class:`MemberCacheFlags`
+            The resulting member cache flags.
+        """
+
+        self = cls.none()
+        if intents.members:
+            self.joined = True
+        if intents.presences:
+            self.online = True
+        if intents.voice_states:
+            self.voice = True
+
+        return self
+
     def _verify_intents(self, intents):
         if self.online and not intents.presences:
             raise ValueError('MemberCacheFlags.online requires Intents.presences enabled')
