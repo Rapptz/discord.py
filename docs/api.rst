@@ -988,6 +988,8 @@ of :class:`enum.Enum`.
 
         A competing activity type.
 
+        .. versionadded:: 1.5
+
 .. class:: HypeSquadHouse
 
     Specifies the HypeSquad house a user belongs to.
