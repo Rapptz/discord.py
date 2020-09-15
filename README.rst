@@ -42,6 +42,9 @@ Otherwise to get voice support you should run the following command:
 
     # Linux/macOS
     python3 -m pip install -U discord.py[voice]
+    
+    If you are running zsh instead of the standard bash shell, you will need to use quotations for the project name, like so:
+    python3 -m pip install -U "discord.py[voice]"
 
     # Windows
     py -3 -m pip install -U discord.py[voice]
