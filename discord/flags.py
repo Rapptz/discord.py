@@ -778,6 +778,9 @@ class MemberCacheFlags(BaseFlags):
         if intents.voice_states:
             self.voice = True
 
+        if not self.joined and self.online and self.voice:
+            self.voice = False
+
         return self
 
     def _verify_intents(self, intents):
