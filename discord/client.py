@@ -147,6 +147,8 @@ class Client:
         .. versionadded:: 1.5
     member_cache_flags: :class:`MemberCacheFlags`
         Allows for finer control over how the library caches members.
+        If not given, defaults to cache as much as possible is with the
+        currently selected intents.
 
         .. versionadded:: 1.5
     fetch_offline_members: :class:`bool`

@@ -144,12 +144,12 @@ class ConnectionState:
 
         cache_flags = options.get('member_cache_flags', None)
         if cache_flags is None:
-            cache_flags = MemberCacheFlags.all()
+            cache_flags = MemberCacheFlags.from_intents(intents)
         else:
             if not isinstance(cache_flags, MemberCacheFlags):
                 raise TypeError('member_cache_flags parameter must be MemberCacheFlags not %r' % type(cache_flags))
 
-        cache_flags._verify_intents(intents)
+            cache_flags._verify_intents(intents)
 
         self._member_cache_flags = cache_flags
         self._activity = activity
