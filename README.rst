@@ -81,11 +81,16 @@ Quick Example
             # don't respond to ourselves
             if message.author == self.user:
                 return
-
-            if message.content == 'ping':
-                await message.channel.send('pong')
+                
+            # Process commands
+            await self.process_commands(message)
 
     client = MyClient()
+    
+    @client.command(name='ping')
+    async def ping(ctx):
+        await ctx.send('pong')
+    
     client.run('token')
 
 Bot Example
