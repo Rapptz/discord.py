@@ -625,6 +625,12 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
+        # Call on_ready if module has been loaded after the bot is ready
+        if self.is_ready():
+            for event in self.extra_events.get('on_ready', []):
+                if event.__module__ is not None and _is_submodule(key, event.__module__):
+                    self._schedule_event(event, 'on_ready')
+
     def load_extension(self, name):
         """Loads an extension.
 
