@@ -326,6 +326,6 @@ class Context(discord.abc.Messageable):
             await cmd.on_help_command_error(self, e)
 
     async def reply(self, *args, **kwargs):
-        return self.message.reply(*args, **kwargs)
+        return await self.message.reply(*args, **kwargs)
 
     reply.__doc__ = Message.reply.__doc__
