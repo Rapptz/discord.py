@@ -199,6 +199,12 @@ class Member(discord.abc.Messageable, _BaseUser):
         data['user'] = author._to_minimal_user_json()
         return cls(data=data, guild=message.guild, state=message._state)
 
+    def _update_from_message(self, data):
+        self.joined_at = utils.parse_time(data.get('joined_at'))
+        self.premium_since = utils.parse_time(data.get('premium_since'))
+        self._update_roles(data)
+        self.nick = data.get('nick', None)
+
     @classmethod
     def _try_upgrade(cls, *,  data, guild, state):
         # A User object with a 'member' key
@@ -433,7 +439,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         guild = self.guild
         if len(self._roles) == 0:
             return guild.default_role
-        
+
         return max(guild.get_role(rid) or guild.default_role for rid in self._roles)
 
     @property
