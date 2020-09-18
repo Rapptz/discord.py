@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Question about the library
-    about: Support questions are better answered in our Discord server. Issues asking how to implement a feature in your bot will be closed.
+  - name: Ask a question
+    about: Ask questions and discuss with other users of the library.
+    url: https://github.com/Rapptz/discord.py/discussions
+  - name: Discord Server
+    about: Use our official Discord server to ask help and questions as well.
     url: https://discord.gg/r3sSKJJ
