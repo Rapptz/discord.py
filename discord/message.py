@@ -251,6 +251,18 @@ class Message:
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
+    reference_id: Optional[:class:`int`]
+        The id of the pinned message the message refers to. This is only applicable to
+        messages of type :attr:`MessageType.pins_add`.
+
+        .. versionadded:: 1.5
+
+    referenced_message: Optional[:class:`Message`]
+        The pinned message the message refers to, if found in the internal message cache.
+        This is only applicable to messages of type :attr:`MessageType.pins_add`.
+
+        .. versionadded:: 1.5
+
     mention_everyone: :class:`bool`
         Specifies if the message mentions everyone.
 
@@ -316,8 +328,8 @@ class Message:
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
-                 '_cs_system_content', '_cs_guild', '_state', 'reactions',
-                 'application', 'activity')
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference_id',
+                 'referenced_message', 'application', 'activity')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -337,6 +349,12 @@ class Message:
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
+
+        ref = data.get('message_reference')
+        # For some reason message_id is an optional key, meaning that
+        # even if a message_reference exists, the message_id could be None
+        self.reference_id = ref.get('message_id') if ref is not None else None
+        self.referenced_message = state._get_message(int(self.reference_id)) if self.reference_id is not None else None
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
