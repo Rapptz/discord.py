@@ -353,8 +353,12 @@ class Message:
         ref = data.get('message_reference')
         # For some reason message_id is an optional key, meaning that
         # even if a message_reference exists, the message_id could be None
-        self.reference_id = ref.get('message_id') if ref is not None else None
-        self.referenced_message = state._get_message(int(self.reference_id)) if self.reference_id is not None else None
+        try:
+            self.reference_id = int(ref.get('message_id')) if ref is not None else None
+        except TypeError:
+            self.reference_id = None
+
+        self.referenced_message = state._get_message(self.reference_id) if self.reference_id is not None else None
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
