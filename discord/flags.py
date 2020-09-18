@@ -503,7 +503,7 @@ class Intents(BaseFlags):
 
     @flag_value
     def presences(self):
-        """:class:`bool`: Whether guild voice state related events are enabled.
+        """:class:`bool`: Whether guild presence related events are enabled.
 
         This corresponds to the following events:
 
