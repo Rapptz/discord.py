@@ -1,6 +1,7 @@
 ---
 name: Bug Report
 about: Report broken or incorrect behaviour
+labels: bug
 ---
 
 ### Summary
