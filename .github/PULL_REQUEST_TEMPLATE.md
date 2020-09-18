@@ -1,8 +1,8 @@
-### Summary
+## Summary
 
 <!-- What is this pull request for? Does it fix any issues? -->
 
-### Checklist
+## Checklist
 
 <!-- Put an x inside [ ] to check it, like so: [x] -->
 
