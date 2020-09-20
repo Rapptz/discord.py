@@ -10,7 +10,7 @@ There comes a time in the bot development when you want to extend the bot functi
 Primer
 --------
 
-An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
+An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). Its first parameter must be the :class:`~.commands.Bot` that loads the extension. Optionally, you may also add extra positional and keyword arguments to provide any extra data your extension will need to setup.
 
 An example extension looks like this:
 

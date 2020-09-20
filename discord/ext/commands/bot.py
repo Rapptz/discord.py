@@ -599,7 +599,7 @@ class BotBase(GroupMixin):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    def _load_from_module_spec(self, spec, key):
+    def _load_from_module_spec(self, spec, key, *args, **kwargs):
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
         sys.modules[key] = lib
@@ -616,7 +616,7 @@ class BotBase(GroupMixin):
             raise errors.NoEntryPointError(key)
 
         try:
-            setup(self)
+            setup(self, *args, **kwargs)
         except Exception as e:
             del sys.modules[key]
             self._remove_module_references(lib.__name__)
@@ -625,7 +625,7 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
-    def load_extension(self, name):
+    def load_extension(self, name, *args, **kwargs):
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
@@ -633,7 +633,9 @@ class BotBase(GroupMixin):
 
         An extension must have a global function, ``setup`` defined as
         the entry point on what to do when the extension is loaded. This entry
-        point must have a single argument, the ``bot``.
+        point must have the ``bot`` as its first argument. Optionally, it may
+        accept extra positional and keyword arguments that will be forwarded
+        to the extension's ``setup`` method.
 
         Parameters
         ------------
@@ -661,7 +663,7 @@ class BotBase(GroupMixin):
         if spec is None:
             raise errors.ExtensionNotFound(name)
 
-        self._load_from_module_spec(spec, name)
+        self._load_from_module_spec(spec, name, *args, **kwargs)
 
     def unload_extension(self, name):
         """Unloads an extension.
