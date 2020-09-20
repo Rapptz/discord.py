@@ -49,12 +49,6 @@ class IntegrationAccount:
         self.id = kwargs.pop('id')
         self.name = kwargs.pop('name')
 
-    def _asdict(self):
-        return {
-            "id": self.id,
-            "name": self.name
-        }
-
     def __repr__(self):
         return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
 

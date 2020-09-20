@@ -71,15 +71,11 @@ class PartialInviteChannel:
         self.name = kwargs.pop('name')
         self.type = kwargs.pop('type')
 
-    def _asdict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "type": self.type
-        }
-
     def __str__(self):
         return self.name
+
+    def __repr__(self):
+        return '<PartialInviteChannel id={0.id} name={0.name} type={0.type!r}>'.format(self)
 
     @property
     def mention(self):

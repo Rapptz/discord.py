@@ -48,20 +48,10 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
+
+BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
 
-class BanEntry:
-    __slots__ = ('reason', 'user')
-
-    def __init__(self, **kwargs):
-        self.user = kwargs.pop('user')
-        self.reason = kwargs.pop('reason')
-
-    def _asdict(self):
-        return {
-            "user": self.user,
-            "reason": self.reason
-        }
 
 class Guild(Hashable):
     """Represents a Discord guild.
@@ -1311,8 +1301,8 @@ class Guild(Hashable):
     async def fetch_ban(self, user):
         """|coro|
 
-        Retrieves the :class:`BanEntry` for a user, which is an object
-        with ``user`` and ``reason`` properties. See :meth:`bans` for more
+        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
+        with a ``user`` and ``reason`` field. See :meth:`bans` for more
         information.
 
         You must have the :attr:`~Permissions.ban_members` permission
@@ -1348,9 +1338,9 @@ class Guild(Hashable):
 
         Retrieves all the users that are banned from the guild.
 
-        This coroutine returns a :class:`list` of BanEntry objects, whi
-        with a ``user`` property to denote the :class:`User`
-        that got banned along with a ``reason`` property specifying
+        This coroutine returns a :class:`list` of BanEntry objects, which is a
+        namedtuple with a ``user`` field to denote the :class:`User`
+        that got banned along with a ``reason`` field specifying
         why the user was banned that could be set to ``None``.
 
         You must have the :attr:`~Permissions.ban_members` permission

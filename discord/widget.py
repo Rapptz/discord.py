@@ -68,15 +68,11 @@ class WidgetChannel:
         self.name = kwargs.pop('name')
         self.position = kwargs.pop('position')
 
-    def _asdict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "position": self.position
-        }
-
     def __str__(self):
         return self.name
+
+    def __repr__(self):
+        return '<WidgetChannel id={0.id} name={0.name!r} position={0.position!r}>'.format(self)
 
     @property
     def mention(self):
