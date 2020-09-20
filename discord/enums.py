@@ -417,6 +417,7 @@ class ActivityType(Enum):
     listening = 2
     watching = 3
     custom = 4
+    competing = 5
 
     def __int__(self):
         return self.value

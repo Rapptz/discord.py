@@ -984,6 +984,11 @@ of :class:`enum.Enum`.
     .. attribute:: custom
 
         A custom activity type.
+    .. attribute:: competing
+
+        A competing activity type.
+
+        .. versionadded:: 1.5
 
 .. class:: HypeSquadHouse
 
