@@ -706,7 +706,14 @@ class Guild(Hashable):
 
     @property
     def member_count(self):
-        """:class:`int`: Returns the true member count regardless of it being loaded fully or not."""
+        """:class:`int`: Returns the true member count regardless of it being loaded fully or not.
+
+        .. warning::
+
+            Due to a Discord limitation, in order for this attribute to remain up-to-date and
+            accurate, it requires :attr:`Intent.members` to be specified.
+
+        """
         return self._member_count
 
     @property
