@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-from collections import namedtuple
 import logging
 import signal
 import sys
