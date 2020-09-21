@@ -208,6 +208,33 @@ class Attachment:
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
+class MessageReference:
+    """Represents a reference to a :class:`Message`.
+
+    .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    message_id: Optional[:class:`int`]
+        The id of the message referenced.
+    channel_id: :class:`int`
+        The channel id of the message referenced.
+    guild_id: Optional[:class:`int`]
+        The guild id of the message referenced.
+    cached_message: Optional[:class:`Message`]
+        The cached message, if found in the internal message cache.
+    """
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'cached_message')
+
+    def __init__(self, **kwargs):
+        self.message_id = int(kwargs.pop('message_id', 0)) or None
+        self.channel_id = int(kwargs.pop('channel_id'))
+        self.guild_id = int(kwargs.pop('guild_id', 0)) or None
+        self.cached_message = None
+
+    def __repr__(self):
+        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
+
 def flatten_handlers(cls):
     prefix = len('_handle_')
     cls._HANDLERS = {
@@ -251,15 +278,10 @@ class Message:
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
-    reference_id: Optional[:class:`int`]
-        The id of the pinned message the message refers to. This is only applicable to
-        messages of type :attr:`MessageType.pins_add`.
-
-        .. versionadded:: 1.5
-
-    referenced_message: Optional[:class:`Message`]
-        The pinned message the message refers to, if found in the internal message cache.
-        This is only applicable to messages of type :attr:`MessageType.pins_add`.
+    reference: Optional[:class:`MessageReference`]
+        The message that this message references. This is only applicable to messages of
+        type :attr:`MessageType.pins_add` or crossposted messages created by a
+        followed channel integration.
 
         .. versionadded:: 1.5
 
@@ -328,8 +350,8 @@ class Message:
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
-                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference_id',
-                 'referenced_message', 'application', 'activity')
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference', 
+                 'application', 'activity')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -351,14 +373,9 @@ class Message:
         self.nonce = data.get('nonce')
 
         ref = data.get('message_reference')
-        # For some reason message_id is an optional key, meaning that
-        # even if a message_reference exists, the message_id could be None
-        try:
-            self.reference_id = int(ref.get('message_id')) if ref is not None else None
-        except TypeError:
-            self.reference_id = None
-
-        self.referenced_message = state._get_message(self.reference_id) if self.reference_id is not None else None
+        self.reference = msg_ref = MessageReference(**ref) if ref is not None else None
+        if msg_ref is not None and msg_ref.message_id is not None:
+            msg_ref.cached_message = state._get_message(msg_ref.message_id)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
