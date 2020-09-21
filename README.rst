@@ -41,7 +41,7 @@ Otherwise to get voice support you should run the following command:
 .. code:: sh
 
     # Linux/macOS
-    python3 -m pip install -U discord.py[voice]
+    python3 -m pip install -U "discord.py[voice]"
 
     # Windows
     py -3 -m pip install -U discord.py[voice]
