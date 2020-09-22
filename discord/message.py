@@ -373,9 +373,12 @@ class Message:
         self.nonce = data.get('nonce')
 
         ref = data.get('message_reference')
-        self.reference = msg_ref = MessageReference(**ref) if ref is not None else None
-        if msg_ref is not None and msg_ref.message_id is not None:
-            msg_ref.cached_message = state._get_message(msg_ref.message_id)
+        if ref is not None:
+            self.reference = msg_ref = MessageReference(**ref)
+            if msg_ref.message_id is not None:
+                msg_ref.cached_message = state._get_message(msg_ref.message_id)
+        else:
+            self.reference = None
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
