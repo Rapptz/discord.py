@@ -318,6 +318,6 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 def setup(app):
-  app.add_javascript('custom.js')
+  app.add_js_file('custom.js')
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
