@@ -954,7 +954,7 @@ class Bot(BotBase, discord.Client):
 
     Attributes
     -----------
-    command_prefix
+    command_prefix: Union[:class:`str`, Iterable[:class:`str`], Callable[[:class:`Bot`, :class:`.Message`], Union[:class:`str`, Iterable[:class:`str`]]]]
         The command prefix is what the message content must contain initially
         to have a command invoked. This prefix could either be a string to
         indicate what the prefix should be, or a callable that takes in the bot
