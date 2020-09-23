@@ -572,7 +572,7 @@ class Message:
 
     @utils.cached_slot_property('_cs_clean_content')
     def clean_content(self):
-        """A property that returns the content in a "cleaned up"
+        """:class:`str`: A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
         into ``#name``.
