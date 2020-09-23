@@ -158,11 +158,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
     def is_nsfw(self):
-        """Checks if the channel is NSFW."""
+        """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
 
     def is_news(self):
-        """Checks if the channel is a news channel."""
+        """:class:`bool`: Checks if the channel is a news channel."""
         return self._type == ChannelType.news.value
 
     @property
@@ -757,7 +757,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category
 
     def is_nsfw(self):
-        """Checks if the category is NSFW."""
+        """:class:`bool`: Checks if the category is NSFW."""
         return self.nsfw
 
     async def clone(self, *, name=None, reason=None):
@@ -933,7 +933,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
     def is_nsfw(self):
-        """Checks if the channel is NSFW."""
+        """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
 
     async def clone(self, *, name=None, reason=None):

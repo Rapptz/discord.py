@@ -303,7 +303,7 @@ class Client:
         return self._connection.voice_clients
 
     def is_ready(self):
-        """Specifies if the client's internal cache is ready for use."""
+        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
     async def _run_event(self, coro, event_name, *args, **kwargs):
@@ -683,7 +683,7 @@ class Client:
     # properties
 
     def is_closed(self):
-        """Indicates if the websocket connection is closed."""
+        """:class:`bool`: Indicates if the websocket connection is closed."""
         return self._closed
 
     @property

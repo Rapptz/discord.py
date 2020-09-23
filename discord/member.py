@@ -309,7 +309,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         return try_enum(Status, self._client_status.get('web', 'offline'))
 
     def is_on_mobile(self):
-        """A helper function that determines if a member is active on a mobile device."""
+        """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
         return 'mobile' in self._client_status
 
     @property
