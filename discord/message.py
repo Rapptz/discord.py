@@ -227,7 +227,7 @@ class MessageReference:
     __slots__ = ('message_id', 'channel_id', 'guild_id', 'cached_message')
 
     def __init__(self, **kwargs):
-        self.message_id = int(kwargs.pop('message_id', 0)) or None
+        self.message_id = utils._get_as_snowflake(kwargs, 'message_id')
         self.channel_id = int(kwargs.pop('channel_id'))
         self.guild_id = int(kwargs.pop('guild_id', 0)) or None
         self.cached_message = None
