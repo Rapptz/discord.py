@@ -810,7 +810,7 @@ class HTTPClient:
         params = {
             'with_counts': int(with_counts)
         }
-        return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id), params=params)
+        return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
     def invites_from(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
@@ -819,7 +819,7 @@ class HTTPClient:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
     def delete_invite(self, invite_id, *, reason=None):
-        return self.request(Route('DELETE', '/invite/{invite_id}', invite_id=invite_id), reason=reason)
+        return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
 
     # Role management
 
