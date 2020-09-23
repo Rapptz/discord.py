@@ -800,6 +800,11 @@ class Client:
             Just because you receive a :class:`.abc.GuildChannel` does not mean that
             you can communicate in said channel. :meth:`.abc.GuildChannel.permissions_for` should
             be used for that.
+
+        Yields
+        ------
+        :class:`.abc.GuildChannel`
+            A channel the client can 'access'.
         """
 
         for guild in self.guilds:
@@ -814,6 +819,11 @@ class Client:
             for guild in client.guilds:
                 for member in guild.members:
                     yield member
+
+        Yields
+        ------
+        :class:`.Member`
+            A member the client can see.
         """
         for guild in self.guilds:
             for member in guild.members:
