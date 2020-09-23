@@ -229,7 +229,7 @@ class MessageReference:
     def __init__(self, **kwargs):
         self.message_id = utils._get_as_snowflake(kwargs, 'message_id')
         self.channel_id = int(kwargs.pop('channel_id'))
-        self.guild_id = int(kwargs.pop('guild_id', 0)) or None
+        self.guild_id = utils._get_as_snowflake(kwargs, 'guild_id')
         self.cached_message = None
 
     def __repr__(self):
