@@ -421,8 +421,7 @@ aside .material-icons,
 
 #sidebar h3 {
   font-size: 24px;
-  margin: 0;
-  margin-top: 1em;
+  margin: 1em 1em 0 0;
 }
 
 #sidebar ul {
@@ -1132,8 +1131,8 @@ div.code-block-caption {
     grid-template-areas:
       "h h h h h h"
       "n n n n n n"
-      "s c c c c c"
-      "s f f f f f";
+      "s s c c c c"
+      "s s f f f f";
   }
 
   .mobile-only {
@@ -1186,7 +1185,6 @@ div.code-block-caption {
     top: 1em;
     max-height: calc(100vh - 2em);
     overflow-y: auto;
-    min-width: max-content;
     margin: 1em;
   }
 
@@ -1231,8 +1229,8 @@ div.code-block-caption {
     grid-template-areas:
       "h h h h h h h h h h h h h h h h"
       "n n n n n n n n n n n n n n n n"
-      "s s . . . c c c c c c c c . . ."
-      "s s f f f f f f f f f f f f f f"
+      "s s s . . c c c c c c c c c . ."
+      "s s s f f f f f f f f f f f f f"
   }
 
   header > nav {
