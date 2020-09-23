@@ -212,29 +212,26 @@ class MessageReference:
     """Represents a reference to a :class:`Message`.
 
     .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    message_id: Optional[:class:`int`]
+        The id of the message referenced.
+    channel_id: :class:`int`
+        The channel id of the message referenced.
+    guild_id: Optional[:class:`int`]
+        The guild id of the message referenced.
+    cached_message: Optional[:class:`Message`]
+        The cached message, if found in the internal message cache.
     """
-    __slots__ = ('_message_id', '_channel_id', '_guild_id', '_state')
+
+    __slots__ = ('message_id', 'channel_id', 'guild_id', '_state')
 
     def __init__(self, state, **kwargs):
-        self._message_id = utils._get_as_snowflake(kwargs, 'message_id')
-        self._channel_id = int(kwargs.pop('channel_id'))
-        self._guild_id = utils._get_as_snowflake(kwargs, 'guild_id')
+        self.message_id = utils._get_as_snowflake(kwargs, 'message_id')
+        self.channel_id = int(kwargs.pop('channel_id'))
+        self.guild_id = utils._get_as_snowflake(kwargs, 'guild_id')
         self._state = state
-
-    @property
-    def message_id(self):
-        """Optional[:class:`int`]: The id of the message referenced."""
-        return self._message_id
-    
-    @property
-    def channel_id(self):
-        """:class:`int`: The channel id of the message referenced."""
-        return self._channel_id
-
-    @property
-    def guild_id(self):
-        """Optional[:class:`int`]: The guild id of the message referenced."""
-        return self._guild_id
 
     @property
     def cached_message(self):
