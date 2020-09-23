@@ -706,6 +706,11 @@ class User(BaseUser, discord.abc.Messageable):
 
         This should be rarely called, as this is done transparently for most
         people.
+
+        Returns
+        -------
+        :class:`.DMChannel`
+            The channel that was created.
         """
         found = self.dm_channel
         if found is not None:
