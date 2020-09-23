@@ -1184,6 +1184,7 @@ class GroupMixin:
         Yields
         ------
         Union[:class:`.Command`, :class:`.Group`]
+            A command or group from the internal list of commands.
         """
         for command in self.commands:
             yield command

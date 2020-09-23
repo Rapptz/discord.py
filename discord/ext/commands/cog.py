@@ -221,6 +221,7 @@ class Cog(metaclass=CogMeta):
         Yields
         ------
         Union[:class:`.Command`, :class:`.Group`]
+            A command or group from the cog.
         """
         from .core import GroupMixin
         for command in self.__cog_commands__:
