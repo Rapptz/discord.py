@@ -236,10 +236,10 @@ class MessageReference:
     @property
     def cached_message(self):
         """Optional[:class:`Message`]: The cached message, if found in the internal message cache."""
-        return self._state._get_message(self._message_id)
+        return self._state._get_message(self.message_id)
 
     def __repr__(self):
-        return '<MessageReference message_id={0._message_id!r} channel_id={0._channel_id!r} guild_id={0._guild_id!r}>'.format(self)
+        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
