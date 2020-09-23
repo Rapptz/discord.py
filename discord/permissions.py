@@ -495,7 +495,7 @@ class PermissionOverwrite:
         self._values[key] = value
 
     def pair(self):
-        """Tuple[:class:`Permissions`]: Returns the (allow, deny) pair from this overwrite."""
+        """Tuple[:class:`Permissions`, :class:`Permissions`]: Returns the (allow, deny) pair from this overwrite."""
 
         allow = Permissions.none()
         deny = Permissions.none()
