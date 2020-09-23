@@ -1180,6 +1180,10 @@ class GroupMixin:
 
         .. versionchanged:: 1.4
             Duplicates due to aliases are no longer returned
+
+        Yields
+        ------
+        Union[:class:`.Command`, :class:`.Group`]
         """
         for command in self.commands:
             yield command
