@@ -266,7 +266,7 @@ class BaseUser(_BaseUser):
         Returns
         -------
         :class:`bool`
-            Whether the member is mentioned in the message.
+            Indicates if the user is mentioned in the message.
         """
 
         if message.mention_everyone:
