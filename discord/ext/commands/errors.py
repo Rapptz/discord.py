@@ -403,7 +403,7 @@ class CommandInvokeError(CommandError):
 
     Attributes
     -----------
-    original: :class:`Exception`
+    original: :exc:`Exception`
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
