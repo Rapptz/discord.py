@@ -418,6 +418,15 @@ class Intents(BaseFlags):
         - :func:`on_guild_channel_create`
         - :func:`on_guild_channel_delete`
         - :func:`on_guild_channel_pins_update`
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`Client.guilds`
+        - :class:`Guild` and all its attributes.
+        - :meth:`Client.get_channel`
+        - :meth:`Client.get_all_channels`
+
+        It is highly advisable to leave this intent enabled for your bot to function.
         """
         return 1 << 0
 
@@ -432,9 +441,25 @@ class Intents(BaseFlags):
         - :func:`on_member_update` (nickname, roles)
         - :func:`on_user_update`
 
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`Client.get_all_members`
+        - :meth:`Guild.chunk`
+        - :meth:`Guild.fetch_members`
+        - :meth:`Guild.members`
+        - :meth:`Guild.get_member`
+        - :attr:`Member.roles`
+        - :attr:`Member.nick`
+        - :attr:`Member.premium_since`
+        - :attr:`User.name`
+        - :attr:`User.avatar` (:meth:`User.avatar_url` and :meth:`User.avatar_url_as`)
+        - :attr:`User.discriminator`
+
+        For more information go to the :ref:`member intent documentation <need_members_intent>`.
+
         .. note::
 
-            Currently, this requires opting in explicitly via the dev portal as well.
+            Currently, this requires opting in explicitly via the developer portal as well.
             Bots in over 100 guilds will need to apply to Discord for verification.
         """
         return 1 << 1
@@ -447,6 +472,8 @@ class Intents(BaseFlags):
 
         - :func:`on_member_ban`
         - :func:`on_member_unban`
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 2
 
@@ -457,6 +484,13 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_guild_emojis_update`
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :class:`Emoji`
+        - :meth:`Client.get_emoji`
+        - :meth:`Client.emojis`
+        - :attr:`Guild.emojis`
         """
         return 1 << 3
 
@@ -467,6 +501,8 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_guild_integrations_update`
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 4
 
@@ -477,6 +513,8 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_webhooks_update`
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 5
 
@@ -488,6 +526,8 @@ class Intents(BaseFlags):
 
         - :func:`on_invite_create`
         - :func:`on_invite_delete`
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 6
 
@@ -498,6 +538,12 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_voice_state_update`
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`VoiceChannel.members`
+        - :attr:`VoiceChannel.voice_states`
+        - :attr:`Member.voice`
         """
         return 1 << 7
 
@@ -509,9 +555,17 @@ class Intents(BaseFlags):
 
         - :func:`on_member_update` (activities, status)
 
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`Member.activities`
+        - :attr:`Member.status`
+        - :attr:`Member.raw_status`
+
+        For more information go to the :ref:`presence intent documentation <need_presence_intent>`.
+
         .. note::
 
-            Currently, this requires opting in explicitly via the dev portal as well.
+            Currently, this requires opting in explicitly via the developer portal as well.
             Bots in over 100 guilds will need to apply to Discord for verification.
         """
         return 1 << 8
@@ -530,6 +584,17 @@ class Intents(BaseFlags):
         - :func:`on_raw_message_delete` (both guilds and DMs)
         - :func:`on_raw_message_update` (both guilds and DMs)
         - :func:`on_private_channel_create`
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :class:`Message`
+        - :attr:`Client.cached_messages`
+
+        Note that due to an implicit relationship this also corresponds to the following events:
+
+        - :func:`on_reaction_add` (both guilds and DMs)
+        - :func:`on_reaction_remove` (both guilds and DMs)
+        - :func:`on_reaction_clear` (both guilds and DMs)
         """
         return (1 << 9) | (1 << 12)
 
@@ -546,6 +611,17 @@ class Intents(BaseFlags):
         - :func:`on_message_delete` (only for guilds)
         - :func:`on_raw_message_delete` (only for guilds)
         - :func:`on_raw_message_update` (only for guilds)
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :class:`Message`
+        - :attr:`Client.cached_messages` (only for guilds)
+
+        Note that due to an implicit relationship this also corresponds to the following events:
+
+        - :func:`on_reaction_add` (only for guilds)
+        - :func:`on_reaction_remove` (only for guilds)
+        - :func:`on_reaction_clear` (only for guilds)
         """
         return 1 << 9
 
@@ -563,6 +639,17 @@ class Intents(BaseFlags):
         - :func:`on_raw_message_delete` (only for DMs)
         - :func:`on_raw_message_update` (only for DMs)
         - :func:`on_private_channel_create`
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :class:`Message`
+        - :attr:`Client.cached_messages` (only for DMs)
+
+        Note that due to an implicit relationship this also corresponds to the following events:
+
+        - :func:`on_reaction_add` (only for DMs)
+        - :func:`on_reaction_remove` (only for DMs)
+        - :func:`on_reaction_clear` (only for DMs)
         """
         return 1 << 12
 
@@ -580,6 +667,10 @@ class Intents(BaseFlags):
         - :func:`on_raw_reaction_add` (both guilds and DMs)
         - :func:`on_raw_reaction_remove` (both guilds and DMs)
         - :func:`on_raw_reaction_clear` (both guilds and DMs)
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`Message.reactions` (both guild and DM messages)
         """
         return (1 << 10) | (1 << 13)
 
@@ -597,6 +688,10 @@ class Intents(BaseFlags):
         - :func:`on_raw_reaction_add` (only for guilds)
         - :func:`on_raw_reaction_remove` (only for guilds)
         - :func:`on_raw_reaction_clear` (only for guilds)
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`Message.reactions` (only for guild messages)
         """
         return 1 << 10
 
@@ -614,6 +709,10 @@ class Intents(BaseFlags):
         - :func:`on_raw_reaction_add` (only for DMs)
         - :func:`on_raw_reaction_remove` (only for DMs)
         - :func:`on_raw_reaction_clear` (only for DMs)
+
+        This also corresponds to the following attributes and classes in terms of cache:
+
+        - :attr:`Message.reactions` (only for DM messages)
         """
         return 1 << 13
 
@@ -626,6 +725,8 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_typing` (both guilds and DMs)
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return (1 << 11) | (1 << 14)
 
@@ -638,6 +739,8 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_typing` (only for guilds)
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 11
 
@@ -650,6 +753,8 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_typing` (only for DMs)
+
+        This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 14
 

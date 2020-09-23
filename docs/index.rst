@@ -49,6 +49,7 @@ Additional Information
     :maxdepth: 2
 
     discord
+    intents
     faq
     whats_new
     version_guarantees
