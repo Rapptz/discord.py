@@ -701,7 +701,7 @@ class GuildChannel:
 
         Returns
         --------
-        :class:`~discord.abc.GuildChannel`
+        :class:`.abc.GuildChannel`
             The channel that was created.
         """
         raise NotImplementedError
