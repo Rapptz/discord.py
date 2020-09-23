@@ -2736,6 +2736,11 @@ Widget
 .. autoclass:: Widget()
     :members:
 
+MessageReference
+~~~~~~~~~~~~~~~~~
+.. autoclass:: MessageReference()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
