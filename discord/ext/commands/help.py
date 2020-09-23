@@ -155,7 +155,7 @@ class Paginator:
 
     @property
     def pages(self):
-        """class:`list`: Returns the rendered list of pages."""
+        """List[:class:`str`]: Returns the rendered list of pages."""
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
             self.close_page()
@@ -381,7 +381,7 @@ class HelpCommand:
 
     @property
     def clean_prefix(self):
-        """The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
+        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
         user = self.context.guild.me if self.context.guild else self.context.bot.user
         # this breaks if the prefix mention is not the bot itself but I
         # consider this to be an *incredibly* strange use case. I'd rather go
