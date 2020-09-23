@@ -221,8 +221,6 @@ class MessageReference:
         The channel id of the message referenced.
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
-    cached_message: Optional[:class:`Message`]
-        The cached message, if found in the internal message cache.
     """
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', '_state')
