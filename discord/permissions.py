@@ -495,10 +495,7 @@ class PermissionOverwrite:
         self._values[key] = value
 
     def pair(self):
-        """Returns the (allow, deny) pair from this overwrite.
-
-        The value of these pairs is :class:`Permissions`.
-        """
+        """Tuple[:class:`Permissions`, :class:`Permissions`]: Returns the (allow, deny) pair from this overwrite."""
 
         allow = Permissions.none()
         deny = Permissions.none()
@@ -530,6 +527,11 @@ class PermissionOverwrite:
 
         An empty permission overwrite is one that has no overwrites set
         to ``True`` or ``False``.
+        
+        Returns
+        -------
+        :class:`bool`
+            Indicates if the overwrite is empty.
         """
         return all(x is None for x in self._values.values())
 

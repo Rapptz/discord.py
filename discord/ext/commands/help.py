@@ -155,7 +155,7 @@ class Paginator:
 
     @property
     def pages(self):
-        """class:`list`: Returns the rendered list of pages."""
+        """List[:class:`str`]: Returns the rendered list of pages."""
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
             self.close_page()
@@ -381,7 +381,7 @@ class HelpCommand:
 
     @property
     def clean_prefix(self):
-        """The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
+        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
         user = self.context.guild.me if self.context.guild else self.context.bot.user
         # this breaks if the prefix mention is not the bot itself but I
         # consider this to be an *incredibly* strange use case. I'd rather go
@@ -441,6 +441,11 @@ class HelpCommand:
         """Removes mentions from the string to prevent abuse.
 
         This includes ``@everyone``, ``@here``, member mentions and role mentions.
+
+        Returns
+        -------
+        :class:`str`
+            The string with mentions removed.
         """
 
         def replace(obj, *, transforms=self.MENTION_TRANSFORMS):
@@ -603,6 +608,11 @@ class HelpCommand:
         You can override this method to customise the behaviour.
 
         By default this returns the context's channel.
+
+        Returns
+        -------
+        :class:`.abc.Messageable`
+            The destination where the help command will be output.
         """
         return self.context.channel
 
@@ -911,13 +921,13 @@ class DefaultHelpCommand(HelpCommand):
         super().__init__(**options)
 
     def shorten_text(self, text):
-        """Shortens text to fit into the :attr:`width`."""
+        """:class:`str`: Shortens text to fit into the :attr:`width`."""
         if len(text) > self.width:
             return text[:self.width - 3] + '...'
         return text
 
     def get_ending_note(self):
-        """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
+        """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
         return "Type {0}{1} command for more info on a command.\n" \
                "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
@@ -1122,6 +1132,10 @@ class MinimalHelpCommand(HelpCommand):
             Use `{prefix}{command_name} [command]` for more info on a command.
             You can also use `{prefix}{command_name} [category]` for more info on a category.
 
+        Returns
+        -------
+        :class:`str`
+            The help command opening note.
         """
         command_name = self.invoked_with
         return "Use `{0}{1} [command]` for more info on a command.\n" \
@@ -1134,6 +1148,11 @@ class MinimalHelpCommand(HelpCommand):
         """Return the help command's ending note. This is mainly useful to override for i18n purposes.
 
         The default implementation does nothing.
+
+        Returns
+        -------
+        :class:`str`
+            The help command ending note.
         """
         return None
 

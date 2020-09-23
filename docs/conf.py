@@ -50,7 +50,7 @@ extlinks = {
 # Links used for cross-referencing stuff in other documentation
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
-  'aio': ('https://aiohttp.readthedocs.io/en/stable/', None),
+  'aio': ('https://docs.aiohttp.org/en/stable/', None),
   'req': ('http://docs.python-requests.org/en/latest/', 'requests.inv')
 }
 
@@ -318,6 +318,6 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 def setup(app):
-  app.add_javascript('custom.js')
+  app.add_js_file('custom.js')
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)

@@ -273,7 +273,7 @@ class ChannelNotReadable(BadArgument):
 
     Attributes
     -----------
-    argument: :class:`Channel`
+    argument: :class:`.abc.GuildChannel`
         The channel supplied by the caller that was not readable
     """
     def __init__(self, argument):
@@ -403,7 +403,7 @@ class CommandInvokeError(CommandError):
 
     Attributes
     -----------
-    original
+    original: :exc:`Exception`
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
@@ -438,7 +438,7 @@ class MaxConcurrencyReached(CommandError):
     ------------
     number: :class:`int`
         The maximum number of concurrent invokers allowed.
-    per: :class:`BucketType`
+    per: :class:`.BucketType`
         The bucket type passed to the :func:`.max_concurrency` decorator.
     """
 

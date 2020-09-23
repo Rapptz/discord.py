@@ -1180,6 +1180,11 @@ class GroupMixin:
 
         .. versionchanged:: 1.4
             Duplicates due to aliases are no longer returned
+
+        Yields
+        ------
+        Union[:class:`.Command`, :class:`.Group`]
+            A command or group from the internal list of commands.
         """
         for command in self.commands:
             yield command
@@ -1233,7 +1238,7 @@ class GroupMixin:
         Returns
         --------
         Callable[..., :class:`Command`]
-            A decorator that converts the provided method into a Command, adds it to the bot, then returns it
+            A decorator that converts the provided method into a Command, adds it to the bot, then returns it.
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
@@ -1246,6 +1251,11 @@ class GroupMixin:
     def group(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
+
+        Returns
+        --------
+        Callable[..., :class:`Group`]
+            A decorator that converts the provided method into a Group, adds it to the bot, then returns it.
         """
         def decorator(func):
             kwargs.setdefault('parent', self)

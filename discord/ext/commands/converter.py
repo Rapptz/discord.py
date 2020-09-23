@@ -362,6 +362,7 @@ class CategoryChannelConverter(IDConverter):
 
 class ColourConverter(Converter):
     """Converts to a :class:`~discord.Colour`.
+
     .. versionchanged:: 1.5
         Add an alias named ColorConverter
 

@@ -148,7 +148,7 @@ class Role(Hashable):
         self.mentionable = data.get('mentionable', False)
 
     def is_default(self):
-        """Checks if the role is the default role."""
+        """:class:`bool`: Checks if the role is the default role."""
         return self.guild.id == self.id
 
     @property
