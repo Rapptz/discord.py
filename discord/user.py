@@ -262,6 +262,11 @@ class BaseUser(_BaseUser):
         -----------
         message: :class:`Message`
             The message to check if you're mentioned in.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the member is mentioned in the message.
         """
 
         if message.mention_everyone:
