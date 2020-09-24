@@ -21,7 +21,7 @@ For example, if you want a bot that functions without spammy events like presenc
 .. code-block:: python3
 
     import discord
-    intents = Intents(typing=False, presences=False)
+    intents = discord.Intents(typing=False, presences=False)
 
 Note that this doesn't enable :attr:`Intents.members` since it's a privileged intent.
 
@@ -65,11 +65,15 @@ Do I need privileged intents?
 
 This is a quick checklist to see if you need specific privileged intents.
 
+.. _need_presence_intent:
+
 Presence Intent
 +++++++++++++++++
 
 - Whether you use :attr:`Member.status` at all to track member statuses.
 - Whether you use :attr:`Member.activity` or :attr:`Member.activities` to check member's activities.
+
+.. _need_members_intent:
 
 Member Intent
 +++++++++++++++
