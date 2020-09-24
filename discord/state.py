@@ -151,7 +151,7 @@ class ConnectionState:
 
         # Ensure these two are set properly
         if not intents.members and self._chunk_guilds:
-            raise ValueError('Intents.members has be enabled to chunk guilds at startup.')
+            raise ValueError('Intents.members must be enabled to chunk guilds at startup.')
 
         cache_flags = options.get('member_cache_flags', None)
         if cache_flags is None:
