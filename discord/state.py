@@ -137,7 +137,7 @@ class ConnectionState:
             if not isinstance(intents, Intents):
                 raise TypeError('intents parameter must be Intent not %r' % type(intents))
         else:
-            intents = Intents()
+            intents = Intents.default()
 
         try:
             chunk_guilds = options['fetch_offline_members']

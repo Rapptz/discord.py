@@ -21,7 +21,9 @@ For example, if you want a bot that functions without spammy events like presenc
 .. code-block:: python3
 
     import discord
-    intents = discord.Intents(typing=False, presences=False)
+    intents = discord.Intents.default()
+    intents.typing = False
+    intents.presences = False
 
 Note that this doesn't enable :attr:`Intents.members` since it's a privileged intent.
 

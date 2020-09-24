@@ -368,9 +368,6 @@ class Intents(BaseFlags):
     run your bot. To make use of this, it is passed to the ``intents`` keyword
     argument of :class:`Client`.
 
-    A default instance of this class has everything enabled except :attr:`presences`
-    and :attr:`members`.
-
     .. versionadded:: 1.5
 
     .. container:: operations
@@ -399,12 +396,7 @@ class Intents(BaseFlags):
     __slots__ = ()
 
     def __init__(self, **kwargs):
-        # Change the default value to everything being enabled
-        # except presences and members
-        bits = max(self.VALID_FLAGS.values()).bit_length()
-        self.value = (1 << bits) - 1
-        self.presences = False
-        self.members = False
+        self.value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError('%r is not a valid flag name.' % key)
@@ -424,6 +416,16 @@ class Intents(BaseFlags):
         """A factory method that creates a :class:`Intents` with everything disabled."""
         self = cls.__new__(cls)
         self.value = self.DEFAULT_VALUE
+        return self
+
+    @classmethod
+    def default(cls):
+        """A factory method that creates a :class:`Intents` with everything enabled
+        except :attr:`presences` and :attr:`members`.
+        """
+        self = cls.all()
+        self.presences = False
+        self.members = False
         return self
 
     @flag_value
