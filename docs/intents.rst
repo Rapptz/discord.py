@@ -60,6 +60,11 @@ A privileged intent is one that requires you to go to the developer portal and m
 
     Enabling privileged intents when your bot is in over 100 guilds requires going through `bot verification <https://support.discord.com/hc/en-us/articles/360040720412>`_. If your bot is already verified and you would like to enable a privileged intent you must go through `discord support <https://dis.gd/contact>`_ and talk to them about it.
 
+.. note::
+
+    Even if you enable intents through the developer portal, you still have to enable the intents
+    through code as well.
+
 Do I need privileged intents?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -163,3 +168,22 @@ To illustrate the slowdown caused the API change, take a bot who is in 840 guild
 Under the original system this would result in 2 requests to fetch the member list (75 guilds, 20 guilds) roughly taking 60 seconds. With :attr:`Intents.members` but not :attr:`Intents.presences` this requires 840 requests, with a rate limit of 120 requests per 60 seconds means that due to waiting for the rate limit it totals to around 7 minutes of waiting for the rate limit to fetch all the members. With both :attr:`Intents.members` and :attr:`Intents.presences` we mostly get the old behaviour so we're only required to request for the 95 guilds that are large, this is slightly less than our rate limit so it's close to the original timing to fetch the member list.
 
 Unfortunately due to this change being required from Discord there is nothing that the library can do to mitigate this.
+
+I don't like this, can I go back?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For now, the old gateway will still work so downgrading to discord.py v1.4 is still possible and will continue to be supported until Discord officially kills the v6 gateway, which is imminent. However it is paramount that for the future of your bot that you upgrade your code to the new way things are done.
+
+To downgrade you can do the following:
+
+.. code-block:: python3
+
+    python3 -m pip install -U "discord.py>=1.4,<1.5"
+
+On Windows use ``py -3`` instead of ``python3``.
+
+.. warning::
+
+    There is no date in which the old gateway will stop working so it is recommended to update your code instead.
+
+If you truly dislike the direction Discord is going with their API, you can contact them via `support <https://dis.gd/contact>`_
