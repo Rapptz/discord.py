@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .flags import BaseFlags, flag_value, fill_with_flags
+from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
     'Permissions',
@@ -33,7 +33,7 @@ __all__ = (
 
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it
-class permission_alias(flag_value):
+class permission_alias(alias_flag_value):
     pass
 
 def make_permission_alias(alias):
@@ -130,14 +130,6 @@ class Permissions(BaseFlags):
     __ge__ = is_superset
     __lt__ = is_strict_subset
     __gt__ = is_strict_superset
-
-    def __iter__(self):
-        for name, value in self.__class__.__dict__.items():
-            if isinstance(value, permission_alias):
-                continue
-
-            if isinstance(value, flag_value):
-                yield (name, self._has_flag(value.flag))
 
     @classmethod
     def none(cls):

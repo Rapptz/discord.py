@@ -50,6 +50,9 @@ class flag_value:
     def __repr__(self):
         return '<flag_value flag={.flag!r}>'.format(self)
 
+class alias_flag_value(flag_value):
+    pass
+
 def fill_with_flags(*, inverted=False):
     def decorator(cls):
         cls.VALID_FLAGS = {
@@ -98,6 +101,9 @@ class BaseFlags:
 
     def __iter__(self):
         for name, value in self.__class__.__dict__.items():
+            if isinstance(value, alias_flag_value):
+                continue
+            
             if isinstance(value, flag_value):
                 yield (name, self._has_flag(value.flag))
 
@@ -248,6 +254,14 @@ class PublicUserFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PublicUserFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
 
     .. versionadded:: 1.4
 
@@ -323,7 +337,15 @@ class PublicUserFlags(BaseFlags):
 
     @flag_value
     def verified_bot_developer(self):
-        """:class:`bool`: Returns ``True`` if the user is a Verified Bot Developer."""
+        """:class:`bool`: Returns ``True`` if the user is an Early Verified Bot Developer."""
+        return UserFlags.verified_bot_developer.value
+    
+    @alias_flag_value
+    def early_verified_bot_developer(self):
+        """:class:`bool`: An alias for :attr:`verified_bot_developer`.
+
+        .. versionadded:: 1.5
+        """
         return UserFlags.verified_bot_developer.value
 
     def all(self):
