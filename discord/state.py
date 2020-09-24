@@ -32,6 +32,7 @@ import itertools
 import logging
 import math
 import weakref
+import warnings
 import inspect
 import gc
 
@@ -103,7 +104,6 @@ class ConnectionState:
         self.hooks = hooks
         self.shard_count = None
         self._ready_task = None
-        self._fetch_offline = options.get('fetch_offline_members', True)
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
@@ -136,11 +136,22 @@ class ConnectionState:
         if intents is not None:
             if not isinstance(intents, Intents):
                 raise TypeError('intents parameter must be Intent not %r' % type(intents))
-
-            if not intents.members and self._fetch_offline:
-                raise ValueError('Intents.members has be enabled to fetch offline members.')
         else:
             intents = Intents()
+
+        try:
+            chunk_guilds = options['fetch_offline_members']
+        except KeyError:
+            chunk_guilds = options.get('chunk_guilds_at_startup', intents.members)
+        else:
+            msg = 'fetch_offline_members is deprecated, use chunk_guilds_at_startup instead'
+            warnings.warn(msg, DeprecationWarning, stacklevel=4)
+
+        self._chunk_guilds = chunk_guilds
+
+        # Ensure these two are set properly
+        if not intents.members and self._chunk_guilds:
+            raise ValueError('Intents.members has be enabled to chunk guilds at startup.')
 
         cache_flags = options.get('member_cache_flags', None)
         if cache_flags is None:
@@ -333,7 +344,7 @@ class ConnectionState:
 
     def _guild_needs_chunking(self, guild):
         # If presences are enabled then we get back the old guild.large behaviour
-        return self._fetch_offline and not guild.chunked and not (self._intents.presences and not guild.large)
+        return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
 
     def _get_guild_channel(self, data):
         channel_id = int(data['channel_id'])

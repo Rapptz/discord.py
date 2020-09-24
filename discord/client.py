@@ -153,10 +153,14 @@ class Client:
 
         .. versionadded:: 1.5
     fetch_offline_members: :class:`bool`
-        Indicates if :func:`.on_ready` should be delayed to fetch all offline
-        members from the guilds the client belongs to. If this is ``False``\, then
-        no offline members are received and :meth:`request_offline_members`
-        must be used to fetch the offline members of the guild.
+        A deprecated alias of ``chunk_guilds_at_startup``.
+    chunk_guilds_at_startup: :class:`bool`
+        Indicates if :func:`.on_ready` should be delayed to chunk all guilds
+        at start-up if necessary. This operation is incredibly slow for large
+        amounts of guilds. The default is ``True`` if :attr:`Intents.members`
+        is ``True``.
+
+        .. versionadded:: 1.5
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
@@ -243,9 +247,7 @@ class Client:
             'before_identify': self._call_before_identify_hook
         }
 
-        self._connection = ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                                           hooks=self._hooks, syncer=self._syncer, http=self.http, loop=self.loop, **options)
-
+        self._connection = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed = False
         self._ready = asyncio.Event()
@@ -260,6 +262,10 @@ class Client:
 
     def _get_websocket(self, guild_id=None, *, shard_id=None):
         return self.ws
+
+    def _get_state(self, **options):
+        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
+                               hooks=self._hooks, syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
     async def _syncer(self, guilds):
         await self.ws.request_sync(guilds)
