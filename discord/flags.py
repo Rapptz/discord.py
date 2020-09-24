@@ -103,7 +103,7 @@ class BaseFlags:
         for name, value in self.__class__.__dict__.items():
             if isinstance(value, alias_flag_value):
                 continue
-            
+
             if isinstance(value, flag_value):
                 yield (name, self._has_flag(value.flag))
 
@@ -339,7 +339,7 @@ class PublicUserFlags(BaseFlags):
     def verified_bot_developer(self):
         """:class:`bool`: Returns ``True`` if the user is an Early Verified Bot Developer."""
         return UserFlags.verified_bot_developer.value
-    
+
     @alias_flag_value
     def early_verified_bot_developer(self):
         """:class:`bool`: An alias for :attr:`verified_bot_developer`.
@@ -785,8 +785,8 @@ class MemberCacheFlags(BaseFlags):
     """Controls the library's cache policy when it comes to members.
 
     This allows for finer grained control over what members are cached.
-    For more information, check :attr:`Client.member_cache_flags`. Note
-    that the bot's own member is always cached.
+    Note that the bot's own member is always cached. This class is passed
+    to the ``member_cache_flags`` parameter in :class:`Client`.
 
     Due to a quirk in how Discord works, in order to ensure proper cleanup
     of cache resources it is recommended to have :attr:`Intents.members`
