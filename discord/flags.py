@@ -443,11 +443,11 @@ class Intents(BaseFlags):
 
         This also corresponds to the following attributes and classes in terms of cache:
 
-        - :attr:`Client.get_all_members`
+        - :meth:`Client.get_all_members`
         - :meth:`Guild.chunk`
         - :meth:`Guild.fetch_members`
-        - :meth:`Guild.members`
         - :meth:`Guild.get_member`
+        - :attr:`Guild.members`
         - :attr:`Member.roles`
         - :attr:`Member.nick`
         - :attr:`Member.premium_since`
