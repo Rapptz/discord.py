@@ -35,6 +35,7 @@ import time
 import json
 import sys
 import re
+import io
 
 from .errors import ClientException
 from .opus import Encoder as OpusEncoder
@@ -203,7 +204,7 @@ class FFmpegPCMAudio(FFmpegAudio):
 
     def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
         args = []
-        subprocess_kwargs = {'stdin': source if pipe else subprocess.DEVNULL, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -218,6 +219,15 @@ class FFmpegPCMAudio(FFmpegAudio):
         args.append('pipe:1')
 
         super().__init__(source, executable=executable, args=args, **subprocess_kwargs)
+        proc = self._process
+
+        if proc.stdin:
+            if isinstance(source, io.BufferedIOBase):
+                bytes_ = source.read()
+            else:
+                bytes_ = source
+
+            self._stdout = io.BytesIO(proc.communicate(input=bytes_)[0])
 
     def read(self):
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
