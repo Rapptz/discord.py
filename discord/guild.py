@@ -711,7 +711,7 @@ class Guild(Hashable):
         .. warning::
 
             Due to a Discord limitation, in order for this attribute to remain up-to-date and
-            accurate, it requires :attr:`Intent.members` to be specified.
+            accurate, it requires :attr:`Intents.members` to be specified.
 
         """
         return self._member_count
