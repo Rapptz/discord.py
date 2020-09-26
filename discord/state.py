@@ -232,6 +232,12 @@ class ConnectionState:
         return u.id if u else None
 
     @property
+    def intents(self):
+        ret = Intents.none()
+        ret.value = self._intents.value
+        return ret
+
+    @property
     def voice_clients(self):
         return list(self._voice_clients.values())
 

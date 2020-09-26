@@ -749,6 +749,14 @@ class Client:
         else:
             raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
 
+    @property
+    def intents(self):
+        """:class:`Intents`: The intents configured for this connection.
+
+        .. versionadded:: 1.5
+        """
+        return self._connection.intents
+
     # helpers/getters
 
     @property
