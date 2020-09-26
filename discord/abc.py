@@ -89,6 +89,8 @@ class User(metaclass=abc.ABCMeta):
     - :class:`~discord.User`
     - :class:`~discord.ClientUser`
     - :class:`~discord.Member`
+    - :class:`~discord.TeamMember`
+    - :class:`~discord.WidgetMember`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
 

@@ -115,6 +115,8 @@ class WidgetMember(BaseUser):
         The member's discriminator.
     bot: :class:`bool`
         Whether the member is a bot.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     status: :class:`Status`
         The member's status.
     nick: Optional[:class:`str`]

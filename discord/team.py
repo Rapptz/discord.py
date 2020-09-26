@@ -111,6 +111,8 @@ class TeamMember(BaseUser):
         The avatar hash the team member has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     team: :class:`Team`
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`
