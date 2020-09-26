@@ -28,6 +28,7 @@ import abc
 import sys
 import copy
 import asyncio
+import itertools
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -238,7 +239,9 @@ class User(metaclass=abc.ABCMeta):
                 return NotImplemented
 
             mro = C.__mro__
-            for attr in ('display_name', 'mention', 'name', 'avatar', 'discriminator', 'bot'):
+            undefined = ('name', 'avatar', 'discriminator', 'bot', 'system')
+            attrs = (attr for attr in cls.__dict__ if not attr.startswith('_'))
+            for attr in itertools.chain(undefined, attrs):
                 for base in mro:
                     if attr in base.__dict__:
                         break
