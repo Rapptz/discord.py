@@ -270,7 +270,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_image', {}))
 
-    def set_image(self, *, url):
+    def set_image(self, *, url=EmptyEmbed):
         """Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -279,9 +279,12 @@ class Embed:
         .. versionchanged:: 1.4
             Passing :attr:`Empty` removes the image.
 
+        .. versionchanged:: 1.5
+            The default argument is not :attr:`Empty`.
+
         Parameters
         -----------
-        url: :class:`str`
+        url: Union[:class:`str`, :attr:`Empty`]
             The source URL for the image. Only HTTP(S) is supported.
         """
 
@@ -312,7 +315,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_thumbnail', {}))
 
-    def set_thumbnail(self, *, url):
+    def set_thumbnail(self, *, url=EmptyEmbed):
         """Sets the thumbnail for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -321,9 +324,12 @@ class Embed:
         .. versionchanged:: 1.4
             Passing :attr:`Empty` removes the thumbnail.
 
+        .. versionchanged:: 1.5
+            The default argument is now :attr:`Empty`.
+
         Parameters
         -----------
-        url: :class:`str`
+        url: Union[:class:`str`, :attr:`Empty`]
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
@@ -373,21 +379,31 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_author', {}))
 
-    def set_author(self, *, name, url=EmptyEmbed, icon_url=EmptyEmbed):
+    def set_author(self, *, name=None, url=EmptyEmbed, icon_url=EmptyEmbed):
         """Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.5
+            The name defaults to None, allowing you to change the url and icon_url without having to provide
+            the name again.
+
         Parameters
         -----------
-        name: :class:`str`
+        name: Optional[:class:`str`]
             The name of the author.
-        url: :class:`str`
+        url: Union[:class:`str`, :attr:`Empty`]
             The URL for the author.
-        icon_url: :class:`str`
+        icon_url: Union[:class:`str`, :attr:`Empty`]
             The URL of the author icon. Only HTTP(S) is supported.
         """
+
+        if not hasattr(self, "_author") and name is None:
+            raise ValueError("Author has to set in order to have name=None")
+        elif name is None:
+            name = self._author["name"]
+
 
         self._author = {
             'name': str(name)
@@ -516,7 +532,7 @@ class Embed:
         except (AttributeError, IndexError):
             pass
 
-    def set_field_at(self, index, *, name, value, inline=True):
+    def set_field_at(self, index, *, name=None, value=None, inline=True):
         """Modifies a field to the embed object.
 
         The index must point to a valid pre-existing field.
@@ -524,13 +540,17 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
+        .. versionchanged:: 1.5
+            The name and value parameters default to None, which uses the existing values
+            for the name and/or value.
+
         Parameters
         -----------
         index: :class:`int`
             The index of the field to modify.
-        name: :class:`str`
+        name: Optional[:class:`str`]
             The name of the field.
-        value: :class:`str`
+        value: Optional[:class:`str`]
             The value of the field.
         inline: :class:`bool`
             Whether the field should be displayed inline.
@@ -546,8 +566,8 @@ class Embed:
         except (TypeError, IndexError, AttributeError):
             raise IndexError('field index out of range')
 
-        field['name'] = str(name)
-        field['value'] = str(value)
+        field['name'] = (name and str(name)) or field['name']
+        field['value'] = (value and str(value)) or field['value']
         field['inline'] = inline
         return self
 
