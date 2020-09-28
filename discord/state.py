@@ -139,6 +139,9 @@ class ConnectionState:
         else:
             intents = Intents.default()
 
+        if not intents.guilds:
+            log.warning('Guilds intent seems to be disabled. This may cause state related issues.')
+
         try:
             chunk_guilds = options['fetch_offline_members']
         except KeyError:
