@@ -731,13 +731,22 @@ class ConnectionState:
         member = Member(guild=guild, data=data, state=self)
         if self._member_cache_flags.joined:
             guild._add_member(member)
-        guild._member_count += 1
+
+        try:
+            guild._member_count += 1
+        except AttributeError:
+            pass
+
         self.dispatch('member_join', member)
 
     def parse_guild_member_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            guild._member_count -= 1
+            try:
+                guild._member_count -= 1
+            except AttributeError:
+                pass
+
             user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
             if member is not None:
