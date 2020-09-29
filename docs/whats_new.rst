@@ -11,6 +11,66 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p5p0:
+
+v1.5.0
+--------
+
+This version came with forced breaking changes that Discord is requiring all bots to go through on October 7th. It is highly recommended to read the documentation on intents, :ref:`intents_primer`.
+
+API Changes
+~~~~~~~~~~~~~
+
+- Members and presences will no longer be retrieved due to an API change. See :ref:`privileged_intents` for more info.
+- As a consequence, fetching offline members is disabled if the members intent is not enabled.
+
+New Features
+~~~~~~~~~~~~~~
+
+- Support for gateway intents, passed via ``intents`` in :class:`Client` using :class:`Intents`.
+- Add :attr:`VoiceRegion.south_korea` (:issue:`5233`)
+- Add support for ``__eq__`` for :class:`Message` (:issue:`5789`)
+- Add :meth:`Colour.dark_theme` factory method (:issue:`1584`)
+- Add :meth:`AllowedMentions.none` and :meth:`AllowedMentions.all` (:issue:`5785`)
+- Add more concrete exceptions for 500 class errors under :class:`DiscordServerError` (:issue:`5797`)
+- Implement :class:`VoiceProtocol` to better intersect the voice flow.
+- Add :meth:`Guild.chunk` to fully chunk a guild.
+- Add :class:`MemberCacheFlags` to better control member cache. See :ref:`intents_member_cache` for more info.
+- Add support for :attr:`ActivityType.competing` (:issue:`5823`)
+    - This seems currently unused API wise.
+
+- Add support for message references, :attr:`Message.reference` (:issue:`5754`, :issue:`5832`)
+- Add alias for :class:`ColourConverter` under ``ColorConverter`` (:issue:`5773`)
+- Add alias for :attr:`PublicUserFlags.verified_bot_developer` under :attr:`PublicUserFlags.early_verified_bot_developer` (:issue:`5849`)
+- |commands| Add support for ``require_var_positional`` for :class:`Command` (:issue:`5793`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix issue with :meth:`Guild.by_category` not showing certain channels.
+- Fix :attr:`abc.GuildChannel.permissions_synced` always being ``False`` (:issue:`5772`)
+- Fix handling of cloudflare bans on webhook related requests (:issue:`5221`)
+- Fix cases where a keep-alive thread would ack despite already dying (:issue:`5800`)
+- Fix cases where a :class:`Member` reference would be stale when cache is disabled in message events (:issue:`5819`)
+- Fix ``allowed_mentions`` not being sent when sending a single file (:issue:`5835`)
+- Fix ``overwrites`` being ignored in :meth:`abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
+- |commands| Fix exceptions being raised improperly in command invoke hooks (:issue:`5799`)
+- |commands| Fix commands not being properly ejected during errors in a cog injection (:issue:`5804`)
+- |commands| Fix cooldown timing ignoring edited timestamps.
+- |tasks| Fix tasks extending the next iteration on handled exceptions (:issue:`5762`, :issue:`5763`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Webhook requests are now logged (:issue:`5798`)
+- Remove caching layer from :attr:`AutoShardedClient.shards`. This was causing issues if queried before launching shards.
+- Gateway rate limits are now handled.
+- Warnings logged due to missed caches are now changed to DEBUG log level.
+- Some strings are now explicitly interned to reduce memory usage.
+- Usage of namedtuples has been reduced to avoid potential breaking changes in the future (:issue:`5834`)
+- |commands| All :class:`BadArgument` exceptions from the built-in converters now raise concrete exceptions to better tell them apart (:issue:`5748`)
+- |tasks| Lazily fetch the event loop to prevent surprises when changing event loop policy (:issue:`5808`)
+
 .. _vp1p4p2:
 
 v1.4.2
