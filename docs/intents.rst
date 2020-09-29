@@ -25,6 +25,12 @@ For example, if you want a bot that functions without spammy events like presenc
     intents.typing = False
     intents.presences = False
 
+    # Somewhere else:
+    # client = discord.Client(intents=intents)
+    # or
+    # from discord.ext import commands
+    # bot = commands.Bot(command_prefix='!', intents=intents)
+
 Note that this doesn't enable :attr:`Intents.members` since it's a privileged intent.
 
 Another example showing a bot that only deals with messages and guild information:
@@ -35,6 +41,12 @@ Another example showing a bot that only deals with messages and guild informatio
     intents = discord.Intents(messages=True, guilds=True)
     # If you also want reaction events enable the following:
     # intents.reactions = True
+
+    # Somewhere else:
+    # client = discord.Client(intents=intents)
+    # or
+    # from discord.ext import commands
+    # bot = commands.Bot(command_prefix='!', intents=intents)
 
 .. _privileged_intents:
 
@@ -152,7 +164,7 @@ For example:
     # client = discord.Client(intents=intents)
     # or
     # from discord.ext import commands
-    # bot = commands.Bot(command_prefix="!", intents=intents)
+    # bot = commands.Bot(command_prefix='!', intents=intents)
 
 Why does ``on_ready`` take so long to fire?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,6 +198,6 @@ On Windows use ``py -3`` instead of ``python3``.
 
 .. warning::
 
-    There is no date in which the old gateway will stop working so it is recommended to update your code instead.
+    There is no currently set date in which the old gateway will stop working so it is recommended to update your code instead.
 
 If you truly dislike the direction Discord is going with their API, you can contact them via `support <https://dis.gd/contact>`_
