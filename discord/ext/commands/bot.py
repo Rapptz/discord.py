@@ -489,7 +489,7 @@ class BotBase(GroupMixin):
 
         A cog is a class that has its own event listeners and commands.
 
-        .. versionchanged:: 1.5
+        .. versionchanged:: 2.0
 
             :exc:`.ClientException` is raised when a cog with the same name
             is already loaded.
@@ -502,7 +502,7 @@ class BotBase(GroupMixin):
             If a previously loaded cog with the same name should be ejected
             instead of raising an error.
 
-            .. versionadded:: 1.5
+            .. versionadded:: 2.0
 
         Raises
         -------
