@@ -121,7 +121,11 @@ def flatten_user(cls):
 _BaseUser = discord.abc.User
 
 @flatten_user
-class Member(discord.abc.Messageable, _BaseUser):
+class _BaseMember:
+    pass
+
+@flatten_user
+class Member(_BaseMember, discord.abc.Messageable, _BaseUser):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
