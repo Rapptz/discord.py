@@ -134,8 +134,9 @@ class BaseUser(_BaseUser):
 
     @property
     def public_flags(self):
-        """:class:`PublicUserFlags`: The publicly available flags the user has."""
         return PublicUserFlags._from_value(self._public_flags)
+
+    public_flags.__doc__ = _BaseUser.public_flags.__doc__
 
     @property
     def avatar_url(self):
@@ -150,8 +151,9 @@ class BaseUser(_BaseUser):
         return self.avatar_url_as(format=None, size=1024)
 
     def is_avatar_animated(self):
-        """:class:`bool`: Indicates if the user has an animated avatar."""
         return bool(self.avatar and self.avatar.startswith('a_'))
+
+    is_avatar_animated.__doc__ = _BaseUser.is_avatar_animated.__doc__
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
         """Returns an :class:`Asset` for the avatar the user has.
@@ -196,8 +198,9 @@ class BaseUser(_BaseUser):
 
     @property
     def default_avatar_url(self):
-        """:class:`Asset`: Returns a URL for a user's default avatar."""
         return Asset(self._state, '/embed/avatars/{}.png'.format(self.default_avatar.value))
+
+    default_avatar_url.__doc__ = _BaseUser.default_avatar_url.__doc__
 
     @property
     def colour(self):
@@ -219,24 +222,14 @@ class BaseUser(_BaseUser):
 
     @property
     def mention(self):
-        """:class:`str`: Returns a string that allows you to mention the given user."""
         return '<@{0.id}>'.format(self)
 
+    mention.__doc__ = _BaseUser.mention.__doc__
+
     def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
-
-        Basically equivalent to:
-
-        .. code-block:: python3
-
-            channel.permissions_for(self)
-
-        Parameters
-        -----------
-        channel: :class:`abc.GuildChannel`
-            The channel to check your permissions for.
-        """
         return channel.permissions_for(self)
+
+    permissions_in.__doc__ = _BaseUser.permissions_in.__doc__
 
     @property
     def created_at(self):
@@ -256,19 +249,6 @@ class BaseUser(_BaseUser):
         return self.name
 
     def mentioned_in(self, message):
-        """Checks if the user is mentioned in the specified message.
-
-        Parameters
-        -----------
-        message: :class:`Message`
-            The message to check if you're mentioned in.
-
-        Returns
-        -------
-        :class:`bool`
-            Indicates if the user is mentioned in the message.
-        """
-
         if message.mention_everyone:
             return True
 
@@ -277,6 +257,8 @@ class BaseUser(_BaseUser):
                 return True
 
         return False
+
+    mentioned_in.__doc__ = _BaseUser.mentioned_in.__doc__
 
 class ClientUser(BaseUser):
     """Represents your Discord user.
