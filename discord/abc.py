@@ -102,8 +102,71 @@ class User(metaclass=abc.ABCMeta):
         The avatar hash the user has.
     bot: :class:`bool`
         If the user is a bot account.
+    system: :class:`bool`
+        Specifies if the user is a system user (i.e. represents Discord officially).
     """
     __slots__ = ()
+
+    @property
+    @abc.abstractmethod
+    def avatar_url(self):
+        """:class:`~discord.Asset`: Returns an :class:`~discord.Asset` for the avatar the user has.
+
+        This is equivalent to calling :meth:`avatar_url_as` with the default parameters.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def avatar_url_as(self, *, format, static_format, size):
+        """Returns an :class:`~discord.Asset` for the avatar the user has.
+
+        Parameters
+        -----------
+        format: Optional[:class:`str`]
+            The format to attempt to convert the avatar to.
+        static_format: Optional[:class:`str`]
+            Format to attempt to convert only non-animated avatars to.
+        size: :class:`int`
+            The size of the image to display.
+
+        Returns
+        --------
+        :class:`~discord.Asset`
+            The resulting CDN asset.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def color(self):
+        """:class:`~discord.Colour`: A property that returns a color denoting the rendered color
+        for the user.
+
+        There is an alias for this named :attr:`colour`.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def colour(self):
+        """:class:`~discord.Colour`: A property that returns a colour denoting the rendered colour
+        for the user.
+
+        There is an alias for this named :attr:`color`.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def default_avatar(self):
+        """:class:`~discord.DefaultAvatar`: Returns the default avatar for a given user."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def default_avatar_url(self):
+        """:class:`~discord.Asset`: Returns a URL for a user's default avatar."""
+        raise NotImplementedError
 
     @property
     @abc.abstractmethod
@@ -111,10 +174,59 @@ class User(metaclass=abc.ABCMeta):
         """:class:`str`: Returns the user's display name."""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def is_avatar_animated(self):
+        """:class:`bool`: Indicates if the user has an animated avatar."""
+        raise NotImplementedError
+
     @property
     @abc.abstractmethod
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention the given user."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def mentioned_in(self, message):
+        """Checks if the user is mentioned in the specified message.
+
+        Parameters
+        -----------
+        message: :class:`~discord.Message`
+            The message to check if you're mentioned in.
+
+        Returns
+        -------
+        :class:`bool`
+            Indicates if the user is mentioned in the message.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def permissions_in(self, channel):
+        """An alias for :meth:`abc.GuildChannel.permissions_for<discord.abc.GuildChannel.permissions_for>`.
+
+        Basically equivalent to:
+
+        .. code-block:: python3
+
+            channel.permissions_for(self)
+
+        Parameters
+        -----------
+        channel: :class:`abc.GuildChannel<discord.abc.GuildChannel>`
+            The channel to check your permissions for.
+
+        Returns
+        -------
+        :class:`~discord.Permissions`
+            The resolved permissions for the member.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def public_flags(self):
+        """:class:`~discord.PublicUserFlags`: The publicly available flags the user has."""
         raise NotImplementedError
 
     @classmethod
