@@ -71,6 +71,34 @@ Miscellaneous
 - |commands| All :class:`BadArgument` exceptions from the built-in converters now raise concrete exceptions to better tell them apart (:issue:`5748`)
 - |tasks| Lazily fetch the event loop to prevent surprises when changing event loop policy (:issue:`5808`)
 
+.. _vp1p4p2:
+
+v1.4.2
+--------
+
+This is a maintenance release with backports from :ref:`vp1p5p0`.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix issue with :meth:`Guild.by_category` not showing certain channels.
+- Fix :attr:`abc.GuildChannel.permissions_synced` always being ``False`` (:issue:`5772`)
+- Fix handling of cloudflare bans on webhook related requests (:issue:`5221`)
+- Fix cases where a keep-alive thread would ack despite already dying (:issue:`5800`)
+- Fix cases where a :class:`Member` reference would be stale when cache is disabled in message events (:issue:`5819`)
+- Fix ``allowed_mentions`` not being sent when sending a single file (:issue:`5835`)
+- Fix ``overwrites`` being ignored in :meth:`abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
+- |commands| Fix exceptions being raised improperly in command invoke hooks (:issue:`5799`)
+- |commands| Fix commands not being properly ejected during errors in a cog injection (:issue:`5804`)
+- |commands| Fix cooldown timing ignoring edited timestamps.
+- |tasks| Fix tasks extending the next iteration on handled exceptions (:issue:`5762`, :issue:`5763`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Remove caching layer from :attr:`AutoShardedClient.shards`. This was causing issues if queried before launching shards.
+- |tasks| Lazily fetch the event loop to prevent surprises when changing event loop policy (:issue:`5808`)
+
 .. _vp1p4p1:
 
 v1.4.1
