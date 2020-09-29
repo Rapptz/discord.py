@@ -373,20 +373,17 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     @property
     def mention(self):
-        """:class:`str`: Returns a string that allows you to mention the member."""
         if self.nick:
             return '<@!%s>' % self.id
         return '<@%s>' % self.id
 
+    mention.__doc__ = _BaseUser.mention.__doc__
+
     @property
     def display_name(self):
-        """:class:`str`: Returns the user's display name.
-
-        For regular users this is just their username, but
-        if they have a guild specific nickname then that
-        is returned instead.
-        """
         return self.nick if self.nick is not None else self.name
+
+    display_name.__doc__ = User.display_name.__doc__
 
     @property
     def activity(self):
@@ -401,18 +398,6 @@ class Member(discord.abc.Messageable, _BaseUser):
             return self.activities[0]
 
     def mentioned_in(self, message):
-        """Checks if the member is mentioned in the specified message.
-
-        Parameters
-        -----------
-        message: :class:`Message`
-            The message to check if you're mentioned in.
-
-        Returns
-        -------
-        :class:`bool`
-            Indicates if the member is mentioned in the message.
-        """
         if message.guild is None or message.guild.id != self.guild.id:
             return False
 
@@ -425,26 +410,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         return False
 
+    mentioned_in.__doc__ = _BaseUser.mentioned_in.__doc__
+
     def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
-
-        Basically equivalent to:
-
-        .. code-block:: python3
-
-            channel.permissions_for(self)
-
-        Parameters
-        -----------
-        channel: :class:`abc.GuildChannel`
-            The channel to check your permissions for.
-
-        Returns
-        -------
-        :class:`Permissions`
-            The resolved permissions for the member.
-        """
         return channel.permissions_for(self)
+
+    permissions_in.__doc__ = _BaseUser.permissions_in.__doc__
 
     @property
     def top_role(self):
