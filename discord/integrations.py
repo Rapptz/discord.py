@@ -85,7 +85,7 @@ class Application:
         self.bot = User(state=state, data=data['bot'])
 
     def __repr__(self):
-        return '<Application id={0.id} name={0.name!r}, bot={0.bot!r}>'.format(self)
+        return '<Application id={0.id} name={0.name!r} bot={0.bot!r}>'.format(self)
 
 class Integration:
     """Represents a guild integration.
