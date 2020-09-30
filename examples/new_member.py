@@ -1,3 +1,5 @@
+# This example requires the 'members' privileged intents
+
 import discord
 
 class MyClient(discord.Client):
