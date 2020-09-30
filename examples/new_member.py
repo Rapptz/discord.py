@@ -14,5 +14,8 @@ class MyClient(discord.Client):
             await guild.system_channel.send(to_send)
 
 
-client = MyClient()
+intents = discord.Intents.default()
+intents.members = True
+
+client = MyClient(intents=intents)
 client.run('token')
