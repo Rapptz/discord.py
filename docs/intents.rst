@@ -157,7 +157,7 @@ For example:
 .. code-block:: python3
 
     import discord
-    intents = discord.Intents()
+    intents = discord.Intents.default()
     intents.members = True
 
     # Somewhere else:
