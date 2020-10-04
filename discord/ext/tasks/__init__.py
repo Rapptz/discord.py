@@ -37,12 +37,17 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+def time_diff(x, y):
+    """Returns the timedelta between two times"""
+    now = datetime.datetime.now().date()
+    return datetime.datetime.combine(now, x) - datetime.datetime.combine(now, y)
+
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
 
     The main interface to create this is through :func:`loop`.
     """
-    def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
+    def __init__(self, coro, at, seconds, hours, minutes, count, reconnect, loop):
         self.coro = coro
         self.reconnect = reconnect
         self.loop = loop
@@ -68,6 +73,19 @@ class Loop:
             raise ValueError('count must be greater than 0 or None.')
 
         self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
+    
+        self._at = at
+        if self._at:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            self._realignment = time_diff(now.time(), at).total_seconds()
+            if self._realignment > 0:
+                # The time today already passed. Wait tomorrow.
+                self._realignment = 86400 - self._realignment
+            elif self._realignment < 0:
+                self._realignment = abs(self._realignment)
+        else:
+            self._realignment = 0
+    
         self._last_iteration_failed = False
         self._last_iteration = None
         self._next_iteration = None
@@ -91,6 +109,9 @@ class Loop:
         sleep_until = discord.utils.sleep_until
         self._last_iteration_failed = False
         self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
+        if self._realignment:
+            self._next_iteration += datetime.timedelta(seconds=self._realignment)
+            await sleep_until(self._next_iteration)
         try:
             await asyncio.sleep(0) # allows canceling in before_loop
             while True:
@@ -134,7 +155,7 @@ class Loop:
         if obj is None:
             return self
 
-        copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
+        copy = Loop(self.coro, at = self._at, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
                                count=self.count, reconnect=self.reconnect, loop=self.loop)
         copy._injected = obj
         copy._before_loop = self._before_loop
@@ -444,12 +465,15 @@ class Loop:
         self.hours = hours
         self.minutes = minutes
 
-def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
+def loop(*, at=None, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
     Parameters
     ------------
+    at: :class:`datetime.time`
+        When to run the task at the initial iteration. Afterwards, the
+        loop will run each interval as specified in the other parameters.
     seconds: :class:`float`
         The number of seconds between every iteration.
     minutes: :class:`float`
@@ -476,6 +500,7 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
     """
     def decorator(func):
         kwargs = {
+            'at': at,
             'seconds': seconds,
             'minutes': minutes,
             'hours': hours,
