@@ -68,7 +68,11 @@ class Team:
 
     @property
     def icon_url(self):
-        """:class:`.Asset`: Retrieves the team's icon asset."""
+        """:class:`.Asset`: Retrieves the team's icon asset.
+
+        This is equivalent to calling :meth:`icon_url_as` with
+        the default parameters ('webp' format and a size of 1024).
+        """
         return self.icon_url_as()
 
     def icon_url_as(self, *, format=None, size=1024):

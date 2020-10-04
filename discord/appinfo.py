@@ -131,6 +131,9 @@ class AppInfo:
     def icon_url(self):
         """:class:`.Asset`: Retrieves the application's icon asset.
 
+        This is equivalent to calling :meth:`icon_url_as` with
+        the default parameters ('webp' format and a size of 1024).
+
         .. versionadded:: 1.3
         """
         return self.icon_url_as()
@@ -167,6 +170,9 @@ class AppInfo:
     @property
     def cover_image_url(self):
         """:class:`.Asset`: Retrieves the cover image on a store embed.
+
+        This is equivalent to calling :meth:`cover_image_url_as` with
+        the default parameters ('webp' format and a size of 1024).
 
         .. versionadded:: 1.3
         """

@@ -1154,7 +1154,11 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     @property
     def icon_url(self):
-        """:class:`Asset`: Returns the channel's icon asset if available."""
+        """:class:`Asset`: Returns the channel's icon asset if available.
+
+        This is equivalent to calling :meth:`icon_url_as` with
+        the default parameters ('webp' format and a size of 1024).
+        """
         return self.icon_url_as()
 
     def icon_url_as(self, *, format=None, size=1024):
