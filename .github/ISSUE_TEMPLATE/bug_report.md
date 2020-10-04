@@ -20,6 +20,9 @@ labels: bug
 
 <!-- What actually happened. If there is a traceback, please show the entire thing. -->
 
+## Intents
+
+<!-- What intents are you using for your bot? This is the `discord.Intents` class you pass to the client -->
 
 ## Checklist
 
@@ -28,6 +31,7 @@ labels: bug
 - [ ] I have searched the open issues for duplicates.
 - [ ] I have shown the entire traceback, if possible.
 - [ ] I have removed my token from display, if visible.
+- [ ] I have provided the intents that my bot is using.
 
 ## System Information
 
