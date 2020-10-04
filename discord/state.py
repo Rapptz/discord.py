@@ -507,9 +507,10 @@ class ConnectionState:
         message = self._get_message(raw.message_id)
         if message is not None:
             older_message = copy.copy(message)
-            raw.cached_message = older_message
-            self.dispatch('raw_message_edit', raw)
+            raw.before_cached_message = older_message
+            raw.after_cached_message = message
             message._update(data)
+            self.dispatch('raw_message_edit', raw)
             self.dispatch('message_edit', older_message, message)
         else:
             self.dispatch('raw_message_edit', raw)

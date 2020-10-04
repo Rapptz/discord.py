@@ -96,17 +96,20 @@ class RawMessageUpdateEvent(_RawReprMixin):
 
     data: :class:`dict`
         The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
-    cached_message: Optional[:class:`Message`]
-        The cached message, if found in the internal message cache.
+    before_cached_message: Optional[:class:`Message`]
+        The cached message before it was updated, if found in the internal message cache.
+    after_cached_message: Optional[:class:`Message`]
+        The cached message after it was updated, if found in the internal message cache.
     """
 
-    __slots__ = ('message_id', 'channel_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'data', 'before_cached_message', 'after_cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
         self.channel_id = int(data['channel_id'])
         self.data = data
-        self.cached_message = None
+        self.before_cached_message = None
+        self.after_cached_message = None
 
 class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
