@@ -83,7 +83,7 @@ class Team:
         -----------
         format: Optional[:class:`str`]
             The format to attempt to convert the icon to.
-            If the format is ``None``, then it is automatically detected into either 'jpg'.
+            If the format is ``None``, then it automatically uses 'webp'.
         size: :class:`int`
             The size of the image to display.
 

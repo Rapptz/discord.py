@@ -98,7 +98,7 @@ class Asset:
         if format is not None and format not in VALID_STATIC_FORMATS:
             raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
         else:
-            format = 'jpg'
+            format = 'webp'
 
         url = '/{0}-icons/{1.id}/{1.icon}.{2}?size={3}'.format(path, object, format, size)
         return cls(state, url)
@@ -113,7 +113,7 @@ class Asset:
         if format is not None and format not in VALID_STATIC_FORMATS:
             raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
         else:
-            format = 'jpg'
+            format = 'webp'
 
         url = '/app-assets/{0.id}/store/{0.cover_image}.{1}?size={2}'.format(obj, format, size)
         return cls(state, url)
