@@ -75,7 +75,7 @@ class Team:
         """
         return self.icon_url_as()
 
-    def icon_url_as(self, *, format=None, size=1024):
+    def icon_url_as(self, *, format='None', size=1024):
         """Returns an :class:`Asset` for the icon the team has.
 
         The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
@@ -85,9 +85,8 @@ class Team:
 
         Parameters
         -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the icon to.
-            If the format is ``None``, then it automatically uses 'webp'.
+        format: :class:`str`
+            The format to attempt to convert the icon to. Defaults to 'webp'.
         size: :class:`int`
             The size of the image to display.
 

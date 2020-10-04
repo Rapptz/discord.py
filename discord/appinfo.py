@@ -138,7 +138,7 @@ class AppInfo:
         """
         return self.icon_url_as()
 
-    def icon_url_as(self, *, format=None, size=1024):
+    def icon_url_as(self, *, format='webp', size=1024):
         """Returns an :class:`Asset` for the icon the application has.
 
         The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
@@ -148,9 +148,8 @@ class AppInfo:
 
         Parameters
         -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the icon to.
-            If the format is ``None``, then it automatically uses 'webp'.
+        format: :class:`str`
+            The format to attempt to convert the icon to. Defaults to 'webp'.
         size: :class:`int`
             The size of the image to display.
 
@@ -178,7 +177,7 @@ class AppInfo:
         """
         return self.cover_image_url_as()
 
-    def cover_image_url_as(self, *, format=None, size=1024):
+    def cover_image_url_as(self, *, format='webp', size=1024):
         """Returns an :class:`Asset` for the image on store embeds
         if this application is a game sold on Discord.
 
@@ -189,9 +188,8 @@ class AppInfo:
 
         Parameters
         -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the image to.
-            If the format is ``None``, then it automatically uses 'webp'.
+        format: :class:`str`
+            The format to attempt to convert the image to. Defaults to 'webp'.
         size: :class:`int`
             The size of the image to display.
 
