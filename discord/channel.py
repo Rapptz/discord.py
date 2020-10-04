@@ -1155,7 +1155,35 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     @property
     def icon_url(self):
         """:class:`Asset`: Returns the channel's icon asset if available."""
-        return Asset._from_icon(self._state, self, 'channel')
+        return self.icon_url_as()
+
+    def icon_url_as(self, *, format=None, size=1024):
+        """Returns an :class:`Asset` for the icon the application has.
+
+        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
+        The size must be a power of 2 between 16 and 4096.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        format: Optional[:class:`str`]
+            The format to attempt to convert the avatar to.
+            If the format is ``None``, then it is automatically detected into either 'jpg'.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_icon(self._state, self, 'channel', format=format, size=size)
 
     @property
     def created_at(self):
