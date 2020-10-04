@@ -146,7 +146,7 @@ class AppInfo:
         Parameters
         -----------
         format: Optional[:class:`str`]
-            The format to attempt to convert the avatar to.
+            The format to attempt to convert the icon to.
             If the format is ``None``, then it is automatically detected into either 'jpg'.
         size: :class:`int`
             The size of the image to display.
@@ -184,7 +184,7 @@ class AppInfo:
         Parameters
         -----------
         format: Optional[:class:`str`]
-            The format to attempt to convert the avatar to.
+            The format to attempt to convert the image to.
             If the format is ``None``, then it is automatically detected into either 'jpg'.
         size: :class:`int`
             The size of the image to display.
