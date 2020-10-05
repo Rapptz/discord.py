@@ -181,6 +181,7 @@ class MessageType(Enum):
     guild_discovery_grace_period_initial_warning = 16
     guild_discovery_grace_period_final_warning   = 17
     thread_created                               = 18
+    reply                                        = 19
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
