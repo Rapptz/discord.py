@@ -42,6 +42,7 @@ from .flags import MessageFlags
 from .file import File
 from .utils import escape_mentions
 from .guild import Guild
+from .mixins import Hashable
 
 
 class Attachment:
@@ -252,7 +253,7 @@ def flatten_handlers(cls):
     return cls
 
 @flatten_handlers
-class Message:
+class Message(Hashable):
     r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
@@ -387,9 +388,6 @@ class Message:
 
     def __repr__(self):
         return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.id == other.id
 
     def _try_patch(self, data, key, transform=None):
         try:
