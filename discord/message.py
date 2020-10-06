@@ -390,6 +390,10 @@ class Message:
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.id == other.id
+    
+    def __hash__(self):
+        guild_id = getattr(self.guild, 'id', '@me')
+        return hash((guild_id, self.channel.id, self.id))
 
     def _try_patch(self, data, key, transform=None):
         try:
