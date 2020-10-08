@@ -230,6 +230,9 @@ class Command(_BaseCommand):
             help_doc = inspect.getdoc(func)
             if isinstance(help_doc, bytes):
                 help_doc = help_doc.decode('utf-8')
+            if help_doc is not None:
+                # Markdown-inspired newline handling for help message obtained from docstring
+                help_doc = help_doc.replace('\n\n', '\r').replace('\n', ' ').replace('\r', '\n')
 
         self.help = help_doc
 
