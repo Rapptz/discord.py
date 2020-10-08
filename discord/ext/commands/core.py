@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import functools
 import inspect
+from io import StringIO
 import typing
 import datetime
 
@@ -230,9 +231,26 @@ class Command(_BaseCommand):
             help_doc = inspect.getdoc(func)
             if isinstance(help_doc, bytes):
                 help_doc = help_doc.decode('utf-8')
+
             if help_doc is not None:
                 # Markdown-inspired newline handling for help message obtained from docstring
-                help_doc = help_doc.replace('\n\n', '\r').replace('\n', ' ').replace('\r', '\n')
+                help_doc_clean = StringIO()
+                newlines_seen = 0
+                for c in help_doc:
+                    if c == '\n':
+                        # Count consecutive newlines
+                        newlines_seen += 1
+                    else:
+                        if newlines_seen == 1:
+                            # Only one newline; add a space in its place
+                            help_doc_clean.write(' ')
+                            newlines_seen = 0
+                        elif newlines_seen > 1:
+                            # Multiple newlines; add a single newline in their place
+                            help_doc_clean.write('\n')
+                            newlines_seen = 0
+                        help_doc_clean.write(c)
+                help_doc = help_doc_clean.getvalue()
 
         self.help = help_doc
 
