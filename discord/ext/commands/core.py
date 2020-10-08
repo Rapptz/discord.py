@@ -1401,9 +1401,10 @@ def command(name=None, cls=None, **attrs):
     By default the ``help`` attribute is received automatically from the
     docstring of the function and is cleaned up with the use of
     ``inspect.cleandoc``. Additionally, like in Markdown, single newlines in
-    the cleaned docstring will be transformed into spaces, and double newlines
-    will be transformed into single newlines. If the docstring is ``bytes``,
-    then it is decoded into :class:`str` using utf-8 encoding.
+    the cleaned docstring will be transformed into spaces, and multiple
+    consecutive newlines will be transformed into a single newline.
+    If the docstring is ``bytes``, then it is decoded into :class:`str` using
+    utf-8 encoding.
 
     All checks added using the :func:`.check` & co. decorators are added into
     the function. There is no way to supply your own checks through this
