@@ -237,8 +237,8 @@ class Colour:
 
     @classmethod
     def dark_theme(cls):
-        """A factory method that returns a :class:'Colour' with a value of ``0x36393F``.
-        Will appear transparent on Discord's dark theme and be the text colour on Discord's light theme.
+        """A factory method that returns a :class:`Colour` with a value of ``0x36393F``.
+        This will appear transparent on Discord's dark theme.
         
         .. versionadded:: 1.5
         """
