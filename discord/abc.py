@@ -227,7 +227,7 @@ class GuildChannel:
             # not there somehow lol
             return
         else:
-            index = next((i for i, c in enumerate(channels) if c.position >= position), -1)
+            index = next((i for i, c in enumerate(channels) if c.position >= position), len(channels))
             # add ourselves at our designated position
             channels.insert(index, self)
 
