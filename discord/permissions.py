@@ -484,7 +484,10 @@ class PermissionOverwrite:
         if value not in (True, None, False):
             raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
 
-        self._values[key] = value
+        if value is None:
+            self._values.pop(key, None)
+        else:
+            self._values[key] = value
 
     def pair(self):
         """Tuple[:class:`Permissions`, :class:`Permissions`]: Returns the (allow, deny) pair from this overwrite."""
@@ -519,13 +522,13 @@ class PermissionOverwrite:
 
         An empty permission overwrite is one that has no overwrites set
         to ``True`` or ``False``.
-        
+
         Returns
         -------
         :class:`bool`
             Indicates if the overwrite is empty.
         """
-        return all(x is None for x in self._values.values())
+        return len(self._values) == 0
 
     def update(self, **kwargs):
         r"""Bulk updates this permission overwrite object.
