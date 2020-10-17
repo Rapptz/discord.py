@@ -89,7 +89,7 @@ class Sticker(Hashable):
         """Returns an :class:`Asset` for the stickers image.
 
         .. note::
-            This will return ``None`` if the format is ``StickerType.lottie`
+            This will return ``None`` if the format is ``StickerType.lottie``
 
         Returns
         -------
