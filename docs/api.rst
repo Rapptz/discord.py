@@ -713,7 +713,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a guild becomes available or unavailable. The guild must have
     existed in the :attr:`Client.guilds` cache.
 
-    This requires :attr:`Intents.emojis` to be enabled.
+    This requires :attr:`Intents.guilds` to be enabled.
 
     :param guild: The :class:`Guild` that has changed availability.
 
