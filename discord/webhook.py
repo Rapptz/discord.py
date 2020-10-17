@@ -58,7 +58,7 @@ class WebhookAdapter:
         The webhook that owns this adapter.
     """
 
-    BASE = 'https://discord.com/api/v7'
+    BASE = 'https://discord.com/api/v8'
 
     def _prepare(self, webhook):
         self._webhook_id = webhook.id
