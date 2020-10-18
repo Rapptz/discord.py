@@ -1125,7 +1125,7 @@ class AutoShardedConnectionState(ConnectionState):
                             await utils.sane_wait_for(current_bucket, timeout=max_concurrency * 70.0)
                         except asyncio.TimeoutError:
                             fmt = 'Shard ID %s failed to wait for chunks from a sub-bucket with length %d'
-                            log.warning(fmt, self.shard_id, len(current_bucket))
+                            log.warning(fmt, guild.shard_id, len(current_bucket))
                         finally:
                             current_bucket = []
 
@@ -1146,7 +1146,7 @@ class AutoShardedConnectionState(ConnectionState):
             try:
                 await utils.sane_wait_for(futures, timeout=timeout)
             except asyncio.TimeoutError:
-                log.warning('Shard ID %s failed to wait for chunks (timeout=%.2f) for %d guilds', self.shard_id,
+                log.warning('Shard ID %s failed to wait for chunks (timeout=%.2f) for %d guilds', shard_id,
                                                                                                   timeout,
                                                                                                   len(guilds))
             for guild in children:
