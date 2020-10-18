@@ -76,6 +76,12 @@ class GatewayRatelimiter:
         self.lock = asyncio.Lock()
         self.shard_id = None
 
+    def is_ratelimited(self):
+        current = time.time()
+        if current > self.window + self.per:
+            return False
+        return self.remaining == 0
+
     def get_delay(self):
         current = time.time()
 
@@ -286,6 +292,9 @@ class DiscordWebSocket:
     @property
     def open(self):
         return not self.socket.closed
+
+    def is_ratelimited(self):
+        return self._rate_limiter.is_ratelimited()
 
     @classmethod
     async def from_client(cls, client, *, initial=False, gateway=None, shard_id=None, session=None, sequence=None, resume=False):
