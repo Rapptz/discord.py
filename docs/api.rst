@@ -2832,6 +2832,12 @@ Widget
 .. autoclass:: Widget()
     :members:
 
+Sticker
+~~~~~~~~~~~~~~~
+
+.. autoclass:: Sticker()
+    :members:
+
 MessageReference
 ~~~~~~~~~~~~~~~~~
 .. autoclass:: MessageReference()
@@ -2998,13 +3004,6 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
-
-Sticker
-~~~~~~~~~~~~~~~
-
-.. autoclass:: Sticker()
-    :members:
-
 
 Exceptions
 ------------
