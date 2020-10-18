@@ -86,7 +86,7 @@ class Sticker(Hashable):
 
     @property
     def image_url(self):
-        """Returns an :class:`Asset` for the stickers image.
+        """Returns an :class:`Asset` for the sticker's image.
 
         .. note::
             This will return ``None`` if the format is ``StickerType.lottie``
