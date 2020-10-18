@@ -99,7 +99,7 @@ class Sticker(Hashable):
         return self.image_url_as()
 
     def image_url_as(self, *, size=1024):
-        """Optionally returns an :class:`Asset` for the stickers image.
+        """Optionally returns an :class:`Asset` for the sticker's image.
 
         size must be a power of 2 between 16 and 4096.
 
