@@ -719,6 +719,7 @@ class DiscordVoiceWebSocket:
         self.loop = loop
         self._keep_alive = None
         self._close_code = None
+        self.secret_key = None
 
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
@@ -872,7 +873,7 @@ class DiscordVoiceWebSocket:
 
     async def load_secret_key(self, data):
         log.info('received secret key for voice connection')
-        self._connection.secret_key = data.get('secret_key')
+        self.secret_key = self._connection.secret_key = data.get('secret_key')
         await self.speak()
         await self.speak(False)
 
