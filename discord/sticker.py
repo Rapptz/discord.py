@@ -114,7 +114,7 @@ class Sticker(Hashable):
         Raises
         ------
         InvalidArgument
-            invalid ``size``.
+            Invalid ``size``.
         
         Returns
         -------
