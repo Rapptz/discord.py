@@ -122,13 +122,49 @@ class MemberConverter(IDConverter):
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
+
+    .. versionchanged:: 1.5.1
+        This converter now lazily fetches members from the gateway and HTTP APIs,
+        optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
     """
+
+    async def query_member_named(self, guild, argument):
+        cache = guild._state._member_cache_flags.joined
+        if len(argument) > 5 and argument[-5] == '#':
+            username, _, discriminator = argument.rpartition('#')
+            members = await guild.query_members(username, limit=100, cache=cache)
+            return discord.utils.get(members, name=username, discriminator=discriminator)
+        else:
+            members = await guild.query_members(argument, limit=100, cache=cache)
+            return discord.utils.find(lambda m: m.name == argument or m.nick == argument, members)
+
+    async def query_member_by_id(self, bot, guild, user_id):
+        ws = bot._get_websocket(shard_id=guild.shard_id)
+        cache = guild._state._member_cache_flags.joined
+        if ws.is_ratelimited():
+            # If we're being rate limited on the WS, then fall back to using the HTTP API
+            # So we don't have to wait ~60 seconds for the query to finish
+            try:
+                member = await guild.fetch_member(user_id)
+            except discord.HTTPException:
+                return None
+
+            if cache:
+                guild._add_member(member)
+            return member
+
+        # If we're not being rate limited then we can use the websocket to actually query
+        members = await guild.query_members(limit=1, user_ids=[user_id], cache=cache)
+        if not members:
+            return None
+        return members[0]
 
     async def convert(self, ctx, argument):
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
         guild = ctx.guild
         result = None
+        user_id = None
         if match is None:
             # not a mention...
             if guild:
@@ -143,7 +179,16 @@ class MemberConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
         if result is None:
-            raise MemberNotFound(argument)
+            if guild is None:
+                raise MemberNotFound(argument)
+
+            if user_id is not None:
+                result = await self.query_member_by_id(bot, guild, user_id)
+            else:
+                result = await self.query_member_named(guild, argument)
+
+            if not result:
+                raise MemberNotFound(argument)
 
         return result
 
