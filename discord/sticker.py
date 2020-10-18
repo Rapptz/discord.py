@@ -30,7 +30,7 @@ class Sticker(Hashable):
 
     .. versionadded:: 2.0
 
-    .. container: opertations
+    .. container: operations
 
         .. describe:: str(x)
 
