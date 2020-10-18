@@ -610,7 +610,7 @@ class ConnectionState:
             if user_update:
                 self.dispatch('user_update', user_update[0], user_update[1])
 
-            if flags._online_only and member.raw_status == 'offline':
+            if member.id != self.self_id and flags._online_only and member.raw_status == 'offline':
                 guild._remove_member(member)
 
         self.dispatch('member_update', old_member, member)
@@ -971,8 +971,9 @@ class ConnectionState:
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = utils._get_as_snowflake(data, 'channel_id')
         flags = self._member_cache_flags
+        self_id = self.user.id
         if guild is not None:
-            if int(data['user_id']) == self.user.id:
+            if int(data['user_id']) == self_id:
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
                     coro = voice.on_voice_state_update(data)
@@ -981,10 +982,10 @@ class ConnectionState:
             member, before, after = guild._update_voice_state(data, channel_id)
             if member is not None:
                 if flags.voice:
-                    if channel_id is None and flags.value == MemberCacheFlags.voice.flag:
+                    if channel_id is None and flags._voice_only and member.id != self_id:
                         # Only remove from cache iff we only have the voice flag enabled
                         guild._remove_member(member)
-                    else:
+                    elif channel_id is not None:
                         guild._add_member(member)
 
                 self.dispatch('voice_state_update', member, before, after)
