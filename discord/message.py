@@ -350,7 +350,7 @@ class Message(Hashable):
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
     stickers: List[:class:`Sticker`]
-        a list of stickers given to the message.
+        A list of stickers given to the message.
 
         .. versionadded:: 2.0
     """
