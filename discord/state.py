@@ -776,6 +776,9 @@ class ConnectionState:
 
             self.dispatch('member_update', old_member, member)
         else:
+            if self._member_cache_flags.joined:
+                member = Member(data=data, guild=guild, state=self)
+                guild._add_member(member)
             log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Discarding.', user_id)
 
     def parse_guild_emojis_update(self, data):
