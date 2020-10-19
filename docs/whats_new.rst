@@ -11,6 +11,31 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p5p1:
+
+v1.5.1
+-------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix :func:`utils.escape_markdown` not escaping quotes properly (:issue:`5897`)
+- Fix :class:`Message` not being hashable (:issue:`5901`, :issue:`5866`)
+- Fix moving channels to the end of the channel list (:issue:`5923`)
+- Fix seemingly strange behaviour in ``__eq__`` for :class:`PermissionOverwrite` (:issue:`5929`)
+- Fix aliases showing up in ``__iter__`` for :class:`Intents` (:issue:`5945`)
+- Fix the bot disconnecting from voice when moving them to another channel (:issue:`5904`)
+- Fix attribute errors when chunking times out sometimes during delayed on_ready dispatching.
+- Ensure that the bot's own member is not evicted from the cache (:issue:`5949`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Members are now loaded during ``GUILD_MEMBER_UPDATE`` events if :attr:`MemberCacheFlags.joined` is set. (:issue:`5930`)
+- |commands| :class:`MemberConverter <ext.commands.MemberConverter>` now properly lazily fetches members if not available from cache.
+    - This is the same as having ``discord.Member`` as the type-hint.
+- :meth:`Guild.chunk` now allows concurrent calls without spamming the gateway with requests.
+
 .. _vp1p5p0:
 
 v1.5.0
