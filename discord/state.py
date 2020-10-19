@@ -83,8 +83,7 @@ class ChunkRequest:
         future = self.loop.create_future()
         self.waiters.append(future)
         try:
-            await future
-            return True
+            return await future
         finally:
             self.waiters.remove(future)
 
