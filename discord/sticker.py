@@ -54,7 +54,7 @@ class Sticker(Hashable):
     description: :class:`str`
         The description of the sticker
     pack_id: :class:`int`
-        the id of the sticker's pack
+        The id of the sticker's pack
     format: :class:`StickerType`
         The format for the sticker's image
     image: :class:`str`
