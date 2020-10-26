@@ -324,8 +324,7 @@ class ClientUser(BaseUser):
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
     """
-    __slots__ = BaseUser.__slots__ + \
-                ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
+    __slots__ = ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
                  'premium', 'premium_type', '_relationships', '__weakref__')
 
     def __init__(self, *, state, data):
@@ -683,7 +682,7 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
-    __slots__ = BaseUser.__slots__ + ('__weakref__',)
+    __slots__ = ('__weakref__',)
 
     def __repr__(self):
         return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
