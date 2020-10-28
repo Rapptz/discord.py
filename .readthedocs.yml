@@ -1,5 +1,6 @@
 version: 2
-formats: []
+formats:
+  - epub
 
 build:
   image: latest
