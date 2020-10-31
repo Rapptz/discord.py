@@ -1236,7 +1236,8 @@ class Guild(Hashable):
     def fetch_members(self, *, limit=1000, after=None):
         """|coro|
 
-        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
+        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
+        :meth:`Intents.members` must be enabled.
 
         .. note::
 
@@ -1257,6 +1258,8 @@ class Guild(Hashable):
 
         Raises
         ------
+        ClientException
+            The members intent is not enabled.
         HTTPException
             Getting the members failed.
 
@@ -1278,6 +1281,10 @@ class Guild(Hashable):
             members = await guild.fetch_members(limit=150).flatten()
             # members is now a list of Member...
         """
+
+        if not self._state._intents.members:
+            raise ClientException('Intents.members must be enabled to use this.')
+
         return MemberIterator(self, limit=limit, after=after)
 
     async def fetch_member(self, member_id):
