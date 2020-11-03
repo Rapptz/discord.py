@@ -255,10 +255,10 @@ class MessageConverter(Converter):
          Raise :exc:`.ChannelNotFound`, `MessageNotFound` or `ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
-        id_regex = re.compile(r'^(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
         link_regex = re.compile(
-            r'^https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
-            r'(?:([0-9]{15,21})|(@me))'
+            r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
+            r'(?:[0-9]{15,21}|@me)'
             r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
         )
         match = id_regex.match(argument) or link_regex.match(argument)
