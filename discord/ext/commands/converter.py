@@ -429,7 +429,7 @@ class ColourConverter(Converter):
         if arg[0] == '#':
             arg = arg[1:]
 
-        if len(arg) == 3:
+        if "#" in argument and len(arg) == 3:
             arg = ''.join(i * 2 for i in arg)
         try:
             value = int(arg, base=16)
