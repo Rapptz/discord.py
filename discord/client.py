@@ -920,17 +920,21 @@ class Client:
             async def on_message(message):
                 if message.content.startswith('$thumb'):
                     channel = message.channel
-                    await channel.send('Send me that \N{THUMBS UP SIGN} reaction, mate')
+                    await channel.send('Send me that \N{THUMBS UP SIGN}\N{VARIATION SELECTOR-16} reaction, mate')
 
                     def check(reaction, user):
-                        return user == message.author and str(reaction.emoji) == '\N{THUMBS UP SIGN}'
+                        # We compare the first character because the user's client may add things
+                        # such as Variation Selector-16, Skin tone modifiers, or both of these.
+                        # This approach can not be used in all cases as some emojis (such as flags)
+                        # are composed of multiple emojis.
+                        return user == message.author and str(reaction.emoji)[0] == '\N{THUMBS UP SIGN}'
 
                     try:
                         reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check)
                     except asyncio.TimeoutError:
-                        await channel.send('\N{THUMBS DOWN SIGN}')
+                        await channel.send('\N{THUMBS DOWN SIGN}\N{VARIATION SELECTOR-16}')
                     else:
-                        await channel.send('\N{THUMBS UP SIGN}')
+                        await channel.send('\N{THUMBS UP SIGN}\N{VARIATION SELECTOR-16}')
 
 
         Parameters
