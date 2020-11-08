@@ -26,10 +26,10 @@ For example, if you want a bot that functions without spammy events like presenc
     intents.presences = False
 
     # Somewhere else:
-    # client = discord.Client(intents=intents)
+    client = discord.Client(intents=intents)
     # or
-    # from discord.ext import commands
-    # bot = commands.Bot(command_prefix='!', intents=intents)
+    from discord.ext import commands
+    bot = commands.Bot(command_prefix='!', intents=intents)
 
 Note that this doesn't enable :attr:`Intents.members` since it's a privileged intent.
 
@@ -43,10 +43,10 @@ Another example showing a bot that only deals with messages and guild informatio
     # intents.reactions = True
 
     # Somewhere else:
-    # client = discord.Client(intents=intents)
+    client = discord.Client(intents=intents)
     # or
-    # from discord.ext import commands
-    # bot = commands.Bot(command_prefix='!', intents=intents)
+    from discord.ext import commands
+    bot = commands.Bot(command_prefix='!', intents=intents)
 
 .. _privileged_intents:
 
