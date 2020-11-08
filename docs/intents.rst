@@ -19,6 +19,7 @@ The intents that are necessary for your bot can only be dictated by yourself. Ea
 For example, if you want a bot that functions without spammy events like presences or typing then we could do the following:
 
 .. code-block:: python3
+   :emphasize-lines: 7,9,10
 
     import discord
     intents = discord.Intents.default()
@@ -36,6 +37,7 @@ Note that this doesn't enable :attr:`Intents.members` since it's a privileged in
 Another example showing a bot that only deals with messages and guild information:
 
 .. code-block:: python3
+   :emphasize-lines: 7,9,10
 
     import discord
     intents = discord.Intents(messages=True, guilds=True)
@@ -155,6 +157,7 @@ Due to an :ref:`API change <intents_member_cache>` Discord is now forcing develo
 For example:
 
 .. code-block:: python3
+   :emphasize-lines: 3,6,8,9
 
     import discord
     intents = discord.Intents.default()
