@@ -19,6 +19,7 @@ The intents that are necessary for your bot can only be dictated by yourself. Ea
 For example, if you want a bot that functions without spammy events like presences or typing then we could do the following:
 
 .. code-block:: python3
+   :emphasize-lines: 7,9,10
 
     import discord
     intents = discord.Intents.default()
@@ -26,16 +27,17 @@ For example, if you want a bot that functions without spammy events like presenc
     intents.presences = False
 
     # Somewhere else:
-    client = discord.Client(intents=intents)
+    # client = discord.Client(intents=intents)
     # or
-    from discord.ext import commands
-    bot = commands.Bot(command_prefix='!', intents=intents)
+    # from discord.ext import commands
+    # bot = commands.Bot(command_prefix='!', intents=intents)
 
 Note that this doesn't enable :attr:`Intents.members` since it's a privileged intent.
 
 Another example showing a bot that only deals with messages and guild information:
 
 .. code-block:: python3
+   :emphasize-lines: 6,8,9
 
     import discord
     intents = discord.Intents(messages=True, guilds=True)
@@ -43,10 +45,10 @@ Another example showing a bot that only deals with messages and guild informatio
     # intents.reactions = True
 
     # Somewhere else:
-    client = discord.Client(intents=intents)
+    # client = discord.Client(intents=intents)
     # or
-    from discord.ext import commands
-    bot = commands.Bot(command_prefix='!', intents=intents)
+    # from discord.ext import commands
+    # bot = commands.Bot(command_prefix='!', intents=intents)
 
 .. _privileged_intents:
 
@@ -155,6 +157,7 @@ Due to an :ref:`API change <intents_member_cache>` Discord is now forcing develo
 For example:
 
 .. code-block:: python3
+   :emphasize-lines: 3,5,7,8
 
     import discord
     intents = discord.Intents.default()
