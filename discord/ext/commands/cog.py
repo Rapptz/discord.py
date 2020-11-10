@@ -95,9 +95,9 @@ class CogMeta(type):
         attrs['__cog_name__'] = kwargs.pop('name', name)
         attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
 
-        description = kwargs.pop('description', None)
+        attrs['description'] = description = kwargs.pop('description', None)
         if description is not None:
-            attrs['__cog_cleaned_doc__'] = description
+            attrs['description'] = inspect.getdoc(cls)
 
         commands = {}
         listeners = {}
@@ -162,6 +162,11 @@ class Cog(metaclass=CogMeta):
 
     When inheriting from this class, the options shown in :class:`CogMeta`
     are equally valid here.
+
+    Attributes
+    -----------
+    description: :class:`str`
+        Returns the cog's description, typically the cleaned docstring.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -211,15 +216,6 @@ class Cog(metaclass=CogMeta):
     def qualified_name(self):
         """:class:`str`: Returns the cog's specified name, not the class name."""
         return self.__cog_name__
-
-    @property
-    def description(self):
-        """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
-        try:
-            return self.__cog_cleaned_doc__
-        except AttributeError:
-            self.__cog_cleaned_doc__ = cleaned = inspect.getdoc(self)
-            return cleaned
 
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands.
