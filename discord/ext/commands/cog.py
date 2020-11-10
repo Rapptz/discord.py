@@ -70,6 +70,8 @@ class CogMeta(type):
     -----------
     name: :class:`str`
         The cog name. By default, it is the name of the class with no modification.
+    description: :class:`str`
+        The cog description. By default, it is the cleaned docstring of the class.
     command_attrs: :class:`dict`
         A list of attributes to apply to every command inside this cog. The dictionary
         is passed into the :class:`Command` options at ``__init__``.
@@ -92,6 +94,10 @@ class CogMeta(type):
         name, bases, attrs = args
         attrs['__cog_name__'] = kwargs.pop('name', name)
         attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
+
+        description = kwargs.pop('description', None)
+        if description is not None:
+            attrs['__cog_cleaned_doc__'] = description
 
         commands = {}
         listeners = {}
