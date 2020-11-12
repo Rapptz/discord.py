@@ -108,9 +108,7 @@ class HTTPClient:
         self.proxy = proxy
         self.proxy_auth = proxy_auth
         self.use_clock = not unsync_clock
-
-        user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
-        self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+        self.user_agent = None
 
     def recreate(self):
         if self.__session.closed:
@@ -282,6 +280,14 @@ class HTTPClient:
     # login management
 
     async def static_login(self, token, *, bot):
+        if self.user_agent is None:
+            if bot:
+                user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
+                self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+            else:
+                # Prevent us from getting locked behind an email verification gate
+                self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.12 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
+
         # Necessary to get aiohttp to stop complaining about session creation
         self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
         old_token, old_bot = self.token, self.bot_token
