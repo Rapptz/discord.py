@@ -241,6 +241,8 @@ class HTTPClient:
                             raise Forbidden(r, data)
                         elif r.status == 404:
                             raise NotFound(r, data)
+                        elif r.status == 503:
+                            raise DiscordServerError(r, data)
                         else:
                             raise HTTPException(r, data)
 
