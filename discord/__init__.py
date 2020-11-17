@@ -54,7 +54,7 @@ from .mentions import AllowedMentions
 from .shard import AutoShardedClient, ShardInfo
 from .player import *
 from .webhook import *
-from .voice_client import VoiceClient, VoiceProtocol
+from .voice_client import VoiceClient, VoiceProtocol, NaClWarning
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 from .raw_models import *
 from .team import *

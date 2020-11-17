@@ -75,6 +75,8 @@ Voice
 .. autoclass:: PCMVolumeTransformer
     :members:
 
+.. autoclass:: NaClWarning
+
 Opus Library
 ~~~~~~~~~~~~~
 

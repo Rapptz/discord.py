@@ -168,6 +168,16 @@ class VoiceProtocol:
         key_id, _ = self.channel._get_voice_client_key()
         self.client._connection._remove_voice_client(key_id)
 
+class NaClWarning(UserWarning):
+    """By default, the library warns if the PyNaCl library is not installed.
+
+    Suppress this warning class if you do not want to install PyNaCl and do not care about voice support.
+
+    .. versionadded:: 2.0
+    """
+    def __init__(self):
+        super().__init__("PyNaCl is not installed, voice will NOT be supported")
+
 class VoiceClient(VoiceProtocol):
     """Represents a Discord voice connection.
 
@@ -221,7 +231,7 @@ class VoiceClient(VoiceProtocol):
         self.encoder = None
         self._lite_nonce = 0
 
-    warn_nacl = not has_nacl
+    has_nacl = has_nacl
     supported_modes = (
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',

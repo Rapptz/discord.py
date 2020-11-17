@@ -29,6 +29,7 @@ import logging
 import signal
 import sys
 import traceback
+import warnings
 
 import aiohttp
 
@@ -46,7 +47,7 @@ from .errors import *
 from .enums import Status, VoiceRegion
 from .gateway import *
 from .activity import BaseActivity, create_activity
-from .voice_client import VoiceClient
+from .voice_client import VoiceClient, NaClWarning
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
@@ -254,9 +255,8 @@ class Client:
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
 
-        if VoiceClient.warn_nacl:
-            VoiceClient.warn_nacl = False
-            log.warning("PyNaCl is not installed, voice will NOT be supported")
+        if not VoiceClient.has_nacl:
+            warnings.warn(NaClWarning())
 
     # internals
 
