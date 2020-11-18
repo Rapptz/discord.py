@@ -234,18 +234,18 @@ class MessageReference:
 
     @classmethod
     def from_message(cls, message):
-        """Creates a :class:`discord.MessageReference` from an existing :class:`discord.Message`
+        """Creates a :class:`MessageReference` from an existing :class:`Message`
 
         .. versionadded:: 2.0
 
         Parameters
         ----------
-        message: :class:`discord.Message`
+        message: :class:`Message`
             The message to be converted into a reference.
 
         Returns
         -------
-        :class:`discord.MessageReference`
+        :class:`MessageReference`
             A reference to the message
         """
         return cls(message._state, message_id=message.id, channel_id=message.channel.id, guild_id=message.guild and message.guild.id)

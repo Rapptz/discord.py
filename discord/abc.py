@@ -845,8 +845,10 @@ class Messageable(metaclass=abc.ABCMeta):
 
             .. versionadded:: 1.4
 
-        message_reference: :class:`discord.MessageReference`
-            Message to which you are replying. If this is passed, then you should
+        message_reference: :class:`~discord.MessageReference`
+            A reference to the :class:`~discord.Message` to which you are replying, i.e. as created using
+            :meth:`~discord.MessageReference.from_message`. You can control whether this mentions the author
+            of the referenced Message using :attr:`~discord.AllowedMentions.replied_user`.
 
             .. versionadded:: 2.0
 
