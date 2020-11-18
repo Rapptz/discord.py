@@ -1169,7 +1169,7 @@ class Message(Hashable):
 
         Returns
         ---------
-        :class:`~discord.Message`
+        :class:`Message`
             The message that was sent.
         """
 
