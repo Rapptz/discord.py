@@ -1149,53 +1149,11 @@ class Message(Hashable):
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
 
-    async def reply(self, content=None, *, tts=False, embed=None, file=None,
-                                          files=None, delete_after=None, nonce=None,
-                                          allowed_mentions=None):
+    async def reply(self, content=None, **kwargs):
         """|coro|
 
-        Replies to the message with the content given.
-
-        The content must be a type that can convert to a string through ``str(content)``.
-        If the content is set to ``None`` (the default), then the ``embed`` parameter must
-        be provided.
-
-        To upload a single file, the ``file`` parameter should be used with a
-        single :class:`~discord.File` object. To upload multiple files, the ``files``
-        parameter should be used with a :class:`list` of :class:`~discord.File` objects.
-        **Specifying both parameters will lead to an exception**.
-
-        If the ``embed`` parameter is provided, it must be of type :class:`~discord.Embed` and
-        it must be a rich embed type.
-
-        Parameters
-        ------------
-        content: :class:`str`
-            The content of the message to send.
-        tts: :class:`bool`
-            Indicates if the message should be sent using text-to-speech.
-        embed: :class:`~discord.Embed`
-            The rich embed for the content.
-        file: :class:`~discord.File`
-            The file to upload.
-        files: List[:class:`~discord.File`]
-            A list of files to upload. Must be a maximum of 10.
-        nonce: :class:`int`
-            The nonce to use for sending this message. If the message was successfully sent,
-            then the message will have a nonce with this value.
-        delete_after: :class:`float`
-            If provided, the number of seconds to wait in the background
-            before deleting the message we just sent. If the deletion fails,
-            then it is silently ignored.
-        allowed_mentions: :class:`~discord.AllowedMentions`
-            Controls the mentions being processed in this message. If this is
-            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
-            The merging behaviour only overrides attributes that have been explicitly passed
-            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
-            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
-            are used instead.
-        message_reference: :class:`discord.MessageReference`
-            Message to which you are replying to.
+        A shortcut method to :meth:`abc.Messageable.send` to reply to the
+        :class:`Message`.
 
             .. versionadded:: 2.0
 
@@ -1216,6 +1174,4 @@ class Message(Hashable):
         """
 
         reference = MessageReference.from_message(self)
-        await self.channel.send(content, tts=tts, embed=embed, file=file,
-                                files=files, delete_after=delete_after, nonce=nonce,
-                                allowed_mentions=allowed_mentions, message_reference=reference)
+        return await self.channel.send(content, message_reference=reference, **kwargs)
