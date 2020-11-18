@@ -258,21 +258,28 @@ class MessageReference:
     def __repr__(self):
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
 
-    def to_dict(self):
+    def to_dict(self, specify_channel=False):
         """Converts the message reference to a dict, for transmission via the gateway.
 
         .. versionadded:: 2.0
+
+        Parameters
+        -------
+        specify_channel: Optional[:class:`bool`]
+            Whether to include the channel ID in the returned object.
+            Defaults to False.
 
         Returns
         -------
         :class:`dict`
             The reference as a dict.
         """
-        return {
-            'message_id': self.message_id,
-            'channel_id': self.channel_id,
-            'guild_id': self.guild_id
-        }
+        result = {'message_id': self.message_id} if self.message_id is not None else {}
+        if specify_channel:
+            result['channel_id'] = self.channel_id
+        if self.guild_id is not None:
+            result['guild_id'] = self.guild_id
+        return result
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -319,8 +326,8 @@ class Message(Hashable):
         :attr:`MessageType.call`.
     reference: Optional[:class:`MessageReference`]
         The message that this message references. This is only applicable to messages of
-        type :attr:`MessageType.pins_add` or crossposted messages created by a
-        followed channel integration.
+        type :attr:`MessageType.pins_add`, crossposted messages created by a
+        followed channel integration, or message replies.
 
         .. versionadded:: 1.5
 
