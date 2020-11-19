@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import colorsys
+import random
 
 class Colour:
     """Represents a Discord role colour. This class is similar
@@ -116,6 +117,11 @@ class Colour:
     def default(cls):
         """A factory method that returns a :class:`Colour` with a value of ``0``."""
         return cls(0)
+
+    @classmethod
+    def random(cls):
+        """A factory method that returns a :class:`Colour` with a random value."""
+        return cls.from_hsv(random.random(), 1, 1)
 
     @classmethod
     def teal(cls):
