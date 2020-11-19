@@ -738,6 +738,9 @@ class GuildChannel:
         ~discord.HTTPException
             Invite creation failed.
 
+        ~discord.NotFound
+            The channel that was passed is a category, or a invalid channel.
+
         Returns
         --------
         :class:`~discord.Invite`
