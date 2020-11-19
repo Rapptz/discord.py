@@ -739,7 +739,7 @@ class GuildChannel:
             Invite creation failed.
 
         ~discord.NotFound
-            The channel that was passed is a category or a invalid channel.
+            The channel that was passed is a category or an invalid channel.
 
         Returns
         --------
