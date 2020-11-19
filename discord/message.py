@@ -35,7 +35,7 @@ from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, ChannelType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException
+from .errors import InvalidArgument, ClientException, HTTPException, ChannelNotFound
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -334,6 +334,37 @@ class MessageReference:
     def cached_message(self):
         """Optional[:class:`~discord.Message`]: The cached message, if found in the internal message cache."""
         return self._state._get_message(self.message_id)
+
+    async def fetch_message(self):
+        """|coro|
+
+        Retrieves the :class:`Message` from the destination.
+
+        This can only be used by bot accounts.
+
+        .. versionadded:: 2.0
+
+        Raises
+        --------
+        ~discord.NotFound
+            The message was not found.
+        ~discord.ChannelNotFound
+            The message's channel was not found.
+        ~discord.Forbidden
+            You do not have the permissions required to get a message.
+        ~discord.HTTPException
+            Retrieving the message failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The message asked for.
+        """
+
+        channel = self._state.get_channel(self.channel_id)
+        if channel is None:
+            raise ChannelNotFound(self.channel_id)
+        return await channel.fetch_message(self.message_id)
 
     def __repr__(self):
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
