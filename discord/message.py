@@ -349,8 +349,6 @@ class MessageReference:
         --------
         ~discord.NotFound
             The message was not found.
-        ~discord.ChannelNotFound
-            The message's channel was not found.
         ~discord.Forbidden
             You do not have the permissions required to get a message.
         ~discord.HTTPException
