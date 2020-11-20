@@ -44,6 +44,7 @@ from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
 from .sticker import Sticker
+from .object import Object
 
 __all__ = (
     'Attachment',
@@ -361,10 +362,20 @@ class MessageReference:
             The message asked for.
         """
 
-        channel = self._state.get_channel(self.channel_id)
+        state = self._state
+        if self.guild_id:
+            guild = state.get_guild(self.guild_id)
+            if guild:
+                channel = guild.get_channel(self.channel_id)
+        else:
+            channel = state.get_channel(self.channel_id)
+
+        data = await state.http.get_message(self.channel_id, self.message_id)
         if channel is None:
-            raise ChannelNotFound(self.channel_id)
-        return await channel.fetch_message(self.message_id)
+            channel = Object(id=self.channel_id)
+            if self.guild_id:
+                channel.guild = Object(id=self.guild_id)
+        return state.create_message(channel=channel, data=data)
 
     def __repr__(self):
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
