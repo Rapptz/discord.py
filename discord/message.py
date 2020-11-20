@@ -367,6 +367,8 @@ class MessageReference:
             guild = state.get_guild(self.guild_id)
             if guild:
                 channel = guild.get_channel(self.channel_id)
+            else:
+                channel = None
         else:
             channel = state.get_channel(self.channel_id)
 
