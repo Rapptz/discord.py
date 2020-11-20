@@ -124,4 +124,4 @@ class AllowedMentions:
         return AllowedMentions(everyone=everyone, roles=roles, users=users, replied_user=replied_user)
 
     def __repr__(self):
-        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles} replied_user={0.replied_user})'.format(self)
+        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles}, replied_user={0.replied_user})'.format(self)
