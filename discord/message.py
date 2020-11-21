@@ -341,6 +341,8 @@ class MessageReference:
 
         Retrieves the :class:`Message` from the destination.
 
+        The channel or guild may be a partial object if it is not found.
+
         This can only be used by bot accounts.
 
         .. versionadded:: 2.0
