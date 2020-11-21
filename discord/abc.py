@@ -850,7 +850,7 @@ class Messageable(metaclass=abc.ABCMeta):
             :meth:`~discord.MessageReference.from_message`. You can control whether this mentions the author
             of the referenced Message using :attr:`~discord.AllowedMentions.replied_user`.
 
-            .. versionadded:: 2.0
+            .. versionadded:: 1.6
 
         Raises
         --------

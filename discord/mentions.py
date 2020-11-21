@@ -63,7 +63,7 @@ class AllowedMentions:
         Whether to mention the author of the message being replied to. Defaults
         to ``True``.
 
-        .. versionadded:: 2.0
+        .. versionadded:: 1.6
     """
 
     __slots__ = ('everyone', 'users', 'roles', 'replied_user')

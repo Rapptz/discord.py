@@ -329,7 +329,7 @@ class Context(discord.abc.Messageable):
         A shortcut method to :meth:`~discord.abc.Messageable.send` to reply to the
         :class:`~discord.Message` that invoked the command.
 
-            .. versionadded:: 2.0
+            .. versionadded:: 1.6
 
         Raises
         --------

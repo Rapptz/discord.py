@@ -236,7 +236,7 @@ class MessageReference:
     def from_message(cls, message):
         """Creates a :class:`MessageReference` from an existing :class:`Message`.
 
-        .. versionadded:: 2.0
+        .. versionadded:: 1.6
 
         Parameters
         ----------
@@ -261,7 +261,7 @@ class MessageReference:
     def to_dict(self, specify_channel=False):
         """Converts the message reference to a dict, for transmission via the gateway.
 
-        .. versionadded:: 2.0
+        .. versionadded:: 1.6
 
         Parameters
         -------
@@ -1162,7 +1162,7 @@ class Message(Hashable):
         A shortcut method to :meth:`abc.Messageable.send` to reply to the
         :class:`Message`.
 
-            .. versionadded:: 2.0
+            .. versionadded:: 1.6
 
         Raises
         --------
