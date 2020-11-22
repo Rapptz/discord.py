@@ -647,6 +647,10 @@ class BotBase(GroupMixin):
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        args:
+            The position arguments to be passed to the extension setup function.
+        kwargs:
+            The keyword arguments to be passed to the extension setup function.
 
         Raises
         --------
@@ -714,6 +718,10 @@ class BotBase(GroupMixin):
             The extension name to reload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        args:
+            The position arguments to be passed to the extension setup function.
+        kwargs:
+            The keyword arguments to be passed to the extension setup function.
 
         Raises
         -------
