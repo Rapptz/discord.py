@@ -305,8 +305,8 @@ class Guild(Hashable):
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
 
-        cache_online_members = self._state._member_cache_flags.online
-        cache_joined = self._state._member_cache_flags.joined
+        cache_online_members = self._state.member_cache_flags.online
+        cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)

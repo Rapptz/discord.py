@@ -129,7 +129,7 @@ class MemberConverter(IDConverter):
     """
 
     async def query_member_named(self, guild, argument):
-        cache = guild._state._member_cache_flags.joined
+        cache = guild._state.member_cache_flags.joined
         if len(argument) > 5 and argument[-5] == '#':
             username, _, discriminator = argument.rpartition('#')
             members = await guild.query_members(username, limit=100, cache=cache)
@@ -140,7 +140,7 @@ class MemberConverter(IDConverter):
 
     async def query_member_by_id(self, bot, guild, user_id):
         ws = bot._get_websocket(shard_id=guild.shard_id)
-        cache = guild._state._member_cache_flags.joined
+        cache = guild._state.member_cache_flags.joined
         if ws.is_ratelimited():
             # If we're being rate limited on the WS, then fall back to using the HTTP API
             # So we don't have to wait ~60 seconds for the query to finish
