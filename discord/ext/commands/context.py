@@ -333,9 +333,9 @@ class Context(discord.abc.Messageable):
 
         Parameters
         --------
-        content: :class:`Optional[str]`
+        content: Optional[:class:`str`]
             The content of the message to be sent.
-        mention_author: :class:`Optional[bool]`
+        mention_author: Optional[:class:`bool`]
             Shortcut to passing an :class:`AllowedMentions` object with
             :attr:`AllowedMentions.replied_user` set.
         kwargs:
