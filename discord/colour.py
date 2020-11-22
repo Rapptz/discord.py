@@ -120,7 +120,15 @@ class Colour:
 
     @classmethod
     def random(cls):
-        """A factory method that returns a :class:`Colour` with a random value."""
+        """A factory method that returns a :class:`Colour` with a random hue.
+
+        .. note::
+
+            The random algorithm works by choosing a colour with a random hue but
+            with maxed out saturation and value.
+
+        .. versionadded:: 1.6
+        """
         return cls.from_hsv(random.random(), 1, 1)
 
     @classmethod
@@ -245,7 +253,7 @@ class Colour:
     def dark_theme(cls):
         """A factory method that returns a :class:`Colour` with a value of ``0x36393F``.
         This will appear transparent on Discord's dark theme.
-        
+
         .. versionadded:: 1.5
         """
         return cls(0x36393F)
