@@ -81,6 +81,7 @@ class Paginator:
         The maximum amount of codepoints allowed in a page.
     linesep: :class:`str`
         The character string inserted between lines. e.g. a newline character.
+            .. versionadded:: 1.6
     """
     def __init__(self, prefix='```', suffix='```', max_size=2000, linesep='\n'):
         self.prefix = prefix
@@ -169,8 +170,8 @@ class Paginator:
         return self._pages
 
     def __repr__(self):
-        fmt = '<Paginator prefix: {0.prefix} suffix: {0.suffix} linesep: {1} max_size: {0.max_size} count: {0._count}>'
-        return fmt.format(self, repr(self.linesep))
+        fmt = '<Paginator prefix: {0.prefix!r} suffix: {0.suffix!r} linesep: {0.linesep!r} max_size: {0.max_size} count: {0._count}>'
+        return fmt.format(self)
 
 def _not_overriden(f):
     f.__help_command_not_overriden__ = True

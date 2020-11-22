@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p6p0:
+
+v1.6.0
+-------
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Add :attr:`Paginator.linesep` to allow further customization of the Paginator.
+
 .. _vp1p5p1:
 
 v1.5.1
