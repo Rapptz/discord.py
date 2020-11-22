@@ -94,7 +94,7 @@ class CogMeta(type):
         attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
 
         attrs['__cog_description__'] = description = kwargs.pop('description', None)
-        if description is not None:
+        if description is None:
             attrs['__cog_description__'] = inspect.cleandoc(attrs.get('__doc__', ''))
 
         commands = {}
