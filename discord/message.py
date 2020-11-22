@@ -259,21 +259,6 @@ class MessageReference:
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
 
     def to_dict(self, specify_channel=False):
-        """Converts the message reference to a dict, for transmission via the gateway.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        -------
-        specify_channel: Optional[:class:`bool`]
-            Whether to include the channel ID in the returned object.
-            Defaults to False.
-
-        Returns
-        -------
-        :class:`dict`
-            The reference as a dict.
-        """
         result = {'message_id': self.message_id} if self.message_id is not None else {}
         if specify_channel:
             result['channel_id'] = self.channel_id
