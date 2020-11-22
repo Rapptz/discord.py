@@ -157,7 +157,7 @@ Due to an :ref:`API change <intents_member_cache>` Discord is now forcing develo
 For example:
 
 .. code-block:: python3
-   :emphasize-lines: 3,5,7,8
+   :emphasize-lines: 3,6,8,9
 
     import discord
     intents = discord.Intents.default()
