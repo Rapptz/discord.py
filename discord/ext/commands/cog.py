@@ -70,8 +70,6 @@ class CogMeta(type):
     -----------
     name: :class:`str`
         The cog name. By default, it is the name of the class with no modification.
-    description: :class:`str`
-        The cog description. By default, it is the cleaned docstring of the class.
     command_attrs: :class:`dict`
         A list of attributes to apply to every command inside this cog. The dictionary
         is passed into the :class:`Command` options at ``__init__``.
@@ -212,6 +210,11 @@ class Cog(metaclass=CogMeta):
     def qualified_name(self):
         """:class:`str`: Returns the cog's specified name, not the class name."""
         return self.__cog_name__
+
+    @property
+    def description(self):
+        """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
+        return self.__cog_description__
 
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands.
