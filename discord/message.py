@@ -1180,5 +1180,18 @@ class Message(Hashable):
             The message that was sent.
         """
 
-        reference = MessageReference.from_message(self)
-        return await self.channel.send(content, message_reference=reference, **kwargs)
+        return await self.channel.send(content, reference=self, **kwargs)
+
+    def make_reference(self):
+        """
+        Creates a :class:`MessageReference` from the current message.
+
+        .. versionadded:: 1.6
+
+        Returns
+        ---------
+        :class:`MessageReference`
+            The reference to this message.
+        """
+
+        return MessageReference(self._state, message_id=self.id, channel_id=self.channel.id, guild_id=self.guild and self.guild.id)

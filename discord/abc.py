@@ -799,7 +799,7 @@ class Messageable(metaclass=abc.ABCMeta):
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
-                                          allowed_mentions=None, message_reference=None):
+                                          allowed_mentions=None, reference=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -845,10 +845,10 @@ class Messageable(metaclass=abc.ABCMeta):
 
             .. versionadded:: 1.4
 
-        message_reference: :class:`~discord.MessageReference`
-            A reference to the :class:`~discord.Message` to which you are replying, i.e. as created using
-            :meth:`~discord.MessageReference.from_message`. You can control whether this mentions the author
-            of the referenced Message using :attr:`~discord.AllowedMentions.replied_user`.
+        reference: :class:`Union[~discord.Message, ~discord.MessageReference]`
+            A reference to the :class:`~discord.Message` to which you are replying, this can be created using
+            :meth:`~discord.MessageReference.from_message` or passed directly as a Message. You can control
+            whether this mentions the author of the referenced Message using :attr:`~discord.AllowedMentions.replied_user`.
 
             .. versionadded:: 1.6
 
@@ -882,8 +882,11 @@ class Messageable(metaclass=abc.ABCMeta):
         else:
             allowed_mentions = state.allowed_mentions and state.allowed_mentions.to_dict()
 
-        if message_reference is not None:
-            message_reference = message_reference.to_dict()
+        if reference is not None:
+            try:
+                reference = reference.to_dict()
+            except AttributeError:
+                reference = reference.make_reference().to_dict()
 
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')
@@ -895,7 +898,7 @@ class Messageable(metaclass=abc.ABCMeta):
             try:
                 data = await state.http.send_files(channel.id, files=[file], allowed_mentions=allowed_mentions,
                                                    content=content, tts=tts, embed=embed, nonce=nonce,
-                                                   message_reference=message_reference)
+                                                   message_reference=reference)
             finally:
                 file.close()
 
@@ -908,14 +911,14 @@ class Messageable(metaclass=abc.ABCMeta):
             try:
                 data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
                                                    embed=embed, nonce=nonce, allowed_mentions=allowed_mentions,
-                                                   message_reference=message_reference)
+                                                   message_reference=reference)
             finally:
                 for f in files:
                     f.close()
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed,
                                                                       nonce=nonce, allowed_mentions=allowed_mentions,
-                                                                      message_reference=message_reference)
+                                                                      message_reference=reference)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:

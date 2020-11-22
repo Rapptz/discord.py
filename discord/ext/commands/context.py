@@ -323,13 +323,23 @@ class Context(discord.abc.Messageable):
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
 
-    async def reply(self, content=None, **kwargs):
+    async def reply(self, content=None, *, mention_author=None, **kwargs):
         """|coro|
 
         A shortcut method to :meth:`~discord.abc.Messageable.send` to reply to the
         :class:`~discord.Message` that invoked the command.
 
             .. versionadded:: 1.6
+
+        Parameters
+        --------
+        content: :class:`Optional[str]`
+            The content of the message to be sent.
+        mention_author: :class:`Optional[bool]`
+            Shortcut to passing an :class:`AllowedMentions` object with
+            :attr:`AllowedMentions.replied_user` set.
+        kwargs:
+            Other keyword arguments passed to :meth:`abc.Messageable.send`.
 
         Raises
         --------
@@ -346,4 +356,7 @@ class Context(discord.abc.Messageable):
         :class:`~discord.Message`
             The message that was sent.
         """
-        return await self.message.reply(content, **kwargs)
+        allowed_mentions = kwargs.pop('allowed_mentions', discord.AllowedMentions())
+        if mention_author is not None:
+            allowed_mentions.replied_user = mention_author
+        return await self.message.reply(content, allowed_mentions=allowed_mentions, **kwargs)

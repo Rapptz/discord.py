@@ -11,16 +11,6 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
-.. _vp1p6p0:
-
-v1.6.0
--------
-
-API Changes
-~~~~~~~~~~~
-
-- Add support for replying to a :class:`Message` (:issue:`6054`)
-
 .. _vp1p5p1:
 
 v1.5.1
