@@ -220,6 +220,7 @@ class VoiceClient(VoiceProtocol):
         self._player = None
         self.encoder = None
         self._lite_nonce = 0
+        self.ws = None
 
     warn_nacl = not has_nacl
     supported_modes = (
