@@ -37,7 +37,7 @@ Note that this doesn't enable :attr:`Intents.members` since it's a privileged in
 Another example showing a bot that only deals with messages and guild information:
 
 .. code-block:: python3
-   :emphasize-lines: 6,8,9
+   :emphasize-lines: 7,9,10
 
     import discord
     intents = discord.Intents(messages=True, guilds=True)
