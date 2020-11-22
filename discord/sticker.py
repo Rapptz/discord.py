@@ -28,7 +28,7 @@ from .enums import StickerType, try_enum
 class Sticker(Hashable):
     """Represents a message sticker.
 
-    .. versionadded:: 2.0
+    .. versionadded:: 1.6
 
     .. container:: operations
 
