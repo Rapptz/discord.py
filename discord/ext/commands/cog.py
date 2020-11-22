@@ -95,9 +95,9 @@ class CogMeta(type):
         attrs['__cog_name__'] = kwargs.pop('name', name)
         attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
 
-        attrs['description'] = description = kwargs.pop('description', None)
+        attrs['__cog_description__'] = description = kwargs.pop('description', None)
         if description is not None:
-            attrs['description'] = inspect.getdoc(cls)
+            attrs['__cog_description__'] = inspect.cleandoc(attrs.get('__doc__', ''))
 
         commands = {}
         listeners = {}
@@ -163,10 +163,6 @@ class Cog(metaclass=CogMeta):
     When inheriting from this class, the options shown in :class:`CogMeta`
     are equally valid here.
 
-    Attributes
-    -----------
-    description: :class:`str`
-        Returns the cog's description, typically the cleaned docstring.
     """
 
     def __new__(cls, *args, **kwargs):
