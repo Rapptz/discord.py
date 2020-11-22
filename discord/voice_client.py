@@ -365,6 +365,8 @@ class VoiceClient(VoiceProtocol):
             self._runner = self.loop.create_task(self.poll_voice_ws(reconnect))
 
     async def potential_reconnect(self):
+        # Attempt to stop the player thread from playing early
+        self._connected.clear()
         self.prepare_handshake()
         self._potentially_reconnecting = True
         try:
