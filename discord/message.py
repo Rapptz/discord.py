@@ -381,7 +381,7 @@ class Message(Hashable):
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
-        self.stickers = [Sticker(state, data) for data in data.get("stickers", [])]
+        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
 
         ref = data.get('message_reference')
         self.reference = MessageReference(state, **ref) if ref is not None else None
