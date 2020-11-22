@@ -42,11 +42,11 @@ class _PartialTemplateState:
     def __init__(self, *, state):
         self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
-    
+
     @property
     def is_bot(self):
         return self.__state.is_bot
-    
+
     @property
     def shard_count(self):
         return self.__state.shard_count
@@ -54,14 +54,18 @@ class _PartialTemplateState:
     @property
     def user(self):
         return self.__state.user
-    
+
     @property
     def self_id(self):
         return self.__state.user.id
-    
+
+    @property
+    def member_cache_flags(self):
+        return self.__state.member_cache_flags
+
     def store_emoji(self, guild, packet):
         return None
-    
+
     def _get_voice_client(self, id):
         return None
 

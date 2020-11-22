@@ -305,8 +305,8 @@ class Guild(Hashable):
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
 
-        cache_online_members = self._state._member_cache_flags.online
-        cache_joined = self._state._member_cache_flags.joined
+        cache_online_members = self._state.member_cache_flags.online
+        cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
@@ -1236,7 +1236,8 @@ class Guild(Hashable):
     def fetch_members(self, *, limit=1000, after=None):
         """|coro|
 
-        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members.
+        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
+        :meth:`Intents.members` must be enabled.
 
         .. note::
 
@@ -1257,6 +1258,8 @@ class Guild(Hashable):
 
         Raises
         ------
+        ClientException
+            The members intent is not enabled.
         HTTPException
             Getting the members failed.
 
@@ -1278,6 +1281,10 @@ class Guild(Hashable):
             members = await guild.fetch_members(limit=150).flatten()
             # members is now a list of Member...
         """
+
+        if not self._state._intents.members:
+            raise ClientException('Intents.members must be enabled to use this.')
+
         return MemberIterator(self, limit=limit, after=after)
 
     async def fetch_member(self, member_id):
