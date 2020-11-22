@@ -101,6 +101,8 @@ class BotBase(GroupMixin):
         self.extra_events = {}
         self.__cogs = {}
         self.__extensions = {}
+        self.__extension_args = {}
+        self.__extension_kwargs = {}
         self._checks = []
         self._check_once = []
         self._before_invoke = None
@@ -593,13 +595,15 @@ class BotBase(GroupMixin):
                 pass
         finally:
             self.__extensions.pop(key, None)
+            self.__extension_args.pop(key, None)
+            self.__extension_kwargs.pop(key, None)
             sys.modules.pop(key, None)
             name = lib.__name__
             for module in list(sys.modules.keys()):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    def _load_from_module_spec(self, spec, key):
+    def _load_from_module_spec(self, spec, key, args, kwargs):
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
         sys.modules[key] = lib
@@ -616,7 +620,7 @@ class BotBase(GroupMixin):
             raise errors.NoEntryPointError(key)
 
         try:
-            setup(self)
+            setup(self, *args, **kwargs)
         except Exception as e:
             del sys.modules[key]
             self._remove_module_references(lib.__name__)
@@ -624,8 +628,10 @@ class BotBase(GroupMixin):
             raise errors.ExtensionFailed(key, e) from e
         else:
             self.__extensions[key] = lib
+            self.__extension_args[key] = args
+            self.__extension_kwargs[key] = kwargs
 
-    def load_extension(self, name):
+    def load_extension(self, name, *args, **kwargs):
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
@@ -661,7 +667,7 @@ class BotBase(GroupMixin):
         if spec is None:
             raise errors.ExtensionNotFound(name)
 
-        self._load_from_module_spec(spec, name)
+        self._load_from_module_spec(spec, name, args, kwargs)
 
     def unload_extension(self, name):
         """Unloads an extension.
@@ -694,7 +700,7 @@ class BotBase(GroupMixin):
         self._remove_module_references(lib.__name__)
         self._call_module_finalizers(lib, name)
 
-    def reload_extension(self, name):
+    def reload_extension(self, name, *args, **kwargs):
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
@@ -725,6 +731,9 @@ class BotBase(GroupMixin):
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
 
+        old_args = self.__extension_args.get(name, [])
+        old_kwargs = self.__extension_kwargs.get(name, {})
+
         # get the previous module states from sys modules
         modules = {
             name: module
@@ -736,13 +745,15 @@ class BotBase(GroupMixin):
             # Unload and then load the module...
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, name)
-            self.load_extension(name)
+            self.load_extension(name, *args, **kwargs)
         except Exception as e:
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.
-            lib.setup(self)
+            lib.setup(self, *old_args, **old_kwargs)
             self.__extensions[name] = lib
+            self.__extension_args[name] = old_args
+            self.__extension_kwargs[name] = old_kwargs
 
             # revert sys.modules back to normal and raise back to caller
             sys.modules.update(modules)
