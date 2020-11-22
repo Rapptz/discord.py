@@ -160,7 +160,6 @@ class Cog(metaclass=CogMeta):
 
     When inheriting from this class, the options shown in :class:`CogMeta`
     are equally valid here.
-
     """
 
     def __new__(cls, *args, **kwargs):
