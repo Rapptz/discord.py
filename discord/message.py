@@ -43,6 +43,7 @@ from .file import File
 from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
+from .mentions import AllowedMentions
 
 
 class Attachment:
@@ -1141,13 +1142,23 @@ class Message(Hashable):
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
 
-    async def reply(self, content=None, **kwargs):
+    async def reply(self, content=None, *, mention_author=None, **kwargs):
         """|coro|
 
         A shortcut method to :meth:`abc.Messageable.send` to reply to the
         :class:`Message`.
 
             .. versionadded:: 1.6
+
+        Parameters
+        --------
+        content: Optional[:class:`str`]
+            The content of the message to be sent.
+        mention_author: Optional[:class:`bool`]
+            Shortcut to passing an :class:`AllowedMentions` object with
+            :attr:`AllowedMentions.replied_user` set.
+        kwargs:
+            Other keyword arguments passed to :meth:`abc.Messageable.send`.
 
         Raises
         --------
@@ -1165,7 +1176,10 @@ class Message(Hashable):
             The message that was sent.
         """
 
-        return await self.channel.send(content, reference=self, **kwargs)
+        allowed_mentions = kwargs.pop('allowed_mentions', AllowedMentions())
+        if mention_author is not None:
+            allowed_mentions.replied_user = mention_author
+        return await self.channel.send(content, reference=self, allowed_mentions=allowed_mentions, **kwargs)
 
     def make_reference(self):
         """
