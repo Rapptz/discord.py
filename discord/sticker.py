@@ -64,6 +64,8 @@ class Sticker(Hashable):
         The sticker's image
     tags: List[:class:`str`]
         A list of tags for the sticker
+    preview_asset: Optional[:class:`str`]
+        The sticker's preview asset hash
     """
     def __init__(self, *, state, data):
         self._state = state
