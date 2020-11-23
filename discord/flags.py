@@ -851,6 +851,10 @@ class MemberCacheFlags(BaseFlags):
         self.value = self.DEFAULT_VALUE
         return self
 
+    @property
+    def _empty(self):
+        return self.value == self.DEFAULT_VALUE
+
     @flag_value
     def online(self):
         """:class:`bool`: Whether to cache members with a status.

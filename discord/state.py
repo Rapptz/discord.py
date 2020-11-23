@@ -186,6 +186,9 @@ class ConnectionState:
         self._status = status
         self._intents = intents
 
+        if not intents.members or cache_flags._empty:
+            self.store_user = self.store_user_no_intents
+
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
@@ -278,6 +281,9 @@ class ConnectionState:
             if user.discriminator != '0000':
                 self._users[user_id] = user
             return user
+
+    def store_user_no_intents(self, data):
+        return User(state=self, data=data)
 
     def get_user(self, id):
         return self._users.get(id)
