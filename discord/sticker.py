@@ -62,7 +62,7 @@ class Sticker(Hashable):
     tags: List[:class:`str`]
         A list of tags for the sticker
     """
-    def __init__(self, state, data):
+    def __init__(self, *, state, data):
         self._state = state
         self.id = int(data["id"])
         self.name = data["name"]
