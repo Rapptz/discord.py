@@ -71,14 +71,14 @@ class Sticker(Hashable):
 
     def __init__(self, *, state, data):
         self._state = state
-        self.id = int(data["id"])
-        self.name = data["name"]
-        self.description = data["description"]
-        self.pack_id = int(data["pack_id"])
-        self.format = try_enum(StickerType, data["format_type"])
-        self.image = data["asset"]
-        self.tags = [tag.strip() for tag in data.get("tags", "").split(",")]
-        self.preview_asset = data.get("preview_asset")
+        self.id = int(data['id'])
+        self.name = data['name']
+        self.description = data['description']
+        self.pack_id = int(data['pack_id'])
+        self.format = try_enum(StickerType, data['format_type'])
+        self.image = data['asset']
+        self.tags = [tag.strip() for tag in data.get('tags', '').split(',')]
+        self.preview_asset = data.get('preview_asset')
 
     def __repr__(self):
         return '<{0.__class__.__name__} id={0.id} name={0.name!r}>'.format(self)
