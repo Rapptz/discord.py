@@ -526,6 +526,9 @@ class ConnectionState:
             raw.cached_message = older_message
             self.dispatch('raw_message_edit', raw)
             message._update(data)
+            # Coerce the `after` parameter to take the new updated Member
+            # ref: #5999
+            older_message.author = message.author
             self.dispatch('message_edit', older_message, message)
         else:
             self.dispatch('raw_message_edit', raw)

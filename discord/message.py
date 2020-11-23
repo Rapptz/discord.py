@@ -243,11 +243,15 @@ class MessageReference:
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
-    cls._HANDLERS = {
-        key[prefix:]: value
+    handlers = [
+        (key[prefix:], value)
         for key, value in cls.__dict__.items()
-        if key.startswith('_handle_')
-    }
+        if key.startswith('_handle_') and key != '_handle_member'
+    ]
+
+    # store _handle_member last
+    handlers.append(('member', cls._handle_member))
+    cls._HANDLERS = handlers
     cls._CACHED_SLOTS = [
         attr for attr in cls.__slots__ if attr.startswith('_cs_')
     ]
@@ -452,10 +456,13 @@ class Message(Hashable):
         return reaction
 
     def _update(self, data):
-        handlers = self._HANDLERS
-        for key, value in data.items():
+        # In an update scheme, 'author' key has to be handled before 'member'
+        # otherwise they overwrite each other which is undesirable.
+        # Since there's no good way to do this we have to iterate over every
+        # handler rather than iterating over the keys which is a little slower
+        for key, handler in self._HANDLERS:
             try:
-                handler = handlers[key]
+                value = data[key]
             except KeyError:
                 continue
             else:
