@@ -324,26 +324,6 @@ class Context(discord.abc.Messageable):
             await cmd.on_help_command_error(self, e)
 
     async def reply(self, content=None, **kwargs):
-        """|coro|
-
-        A shortcut method to :meth:`~discord.abc.Messageable.send` to reply to the
-        :class:`~discord.Message` that invoked the command.
-
-            .. versionadded:: 1.6
-
-        Raises
-        --------
-        ~discord.HTTPException
-            Sending the message failed.
-        ~discord.Forbidden
-            You do not have the proper permissions to send the message.
-        ~discord.InvalidArgument
-            The ``files`` list is not of the appropriate size or
-            you specified both ``file`` and ``files``.
-
-        Returns
-        ---------
-        :class:`~discord.Message`
-            The message that was sent.
-        """
         return await self.message.reply(content, **kwargs)
+
+    reply.__doc__ = discord.Message.reply.__doc__

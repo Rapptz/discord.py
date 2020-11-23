@@ -44,6 +44,7 @@ from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
 from .mentions import AllowedMentions
+from .message_reference import _MessageType, MessageReference
 
 
 class Attachment:
@@ -210,62 +211,6 @@ class Attachment:
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
-class MessageReference:
-    """Represents a reference to a :class:`Message`.
-
-    .. versionadded:: 1.5
-
-    Attributes
-    -----------
-    message_id: Optional[:class:`int`]
-        The id of the message referenced.
-    channel_id: :class:`int`
-        The channel id of the message referenced.
-    guild_id: Optional[:class:`int`]
-        The guild id of the message referenced.
-    """
-
-    __slots__ = ('message_id', 'channel_id', 'guild_id', '_state')
-
-    def __init__(self, state, **kwargs):
-        self.message_id = utils._get_as_snowflake(kwargs, 'message_id')
-        self.channel_id = int(kwargs.pop('channel_id'))
-        self.guild_id = utils._get_as_snowflake(kwargs, 'guild_id')
-        self._state = state
-
-    @classmethod
-    def from_message(cls, message):
-        """Creates a :class:`MessageReference` from an existing :class:`Message`.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        ----------
-        message: :class:`Message`
-            The message to be converted into a reference.
-
-        Returns
-        -------
-        :class:`MessageReference`
-            A reference to the message.
-        """
-        return cls(message._state, message_id=message.id, channel_id=message.channel.id, guild_id=message.guild and message.guild.id)
-
-    @property
-    def cached_message(self):
-        """Optional[:class:`Message`]: The cached message, if found in the internal message cache."""
-        return self._state._get_message(self.message_id)
-
-    def __repr__(self):
-        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
-
-    def to_dict(self, specify_channel=False):
-        result = {'message_id': self.message_id} if self.message_id is not None else {}
-        if specify_channel:
-            result['channel_id'] = self.channel_id
-        if self.guild_id is not None:
-            result['guild_id'] = self.guild_id
-        return result
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -280,7 +225,7 @@ def flatten_handlers(cls):
     return cls
 
 @flatten_handlers
-class Message(Hashable):
+class Message(Hashable, _MessageType):
     r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
@@ -1181,9 +1126,8 @@ class Message(Hashable):
             allowed_mentions.replied_user = mention_author
         return await self.channel.send(content, reference=self, allowed_mentions=allowed_mentions, **kwargs)
 
-    def make_reference(self):
-        """
-        Creates a :class:`MessageReference` from the current message.
+    def to_reference(self):
+        """Creates a :class:`MessageReference` from the current message.
 
         .. versionadded:: 1.6
 
@@ -1193,4 +1137,4 @@ class Message(Hashable):
             The reference to this message.
         """
 
-        return MessageReference(self._state, message_id=self.id, channel_id=self.channel.id, guild_id=self.guild and self.guild.id)
+        return MessageReference.from_message(self)

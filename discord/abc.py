@@ -39,6 +39,7 @@ from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
+from .message_reference import _MessageType, MessageReference
 
 class _Undefined:
     def __repr__(self):
@@ -848,9 +849,9 @@ class Messageable(metaclass=abc.ABCMeta):
 
             .. versionadded:: 1.4
 
-        reference: :class:`Union[~discord.Message, ~discord.MessageReference]`
+        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`]
             A reference to the :class:`~discord.Message` to which you are replying, this can be created using
-            :meth:`~discord.MessageReference.from_message` or passed directly as a Message. You can control
+            :meth:`~discord.MessageReference.from_message` or passed directly as a :class:`~discord.Message`. You can control
             whether this mentions the author of the referenced Message using :attr:`~discord.AllowedMentions.replied_user`.
 
             .. versionadded:: 1.6
@@ -862,8 +863,10 @@ class Messageable(metaclass=abc.ABCMeta):
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
         ~discord.InvalidArgument
-            The ``files`` list is not of the appropriate size or
-            you specified both ``file`` and ``files``.
+            The ``files`` list is not of the appropriate size,
+            you specified both ``file`` and ``files``,
+            or the ``reference`` object is not a :class:`~discord.Message`
+            or :class:`~discord.MessageReference`.
 
         Returns
         ---------
@@ -886,10 +889,10 @@ class Messageable(metaclass=abc.ABCMeta):
             allowed_mentions = state.allowed_mentions and state.allowed_mentions.to_dict()
 
         if reference is not None:
-            try:
-                reference = reference.to_dict()
-            except AttributeError:
-                reference = reference.make_reference().to_dict()
+            if isinstance(reference, _MessageType):
+                reference = (reference if isinstance(reference, MessageReference) else reference.to_reference()).to_dict()
+            else:
+                raise InvalidArgument('reference parameter must be Message or MessageReference')
 
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')
