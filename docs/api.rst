@@ -1997,7 +1997,7 @@ of :class:`enum.Enum`.
 
     Represents the type of sticker images.
 
-    .. versionadded:: 2.0
+    .. versionadded:: 1.6
 
     .. attribute:: png
 
