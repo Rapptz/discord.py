@@ -221,6 +221,10 @@ class Cog(metaclass=CogMeta):
         """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
         return self.__cog_description__
 
+    @description.setter
+    def description(self, description):
+        self.__cog_description__ = description
+
     def walk_commands(self):
         """An iterator that recursively walks through this cog's commands and subcommands.
 
