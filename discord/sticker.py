@@ -46,7 +46,6 @@ class Sticker(Hashable):
 
     Attributes
     ----------
-
     name: :class:`str`
         The sticker's name
     id: :class:`int`
