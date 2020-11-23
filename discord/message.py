@@ -352,7 +352,7 @@ class Message(Hashable):
     stickers: List[:class:`Sticker`]
         A list of stickers given to the message.
 
-        .. versionadded:: 2.0
+        .. versionadded:: 1.6
     """
 
     __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
