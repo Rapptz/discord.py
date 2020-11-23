@@ -146,6 +146,12 @@ class Asset:
 
         return cls(state, '/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
 
+    @classmethod
+    def _from_sticker_url(cls, state, sticker, *, size=1024):
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+
+        return cls(state, '/stickers/{0.id}/{0.image}.png?size={2}'.format(sticker, format, size))
 
     def __str__(self):
         return self.BASE + self._url if self._url is not None else ''

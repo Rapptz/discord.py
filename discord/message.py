@@ -43,6 +43,7 @@ from .file import File
 from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
+from .sticker import Sticker
 
 
 class Attachment:
@@ -348,6 +349,10 @@ class Message(Hashable):
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
+    stickers: List[:class:`Sticker`]
+        A list of stickers given to the message.
+
+        .. versionadded:: 1.6
     """
 
     __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
@@ -355,8 +360,8 @@ class Message(Hashable):
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
-                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference', 
-                 'application', 'activity')
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
+                 'application', 'activity', 'stickers')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -376,6 +381,7 @@ class Message(Hashable):
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
+        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
 
         ref = data.get('message_reference')
         self.reference = MessageReference(state, **ref) if ref is not None else None
