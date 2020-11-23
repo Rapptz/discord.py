@@ -30,7 +30,7 @@ class _MessageType:
     __slots__ = ()
 
 class MessageReference(_MessageType):
-    """Represents a reference to a :class:`Message`.
+    """Represents a reference to a :class:`~discord.Message`.
 
     .. versionadded:: 1.5
 
@@ -54,13 +54,13 @@ class MessageReference(_MessageType):
 
     @classmethod
     def from_message(cls, message):
-        """Creates a :class:`MessageReference` from an existing :class:`Message`.
+        """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
 
         Parameters
         ----------
-        message: :class:`Message`
+        message: :class:`~discord.Message`
             The message to be converted into a reference.
 
         Returns
@@ -72,7 +72,7 @@ class MessageReference(_MessageType):
 
     @property
     def cached_message(self):
-        """Optional[:class:`Message`]: The cached message, if found in the internal message cache."""
+        """Optional[:class:`~discord.Message`]: The cached message, if found in the internal message cache."""
         return self._state._get_message(self.message_id)
 
     def __repr__(self):

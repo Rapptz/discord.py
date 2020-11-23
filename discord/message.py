@@ -260,7 +260,7 @@ class Message(Hashable, _MessageType):
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
-    reference: Optional[:class:`MessageReference`]
+    reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
         followed channel integration, or message replies.
@@ -1140,13 +1140,13 @@ class Message(Hashable, _MessageType):
         return await self.channel.send(content, reference=self, allowed_mentions=allowed_mentions, **kwargs)
 
     def to_reference(self):
-        """Creates a :class:`MessageReference` from the current message.
+        """Creates a :class:`~discord.MessageReference` from the current message.
 
         .. versionadded:: 1.6
 
         Returns
         ---------
-        :class:`MessageReference`
+        :class:`~discord.MessageReference`
             The reference to this message.
         """
 
