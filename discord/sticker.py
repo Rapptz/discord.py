@@ -73,7 +73,7 @@ class Sticker(Hashable):
         self.preview_asset = data.get("preview_asset")
 
     def __repr__(self):
-        return "<{0.__class__.__name__} id={0.id} name='{0.name}'>".format(self)
+        return '<{0.__class__.__name__} id={0.id} name={0.name!r}>'.format(self)
 
     def __str__(self):
         return self.name
