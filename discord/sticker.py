@@ -67,6 +67,8 @@ class Sticker(Hashable):
     preview_asset: Optional[:class:`str`]
         The sticker's preview asset hash
     """
+    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags', 'preview_asset')
+
     def __init__(self, *, state, data):
         self._state = state
         self.id = int(data["id"])
