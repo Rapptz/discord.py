@@ -26,7 +26,7 @@ from .utils import snowflake_time
 from .enums import StickerType, try_enum
 
 class Sticker(Hashable):
-    """Represents a message sticker.
+    """Represents a sticker
 
     .. versionadded:: 1.6
 
