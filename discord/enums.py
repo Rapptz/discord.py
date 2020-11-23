@@ -52,7 +52,7 @@ __all__ = (
     'WebhookType',
     'ExpireBehaviour',
     'ExpireBehavior',
-    'StickerType'
+    'StickerType',
 )
 
 def _create_value_cls(name):

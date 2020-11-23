@@ -64,10 +64,10 @@ class Sticker(Hashable):
         The sticker's image
     tags: List[:class:`str`]
         A list of tags for the sticker
-    preview_asset: Optional[:class:`str`]
+    preview_image: Optional[:class:`str`]
         The sticker's preview asset hash
     """
-    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags', 'preview_asset')
+    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags', 'preview_image')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -77,8 +77,13 @@ class Sticker(Hashable):
         self.pack_id = int(data['pack_id'])
         self.format = try_enum(StickerType, data['format_type'])
         self.image = data['asset']
-        self.tags = [tag.strip() for tag in data.get('tags', '').split(',')]
-        self.preview_asset = data.get('preview_asset')
+
+        try:
+            self.tags = [tag.strip() for tag in data['tags'].split(',')]
+        except KeyError:
+            self.tags = []
+
+        self.preview_image = data.get('preview_image')
 
     def __repr__(self):
         return '<{0.__class__.__name__} id={0.id} name={0.name!r}>'.format(self)
@@ -122,7 +127,7 @@ class Sticker(Hashable):
         ------
         InvalidArgument
             Invalid ``size``.
-        
+
         Returns
         -------
         Optional[:class:`Asset`]
