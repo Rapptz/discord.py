@@ -52,6 +52,7 @@ __all__ = (
     'WebhookType',
     'ExpireBehaviour',
     'ExpireBehavior',
+    'StickerType',
 )
 
 def _create_value_cls(name):
@@ -455,3 +456,8 @@ def try_enum(cls, val):
         return cls._enum_value_map_[val]
     except (KeyError, TypeError, AttributeError):
         return val
+
+class StickerType(Enum):
+    png = 1
+    apng = 2
+    lottie = 3

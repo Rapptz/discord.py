@@ -206,6 +206,10 @@ class UserConverter(IDConverter):
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
+
+    .. versionchanged:: 1.6
+        This converter now lazily fetches users from the HTTP APIs if an ID is passed
+        and it's not available in cache.
     """
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
@@ -215,25 +219,32 @@ class UserConverter(IDConverter):
         if match is not None:
             user_id = int(match.group(1))
             result = ctx.bot.get_user(user_id) or _utils_get(ctx.message.mentions, id=user_id)
-        else:
-            arg = argument
+            if result is None:
+                try:
+                    result = await ctx.bot.fetch_user(user_id)
+                except discord.HTTPException:
+                    raise UserNotFound(argument) from None
 
-            # Remove the '@' character if this is the first character from the argument
-            if arg[0] == '@':
-                # Remove first character
-                arg = arg[1:]
+            return result
 
-            # check for discriminator if it exists,
-            if len(arg) > 5 and arg[-5] == '#':
-                discrim = arg[-4:]
-                name = arg[:-5]
-                predicate = lambda u: u.name == name and u.discriminator == discrim
-                result = discord.utils.find(predicate, state._users.values())
-                if result is not None:
-                    return result
+        arg = argument
 
-            predicate = lambda u: u.name == arg
+        # Remove the '@' character if this is the first character from the argument
+        if arg[0] == '@':
+            # Remove first character
+            arg = arg[1:]
+
+        # check for discriminator if it exists,
+        if len(arg) > 5 and arg[-5] == '#':
+            discrim = arg[-4:]
+            name = arg[:-5]
+            predicate = lambda u: u.name == name and u.discriminator == discrim
             result = discord.utils.find(predicate, state._users.values())
+            if result is not None:
+                return result
+
+        predicate = lambda u: u.name == arg
+        result = discord.utils.find(predicate, state._users.values())
 
         if result is None:
             raise UserNotFound(argument)

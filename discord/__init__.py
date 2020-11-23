@@ -58,6 +58,7 @@ from .voice_client import VoiceClient, VoiceProtocol
 from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 from .raw_models import *
 from .team import *
+from .sticker import Sticker
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
