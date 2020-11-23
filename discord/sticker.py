@@ -100,7 +100,7 @@ class Sticker(Hashable):
     def image_url_as(self, *, size=1024):
         """Optionally returns an :class:`Asset` for the sticker's image.
 
-        size must be a power of 2 between 16 and 4096.
+        The size must be a power of 2 between 16 and 4096.
 
         .. note::
             This will return ``None`` if the format is ``StickerType.lottie``.
