@@ -852,7 +852,7 @@ class Messageable(metaclass=abc.ABCMeta):
         reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`]
             A reference to the :class:`~discord.Message` to which you are replying, this can be created using
             :meth:`~discord.MessageReference.from_message` or passed directly as a :class:`~discord.Message`. You can control
-            whether this mentions the author of the referenced Message using :attr:`~discord.AllowedMentions.replied_user`.
+            whether this mentions the author of the referenced message using :attr:`~discord.AllowedMentions.replied_user`.
 
             .. versionadded:: 1.6
 
@@ -890,7 +890,9 @@ class Messageable(metaclass=abc.ABCMeta):
 
         if reference is not None:
             if isinstance(reference, _MessageType):
-                reference = (reference if isinstance(reference, MessageReference) else reference.to_reference()).to_dict()
+                if not isinstance(reference, MessageReference):
+                    reference = reference.to_reference()
+                reference = reference.to_dict()
             else:
                 raise InvalidArgument('reference parameter must be Message or MessageReference')
 
