@@ -78,7 +78,7 @@ class MessageReference(_MessageType):
     def __repr__(self):
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
 
-    def to_dict(self, specify_channel=False):
+    def to_dict(self, specify_channel=True):
         result = {'message_id': self.message_id} if self.message_id is not None else {}
         if specify_channel:
             result['channel_id'] = self.channel_id
