@@ -2733,6 +2733,12 @@ Role
 .. autoclass:: Role()
     :members:
 
+RoleTags
+~~~~~~~~~~
+
+.. autoclass:: RoleTags()
+    :members:
+
 TextChannel
 ~~~~~~~~~~~~
 
