@@ -38,7 +38,7 @@ from .asset import Asset
 from .errors import *
 from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite
-from .role import Role
+from .role import Role, RoleTags
 from .file import File
 from .colour import Color, Colour
 from .integrations import Integration, IntegrationAccount

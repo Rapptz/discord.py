@@ -61,8 +61,7 @@ class AllowedMentions:
         roles are in the message content.
     replied_user: :class:`bool`
         Whether to mention the author of the message being replied to. Defaults
-        to ``True``. This is different from the client behaviour which defaults
-        to ``False`` in some contexts such as DMs.
+        to ``True``.
 
         .. versionadded:: 1.6
     """

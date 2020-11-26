@@ -813,9 +813,22 @@ class Message(Hashable, _MessageType):
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
-            Controls the mentions being processed in this message.
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
 
             .. versionadded:: 1.4
+            .. versionchanged:: 1.6
+                :attr:`~discord.Client.allowed_mentions` serves as defaults unconditionally.
+
+        mention_author: Optional[:class:`bool`]
+            Overrides the :attr:`~discord.AllowedMentions.replied_user` attribute
+            of ``allowed_mentions``.
+
+            .. versionadded:: 1.6
 
         Raises
         -------
@@ -853,17 +866,24 @@ class Message(Hashable, _MessageType):
 
         delete_after = fields.pop('delete_after', None)
 
-        try:
-            allowed_mentions = fields.pop('allowed_mentions')
-        except KeyError:
-            pass
-        else:
-            if allowed_mentions is not None:
-                if self._state.allowed_mentions is not None:
-                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
-                else:
-                    allowed_mentions = allowed_mentions.to_dict()
-                fields['allowed_mentions'] = allowed_mentions
+        mention_author = fields.pop('mention_author', None)
+        allowed_mentions = fields.pop('allowed_mentions', None)
+        if allowed_mentions is not None:
+            if self._state.allowed_mentions is not None:
+                allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions)
+            allowed_mentions = allowed_mentions.to_dict()
+            if mention_author is not None:
+                allowed_mentions['replied_user'] = mention_author
+            fields['allowed_mentions'] = allowed_mentions
+        elif mention_author is not None:
+            if self._state.allowed_mentions is not None:
+                allowed_mentions = self._state.allowed_mentions.to_dict()
+                allowed_mentions['replied_user'] = mention_author
+            else:
+                allowed_mentions = {'replied_user': mention_author}
+            fields['allowed_mentions'] = allowed_mentions
+        elif self._state.allowed_mentions is not None:
+            fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
@@ -1100,23 +1120,13 @@ class Message(Hashable, _MessageType):
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
 
-    async def reply(self, content=None, *, mention_author=None, **kwargs):
+    async def reply(self, content=None, **kwargs):
         """|coro|
 
         A shortcut method to :meth:`abc.Messageable.send` to reply to the
         :class:`Message`.
 
             .. versionadded:: 1.6
-
-        Parameters
-        --------
-        content: Optional[:class:`str`]
-            The content of the message to be sent.
-        mention_author: Optional[:class:`bool`]
-            Shortcut to passing an :class:`AllowedMentions` object with
-            :attr:`AllowedMentions.replied_user` set.
-        kwargs:
-            Other keyword arguments passed to :meth:`abc.Messageable.send`.
 
         Raises
         --------
@@ -1134,10 +1144,7 @@ class Message(Hashable, _MessageType):
             The message that was sent.
         """
 
-        allowed_mentions = kwargs.pop('allowed_mentions', AllowedMentions())
-        if mention_author is not None:
-            allowed_mentions.replied_user = mention_author
-        return await self.channel.send(content, reference=self, allowed_mentions=allowed_mentions, **kwargs)
+        return await self.channel.send(content, reference=self, **kwargs)
 
     def to_reference(self):
         """Creates a :class:`~discord.MessageReference` from the current message.
