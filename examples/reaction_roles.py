@@ -1,4 +1,4 @@
-"""Uses two messages to add and remove roles through reactions."""
+"""Uses a messages to add and remove roles through reactions."""
 
 import discord
 from discord.ext import commands
