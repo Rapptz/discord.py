@@ -282,6 +282,18 @@ class Client:
         ws = self.ws
         return float('nan') if not ws else ws.latency
 
+    def is_ws_ratelimited(self):
+        """:class:`bool`: Whether the websocket is currently rate limited.
+
+        This can be useful to know when deciding whether you should query members
+        using HTTP or via the gateway.
+
+        .. versionadded:: 1.6
+        """
+        if self.ws:
+            return self.ws.is_ratelimited()
+        return False
+
     @property
     def user(self):
         """Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in."""
