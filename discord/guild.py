@@ -565,6 +565,30 @@ class Guild(Hashable):
         return self.get_role(self.id)
 
     @property
+    def premium_subscriber_role(self):
+        """Optional[:class:`Role`]: Gets the premium subscriber role, AKA "boost" role, in this guild.
+
+        .. versionadded:: 1.6
+        """
+        for role in self._roles.values():
+            if role.is_premium_subscriber():
+                return role
+        return None
+
+    @property
+    def self_role(self):
+        """Optional[:class:`Role`]: Gets the role associated with this client's user, if any.
+
+        .. versionadded:: 1.6
+        """
+        self_id = self._state.self_id
+        for role in self._roles.values():
+            tags = role.tags
+            if tags and tags.bot_id == self_id:
+                return role
+        return None
+
+    @property
     def owner(self):
         """Optional[:class:`Member`]: The member that owns the guild."""
         return self.get_member(self.owner_id)
