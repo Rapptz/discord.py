@@ -2648,6 +2648,13 @@ Message
 .. autoclass:: Message()
     :members:
 
+DeletedReferencedMessage
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: DeletedReferencedMessage()
+    :members:
+
+
 Reaction
 ~~~~~~~~~
 

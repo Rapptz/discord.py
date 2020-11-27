@@ -33,7 +33,7 @@ from .guild import Guild
 from .flags import *
 from .relationship import Relationship
 from .member import Member, VoiceState
-from .message import Message, MessageReference, Attachment
+from .message import *
 from .asset import Asset
 from .errors import *
 from .calls import CallMessage, GroupCall

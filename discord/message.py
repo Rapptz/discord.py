@@ -46,6 +46,12 @@ from .mixins import Hashable
 from .mentions import AllowedMentions
 from .sticker import Sticker
 
+__all__ = (
+    'Attachment',
+    'Message',
+    'MessageReference',
+    'DeletedReferencedMessage',
+)
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -211,6 +217,36 @@ class Attachment:
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
+class DeletedReferencedMessage:
+    """A special sentinel type that denotes whether the
+    resolved message referenced message had since been deleted.
+
+    The purpose of this class is to separate referenced messages that could not be
+    fetched and those that were previously fetched but have since been deleted.
+
+    .. versionadded:: 1.6
+    """
+
+    __slots__ = ('_parent')
+
+    def __init__(self, parent):
+        self._parent = parent
+
+    @property
+    def id(self):
+        """:class:`int`: The message ID of the deleted referenced message."""
+        return self._parent.message_id
+
+    @property
+    def channel_id(self):
+        """:class:`int`: The channel ID of the deleted referenced message."""
+        return self._parent.channel_id
+
+    @property
+    def guild_id(self):
+        """Optional[:class:`int`]: The guild ID of the deleted referenced message."""
+        return self._parent.guild_id
+
 
 class MessageReference:
     """Represents a reference to a :class:`~discord.Message`.
@@ -228,12 +264,23 @@ class MessageReference:
         The channel id of the message referenced.
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
+    resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]
+        The message that this reference resolved to. If this is ``None``
+        then the original message was not fetched either due to the discord API
+        not attempting to resolve it or it not being available at the time of creation.
+        If the message was resolved at a prior point but has since been deleted then
+        this will be of type :class:`DeletedReferencedMessage`.
+
+        Currently, this is mainly the replied to message when a user replies to a message.
+
+        .. versionadded:: 1.6
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', '_state')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'resolved', '_state')
 
     def __init__(self, *, message_id, channel_id, guild_id=None):
         self._state = None
+        self.resolved = None
         self.message_id = message_id
         self.channel_id = channel_id
         self.guild_id = guild_id
@@ -245,6 +292,7 @@ class MessageReference:
         self.channel_id = int(data.pop('channel_id'))
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self._state = state
+        self.resolved = None
         return self
 
     @classmethod
@@ -433,7 +481,22 @@ class Message(Hashable):
         except KeyError:
             self.reference = None
         else:
-            self.reference = MessageReference.with_state(state, ref)
+            self.reference = ref = MessageReference.with_state(state, ref)
+            try:
+                resolved = data['referenced_message']
+            except KeyError:
+                pass
+            else:
+                if resolved is None:
+                    ref.resolved = DeletedReferencedMessage(ref)
+                else:
+                    # Right now the channel IDs match but maybe in the future they won't.
+                    if ref.channel_id == channel.id:
+                        chan = channel
+                    else:
+                        chan, _ = state._get_guild_channel(resolved)
+
+                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
