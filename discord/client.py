@@ -33,14 +33,12 @@ import traceback
 import aiohttp
 
 from .user import User, Profile
-from .asset import Asset
 from .invite import Invite
 from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .channel import _channel_factory
 from .enums import ChannelType
-from .member import Member
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion

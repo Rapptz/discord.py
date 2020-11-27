@@ -28,7 +28,7 @@ import asyncio
 import datetime
 
 from .errors import NoMoreItems
-from .utils import DISCORD_EPOCH, time_snowflake, maybe_coroutine
+from .utils import time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
 

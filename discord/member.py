@@ -34,7 +34,7 @@ from . import utils
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
-from .enums import Status, try_enum, UserFlags, HypeSquadHouse
+from .enums import Status, try_enum
 from .colour import Colour
 from .object import Object
 

@@ -30,7 +30,6 @@ import copy
 import datetime
 import itertools
 import logging
-import math
 import weakref
 import warnings
 import inspect
@@ -53,7 +52,6 @@ from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
 from .flags import Intents, MemberCacheFlags
-from .embeds import Embed
 from .object import Object
 from .invite import Invite
 

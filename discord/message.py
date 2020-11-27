@@ -43,7 +43,6 @@ from .file import File
 from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
-from .mentions import AllowedMentions
 from .sticker import Sticker
 
 __all__ = (

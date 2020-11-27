@@ -30,12 +30,11 @@ import inspect
 import importlib.util
 import sys
 import traceback
-import re
 import types
 
 import discord
 
-from .core import GroupMixin, Command
+from .core import GroupMixin
 from .view import StringView
 from .context import Context
 from . import errors

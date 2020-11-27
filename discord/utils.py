@@ -31,7 +31,6 @@ import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
 import datetime
-from email.utils import parsedate_to_datetime
 import functools
 from inspect import isawaitable as _isawaitable
 from operator import attrgetter
@@ -40,7 +39,6 @@ import re
 import warnings
 
 from .errors import InvalidArgument
-from .object import Object
 
 DISCORD_EPOCH = 1420070400000
 MAX_ASYNCIO_SECONDS = 3456000
