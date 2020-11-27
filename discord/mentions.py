@@ -59,14 +59,20 @@ class AllowedMentions:
         roles are not mentioned at all. If a list of :class:`abc.Snowflake`
         is given then only the roles provided will be mentioned, provided those
         roles are in the message content.
+    replied_user: :class:`bool`
+        Whether to mention the author of the message being replied to. Defaults
+        to ``True``.
+
+        .. versionadded:: 1.6
     """
 
-    __slots__ = ('everyone', 'users', 'roles')
+    __slots__ = ('everyone', 'users', 'roles', 'replied_user')
 
-    def __init__(self, *, everyone=default, users=default, roles=default):
+    def __init__(self, *, everyone=default, users=default, roles=default, replied_user=default):
         self.everyone = everyone
         self.users = users
         self.roles = roles
+        self.replied_user = replied_user
 
     @classmethod
     def all(cls):
@@ -74,7 +80,7 @@ class AllowedMentions:
 
         .. versionadded:: 1.5
         """
-        return cls(everyone=True, users=True, roles=True)
+        return cls(everyone=True, users=True, roles=True, replied_user=True)
 
     @classmethod
     def none(cls):
@@ -82,7 +88,7 @@ class AllowedMentions:
 
         .. versionadded:: 1.5
         """
-        return cls(everyone=False, users=False, roles=False)
+        return cls(everyone=False, users=False, roles=False, replied_user=False)
 
     def to_dict(self):
         parse = []
@@ -101,6 +107,9 @@ class AllowedMentions:
         elif self.roles != False:
             data['roles'] = [x.id for x in self.roles]
 
+        if self.replied_user:
+            data['replied_user'] = True
+
         data['parse'] = parse
         return data
 
@@ -111,7 +120,8 @@ class AllowedMentions:
         everyone = self.everyone if other.everyone is default else other.everyone
         users = self.users if other.users is default else other.users
         roles = self.roles if other.roles is default else other.roles
-        return AllowedMentions(everyone=everyone, roles=roles, users=users)
+        replied_user = self.replied_user if other.replied_user is default else other.replied_user
+        return AllowedMentions(everyone=everyone, roles=roles, users=users, replied_user=replied_user)
 
     def __repr__(self):
-        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles})'.format(self)
+        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles}, replied_user={0.replied_user})'.format(self)

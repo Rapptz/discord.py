@@ -43,6 +43,8 @@ from .file import File
 from .utils import escape_mentions
 from .guild import Guild
 from .mixins import Hashable
+from .mentions import AllowedMentions
+from .message_reference import _MessageType, MessageReference
 from .sticker import Sticker
 
 
@@ -210,36 +212,6 @@ class Attachment:
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
-class MessageReference:
-    """Represents a reference to a :class:`Message`.
-
-    .. versionadded:: 1.5
-
-    Attributes
-    -----------
-    message_id: Optional[:class:`int`]
-        The id of the message referenced.
-    channel_id: :class:`int`
-        The channel id of the message referenced.
-    guild_id: Optional[:class:`int`]
-        The guild id of the message referenced.
-    """
-
-    __slots__ = ('message_id', 'channel_id', 'guild_id', '_state')
-
-    def __init__(self, state, **kwargs):
-        self.message_id = utils._get_as_snowflake(kwargs, 'message_id')
-        self.channel_id = int(kwargs.pop('channel_id'))
-        self.guild_id = utils._get_as_snowflake(kwargs, 'guild_id')
-        self._state = state
-
-    @property
-    def cached_message(self):
-        """Optional[:class:`Message`]: The cached message, if found in the internal message cache."""
-        return self._state._get_message(self.message_id)
-
-    def __repr__(self):
-        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
 
 def flatten_handlers(cls):
     prefix = len('_handle_')
@@ -258,7 +230,7 @@ def flatten_handlers(cls):
     return cls
 
 @flatten_handlers
-class Message(Hashable):
+class Message(Hashable, _MessageType):
     r"""Represents a message from Discord.
 
     There should be no need to create one of these manually.
@@ -288,10 +260,10 @@ class Message(Hashable):
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
-    reference: Optional[:class:`MessageReference`]
+    reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
-        type :attr:`MessageType.pins_add` or crossposted messages created by a
-        followed channel integration.
+        type :attr:`MessageType.pins_add`, crossposted messages created by a
+        followed channel integration, or message replies.
 
         .. versionadded:: 1.5
 
@@ -841,9 +813,22 @@ class Message(Hashable):
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
-            Controls the mentions being processed in this message.
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
 
             .. versionadded:: 1.4
+            .. versionchanged:: 1.6
+                :attr:`~discord.Client.allowed_mentions` serves as defaults unconditionally.
+
+        mention_author: Optional[:class:`bool`]
+            Overrides the :attr:`~discord.AllowedMentions.replied_user` attribute
+            of ``allowed_mentions``.
+
+            .. versionadded:: 1.6
 
         Raises
         -------
@@ -881,17 +866,24 @@ class Message(Hashable):
 
         delete_after = fields.pop('delete_after', None)
 
-        try:
-            allowed_mentions = fields.pop('allowed_mentions')
-        except KeyError:
-            pass
-        else:
-            if allowed_mentions is not None:
-                if self._state.allowed_mentions is not None:
-                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
-                else:
-                    allowed_mentions = allowed_mentions.to_dict()
-                fields['allowed_mentions'] = allowed_mentions
+        mention_author = fields.pop('mention_author', None)
+        allowed_mentions = fields.pop('allowed_mentions', None)
+        if allowed_mentions is not None:
+            if self._state.allowed_mentions is not None:
+                allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions)
+            allowed_mentions = allowed_mentions.to_dict()
+            if mention_author is not None:
+                allowed_mentions['replied_user'] = mention_author
+            fields['allowed_mentions'] = allowed_mentions
+        elif mention_author is not None:
+            if self._state.allowed_mentions is not None:
+                allowed_mentions = self._state.allowed_mentions.to_dict()
+                allowed_mentions['replied_user'] = mention_author
+            else:
+                allowed_mentions = {'replied_user': mention_author}
+            fields['allowed_mentions'] = allowed_mentions
+        elif self._state.allowed_mentions is not None:
+            fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
@@ -1127,3 +1119,42 @@ class Message(Hashable):
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
+
+    async def reply(self, content=None, **kwargs):
+        """|coro|
+
+        A shortcut method to :meth:`abc.Messageable.send` to reply to the
+        :class:`Message`.
+
+            .. versionadded:: 1.6
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ~discord.InvalidArgument
+            The ``files`` list is not of the appropriate size or
+            you specified both ``file`` and ``files``.
+
+        Returns
+        ---------
+        :class:`Message`
+            The message that was sent.
+        """
+
+        return await self.channel.send(content, reference=self, **kwargs)
+
+    def to_reference(self):
+        """Creates a :class:`~discord.MessageReference` from the current message.
+
+        .. versionadded:: 1.6
+
+        Returns
+        ---------
+        :class:`~discord.MessageReference`
+            The reference to this message.
+        """
+
+        return MessageReference.from_message(self)
