@@ -264,7 +264,7 @@ class MessageReference:
         The channel id of the message referenced.
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
-    resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]
+    resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]]
         The message that this reference resolved to. If this is ``None``
         then the original message was not fetched either due to the discord API
         not attempting to resolve it or it not being available at the time of creation.
