@@ -685,6 +685,7 @@ class CustomActivity(BaseActivity):
     __slots__ = ('name', 'emoji', 'state')
 
     def __init__(self, name, *, emoji=None, **extra):
+        super().__init__(**extra)
         self.name = name
         self.state = extra.pop('state', None)
         if self.name == 'Custom Status':
