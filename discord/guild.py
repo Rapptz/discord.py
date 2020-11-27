@@ -1216,10 +1216,10 @@ class Guild(Hashable):
         except KeyError:
             pass
         else:
-            if rules_channel is None:
-                fields['public_updates_channel_id'] = rules_channel
+            if public_updates_channel is None:
+                fields['public_updates_channel_id'] = public_updates_channel
             else:
-                fields['public_updates_channel_id'] = rules_channel.id
+                fields['public_updates_channel_id'] = public_updates_channel.id
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def fetch_channels(self):
