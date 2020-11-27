@@ -217,6 +217,9 @@ class MessageReference:
 
     .. versionadded:: 1.5
 
+    .. versionchanged:: 1.6
+        This class can now be constructed by users.
+
     Attributes
     -----------
     message_id: Optional[:class:`int`]
@@ -229,11 +232,20 @@ class MessageReference:
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', '_state')
 
-    def __init__(self, state, **kwargs):
-        self.message_id = utils._get_as_snowflake(kwargs, 'message_id')
-        self.channel_id = int(kwargs.pop('channel_id'))
-        self.guild_id = utils._get_as_snowflake(kwargs, 'guild_id')
+    def __init__(self, *, message_id, channel_id, guild_id=None):
+        self._state = None
+        self.message_id = message_id
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+
+    @classmethod
+    def with_state(cls, state, data):
+        self = cls.__new__(cls)
+        self.message_id = utils._get_as_snowflake(data, 'message_id')
+        self.channel_id = int(data.pop('channel_id'))
+        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self._state = state
+        return self
 
     @classmethod
     def from_message(cls, message):
@@ -416,8 +428,12 @@ class Message(Hashable):
         self.nonce = data.get('nonce')
         self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
 
-        ref = data.get('message_reference')
-        self.reference = MessageReference(state, **ref) if ref is not None else None
+        try:
+            ref = data['message_reference']
+        except KeyError:
+            self.reference = None
+        else:
+            self.reference = MessageReference.with_state(state, ref)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
