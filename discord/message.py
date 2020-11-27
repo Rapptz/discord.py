@@ -311,7 +311,9 @@ class MessageReference:
         :class:`MessageReference`
             A reference to the message.
         """
-        return cls(message._state, message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None))
+        self = cls(message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None))
+        self._state = message._state
+        return self
 
     @property
     def cached_message(self):
