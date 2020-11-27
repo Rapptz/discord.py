@@ -39,7 +39,6 @@ from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
-from .message_reference import _MessageType, MessageReference
 
 class _Undefined:
     def __repr__(self):
@@ -897,15 +896,13 @@ class Messageable(metaclass=abc.ABCMeta):
 
         if mention_author is not None:
             allowed_mentions = allowed_mentions or {}
-            allowed_mentions['replied_user'] = mention_author
+            allowed_mentions['replied_user'] = bool(mention_author)
 
         if reference is not None:
-            if isinstance(reference, _MessageType):
-                if not isinstance(reference, MessageReference):
-                    reference = reference.to_reference()
-                reference = reference.to_dict()
-            else:
-                raise InvalidArgument('reference parameter must be Message or MessageReference')
+            try:
+                reference = reference.to_message_reference_dict()
+            except AttributeError:
+                raise InvalidArgument('reference parameter must be Message or MessageReference') from None
 
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')
