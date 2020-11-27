@@ -10,8 +10,8 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), intents=inten
 
 role_message_id = 0  # ID of message that can be reacted to to add role
 emoji_to_role = {
-    "👍": 0,  # ID of role associated with thumbs up emoji
-    "test": 0  # ID of role associated with custom emoji 'test'
+    partial_emoji_1: 0,  # ID of role associated with partial emoji object 'partial_emoji_1'
+    partial_emoji_2: 0  # ID of role associated with partial emoji object 'partial_emoji_2'
 }
 
 @bot.event
@@ -52,7 +52,7 @@ async def on_raw_reaction_remove(payload):
         return
 
     try:
-        role_id = emoji_to_role[str(payload.emoji)]
+        role_id = emoji_to_role[payload.emoji]
     except KeyError:
         # If the emoji isn't the one we care about then exit as well.
         return
