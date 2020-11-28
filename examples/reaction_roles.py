@@ -2,21 +2,24 @@
 
 import discord
 
-role_message_id = 0  # ID of message that can be reacted to to add role
-emoji_to_role = {
-    partial_emoji_1: 0,  # ID of role associated with partial emoji object 'partial_emoji_1'
-    partial_emoji_2: 0  # ID of role associated with partial emoji object 'partial_emoji_2'
-}
-
 class RoleReactClient(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.role_message_id = 0  # ID of message that can be reacted to to add role
+        self.emoji_to_role = {
+            partial_emoji_1: 0,  # ID of role associated with partial emoji object 'partial_emoji_1'
+            partial_emoji_2: 0  # ID of role associated with partial emoji object 'partial_emoji_2'
+        }
+
     async def on_raw_reaction_add(self, payload):
         """Gives a role based on a reaction emoji."""
         # Make sure that the message the user is reacting to is the one we care about
-        if payload.message_id != role_message_id:
+        if payload.message_id != self.role_message_id:
             return
 
         try:
-            role_id = emoji_to_role[payload.emoji]
+            role_id = self.emoji_to_role[payload.emoji]
         except KeyError:
             # If the emoji isn't the one we care about then exit as well.
             return
@@ -38,19 +41,19 @@ class RoleReactClient(discord.Client):
             # If we want to do something in case of errors we'd do it here.
             pass
 
-    async def on_raw_reaction_remove(payload):
+    async def on_raw_reaction_remove(self, payload):
         """Removes a role based on a reaction emoji."""
         # Make sure that the message the user is reacting to is the one we care about
-        if payload.message_id == role_message_id:
+        if payload.message_id == self.role_message_id:
             return
 
         try:
-            role_id = emoji_to_role[payload.emoji]
+            role_id = self.emoji_to_role[payload.emoji]
         except KeyError:
             # If the emoji isn't the one we care about then exit as well.
             return
 
-        guild = bot.get_guild(payload.guild_id)
+        guild = self.get_guild(payload.guild_id)
         if guild is None:
             # Check if we're still in the guild and it's cached.
             return
