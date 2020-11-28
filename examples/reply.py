@@ -13,7 +13,7 @@ class MyClient(discord.Client):
             return
 
         if message.content.startswith('!hello'):
-            await message.channel.send('Hello {0.author.mention}'.format(message))
+            await message.reply('Hello!', mention_author=True)
 
 client = MyClient()
 client.run('token')
