@@ -559,9 +559,19 @@ class BotBase(GroupMixin):
     def _remove_module_references(self, name):
         # find all references to the module
         # remove the cogs registered from the module
+        removed_cogs = []
         for cogname, cog in self.__cogs.copy().items():
             if _is_submodule(name, cog.__module__):
-                self.remove_cog(cogname)
+                try:
+                    self.remove_cog(cogname)
+                except Exception as exc:
+                    # a cog raised an exception in cog_unload
+                    # add all cogs back to the module and propagate the exception
+                    for removed_cog in removed_cogs:
+                        self.add_cog(remove_cog)
+                    raise exc
+                else:
+                    removed_cogs.append(cog)
 
         # remove all the commands from the module
         for cmd in self.all_commands.copy().values():
