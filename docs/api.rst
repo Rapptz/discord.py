@@ -2085,6 +2085,26 @@ Certain utilities make working with async iterators easier, detailed below.
         :return: A list of every element in the async iterator.
         :rtype: list
 
+    .. method:: chunk(max_size)
+
+        Collects items into chunks of up to a given maximum size.
+        Another :class:`AsyncIterator` is returned which collects items into
+        :class:`list`\s of a given size. The maximum chunk size must be a positive integer.
+        
+        .. versionadded:: 1.6
+        
+        Collecting groups of users: ::
+
+            async for leader, *users in reaction.users().chunk(3):
+                ...
+
+        .. warning::
+
+            The last chunk collected may not be as large as ``max_size``.
+
+        :param max_size: The size of individual chunks.
+        :rtype: :class:`AsyncIterator`
+
     .. method:: map(func)
 
         This is similar to the built-in :func:`map <py:map>` function. Another
