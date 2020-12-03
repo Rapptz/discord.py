@@ -563,15 +563,14 @@ class BotBase(GroupMixin):
         for cogname, cog in self.__cogs.copy().items():
             if _is_submodule(name, cog.__module__):
                 try:
+                    removed_cogs.append(cog)
                     self.remove_cog(cogname)
                 except Exception as exc:
                     # a cog raised an exception in cog_unload
                     # add all cogs back to the module and propagate the exception
                     for removed_cog in removed_cogs:
-                        self.add_cog(remove_cog)
+                        self.add_cog(removed_cog)
                     raise exc
-                else:
-                    removed_cogs.append(cog)
 
         # remove all the commands from the module
         for cmd in self.all_commands.copy().values():
