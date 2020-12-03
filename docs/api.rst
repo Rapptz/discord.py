@@ -2090,6 +2090,7 @@ Certain utilities make working with async iterators easier, detailed below.
         Collects items into chunks of up to a given maximum size.
         Another :class:`AsyncIterator` is returned which collects items into
         :class:`list`\s of a given size. The maximum chunk size must be a positive integer.
+        
         .. versionadded:: 1.6
         
         Collecting groups of users: ::
