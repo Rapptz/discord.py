@@ -565,7 +565,7 @@ class BotBase(GroupMixin):
                 try:
                     removed_cogs.append(cog)
                     self.remove_cog(cogname)
-                except Exception as exc:
+                except BaseException as exc:
                     # a cog raised an exception in cog_unload
                     # add all cogs back to the module and propagate the exception
                     for removed_cog in removed_cogs:
