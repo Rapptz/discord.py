@@ -437,4 +437,7 @@ class Cog(metaclass=CogMeta):
             if cls.bot_check_once is not Cog.bot_check_once:
                 bot.remove_check(self.bot_check_once, call_once=True)
         finally:
-            self.cog_unload()
+            try:
+                self.cog_unload()
+            except Exception:
+                pass
