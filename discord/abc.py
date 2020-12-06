@@ -755,7 +755,7 @@ class GuildChannel:
 
         Returns a list of all active instant invites from this channel.
 
-        You must have :attr:`~Permissions.manage_guild` to get this information.
+        You must have :attr:`~Permissions.manage_channels` to get this information.
 
         Raises
         -------
