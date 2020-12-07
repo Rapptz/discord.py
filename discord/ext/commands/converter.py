@@ -263,7 +263,7 @@ class MessageConverter(Converter):
     3. Lookup by message URL
 
     .. versionchanged:: 1.5
-         Raise :exc:`.ChannelNotFound`, `MessageNotFound` or `ChannelNotReadable` instead of generic :exc:`.BadArgument`
+         Raise :exc:`.ChannelNotFound`, :exc:`.MessageNotFound` or :exc:`.ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
