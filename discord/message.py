@@ -1019,7 +1019,7 @@ class Message(Hashable):
             else:
                 allowed_mentions = {'replied_user': mention_author}
             fields['allowed_mentions'] = allowed_mentions
-        elif self._state.allowed_mentions is not None:
+        elif self._state.allowed_mentions is not None and self._state.self_id == self.author.id:
             fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
 
         if fields:
