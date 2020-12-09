@@ -958,14 +958,6 @@ class Message(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
-            .. versionchanged:: 1.6
-                :attr:`~discord.Client.allowed_mentions` serves as defaults unconditionally.
-
-        mention_author: Optional[:class:`bool`]
-            Overrides the :attr:`~discord.AllowedMentions.replied_user` attribute
-            of ``allowed_mentions``.
-
-            .. versionadded:: 1.6
 
         Raises
         -------
@@ -1003,24 +995,17 @@ class Message(Hashable):
 
         delete_after = fields.pop('delete_after', None)
 
-        mention_author = fields.pop('mention_author', None)
-        allowed_mentions = fields.pop('allowed_mentions', None)
-        if allowed_mentions is not None:
-            if self._state.allowed_mentions is not None:
-                allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions)
-            allowed_mentions = allowed_mentions.to_dict()
-            if mention_author is not None:
-                allowed_mentions['replied_user'] = mention_author
-            fields['allowed_mentions'] = allowed_mentions
-        elif mention_author is not None:
-            if self._state.allowed_mentions is not None:
-                allowed_mentions = self._state.allowed_mentions.to_dict()
-                allowed_mentions['replied_user'] = mention_author
-            else:
-                allowed_mentions = {'replied_user': mention_author}
-            fields['allowed_mentions'] = allowed_mentions
-        elif self._state.allowed_mentions is not None and self._state.self_id == self.author.id:
-            fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
+        try:
+            allowed_mentions = fields.pop('allowed_mentions')
+        except KeyError:
+            pass
+        else:
+            if allowed_mentions is not None:
+                if self._state.allowed_mentions is not None:
+                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+                else:
+                    allowed_mentions = allowed_mentions.to_dict()
+                fields['allowed_mentions'] = allowed_mentions
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
