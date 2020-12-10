@@ -123,6 +123,9 @@ class Embed:
         else:
             self.timestamp = timestamp
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.to_dict() == other.to_dict()
+
     @classmethod
     def from_dict(cls, data):
         """Converts a :class:`dict` to a :class:`Embed` provided it is in the
