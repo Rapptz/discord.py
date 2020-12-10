@@ -2090,9 +2090,9 @@ Certain utilities make working with async iterators easier, detailed below.
         Collects items into chunks of up to a given maximum size.
         Another :class:`AsyncIterator` is returned which collects items into
         :class:`list`\s of a given size. The maximum chunk size must be a positive integer.
-        
+
         .. versionadded:: 1.6
-        
+
         Collecting groups of users: ::
 
             async for leader, *users in reaction.users().chunk(3):
@@ -2542,6 +2542,9 @@ Webhook Support
 discord.py offers support for creating, editing, and executing webhooks through the :class:`Webhook` class.
 
 .. autoclass:: Webhook
+    :members:
+
+.. autoclass:: WebhookMessage
     :members:
 
 Adapters

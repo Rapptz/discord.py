@@ -41,7 +41,6 @@ from .mixins import Hashable
 from .user import User
 from .invite import Invite
 from .iterators import AuditLogIterator, MemberIterator
-from .webhook import Webhook
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
@@ -482,7 +481,7 @@ class Guild(Hashable):
     @property
     def public_updates_channel(self):
         """Optional[:class:`TextChannel`]: Return's the guild's channel where admins and
-        moderators of the guilds receive notices from Discord. The guild must be a 
+        moderators of the guilds receive notices from Discord. The guild must be a
         Community guild.
 
         If no channel is set, then this returns ``None``.
@@ -1482,6 +1481,7 @@ class Guild(Hashable):
             The webhooks for this guild.
         """
 
+        from .webhook import Webhook
         data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
