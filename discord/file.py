@@ -28,7 +28,7 @@ import os.path
 import io
 
 class File:
-    """A parameter object used for :meth:`abc.Messageable.send`
+    r"""A parameter object used for :meth:`abc.Messageable.send`
     for sending file objects.
 
     .. note::
