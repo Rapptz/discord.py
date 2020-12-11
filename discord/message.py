@@ -367,7 +367,19 @@ def flatten_handlers(cls):
 class Message(Hashable):
     r"""Represents a message from Discord.
 
-    There should be no need to create one of these manually.
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two messages are equal.
+
+        .. describe:: x != y
+
+            Checks if two messages are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the message's hash.
 
     Attributes
     -----------
@@ -1311,6 +1323,20 @@ class PartialMessage(Hashable):
     Note that this class is trimmed down and has no rich attributes.
 
     .. versionadded:: 1.6
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial messages are equal.
+
+        .. describe:: x != y
+
+            Checks if two partial messages are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the partial message's hash.
 
     Attributes
     -----------
