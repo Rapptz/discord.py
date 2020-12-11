@@ -490,7 +490,7 @@ class WebhookMessage(Message):
         Forbidden
             You do not have proper permissions to delete the message.
         NotFound
-            The message was deleted already
+            The message was deleted already.
         HTTPException
             Deleting the message failed.
         """
@@ -1080,7 +1080,7 @@ class Webhook(Hashable):
         Parameters
         ------------
         message_id: :class:`int`
-            The message ID to edit.
+            The message ID to delete.
 
         Raises
         -------
