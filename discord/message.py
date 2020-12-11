@@ -1361,6 +1361,7 @@ class PartialMessage(Hashable):
         'clear_reactions',
         'reply',
         'to_reference',
+        'to_message_reference_dict',
     )
 
     def __init__(self, *, channel, id):
