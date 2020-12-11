@@ -2952,6 +2952,12 @@ MessageReference
 .. autoclass:: MessageReference
     :members:
 
+PartialMessage
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PartialMessage
+    :members:
+
 Intents
 ~~~~~~~~~~
 

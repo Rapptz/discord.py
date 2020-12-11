@@ -34,7 +34,7 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, try_enum
+from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
@@ -48,9 +48,25 @@ from .sticker import Sticker
 __all__ = (
     'Attachment',
     'Message',
+    'PartialMessage',
     'MessageReference',
     'DeletedReferencedMessage',
 )
+
+def convert_emoji_reaction(emoji):
+    if isinstance(emoji, Reaction):
+        emoji = emoji.emoji
+
+    if isinstance(emoji, Emoji):
+        return '%s:%s' % (emoji.name, emoji.id)
+    if isinstance(emoji, PartialEmoji):
+        return emoji._as_reaction()
+    if isinstance(emoji, str):
+        # Reactions can be in :name:id format, but not <:name:id>.
+        # No existing emojis have <> in them, so this should be okay.
+        return emoji.strip('<>')
+
+    raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -1117,7 +1133,7 @@ class Message(Hashable):
             The emoji parameter is invalid.
         """
 
-        emoji = self._emoji_reaction(emoji)
+        emoji = convert_emoji_reaction(emoji)
         await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
     async def remove_reaction(self, emoji, member):
@@ -1152,7 +1168,7 @@ class Message(Hashable):
             The emoji parameter is invalid.
         """
 
-        emoji = self._emoji_reaction(emoji)
+        emoji = convert_emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
             await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
@@ -1187,24 +1203,8 @@ class Message(Hashable):
             The emoji parameter is invalid.
         """
 
-        emoji = self._emoji_reaction(emoji)
+        emoji = convert_emoji_reaction(emoji)
         await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
-
-    @staticmethod
-    def _emoji_reaction(emoji):
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            return '%s:%s' % (emoji.name, emoji.id)
-        if isinstance(emoji, PartialEmoji):
-            return emoji._as_reaction()
-        if isinstance(emoji, str):
-            # Reactions can be in :name:id format, but not <:name:id>.
-            # No existing emojis have <> in them, so this should be okay.
-            return emoji.strip('<>')
-
-        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     async def clear_reactions(self):
         """|coro|
@@ -1248,7 +1248,7 @@ class Message(Hashable):
         A shortcut method to :meth:`abc.Messageable.send` to reply to the
         :class:`Message`.
 
-            .. versionadded:: 1.6
+        .. versionadded:: 1.6
 
         Raises
         --------
@@ -1291,3 +1291,101 @@ class Message(Hashable):
             data['guild_id'] = self.guild.id
 
         return data
+
+def implement_partial_methods(cls):
+    msg = Message
+    for name in cls._exported_names:
+        func = getattr(msg, name)
+        setattr(cls, name, func)
+    return cls
+
+@implement_partial_methods
+class PartialMessage(Hashable):
+    """Represents a partial message to aid with working messages when only
+    a message and channel ID are present.
+
+    There are two ways to construct this class. The first one is through
+    the constructor itself, and the second is via
+    :meth:`TextChannel.get_partial_message`.
+
+    Note that this class is trimmed down and has no rich attributes.
+
+    .. versionadded:: 1.6
+
+    Attributes
+    -----------
+    channel: :class:`TextChannel`
+        The text channel associated with this partial message.
+    id: :class:`int`
+        The message ID.
+    """
+
+    __slots__ = ('channel', 'id', '_state')
+
+    _exported_names = (
+        'jump_url',
+        'delete',
+        'edit',
+        'publish',
+        'pin',
+        'unpin',
+        'add_reaction',
+        'remove_reaction',
+        'clear_reaction',
+        'clear_reactions',
+        'reply',
+        'to_reference',
+    )
+
+    def __init__(self, *, channel, id):
+        if channel.type not in (ChannelType.text, ChannelType.news):
+            raise TypeError('Expected TextChannel not %r' % type(channel))
+
+        self.channel = channel
+        self._state = channel._state
+        self.id = id
+
+    def _update(self, data):
+        # This is used for duck typing purposes.
+        # Just do nothing with the data.
+        pass
+
+    # Also needed for duck typing purposes
+    # n.b. not exposed
+    pinned = property(None, lambda x, y: ...)
+
+    def __repr__(self):
+        return '<PartialMessage id={0.id} channel={0.channel!r}>'.format(self)
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: The partial message's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def guild(self):
+        """:class:`Guild`: The guild that the partial message belongs to."""
+        return self.channel.guild
+
+    async def fetch(self):
+        """|coro|
+
+        Fetches the partial message to a full :class:`Message`.
+
+        Raises
+        --------
+        NotFound
+            The message was not found.
+        Forbidden
+            You do not have the permissions required to get a message.
+        HTTPException
+            Retrieving the message failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The full message.
+        """
+
+        data = await self._state.http.get_message(self.channel.id, self.id)
+        return self._state.create_message(channel=self.channel, data=data)
