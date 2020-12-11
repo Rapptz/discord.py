@@ -1318,7 +1318,7 @@ class PartialMessage(Hashable):
 
     There are two ways to construct this class. The first one is through
     the constructor itself, and the second is via
-    :meth:`TextChannel.get_partial_message`.
+    :meth:`TextChannel.get_partial_message` or :meth:`DMChannel.get_partial_message`.
 
     Note that this class is trimmed down and has no rich attributes.
 
@@ -1340,13 +1340,13 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: :class:`TextChannel`
-        The text channel associated with this partial message.
+    channel: Union[:class:`TextChannel`, :class:`DMChannel`]
+        The channel associated with this partial message.
     id: :class:`int`
         The message ID.
     """
 
-    __slots__ = ('channel', 'id', '_state')
+    __slots__ = ('channel', 'id', '_cs_guild', '_state')
 
     _exported_names = (
         'jump_url',
@@ -1365,8 +1365,8 @@ class PartialMessage(Hashable):
     )
 
     def __init__(self, *, channel, id):
-        if channel.type not in (ChannelType.text, ChannelType.news):
-            raise TypeError('Expected TextChannel not %r' % type(channel))
+        if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
+            raise TypeError('Expected TextChannel or DMChannel not %r' % type(channel))
 
         self.channel = channel
         self._state = channel._state
@@ -1389,10 +1389,10 @@ class PartialMessage(Hashable):
         """:class:`datetime.datetime`: The partial message's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
-    @property
+    @utils.cached_slot_property('_cs_guild')
     def guild(self):
-        """:class:`Guild`: The guild that the partial message belongs to."""
-        return self.channel.guild
+        """Optional[:class:`Guild`]: The guild that the partial message belongs to, if applicable."""
+        return getattr(self.channel, 'guild', None)
 
     async def fetch(self):
         """|coro|
