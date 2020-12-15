@@ -174,7 +174,7 @@ class Emoji(_EmojiTag):
             Defaults to 'png'
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or ``static_format``.
 
