@@ -167,7 +167,7 @@ class Emoji(_EmojiTag):
         format: Optional[:class:`str`]
             The format to attempt to convert the emojis to.
             If the format is ``None``, then it is automatically
-            detected as either 'gif' or static_format, depending on wether the
+            detected as either 'gif' or static_format, depending on whether the
             emoji is animated or not.
         static_format: Optional[:class:`str`]
             Format to attempt to convert only non-animated emoji's to.
