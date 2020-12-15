@@ -156,19 +156,19 @@ class Emoji(_EmojiTag):
         return self._state._get_guild(self.guild_id)
 
 
-    def url_as(self,*,format=None,static_format="png"):
+    def url_as(self, *, format=None, static_format="png"):
         """Returns an :class:`Asset` for the emoji's url.
 
-        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif'.
         'gif' is only valid for animated emojis. 
 
         Parameters
         -----------
         format: Optional[:class:`str`]
-            The format to attempt to convert the emoji to.
+            The format to attempt to convert the emojis to.
             If the format is ``None``, then it is automatically
-            detected into either 'gif' or static_format depending on the
-            emoji being animated or not.
+            detected as either 'gif' or static_format, depending on wether the
+            emoji is animated or not.
         static_format: Optional[:class:`str`]
             Format to attempt to convert only non-animated emoji's to.
             Defaults to 'png'
@@ -176,7 +176,7 @@ class Emoji(_EmojiTag):
         Raises
         ------
         InvalidArgument
-            Bad image format passed to ``format`` or ``static_format``
+            Bad image format passed to ``format`` or ``static_format``.
 
         Returns
         --------
