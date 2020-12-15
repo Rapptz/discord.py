@@ -163,7 +163,7 @@ class Loop:
     async def __call__(self, *args, **kwargs):
         """|coro|
 
-        Calls the internal callback that the command holds.
+        Calls the internal callback that the task holds.
 
         .. versionadded:: 1.6
 
