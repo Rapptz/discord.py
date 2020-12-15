@@ -254,7 +254,17 @@ class BaseUser(_BaseUser):
         is returned instead.
         """
         return self.name
-
+    
+    @property
+    def tag(self):
+        """ :class:'str': Returns the user's display name and discriminator in the Discord UI format.
+        
+        This will give the user's name and disciminator.
+        
+        """
+        formatted = f"{self.name}#{self.discriminator}"
+        return formatted
+        
     def mentioned_in(self, message):
         """Checks if the user is mentioned in the specified message.
 
