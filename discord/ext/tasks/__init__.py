@@ -160,6 +160,26 @@ class Loop:
             return None
         return self._next_iteration
 
+    async def __call__(self, *args, **kwargs):
+        """|coro|
+
+        Calls the internal callback that the command holds.
+
+        .. versionadded:: 1.6
+
+        Parameters
+        ------------
+        \*args
+            The arguments to use.
+        \*\*kwargs
+            The keyword arguments to use.
+        """
+
+        if self._injected is not None:
+            args = (self._injected, *args)
+
+        return await self.coro(*args, **kwargs)
+
     def start(self, *args, **kwargs):
         r"""Starts the internal task in the event loop.
 
