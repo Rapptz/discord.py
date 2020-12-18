@@ -132,7 +132,7 @@ class Emoji(_EmojiTag):
     @property
     def url(self):
         """:class:`Asset`: Returns the asset of the emoji.
-        
+
         This is equivalent to calling :meth:`url_as` with
         the default parameters (i.e. png/gif detection).
         """
@@ -160,7 +160,9 @@ class Emoji(_EmojiTag):
         """Returns an :class:`Asset` for the emoji's url.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif'.
-        'gif' is only valid for animated emojis. 
+        'gif' is only valid for animated emojis.
+
+        .. versionadded:: 1.6
 
         Parameters
         -----------
