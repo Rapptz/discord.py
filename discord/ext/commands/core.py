@@ -778,15 +778,15 @@ class Command(_BaseCommand):
         if not await self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
+        if self._max_concurrency is not None:
+            await self._max_concurrency.acquire(ctx)
+
         if self.cooldown_after_parsing:
             await self._parse_arguments(ctx)
             self._prepare_cooldowns(ctx)
         else:
             self._prepare_cooldowns(ctx)
             await self._parse_arguments(ctx)
-
-        if self._max_concurrency is not None:
-            await self._max_concurrency.acquire(ctx)
 
         await self.call_before_hooks(ctx)
 
