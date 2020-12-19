@@ -318,6 +318,11 @@ header > nav > a:hover {
 
   cursor: pointer;
 }
+
+.sub-header option {
+    color: black;
+}
+
 .sub-header > select:focus {
   outline: none;
 }
