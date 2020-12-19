@@ -157,13 +157,17 @@ class Member(discord.abc.Messageable, _BaseUser):
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
         The guild specific nickname of the user.
+    pending: :class:`bool`
+        Whether the member is pending member verification.
+
+        .. versionadded:: 1.6
     premium_since: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC when the member used their
         Nitro boost on the guild, if available. This could be ``None``.
     """
 
     __slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status',
-                 'activities', 'guild', 'nick', '_user', '_state')
+                 'activities', 'guild', 'pending', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -177,6 +181,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         }
         self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
+        self.pending = data.get('pending', False)
 
     def __str__(self):
         return str(self._user)
@@ -205,6 +210,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
         self.nick = data.get('nick', None)
+        self.pending = data.get('pending', False)
 
     @classmethod
     def _try_upgrade(cls, *,  data, guild, state):
@@ -238,6 +244,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._client_status = member._client_status.copy()
         self.guild = member.guild
         self.nick = member.nick
+        self.pending = member.pending
         self.activities = member.activities
         self._state = member._state
 
@@ -258,6 +265,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         # if it isn't in the payload then it didn't change
         try:
             self.nick = data['nick']
+        except KeyError:
+            pass
+
+        try:
+            self.pending = data['pending']
         except KeyError:
             pass
 
