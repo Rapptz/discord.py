@@ -2624,10 +2624,18 @@ Webhook Support
 
 discord.py offers support for creating, editing, and executing webhooks through the :class:`Webhook` class.
 
+Webhook
+~~~~~~~~~
+
 .. attributetable:: Webhook
 
 .. autoclass:: Webhook
     :members:
+
+WebhookMessage
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: WebhookMessage
 
 .. autoclass:: WebhookMessage
     :members:
