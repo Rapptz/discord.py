@@ -55,7 +55,7 @@ async def ping(ctx):
     await ctx.send(embed=embed)
 @bot.event 
 async def on_command_error(ctx, error):
-	error = getattr(error, 'original', error)
+	error = getattr(error, "original", error)
 	if isinstance(error, commands.MissingRequiredArgument):
 		await ctx.send(error)
 @bot.command()
