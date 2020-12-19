@@ -387,12 +387,12 @@ aside h3 {
   position: relative;
   line-height: 0.5em;
   transition: transform 0.4s;
-  transform: rotate(0deg);
+  transform: rotate(-90deg);
 }
 
 .expanded {
   transition: transform 0.4s;
-  transform: rotate(-90deg);
+  transform: rotate(0deg);
 }
 
 .ref-internal-padding {
