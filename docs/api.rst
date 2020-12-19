@@ -2801,6 +2801,8 @@ Message
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. attributetable:: DeletedReferencedMessage
+
 .. autoclass:: DeletedReferencedMessage()
     :members:
 
@@ -3009,6 +3011,8 @@ Invite
 Template
 ~~~~~~~~~
 
+.. attributetable:: Template
+
 .. autoclass:: Template()
     :members:
 
@@ -3039,6 +3043,8 @@ Widget
 
 Sticker
 ~~~~~~~~~~~~~~~
+
+.. attributetable:: Sticker
 
 .. autoclass:: Sticker()
     :members:
@@ -3111,6 +3117,8 @@ dynamic attributes in mind.
 
 Object
 ~~~~~~~
+
+.. attributetable:: Object
 
 .. autoclass:: Object
     :members:
