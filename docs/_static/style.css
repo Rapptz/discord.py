@@ -19,6 +19,7 @@ Historically however, thanks to:
 /* CSS variables would go here */
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --monospace-font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
 
   /* palette goes here */
   --white: #ffffff;
@@ -855,7 +856,7 @@ dl.field-list {
 /* internal references are forced to bold for some reason */
 a.reference.internal > strong {
   font-weight: unset;
-  font-family: monospace;
+  font-family: var(--monospace-font-family);
 }
 
 /* exception hierarchy */
@@ -950,7 +951,7 @@ pre {
 }
 
 pre, code {
-  font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+  font-family: var(--monospace-font-family);
   font-size: 0.9em;
   overflow-wrap: break-word;
 }
