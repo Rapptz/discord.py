@@ -48,7 +48,16 @@ async def repeat(ctx, times: int, content='repeating...'):
     """Repeats a message multiple times."""
     for i in range(times):
         await ctx.send(content)
-
+@bot.command()
+async def ping(ctx):
+    """A simple ping command!""" 
+    embed = discord.Embed(title="Pong!", description=f"```{round(bot.latency * 1000)} ms```", color = discord.Color.blue()) 
+    await ctx.send(embed=embed)
+@bot.event 
+async def on_command_error(ctx, error):
+	error = getattr(error, 'original', error)
+	if isinstance(error, commands.MissingRequiredArgument):
+		await ctx.send(error)
 @bot.command()
 async def joined(ctx, member: discord.Member):
     """Says when a member joined."""
