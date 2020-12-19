@@ -7,15 +7,28 @@ The following section outlines the API of discord.py's command extension module.
 
 .. _ext_commands_api_bot:
 
+Bots
+------
+
 Bot
-----
+~~~~
+
+.. attributetable:: discord.ext.commands.Bot
 
 .. autoclass:: discord.ext.commands.Bot
     :members:
     :inherited-members:
 
+AutoShardedBot
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.AutoShardedBot
+
 .. autoclass:: discord.ext.commands.AutoShardedBot
     :members:
+
+Prefix Helpers
+----------------
 
 .. autofunction:: discord.ext.commands.when_mentioned
 
@@ -64,20 +77,38 @@ are custom to the command extension module.
 
 .. _ext_commands_api_command:
 
-Command
---------
+Commands
+----------
+
+Decorators
+~~~~~~~~~~~~
 
 .. autofunction:: discord.ext.commands.command
 
 .. autofunction:: discord.ext.commands.group
 
+Command
+~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.Command
+
 .. autoclass:: discord.ext.commands.Command
     :members:
     :special-members: __call__
 
+Group
+~~~~~~
+
+.. attributetable:: discord.ext.commands.Group
+
 .. autoclass:: discord.ext.commands.Group
     :members:
     :inherited-members:
+
+GroupMixin
+~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.GroupMixin
 
 .. autoclass:: discord.ext.commands.GroupMixin
     :members:
@@ -87,8 +118,18 @@ Command
 Cogs
 ------
 
+Cog
+~~~~
+
+.. attributetable:: discord.ext.commands.Cog
+
 .. autoclass:: discord.ext.commands.Cog
     :members:
+
+CogMeta
+~~~~~~~~
+
+.. attributetable:: discord.ext.commands.CogMeta
 
 .. autoclass:: discord.ext.commands.CogMeta
     :members:
@@ -96,18 +137,38 @@ Cogs
 .. _ext_commands_help_command:
 
 Help Commands
------------------
+---------------
+
+HelpCommand
+~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.HelpCommand
 
 .. autoclass:: discord.ext.commands.HelpCommand
     :members:
+
+DefaultHelpCommand
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.DefaultHelpCommand
 
 .. autoclass:: discord.ext.commands.DefaultHelpCommand
     :members:
     :exclude-members: send_bot_help, send_cog_help, send_group_help, send_command_help, prepare_help_command
 
+MinimalHelpCommand
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.MinimalHelpCommand
+
 .. autoclass:: discord.ext.commands.MinimalHelpCommand
     :members:
     :exclude-members: send_bot_help, send_cog_help, send_group_help, send_command_help, prepare_help_command
+
+Paginator
+~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.Paginator
 
 .. autoclass:: discord.ext.commands.Paginator
     :members:
@@ -189,6 +250,8 @@ Checks
 
 Context
 --------
+
+.. attributetable:: discord.ext.commands.Context
 
 .. autoclass:: discord.ext.commands.Context
     :members:
