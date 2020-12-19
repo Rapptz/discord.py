@@ -112,6 +112,7 @@
 :root[data-theme="dark"] .highlight .ni { color: #d0d0d0; } /* Name.Entity */
 :root[data-theme="dark"] .highlight .ne { color: #bbbbbb; } /* Name.Exception */
 :root[data-theme="dark"] .highlight .nf { color: #6494d8; } /* Name.Function */
+:root[data-theme="dark"] .highlight .fm { color: #6494d8; } /* Name.Function.Magic */
 :root[data-theme="dark"] .highlight .nl { color: #d0d0d0; } /* Name.Label */
 :root[data-theme="dark"] .highlight .nn { color: #6494d8;} /* Name.Namespace */
 :root[data-theme="dark"] .highlight .nx { color: #d0d0d0; } /* Name.Other */
