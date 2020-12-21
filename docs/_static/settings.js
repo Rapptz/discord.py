@@ -94,10 +94,13 @@ function updateSetting(element) {
   }
 }
 
+for (const setting of settings) {
+  setting.load();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   settingsModal = new Modal(document.querySelector('div#settings.modal'));
   for (const setting of settings) {
-    setting.load();
     setting.setElement();
   }
 });
