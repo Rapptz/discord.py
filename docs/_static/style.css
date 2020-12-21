@@ -104,6 +104,7 @@ Historically however, thanks to:
   --attribute-table-entry-hover-background: var(--grey-2);
   --attribute-table-entry-hover-text: var(--blue-2);
   --attribute-table-badge: var(--grey-7);
+  --highlighted-text: rgb(252, 233, 103);
 }
 
 :root[data-font="serif"] {
@@ -163,6 +164,7 @@ Historically however, thanks to:
   --attribute-table-entry-hover-background: var(--grey-6);
   --attribute-table-entry-hover-text: var(--blue-1);
   --attribute-table-badge: var(--grey-4);
+  --highlighted-text: rgba(252, 233, 103, 0.4);
 }
 
 img[src$="snake_dark.svg"]  {
@@ -1014,6 +1016,13 @@ dd {
   margin-left: 1.5em;
 }
 
+dt:target, span.highlighted {
+    background-color: var(--highlighted-text);
+}
+
+rect.highlighted {
+    fill: var(--highlighted-text);
+}
 
 .container.operations {
   padding: 10px;
