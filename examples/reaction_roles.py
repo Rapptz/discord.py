@@ -44,7 +44,7 @@ class RoleReactClient(discord.Client):
     async def on_raw_reaction_remove(self, payload):
         """Removes a role based on a reaction emoji."""
         # Make sure that the message the user is reacting to is the one we care about
-        if payload.message_id == self.role_message_id:
+        if payload.message_id != self.role_message_id:
             return
 
         try:
