@@ -688,8 +688,6 @@ class ConnectionState:
             log.debug('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
             return
 
-        channel = None
-
         if ch_type in (ChannelType.group, ChannelType.private):
             channel_id = int(data['id'])
             if self._get_private_channel(channel_id) is None:
