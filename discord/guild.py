@@ -144,6 +144,8 @@ class Guild(Hashable):
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
         - ``PUBLIC_DISABLED``: Guild cannot be public.
         - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
+        - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
+        - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
 
     splash: Optional[:class:`str`]
         The guild's invite splash.
