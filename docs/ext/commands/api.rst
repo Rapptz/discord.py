@@ -416,7 +416,13 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
+.. autoexception:: discord.ext.commands.BadColourArgument
+    :members:
+
 .. autoexception:: discord.ext.commands.RoleNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.BadInviteArgument
     :members:
 
 .. autoexception:: discord.ext.commands.EmojiNotFound
@@ -472,7 +478,7 @@ Exceptions
 
 
 Exception Hierarchy
-+++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~
 
 .. exception_hierarchy::
 
