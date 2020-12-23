@@ -52,7 +52,7 @@ Virtual Environments
 ~~~~~~~~~~~~~~~~~~~~~
 
 Sometimes you want to keep libraries from polluting system installs or use a different version of
-libraries than the ones installed on the system. You might also not have permissions to install libaries system-wide.
+libraries than the ones installed on the system. You might also not have permissions to install libraries system-wide.
 For this purpose, the standard library as of Python 3.3 comes with a concept called "Virtual Environment"s to
 help maintain these separate versions.
 
