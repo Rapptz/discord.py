@@ -848,7 +848,12 @@ class Command(_BaseCommand):
         return 0.0
 
     async def invoke(self, ctx):
-        await self.prepare(ctx)
+        try:
+            await self.prepare(ctx)
+        except:
+            if self._max_concurrency is not None:
+                await self._max_concurrency.release(ctx)
+            raise
 
         # terminate the invoked_subcommand chain.
         # since we're in a regular command (and not a group) then
