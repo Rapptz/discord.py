@@ -1736,7 +1736,7 @@ class Guild(Hashable):
             The role name. Defaults to 'new role'.
         permissions: :class:`Permissions`
             The permissions to have. Defaults to no permissions.
-        colour: :class:`Colour`
+        colour: Union[:class:`Colour`, :class:`int`]
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
         hoist: :class:`bool`
@@ -1775,6 +1775,8 @@ class Guild(Hashable):
         except KeyError:
             colour = fields.get('color', Colour.default())
         finally:
+            if isinstance(colour, int):
+                colour = Colour(value=colour)
             fields['color'] = colour.value
 
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
