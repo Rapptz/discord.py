@@ -661,7 +661,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_member_update(before, after)
 
-    Called when a :class:`Member` updates their profile.
+    Called when a profile of :class:`Member` is updated.
 
     This is called when one or more of the following things change:
 
