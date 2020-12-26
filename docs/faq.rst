@@ -394,7 +394,13 @@ Example: ::
     @bot.group(invoke_without_command=True)
     async def git(ctx):
         await ctx.send('Invalid git command passed...')
-
+    
+    ## You can use this instead:
+    # @bot.group()
+    # async def git(ctx):
+    #     if ctx.invoked_subcommand is None:
+    #         await ctx.send('Invalid git command passed...')
+    
     @git.command()
     async def push(ctx, remote: str, branch: str):
         await ctx.send('Pushing to {} {}'.format(remote, branch))
