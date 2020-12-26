@@ -971,6 +971,7 @@ class ConnectionState:
 
         members = [Member(guild=guild, data=member, state=self) for member in data.get('members', [])]
         log.debug('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
+
         if presences:
             member_dict = {str(member.id): member for member in members}
             for presence in presences:
