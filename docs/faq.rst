@@ -391,10 +391,9 @@ the group operating as "subcommands". These groups can be arbitrarily nested as 
 
 Example: ::
 
-    @bot.group()
+    @bot.group(invoke_without_command=True)
     async def git(ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('Invalid git command passed...')
+        await ctx.send('Invalid git command passed...')
 
     @git.command()
     async def push(ctx, remote: str, branch: str):
