@@ -25,24 +25,20 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
-from collections import namedtuple
 import logging
 import signal
 import sys
 import traceback
 
 import aiohttp
-import websockets
 
 from .user import User, Profile
-from .asset import Asset
 from .invite import Invite
 from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .channel import _channel_factory
 from .enums import ChannelType
-from .member import Member
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
@@ -142,11 +138,27 @@ class Client:
         Integer starting at ``0`` and less than :attr:`.shard_count`.
     shard_count: Optional[:class:`int`]
         The total number of shards.
+    intents: :class:`Intents`
+        The intents that you want to enable for the session. This is a way of
+        disabling and enabling certain gateway events from triggering and being sent.
+        If not given, defaults to a regularly constructed :class:`Intents` class.
+
+        .. versionadded:: 1.5
+    member_cache_flags: :class:`MemberCacheFlags`
+        Allows for finer control over how the library caches members.
+        If not given, defaults to cache as much as possible with the
+        currently selected intents.
+
+        .. versionadded:: 1.5
     fetch_offline_members: :class:`bool`
-        Indicates if :func:`.on_ready` should be delayed to fetch all offline
-        members from the guilds the client belongs to. If this is ``False``\, then
-        no offline members are received and :meth:`request_offline_members`
-        must be used to fetch the offline members of the guild.
+        A deprecated alias of ``chunk_guilds_at_startup``.
+    chunk_guilds_at_startup: :class:`bool`
+        Indicates if :func:`.on_ready` should be delayed to chunk all guilds
+        at start-up if necessary. This operation is incredibly slow for large
+        amounts of guilds. The default is ``True`` if :attr:`Intents.members`
+        is ``True``.
+
+        .. versionadded:: 1.5
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
@@ -160,8 +172,13 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
+    guild_ready_timeout: :class:`float`
+        The maximum number of seconds to wait for the GUILD_CREATE stream to end before
+        preparing the member cache and firing READY. The default timeout is 2 seconds.
+
+        .. versionadded:: 1.4
     guild_subscriptions: :class:`bool`
-        Whether to dispatching of presence or typing events. Defaults to ``True``.
+        Whether to dispatch presence or typing events. Defaults to ``True``.
 
         .. versionadded:: 1.3
 
@@ -224,13 +241,16 @@ class Client:
             'ready': self._handle_ready
         }
 
-        self._connection = ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                                           syncer=self._syncer, http=self.http, loop=self.loop, **options)
+        self._hooks = {
+            'before_identify': self._call_before_identify_hook
+        }
 
+        self._connection = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed = False
         self._ready = asyncio.Event()
         self._connection._get_websocket = self._get_websocket
+        self._connection._get_client = lambda: self
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -240,6 +260,10 @@ class Client:
 
     def _get_websocket(self, guild_id=None, *, shard_id=None):
         return self.ws
+
+    def _get_state(self, **options):
+        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
+                               hooks=self._hooks, syncer=self._syncer, http=self.http, loop=self.loop, **options)
 
     async def _syncer(self, guilds):
         await self.ws.request_sync(guilds)
@@ -255,6 +279,18 @@ class Client:
         """
         ws = self.ws
         return float('nan') if not ws else ws.latency
+
+    def is_ws_ratelimited(self):
+        """:class:`bool`: Whether the websocket is currently rate limited.
+
+        This can be useful to know when deciding whether you should query members
+        using HTTP or via the gateway.
+
+        .. versionadded:: 1.6
+        """
+        if self.ws:
+            return self.ws.is_ratelimited()
+        return False
 
     @property
     def user(self):
@@ -292,11 +328,14 @@ class Client:
 
     @property
     def voice_clients(self):
-        """List[:class:`.VoiceClient`]: Represents a list of voice connections."""
+        """List[:class:`.VoiceProtocol`]: Represents a list of voice connections.
+
+        These are usually :class:`.VoiceClient` instances.
+        """
         return self._connection.voice_clients
 
     def is_ready(self):
-        """Specifies if the client's internal cache is ready for use."""
+        """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
 
     async def _run_event(self, coro, event_name, *args, **kwargs):
@@ -367,6 +406,7 @@ class Client:
         print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
         traceback.print_exc()
 
+    @utils.deprecated('Guild.chunk')
     async def request_offline_members(self, *guilds):
         r"""|coro|
 
@@ -380,6 +420,10 @@ class Client:
         in the guild is larger than 250. You can check if a guild is large
         if :attr:`.Guild.large` is ``True``.
 
+        .. warning::
+
+            This method is deprecated. Use :meth:`Guild.chunk` instead.
+
         Parameters
         -----------
         \*guilds: :class:`.Guild`
@@ -388,12 +432,43 @@ class Client:
         Raises
         -------
         :exc:`.InvalidArgument`
-            If any guild is unavailable or not large in the collection.
+            If any guild is unavailable in the collection.
         """
-        if any(not g.large or g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
+        if any(g.unavailable for g in guilds):
+            raise InvalidArgument('An unavailable guild was passed.')
 
-        await self._connection.request_offline_members(guilds)
+        for guild in guilds:
+            await self._connection.chunk_guild(guild)
+
+    # hooks
+
+    async def _call_before_identify_hook(self, shard_id, *, initial=False):
+        # This hook is an internal hook that actually calls the public one.
+        # It allows the library to have its own hook without stepping on the
+        # toes of those who need to override their own hook.
+        await self.before_identify_hook(shard_id, initial=initial)
+
+    async def before_identify_hook(self, shard_id, *, initial=False):
+        """|coro|
+
+        A hook that is called before IDENTIFYing a session. This is useful
+        if you wish to have more control over the synchronization of multiple
+        IDENTIFYing clients.
+
+        The default implementation sleeps for 5 seconds.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        ------------
+        shard_id: :class:`int`
+            The shard ID that requested being IDENTIFY'd
+        initial: :class:`bool`
+            Whether this IDENTIFY is the first initial IDENTIFY.
+        """
+
+        if not initial:
+            await asyncio.sleep(5.0)
 
     # login state management
 
@@ -447,19 +522,6 @@ class Client:
         """
         await self.close()
 
-    async def _connect(self):
-        coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id)
-        self.ws = await asyncio.wait_for(coro, timeout=180.0)
-        while True:
-            try:
-                await self.ws.poll_event()
-            except ResumeWebSocket:
-                log.info('Got a request to RESUME the websocket.')
-                self.dispatch('disconnect')
-                coro = DiscordWebSocket.from_client(self, shard_id=self.shard_id, session=self.ws.session_id,
-                                                    sequence=self.ws.sequence, resume=True)
-                self.ws = await asyncio.wait_for(coro, timeout=180.0)
-
     async def connect(self, *, reconnect=True):
         """|coro|
 
@@ -486,17 +548,28 @@ class Client:
         """
 
         backoff = ExponentialBackoff()
+        ws_params = {
+            'initial': True,
+            'shard_id': self.shard_id,
+        }
         while not self.is_closed():
             try:
-                await self._connect()
+                coro = DiscordWebSocket.from_client(self, **ws_params)
+                self.ws = await asyncio.wait_for(coro, timeout=60.0)
+                ws_params['initial'] = False
+                while True:
+                    await self.ws.poll_event()
+            except ReconnectWebSocket as e:
+                log.info('Got a request to %s the websocket.', e.op)
+                self.dispatch('disconnect')
+                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
+                continue
             except (OSError,
                     HTTPException,
                     GatewayNotFound,
                     ConnectionClosed,
                     aiohttp.ClientError,
-                    asyncio.TimeoutError,
-                    websockets.InvalidHandshake,
-                    websockets.WebSocketProtocolError) as exc:
+                    asyncio.TimeoutError) as exc:
 
                 self.dispatch('disconnect')
                 if not reconnect:
@@ -509,11 +582,18 @@ class Client:
                 if self.is_closed():
                     return
 
+                # If we get connection reset by peer then try to RESUME
+                if isinstance(exc, OSError) and exc.errno in (54, 10054):
+                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)
+                    continue
+
                 # We should only get this when an unhandled close code happens,
                 # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
                 # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
                 # regardless and rely on is_closed instead
                 if isinstance(exc, ConnectionClosed):
+                    if exc.code == 4014:
+                        raise PrivilegedIntentsRequired(exc.shard_id) from None
                     if exc.code != 1000:
                         await self.close()
                         raise
@@ -521,6 +601,10 @@ class Client:
                 retry = backoff.delay()
                 log.exception("Attempting a reconnect in %.2fs", retry)
                 await asyncio.sleep(retry)
+                # Always try to RESUME the connection
+                # If the connection is not RESUME-able then the gateway will invalidate the session.
+                # This is apparently what the official Discord client does.
+                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
 
     async def close(self):
         """|coro|
@@ -612,7 +696,8 @@ class Client:
             try:
                 await self.start(*args, **kwargs)
             finally:
-                await self.close()
+                if not self.is_closed():
+                    await self.close()
 
         def stop_loop_on_completion(f):
             loop.stop()
@@ -629,12 +714,16 @@ class Client:
             _cleanup_loop(loop)
 
         if not future.cancelled():
-            return future.result()
+            try:
+                return future.result()
+            except KeyboardInterrupt:
+                # I am unsure why this gets raised here but suppress it anyway
+                return None
 
     # properties
 
     def is_closed(self):
-        """Indicates if the websocket connection is closed."""
+        """:class:`bool`: Indicates if the websocket connection is closed."""
         return self._closed
 
     @property
@@ -669,6 +758,14 @@ class Client:
             self._connection.allowed_mentions = value
         else:
             raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
+
+    @property
+    def intents(self):
+        """:class:`Intents`: The intents configured for this connection.
+
+        .. versionadded:: 1.5
+        """
+        return self._connection.intents
 
     # helpers/getters
 
@@ -751,6 +848,11 @@ class Client:
             Just because you receive a :class:`.abc.GuildChannel` does not mean that
             you can communicate in said channel. :meth:`.abc.GuildChannel.permissions_for` should
             be used for that.
+
+        Yields
+        ------
+        :class:`.abc.GuildChannel`
+            A channel the client can 'access'.
         """
 
         for guild in self.guilds:
@@ -765,6 +867,11 @@ class Client:
             for guild in client.guilds:
                 for member in guild.members:
                     yield member
+
+        Yields
+        ------
+        :class:`.Member`
+            A member the client can see.
         """
         for guild in self.guilds:
             for member in guild.members:
@@ -1140,7 +1247,7 @@ class Client:
 
             If the invite is for a guild you have not joined, the guild and channel
             attributes of the returned :class:`.Invite` will be :class:`.PartialInviteGuild` and
-            :class:`PartialInviteChannel` respectively.
+            :class:`.PartialInviteChannel` respectively.
 
         Parameters
         -----------

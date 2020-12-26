@@ -3,9 +3,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-28 07:15-0400\n"
-"PO-Revision-Date: 2019-06-28 11:14+0000\n"
-"Last-Translator: Danny Y (rapptz)\n"
+"POT-Creation-Date: 2020-10-23 22:41-0400\n"
+"PO-Revision-Date: 2020-10-24 02:41+0000\n"
+"Last-Translator: \n"
 "Language: ja_JP\n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0\n"
@@ -41,7 +41,7 @@ msgstr "スリープできる最大時間は何秒ですか？"
 msgid ""
 "The goal of this discord.py extension is to abstract all these worries "
 "away from you."
-msgstr ""
+msgstr "discord.pyの拡張機能の目的は、こういった苦労の種を抽象化することです。"
 
 #: ../../ext/tasks/index.rst:17
 msgid "Recipes"
@@ -57,15 +57,15 @@ msgstr "再接続中に処理する例外を追加します:"
 
 #: ../../ext/tasks/index.rst:61
 msgid "Looping a certain amount of times before exiting:"
-msgstr ""
+msgstr "特定の回数ループさせる:"
 
 #: ../../ext/tasks/index.rst:77
 msgid "Waiting until the bot is ready before the loop starts:"
-msgstr ""
+msgstr "ループが始まる前に、Botの準備が整うまで待機する: "
 
 #: ../../ext/tasks/index.rst:102
 msgid "Doing something during cancellation:"
-msgstr ""
+msgstr "キャンセルする場合、その間に何らかの処理を行う:"
 
 #: ../../ext/tasks/index.rst:136
 msgid "API Reference"
@@ -75,17 +75,17 @@ msgstr "APIリファレンス"
 msgid ""
 "A background task helper that abstracts the loop and reconnection logic "
 "for you."
-msgstr ""
+msgstr "ループと再接続処理を抽象化するバックグラウンドタスクのヘルパー。"
 
 #: discord.ext.tasks.Loop:3 of
 msgid "The main interface to create this is through :func:`loop`."
-msgstr ""
+msgstr ":func:`loop` はこれを作成するための主要なインタフェースです。"
 
 #: discord.ext.tasks.Loop.current_loop:1 of
 msgid "The current iteration of the loop."
 msgstr ""
 
-#: discord.ext.tasks.Loop.current_loop of
+#: discord.ext.tasks.Loop.current_loop discord.ext.tasks.Loop.next_iteration of
 msgid "type"
 msgstr ""
 
@@ -94,19 +94,28 @@ msgstr ""
 msgid ":class:`int`"
 msgstr ":class:`asyncio.Task`"
 
+#: discord.ext.tasks.Loop.next_iteration:1 of
+msgid "When the next iteration of the loop will occur."
+msgstr ""
+
+#: discord.ext.tasks.Loop.next_iteration:5 of
+msgid "Optional[:class:`datetime.datetime`]"
+msgstr ""
+
 #: discord.ext.tasks.Loop.start:1 of
 msgid "Starts the internal task in the event loop."
 msgstr ""
 
 #: discord.ext.tasks.Loop.add_exception_type discord.ext.tasks.Loop.after_loop
 #: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
-#: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.restart
-#: discord.ext.tasks.Loop.start discord.ext.tasks.loop of
+#: discord.ext.tasks.Loop.error discord.ext.tasks.Loop.remove_exception_type
+#: discord.ext.tasks.Loop.restart discord.ext.tasks.Loop.start
+#: discord.ext.tasks.loop of
 msgid "Parameters"
 msgstr "パラメーター"
 
-#: discord.ext.tasks.Loop.restart:8 discord.ext.tasks.Loop.start:3 of
-msgid "The arguments to to use."
+#: discord.ext.tasks.Loop.start:3 of
+msgid "The arguments to use."
 msgstr ""
 
 #: discord.ext.tasks.Loop.restart:9 discord.ext.tasks.Loop.start:4 of
@@ -115,7 +124,8 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.add_exception_type discord.ext.tasks.Loop.after_loop
 #: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
-#: discord.ext.tasks.Loop.start discord.ext.tasks.loop of
+#: discord.ext.tasks.Loop.error discord.ext.tasks.Loop.start
+#: discord.ext.tasks.loop of
 #, fuzzy
 msgid "Raises"
 msgstr "例外"
@@ -124,8 +134,7 @@ msgstr "例外"
 msgid "A task has already been launched and is running."
 msgstr ""
 
-#: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.start
-#: discord.ext.tasks.loop of
+#: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.start of
 msgid "Returns"
 msgstr "戻り値"
 
@@ -133,8 +142,7 @@ msgstr "戻り値"
 msgid "The task that has been created."
 msgstr "タスクが作成されました。"
 
-#: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.start
-#: discord.ext.tasks.loop of
+#: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.start of
 msgid "Return type"
 msgstr "戻り値の型"
 
@@ -178,9 +186,14 @@ msgid ""
 ":meth:`start`."
 msgstr ""
 
-#: discord.ext.tasks.Loop.add_exception_type:1 of
-msgid "Adds an exception type to be handled during the reconnect logic."
+#: discord.ext.tasks.Loop.restart:8 of
+msgid "The arguments to to use."
 msgstr ""
+
+#: discord.ext.tasks.Loop.add_exception_type:1 of
+#, fuzzy
+msgid "Adds exception types to be handled during the reconnect logic."
+msgstr "再接続中に処理する例外を追加します:"
 
 #: discord.ext.tasks.Loop.add_exception_type:3 of
 msgid ""
@@ -197,12 +210,12 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.add_exception_type:10
 #: discord.ext.tasks.Loop.remove_exception_type:3 of
-msgid "The exception class to handle."
+msgid "An argument list of exception classes to handle."
 msgstr ""
 
 #: discord.ext.tasks.Loop.add_exception_type:13 of
 msgid ""
-"The exception passed is either not a class or not inherited from "
+"An exception passed is either not a class or not inherited from "
 ":class:`BaseException`."
 msgstr ""
 
@@ -215,11 +228,12 @@ msgid "This operation obviously cannot be undone!"
 msgstr ""
 
 #: discord.ext.tasks.Loop.remove_exception_type:1 of
-msgid "Removes an exception type from being handled during the reconnect logic."
-msgstr ""
+#, fuzzy
+msgid "Removes exception types from being handled during the reconnect logic."
+msgstr "再接続中に処理する例外を追加します:"
 
 #: discord.ext.tasks.Loop.remove_exception_type:6 of
-msgid "Whether it was successfully removed."
+msgid "Whether all exceptions were successfully removed."
 msgstr ""
 
 #: discord.ext.tasks.Loop.remove_exception_type:7 of
@@ -238,6 +252,10 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.failed:1 of
 msgid ":class:`bool`: Whether the internal task has failed."
+msgstr ""
+
+#: discord.ext.tasks.Loop.is_running:1 of
+msgid ":class:`bool`: Check if the task is currently running."
 msgstr ""
 
 #: discord.ext.tasks.Loop.before_loop:1 of
@@ -261,7 +279,7 @@ msgid "The coroutine to register before the loop runs."
 msgstr ""
 
 #: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:11
-#: discord.ext.tasks.loop:22 of
+#: discord.ext.tasks.Loop.error:13 discord.ext.tasks.loop:22 of
 msgid "The function was not a coroutine."
 msgstr ""
 
@@ -280,6 +298,28 @@ msgstr ""
 
 #: discord.ext.tasks.Loop.after_loop:11 of
 msgid "The coroutine to register after the loop finishes."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:1 of
+msgid ""
+"A decorator that registers a coroutine to be called if the task "
+"encounters an unhandled exception."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:3 of
+msgid ""
+"The coroutine must take only one argument the exception raised (except "
+"``self`` in a class context)."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:5 of
+msgid ""
+"By default this prints to :data:`sys.stderr` however it could be "
+"overridden to have a different implementation."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:10 of
+msgid "The coroutine to register in the event of an unhandled exception."
 msgstr ""
 
 #: discord.ext.tasks.Loop.change_interval:1 of
@@ -312,7 +352,7 @@ msgstr ""
 #: discord.ext.tasks.loop:1 of
 msgid ""
 "A decorator that schedules a task in the background for you with optional"
-" reconnect logic."
+" reconnect logic. The decorator returns a :class:`Loop`."
 msgstr ""
 
 #: discord.ext.tasks.loop:10 of
@@ -331,18 +371,16 @@ msgid ""
 ":func:`asyncio.get_event_loop`."
 msgstr ""
 
-#: discord.ext.tasks.loop:24 of
-msgid "The loop helper that handles the background task."
-msgstr ""
-
-#: discord.ext.tasks.loop:25 of
-msgid ":class:`Loop`"
-msgstr ""
-
 #~ msgid ":class:`int` -- The current iteration of the loop."
 #~ msgstr ""
 
 #~ msgid ":exc:`RuntimeError` -- A task has already been launched and is running."
+#~ msgstr ""
+
+#~ msgid "Adds an exception type to be handled during the reconnect logic."
+#~ msgstr ""
+
+#~ msgid "The exception class to handle."
 #~ msgstr ""
 
 #~ msgid ""
@@ -351,9 +389,29 @@ msgstr ""
 #~ "inherited from :class:`BaseException`."
 #~ msgstr ""
 
+#~ msgid ""
+#~ "Removes an exception type from being "
+#~ "handled during the reconnect logic."
+#~ msgstr ""
+
+#~ msgid "Whether it was successfully removed."
+#~ msgstr ""
+
 #~ msgid ":exc:`TypeError` -- The function was not a coroutine."
 #~ msgstr ""
 
 #~ msgid ":exc:`ValueError` -- An invalid value was given."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A decorator that schedules a task "
+#~ "in the background for you with "
+#~ "optional reconnect logic."
+#~ msgstr ""
+
+#~ msgid "The loop helper that handles the background task."
+#~ msgstr ""
+
+#~ msgid ":class:`Loop`"
 #~ msgstr ""
 

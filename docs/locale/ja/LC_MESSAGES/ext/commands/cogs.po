@@ -3,17 +3,18 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-22 09:35-0400\n"
-"PO-Revision-Date: 2019-06-28 11:14\n"
-"Last-Translator: Danny Y (rapptz)\n"
+"PO-Revision-Date: 2020-10-24 02:41\n"
+"Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: crowdin.com\n"
 "X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
 "X-Crowdin-Language: ja\n"
 "X-Crowdin-File: /ext/commands/cogs.pot\n"
+"X-Crowdin-File-ID: 60\n"
 "Language: ja_JP\n"
 
 #: ../../ext/commands/cogs.rst:6
@@ -114,31 +115,31 @@ msgstr "そのための特殊なメソッドは以下のとおりです:"
 
 #: ../../ext/commands/cogs.rst:115
 msgid ":meth:`.Cog.cog_unload`"
-msgstr ""
+msgstr ":meth:`.Cog.cog_unload`"
 
 #: ../../ext/commands/cogs.rst:116
 msgid ":meth:`.Cog.cog_check`"
-msgstr ""
+msgstr ":meth:`.Cog.cog_check`"
 
 #: ../../ext/commands/cogs.rst:117
 msgid ":meth:`.Cog.cog_command_error`"
-msgstr ""
+msgstr ":meth:`.Cog.cog_command_error`"
 
 #: ../../ext/commands/cogs.rst:118
 msgid ":meth:`.Cog.cog_before_invoke`"
-msgstr ""
+msgstr ":meth:`.Cog.cog_before_invoke`"
 
 #: ../../ext/commands/cogs.rst:119
 msgid ":meth:`.Cog.cog_after_invoke`"
-msgstr ""
+msgstr ":meth:`.Cog.cog_after_invoke`"
 
 #: ../../ext/commands/cogs.rst:120
 msgid ":meth:`.Cog.bot_check`"
-msgstr ""
+msgstr ":meth:`.Cog.bot_check`"
 
 #: ../../ext/commands/cogs.rst:121
 msgid ":meth:`.Cog.bot_check_once`"
-msgstr ""
+msgstr ":meth:`.Cog.bot_check_once`"
 
 #: ../../ext/commands/cogs.rst:123
 msgid "You can visit the reference to get more detail."

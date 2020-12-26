@@ -1,27 +1,27 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: discordpy\n"
+"Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 09:35-0400\n"
-"PO-Revision-Date: 2019-06-28 11:14\n"
-"Last-Translator: Danny Y (rapptz)\n"
-"Language-Team: Japanese\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: crowdin.com\n"
-"X-Crowdin-Project: discordpy\n"
-"X-Crowdin-Language: ja\n"
-"X-Crowdin-File: index.pot\n"
+"POT-Creation-Date: 2020-10-23 22:41-0400\n"
+"PO-Revision-Date: 2020-10-24 02:41+0000\n"
+"Last-Translator: \n"
 "Language: ja_JP\n"
+"Language-Team: Japanese\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
 
 #: ../../index.rst:7
 msgid "Welcome to discord.py"
 msgstr "discord.py へようこそ。"
 
 #: ../../index.rst:11
-msgid "discord.py is a modern, easy to use, feature-rich, and async ready API wrapper for Discord."
+msgid ""
+"discord.py is a modern, easy to use, feature-rich, and async ready API "
+"wrapper for Discord."
 msgstr "discord.py は機能豊富かつモダンで使いやすい、非同期処理にも対応したDiscord用のAPIラッパーです。"
 
 #: ../../index.rst:14
@@ -64,19 +64,20 @@ msgstr "拡張機能"
 msgid "Additional Information"
 msgstr "追加情報"
 
-#: ../../index.rst:56
-msgid "If you still can't find what you're looking for, try in one of the following pages:"
+#: ../../index.rst:57
+msgid ""
+"If you still can't find what you're looking for, try in one of the "
+"following pages:"
 msgstr "探しているものが見つからない場合は、以下のページを試してください。"
 
-#: ../../index.rst:58
+#: ../../index.rst:59
 msgid ":ref:`genindex`"
 msgstr ":ref:`genindex`"
-
-#: ../../index.rst:59
-msgid ":ref:`modindex`"
-msgstr ":ref:`modindex`"
 
 #: ../../index.rst:60
 msgid ":ref:`search`"
 msgstr ":ref:`search`"
+
+#~ msgid ":ref:`modindex`"
+#~ msgstr ":ref:`modindex`"
 

@@ -107,7 +107,7 @@ def _convert_to_bool(argument):
     elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
         return False
     else:
-        raise BadArgument(lowered + ' is not a recognised boolean option')
+        raise BadBoolArgument(lowered)
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
@@ -179,6 +179,12 @@ class Command(_BaseCommand):
         in a completely raw matter. Defaults to ``False``.
     invoked_subcommand: Optional[:class:`Command`]
         The subcommand that was invoked, if any.
+    require_var_positional: :class:`bool`
+        If ``True`` and a variadic positional argument is specified, requires
+        the user to specify at least one argument. Defaults to ``False``.
+
+        .. versionadded:: 1.5
+
     ignore_extra: :class:`bool`
         If ``True``\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
@@ -260,6 +266,7 @@ class Command(_BaseCommand):
         finally:
             self._max_concurrency = max_concurrency
 
+        self.require_var_positional = kwargs.get('require_var_positional', False)
         self.ignore_extra = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing = kwargs.get('cooldown_after_parsing', False)
         self.cog = None
@@ -699,6 +706,8 @@ class Command(_BaseCommand):
                     kwargs[name] = await self.transform(ctx, param)
                 break
             elif param.kind == param.VAR_POSITIONAL:
+                if view.eof and self.require_var_positional:
+                    raise MissingRequiredArgument(param)
                 while not view.eof:
                     try:
                         transformed = await self.transform(ctx, param)
@@ -715,18 +724,14 @@ class Command(_BaseCommand):
         # first, call the command local hook:
         cog = self.cog
         if self._before_invoke is not None:
-            try:
-                instance = self._before_invoke.__self__
-                # should be cog if @commands.before_invoke is used
-            except AttributeError:
-                # __self__ only exists for methods, not functions
-                # however, if @command.before_invoke is used, it will be a function
-                if self.cog:
-                    await self._before_invoke(cog, ctx)
-                else:
-                    await self._before_invoke(ctx)
-            else:
+            # should be cog if @commands.before_invoke is used
+            instance = getattr(self._before_invoke, '__self__', cog)
+            # __self__ only exists for methods, not functions
+            # however, if @command.before_invoke is used, it will be a function
+            if instance:
                 await self._before_invoke(instance, ctx)
+            else:
+                await self._before_invoke(ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -742,15 +747,11 @@ class Command(_BaseCommand):
     async def call_after_hooks(self, ctx):
         cog = self.cog
         if self._after_invoke is not None:
-            try:
-                instance = self._after_invoke.__self__
-            except AttributeError:
-                if self.cog:
-                    await self._after_invoke(cog, ctx)
-                else:
-                    await self._after_invoke(ctx)
+            instance = getattr(self._after_invoke, '__self__', cog)
+            if instance:
+                    await self._after_invoke(instance, ctx)
             else:
-                await self._after_invoke(instance, ctx)
+                await self._after_invoke(ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -764,7 +765,8 @@ class Command(_BaseCommand):
 
     def _prepare_cooldowns(self, ctx):
         if self._buckets.valid:
-            current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
+            dt = ctx.message.edited_at or ctx.message.created_at
+            current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             bucket = self._buckets.get_bucket(ctx.message, current)
             retry_after = bucket.update_rate_limit(current)
             if retry_after:
@@ -776,15 +778,15 @@ class Command(_BaseCommand):
         if not await self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
+        if self._max_concurrency is not None:
+            await self._max_concurrency.acquire(ctx)
+
         if self.cooldown_after_parsing:
             await self._parse_arguments(ctx)
             self._prepare_cooldowns(ctx)
         else:
             self._prepare_cooldowns(ctx)
             await self._parse_arguments(ctx)
-
-        if self._max_concurrency is not None:
-            await self._max_concurrency.acquire(ctx)
 
         await self.call_before_hooks(ctx)
 
@@ -805,7 +807,9 @@ class Command(_BaseCommand):
             return False
 
         bucket = self._buckets.get_bucket(ctx.message)
-        return bucket.get_tokens() == 0
+        dt = ctx.message.edited_at or ctx.message.created_at
+        current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
+        return bucket.get_tokens(current) == 0
 
     def reset_cooldown(self, ctx):
         """Resets the cooldown on this command.
@@ -819,6 +823,30 @@ class Command(_BaseCommand):
             bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
 
+    def get_cooldown_retry_after(self, ctx):
+        """Retrieves the amount of seconds before this command can be tried again.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        ctx: :class:`.Context`
+            The invocation context to retrieve the cooldown from.
+
+        Returns
+        --------
+        :class:`float`
+            The amount of time left on this command's cooldown in seconds.
+            If this is ``0.0`` then the command isn't on cooldown.
+        """
+        if self._buckets.valid:
+            bucket = self._buckets.get_bucket(ctx.message)
+            dt = ctx.message.edited_at or ctx.message.created_at
+            current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
+            return bucket.get_retry_after(current)
+
+        return 0.0
+
     async def invoke(self, ctx):
         await self.prepare(ctx)
 
@@ -826,6 +854,7 @@ class Command(_BaseCommand):
         # since we're in a regular command (and not a group) then
         # the invoked subcommand is None.
         ctx.invoked_subcommand = None
+        ctx.subcommand_passed = None
         injected = hooked_wrapped_callback(self, ctx, self.callback)
         await injected(*ctx.args, **ctx.kwargs)
 
@@ -981,7 +1010,10 @@ class Command(_BaseCommand):
                     result.append('[%s]' % name)
 
             elif param.kind == param.VAR_POSITIONAL:
-                result.append('[%s...]' % name)
+                if self.require_var_positional:
+                    result.append('<%s...>' % name)
+                else:
+                    result.append('[%s...]' % name)
             elif greedy:
                 result.append('[%s]...' % name)
             elif self._is_typing_optional(param.annotation):
@@ -995,7 +1027,7 @@ class Command(_BaseCommand):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`.checks` attribute. This also checks whether the
+        inside the :attr:`checks` attribute. This also checks whether the
         command is disabled.
 
         .. versionchanged:: 1.3
@@ -1148,6 +1180,11 @@ class GroupMixin:
 
         .. versionchanged:: 1.4
             Duplicates due to aliases are no longer returned
+
+        Yields
+        ------
+        Union[:class:`.Command`, :class:`.Group`]
+            A command or group from the internal list of commands.
         """
         for command in self.commands:
             yield command
@@ -1180,6 +1217,8 @@ class GroupMixin:
             return self.all_commands.get(name)
 
         names = name.split()
+        if not names:
+            return None
         obj = self.all_commands.get(names[0])
         if not isinstance(obj, GroupMixin):
             return obj
@@ -1195,6 +1234,11 @@ class GroupMixin:
     def command(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
+
+        Returns
+        --------
+        Callable[..., :class:`Command`]
+            A decorator that converts the provided method into a Command, adds it to the bot, then returns it.
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
@@ -1207,6 +1251,11 @@ class GroupMixin:
     def group(self, *args, **kwargs):
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
+
+        Returns
+        --------
+        Callable[..., :class:`Group`]
+            A decorator that converts the provided method into a Group, adds it to the bot, then returns it.
         """
         def decorator(func):
             kwargs.setdefault('parent', self)
@@ -1257,6 +1306,7 @@ class Group(GroupMixin, Command):
 
     async def invoke(self, ctx):
         ctx.invoked_subcommand = None
+        ctx.subcommand_passed = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
             await self.prepare(ctx)

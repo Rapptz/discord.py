@@ -31,7 +31,6 @@ import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
 import datetime
-from email.utils import parsedate_to_datetime
 import functools
 from inspect import isawaitable as _isawaitable
 from operator import attrgetter
@@ -40,7 +39,6 @@ import re
 import warnings
 
 from .errors import InvalidArgument
-from .object import Object
 
 DISCORD_EPOCH = 1420070400000
 MAX_ASYNCIO_SECONDS = 3456000
@@ -299,7 +297,7 @@ def _get_as_snowflake(data, key):
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data[6:10] in (b'JFIF', b'Exif'):
+    elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
@@ -429,11 +427,11 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
 
 def resolve_invite(invite):
     """
-    Resolves an invite from a :class:`~discord.Invite`, URL or ID
+    Resolves an invite from a :class:`~discord.Invite`, URL or code.
 
     Parameters
     -----------
-    invite: Union[:class:`~discord.Invite`, :class:`~discord.Object`, :class:`str`]
+    invite: Union[:class:`~discord.Invite`, :class:`str`]
         The invite.
 
     Returns
@@ -452,9 +450,24 @@ def resolve_invite(invite):
     return invite
 
 def resolve_template(code):
+    """
+    Resolves a template code from a :class:`~discord.Template`, URL or code.
+
+    .. versionadded:: 1.4
+
+    Parameters
+    -----------
+    code: Union[:class:`~discord.Template`, :class:`str`]
+        The code.
+
+    Returns
+    --------
+    :class:`str`
+        The template code.
+    """
     from .template import Template # circular import
     if isinstance(code, Template):
-        return template.code
+        return code.code
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
         m = re.match(rx, code)
@@ -467,7 +480,7 @@ _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(
 
 _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON))
+_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON), re.MULTILINE)
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
     r"""A helper function that escapes Discord's markdown.
@@ -506,7 +519,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
         regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
         if ignore_links:
             regex = '(?:%s|%s)' % (url_regex, regex)
-        return re.sub(regex, replacement, text)
+        return re.sub(regex, replacement, text, 0, re.MULTILINE)
     else:
         text = re.sub(r'\\', r'\\\\', text)
         return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
@@ -517,6 +530,12 @@ def escape_mentions(text):
     .. note::
 
         This does not include channel mentions.
+
+    .. note::
+
+        For more granular control over what mentions should be escaped
+        within messages, refer to the :class:`~discord.AllowedMentions`
+        class.
 
     Parameters
     -----------

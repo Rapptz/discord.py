@@ -89,19 +89,29 @@ class Asset:
         return cls(state, '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(user, format, size))
 
     @classmethod
-    def _from_icon(cls, state, object, path):
+    def _from_icon(cls, state, object, path, *, format='webp', size=1024):
         if object.icon is None:
             return cls(state)
 
-        url = '/{0}-icons/{1.id}/{1.icon}.jpg'.format(path, object)
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
+
+        url = '/{0}-icons/{1.id}/{1.icon}.{2}?size={3}'.format(path, object, format, size)
         return cls(state, url)
 
     @classmethod
-    def _from_cover_image(cls, state, obj):
+    def _from_cover_image(cls, state, obj, *, format='webp', size=1024):
         if obj.cover_image is None:
             return cls(state)
 
-        url = '/app-assets/{0.id}/store/{0.cover_image}.jpg'.format(obj)
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
+        if format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
+
+        url = '/app-assets/{0.id}/store/{0.cover_image}.{1}?size={2}'.format(obj, format, size)
         return cls(state, url)
 
     @classmethod
@@ -136,7 +146,26 @@ class Asset:
 
         return cls(state, '/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
 
+    @classmethod
+    def _from_sticker_url(cls, state, sticker, *, size=1024):
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
 
+        return cls(state, '/stickers/{0.id}/{0.image}.png?size={2}'.format(sticker, format, size))
+
+    @classmethod
+    def _from_emoji(cls, state, emoji, *, format=None, static_format='png'):
+        if format is not None and format not in VALID_AVATAR_FORMATS:
+            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+        if format == "gif" and not emoji.animated:
+            raise InvalidArgument("non animated emoji's do not support gif format")
+        if static_format not in VALID_STATIC_FORMATS:
+            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+        if format is None:
+            format = 'gif' if emoji.animated else static_format
+
+        return cls(state, '/emojis/{0.id}.{1}'.format(emoji, format))
+    
     def __str__(self):
         return self.BASE + self._url if self._url is not None else ''
 

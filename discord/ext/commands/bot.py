@@ -30,12 +30,11 @@ import inspect
 import importlib.util
 import sys
 import traceback
-import re
 import types
 
 import discord
 
-from .core import GroupMixin, Command
+from .core import GroupMixin
 from .view import StringView
 from .context import Context
 from . import errors
@@ -254,6 +253,12 @@ class BotBase(GroupMixin):
         or :meth:`.Command.can_run` is called. This type of check
         bypasses that and ensures that it's called only once, even inside
         the default help command.
+
+        .. note::
+
+            When using this function the :class:`.Context` sent to a group subcommand
+            may only parse the parent command and not the subcommands due to it
+            being invoked once per :meth:`.Bot.invoke` call.
 
         .. note::
 

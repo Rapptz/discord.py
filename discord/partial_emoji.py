@@ -124,11 +124,11 @@ class PartialEmoji(_EmojiTag):
         return hash((self.id, self.name))
 
     def is_custom_emoji(self):
-        """Checks if this is a custom non-Unicode emoji."""
+        """:class:`bool`: Checks if this is a custom non-Unicode emoji."""
         return self.id is not None
 
     def is_unicode_emoji(self):
-        """Checks if this is a Unicode emoji."""
+        """:class:`bool`: Checks if this is a Unicode emoji."""
         return self.id is None
 
     def _as_reaction(self):
@@ -137,8 +137,19 @@ class PartialEmoji(_EmojiTag):
         return '%s:%s' % (self.name, self.id)
 
     @property
+    def created_at(self):
+        """Optional[:class:`datetime.datetime`]: Returns the emoji's creation time in UTC, or None if Unicode emoji.
+
+        .. versionadded:: 1.6
+        """
+        if self.is_unicode_emoji():
+            return None
+
+        return utils.snowflake_time(self.id)
+
+    @property
     def url(self):
-        """:class:`Asset`:Returns an asset of the emoji, if it is custom."""
+        """:class:`Asset`: Returns an asset of the emoji, if it is custom."""
         if self.is_unicode_emoji():
             return Asset(self._state)
 

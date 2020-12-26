@@ -344,6 +344,15 @@ Overriding the default provided ``on_message`` forbids any extra commands from r
 
         await bot.process_commands(message)
 
+Alternatively, you can place your ``on_message`` logic into a **listener**. In this setup, you should not
+manually call ``bot.process_commands()``. This also allows you to do multiple things asynchronously in response
+to a message. Example::
+
+    @bot.listen('on_message')
+    async def whatever_you_want_to_call_it(message):
+        # do stuff here
+        # do not process commands here
+
 Why do my arguments require quotes?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

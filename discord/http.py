@@ -33,7 +33,8 @@ import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, GatewayNotFound
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
+from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 
 log = logging.getLogger(__name__)
@@ -85,6 +86,10 @@ class MaybeUnlock:
         if self._unlock:
             self.lock.release()
 
+# For some reason, the Discord voice websocket expects this header to be
+# completely lowercase while aiohttp respects spec and does it as case-insensitive
+aiohttp.hdrs.WEBSOCKET = 'websocket'
+
 class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
 
@@ -109,7 +114,22 @@ class HTTPClient:
 
     def recreate(self):
         if self.__session.closed:
-            self.__session = aiohttp.ClientSession(connector=self.connector)
+            self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
+
+    async def ws_connect(self, url, *, compress=0):
+        kwargs = {
+            'proxy_auth': self.proxy_auth,
+            'proxy': self.proxy,
+            'max_msg_size': 0,
+            'timeout': 30.0,
+            'autoclose': False,
+            'headers': {
+                'User-Agent': self.user_agent,
+            },
+            'compress': compress
+        }
+
+        return await self.__session.ws_connect(url, **kwargs)
 
     async def request(self, route, *, files=None, **kwargs):
         bucket = route.bucket
@@ -161,70 +181,82 @@ class HTTPClient:
                 if files:
                     for f in files:
                         f.reset(seek=tries)
+                try:
+                    async with self.__session.request(method, url, **kwargs) as r:
+                        log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
 
-                async with self.__session.request(method, url, **kwargs) as r:
-                    log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
+                        # even errors have text involved in them so this is safe to call
+                        data = await json_or_text(r)
 
-                    # even errors have text involved in them so this is safe to call
-                    data = await json_or_text(r)
+                        # check if we have rate limit header information
+                        remaining = r.headers.get('X-Ratelimit-Remaining')
+                        if remaining == '0' and r.status != 429:
+                            # we've depleted our current bucket
+                            delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
+                            log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
+                            maybe_lock.defer()
+                            self.loop.call_later(delta, lock.release)
 
-                    # check if we have rate limit header information
-                    remaining = r.headers.get('X-Ratelimit-Remaining')
-                    if remaining == '0' and r.status != 429:
-                        # we've depleted our current bucket
-                        delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
-                        log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
-                        maybe_lock.defer()
-                        self.loop.call_later(delta, lock.release)
+                        # the request was successful so just return the text/json
+                        if 300 > r.status >= 200:
+                            log.debug('%s %s has received %s', method, url, data)
+                            return data
 
-                    # the request was successful so just return the text/json
-                    if 300 > r.status >= 200:
-                        log.debug('%s %s has received %s', method, url, data)
-                        return data
+                        # we are being rate limited
+                        if r.status == 429:
+                            if not r.headers.get('Via'):
+                                # Banned by Cloudflare more than likely.
+                                raise HTTPException(r, data)
 
-                    # we are being rate limited
-                    if r.status == 429:
-                        if not r.headers.get('Via'):
-                            # Banned by Cloudflare more than likely.
+                            fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
+
+                            # sleep a bit
+                            retry_after = data['retry_after'] / 1000.0
+                            log.warning(fmt, retry_after, bucket)
+
+                            # check if it's a global rate limit
+                            is_global = data.get('global', False)
+                            if is_global:
+                                log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
+                                self._global_over.clear()
+
+                            await asyncio.sleep(retry_after)
+                            log.debug('Done sleeping for the rate limit. Retrying...')
+
+                            # release the global lock now that the
+                            # global rate limit has passed
+                            if is_global:
+                                self._global_over.set()
+                                log.debug('Global rate limit is now over.')
+
+                            continue
+
+                        # we've received a 500 or 502, unconditional retry
+                        if r.status in {500, 502}:
+                            await asyncio.sleep(1 + tries * 2)
+                            continue
+
+                        # the usual error cases
+                        if r.status == 403:
+                            raise Forbidden(r, data)
+                        elif r.status == 404:
+                            raise NotFound(r, data)
+                        elif r.status == 503:
+                            raise DiscordServerError(r, data)
+                        else:
                             raise HTTPException(r, data)
 
-                        fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
-
-                        # sleep a bit
-                        retry_after = data['retry_after'] / 1000.0
-                        log.warning(fmt, retry_after, bucket)
-
-                        # check if it's a global rate limit
-                        is_global = data.get('global', False)
-                        if is_global:
-                            log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
-                            self._global_over.clear()
-
-                        await asyncio.sleep(retry_after)
-                        log.debug('Done sleeping for the rate limit. Retrying...')
-
-                        # release the global lock now that the
-                        # global rate limit has passed
-                        if is_global:
-                            self._global_over.set()
-                            log.debug('Global rate limit is now over.')
-
+                # This is handling exceptions from the request
+                except OSError as e:
+                    # Connection reset by peer
+                    if tries < 4 and e.errno in (54, 10054):
                         continue
-
-                    # we've received a 500 or 502, unconditional retry
-                    if r.status in {500, 502}:
-                        await asyncio.sleep(1 + tries * 2)
-                        continue
-
-                    # the usual error cases
-                    if r.status == 403:
-                        raise Forbidden(r, data)
-                    elif r.status == 404:
-                        raise NotFound(r, data)
-                    else:
-                        raise HTTPException(r, data)
+                    raise
 
             # We've run out of retries, raise.
+            if r.status >= 500:
+                raise DiscordServerError(r, data)
+
             raise HTTPException(r, data)
 
     async def get_from_cdn(self, url):
@@ -253,7 +285,7 @@ class HTTPClient:
 
     async def static_login(self, token, *, bot):
         # Necessary to get aiohttp to stop complaining about session creation
-        self.__session = aiohttp.ClientSession(connector=self.connector)
+        self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
         old_token, old_bot = self.token, self.bot_token
         self._token(token, bot=bot)
 
@@ -310,7 +342,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload)
 
-    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None, allowed_mentions=None):
+    def send_message(self, channel_id, content, *, tts=False, embed=None, nonce=None, allowed_mentions=None, message_reference=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
 
@@ -329,12 +361,15 @@ class HTTPClient:
         if allowed_mentions:
             payload['allowed_mentions'] = allowed_mentions
 
+        if message_reference:
+            payload['message_reference'] = message_reference
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id):
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None, allowed_mentions=None):
+    def send_files(self, channel_id, *, files, content=None, tts=False, embed=None, nonce=None, allowed_mentions=None, message_reference=None):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         form = aiohttp.FormData()
 
@@ -347,6 +382,8 @@ class HTTPClient:
             payload['nonce'] = nonce
         if allowed_mentions:
             payload['allowed_mentions'] = allowed_mentions
+        if message_reference:
+            payload['message_reference'] = message_reference
 
         form.add_field('payload_json', utils.to_json(payload))
         if len(files) == 1:
@@ -467,7 +504,7 @@ class HTTPClient:
     def ban(self, user_id, guild_id, delete_message_days=1, reason=None):
         r = Route('PUT', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         params = {
-            'delete-message-days': delete_message_days,
+            'delete_message_days': delete_message_days,
         }
 
         if reason:
@@ -632,7 +669,7 @@ class HTTPClient:
 
     def get_template(self, code):
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
-    
+
     def create_from_template(self, code, name, region, icon):
         payload = {
             'name': name,
@@ -673,9 +710,11 @@ class HTTPClient:
     def prune_members(self, guild_id, days, compute_prune_count, roles, *, reason=None):
         payload = {
             'days': days,
-            'compute_prune_count': 'true' if compute_prune_count else 'false',
-            'include_roles': ', '.join(roles)
+            'compute_prune_count': 'true' if compute_prune_count else 'false'
         }
+        if roles:
+            payload['include_roles'] = ', '.join(roles)
+
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
     def estimate_pruned_members(self, guild_id, days):
@@ -778,7 +817,7 @@ class HTTPClient:
         params = {
             'with_counts': int(with_counts)
         }
-        return self.request(Route('GET', '/invite/{invite_id}', invite_id=invite_id), params=params)
+        return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
     def invites_from(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
@@ -787,7 +826,7 @@ class HTTPClient:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
     def delete_invite(self, invite_id, *, reason=None):
-        return self.request(Route('DELETE', '/invite/{invite_id}', invite_id=invite_id), reason=reason)
+        return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
 
     # Role management
 

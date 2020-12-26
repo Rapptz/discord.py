@@ -150,7 +150,7 @@ class BaseUser(_BaseUser):
         return self.avatar_url_as(format=None, size=1024)
 
     def is_avatar_animated(self):
-        """Indicates if the user has an animated avatar."""
+        """:class:`bool`: Indicates if the user has an animated avatar."""
         return bool(self.avatar and self.avatar.startswith('a_'))
 
     def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
@@ -262,6 +262,11 @@ class BaseUser(_BaseUser):
         -----------
         message: :class:`Message`
             The message to check if you're mentioned in.
+
+        Returns
+        -------
+        :class:`bool`
+            Indicates if the user is mentioned in the message.
         """
 
         if message.mention_everyone:
@@ -706,6 +711,11 @@ class User(BaseUser, discord.abc.Messageable):
 
         This should be rarely called, as this is done transparently for most
         people.
+
+        Returns
+        -------
+        :class:`.DMChannel`
+            The channel that was created.
         """
         found = self.dm_channel
         if found is not None:
@@ -751,7 +761,7 @@ class User(BaseUser, discord.abc.Messageable):
         return [User(state=state, data=friend) for friend in mutuals]
 
     def is_friend(self):
-        """Checks if the user is your friend.
+        """:class:`bool`: Checks if the user is your friend.
 
         .. note::
 
@@ -763,7 +773,7 @@ class User(BaseUser, discord.abc.Messageable):
         return r.type is RelationshipType.friend
 
     def is_blocked(self):
-        """Checks if the user is blocked.
+        """:class:`bool`: Checks if the user is blocked.
 
         .. note::
 

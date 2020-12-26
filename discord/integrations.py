@@ -25,13 +25,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
-from collections import namedtuple
 from .utils import _get_as_snowflake, get, parse_time
 from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
 
-class IntegrationAccount(namedtuple('IntegrationAccount', 'id name')):
+class IntegrationAccount:
     """Represents an integration account.
 
     .. versionadded:: 1.4
@@ -44,7 +43,11 @@ class IntegrationAccount(namedtuple('IntegrationAccount', 'id name')):
         The account name.
     """
 
-    __slots__ = ()
+    __slots__ = ('id', 'name')
+
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop('id')
+        self.name = kwargs.pop('name')
 
     def __repr__(self):
         return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
@@ -86,7 +89,8 @@ class Integration:
 
     __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
                  'syncing', 'role', 'expire_behaviour', 'expire_behavior',
-                 'expire_grace_period', 'synced_at', 'user', 'account')
+                 'expire_grace_period', 'synced_at', 'user', 'account',
+                 'enable_emoticons', '_role_id')
 
     def __init__(self, *, data, guild):
         self.guild = guild
@@ -161,7 +165,7 @@ class Integration:
 
         await self._state.http.edit_integration(self.guild.id, self.id, **payload)
 
-        self.expire_behaviour = expire_behavior
+        self.expire_behaviour = expire_behaviour
         self.expire_behavior = self.expire_behaviour
         self.expire_grace_period = expire_grace_period
         self.enable_emoticons = enable_emoticons

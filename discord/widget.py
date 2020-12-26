@@ -29,9 +29,8 @@ from .user import BaseUser
 from .activity import create_activity
 from .invite import Invite
 from .enums import Status, try_enum
-from collections import namedtuple
 
-class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
+class WidgetChannel:
     """Represents a "partial" widget channel.
 
     .. container:: operations
@@ -61,10 +60,19 @@ class WidgetChannel(namedtuple('WidgetChannel', 'id name position')):
     position: :class:`int`
         The channel's position
     """
-    __slots__ = ()
+    __slots__ = ('id', 'name', 'position')
+
+
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop('id')
+        self.name = kwargs.pop('name')
+        self.position = kwargs.pop('position')
 
     def __str__(self):
         return self.name
+
+    def __repr__(self):
+        return '<WidgetChannel id={0.id} name={0.name!r} position={0.position!r}>'.format(self)
 
     @property
     def mention(self):

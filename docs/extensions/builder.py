@@ -1,5 +1,24 @@
 from sphinx.builders.html import StandaloneHTMLBuilder
 from sphinx.environment.adapters.indexentries import IndexEntries
+from sphinx.writers.html5 import HTML5Translator
+
+class DPYHTML5Translator(HTML5Translator):
+    def visit_section(self, node):
+        self.section_level += 1
+        self.body.append(
+            self.starttag(node, 'section'))
+
+    def depart_section(self, node):
+        self.section_level -= 1
+        self.body.append('</section>\n')
+
+    def visit_table(self, node):
+        self.body.append('<div class="table-wrapper">')
+        super().visit_table(node)
+
+    def depart_table(self, node):
+        super().depart_table(node)
+        self.body.append('</div>')
 
 class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
     # This is mostly copy pasted from Sphinx.
@@ -31,16 +50,26 @@ class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
         else:
             self.handle_page('genindex', genindexcontext, 'genindex.html')
 
-def get_builder(app):
+
+def add_custom_jinja2(app):
+    env = app.builder.templates.environment
+    env.tests['prefixedwith'] = str.startswith
+    env.tests['suffixedwith'] = str.endswith
+
+def add_builders(app):
     """This is necessary because RTD injects their own for some reason."""
     try:
         original = app.registry.builders['readthedocs']
     except KeyError:
-        return DPYStandaloneHTMLBuilder
+        app.set_translator('html', DPYHTML5Translator, override=True)
+        app.add_builder(DPYStandaloneHTMLBuilder, override=True)
     else:
         injected_mro = tuple(base if base is not StandaloneHTMLBuilder else DPYStandaloneHTMLBuilder
                              for base in original.mro()[1:])
-        return type(original.__name__, injected_mro, {'name': 'readthedocs'})
+        new_builder = type(original.__name__, injected_mro, {'name': 'readthedocs'})
+        app.set_translator('readthedocs', DPYHTML5Translator, override=True)
+        app.add_builder(new_builder, override=True)
 
 def setup(app):
-    app.add_builder(get_builder(app), override=True)
+    add_builders(app)
+    app.connect('builder-inited', add_custom_jinja2)

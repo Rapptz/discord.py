@@ -34,7 +34,7 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, try_enum
+from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
 from .member import Member
@@ -42,7 +42,31 @@ from .flags import MessageFlags
 from .file import File
 from .utils import escape_mentions
 from .guild import Guild
+from .mixins import Hashable
+from .sticker import Sticker
 
+__all__ = (
+    'Attachment',
+    'Message',
+    'PartialMessage',
+    'MessageReference',
+    'DeletedReferencedMessage',
+)
+
+def convert_emoji_reaction(emoji):
+    if isinstance(emoji, Reaction):
+        emoji = emoji.emoji
+
+    if isinstance(emoji, Emoji):
+        return '%s:%s' % (emoji.name, emoji.id)
+    if isinstance(emoji, PartialEmoji):
+        return emoji._as_reaction()
+    if isinstance(emoji, str):
+        # Reactions can be in :name:id format, but not <:name:id>.
+        # No existing emojis have <> in them, so this should be okay.
+        return emoji.strip('<>')
+
+    raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
 class Attachment:
     """Represents an attachment from Discord.
@@ -208,23 +232,154 @@ class Attachment:
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
+class DeletedReferencedMessage:
+    """A special sentinel type that denotes whether the
+    resolved message referenced message had since been deleted.
+
+    The purpose of this class is to separate referenced messages that could not be
+    fetched and those that were previously fetched but have since been deleted.
+
+    .. versionadded:: 1.6
+    """
+
+    __slots__ = ('_parent')
+
+    def __init__(self, parent):
+        self._parent = parent
+
+    @property
+    def id(self):
+        """:class:`int`: The message ID of the deleted referenced message."""
+        return self._parent.message_id
+
+    @property
+    def channel_id(self):
+        """:class:`int`: The channel ID of the deleted referenced message."""
+        return self._parent.channel_id
+
+    @property
+    def guild_id(self):
+        """Optional[:class:`int`]: The guild ID of the deleted referenced message."""
+        return self._parent.guild_id
+
+
+class MessageReference:
+    """Represents a reference to a :class:`~discord.Message`.
+
+    .. versionadded:: 1.5
+
+    .. versionchanged:: 1.6
+        This class can now be constructed by users.
+
+    Attributes
+    -----------
+    message_id: Optional[:class:`int`]
+        The id of the message referenced.
+    channel_id: :class:`int`
+        The channel id of the message referenced.
+    guild_id: Optional[:class:`int`]
+        The guild id of the message referenced.
+    resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]]
+        The message that this reference resolved to. If this is ``None``
+        then the original message was not fetched either due to the Discord API
+        not attempting to resolve it or it not being available at the time of creation.
+        If the message was resolved at a prior point but has since been deleted then
+        this will be of type :class:`DeletedReferencedMessage`.
+
+        Currently, this is mainly the replied to message when a user replies to a message.
+
+        .. versionadded:: 1.6
+    """
+
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'resolved', '_state')
+
+    def __init__(self, *, message_id, channel_id, guild_id=None):
+        self._state = None
+        self.resolved = None
+        self.message_id = message_id
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+
+    @classmethod
+    def with_state(cls, state, data):
+        self = cls.__new__(cls)
+        self.message_id = utils._get_as_snowflake(data, 'message_id')
+        self.channel_id = int(data.pop('channel_id'))
+        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self._state = state
+        self.resolved = None
+        return self
+
+    @classmethod
+    def from_message(cls, message):
+        """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
+
+        .. versionadded:: 1.6
+
+        Parameters
+        ----------
+        message: :class:`~discord.Message`
+            The message to be converted into a reference.
+
+        Returns
+        -------
+        :class:`MessageReference`
+            A reference to the message.
+        """
+        self = cls(message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None))
+        self._state = message._state
+        return self
+
+    @property
+    def cached_message(self):
+        """Optional[:class:`~discord.Message`]: The cached message, if found in the internal message cache."""
+        return self._state._get_message(self.message_id)
+
+    def __repr__(self):
+        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
+
+    def to_dict(self):
+        result = {'message_id': self.message_id} if self.message_id is not None else {}
+        result['channel_id'] = self.channel_id
+        if self.guild_id is not None:
+            result['guild_id'] = self.guild_id
+        return result
+
+    to_message_reference_dict = to_dict
+
 def flatten_handlers(cls):
     prefix = len('_handle_')
-    cls._HANDLERS = {
-        key[prefix:]: value
+    handlers = [
+        (key[prefix:], value)
         for key, value in cls.__dict__.items()
-        if key.startswith('_handle_')
-    }
+        if key.startswith('_handle_') and key != '_handle_member'
+    ]
+
+    # store _handle_member last
+    handlers.append(('member', cls._handle_member))
+    cls._HANDLERS = handlers
     cls._CACHED_SLOTS = [
         attr for attr in cls.__slots__ if attr.startswith('_cs_')
     ]
     return cls
 
 @flatten_handlers
-class Message:
+class Message(Hashable):
     r"""Represents a message from Discord.
 
-    There should be no need to create one of these manually.
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two messages are equal.
+
+        .. describe:: x != y
+
+            Checks if two messages are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the message's hash.
 
     Attributes
     -----------
@@ -251,6 +406,13 @@ class Message:
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
+    reference: Optional[:class:`~discord.MessageReference`]
+        The message that this message references. This is only applicable to messages of
+        type :attr:`MessageType.pins_add`, crossposted messages created by a
+        followed channel integration, or message replies.
+
+        .. versionadded:: 1.5
+
     mention_everyone: :class:`bool`
         Specifies if the message mentions everyone.
 
@@ -268,7 +430,7 @@ class Message:
         .. warning::
 
             The order of the mentions list is not in any particular order so you should
-            not rely on it. This is a discord limitation, not one with the library.
+            not rely on it. This is a Discord limitation, not one with the library.
     channel_mentions: List[:class:`abc.GuildChannel`]
         A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
         then the list is always empty.
@@ -309,6 +471,10 @@ class Message:
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
+    stickers: List[:class:`Sticker`]
+        A list of stickers given to the message.
+
+        .. versionadded:: 1.6
     """
 
     __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
@@ -316,8 +482,8 @@ class Message:
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                  'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
-                 '_cs_system_content', '_cs_guild', '_state', 'reactions',
-                 'application', 'activity')
+                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
+                 'application', 'activity', 'stickers')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -337,6 +503,29 @@ class Message:
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
+        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
+
+        try:
+            ref = data['message_reference']
+        except KeyError:
+            self.reference = None
+        else:
+            self.reference = ref = MessageReference.with_state(state, ref)
+            try:
+                resolved = data['referenced_message']
+            except KeyError:
+                pass
+            else:
+                if resolved is None:
+                    ref.resolved = DeletedReferencedMessage(ref)
+                else:
+                    # Right now the channel IDs match but maybe in the future they won't.
+                    if ref.channel_id == channel.id:
+                        chan = channel
+                    else:
+                        chan, _ = state._get_guild_channel(resolved)
+
+                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
@@ -404,10 +593,13 @@ class Message:
         return reaction
 
     def _update(self, data):
-        handlers = self._HANDLERS
-        for key, value in data.items():
+        # In an update scheme, 'author' key has to be handled before 'member'
+        # otherwise they overwrite each other which is undesirable.
+        # Since there's no good way to do this we have to iterate over every
+        # handler rather than iterating over the keys which is a little slower
+        for key, handler in self._HANDLERS:
             try:
-                handler = handlers[key]
+                value = data[key]
             except KeyError:
                 continue
             else:
@@ -473,8 +665,7 @@ class Message:
         author = self.author
         try:
             # Update member reference
-            if author.joined_at is None:
-                author.joined_at = utils.parse_time(member.get('joined_at'))
+            author._update_from_message(member)
         except AttributeError:
             # It's a user here
             # TODO: consider adding to cache here
@@ -524,6 +715,14 @@ class Message:
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
+    def _rebind_channel_reference(self, new_channel):
+        self.channel = new_channel
+
+        try:
+            del self._cs_guild
+        except AttributeError:
+            pass
+
     @utils.cached_slot_property('_cs_guild')
     def guild(self):
         """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
@@ -562,7 +761,7 @@ class Message:
 
     @utils.cached_slot_property('_cs_clean_content')
     def clean_content(self):
-        """A property that returns the content in a "cleaned up"
+        """:class:`str`: A property that returns the content in a "cleaned up"
         manner. This basically means that mentions are transformed
         into the way the client shows it. e.g. ``<#id>`` will transform
         into ``#name``.
@@ -779,7 +978,12 @@ class Message:
             before deleting the message we just edited. If the deletion fails,
             then it is silently ignored.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
-            Controls the mentions being processed in this message.
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
 
             .. versionadded:: 1.4
 
@@ -896,7 +1100,7 @@ class Message:
         Parameters
         -----------
         reason: Optional[:class:`str`]
-            The reason for pinning the message. Shows up on the audit log.
+            The reason for unpinning the message. Shows up on the audit log.
 
             .. versionadded:: 1.4
 
@@ -941,7 +1145,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        emoji = self._emoji_reaction(emoji)
+        emoji = convert_emoji_reaction(emoji)
         await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
     async def remove_reaction(self, emoji, member):
@@ -976,7 +1180,7 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        emoji = self._emoji_reaction(emoji)
+        emoji = convert_emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
             await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
@@ -1011,24 +1215,8 @@ class Message:
             The emoji parameter is invalid.
         """
 
-        emoji = self._emoji_reaction(emoji)
+        emoji = convert_emoji_reaction(emoji)
         await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
-
-    @staticmethod
-    def _emoji_reaction(emoji):
-        if isinstance(emoji, Reaction):
-            emoji = emoji.emoji
-
-        if isinstance(emoji, Emoji):
-            return '%s:%s' % (emoji.name, emoji.id)
-        if isinstance(emoji, PartialEmoji):
-            return emoji._as_reaction()
-        if isinstance(emoji, str):
-            # Reactions can be in :name:id format, but not <:name:id>.
-            # No existing emojis have <> in them, so this should be okay.
-            return emoji.strip('<>')
-
-        raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
 
     async def clear_reactions(self):
         """|coro|
@@ -1065,3 +1253,166 @@ class Message:
         if state.is_bot:
             raise ClientException('Must not be a bot account to ack messages.')
         return await state.http.ack_message(self.channel.id, self.id)
+
+    async def reply(self, content=None, **kwargs):
+        """|coro|
+
+        A shortcut method to :meth:`abc.Messageable.send` to reply to the
+        :class:`Message`.
+
+        .. versionadded:: 1.6
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ~discord.InvalidArgument
+            The ``files`` list is not of the appropriate size or
+            you specified both ``file`` and ``files``.
+
+        Returns
+        ---------
+        :class:`Message`
+            The message that was sent.
+        """
+
+        return await self.channel.send(content, reference=self, **kwargs)
+
+    def to_reference(self):
+        """Creates a :class:`~discord.MessageReference` from the current message.
+
+        .. versionadded:: 1.6
+
+        Returns
+        ---------
+        :class:`~discord.MessageReference`
+            The reference to this message.
+        """
+
+        return MessageReference.from_message(self)
+
+    def to_message_reference_dict(self):
+        data = {
+            'message_id': self.id,
+            'channel_id': self.channel.id,
+        }
+
+        if self.guild is not None:
+            data['guild_id'] = self.guild.id
+
+        return data
+
+def implement_partial_methods(cls):
+    msg = Message
+    for name in cls._exported_names:
+        func = getattr(msg, name)
+        setattr(cls, name, func)
+    return cls
+
+@implement_partial_methods
+class PartialMessage(Hashable):
+    """Represents a partial message to aid with working messages when only
+    a message and channel ID are present.
+
+    There are two ways to construct this class. The first one is through
+    the constructor itself, and the second is via
+    :meth:`TextChannel.get_partial_message` or :meth:`DMChannel.get_partial_message`.
+
+    Note that this class is trimmed down and has no rich attributes.
+
+    .. versionadded:: 1.6
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial messages are equal.
+
+        .. describe:: x != y
+
+            Checks if two partial messages are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the partial message's hash.
+
+    Attributes
+    -----------
+    channel: Union[:class:`TextChannel`, :class:`DMChannel`]
+        The channel associated with this partial message.
+    id: :class:`int`
+        The message ID.
+    """
+
+    __slots__ = ('channel', 'id', '_cs_guild', '_state')
+
+    _exported_names = (
+        'jump_url',
+        'delete',
+        'edit',
+        'publish',
+        'pin',
+        'unpin',
+        'add_reaction',
+        'remove_reaction',
+        'clear_reaction',
+        'clear_reactions',
+        'reply',
+        'to_reference',
+        'to_message_reference_dict',
+    )
+
+    def __init__(self, *, channel, id):
+        if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
+            raise TypeError('Expected TextChannel or DMChannel not %r' % type(channel))
+
+        self.channel = channel
+        self._state = channel._state
+        self.id = id
+
+    def _update(self, data):
+        # This is used for duck typing purposes.
+        # Just do nothing with the data.
+        pass
+
+    # Also needed for duck typing purposes
+    # n.b. not exposed
+    pinned = property(None, lambda x, y: ...)
+
+    def __repr__(self):
+        return '<PartialMessage id={0.id} channel={0.channel!r}>'.format(self)
+
+    @property
+    def created_at(self):
+        """:class:`datetime.datetime`: The partial message's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @utils.cached_slot_property('_cs_guild')
+    def guild(self):
+        """Optional[:class:`Guild`]: The guild that the partial message belongs to, if applicable."""
+        return getattr(self.channel, 'guild', None)
+
+    async def fetch(self):
+        """|coro|
+
+        Fetches the partial message to a full :class:`Message`.
+
+        Raises
+        --------
+        NotFound
+            The message was not found.
+        Forbidden
+            You do not have the permissions required to get a message.
+        HTTPException
+            Retrieving the message failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The full message.
+        """
+
+        data = await self._state.http.get_message(self.channel.id, self.id)
+        return self._state.create_message(channel=self.channel, data=data)

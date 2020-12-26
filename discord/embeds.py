@@ -286,7 +286,10 @@ class Embed:
         """
 
         if url is EmptyEmbed:
-            del self._image
+            try:
+                del self._image
+            except AttributeError:
+                pass
         else:
             self._image = {
                 'url': str(url)
@@ -325,7 +328,10 @@ class Embed:
         """
 
         if url is EmptyEmbed:
-            del self._thumbnail
+            try:
+                del self._thumbnail
+            except AttributeError:
+                pass
         else:
             self._thumbnail = {
                 'url': str(url)

@@ -1,9 +1,35 @@
-from .utils import parse_time, _get_as_snowflake
+# -*- coding: utf-8 -*-
+
+"""
+The MIT License (MIT)
+
+Copyright (c) 2015-2020 Rapptz
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+"""
+
+from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data
 from .enums import VoiceRegion
 from .guild import Guild
 
 __all__ = (
-    'Template'
+    'Template',
 )
 
 class _FriendlyHttpAttributeErrorHelper:
@@ -16,11 +42,11 @@ class _PartialTemplateState:
     def __init__(self, *, state):
         self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
-    
+
     @property
     def is_bot(self):
         return self.__state.is_bot
-    
+
     @property
     def shard_count(self):
         return self.__state.shard_count
@@ -28,14 +54,18 @@ class _PartialTemplateState:
     @property
     def user(self):
         return self.__state.user
-    
+
     @property
     def self_id(self):
         return self.__state.user.id
-    
+
+    @property
+    def member_cache_flags(self):
+        return self.__state.member_cache_flags
+
     def store_emoji(self, guild, packet):
         return None
-    
+
     def _get_voice_client(self, id):
         return None
 
@@ -58,7 +88,7 @@ class Template:
     code: :class:`str`
         The template code.
     uses: :class:`int`
-        How many time the template has been used.
+        How many times the template has been used.
     name: :class:`str`
         The name of the template.
     description: :class:`str`
@@ -69,7 +99,7 @@ class Template:
         When the template was created.
     updated_at: :class:`datetime.datetime`
         When the template was last updated (referred to as "last synced" in the client).
-    source_guild: :class:`TemplateGuild`
+    source_guild: :class:`Guild`
         The source guild.
     """
 
@@ -137,4 +167,4 @@ class Template:
             region = region.value
 
         data = await self._state.http.create_from_template(self.code, name, region, icon)
-        return Guild(data=data, state=self._sate)
+        return Guild(data=data, state=self._state)

@@ -30,44 +30,115 @@ There are two main ways to query version information about the library. For guar
     A string representation of the version. e.g. ``'1.0.0rc1'``. This is based
     off of :pep:`440`.
 
+Clients
+--------
+
 Client
--------
+~~~~~~~
+
+.. attributetable:: Client
 
 .. autoclass:: Client
     :members:
 
+AutoShardedClient
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AutoShardedClient
+
 .. autoclass:: AutoShardedClient
     :members:
+
+Application Info
+------------------
+
+AppInfo
+~~~~~~~~
+
+.. attributetable:: AppInfo
 
 .. autoclass:: AppInfo()
     :members:
 
+Team
+~~~~~
+
+.. attributetable:: Team
+
 .. autoclass:: Team()
     :members:
+
+TeamMember
+~~~~~~~~~~~
+
+.. attributetable:: TeamMember
 
 .. autoclass:: TeamMember()
     :members:
 
-Voice
-------
+Voice Related
+---------------
+
+VoiceClient
+~~~~~~~~~~~~
+
+.. attributetable:: VoiceClient
 
 .. autoclass:: VoiceClient()
     :members:
 
+VoiceProtocol
+~~~~~~~~~~~~~~~
+
+.. attributetable:: VoiceProtocol
+
+.. autoclass:: VoiceProtocol
+    :members:
+
+AudioSource
+~~~~~~~~~~~~
+
+.. attributetable:: AudioSource
+
 .. autoclass:: AudioSource
     :members:
+
+PCMAudio
+~~~~~~~~~
+
+.. attributetable:: PCMAudio
 
 .. autoclass:: PCMAudio
     :members:
 
+FFmpegAudio
+~~~~~~~~~~~~
+
+.. attributetable:: FFmpegAudio
+
 .. autoclass:: FFmpegAudio
     :members:
+
+FFmpegPCMAudio
+~~~~~~~~~~~~~~~
+
+.. attributetable:: FFmpegPCMAudio
 
 .. autoclass:: FFmpegPCMAudio
     :members:
 
+FFmpegOpusAudio
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: FFmpegOpusAudio
+
 .. autoclass:: FFmpegOpusAudio
     :members:
+
+PCMVolumeTransformer
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PCMVolumeTransformer
 
 .. autoclass:: PCMVolumeTransformer
     :members:
@@ -117,6 +188,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The warnings on :func:`on_ready` also apply.
 
+.. function:: on_shard_connect(shard_id)
+
+    Similar to :func:`on_connect` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has connected to Discord.
+
+    .. versionadded:: 1.4
+
+    :param shard_id: The shard ID that has connected.
+    :type shard_id: :class:`int`
+
 .. function:: on_disconnect()
 
     Called when the client has disconnected from Discord. This could happen either through
@@ -124,6 +205,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     one way or the other.
 
     This function can be called many times.
+
+.. function:: on_shard_disconnect(shard_id)
+
+    Similar to :func:`on_disconnect` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has disconnected from Discord.
+
+    .. versionadded:: 1.4
+
+    :param shard_id: The shard ID that has disconnected.
+    :type shard_id: :class:`int`
 
 .. function:: on_ready()
 
@@ -149,6 +240,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when the client has resumed a session.
 
+.. function:: on_shard_resumed(shard_id)
+
+    Similar to :func:`on_resumed` except used by :class:`AutoShardedClient`
+    to denote when a particular shard ID has resumed a session.
+
+    .. versionadded:: 1.4
+
+    :param shard_id: The shard ID that has resumed.
+    :type shard_id: :class:`int`
+
 .. function:: on_error(event, \*args, \*\*kwargs)
 
     Usually when an event raises an uncaught exception, a traceback is
@@ -164,6 +265,14 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     you can define an ``on_error`` handler consisting of a single empty
     :ref:`py:raise`.  Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
+
+    .. note::
+
+        ``on_error`` will only be dispatched to :meth:`Client.event`.
+
+        It will not be received by :meth:`Client.wait_for`, or, if used,
+        :ref:`ext_commands_api_bot` listeners such as
+        :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
 
     :param event: The name of the event that raised the exception.
     :type event: :class:`str`
@@ -203,7 +312,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     .. note::
 
-        This is only for the messages received from the client
+        This is only for the messages sent from the client
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param payload: The message that is about to be passed on to the
@@ -221,6 +330,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
+    This requires :attr:`Intents.typing` to be enabled.
+
     :param channel: The location where the typing originated from.
     :type channel: :class:`abc.Messageable`
     :param user: The user that started typing.
@@ -231,6 +342,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_message(message)
 
     Called when a :class:`Message` is created and sent.
+
+    This requires :attr:`Intents.messages` to be enabled.
 
     .. warning::
 
@@ -253,6 +366,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If this occurs increase the :attr:`Client.max_messages` attribute
     or use the :func:`on_raw_message_delete` event instead.
 
+    This requires :attr:`Intents.messages` to be enabled.
+
     :param message: The deleted message.
     :type message: :class:`Message`
 
@@ -268,6 +383,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If this occurs increase the :attr:`Client.max_messages` attribute
     or use the :func:`on_raw_bulk_message_delete` event instead.
 
+    This requires :attr:`Intents.messages` to be enabled.
+
     :param messages: The messages that have been deleted.
     :type messages: List[:class:`Message`]
 
@@ -279,6 +396,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If the message is found in the message cache,
     it can be accessed via :attr:`RawMessageDeleteEvent.cached_message`
 
+    This requires :attr:`Intents.messages` to be enabled.
+
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageDeleteEvent`
 
@@ -289,6 +408,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     If the messages are found in the message cache,
     they can be accessed via :attr:`RawBulkMessageDeleteEvent.cached_messages`
+
+    This requires :attr:`Intents.messages` to be enabled.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawBulkMessageDeleteEvent`
@@ -314,6 +435,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - The message's embeds were suppressed or unsuppressed.
     - A call message has received an update to its participants or ending time.
 
+    This requires :attr:`Intents.messages` to be enabled.
+
     :param before: The previous version of the message.
     :type before: :class:`Message`
     :param after: The current version of the message.
@@ -335,6 +458,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     denotes an "embed" only edit, which is an edit in which only the embeds are updated by the Discord
     embed server.
 
+    This requires :attr:`Intents.messages` to be enabled.
+
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageUpdateEvent`
 
@@ -348,6 +473,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
 
+    This requires :attr:`Intents.reactions` to be enabled.
+
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
@@ -357,6 +484,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a message has a reaction added. Unlike :func:`on_reaction_add`, this is
     called regardless of the state of the internal message cache.
+
+    This requires :attr:`Intents.reactions` to be enabled.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionActionEvent`
@@ -371,6 +500,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         To get the message being reacted, access it via :attr:`Reaction.message`.
 
+    This requires :attr:`Intents.reactions` to be enabled.
+
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
@@ -381,6 +512,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a reaction removed. Unlike :func:`on_reaction_remove`, this is
     called regardless of the state of the internal message cache.
 
+    This requires :attr:`Intents.reactions` to be enabled.
+
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionActionEvent`
 
@@ -389,6 +522,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has all its reactions removed from it. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear` instead.
+
+    This requires :attr:`Intents.reactions` to be enabled.
 
     :param message: The message that had its reactions cleared.
     :type message: :class:`Message`
@@ -400,6 +535,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has all its reactions removed. Unlike :func:`on_reaction_clear`,
     this is called regardless of the state of the internal message cache.
 
+    This requires :attr:`Intents.reactions` to be enabled.
+
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEvent`
 
@@ -408,6 +545,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a specific reaction removed from it. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
+
+    This requires :attr:`Intents.reactions` to be enabled.
 
     .. versionadded:: 1.3
 
@@ -419,6 +558,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
     regardless of the state of the internal message cache.
 
+    This requires :attr:`Intents.reactions` to be enabled.
+
     .. versionadded:: 1.3
 
     :param payload: The raw event payload data.
@@ -429,12 +570,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called whenever a private channel is deleted or created.
 
+    This requires :attr:`Intents.messages` to be enabled.
+
     :param channel: The private channel that got created or deleted.
     :type channel: :class:`abc.PrivateChannel`
 
 .. function:: on_private_channel_update(before, after)
 
     Called whenever a private group DM is updated. e.g. changed name or topic.
+
+    This requires :attr:`Intents.messages` to be enabled.
 
     :param before: The updated group channel's old info.
     :type before: :class:`GroupChannel`
@@ -457,12 +602,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Note that you can get the guild from :attr:`~abc.GuildChannel.guild`.
 
+    This requires :attr:`Intents.guilds` to be enabled.
+
     :param channel: The guild channel that got created or deleted.
     :type channel: :class:`abc.GuildChannel`
 
 .. function:: on_guild_channel_update(before, after)
 
     Called whenever a guild channel is updated. e.g. changed name, topic, permissions.
+
+    This requires :attr:`Intents.guilds` to be enabled.
 
     :param before: The updated guild channel's old info.
     :type before: :class:`abc.GuildChannel`
@@ -472,6 +621,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_guild_channel_pins_update(channel, last_pin)
 
     Called whenever a message is pinned or unpinned from a guild channel.
+
+    This requires :attr:`Intents.guilds` to be enabled.
 
     :param channel: The guild channel that had its pins updated.
     :type channel: :class:`abc.GuildChannel`
@@ -484,12 +635,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called whenever an integration is created, modified, or removed from a guild.
 
+    This requires :attr:`Intents.integrations` to be enabled.
+
     :param guild: The guild that had its integrations updated.
     :type guild: :class:`Guild`
 
 .. function:: on_webhooks_update(channel)
 
     Called whenever a webhook is created, modified, or removed from a guild channel.
+
+    This requires :attr:`Intents.webhooks` to be enabled.
 
     :param channel: The channel that had its webhooks updated.
     :type channel: :class:`abc.GuildChannel`
@@ -498,6 +653,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
               on_member_remove(member)
 
     Called when a :class:`Member` leaves or joins a :class:`Guild`.
+
+    This requires :attr:`Intents.members` to be enabled.
 
     :param member: The member who joined or left.
     :type member: :class:`Member`
@@ -512,6 +669,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - activity
     - nickname
     - roles
+
+    This requires :attr:`Intents.members` to be enabled.
 
     :param before: The updated member's old info.
     :type before: :class:`Member`
@@ -528,6 +687,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - username
     - discriminator
 
+    This requires :attr:`Intents.members` to be enabled.
+
     :param before: The updated user's old info.
     :type before: :class:`User`
     :param after: The updated user's updated info.
@@ -537,6 +698,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Guild` is either created by the :class:`Client` or when the
     :class:`Client` joins a guild.
+
+    This requires :attr:`Intents.guilds` to be enabled.
 
     :param guild: The guild that was joined.
     :type guild: :class:`Guild`
@@ -555,6 +718,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     In order for this event to be invoked then the :class:`Client` must have
     been part of the guild to begin with. (i.e. it is part of :attr:`Client.guilds`)
 
+    This requires :attr:`Intents.guilds` to be enabled.
+
     :param guild: The guild that got removed.
     :type guild: :class:`Guild`
 
@@ -566,6 +731,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - Changed AFK channel
     - Changed AFK timeout
     - etc
+
+    This requires :attr:`Intents.guilds` to be enabled.
 
     :param before: The guild prior to being updated.
     :type before: :class:`Guild`
@@ -579,12 +746,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     To get the guild it belongs to, use :attr:`Role.guild`.
 
+    This requires :attr:`Intents.guilds` to be enabled.
+
     :param role: The role that was created or deleted.
     :type role: :class:`Role`
 
 .. function:: on_guild_role_update(before, after)
 
     Called when a :class:`Role` is changed guild-wide.
+
+    This requires :attr:`Intents.guilds` to be enabled.
 
     :param before: The updated role's old info.
     :type before: :class:`Role`
@@ -594,6 +765,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_guild_emojis_update(guild, before, after)
 
     Called when a :class:`Guild` adds or removes :class:`Emoji`.
+
+    This requires :attr:`Intents.emojis` to be enabled.
 
     :param guild: The guild who got their emojis updated.
     :type guild: :class:`Guild`
@@ -608,6 +781,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a guild becomes available or unavailable. The guild must have
     existed in the :attr:`Client.guilds` cache.
 
+    This requires :attr:`Intents.guilds` to be enabled.
+
     :param guild: The :class:`Guild` that has changed availability.
 
 .. function:: on_voice_state_update(member, before, after)
@@ -621,6 +796,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a guild administrator.
 
+    This requires :attr:`Intents.voice_states` to be enabled.
+
     :param member: The member whose voice states changed.
     :type member: :class:`Member`
     :param before: The voice state prior to the changes.
@@ -632,6 +809,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when user gets banned from a :class:`Guild`.
 
+    This requires :attr:`Intents.bans` to be enabled.
+
     :param guild: The guild the user got banned from.
     :type guild: :class:`Guild`
     :param user: The user that got banned.
@@ -642,6 +821,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_member_unban(guild, user)
 
     Called when a :class:`User` gets unbanned from a :class:`Guild`.
+
+    This requires :attr:`Intents.bans` to be enabled.
 
     :param guild: The guild the user got unbanned from.
     :type guild: :class:`Guild`
@@ -660,6 +841,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
         attributes will be of :class:`Object` rather than the respective models.
 
+    This requires :attr:`Intents.invites` to be enabled.
+
     :param invite: The invite that was created.
     :type invite: :class:`Invite`
 
@@ -677,6 +860,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         Outside of those two attributes, the only other attribute guaranteed to be
         filled by the Discord gateway for this event is :attr:`Invite.code`.
+
+    This requires :attr:`Intents.invites` to be enabled.
 
     :param invite: The invite that was deleted.
     :type invite: :class:`Invite`
@@ -728,6 +913,8 @@ Utility Functions
 .. autofunction:: discord.utils.escape_mentions
 
 .. autofunction:: discord.utils.resolve_invite
+
+.. autofunction:: discord.utils.resolve_template
 
 .. autofunction:: discord.utils.sleep_until
 
@@ -863,6 +1050,15 @@ of :class:`enum.Enum`.
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
 
+    .. container:: operations
+
+      .. describe:: x == y
+
+          Checks if two messages are equal.
+      .. describe:: x != y
+
+          Checks if two messages are not equal.
+
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
@@ -935,6 +1131,11 @@ of :class:`enum.Enum`.
     .. attribute:: custom
 
         A custom activity type.
+    .. attribute:: competing
+
+        A competing activity type.
+
+        .. versionadded:: 1.5
 
 .. class:: HypeSquadHouse
 
@@ -1005,6 +1206,9 @@ of :class:`enum.Enum`.
     .. attribute:: southafrica
 
         The South Africa region.
+    .. attribute:: south_korea
+
+        The South Korea region.
     .. attribute:: sydney
 
         The Sydney region.
@@ -1857,6 +2061,23 @@ of :class:`enum.Enum`.
         Represents the default avatar with the color red.
         See also :attr:`Colour.red`
 
+.. class:: StickerType
+
+    Represents the type of sticker images.
+
+    .. versionadded:: 1.6
+
+    .. attribute:: png
+
+        Represents a sticker with a png image.
+
+    .. attribute:: apng
+
+        Represents a sticker with an apng image.
+
+    .. attribute:: lottie
+
+        Represents a sticker with a lottie image.
 
 Async Iterator
 ----------------
@@ -1932,6 +2153,26 @@ Certain utilities make working with async iterators easier, detailed below.
         :return: A list of every element in the async iterator.
         :rtype: list
 
+    .. method:: chunk(max_size)
+
+        Collects items into chunks of up to a given maximum size.
+        Another :class:`AsyncIterator` is returned which collects items into
+        :class:`list`\s of a given size. The maximum chunk size must be a positive integer.
+
+        .. versionadded:: 1.6
+
+        Collecting groups of users: ::
+
+            async for leader, *users in reaction.users().chunk(3):
+                ...
+
+        .. warning::
+
+            The last chunk collected may not be as large as ``max_size``.
+
+        :param max_size: The size of individual chunks.
+        :rtype: :class:`AsyncIterator`
+
     .. method:: map(func)
 
         This is similar to the built-in :func:`map <py:map>` function. Another
@@ -1976,8 +2217,18 @@ Working with :meth:`Guild.audit_logs` is a complicated process with a lot of mac
 involved. The library attempts to make it easy to use and friendly. In order to accomplish
 this goal, it must make use of a couple of data classes that aid in this goal.
 
+AuditLogEntry
+~~~~~~~~~~~~~~~
+
+.. attributetable:: AuditLogEntry
+
 .. autoclass:: AuditLogEntry
     :members:
+
+AuditLogChanges
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AuditLogChanges
 
 .. class:: AuditLogChanges
 
@@ -2022,6 +2273,11 @@ this goal, it must make use of a couple of data classes that aid in this goal.
         +----------------------------------------+--------------------------------------------------+
         | ``None``                               | No attributes are set.                           |
         +----------------------------------------+--------------------------------------------------+
+
+AuditLogDiff
+~~~~~~~~~~~~~
+
+.. attributetable:: AuditLogDiff
 
 .. class:: AuditLogDiff
 
@@ -2368,7 +2624,20 @@ Webhook Support
 
 discord.py offers support for creating, editing, and executing webhooks through the :class:`Webhook` class.
 
+Webhook
+~~~~~~~~~
+
+.. attributetable:: Webhook
+
 .. autoclass:: Webhook
+    :members:
+
+WebhookMessage
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: WebhookMessage
+
+.. autoclass:: WebhookMessage
     :members:
 
 Adapters
@@ -2399,17 +2668,42 @@ They are mainly there for usage with :func:`py:isinstance` and :func:`py:issubcl
 This library has a module related to abstract base classes, some of which are actually from the :doc:`abc <py:library/abc>` standard
 module, others which are not.
 
+Snowflake
+~~~~~~~~~~
+
+.. attributetable:: discord.abc.Snowflake
+
 .. autoclass:: discord.abc.Snowflake
     :members:
+
+User
+~~~~~
+
+.. attributetable:: discord.abc.User
 
 .. autoclass:: discord.abc.User
     :members:
 
+PrivateChannel
+~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.abc.PrivateChannel
+
 .. autoclass:: discord.abc.PrivateChannel
     :members:
 
+GuildChannel
+~~~~~~~~~~~~~
+
+.. attributetable:: discord.abc.GuildChannel
+
 .. autoclass:: discord.abc.GuildChannel
     :members:
+
+Messageable
+~~~~~~~~~~~~
+
+.. attributetable:: discord.abc.Messageable
 
 .. autoclass:: discord.abc.Messageable
     :members:
@@ -2420,6 +2714,11 @@ module, others which are not.
 
     .. automethod:: discord.abc.Messageable.typing
         :async-with:
+
+Connectable
+~~~~~~~~~~~~
+
+.. attributetable:: discord.abc.Connectable
 
 .. autoclass:: discord.abc.Connectable
 
@@ -2453,6 +2752,8 @@ the user of the library.
 ClientUser
 ~~~~~~~~~~~~
 
+.. attributetable:: ClientUser
+
 .. autoclass:: ClientUser()
     :members:
     :inherited-members:
@@ -2460,11 +2761,15 @@ ClientUser
 Relationship
 ~~~~~~~~~~~~~~
 
+.. attributetable:: Relationship
+
 .. autoclass:: Relationship()
     :members:
 
 User
 ~~~~~
+
+.. attributetable:: User
 
 .. autoclass:: User()
     :members:
@@ -2480,11 +2785,15 @@ User
 Attachment
 ~~~~~~~~~~~
 
+.. attributetable:: Attachment
+
 .. autoclass:: Attachment()
     :members:
 
 Asset
 ~~~~~
+
+.. attributetable:: Asset
 
 .. autoclass:: Asset()
     :members:
@@ -2492,11 +2801,24 @@ Asset
 Message
 ~~~~~~~
 
+.. attributetable:: Message
+
 .. autoclass:: Message()
     :members:
 
+DeletedReferencedMessage
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: DeletedReferencedMessage
+
+.. autoclass:: DeletedReferencedMessage()
+    :members:
+
+
 Reaction
 ~~~~~~~~~
+
+.. attributetable:: Reaction
 
 .. autoclass:: Reaction()
     :members:
@@ -2508,17 +2830,23 @@ Reaction
 CallMessage
 ~~~~~~~~~~~~
 
+.. attributetable:: CallMessage
+
 .. autoclass:: CallMessage()
     :members:
 
 GroupCall
 ~~~~~~~~~~
 
+.. attributetable:: GroupCall
+
 .. autoclass:: GroupCall()
     :members:
 
 Guild
 ~~~~~~
+
+.. attributetable:: Guild
 
 .. autoclass:: Guild()
     :members:
@@ -2539,6 +2867,8 @@ Integration
 Member
 ~~~~~~
 
+.. attributetable:: Member
+
 .. autoclass:: Member()
     :members:
     :inherited-members:
@@ -2553,11 +2883,15 @@ Member
 Spotify
 ~~~~~~~~
 
+.. attributetable:: Spotify
+
 .. autoclass:: Spotify()
     :members:
 
 VoiceState
 ~~~~~~~~~~~
+
+.. attributetable:: VoiceState
 
 .. autoclass:: VoiceState()
     :members:
@@ -2565,11 +2899,15 @@ VoiceState
 Emoji
 ~~~~~
 
+.. attributetable:: Emoji
+
 .. autoclass:: Emoji()
     :members:
 
 PartialEmoji
 ~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialEmoji
 
 .. autoclass:: PartialEmoji()
     :members:
@@ -2577,11 +2915,21 @@ PartialEmoji
 Role
 ~~~~~
 
+.. attributetable:: Role
+
 .. autoclass:: Role()
+    :members:
+
+RoleTags
+~~~~~~~~~~
+
+.. autoclass:: RoleTags()
     :members:
 
 TextChannel
 ~~~~~~~~~~~~
+
+.. attributetable:: TextChannel
 
 .. autoclass:: TextChannel()
     :members:
@@ -2597,6 +2945,8 @@ TextChannel
 VoiceChannel
 ~~~~~~~~~~~~~
 
+.. attributetable:: VoiceChannel
+
 .. autoclass:: VoiceChannel()
     :members:
     :inherited-members:
@@ -2604,12 +2954,16 @@ VoiceChannel
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
 
+.. attributetable:: CategoryChannel
+
 .. autoclass:: CategoryChannel()
     :members:
     :inherited-members:
 
 DMChannel
 ~~~~~~~~~
+
+.. attributetable:: DMChannel
 
 .. autoclass:: DMChannel()
     :members:
@@ -2625,6 +2979,8 @@ DMChannel
 GroupChannel
 ~~~~~~~~~~~~
 
+.. attributetable:: GroupChannel
+
 .. autoclass:: GroupChannel()
     :members:
     :inherited-members:
@@ -2639,11 +2995,15 @@ GroupChannel
 PartialInviteGuild
 ~~~~~~~~~~~~~~~~~~~
 
+.. attributetable:: PartialInviteGuild
+
 .. autoclass:: PartialInviteGuild()
     :members:
 
 PartialInviteChannel
 ~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialInviteChannel
 
 .. autoclass:: PartialInviteChannel()
     :members:
@@ -2651,11 +3011,15 @@ PartialInviteChannel
 Invite
 ~~~~~~~
 
+.. attributetable:: Invite
+
 .. autoclass:: Invite()
     :members:
 
 Template
 ~~~~~~~~~
+
+.. attributetable:: Template
 
 .. autoclass:: Template()
     :members:
@@ -2663,11 +3027,15 @@ Template
 WidgetChannel
 ~~~~~~~~~~~~~~~
 
+.. attributetable:: WidgetChannel
+
 .. autoclass:: WidgetChannel()
     :members:
 
 WidgetMember
 ~~~~~~~~~~~~~
+
+.. attributetable:: WidgetMember
 
 .. autoclass:: WidgetMember()
     :members:
@@ -2676,11 +3044,23 @@ WidgetMember
 Widget
 ~~~~~~~
 
+.. attributetable:: Widget
+
 .. autoclass:: Widget()
+    :members:
+
+Sticker
+~~~~~~~~~~~~~~~
+
+.. attributetable:: Sticker
+
+.. autoclass:: Sticker()
     :members:
 
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawMessageDeleteEvent
 
 .. autoclass:: RawMessageDeleteEvent()
     :members:
@@ -2688,11 +3068,15 @@ RawMessageDeleteEvent
 RawBulkMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. attributetable:: RawBulkMessageDeleteEvent
+
 .. autoclass:: RawBulkMessageDeleteEvent()
     :members:
 
 RawMessageUpdateEvent
 ~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawMessageUpdateEvent
 
 .. autoclass:: RawMessageUpdateEvent()
     :members:
@@ -2700,17 +3084,23 @@ RawMessageUpdateEvent
 RawReactionActionEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+.. attributetable:: RawReactionActionEvent
+
 .. autoclass:: RawReactionActionEvent()
     :members:
 
 RawReactionClearEvent
 ~~~~~~~~~~~~~~~~~~~~~~
 
+.. attributetable:: RawReactionClearEvent
+
 .. autoclass:: RawReactionClearEvent()
     :members:
 
 RawReactionClearEmojiEvent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawReactionClearEmojiEvent
 
 .. autoclass:: RawReactionClearEmojiEvent()
     :members:
@@ -2724,7 +3114,7 @@ Data Classes
 Some classes are just there to be data containers, this lists them.
 
 Unlike :ref:`models <discord_api_models>` you are allowed to create
-these yourself, even if they can also be used to hold attributes.
+most of these yourself, even if they can also be used to hold attributes.
 
 Nearly all classes here have :ref:`py:slots` defined which means that it is
 impossible to have dynamic attributes to the data classes.
@@ -2736,11 +3126,15 @@ dynamic attributes in mind.
 Object
 ~~~~~~~
 
+.. attributetable:: Object
+
 .. autoclass:: Object
     :members:
 
 Embed
 ~~~~~~
+
+.. attributetable:: Embed
 
 .. autoclass:: Embed
     :members:
@@ -2748,11 +3142,39 @@ Embed
 AllowedMentions
 ~~~~~~~~~~~~~~~~~
 
+.. attributetable:: AllowedMentions
+
 .. autoclass:: AllowedMentions
+    :members:
+
+MessageReference
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MessageReference
+    :members:
+
+PartialMessage
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PartialMessage
+    :members:
+
+Intents
+~~~~~~~~~~
+
+.. autoclass:: Intents
+    :members:
+
+MemberCacheFlags
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MemberCacheFlags
     :members:
 
 File
 ~~~~~
+
+.. attributetable:: File
 
 .. autoclass:: File
     :members:
@@ -2760,11 +3182,15 @@ File
 Colour
 ~~~~~~
 
+.. attributetable:: Colour
+
 .. autoclass:: Colour
     :members:
 
 BaseActivity
 ~~~~~~~~~~~~~~
+
+.. attributetable:: BaseActivity
 
 .. autoclass:: BaseActivity
     :members:
@@ -2772,11 +3198,15 @@ BaseActivity
 Activity
 ~~~~~~~~~
 
+.. attributetable:: Activity
+
 .. autoclass:: Activity
     :members:
 
 Game
 ~~~~~
+
+.. attributetable:: Game
 
 .. autoclass:: Game
     :members:
@@ -2784,11 +3214,15 @@ Game
 Streaming
 ~~~~~~~~~~~
 
+.. attributetable:: Streaming
+
 .. autoclass:: Streaming
     :members:
 
 CustomActivity
 ~~~~~~~~~~~~~~~
+
+.. attributetable:: CustomActivity
 
 .. autoclass:: CustomActivity
     :members:
@@ -2796,33 +3230,42 @@ CustomActivity
 Permissions
 ~~~~~~~~~~~~
 
+.. attributetable:: Permissions
+
 .. autoclass:: Permissions
     :members:
 
 PermissionOverwrite
 ~~~~~~~~~~~~~~~~~~~~
 
+.. attributetable:: PermissionOverwrite
+
 .. autoclass:: PermissionOverwrite
+    :members:
+
+ShardInfo
+~~~~~~~~~~~
+
+.. autoclass:: ShardInfo()
     :members:
 
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: SystemChannelFlags
+.. autoclass:: SystemChannelFlags()
     :members:
 
 MessageFlags
 ~~~~~~~~~~~~
 
-.. autoclass:: MessageFlags
+.. autoclass:: MessageFlags()
     :members:
 
 PublicUserFlags
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: PublicUserFlags
+.. autoclass:: PublicUserFlags()
     :members:
-
 
 Exceptions
 ------------
@@ -2844,6 +3287,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: NotFound
 
+.. autoexception:: DiscordServerError
+
 .. autoexception:: InvalidData
 
 .. autoexception:: InvalidArgument
@@ -2851,6 +3296,8 @@ The following exceptions are thrown by the library.
 .. autoexception:: GatewayNotFound
 
 .. autoexception:: ConnectionClosed
+
+.. autoexception:: PrivilegedIntentsRequired
 
 .. autoexception:: discord.opus.OpusError
 
@@ -2868,8 +3315,10 @@ Exception Hierarchy
                 - :exc:`InvalidArgument`
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
+                - :exc:`PrivilegedIntentsRequired`
             - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
                 - :exc:`NotFound`
+                - :exc:`DiscordServerError`
