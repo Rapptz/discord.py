@@ -281,7 +281,7 @@ class MessageReference:
         The guild id of the message referenced.
     resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]]
         The message that this reference resolved to. If this is ``None``
-        then the original message was not fetched either due to the discord API
+        then the original message was not fetched either due to the Discord API
         not attempting to resolve it or it not being available at the time of creation.
         If the message was resolved at a prior point but has since been deleted then
         this will be of type :class:`DeletedReferencedMessage`.
@@ -430,7 +430,7 @@ class Message(Hashable):
         .. warning::
 
             The order of the mentions list is not in any particular order so you should
-            not rely on it. This is a discord limitation, not one with the library.
+            not rely on it. This is a Discord limitation, not one with the library.
     channel_mentions: List[:class:`abc.GuildChannel`]
         A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
         then the list is always empty.
