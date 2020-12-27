@@ -164,7 +164,7 @@ Historically however, thanks to:
   --attribute-table-entry-hover-background: var(--grey-6);
   --attribute-table-entry-hover-text: var(--blue-1);
   --attribute-table-badge: var(--grey-4);
-  --highlighted-text: rgba(252, 233, 103, 0.4);
+  --highlighted-text: rgba(250, 166, 26, 0.2);
 }
 
 img[src$="snake_dark.svg"]  {
