@@ -781,14 +781,19 @@ class Command(_BaseCommand):
         if self._max_concurrency is not None:
             await self._max_concurrency.acquire(ctx)
 
-        if self.cooldown_after_parsing:
-            await self._parse_arguments(ctx)
-            self._prepare_cooldowns(ctx)
-        else:
-            self._prepare_cooldowns(ctx)
-            await self._parse_arguments(ctx)
+        try:
+            if self.cooldown_after_parsing:
+                await self._parse_arguments(ctx)
+                self._prepare_cooldowns(ctx)
+            else:
+                self._prepare_cooldowns(ctx)
+                await self._parse_arguments(ctx)
 
-        await self.call_before_hooks(ctx)
+            await self.call_before_hooks(ctx)
+        except:
+            if self._max_concurrency is not None:
+                await self._max_concurrency.release(ctx)
+            raise
 
     def is_on_cooldown(self, ctx):
         """Checks whether the command is currently on cooldown.
@@ -848,12 +853,7 @@ class Command(_BaseCommand):
         return 0.0
 
     async def invoke(self, ctx):
-        try:
-            await self.prepare(ctx)
-        except:
-            if self._max_concurrency is not None:
-                await self._max_concurrency.release(ctx)
-            raise
+        await self.prepare(ctx)
 
         # terminate the invoked_subcommand chain.
         # since we're in a regular command (and not a group) then
