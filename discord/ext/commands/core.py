@@ -1143,9 +1143,13 @@ class GroupMixin:
             raise CommandRegistrationError(command.name)
 
         self.all_commands[command.name] = command
+        to_undo = [command.name]
         for alias in command.aliases:
             if alias in self.all_commands:
+                for name in to_undo:
+                    self.all_commands.pop(name)
                 raise CommandRegistrationError(alias, alias_conflict=True)
+            to_undo.append(alias)
             self.all_commands[alias] = command
 
     def remove_command(self, name):
