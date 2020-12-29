@@ -268,7 +268,7 @@ class AsyncWebhookAdapter(WebhookAdapter):
 
         # transform into Message object
         # Make sure to coerce the state to the partial one to allow message edits/delete
-        state = _PartialWebhookState(self, self.webhook)
+        state = _PartialWebhookState(self, self.webhook, parent=self.webhook._state)
         return WebhookMessage(data=data, state=state, channel=self.webhook.channel)
 
 class RequestsWebhookAdapter(WebhookAdapter):
@@ -372,7 +372,7 @@ class RequestsWebhookAdapter(WebhookAdapter):
 
         # transform into Message object
         # Make sure to coerce the state to the partial one to allow message edits/delete
-        state = _PartialWebhookState(self, self.webhook)
+        state = _PartialWebhookState(self, self.webhook, parent=self.webhook._state)
         return WebhookMessage(data=response, state=state, channel=self.webhook.channel)
 
 class _FriendlyHttpAttributeErrorHelper:
@@ -382,10 +382,16 @@ class _FriendlyHttpAttributeErrorHelper:
         raise AttributeError('PartialWebhookState does not support http methods.')
 
 class _PartialWebhookState:
-    __slots__ = ('loop', 'parent')
+    __slots__ = ('loop', 'parent', '_webhook')
 
-    def __init__(self, adapter, parent):
-        self.parent = parent
+    def __init__(self, adapter, webhook, parent):
+        self._webhook = webhook
+
+        if isinstance(parent, self.__class__):
+            self.parent = None
+        else:
+            self.parent = parent
+
         # Fetch the loop from the adapter if it's there
         try:
             self.loop = adapter.loop
@@ -404,11 +410,17 @@ class _PartialWebhookState:
 
     @property
     def http(self):
+        if self.parent is not None:
+            return self.parent.http
+
         # Some data classes assign state.http and that should be kosher
         # however, using it should result in a late-binding error.
         return _FriendlyHttpAttributeErrorHelper()
 
     def __getattr__(self, attr):
+        if self.parent is not None:
+            return getattr(self.parent, attr)
+
         raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
 
 class WebhookMessage(Message):
@@ -456,17 +468,17 @@ class WebhookMessage(Message):
             ``embeds`` was invalid or there was no token associated with
             this webhook.
         """
-        return self._state.parent.edit_message(self.id, **fields)
+        return self._state._webhook.edit_message(self.id, **fields)
 
     def _delete_delay_sync(self, delay):
         time.sleep(delay)
-        return self._state.parent.delete_message(self.id)
+        return self._state._webhook.delete_message(self.id)
 
     async def _delete_delay_async(self, delay):
         async def inner_call():
             await asyncio.sleep(delay)
             try:
-                await self._state.parent.delete_message(self.id)
+                await self._state._webhook.delete_message(self.id)
             except HTTPException:
                 pass
 
@@ -597,7 +609,7 @@ class Webhook(Hashable):
         self.name = data.get('name')
         self.avatar = data.get('avatar')
         self.token = data.get('token')
-        self._state = state or _PartialWebhookState(adapter, self)
+        self._state = state or _PartialWebhookState(adapter, self, parent=state)
         self._adapter = adapter
         self._adapter._prepare(self)
 
