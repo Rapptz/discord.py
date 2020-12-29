@@ -1143,13 +1143,10 @@ class GroupMixin:
             raise CommandRegistrationError(command.name)
 
         self.all_commands[command.name] = command
-        to_undo = [command.name]
         for alias in command.aliases:
             if alias in self.all_commands:
-                for name in to_undo:
-                    self.all_commands.pop(name)
+                self.remove_command(command.name)
                 raise CommandRegistrationError(alias, alias_conflict=True)
-            to_undo.append(alias)
             self.all_commands[alias] = command
 
     def remove_command(self, name):
@@ -1181,7 +1178,12 @@ class GroupMixin:
 
         # we're not removing the alias so let's delete the rest of them.
         for alias in command.aliases:
-            self.all_commands.pop(alias, None)
+            cmd = self.all_commands.pop(alias, None)
+            # in the case of a CommandRegistrationError, an alias might conflict
+            # with an already existing command. If this is the case, we want to
+            # make sure the pre-existing command is not removed.
+            if cmd not in (None, command):
+                self.all_commands[alias] = cmd
         return command
 
     def walk_commands(self):
