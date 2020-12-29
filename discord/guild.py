@@ -2128,6 +2128,9 @@ class Guild(Hashable):
         presences: :class:`bool`
             Whether to request for presences to be provided. This defaults
             to ``False``.
+
+            .. versionadded:: 1.6
+
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
@@ -2143,12 +2146,17 @@ class Guild(Hashable):
             The query timed out waiting for the members.
         ValueError
             Invalid parameters were passed to the function
+        ClientException
+            The presences intent is not enabled.
 
         Returns
         --------
         List[:class:`Member`]
             The list of members that have matched the query.
         """
+
+        if not self._state._intents.presences:
+            raise ClientException('Intents.presences must be enabled to use this.')
 
         if query is None:
             if query == '':
@@ -2160,6 +2168,7 @@ class Guild(Hashable):
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
             
+        limit = min(100, limit or 5)
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache)
 
     async def change_voice_state(self, *, channel, self_mute=False, self_deaf=False):

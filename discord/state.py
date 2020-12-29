@@ -382,9 +382,9 @@ class ConnectionState:
 
         return channel or Object(id=channel_id), guild
 
-    async def chunker(self, guild_id, query='', limit=0, *, nonce=None):
+    async def chunker(self, guild_id, query='', limit=0, presences=False, *, nonce=None):
         ws = self._get_websocket(guild_id) # This is ignored upstream
-        await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
+        await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
     async def query_members(self, guild, query, limit, user_ids, cache, presences):
         guild_id = guild.id
@@ -1132,9 +1132,9 @@ class AutoShardedConnectionState(ConnectionState):
                 channel = new_guild.get_channel(channel_id) or Object(id=channel_id)
                 msg._rebind_channel_reference(channel)
 
-    async def chunker(self, guild_id, query='', limit=0, *, shard_id=None, nonce=None):
+    async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)
-        await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
+        await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
     async def _delay_ready(self):
         await self.shards_launched.wait()
