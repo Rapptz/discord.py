@@ -669,6 +669,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - activity
     - nickname
     - roles
+    - pending
 
     This requires :attr:`Intents.members` to be enabled.
 
