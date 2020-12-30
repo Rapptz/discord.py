@@ -2155,7 +2155,7 @@ class Guild(Hashable):
             The list of members that have matched the query.
         """
 
-        if not self._state._intents.presences:
+        if presences and not self._state._intents.presences:
             raise ClientException('Intents.presences must be enabled to use this.')
 
         if query is None:
