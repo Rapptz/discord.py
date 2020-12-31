@@ -6,10 +6,11 @@ class RoleReactClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        global partial_emoji_1, partial_emoji_2  # Define these in your code.
         self.role_message_id = 0  # ID of message that can be reacted to to add role
         self.emoji_to_role = {
-            "partial_emoji_1": 0,  # ID of role associated with partial emoji object 'partial_emoji_1'
-            "partial_emoji_2": 0  # ID of role associated with partial emoji object 'partial_emoji_2'
+            partial_emoji_1: 0,  # ID of role associated with partial emoji object 'partial_emoji_1'
+            partial_emoji_2: 0  # ID of role associated with partial emoji object 'partial_emoji_2'
         }
 
     async def on_raw_reaction_add(self, payload):
