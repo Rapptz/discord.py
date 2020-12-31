@@ -17,4 +17,4 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest . || true
       - run: shopt -s globstar && pyupgrade --py36-plus **/*.py || true
-      - run: safety check || true
+      - run: safety check
