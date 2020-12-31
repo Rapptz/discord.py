@@ -382,11 +382,11 @@ class ConnectionState:
 
         return channel or Object(id=channel_id), guild
 
-    async def chunker(self, guild_id, query='', limit=0, *, nonce=None):
+    async def chunker(self, guild_id, query='', limit=0, presences=False, *, nonce=None):
         ws = self._get_websocket(guild_id) # This is ignored upstream
-        await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
+        await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
-    async def query_members(self, guild, query, limit, user_ids, cache):
+    async def query_members(self, guild, query, limit, user_ids, cache, presences):
         guild_id = guild.id
         ws = self._get_websocket(guild_id)
         if ws is None:
@@ -397,7 +397,7 @@ class ConnectionState:
 
         try:
             # start the query operation
-            await ws.request_chunks(guild_id, query=query, limit=limit, user_ids=user_ids, nonce=request.nonce)
+            await ws.request_chunks(guild_id, query=query, limit=limit, user_ids=user_ids, presences=presences, nonce=request.nonce)
             return await asyncio.wait_for(request.wait(), timeout=30.0)
         except asyncio.TimeoutError:
             log.warning('Timed out waiting for chunks with query %r and limit %d for guild_id %d', query, limit, guild_id)
@@ -967,8 +967,19 @@ class ConnectionState:
     def parse_guild_members_chunk(self, data):
         guild_id = int(data['guild_id'])
         guild = self._get_guild(guild_id)
+        presences = data.get('presences', [])
+
         members = [Member(guild=guild, data=member, state=self) for member in data.get('members', [])]
         log.debug('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
+
+        if presences:
+            member_dict = {str(member.id): member for member in members}
+            for presence in presences:
+                user = presence['user']
+                member_id = user['id']
+                member = member_dict.get(member_id)
+                member._presence_update(presence, user)
+
         complete = data.get('chunk_index', 0) + 1 == data.get('chunk_count')
         self.process_chunk_requests(guild_id, data.get('nonce'), members, complete)
 
@@ -1121,9 +1132,9 @@ class AutoShardedConnectionState(ConnectionState):
                 channel = new_guild.get_channel(channel_id) or Object(id=channel_id)
                 msg._rebind_channel_reference(channel)
 
-    async def chunker(self, guild_id, query='', limit=0, *, shard_id=None, nonce=None):
+    async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)
-        await ws.request_chunks(guild_id, query=query, limit=limit, nonce=nonce)
+        await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
     async def _delay_ready(self):
         await self.shards_launched.wait()

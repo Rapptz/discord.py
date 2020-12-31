@@ -2108,7 +2108,7 @@ class Guild(Hashable):
 
         return await self._state.chunk_guild(self, cache=cache)
 
-    async def query_members(self, query=None, *, limit=5, user_ids=None, cache=True):
+    async def query_members(self, query=None, *, limit=5, user_ids=None, presences=False, cache=True):
         """|coro|
 
         Request members that belong to this guild whose username starts with
@@ -2125,6 +2125,12 @@ class Guild(Hashable):
         limit: :class:`int`
             The maximum number of members to send back. This must be
             a number between 5 and 100.
+        presences: :class:`bool`
+            Whether to request for presences to be provided. This defaults
+            to ``False``.
+
+            .. versionadded:: 1.6
+
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
@@ -2140,12 +2146,17 @@ class Guild(Hashable):
             The query timed out waiting for the members.
         ValueError
             Invalid parameters were passed to the function
+        ClientException
+            The presences intent is not enabled.
 
         Returns
         --------
         List[:class:`Member`]
             The list of members that have matched the query.
         """
+
+        if presences and not self._state._intents.presences:
+            raise ClientException('Intents.presences must be enabled to use this.')
 
         if query is None:
             if query == '':
@@ -2156,9 +2167,9 @@ class Guild(Hashable):
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
-
+            
         limit = min(100, limit or 5)
-        return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, cache=cache)
+        return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache)
 
     async def change_voice_state(self, *, channel, self_mute=False, self_deaf=False):
         """|coro|
