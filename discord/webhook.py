@@ -513,7 +513,7 @@ class WebhookMessage(Message):
             else:
                 return self._delete_delay_sync(delay)
 
-        return self._state.parent.delete_message(self.id)
+        return self._state._webhook.delete_message(self.id)
 
 class Webhook(Hashable):
     """Represents a Discord webhook.
