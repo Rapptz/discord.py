@@ -35,7 +35,7 @@ Creating a Bot account is a pretty straightforward process.
 
 7. Copy the token using the "Copy" button.
 
-    - **This is not the Client Secret at the General Information page**
+    - **This is not the Client Secret at the General Information page.**
 
     .. warning::
 
