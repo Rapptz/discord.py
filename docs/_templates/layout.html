@@ -67,7 +67,7 @@
         <a onclick="mobileSearch.close();" title="{{ _('Close') }}" id="close-search" class="mobile-only" hidden><span class="material-icons">close</span></a>
       </nav>
       <nav class="mobile-only">
-        <form role="search" class="search" action="search.html" method="get">
+        <form role="search" class="search" action="{{ pathto('search') }}" method="get">
           <div class="search-wrapper">
             <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
             <button type="submit">
