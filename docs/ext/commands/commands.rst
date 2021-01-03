@@ -713,7 +713,7 @@ Global Checks
 Sometimes we want to apply a check to **every** command, not just certain commands. The library supports this as well
 using the global check concept.
 
-Global checks work similarly to regular checks except they are registered with the :func:`.Bot.check` decorator.
+Global checks work similarly to regular checks except they are registered with the :meth:`.Bot.check` decorator.
 
 For example, to block all DMs we could do the following:
 
