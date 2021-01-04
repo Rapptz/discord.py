@@ -96,7 +96,7 @@ msgid ""
 msgstr ""
 "もしロギングを有効にしている場合、ライブラリはブロッキングが起きていることを次のメッセージで警告しようと試みます: ``Heartbeat "
 "blocked for more than N seconds.`` "
-"ロギングを有効にするには、:ref:`logging_setup`をご覧ください。"
+"ロギングを有効にするには、:ref:`logging_setup` をご覧ください。"
 
 #: ../../faq.rst:45
 msgid ""
