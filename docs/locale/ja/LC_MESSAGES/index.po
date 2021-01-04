@@ -73,7 +73,7 @@ msgstr "**Discordで動かす:** "
 #: ../../index.rst:31
 msgid "**Examples:**"
 "Many examples are available in the :resource:`repository <examples>`."
-msgstr "**例**: 沢山の例が :resource:`repository <examples>` にあります。"
+msgstr "**例:** 沢山の例が :resource:`repository <examples>` にあります。"
 
 #: ../../index.rst:33
 msgid "Getting help"
