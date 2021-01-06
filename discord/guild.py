@@ -1084,6 +1084,9 @@ class Guild(Hashable):
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
         system_channel_flags: :class:`SystemChannelFlags`
             The new system channel settings to use with the new system channel.
+        preferred_locale: :class:`str`
+            The new preferred locale for the guild. Used as the primary language in the guild.
+            If set, this must be an ISO 639 code, e.g. ``en-US`` or ``ja`` or ``zh-CN``.
         rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
             guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
@@ -2167,7 +2170,7 @@ class Guild(Hashable):
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
-            
+
         limit = min(100, limit or 5)
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache)
 
