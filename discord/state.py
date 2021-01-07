@@ -1074,7 +1074,7 @@ class ConnectionState:
             self.dispatch('relationship_remove', old)
 
     def _get_reaction_user(self, channel, user_id):
-        if isinstance(channel, TextChannel):
+        if self.intents.members and isinstance(channel, TextChannel):
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 
