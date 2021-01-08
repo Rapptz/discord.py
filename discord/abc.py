@@ -659,6 +659,25 @@ class GuildChannel:
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
+    async def add_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+        """|coro|
+        
+        Same as `Channel.set_permissions` except it adds the channel overwrites instead of overwriting them.
+        """
+        channel_perms = self.overwrites_for(target)
+        
+        if isinstance(overwrite, _Undefined):
+            if len(permissions) == 0:
+                raise InvalidArgument('No overwrite provided.')
+            new_perms = permissions
+        else:
+            if len(permissions) > 0:
+                raise InvalidArgument('Cannot mix overwrite and keyword arguments.')
+            new_perms = dict(overwrite.pair())
+        
+        channel_perms.update(**new_perms)
+        await self.set_permissions(target, overwrite=channel_perms, reason=reason)
+
     async def _clone_impl(self, base_attrs, *, name=None, reason=None):
         base_attrs['permission_overwrites'] = [
             x._asdict() for x in self._overwrites
