@@ -23,12 +23,12 @@ New Features
 
 - An entirely redesigned documentation. This was the cumulation of multiple months of effort.
     - There's now a dark theme, feel free to navigate to the cog on the screen to change your setting, though this should be automatic.
-- Add support for :meth:`AppInfo.icon_url_as` and :meth:`ApInfo.cover_image_url_as` (:issue:`5888`)
+- Add support for :meth:`AppInfo.icon_url_as` and :meth:`AppInfo.cover_image_url_as` (:issue:`5888`)
 - Add :meth:`Colour.random` to get a random colour (:issue:`6067`)
 - Add support for stickers via :class:`Sticker` (:issue:`5946`)
 - Add support for replying via :meth:`Message.reply` (:issue:`6061`)
     - This also comes with the :attr:`AllowedMentions.replied_user` setting.
-    - :meth:`Message.send` can now accept a :class:`MessageReference`.
+    - :meth:`abc.Messageable.send` can now accept a :class:`MessageReference`.
     - :class:`MessageReference` can now be constructed by users.
     - :meth:`Message.to_reference` can now convert a message to a :class:`MessageReference`.
 - Add support for getting the replied to resolved message through :attr:`MessageReference.resolved`.
@@ -40,6 +40,7 @@ New Features
     - :meth:`Role.is_bot_managed` to check if a role is a bot role (i.e. the automatically created role for bots).
     - :meth:`Role.is_integration` to check if a role is role created by an integration.
 - Add :meth:`Client.is_ws_ratelimited` to check if the websocket is rate limited.
+    - :meth:`ShardInfo.is_ws_ratelimited` is the equivalent for checking a specific shard.
 - Add support for chunking an :class:`AsyncIterator` through :meth:`AsyncIterator.chunk` (:issue:`6100`, :issue:`6082`)
 - Add :attr:`PartialEmoji.created_at` (:issue:`6128`)
 - Add support for editing and deleting webhook sent messages (:issue:`6058`)
