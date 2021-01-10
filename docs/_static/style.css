@@ -582,10 +582,14 @@ div.modal input {
 
 #to-top {
   position: fixed;
-  bottom: 90px;
+  bottom: 50px;
   right: 20px;
 
   cursor: pointer;
+}
+
+#to-top.is-rtd {
+  bottom: 90px;
 }
 
 #to-top > span {
