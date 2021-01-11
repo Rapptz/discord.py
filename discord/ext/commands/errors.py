@@ -289,7 +289,7 @@ class ChannelNotFound(BadArgument):
 
     Attributes
     -----------
-    channel: :class:`str`
+    argument: :class:`str`
         The channel supplied by the caller that was not found
     """
     def __init__(self, argument):
