@@ -1176,6 +1176,11 @@ class GroupMixin:
             # we're removing an alias so we don't want to remove the rest
             return command
 
+        if command.cog is not None:
+            # removes the command instance from the cog.
+            cog = command.cog
+            cog.__cog_commands__ = tuple(c for c in cog.__cog_commands__ if c is not command)
+
         # we're not removing the alias so let's delete the rest of them.
         for alias in command.aliases:
             cmd = self.all_commands.pop(alias, None)
