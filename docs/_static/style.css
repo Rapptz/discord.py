@@ -97,6 +97,8 @@ Historically however, thanks to:
   --rtd-ad-background: var(--grey-2);
   --rtd-ad-main-text: var(--grey-6);
   --rtd-ad-small-text: var(--grey-4);
+  --rtd-version-background: #272525;
+  --rtd-version-main-text: #fcfcfc;
   --attribute-table-title: var(--grey-6);
   --attribute-table-entry-border: var(--grey-3);
   --attribute-table-entry-text: var(--grey-5);
@@ -574,6 +576,37 @@ div.modal-content > span.close:focus {
 
 div.modal input {
   cursor: pointer;
+}
+
+/* scroll to top button */
+
+#to-top {
+  position: fixed;
+  bottom: 50px;
+  right: 20px;
+
+  cursor: pointer;
+}
+
+#to-top.is-rtd {
+  bottom: 90px;
+}
+
+#to-top > span {
+  display: block;
+
+  width: auto;
+  height: 30px;
+  padding: 0 6px;
+
+  background-color: var(--rtd-version-background);
+  color: var(--rtd-version-main-text);
+}
+
+#to-top span {
+  line-height: 30px;
+  font-size: 90%;
+  text-align: center;
 }
 
 /* copy button */
