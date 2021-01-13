@@ -644,7 +644,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         You must have the :attr:`~Permissions.manage_roles` permission to
         use this, and the added :class:`Role`\s must appear lower in the list
-        of roles than the highest role of the caller.
+        of roles than the highest role of the member.
 
         Parameters
         -----------
@@ -682,7 +682,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         Removes :class:`Role`\s from this member.
 
         You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        use this, and the removed :class:`Role`\s must appear lower in the list
+        of roles than the highest role of the member.
 
         Parameters
         -----------
