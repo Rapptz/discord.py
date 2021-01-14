@@ -37,6 +37,7 @@ __all__ = (
     'MemberConverter',
     'UserConverter',
     'MessageConverter',
+    'PartialMessageConverter',
     'TextChannelConverter',
     'InviteConverter',
     'RoleConverter',
@@ -289,6 +290,34 @@ class MessageConverter(Converter):
             raise MessageNotFound(argument)
         except discord.Forbidden:
             raise ChannelNotReadable(channel)
+
+class PartialMessageConverter(Converter):
+    """Converts to a :class:`discord.PartialMessage`.
+
+    .. versionadded:: 1.7
+
+    The creation strategy is as follows (in order):
+
+    1. By "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
+    2. By message ID (The message is assumed to be in the context channel.)
+    3. By message URL
+    """
+    async def convert(self, ctx, argument):
+        id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        link_regex = re.compile(
+            r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
+            r'(?:[0-9]{15,21}|@me)'
+            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
+        )
+        match = id_regex.match(argument) or link_regex.match(argument)
+        if not match:
+            raise MessageNotFound(argument)
+        message_id = int(match.group("message_id"))
+        channel_id = match.group("channel_id")
+        channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
+        if not channel:
+            raise ChannelNotFound(channel_id)
+        return discord.PartialMessage(channel=channel, id=message_id)
 
 class TextChannelConverter(IDConverter):
     """Converts to a :class:`~discord.TextChannel`.
