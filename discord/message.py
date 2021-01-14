@@ -1423,6 +1423,9 @@ class PartialMessage(Hashable):
 
         The content must be able to be transformed into a string via ``str(content)``.
 
+        .. versionchanged:: 1.7
+            :class:`discord.Message` is returned instead of ``None`` on edit.
+
         Parameters
         -----------
         content: Optional[:class:`str`]
@@ -1448,8 +1451,6 @@ class PartialMessage(Hashable):
             If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
             are used instead.
 
-            .. versionadded:: 1.7
-
         Raises
         -------
         NotFound
@@ -1462,7 +1463,7 @@ class PartialMessage(Hashable):
 
         Returns
         ---------
-        :class:`Message`
+        Optional[:class:`Message`]
             The message that was edited.
         """
 
