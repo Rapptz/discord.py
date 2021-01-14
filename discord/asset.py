@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -165,7 +165,7 @@ class Asset:
             format = 'gif' if emoji.animated else static_format
 
         return cls(state, '/emojis/{0.id}.{1}'.format(emoji, format))
-    
+
     def __str__(self):
         return self.BASE + self._url if self._url is not None else ''
 

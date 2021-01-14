@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -374,7 +374,7 @@ class Decoder(_OpusStruct):
 
     def _set_gain(self, adjustment):
         """Configures decoder gain adjustment.
-        
+
         Scales the decoded output by a factor specified in Q8 dB units.
         This has a maximum range of -32768 to 32767 inclusive, and returns
         OPUS_BAD_ARG (-1) otherwise. The default is zero indicating no adjustment.
