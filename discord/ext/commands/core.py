@@ -144,7 +144,7 @@ class Command(_BaseCommand):
         The long help text for the command.
     brief: Optional[:class:`str`]
         The short help text for the command.
-    usage: :class:`str`
+    usage: Optional[:class:`str`]
         A replacement for arguments in the default help text.
     aliases: Union[List[:class:`str`], Tuple[:class:`str`]]
         The list of aliases the command can be invoked under.
