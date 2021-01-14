@@ -1351,7 +1351,6 @@ class PartialMessage(Hashable):
     _exported_names = (
         'jump_url',
         'delete',
-        'edit',
         'publish',
         'pin',
         'unpin',
@@ -1416,3 +1415,101 @@ class PartialMessage(Hashable):
 
         data = await self._state.http.get_message(self.channel.id, self.id)
         return self._state.create_message(channel=self.channel, data=data)
+
+    async def edit(self, **fields):
+        """|coro|
+
+        Edits the message.
+
+        The content must be able to be transformed into a string via ``str(content)``.
+
+        Parameters
+        -----------
+        content: Optional[:class:`str`]
+            The new content to replace the message with.
+            Could be ``None`` to remove the content.
+        embed: Optional[:class:`Embed`]
+            The new embed to replace the original with.
+            Could be ``None`` to remove the embed.
+        suppress: :class:`bool`
+            Whether to suppress embeds for the message. This removes
+            all the embeds if set to ``True``. If set to ``False``
+            this brings the embeds back if they were suppressed.
+            Using this parameter requires :attr:`~.Permissions.manage_messages`.
+        delete_after: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just edited. If the deletion fails,
+            then it is silently ignored.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
+
+            .. versionadded:: 1.7
+
+        Raises
+        -------
+        NotFound
+            The message was not found.
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to suppress a message without permissions or
+            edited a message's content or embed that isn't yours.
+
+        Returns
+        ---------
+        :class:`Message`
+            The message that was edited.
+        """
+
+        try:
+            content = fields['content']
+        except KeyError:
+            pass
+        else:
+            if content is not None:
+                fields['content'] = str(content)
+
+        try:
+            embed = fields['embed']
+        except KeyError:
+            pass
+        else:
+            if embed is not None:
+                fields['embed'] = embed.to_dict()
+
+        try:
+            suppress = fields.pop('suppress')
+        except KeyError:
+            pass
+        else:
+             flags = MessageFlags._from_value(0)
+             flags.suppress_embeds = suppress
+             fields['flags'] = flags.value
+
+        delete_after = fields.pop('delete_after', None)
+
+        try:
+            allowed_mentions = fields.pop('allowed_mentions')
+        except KeyError:
+            pass
+        else:
+            if allowed_mentions is not None:
+                if self._state.allowed_mentions is not None:
+                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+                else:
+                    allowed_mentions = allowed_mentions.to_dict()
+                fields['allowed_mentions'] = allowed_mentions
+
+        if fields:
+            data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
+
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
+
+        if fields:
+            return self._state.create_message(channel=self.channel, data=data)
