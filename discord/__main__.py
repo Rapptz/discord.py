@@ -250,8 +250,9 @@ def newcog(parser, args):
                 name = args.class_name
             else:
                 name = str(directory.stem)
-                if '-' in name:
-                    name = name.replace('-', ' ').title().replace(' ', '')
+                if '-' in name or '_' in name:
+                    translation = str.maketrans('-_', '  ')
+                    name = name.translate(translation).title().replace(' ', '')
                 else:
                     name = name.title()
 
