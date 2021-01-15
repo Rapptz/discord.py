@@ -37,6 +37,7 @@ __all__ = (
     'MemberConverter',
     'UserConverter',
     'MessageConverter',
+    'PartialMessageConverter',
     'TextChannelConverter',
     'InviteConverter',
     'RoleConverter',
@@ -251,7 +252,38 @@ class UserConverter(IDConverter):
 
         return result
 
-class MessageConverter(Converter):
+class PartialMessageConverter(Converter):
+    """Converts to a :class:`discord.PartialMessage`.
+
+    .. versionadded:: 1.7
+
+    The creation strategy is as follows (in order):
+
+    1. By "{channel ID}-{message ID}" (retrieved by shift-clicking on "Copy ID")
+    2. By message ID (The message is assumed to be in the context channel.)
+    3. By message URL
+    """
+    def _get_id_matches(self, argument):
+        id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        link_regex = re.compile(
+            r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
+            r'(?:[0-9]{15,21}|@me)'
+            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
+        )
+        match = id_regex.match(argument) or link_regex.match(argument)
+        if not match:
+            raise MessageNotFound(argument)
+        channel_id = match.group("channel_id")
+        return int(match.group("message_id")), int(channel_id) if channel_id else None
+
+    async def convert(self, ctx, argument):
+        message_id, channel_id = self._get_id_matches(argument)
+        channel = ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
+        if not channel:
+            raise ChannelNotFound(channel_id)
+        return discord.PartialMessage(channel=channel, id=message_id)
+        
+class MessageConverter(PartialMessageConverter):
     """Converts to a :class:`discord.Message`.
 
     .. versionadded:: 1.1
@@ -266,21 +298,11 @@ class MessageConverter(Converter):
          Raise :exc:`.ChannelNotFound`, :exc:`.MessageNotFound` or :exc:`.ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
-        id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
-        link_regex = re.compile(
-            r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
-            r'(?:[0-9]{15,21}|@me)'
-            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
-        )
-        match = id_regex.match(argument) or link_regex.match(argument)
-        if not match:
-            raise MessageNotFound(argument)
-        message_id = int(match.group("message_id"))
-        channel_id = match.group("channel_id")
+        message_id, channel_id = self._get_id_matches(argument)
         message = ctx.bot._connection._get_message(message_id)
         if message:
             return message
-        channel = ctx.bot.get_channel(int(channel_id)) if channel_id else ctx.channel
+        channel = ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
         if not channel:
             raise ChannelNotFound(channel_id)
         try:
