@@ -296,6 +296,13 @@ class Cog(metaclass=CogMeta):
             return func
         return decorator
 
+    def has_error_handler(self):
+        """:class:`bool`: Checks whether the cog has an error handler.
+
+        .. versionadded:: 1.7
+        """
+        return hasattr(self.cog_command_error.__func__, '__cog_special_method__')
+
     @_cog_special_method
     def cog_unload(self):
         """A special method that is called when the cog gets removed.

@@ -904,6 +904,13 @@ class Command(_BaseCommand):
         self.on_error = coro
         return coro
 
+    def has_error_handler(self):
+        """:class:`bool`: Checks whether the command has an error handler registered.
+
+        .. versionadded:: 1.7
+        """
+        return hasattr(self, 'on_error')
+
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
 
