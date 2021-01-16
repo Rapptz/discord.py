@@ -92,6 +92,8 @@ class File:
         if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
             self.filename = 'SPOILER_' + self.filename
 
+        self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+
     def reset(self, *, seek=True):
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times
