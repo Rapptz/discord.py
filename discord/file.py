@@ -58,7 +58,7 @@ class File:
         Whether the attachment is a spoiler.
     """
 
-    __slots__ = ('fp', 'filename', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
 
     def __init__(self, fp, filename=None, *, spoiler=False):
         self.fp = fp
