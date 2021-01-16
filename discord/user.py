@@ -120,6 +120,7 @@ class BaseUser(_BaseUser):
         self.avatar = user.avatar
         self.bot = user.bot
         self._state = user._state
+        self._public_flags = user._public_flags
 
         return self
 
