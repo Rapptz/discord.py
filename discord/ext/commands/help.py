@@ -376,7 +376,7 @@ class HelpCommand:
             cog: cog.get_commands()
             for cog in bot.cogs.values()
         }
-        mapping[None] = [c for c in bot.all_commands.values() if c.cog is None]
+        mapping[None] = [c for c in bot.commands if c.cog is None]
         return mapping
 
     @property
