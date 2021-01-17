@@ -335,6 +335,15 @@ class MessageReference:
         """Optional[:class:`~discord.Message`]: The cached message, if found in the internal message cache."""
         return self._state._get_message(self.message_id)
 
+    @property
+    def jump_url(self):
+        """:class:`str`: Returns a URL that allows the client to jump to the referenced message.
+
+        .. versionadded:: 1.7
+        """
+        guild_id = self.guild_id if self.guild_id is not None else '@me'
+        return 'https://discord.com/channels/{0}/{1.channel_id}/{1.message_id}'.format(guild_id, self)
+
     def __repr__(self):
         return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
 
