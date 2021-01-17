@@ -58,7 +58,7 @@ class File:
         Whether the attachment is a spoiler.
     """
 
-    __slots__ = ('fp', 'filename', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
 
     def __init__(self, fp, filename=None, *, spoiler=False):
         self.fp = fp
@@ -91,6 +91,8 @@ class File:
 
         if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
             self.filename = 'SPOILER_' + self.filename
+
+        self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
 
     def reset(self, *, seek=True):
         # The `seek` parameter is needed because
