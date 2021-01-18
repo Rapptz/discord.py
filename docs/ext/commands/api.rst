@@ -273,40 +273,28 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.MemberConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.UserConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.MessageConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.TextChannelConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.VoiceChannelConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.InviteConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.RoleConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.GameConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.ColourConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.EmojiConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.PartialEmojiConverter
-    :members:
 
 .. autoclass:: discord.ext.commands.clean_content
     :members:
