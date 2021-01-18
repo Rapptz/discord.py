@@ -100,12 +100,11 @@ class Converter:
         raise NotImplementedError('Derived classes need to implement this.')
 
 class IDConverter(Converter):
-    def __init__(self):
-        self._id_regex = re.compile(r'([0-9]{15,21})$')
-        super().__init__()
+    _id_regex = re.compile(r'([0-9]{15,21})$')
 
-    def _get_id_match(self, argument):
-        return self._id_regex.match(argument)
+    @classmethod
+    def _get_id_match(cls, argument):
+        return cls._id_regex.match(argument)
 
 class MemberConverter(IDConverter):
     """Converts to a :class:`~discord.Member`.
@@ -128,8 +127,8 @@ class MemberConverter(IDConverter):
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
     """
-
-    async def query_member_named(self, guild, argument):
+    @staticmethod
+    async def query_member_named(guild, argument):
         cache = guild._state.member_cache_flags.joined
         if len(argument) > 5 and argument[-5] == '#':
             username, _, discriminator = argument.rpartition('#')
@@ -139,7 +138,8 @@ class MemberConverter(IDConverter):
             members = await guild.query_members(argument, limit=100, cache=cache)
             return discord.utils.find(lambda m: m.name == argument or m.nick == argument, members)
 
-    async def query_member_by_id(self, bot, guild, user_id):
+    @staticmethod
+    async def query_member_by_id(bot, guild, user_id):
         ws = bot._get_websocket(shard_id=guild.shard_id)
         cache = guild._state.member_cache_flags.joined
         if ws.is_ratelimited():
@@ -160,9 +160,10 @@ class MemberConverter(IDConverter):
             return None
         return members[0]
 
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         bot = ctx.bot
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
+        match = cls._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
         guild = ctx.guild
         result = None
         user_id = None
@@ -184,9 +185,9 @@ class MemberConverter(IDConverter):
                 raise MemberNotFound(argument)
 
             if user_id is not None:
-                result = await self.query_member_by_id(bot, guild, user_id)
+                result = await cls.query_member_by_id(bot, guild, user_id)
             else:
-                result = await self.query_member_named(guild, argument)
+                result = await cls.query_member_named(guild, argument)
 
             if not result:
                 raise MemberNotFound(argument)
@@ -212,8 +213,9 @@ class UserConverter(IDConverter):
         This converter now lazily fetches users from the HTTP APIs if an ID is passed
         and it's not available in cache.
     """
-    async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
+    @classmethod
+    async def convert(cls, ctx, argument):
+        match = cls._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
         result = None
         state = ctx._state
 
@@ -263,7 +265,8 @@ class PartialMessageConverter(Converter):
     2. By message ID (The message is assumed to be in the context channel.)
     3. By message URL
     """
-    def _get_id_matches(self, argument):
+    @staticmethod
+    def _get_id_matches(argument):
         id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
         link_regex = re.compile(
             r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
@@ -276,8 +279,9 @@ class PartialMessageConverter(Converter):
         channel_id = match.group("channel_id")
         return int(match.group("message_id")), int(channel_id) if channel_id else None
 
-    async def convert(self, ctx, argument):
-        message_id, channel_id = self._get_id_matches(argument)
+    @classmethod
+    async def convert(cls, ctx, argument):
+        message_id, channel_id = cls._get_id_matches(argument)
         channel = ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
         if not channel:
             raise ChannelNotFound(channel_id)
@@ -297,8 +301,9 @@ class MessageConverter(PartialMessageConverter):
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound`, :exc:`.MessageNotFound` or :exc:`.ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
-        message_id, channel_id = self._get_id_matches(argument)
+    @classmethod
+    async def convert(cls, ctx, argument):
+        message_id, channel_id = cls._get_id_matches(argument)
         message = ctx.bot._connection._get_message(message_id)
         if message:
             return message
@@ -327,10 +332,11 @@ class TextChannelConverter(IDConverter):
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         bot = ctx.bot
 
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = cls._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
         result = None
         guild = ctx.guild
 
@@ -369,9 +375,10 @@ class VoiceChannelConverter(IDConverter):
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         bot = ctx.bot
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = cls._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
         result = None
         guild = ctx.guild
 
@@ -410,10 +417,11 @@ class CategoryChannelConverter(IDConverter):
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         bot = ctx.bot
 
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = cls._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
         result = None
         guild = ctx.guild
 
@@ -455,7 +463,8 @@ class ColourConverter(Converter):
     .. versionchanged:: 1.5
          Raise :exc:`.BadColourArgument` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         arg = argument.replace('0x', '').lower()
 
         if arg[0] == '#':
@@ -489,12 +498,13 @@ class RoleConverter(IDConverter):
     .. versionchanged:: 1.5
          Raise :exc:`.RoleNotFound` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         guild = ctx.guild
         if not guild:
             raise NoPrivateMessage()
 
-        match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
+        match = cls._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
         if match:
             result = guild.get_role(int(match.group(1)))
         else:
@@ -506,7 +516,8 @@ class RoleConverter(IDConverter):
 
 class GameConverter(Converter):
     """Converts to :class:`~discord.Game`."""
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         return discord.Game(name=argument)
 
 class InviteConverter(Converter):
@@ -517,7 +528,8 @@ class InviteConverter(Converter):
     .. versionchanged:: 1.5
          Raise :exc:`.BadInviteArgument` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         try:
             invite = await ctx.bot.fetch_invite(argument)
             return invite
@@ -539,8 +551,9 @@ class EmojiConverter(IDConverter):
     .. versionchanged:: 1.5
          Raise :exc:`.EmojiNotFound` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
+    @classmethod
+    async def convert(cls, ctx, argument):
+        match = cls._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild
@@ -575,7 +588,8 @@ class PartialEmojiConverter(Converter):
     .. versionchanged:: 1.5
          Raise :exc:`.PartialEmojiConversionFailure` instead of generic :exc:`.BadArgument`
     """
-    async def convert(self, ctx, argument):
+    @classmethod
+    async def convert(cls, ctx, argument):
         match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
 
         if match:
