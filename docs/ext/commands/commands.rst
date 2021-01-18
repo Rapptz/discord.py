@@ -378,6 +378,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`CategoryChannel`
 - :class:`Role`
 - :class:`Message` (since v1.1)
+- :class:`PartialMessage` (since v1.7)
 - :class:`Invite`
 - :class:`Game`
 - :class:`Emoji`
@@ -396,6 +397,8 @@ converter is given below:
 | :class:`Member`          | :class:`~ext.commands.MemberConverter`          |
 +--------------------------+-------------------------------------------------+
 | :class:`Message`         | :class:`~ext.commands.MessageConverter`         |
++--------------------------+-------------------------------------------------+
+| :class:`PartialMessage`  | :class:`~ext.commands.PartialMessageConveter`   |
 +--------------------------+-------------------------------------------------+
 | :class:`User`            | :class:`~ext.commands.UserConverter`            |
 +--------------------------+-------------------------------------------------+
