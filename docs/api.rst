@@ -448,7 +448,10 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     regardless of the state of the internal message cache.
 
     If the message is found in the message cache,
-    it can be accessed via :attr:`RawMessageUpdateEvent.cached_message`
+    it can be accessed via :attr:`RawMessageUpdateEvent.cached_message`. The cached message represents
+    the message before it has been edited. For example, if the content of a message is modified and
+    triggers the :func:`on_raw_message_edit` coroutine, the :attr:`RawMessageUpdateEvent.cached_message`
+    will return a :class:`Message` object that represents the message before the content was modified.
 
     Due to the inherently raw nature of this event, the data parameter coincides with
     the raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_.
