@@ -102,6 +102,7 @@ class Embed:
                  '_fields', 'description')
 
     Empty = EmptyEmbed
+    EmptyString = "\u200b"
 
     def __init__(self, **kwargs):
         # swap the colour/color aliases
