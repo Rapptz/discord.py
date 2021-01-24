@@ -281,6 +281,9 @@ Converters
 .. autoclass:: discord.ext.commands.MessageConverter
     :members:
 
+.. autoclass:: discord.ext.commands.PartialMessageConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 
