@@ -1733,6 +1733,9 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_roles` permission to
         do this.
 
+        ..versionchanged:: 1.6
+            Can now pass ``int`` to ``colour`` keyword-only parameter.
+
         Parameters
         -----------
         name: :class:`str`
