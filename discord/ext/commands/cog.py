@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -296,6 +296,13 @@ class Cog(metaclass=CogMeta):
             return func
         return decorator
 
+    def has_error_handler(self):
+        """:class:`bool`: Checks whether the cog has an error handler.
+
+        .. versionadded:: 1.7
+        """
+        return hasattr(self.cog_command_error.__func__, '__cog_special_method__')
+
     @_cog_special_method
     def cog_unload(self):
         """A special method that is called when the cog gets removed.
@@ -437,4 +444,7 @@ class Cog(metaclass=CogMeta):
             if cls.bot_check_once is not Cog.bot_check_once:
                 bot.remove_check(self.bot_check_once, call_once=True)
         finally:
-            self.cog_unload()
+            try:
+                self.cog_unload()
+            except Exception:
+                pass

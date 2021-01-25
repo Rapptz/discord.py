@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -97,7 +97,8 @@ class RawMessageUpdateEvent(_RawReprMixin):
     data: :class:`dict`
         The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
-        The cached message, if found in the internal message cache.
+        The cached message, if found in the internal message cache. Represents the message before
+        it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
     """
 
     __slots__ = ('message_id', 'channel_id', 'data', 'cached_message')

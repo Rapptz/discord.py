@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -131,10 +131,12 @@ class Emoji(_EmojiTag):
 
     @property
     def url(self):
-        """:class:`Asset`: Returns the asset of the emoji."""
-        _format = 'gif' if self.animated else 'png'
-        url = "/emojis/{0.id}.{1}".format(self, _format)
-        return Asset(self._state, url)
+        """:class:`Asset`: Returns the asset of the emoji.
+
+        This is equivalent to calling :meth:`url_as` with
+        the default parameters (i.e. png/gif detection).
+        """
+        return self.url_as(format=None)
 
     @property
     def roles(self):
@@ -152,6 +154,39 @@ class Emoji(_EmojiTag):
     def guild(self):
         """:class:`Guild`: The guild this emoji belongs to."""
         return self._state._get_guild(self.guild_id)
+
+
+    def url_as(self, *, format=None, static_format="png"):
+        """Returns an :class:`Asset` for the emoji's url.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif'.
+        'gif' is only valid for animated emojis.
+
+        .. versionadded:: 1.6
+
+        Parameters
+        -----------
+        format: Optional[:class:`str`]
+            The format to attempt to convert the emojis to.
+            If the format is ``None``, then it is automatically
+            detected as either 'gif' or static_format, depending on whether the
+            emoji is animated or not.
+        static_format: Optional[:class:`str`]
+            Format to attempt to convert only non-animated emoji's to.
+            Defaults to 'png'
+
+        Raises
+        -------
+        InvalidArgument
+            Bad image format passed to ``format`` or ``static_format``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_emoji(self._state, self, format=format, static_format=static_format)
+
 
     def is_usable(self):
         """:class:`bool`: Whether the bot can use this emoji.

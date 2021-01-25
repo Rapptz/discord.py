@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -144,7 +144,7 @@ class Command(_BaseCommand):
         The long help text for the command.
     brief: Optional[:class:`str`]
         The short help text for the command.
-    usage: :class:`str`
+    usage: Optional[:class:`str`]
         A replacement for arguments in the default help text.
     aliases: Union[List[:class:`str`], Tuple[:class:`str`]]
         The list of aliases the command can be invoked under.
@@ -778,17 +778,22 @@ class Command(_BaseCommand):
         if not await self.can_run(ctx):
             raise CheckFailure('The check functions for command {0.qualified_name} failed.'.format(self))
 
-        if self.cooldown_after_parsing:
-            await self._parse_arguments(ctx)
-            self._prepare_cooldowns(ctx)
-        else:
-            self._prepare_cooldowns(ctx)
-            await self._parse_arguments(ctx)
-
         if self._max_concurrency is not None:
             await self._max_concurrency.acquire(ctx)
 
-        await self.call_before_hooks(ctx)
+        try:
+            if self.cooldown_after_parsing:
+                await self._parse_arguments(ctx)
+                self._prepare_cooldowns(ctx)
+            else:
+                self._prepare_cooldowns(ctx)
+                await self._parse_arguments(ctx)
+
+            await self.call_before_hooks(ctx)
+        except:
+            if self._max_concurrency is not None:
+                await self._max_concurrency.release(ctx)
+            raise
 
     def is_on_cooldown(self, ctx):
         """Checks whether the command is currently on cooldown.
@@ -898,6 +903,13 @@ class Command(_BaseCommand):
 
         self.on_error = coro
         return coro
+
+    def has_error_handler(self):
+        """:class:`bool`: Checks whether the command has an error handler registered.
+
+        .. versionadded:: 1.7
+        """
+        return hasattr(self, 'on_error')
 
     def before_invoke(self, coro):
         """A decorator that registers a coroutine as a pre-invoke hook.
@@ -1140,6 +1152,7 @@ class GroupMixin:
         self.all_commands[command.name] = command
         for alias in command.aliases:
             if alias in self.all_commands:
+                self.remove_command(command.name)
                 raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
@@ -1172,7 +1185,12 @@ class GroupMixin:
 
         # we're not removing the alias so let's delete the rest of them.
         for alias in command.aliases:
-            self.all_commands.pop(alias, None)
+            cmd = self.all_commands.pop(alias, None)
+            # in the case of a CommandRegistrationError, an alias might conflict
+            # with an already existing command. If this is the case, we want to
+            # make sure the pre-existing command is not removed.
+            if cmd not in (None, command):
+                self.all_commands[alias] = cmd
         return command
 
     def walk_commands(self):

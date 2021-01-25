@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -636,11 +636,12 @@ class DiscordWebSocket:
         }
         await self.send_as_json(payload)
 
-    async def request_chunks(self, guild_id, query=None, *, limit, user_ids=None, nonce=None):
+    async def request_chunks(self, guild_id, query=None, *, limit, user_ids=None, presences=False, nonce=None):
         payload = {
             'op': self.REQUEST_MEMBERS,
             'd': {
                 'guild_id': guild_id,
+                'presences': presences,
                 'limit': limit
             }
         }

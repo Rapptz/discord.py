@@ -1,5 +1,5 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2015-2020, Rapptz
+# Copyright (C) 2015-present, Rapptz
 # This file is distributed under the same license as the discord.py package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
 #
@@ -427,4 +427,3 @@ msgid ""
 "If you truly dislike the direction Discord is going with their API, you "
 "can contact them via `support <https://dis.gd/contact>`_"
 msgstr ""
-

@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -157,13 +157,17 @@ class Member(discord.abc.Messageable, _BaseUser):
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
         The guild specific nickname of the user.
+    pending: :class:`bool`
+        Whether the member is pending member verification.
+
+        .. versionadded:: 1.6
     premium_since: Optional[:class:`datetime.datetime`]
         A datetime object that specifies the date and time in UTC when the member used their
         Nitro boost on the guild, if available. This could be ``None``.
     """
 
     __slots__ = ('_roles', 'joined_at', 'premium_since', '_client_status',
-                 'activities', 'guild', 'nick', '_user', '_state')
+                 'activities', 'guild', 'pending', 'nick', '_user', '_state')
 
     def __init__(self, *, data, guild, state):
         self._state = state
@@ -177,6 +181,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         }
         self.activities = tuple(map(create_activity, data.get('activities', [])))
         self.nick = data.get('nick', None)
+        self.pending = data.get('pending', False)
 
     def __str__(self):
         return str(self._user)
@@ -205,6 +210,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
         self.nick = data.get('nick', None)
+        self.pending = data.get('pending', False)
 
     @classmethod
     def _try_upgrade(cls, *,  data, guild, state):
@@ -238,6 +244,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._client_status = member._client_status.copy()
         self.guild = member.guild
         self.nick = member.nick
+        self.pending = member.pending
         self.activities = member.activities
         self._state = member._state
 
@@ -261,6 +268,11 @@ class Member(discord.abc.Messageable, _BaseUser):
         except KeyError:
             pass
 
+        try:
+            self.pending = data['pending']
+        except KeyError:
+            pass
+
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._update_roles(data)
 
@@ -278,12 +290,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _update_inner_user(self, user):
         u = self._user
-        original = (u.name, u.avatar, u.discriminator)
+        original = (u.name, u.avatar, u.discriminator, u._public_flags)
         # These keys seem to always be available
-        modified = (user['username'], user['avatar'], user['discriminator'])
+        modified = (user['username'], user['avatar'], user['discriminator'], user.get('public_flags', 0))
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.avatar, u.discriminator = modified
+            u.name, u.avatar, u.discriminator, u._public_flags = modified
             # Signal to dispatch on_user_update
             return to_return, u
 
@@ -631,7 +643,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         Gives the member a number of :class:`Role`\s.
 
         You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        use this, and the added :class:`Role`\s must appear lower in the list
+        of roles than the highest role of the member.
 
         Parameters
         -----------
@@ -669,7 +682,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         Removes :class:`Role`\s from this member.
 
         You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        use this, and the removed :class:`Role`\s must appear lower in the list
+        of roles than the highest role of the member.
 
         Parameters
         -----------

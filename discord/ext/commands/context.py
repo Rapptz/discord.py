@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -204,7 +204,7 @@ class Context(discord.abc.Messageable):
 
     @property
     def cog(self):
-        """:class:`.Cog`: Returns the cog associated with this context's command. None if it does not exist."""
+        """Optional[:class:`.Cog`]: Returns the cog associated with this context's command. None if it does not exist."""
 
         if self.command is None:
             return None

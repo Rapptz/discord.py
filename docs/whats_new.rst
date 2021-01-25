@@ -11,6 +11,78 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p6p0:
+
+v1.6.0
+--------
+
+This version comes with support for replies and stickers.
+
+New Features
+~~~~~~~~~~~~~~
+
+- An entirely redesigned documentation. This was the cumulation of multiple months of effort.
+    - There's now a dark theme, feel free to navigate to the cog on the screen to change your setting, though this should be automatic.
+- Add support for :meth:`AppInfo.icon_url_as` and :meth:`AppInfo.cover_image_url_as` (:issue:`5888`)
+- Add :meth:`Colour.random` to get a random colour (:issue:`6067`)
+- Add support for stickers via :class:`Sticker` (:issue:`5946`)
+- Add support for replying via :meth:`Message.reply` (:issue:`6061`)
+    - This also comes with the :attr:`AllowedMentions.replied_user` setting.
+    - :meth:`abc.Messageable.send` can now accept a :class:`MessageReference`.
+    - :class:`MessageReference` can now be constructed by users.
+    - :meth:`Message.to_reference` can now convert a message to a :class:`MessageReference`.
+- Add support for getting the replied to resolved message through :attr:`MessageReference.resolved`.
+- Add support for role tags.
+    - :attr:`Guild.premium_subscriber_role` to get the "Nitro Booster" role (if available).
+    - :attr:`Guild.self_role` to get the bot's own role (if available).
+    - :attr:`Role.tags` to get the role's tags.
+    - :meth:`Role.is_premium_subscriber` to check if a role is the "Nitro Booster" role.
+    - :meth:`Role.is_bot_managed` to check if a role is a bot role (i.e. the automatically created role for bots).
+    - :meth:`Role.is_integration` to check if a role is role created by an integration.
+- Add :meth:`Client.is_ws_ratelimited` to check if the websocket is rate limited.
+    - :meth:`ShardInfo.is_ws_ratelimited` is the equivalent for checking a specific shard.
+- Add support for chunking an :class:`AsyncIterator` through :meth:`AsyncIterator.chunk` (:issue:`6100`, :issue:`6082`)
+- Add :attr:`PartialEmoji.created_at` (:issue:`6128`)
+- Add support for editing and deleting webhook sent messages (:issue:`6058`)
+    - This adds :class:`WebhookMessage` as well to power this behaviour.
+- Add :class:`PartialMessage` to allow working with a message via channel objects and just a message_id (:issue:`5905`)
+    - This is useful if you don't want to incur an extra API call to fetch the message.
+- Add :meth:`Emoji.url_as` (:issue:`6162`)
+- Add support for :attr:`Member.pending` for the membership gating feature.
+- Allow ``colour`` parameter to take ``int`` in :meth:`Guild.create_role` (:issue:`6195`)
+- Add support for ``presences`` in :meth:`Guild.query_members` (:issue:`2354`)
+- |commands| Add support for ``description`` keyword argument in :class:`commands.Cog <ext.commands.Cog>` (:issue:`6028`)
+- |tasks| Add support for calling the wrapped coroutine as a function via ``__call__``.
+
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Raise :exc:`DiscordServerError` when reaching 503s repeatedly (:issue:`6044`)
+- Fix :exc:`AttributeError` when :meth:`Client.fetch_template` is called (:issue:`5986`)
+- Fix errors when playing audio and moving to another channel (:issue:`5953`)
+- Fix :exc:`AttributeError` when voice channels disconnect too fast (:issue:`6039`)
+- Fix stale :class:`User` references when the members intent is off.
+- Fix :func:`on_user_update` not dispatching in certain cases when a member is not cached but the user somehow is.
+- Fix :attr:`Message.author` being overwritten in certain cases during message update.
+    - This would previously make it so :attr:`Message.author` is a :class:`User`.
+- Fix :exc:`UnboundLocalError` for editing ``public_updates_channel`` in :meth:`Guild.edit` (:issue:`6093`)
+- Fix uninitialised :attr:`CustomActivity.created_at` (:issue:`6095`)
+- |commands| Errors during cog unload no longer stops module cleanup (:issue:`6113`)
+- |commands| Properly cleanup lingering commands when a conflicting alias is found when adding commands (:issue:`6217`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- ``ffmpeg`` spawned processes no longer open a window in Windows (:issue:`6038`)
+- Update dependencies to allow the library to work on Python 3.9+ without requiring build tools. (:issue:`5984`, :issue:`5970`)
+- Fix docstring issue leading to a SyntaxError in 3.9 (:issue:`6153`)
+- Update Windows opus binaries from 1.2.1 to 1.3.1 (:issue:`6161`)
+- Allow :meth:`Guild.create_role` to accept :class:`int` as the ``colour`` parameter (:issue:`6195`)
+- |commands| :class:`MessageConverter <ext.commands.MessageConverter>` regex got updated to support ``www.`` prefixes (:issue:`6002`)
+- |commands| :class:`UserConverter <ext.commands.UserConverter>` now fetches the API if an ID is passed and the user is not cached.
+- |commands| :func:`max_concurrency <ext.commands.max_concurrency>` is now called before cooldowns (:issue:`6172`)
+
 .. _vp1p5p1:
 
 v1.5.1

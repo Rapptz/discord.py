@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -289,7 +289,7 @@ class ChannelNotFound(BadArgument):
 
     Attributes
     -----------
-    channel: :class:`str`
+    argument: :class:`str`
         The channel supplied by the caller that was not found
     """
     def __init__(self, argument):

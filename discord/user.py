@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -120,6 +120,7 @@ class BaseUser(_BaseUser):
         self.avatar = user.avatar
         self.bot = user.bot
         self._state = user._state
+        self._public_flags = user._public_flags
 
         return self
 
