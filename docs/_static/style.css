@@ -899,6 +899,10 @@ a.reference > strong {
   font-weight: unset;
   font-family: var(--monospace-font-family);
 }
+a.reference.pep > strong,
+a.reference.rfc > strong {
+  font-family: inherit;
+}
 
 /* exception hierarchy */
 
