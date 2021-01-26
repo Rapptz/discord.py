@@ -99,7 +99,7 @@ class BaseActivity:
 
     Note that although these types are considered user-settable by the library,
     Discord typically ignores certain combinations of activity depending on
-    what is currently set. This behaviour may change in the future so there are
+    what is currently set. This behavior may change in the future so there are
     no guarantees on whether Discord will actually let you set these types.
 
     .. versionadded:: 1.3
@@ -124,7 +124,7 @@ class Activity(BaseActivity):
     This could be an activity such as streaming, playing, listening
     or watching.
 
-    For memory optimisation purposes, some activities are offered in slimmed
+    For memory optimization purposes, some activities are offered in slimmed
     down versions:
 
     - :class:`Game`
