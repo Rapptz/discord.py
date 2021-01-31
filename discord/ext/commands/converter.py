@@ -531,7 +531,7 @@ class GuildConverter(IDConverter):
     The lookup strategy is as follows (in order):
 
     1. Lookup by ID.
-    2. Lookup by name.
+    2. Lookup by name. (There is no disambiguation for Guilds with multiple matching names).
 
     .. versionadded:: 1.7
     """
@@ -543,14 +543,14 @@ class GuildConverter(IDConverter):
         if match is not None:
             guild_id = int(match.group(1))
             result = ctx.bot.get_guild(guild_id)
-            return result
 
-        predicate = lambda g: g.name == argument
-        result = discord.utils.find(predicate, ctx.bot.guilds)
-        if result is not None:
-            return result
+        if result is None:
+            predicate = lambda g: g.name == argument
+            result = discord.utils.find(predicate, ctx.bot.guilds)
 
-        raise GuildNotFound(argument)
+            if result is None:
+                raise GuildNotFound(argument)
+        return result
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.
