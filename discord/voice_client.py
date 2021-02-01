@@ -630,6 +630,8 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('sequence', 1, 65535)
         if encode:
+            if not self.encoder:
+                self.encoder = opus.Encoder()
             encoded_data = self.encoder.encode(data, self.encoder.SAMPLES_PER_FRAME)
         else:
             encoded_data = data
