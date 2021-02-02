@@ -545,8 +545,7 @@ class GuildConverter(IDConverter):
             result = ctx.bot.get_guild(guild_id)
 
         if result is None:
-            predicate = lambda g: g.name == argument
-            result = discord.utils.find(predicate, ctx.bot.guilds)
+            result = discord.utils.get(ctx.bot.guilds, name=argument)
 
             if result is None:
                 raise GuildNotFound(argument)
