@@ -53,7 +53,6 @@ inputs:
   - type: checkboxes
     attributes:
       label: Checklist
-      required: true
       description: >
         Let's make sure you've properly done due dilligence when reporting this issue!
       choices:
@@ -62,6 +61,4 @@ inputs:
         - label: I have shown the entire traceback, if possible.
           required: true
         - label: I have removed my token from display, if visible.
-          required: true
-        - label: I have provided the intents that my bot is using.
           required: true
