@@ -296,6 +296,9 @@ Converters
 .. autoclass:: discord.ext.commands.InviteConverter
     :members:
 
+.. autoclass:: discord.ext.commands.GuildConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.RoleConverter
     :members:
 
@@ -408,6 +411,9 @@ Exceptions
     :members:
 
 .. autoexception:: discord.ext.commands.MemberNotFound
+    :members:
+
+.. autoexception:: discord.ext.commands.GuildNotFound
     :members:
 
 .. autoexception:: discord.ext.commands.UserNotFound

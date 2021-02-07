@@ -40,6 +40,7 @@ __all__ = (
     'PartialMessageConverter',
     'TextChannelConverter',
     'InviteConverter',
+    'GuildConverter',
     'RoleConverter',
     'GameConverter',
     'ColourConverter',
@@ -282,7 +283,7 @@ class PartialMessageConverter(Converter):
         if not channel:
             raise ChannelNotFound(channel_id)
         return discord.PartialMessage(channel=channel, id=message_id)
-        
+
 class MessageConverter(PartialMessageConverter):
     """Converts to a :class:`discord.Message`.
 
@@ -523,6 +524,32 @@ class InviteConverter(Converter):
             return invite
         except Exception as exc:
             raise BadInviteArgument() from exc
+
+class GuildConverter(IDConverter):
+    """Converts to a :class:`~discord.Guild`.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by name. (There is no disambiguation for Guilds with multiple matching names).
+
+    .. versionadded:: 1.7
+    """
+
+    async def convert(self, ctx, argument):
+        match = self._get_id_match(argument)
+        result = None
+
+        if match is not None:
+            guild_id = int(match.group(1))
+            result = ctx.bot.get_guild(guild_id)
+
+        if result is None:
+            result = discord.utils.get(ctx.bot.guilds, name=argument)
+
+            if result is None:
+                raise GuildNotFound(argument)
+        return result
 
 class EmojiConverter(IDConverter):
     """Converts to a :class:`~discord.Emoji`.
