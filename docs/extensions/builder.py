@@ -58,11 +58,13 @@ def add_custom_jinja2(app):
 
 def add_builders(app):
     """This is necessary because RTD injects their own for some reason."""
+    app.set_translator('html', DPYHTML5Translator, override=True)
+    app.add_builder(DPYStandaloneHTMLBuilder, override=True)
+
     try:
         original = app.registry.builders['readthedocs']
     except KeyError:
-        app.set_translator('html', DPYHTML5Translator, override=True)
-        app.add_builder(DPYStandaloneHTMLBuilder, override=True)
+        pass
     else:
         injected_mro = tuple(base if base is not StandaloneHTMLBuilder else DPYStandaloneHTMLBuilder
                              for base in original.mro()[1:])

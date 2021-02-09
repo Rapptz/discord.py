@@ -1,0 +1,64 @@
+name: Bug Report
+about: Report broken or incorrect behaviour
+labels: bug
+issue_body: true
+inputs:
+  - type: description
+    attributes:
+      value: >
+        Thanks for taking the time to fill out a bug.
+        If you want real-time support, consider joining our Discord at https://discord.gg/r3sSKJJ instead.
+
+        Please note that this form is for bugs only!
+  - type: input
+    attributes:
+      label: Summary
+      description: A simple summary of your bug report
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      required: true
+      description: >
+         What you did to make it happen.
+         Ideally there should be a short code snippet in this section to help reproduce the bug.
+  - type: textarea
+    attributes:
+      label: Expected Results
+      required: true
+      description: >
+        What did you expect to happen?
+  - type: textarea
+    attributes:
+      label: Actual Results
+      required: true
+      description: >
+        What actually happened?
+  - type: input
+    attributes:
+      label: Intents
+      required: true
+      description: >
+        What intents are you using for your bot?
+        This is the `discord.Intents` class you pass to the client.
+  - type: textarea
+    attributes:
+      label: System Information
+      required: true
+      description: >
+        Run `python -m discord -v` and paste this information below.
+
+        This command required v1.1.0 or higher of the library. If this errors out then show some basic
+        information involving your system such as operating system and Python version.
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: >
+        Let's make sure you've properly done due dilligence when reporting this issue!
+      choices:
+        - label: I have searched the open issues for duplicates.
+          required: true
+        - label: I have shown the entire traceback, if possible.
+          required: true
+        - label: I have removed my token from display, if visible.
+          required: true
