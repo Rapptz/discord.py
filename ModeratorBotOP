@@ -1,0 +1,64 @@
+
+import discord 
+from discord.ext import commands
+
+client = commands.Bot(command_prefix="me-")
+
+@client.event
+async def on_ready():
+    print("Bot Is Ready")
+
+
+@client.command(aliases=['c'])
+@commands.has_permissions(manage_messages = True)
+async def clear(ctx,amount=2):
+    await ctx.channel.purge(limit=amount)
+
+@client.command(aliases=['k'])
+@commands.has_permissions(kick_members = True)
+async def kick(ctx,member : discord.Member,*,reason= "No reason Provided"):
+    await member.kick(reason=reason)
+    await member.send("You Have Been Kicked From The Server,Beacuse:"+reason)
+    
+
+@client.command(aliases=['b'])
+@commands.has_permissions(ban_members = True)
+async def ban(ctx,member : discord.Member,*,reason= "No reason provided"):
+    await ctx.send(member.name + " has been banned from server, Because:"+reason)
+    await member.ban(reason=reason)
+
+@client.command(aliases=['ub'])
+@commands.has_permissions(ban_members = True)
+async def unban(ctx,m_id):
+    await ctx.guild.unban(discord.Object(id=int(m_id)))
+    await ctx.send("unbannned")
+
+
+@client.command()
+@commands.has_permissions(manage_guild=True) # check if message author has permissions or not
+async def setup(ctx):
+    muted_role = discord.utils.get(ctx.guild.roles,name="Muted") # check for a muted role in the guild tje message was sent.
+    if muted_role is None:
+        await ctx.guild.create_role(
+            name="Muted",
+            color=0x000000,
+            hoist=False) # create a muted role with name 'Muted' , bl
+import asyncio # pip install asyncio 
+
+@client.command()
+@commands.has_permissions(kick_members=True) 
+async def mute(ctx,m:discord.Member):
+    muted_role = discord.utils.get(ctx.guild.roles,name="Muted")
+    await m.add_roles(muted_role)
+    await ctx.send("Muted member successfully!") 
+
+@client.command()
+@commands.has_permissions(kick_members=True)
+async def unmute(ctx,m:discord.Member):
+   muted_role = discord.utils.get(ctx.guild.roles,name="Muted")
+   await m.remove_roles(muted_role)
+   await ctx.send("Unmuted Member successfully!")
+
+
+
+client.run("ODA3OTY4Nzk2NDgwNTAzODI4.YB_tlA.R5uU__m680R2y0ZyDLeouTaYsqI") 
