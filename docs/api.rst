@@ -478,6 +478,14 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     This requires :attr:`Intents.reactions` to be enabled.
 
+    .. note::
+
+        This doesn't require :attr:`Intents.members` within a guild context,
+        but due to Discord not providing updated user information in a direct message
+        it's required for direct messages to receive this event.
+        Consider using :func:`on_raw_reaction_add` if you need this and do not otherwise want
+        to enable the members intent.
+
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
