@@ -523,7 +523,7 @@ class Command(_BaseCommand):
         # The greedy converter is simple -- it keeps going until it fails in which case,
         # it undos the view ready for the next parameter to use instead
         if type(converter) is converters._Greedy:
-            if param.kind == param.POSITIONAL_OR_KEYWORD:
+            if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
                 return await self._transform_greedy_pos(ctx, param, required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
                 return await self._transform_greedy_var_pos(ctx, param, converter.converter)
@@ -693,7 +693,7 @@ class Command(_BaseCommand):
             raise discord.ClientException(fmt.format(self))
 
         for name, param in iterator:
-            if param.kind == param.POSITIONAL_OR_KEYWORD:
+            if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
                 transformed = await self.transform(ctx, param)
                 args.append(transformed)
             elif param.kind == param.KEYWORD_ONLY:
