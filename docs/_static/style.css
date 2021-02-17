@@ -371,7 +371,7 @@ aside {
   position: sticky;
   background-color: var(--mobile-nav-background);
   color: var(--mobile-nav-text);
-  z-index: 2;
+  z-index: 3;
   max-height: 100vh;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -1168,6 +1168,38 @@ div.code-block-caption {
   font-weight: bold;
 }
 
+div.controls {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  background: var(--mobile-nav-background);
+  width: 100%;
+  z-index: 2;
+  height: 3rem;
+  border-bottom: 3rem solid var(--mobile-nav-background);
+}
+
+div.controls a {
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+}
+
+.class-anchor-offset {
+  position: relative;
+  scroll-margin-top: 85px;
+}
+
+.control-left {
+  float: left;
+  font-size: 3rem;
+}
+
+.control-right {
+  float: right;
+  font-size: 3rem;
+}
 
 /* desktop stuff */
 
@@ -1267,6 +1299,31 @@ div.code-block-caption {
   #hamburger-toggle, #settings-toggle {
     display: none;
 
+  }
+
+  div.controls {
+    height: 20px;
+    text-align: center;
+    position: unset;
+    background: unset;
+    border-bottom: unset;
+  }
+
+  .control-left {
+    font-size: 2em;
+  }
+  
+  .control-right {
+    font-size: 2em;
+  }
+
+  .class-anchor-offset {
+    position: relative;
+    scroll-margin-top: 2em;
+  }
+
+  .controls {
+    padding-bottom: 10px;
   }
 }
 

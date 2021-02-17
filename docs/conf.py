@@ -257,7 +257,8 @@ html_js_files = [
   'custom.js',
   'settings.js',
   'copy.js',
-  'sidebar.js'
+  'sidebar.js',
+  'pages.js',
 ]
 
 # Output file base name for HTML help builder.

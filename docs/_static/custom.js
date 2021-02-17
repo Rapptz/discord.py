@@ -1,4 +1,4 @@
-'use-strict';
+"use-strict";
 
 let activeModal = null;
 let bottomHeightThreshold, sections;
@@ -6,6 +6,9 @@ let hamburgerToggle;
 let mobileSearch;
 let sidebar;
 let toTop;
+let apiReference;
+let enableScroll = false;
+let currentSection;
 
 class Modal {
   constructor(element) {
@@ -14,7 +17,7 @@ class Modal {
 
   close() {
     activeModal = null;
-    this.element.style.display = 'none'
+    this.element.style.display = "none";
   }
 
   open() {
@@ -22,17 +25,16 @@ class Modal {
       activeModal.close();
     }
     activeModal = this;
-    this.element.style.display = 'flex'
+    this.element.style.display = "flex";
   }
 }
 
 class SearchBar {
-
   constructor() {
-    this.box = document.querySelector('nav.mobile-only');
+    this.box = document.querySelector("nav.mobile-only");
     this.bar = document.querySelector('nav.mobile-only input[type="search"]');
-    this.openButton = document.getElementById('open-search');
-    this.closeButton = document.getElementById('close-search');
+    this.openButton = document.getElementById("open-search");
+    this.closeButton = document.getElementById("close-search");
   }
 
   open() {
@@ -47,50 +49,48 @@ class SearchBar {
     this.closeButton.hidden = true;
     this.box.style.top = "0";
   }
-
 }
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   mobileSearch = new SearchBar();
 
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
-  sections = document.querySelectorAll('section');
-  hamburgerToggle = document.getElementById('hamburger-toggle');
-  
-  toTop = document.getElementById('to-top');
-  toTop.hidden = !(window.scrollY > 0);
+  sections = document.querySelectorAll("section");
+  hamburgerToggle = document.getElementById("hamburger-toggle");
+  apiReference = document.getElementById("api-reference");
 
+  toTop = document.getElementById("to-top");
+  toTop.hidden = !(window.scrollY > 0);
   if (hamburgerToggle) {
-    hamburgerToggle.addEventListener('click', (e) => {
-      sidebar.element.classList.toggle('sidebar-toggle');
+    hamburgerToggle.addEventListener("click", () => {
+      sidebar.element.classList.toggle("sidebar-toggle");
       let button = hamburgerToggle.firstElementChild;
-      if (button.textContent == 'menu') {
-        button.textContent = 'close';
-      }
-      else {
-        button.textContent = 'menu';
+      if (button.textContent == "menu") {
+        button.textContent = "close";
+      } else {
+        button.textContent = "menu";
       }
     });
   }
 
-  const tables = document.querySelectorAll('.py-attribute-table[data-move-to-id]');
-  tables.forEach(table => {
-    let element = document.getElementById(table.getAttribute('data-move-to-id'));
+  const tables = document.querySelectorAll(
+    ".py-attribute-table[data-move-to-id]"
+  );
+  tables.forEach((table) => {
+    let element = document.getElementById(
+      table.getAttribute("data-move-to-id")
+    );
     let parent = element.parentNode;
     // insert ourselves after the element
     parent.insertBefore(table, element.nextSibling);
   });
 
-  window.addEventListener('scroll', () => {
+  window.addEventListener("scroll", () => {
     toTop.hidden = !(window.scrollY > 0);
   });
 });
 
-document.addEventListener('keydown', (event) => {
+document.addEventListener("keydown", (event) => {
   if (event.code == "Escape" && activeModal) {
     activeModal.close();
   }

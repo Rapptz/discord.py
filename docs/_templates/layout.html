@@ -186,6 +186,16 @@
           {{ _('Dark') }}
         </h3>
       </div>
+      
+      <h2>{{ _('API Reference Style') }}</h2>
+      <div class='setting'>
+        <h3>{{ _('Use the classic API Reference style:') }}
+          <label class="toggle" title="{{ _('Enable the classic \'one page for all\' view for API References.') }}">
+            <input type="checkbox" name="useClassicAPIRef" onclick="updateSetting(this);">
+            <span class="toggle-slider"></span>
+          </label>
+        </h3>
+      </div>
 
     </div>
   </div>
