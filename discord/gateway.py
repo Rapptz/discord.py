@@ -876,7 +876,7 @@ class DiscordVoiceWebSocket:
     def average_latency(self):
         """:class:`list`: Average of last 20 HEARTBEAT latencies."""
         heartbeat = self._keep_alive
-        if heartbeat is None:
+        if heartbeat is None or not heartbeat.recent_ack_latencies:
             return float('inf')
 
         return sum(heartbeat.recent_ack_latencies) / len(heartbeat.recent_ack_latencies)
