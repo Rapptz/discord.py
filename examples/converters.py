@@ -10,7 +10,7 @@ bot = commands.Bot("!", intents=intents)
 
 @bot.command()
 async def userinfo(ctx: commands.Context, user: discord.User):
-    # In the command signature about, you can see that the `user`
+    # In the command signature above, you can see that the `user`
     # parameter is typehinted to `discord.User`. This means that
     # during command invocation we will attempt to convert
     # the value passed as `user` to a `discord.User` instance.
@@ -29,15 +29,9 @@ async def userinfo_error(ctx: commands.Context, error: Exception):
         return await ctx.send("Unhandled error: {}".format(error))
 
 # Manual use of converters will follow
-
 @bot.command()
-async def channel_or_member(ctx: commands.Context, argument: int):
-    # Preface - this could be done with `Guild.get_X` calls, but this is for the purpose of an example.
-
-    # Above you can see we want `argument` to be of `int` type
-    # This will attempt to cast whatever `argument` is to `int`
-    # with a base of 10: `int(argument, 10)`
-    # NOTE: There are more builtin type converters, like `float` and `bool`.
+async def channel_or_member(ctx: commands.Context, argument: str):
+    # NOTE: command parameters are `str` type by default, the typehint above is just for completeness' sake.
 
     # If you are doing this kind of thing commonly, consider making a Custom Converter
     # https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#advanced-converters
