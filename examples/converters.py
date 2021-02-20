@@ -36,8 +36,8 @@ async def userinfo_error(ctx: commands.Context, error: Exception):
 async def channel_or_member(ctx: commands.Context, argument: str):
     # NOTE: command parameters are `str` type by default, the typehint above is just for completeness' sake.
 
-    # If you are doing this kind of thing commonly, consider making a Custom Converter
-    # https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#advanced-converters
+    # If you use this pattern commonly, consider making a Custom Converter.
+    # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#advanced-converters
 
     # If for any reason you have an ID, but it may be of one of more
     # items, like a TextChannel or Member, you can manually call the converters
@@ -74,7 +74,7 @@ async def alternative_channel_or_member(ctx: commands.Context, target: typing.Un
     # NOTE: If a Union typehint converter fails it will raise `commands.errors.BadUnionArgument`
     # instead of `commands.errors.BadArgument`.
 
-    # This is a more user friendly alternative to the above command.
+    # This is a more user-friendly alternative to the previous command.
 
     # Let's check the type we actually got...
     if isinstance(target, discord.User):
@@ -82,12 +82,12 @@ async def alternative_channel_or_member(ctx: commands.Context, target: typing.Un
     elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
         return await ctx.send("Channel found: {}".format(target.mention))
 
-# Builtin type converters
+# Built-in type converters
 @bot.command()
 async def trial_converter(ctx: commands.Context, number: int, maybe: bool):
-    # We want and int and a bool parameter here.
-    # Bool is a slightly special case, as shown here:
-    # https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool
+    # We want an `int` and a `bool` parameter here.
+    # `bool` is a slightly special case, as shown here:
+    # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool
 
     await ctx.send("Number: {} -- Bool: {}.".format(number, maybe))
 
