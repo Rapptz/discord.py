@@ -272,7 +272,7 @@ class HelpCommand:
     show_hidden: :class:`bool`
         Specifies if hidden commands should be shown in the output.
         Defaults to ``False``.
-    verify_checks: :class:`bool`
+    verify_checks: Union[:class:`bool`, :class:`None`]
         Specifies if commands should have their :attr:`.Command.checks` called
         and verified. Defaults to ``True``.
     command_attrs: :class:`dict`
@@ -571,6 +571,10 @@ class HelpCommand:
         if not self.verify_checks:
             # if we do not need to verify the checks then we can just
             # run it straight through normally without using await.
+            return sorted(iterator, key=key) if sort else list(iterator)
+
+        if self.verify_checks is None and not self.context.guild:
+            # if verify_checks is None and we're in a DM, don't verify
             return sorted(iterator, key=key) if sort else list(iterator)
 
         # if we're here then we need to check every command if it can run
