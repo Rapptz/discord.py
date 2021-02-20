@@ -406,6 +406,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         activity the user is currently doing. Could be ``None`` if no activity is being done.
 
         .. note::
+        
             Due to a Discord API limitation, this may be ``None`` if the user is listening to a song on spotify with a long title.
 
         .. note::
