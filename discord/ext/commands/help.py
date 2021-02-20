@@ -568,7 +568,7 @@ class HelpCommand:
 
         iterator = commands if self.show_hidden else filter(lambda c: not c.hidden, commands)
 
-        if not self.verify_checks:
+        if self.verify_checks is False:
             # if we do not need to verify the checks then we can just
             # run it straight through normally without using await.
             return sorted(iterator, key=key) if sort else list(iterator)
