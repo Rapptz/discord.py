@@ -17,7 +17,7 @@ async def userinfo(ctx: commands.Context, user: discord.User):
 
     # If the conversion is successful we will have a User instance
     # and can do the following:
-    return await ctx.send(user.name)
+    await ctx.send(user.name)
 
 @userinfo.error
 async def userinfo_error(ctx: commands.Context, error: Exception):
@@ -25,6 +25,8 @@ async def userinfo_error(ctx: commands.Context, error: Exception):
     # so we handle this in this error handler
     if isinstance(error, commands.BadArgument):
         return await ctx.send("Failed to convert the argument for `user` to `discord.User`.")
+    else:
+        return await ctx.send("Unhandled error: {}".format(error))
 
 # Manual use of converters will follow
 
@@ -63,7 +65,7 @@ async def channel_or_member(ctx: commands.Context, argument: int):
     else:
         return await ctx.send("Channel found: {}".format(channel))
 
-    return await ctx.send("No member or channel matching this ID was found.")
+    await ctx.send("No member or channel matching this ID was found.")
 
 # Builtin type converters
 @bot.command()
@@ -72,7 +74,7 @@ async def trial_converter(ctx: commands.Context, number: int, maybe: bool):
     # Bool is a slightly special case, as shown here:
     # https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool
 
-    return await ctx.send("Number: {} -- Bool: {}.".format(number, maybe))
+    await ctx.send("Number: {} -- Bool: {}.".format(number, maybe))
 
 token = "your token here"
 bot.run(token)
