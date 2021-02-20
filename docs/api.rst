@@ -2867,6 +2867,22 @@ Guild
     .. automethod:: audit_logs
         :async-for:
 
+.. class:: BanEntry
+
+    A namedtuple which represents a ban returned from :meth:`~Guild.bans`.
+
+    .. attribute:: reason
+
+        The reason this user was banned.
+
+        :type: Optional[:class:`str`]
+    .. attribute:: user
+
+        The :class:`User` that was banned.
+
+        :type: :class:`User`
+
+
 Integration
 ~~~~~~~~~~~~
 

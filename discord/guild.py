@@ -1383,9 +1383,9 @@ class Guild(Hashable):
 
         Retrieves all the users that are banned from the guild.
 
-        This coroutine returns a :class:`list` of BanEntry objects, which is a
-        namedtuple with a ``user`` field to denote the :class:`User`
-        that got banned along with a ``reason`` field specifying
+        This coroutine returns a :class:`list` of :class:`BanEntry` objects, which is a
+        namedtuple with a :attr:`~BanEntry.user` field to denote the :class:`User`
+        that got banned along with a :class:`~BanEntry.reason` field specifying
         why the user was banned that could be set to ``None``.
 
         You must have the :attr:`~Permissions.ban_members` permission
@@ -1400,8 +1400,8 @@ class Guild(Hashable):
 
         Returns
         --------
-        List[BanEntry]
-            A list of BanEntry objects.
+        List[:class:`BanEntry`]
+            A list of :class:`BanEntry` objects.
         """
 
         data = await self._state.http.get_bans(self.id)
