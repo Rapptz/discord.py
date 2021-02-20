@@ -693,8 +693,14 @@ class CustomActivity(BaseActivity):
 
         if emoji is None:
             self.emoji = emoji
-        else:
+        elif isinstance(emoji, dict):
             self.emoji = PartialEmoji.from_dict(emoji)
+        elif isinstance(emoji, str):
+            self.emoji = PartialEmoji(name=emoji)
+        elif isinstance(emoji, PartialEmoji):
+            self.emoji = emoji
+        else:
+            raise TypeError('Expected str, PartialEmoji, or None, received {0!r} instead.'.format(type(emoji)))
 
     @property
     def type(self):

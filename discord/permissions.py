@@ -403,9 +403,13 @@ class Permissions(BaseFlags):
         """:class:`bool`: Returns ``True`` if a user can create, edit, or delete emojis."""
         return 1 << 30
 
-    # 1 unused
+    @flag_value
+    def use_slash_commands(self):
+        """:class:`bool`: Returns ``True`` if a user can use slash commands.
 
-    # after these 32 bits, there's 21 more unused ones technically
+        .. versionadded:: 1.7
+        """
+        return 1 << 31
 
 def augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)

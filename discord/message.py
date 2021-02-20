@@ -406,7 +406,7 @@ class Message(Hashable):
         The actual contents of the message.
     nonce
         The value used by the discord guild and the client to verify that the message is successfully sent.
-        This is typically non-important.
+        This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
     channel: Union[:class:`abc.Messageable`]
@@ -504,6 +504,7 @@ class Message(Hashable):
         self.application = data.get('application')
         self.activity = data.get('activity')
         self.channel = channel
+        self.call = None
         self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
         self.type = try_enum(MessageType, data['type'])
         self.pinned = data['pinned']

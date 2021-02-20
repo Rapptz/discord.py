@@ -118,8 +118,9 @@ It should be noted that certain things do not need a member cache since Discord 
 
 - :func:`on_message` will have :attr:`Message.author` be a member even if cache is disabled.
 - :func:`on_voice_state_update` will have the ``member`` parameter be a member even if cache is disabled.
-- :func:`on_reaction_add` will have the ``user`` parameter be a member even if cache is disabled.
-- :func:`on_raw_reaction_add` will have :attr:`RawReactionActionEvent.member` be a member even if cache is disabled.
+- :func:`on_reaction_add` will have the ``user`` parameter be a member when in a guild even if cache is disabled.
+- :func:`on_raw_reaction_add` will have :attr:`RawReactionActionEvent.member` be a member when in a guild even if cache is disabled.
+- The reaction add events do not contain additional information when in direct messages. This is a Discord limitation.
 - The reaction removal events do not have the member information. This is a Discord limitation.
 
 Other events that take a :class:`Member` will require the use of the member cache. If absolute accuracy over the member cache is desirable, then it is advisable to have the :attr:`Intents.members` intent enabled.
