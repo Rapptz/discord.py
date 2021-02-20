@@ -18,6 +18,9 @@ async def userinfo(ctx: commands.Context, user: discord.User):
     # during command invocation we will attempt to convert
     # the value passed as `user` to a `discord.User` instance.
 
+    # NOTE: typehinting acts as a converter within discord.py only.
+    # In standard Python it is use for documentation and IDE assistance purposes.
+
     # If the conversion is successful we will have a User instance
     # and can do the following:
     await ctx.send(user.mention)
