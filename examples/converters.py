@@ -1,12 +1,13 @@
+# This example requires the 'members' privileged intent to use the Member converter.
+
 import typing
 
 import discord
 from discord.ext import commands
 
-# We will need the members intents at the minimum to use the Member converter.
-intents = discord.Intents.all()
+intents = discord.Intents.default()
+intents.members = True
 
-# Construct the Bot instance.
 bot = commands.Bot("!", intents=intents)
 
 
@@ -19,7 +20,7 @@ async def userinfo(ctx: commands.Context, user: discord.User):
 
     # If the conversion is successful we will have a User instance
     # and can do the following:
-    await ctx.send(user.name)
+    await ctx.send(user.mention)
 
 @userinfo.error
 async def userinfo_error(ctx: commands.Context, error: Exception):
@@ -77,9 +78,9 @@ async def alternative_channel_or_member(ctx: commands.Context, target: typing.Un
 
     # Let's check the type we actually got...
     if isinstance(target, discord.User):
-        return await ctx.send("User found: {}".format(target))
+        return await ctx.send("User found: {}".format(target.mention))
     elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
-        return await ctx.send("Channel found: {}".format(target))
+        return await ctx.send("Channel found: {}".format(target.mention))
 
 # Builtin type converters
 @bot.command()
@@ -90,5 +91,4 @@ async def trial_converter(ctx: commands.Context, number: int, maybe: bool):
 
     await ctx.send("Number: {} -- Bool: {}.".format(number, maybe))
 
-token = "your token here"
-bot.run(token)
+bot.run("token")
