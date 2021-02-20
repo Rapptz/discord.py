@@ -27,9 +27,10 @@ async def userinfo_error(ctx: commands.Context, error: Exception):
     # if the conversion above fails for any reason, it will raise `commands.errors.BadArgument`
     # so we handle this in this error handler
     if isinstance(error, commands.BadArgument):
-        return await ctx.send("Failed to convert the argument for `user` to `discord.User`.")
+        return await ctx.send("Couldn't find that user.")
     else:
-        return await ctx.send("Unhandled error: {}".format(error))
+        # Raise the error to the global error handler
+        raise error
 
 # Manual use of converters will follow
 @bot.command()
