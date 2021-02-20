@@ -15,13 +15,14 @@ bot = commands.Bot("!", intents=intents)
 async def userinfo(ctx: commands.Context, user: discord.User):
     # In the command signature above, you can see that the `user`
     # parameter is typehinted to `discord.User`. This means that
-    # during command invocation we will attempt to convert
-    # the value passed as `user` to a `discord.User` instance.
+    # during command invocation, the `commands` framework will
+    # attempt to convert the value passed for the `user` parameter
+    # to a `discord.User` instance.
 
-    # NOTE: typehinting acts as a converter within discord.py only.
-    # In standard Python it is use for documentation and IDE assistance purposes.
+    # NOTE: typehinting acts as a converter within the `commands` framework only.
+    # In standard Python, it is use for documentation and IDE assistance purposes.
 
-    # If the conversion is successful we will have a User instance
+    # If the conversion is successful, we will have a `discord.User` instance
     # and can do the following:
     await ctx.send(user.mention)
 
@@ -44,7 +45,7 @@ async def channel_or_member(ctx: commands.Context, argument: str):
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#advanced-converters
 
     # If for any reason you have an ID, but it may be of one of more
-    # items, like a TextChannel or Member, you can manually call the converters
+    # items, like a `discord.TextChannel` or `discord.Member`, you can manually call the converters
     # like the following:
     member_converter = commands.MemberConverter()
     try:
