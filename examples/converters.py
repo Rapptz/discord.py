@@ -1,3 +1,5 @@
+import typing
+
 import discord
 from discord.ext import commands
 
@@ -44,7 +46,7 @@ async def channel_or_member(ctx: commands.Context, argument: str):
         # Try and convert to a Member instance.
         member = await member_converter.convert(ctx, argument)
     except commands.MemberNotFound:
-        # Could not convert to a member instance
+        # Could not convert to a Member instance
         pass
     else:
         # We have our `member` so lets return here.
@@ -60,6 +62,24 @@ async def channel_or_member(ctx: commands.Context, argument: str):
         return await ctx.send("Channel found: {}".format(channel))
 
     await ctx.send("No member or channel matching this ID was found.")
+
+@bot.command()
+async def alternative_channel_or_member(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]):
+    # This command signature utilises the `typing.Union` typehint.
+    # In discord.py this attempts a conversion of each type in this Union *in order*.
+    # So we will attempt to convert whatever is passed to `target` to a `discord.User` and if that fails
+    # we attempt to convert it to a `discord.TextChannel`
+    # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#typing-union
+    # NOTE: If a Union typehint converter fails it will raise `commands.errors.BadUnionArgument`
+    # instead of `commands.errors.BadArgument`.
+
+    # This is a more user friendly alternative to the above command.
+
+    # Let's check the type we actually got...
+    if isinstance(target, discord.User):
+        return await ctx.send("User found: {}".format(target))
+    elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
+        return await ctx.send("Channel found: {}".format(target))
 
 # Builtin type converters
 @bot.command()
