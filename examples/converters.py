@@ -25,14 +25,14 @@ async def userinfo(ctx: commands.Context, user: discord.User):
 @userinfo.error
 async def userinfo_error(ctx: commands.Context, error: Exception):
     # if the conversion above fails for any reason, it will raise `commands.errors.BadArgument`
-    # so we handle this in this error handler
+    # so we handle this in this error handler:
     if isinstance(error, commands.BadArgument):
         return await ctx.send("Couldn't find that user.")
     else:
         # Raise the error to the global error handler
         raise error
 
-# Manual use of converters will follow
+# Manual use of converters will follow:
 @bot.command()
 async def channel_or_member(ctx: commands.Context, argument: str):
     # NOTE: command parameters are `str` type by default, the typehint above is just for completeness' sake.
@@ -48,7 +48,7 @@ async def channel_or_member(ctx: commands.Context, argument: str):
         # Try and convert to a Member instance.
         member = await member_converter.convert(ctx, argument)
     except commands.MemberNotFound:
-        # Could not convert to a Member instance
+        # Could not convert to a Member instance.
         pass
     else:
         # We have our `member` so lets return here.
@@ -83,7 +83,7 @@ async def alternative_channel_or_member(ctx: commands.Context, target: typing.Un
     elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
         return await ctx.send("Channel found: {}".format(target.mention))
 
-# Built-in type converters
+# Built-in type converters.
 @bot.command()
 async def trial_converter(ctx: commands.Context, number: int, maybe: bool):
     # We want an `int` and a `bool` parameter here.
