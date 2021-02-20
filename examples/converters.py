@@ -67,9 +67,9 @@ async def channel_or_member(ctx: commands.Context, argument: str):
 @bot.command()
 async def alternative_channel_or_member(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]):
     # This command signature utilises the `typing.Union` typehint.
-    # In discord.py this attempts a conversion of each type in this Union *in order*.
-    # So we will attempt to convert whatever is passed to `target` to a `discord.User` and if that fails
-    # we attempt to convert it to a `discord.TextChannel`
+    # The `commands` framework attempts a conversion of each type in this Union *in order*.
+    # So, it will attempt to convert whatever is passed to `target` to a `discord.User` instance.
+    # If that fails, it will attempt to convert it to a `discord.TextChannel` instance.
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#typing-union
     # NOTE: If a Union typehint converter fails it will raise `commands.errors.BadUnionArgument`
     # instead of `commands.errors.BadArgument`.
