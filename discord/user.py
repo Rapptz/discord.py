@@ -713,7 +713,8 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. note::
 
-            This can only return mutual guilds within the client's internal cache.
+            This will only return mutual guilds within the client's internal cache.
+
         .. versionadded:: 1.7
         """
         return [guild for guild in self._state._guilds.values() if guild.get_member(self.id)]
