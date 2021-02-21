@@ -283,11 +283,13 @@ class Invite(Hashable):
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
+    target_user: Optional[:class:`User`]
+        The target of this invite in the case of stream invites
     """
 
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                 'temporary', 'max_uses', 'inviter', 'channel', '_state',
-                 'approximate_member_count', 'approximate_presence_count' )
+                 'temporary', 'max_uses', 'inviter', 'channel', 'target_user',
+                 '_state', 'approximate_member_count', 'approximate_presence_count')
 
     BASE = 'https://discord.gg'
 
@@ -305,8 +307,11 @@ class Invite(Hashable):
         self.approximate_member_count = data.get('approximate_member_count')
 
         inviter_data = data.get('inviter')
-        self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
+        self.inviter = inviter_data or self._state.store_user(inviter_data)
         self.channel = data.get('channel')
+        target_user_data = data.get('target_user')
+        self.target_user = target_user_data or self._state.store_user(target_user_data)
+        self._is_stream_invite = bool(data.get('target_user_type', False))
 
     @classmethod
     def from_incomplete(cls, *, state, data):
@@ -371,6 +376,10 @@ class Invite(Hashable):
     def url(self):
         """:class:`str`: A property that retrieves the invite URL."""
         return self.BASE + '/' + self.code
+
+    def is_stream_invite(self):
+        """:class:`bool`: Whether this invite is to a stream."""
+        return self._is_stream_invite
 
     async def delete(self, *, reason=None):
         """|coro|
