@@ -624,6 +624,12 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
+    def _resolve_name(name, package):
+        try:
+            name = importlib.util.resolve_name(name, package)
+        except ImportError:
+            raise errors.ExtensionNotFound(name)
+
     def load_extension(self, name, package=None):
         """Loads an extension.
 
@@ -651,6 +657,7 @@ class BotBase(GroupMixin):
         --------
         ExtensionNotFound
             The extension could not be imported.
+            This is also raised if the name of the extension could not be resolved using the provided ``package`` parameter.
         ExtensionAlreadyLoaded
             The extension is already loaded.
         NoEntryPointError
@@ -659,11 +666,7 @@ class BotBase(GroupMixin):
             The extension or its setup function had an execution error.
         """
 
-        try:
-            name = importlib.util.resolve_name(name, package)
-        except ImportError:
-            raise errors.ExtensionNotFound(name)
-
+        name = self._resolve_name(name, package)
         if name in self.__extensions:
             raise errors.ExtensionAlreadyLoaded(name)
 
@@ -705,11 +708,7 @@ class BotBase(GroupMixin):
             The extension was not loaded.
         """
 
-        try:
-            name = importlib.util.resolve_name(name, package)
-        except ImportError:
-            raise errors.ExtensionNotFound(name)
-
+        name = self._resolve_name(name, package)
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
@@ -744,17 +743,14 @@ class BotBase(GroupMixin):
             The extension was not loaded.
         ExtensionNotFound
             The extension could not be imported.
+            This is also raised if the name of the extension could not be resolved using the provided ``package`` parameter.
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
             The extension setup function had an execution error.
         """
 
-        try:
-            name = importlib.util.resolve_name(name, package)
-        except ImportError:
-            raise errors.ExtensionNotFound(name)
-
+        name = self._resolve_name(name, package)
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
