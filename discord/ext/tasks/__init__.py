@@ -161,7 +161,7 @@ class Loop:
         return self._next_iteration
 
     async def __call__(self, *args, **kwargs):
-        """|coro|
+        r"""|coro|
 
         Calls the internal callback that the task holds.
 
