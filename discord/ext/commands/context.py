@@ -212,7 +212,7 @@ class Context(discord.abc.Messageable):
 
     @property
     def invoked_parents(self):
-        """Mapping[:class:`Group`, :class:`str`] A readonly mapping of parent command to the alias used for that parent.
+        """Mapping[:class:`Group`, :class:`str`] A mapping of parent command to the alias used for that parent.
 
         .. versionadded:: 1.7
         """
