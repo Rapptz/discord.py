@@ -272,7 +272,7 @@ class HelpCommand:
     show_hidden: :class:`bool`
         Specifies if hidden commands should be shown in the output.
         Defaults to ``False``.
-    verify_checks: Union[:class:`bool`, :class:`None`]
+    verify_checks: Optional[:class:`bool`]
         Specifies if commands should have their :attr:`.Command.checks` called
         and verified. Defaults to ``True``.
     command_attrs: :class:`dict`
