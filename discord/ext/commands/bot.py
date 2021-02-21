@@ -624,7 +624,7 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
-    def _resolve_name(name, package):
+    def _resolve_name(self, name, package):
         try:
             name = importlib.util.resolve_name(name, package)
         except ImportError:
