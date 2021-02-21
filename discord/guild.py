@@ -1346,9 +1346,7 @@ class Guild(Hashable):
     async def fetch_ban(self, user):
         """|coro|
 
-        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
-        with a ``user`` and ``reason`` field. See :meth:`bans` for more
-        information.
+        Retrieves the :class:`BanEntry` for a user.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
@@ -1369,8 +1367,8 @@ class Guild(Hashable):
 
         Returns
         -------
-        BanEntry
-            The BanEntry object for the specified user.
+        :class:`BanEntry`
+            The :class:`BanEntry` object for the specified user.
         """
         data = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
@@ -1381,12 +1379,7 @@ class Guild(Hashable):
     async def bans(self):
         """|coro|
 
-        Retrieves all the users that are banned from the guild.
-
-        This coroutine returns a :class:`list` of BanEntry objects, which is a
-        namedtuple with a ``user`` field to denote the :class:`User`
-        that got banned along with a ``reason`` field specifying
-        why the user was banned that could be set to ``None``.
+        Retrieves all the users that are banned from the guild as a :class:`list` of :class:`BanEntry`.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
@@ -1400,8 +1393,8 @@ class Guild(Hashable):
 
         Returns
         --------
-        List[BanEntry]
-            A list of BanEntry objects.
+        List[:class:`BanEntry`]
+            A list of :class:`BanEntry` objects.
         """
 
         data = await self._state.http.get_bans(self.id)
