@@ -707,6 +707,18 @@ class User(BaseUser, discord.abc.Messageable):
         """
         return self._state._get_private_channel_by_user(self.id)
 
+    @property
+    def mutual_guilds(self):
+        """List[:class:`Guild`]: The guilds that the user shares with the client.
+
+        .. note::
+
+            This will only return mutual guilds within the client's internal cache.
+
+        .. versionadded:: 1.7
+        """
+        return [guild for guild in self._state._guilds.values() if guild.get_member(self.id)]
+
     async def create_dm(self):
         """Creates a :class:`DMChannel` with this user.
 
