@@ -53,6 +53,7 @@ __all__ = (
     'ExpireBehaviour',
     'ExpireBehavior',
     'StickerType',
+    'InviteUserTarget',
 )
 
 def _create_value_cls(name):
@@ -450,6 +451,10 @@ class StickerType(Enum):
     png = 1
     apng = 2
     lottie = 3
+
+class InviteUserTarget(Enum):
+    unknown = 0
+    stream  = 1
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
