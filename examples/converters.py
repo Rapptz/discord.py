@@ -74,13 +74,13 @@ class ChannelOrMemberConverter(commands.Converter):
 
 
 @bot.command()
-async def lockdown(ctx: commands.Context, argument: ChannelOrMemberConverter):
-    # So from the command signature, you can see that for `argument` we have typehinted
+async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
+    # So from the command signature, you can see that for `target` we have typehinted
     # the custom converter we defined previously.
-    # What will happen during command invocation is that the `argument` above will be passed to
+    # What will happen during command invocation is that the `target` above will be passed to
     # `ChannelOrMemberConverter.convert` and the conversion will go through the process defined there.
 
-    await ctx.send('Locking down {}!'.format(argument.mention))
+    await target.send('Hello, {}!'.format(target.name))
 
 @bot.command()
 async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]):
