@@ -5,17 +5,8 @@ from discord.ext import commands
 
 bot = commands.Bot(command_prefix=commands.when_mentioned, description="Nothing to see here!")
 
-@bot.event
-async def on_command(ctx):
-    try:
-        await ctx.message.delete(delay=5)
-    except discord.HTTPException:
-        # Oh well, looks like we don't have the ability
-        # to hide the secret.
-        pass
-
 # the `hidden` keyword argument hides it from the help command. 
-@bot.group(invoke_without_command=True, hidden=True)
+@bot.group(hidden=True)
 async def secret(ctx: commands.Context):
     """What is this "secret" you speak of?"""
     if ctx.invoked_subcommand is None:
@@ -28,28 +19,33 @@ def create_overwrites(ctx, *objects):
     A `discord.PermissionOverwrite` allows you to determine the permissions
     of an object, whether it be a `discord.Role` or a `discord.Member`.
 
-    In this case, the `read_messages` permission is being used to hide the channel
+    In this case, the `view_channel` permission is being used to hide the channel
     from being viewed by whoever does not meet the criteria, thus creating a
     secret channel.
     """
 
+    # a dict comprehension is being utilised here to set the same permission overwrites
+    # for each `discord.Role` or `discord.Member`.
     overwrites = {
-        obj: discord.PermissionOverwrite(read_messages=True) for obj in objects
+        obj: discord.PermissionOverwrite(view_channel=True)
+        for obj in objects
     }
- 
-    overwrites.setdefault(ctx.guild.default_role, discord.PermissionOverwrite(read_messages=False))
+
     # prevents the default role (@everyone) from viewing the channel
     # if it isn't already allowed to view the channel.
-    
-    overwrites[ctx.guild.me] = discord.PermissionOverwrite(read_messages=True)
+    overwrites.setdefault(ctx.guild.default_role, discord.PermissionOverwrite(view_channel=False))
+
     # makes sure the client is always allowed to view the channel.
+    overwrites[ctx.guild.me] = discord.PermissionOverwrite(view_channel=True)
 
     return overwrites
 
-@commands.guild_only()
+# since these commands rely on guild related features,
+# it is best to lock it to be guild-only.
 @secret.command()
+@commands.guild_only()
 async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]):
-    """This may or may not make a text channel with a specified name 
+    """This makes a text channel with a specified name 
     that is only visible to roles or members that are specified.
     """
     
@@ -62,10 +58,10 @@ async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.
         reason='Very secret business.',
     )
 
-@commands.guild_only()
 @secret.command()
+@commands.guild_only()
 async def voice(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]):
-    """This may or may not do the same thing as the `text` subcommand
+    """This does the same thing as the `text` subcommand
     but instead creates a voice channel.
     """
 
@@ -77,16 +73,18 @@ async def voice(ctx: commands.Context, name: str, *objects: typing.Union[discord
         reason='Very secret business.'
     )
 
-@commands.guild_only()
 @secret.command()
+@commands.guild_only()
 async def emoji(ctx: commands.Context, emoji: discord.PartialEmoji, *roles: discord.Role):
-    """There is a slight chance this could very well clone an emoji
-    that only specified roles are allowed to use.
+    """This clones a specified emoji that only specified roles
+    are allowed to use.
     """
 
+    # fetch the emoji asset and read it as bytes.
     emoji_bytes = await emoji.url.read()
-    # fetch the emoji asset and read it as bytes
 
+    # the key parameter here is `roles`, which controls
+    # what roles are able to use the emoji.
     await ctx.guild.create_custom_emoji(
         name=emoji.name,
         image=emoji_bytes,
