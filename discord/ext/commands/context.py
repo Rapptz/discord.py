@@ -212,7 +212,7 @@ class Context(discord.abc.Messageable):
 
     @property
     def invoked_parents(self):
-        """Mapping[:class:`Command`, :class:`str`] A readonly mapping of parent command to the alias used for that parent.
+        """Mapping[:class:`Group`, :class:`str`] A readonly mapping of parent command to the alias used for that parent.
 
         .. versionadded:: 1.7
         """
@@ -220,11 +220,11 @@ class Context(discord.abc.Messageable):
         index, previous = view.index, view.previous
         view.index = 0 + len(self.prefix)
         view.previous = 0 + len(self.prefix)
-        invoked_parents = dict()    # there might be another Mapping that could be more efficient
+        invoked_parents = dict()
         for parent in self.command.parents:
             invoked_parents[parent] = view.get_word()
             view.skip_ws()
-        self.view.index = index     # resetting the view, just in case
+        self.view.index = index
         self.view.previous = previous
         return invoked_parents
 
