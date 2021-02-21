@@ -250,7 +250,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param shard_id: The shard ID that has resumed.
     :type shard_id: :class:`int`
 
-.. function:: on_error(event, \*args, \*\*kwargs)
+.. function:: on_error(event, *args, **kwargs)
 
     Usually when an event raises an uncaught exception, a traceback is
     printed to stderr and the exception is ignored. If you want to
