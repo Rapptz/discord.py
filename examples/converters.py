@@ -29,14 +29,14 @@ async def userinfo(ctx: commands.Context, user: discord.User):
     user_id = user.id
     username = user.name
     avatar = user.avatar_url
-    await ctx.send("User found: {} -- {}\n{}".format(user_id, username, avatar))
+    await ctx.send('User found: {} -- {}\n{}'.format(user_id, username, avatar))
 
 @userinfo.error
 async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
     # if the conversion above fails for any reason, it will raise `commands.BadArgument`
     # so we handle this in this error handler:
     if isinstance(error, commands.BadArgument):
-        return await ctx.send("Couldn't find that user.")
+        return await ctx.send('Couldn\'t find that user.')
 
 # Custom Converter here
 class ChannelOrMemberConverter(commands.Converter):
@@ -80,14 +80,14 @@ async def lockdown(ctx: commands.Context, argument: ChannelOrMemberConverter):
     # `ChannelOrMemberConverter.convert` and the conversion will go through the process defined there.
 
     if argument is None:
-        return await ctx.send("No channel or member found with this argument.")
-    await ctx.send("Locking down {}!".format(argument.mention))
+        return await ctx.send('No channel or member found with this argument.')
+    await ctx.send('Locking down {}!'.format(argument.mention))
 
 @bot.command()
 async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]):
     # This command signature utilises the `typing.Union` typehint.
     # The `commands` framework attempts a conversion of each type in this Union *in order*.
-    # So, it will attempt to convert whatever is passed to `target` to a `discord.User` instance.
+    # So, it will attempt to convert whatever is passed to `target` to a `discord.Member` instance.
     # If that fails, it will attempt to convert it to a `discord.TextChannel` instance.
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#typing-union
     # NOTE: If a Union typehint converter fails it will raise `commands.BadUnionArgument`
@@ -97,10 +97,10 @@ async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, dis
     # previous Custom Converter example.
 
     # Let's check the type we actually got...
-    if isinstance(target, discord.User):
-        return await ctx.send("User found: {}, adding them to the ignore list.".format(target.mention))
+    if isinstance(target, discord.Member):
+        await ctx.send('Member found: {}, adding them to the ignore list.'.format(target.mention))
     elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
-        return await ctx.send("Channel found: {}, adding it to the ignore list.".format(target.mention))
+        await ctx.send('Channel found: {}, adding it to the ignore list.'.format(target.mention))
 
 # Built-in type converters.
 @bot.command()
@@ -110,7 +110,7 @@ async def multiply(ctx: commands.Context, number: int, maybe: bool):
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool
 
     if maybe is True:
-        return await ctx.send(str(number * 2))
-    return await ctx.send(str(number * 5))
+        return await ctx.send(number * 2)
+    await ctx.send(number * 5)
 
-bot.run("token")
+bot.run('token')
