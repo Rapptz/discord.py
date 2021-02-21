@@ -28,7 +28,7 @@ from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, VerificationLevel, try_enum
+from .enums import ChannelType, VerificationLevel, InviteUserTarget, try_enum
 
 class PartialInviteChannel:
     """Represents a "partial" invite channel.
@@ -285,11 +285,13 @@ class Invite(Hashable):
         The channel the invite is for.
     target_user: Optional[:class:`User`]
         The target of this invite in the case of stream invites
+        .. versionadded:: 1.7
     """
 
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
                  'temporary', 'max_uses', 'inviter', 'channel', 'target_user',
-                 '_state', 'approximate_member_count', 'approximate_presence_count')
+                 '_target_user_type', '_state', 'approximate_member_count',
+                 'approximate_presence_count')
 
     BASE = 'https://discord.gg'
 
@@ -311,7 +313,7 @@ class Invite(Hashable):
         self.channel = data.get('channel')
         target_user_data = data.get('target_user')
         self.target_user = target_user_data or self._state.store_user(target_user_data)
-        self._is_stream_invite = bool(data.get('target_user_type', False))
+        self._target_user_type = data.get('target_user_type', 0)
 
     @classmethod
     def from_incomplete(cls, *, state, data):
@@ -368,6 +370,14 @@ class Invite(Hashable):
         return hash(self.code)
 
     @property
+    def type(self):
+        """:class:`InviteUserTarget`: The invite's Discord type.
+
+        .. versionadded:: 1.7
+        """
+        return try_enum(InviteUserTarget, self._target_user_type)
+
+    @property
     def id(self):
         """:class:`str`: Returns the proper code portion of the invite."""
         return self.code
@@ -376,10 +386,6 @@ class Invite(Hashable):
     def url(self):
         """:class:`str`: A property that retrieves the invite URL."""
         return self.BASE + '/' + self.code
-
-    def is_stream_invite(self):
-        """:class:`bool`: Whether this invite is to a stream."""
-        return self._is_stream_invite
 
     async def delete(self, *, reason=None):
         """|coro|
