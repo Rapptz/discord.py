@@ -894,6 +894,10 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a :class:`Relationship` is added or removed from the
     :class:`ClientUser`.
 
+    .. warning::
+
+        This event is deprecated.
+
     :param relationship: The relationship that was added or removed.
     :type relationship: :class:`Relationship`
 
@@ -901,6 +905,10 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Relationship` is updated, e.g. when you
     block a friend or a friendship is accepted.
+
+    .. warning::
+
+        This event is deprecated.
 
     :param before: The previous relationship status.
     :type before: :class:`Relationship`
@@ -936,6 +944,10 @@ Profile
 .. class:: Profile
 
     A namedtuple representing a user's Discord public profile.
+
+    .. warning::
+
+        This class is deprecated.
 
     .. attribute:: user
 
@@ -1892,6 +1904,10 @@ of :class:`enum.Enum`.
 
     Specifies the type of :class:`Relationship`.
 
+    .. warning::
+
+        This enum is deprecated.
+
     .. note::
 
         This only applies to users, *not* bots.
@@ -1918,6 +1934,10 @@ of :class:`enum.Enum`.
     Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``
     in the Discord client.
 
+    .. warning::
+
+        This enum is deprecated.
+
     .. note::
 
         This only applies to users, *not* bots.
@@ -1939,6 +1959,10 @@ of :class:`enum.Enum`.
 
     Represents the options found in ``Settings > Privacy & Safety > Who Can Add You As A Friend``
     in the Discord client.
+
+    .. warning::
+
+        This enum is deprecated.
 
     .. note::
 
@@ -1969,6 +1993,10 @@ of :class:`enum.Enum`.
 
     Represents the user's Discord Nitro subscription type.
 
+    .. warning::
+
+        This enum is deprecated.
+
     .. note::
 
         This only applies to users, *not* bots.
@@ -1985,6 +2013,10 @@ of :class:`enum.Enum`.
 .. class:: Theme
 
     Represents the theme synced across all Discord clients.
+
+    .. warning::
+
+        This enum is deprecated.
 
     .. note::
 

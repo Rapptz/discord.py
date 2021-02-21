@@ -1244,12 +1244,17 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
+    @utils.deprecated()
     async def ack(self):
         """|coro|
 
         Marks this message as read.
 
         The user must not be a bot user.
+
+        .. warning::
+
+            This method is deprecated.
 
         Raises
         -------

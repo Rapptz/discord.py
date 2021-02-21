@@ -1274,6 +1274,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         return base
 
+    @utils.deprecated()
     async def add_recipients(self, *recipients):
         r"""|coro|
 
@@ -1283,6 +1284,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         Attempting to add more ends up in an exception. To
         add a recipient to the group, you must have a relationship
         with the user of type :attr:`RelationshipType.friend`.
+
+        .. warning::
+
+            This method is deprecated.
 
         Parameters
         -----------
@@ -1301,10 +1306,15 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         for recipient in recipients:
             await req(self.id, recipient.id)
 
+    @utils.deprecated()
     async def remove_recipients(self, *recipients):
         r"""|coro|
 
         Removes recipients from this group.
+
+        .. warning::
+
+            This method is deprecated.
 
         Parameters
         -----------
@@ -1323,10 +1333,15 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         for recipient in recipients:
             await req(self.id, recipient.id)
 
+    @utils.deprecated()
     async def edit(self, **fields):
         """|coro|
 
         Edits the group.
+
+        .. warning::
+
+            This method is deprecated.
 
         Parameters
         -----------

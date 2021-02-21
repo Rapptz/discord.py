@@ -1385,6 +1385,7 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
+    @utils.deprecated()
     async def fetch_user_profile(self, user_id):
         """|coro|
 
@@ -1393,6 +1394,10 @@ class Client:
         .. note::
 
             This can only be used by non-bot accounts.
+
+        .. warning::
+
+            This method is deprecated.
 
         Parameters
         ------------

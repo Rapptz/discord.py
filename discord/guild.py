@@ -1981,12 +1981,17 @@ class Guild(Hashable):
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
 
+    @utils.deprecated()
     def ack(self):
         """|coro|
 
         Marks every message in this guild as read.
 
         The user must not be a bot user.
+
+        .. warning::
+
+            This method is deprecated.
 
         Raises
         -------

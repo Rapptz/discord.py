@@ -33,6 +33,7 @@ from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, P
 from .errors import ClientException
 from .colour import Colour
 from .asset import Asset
+from .utils import deprecated
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()
@@ -353,8 +354,13 @@ class ClientUser(BaseUser):
         self.premium = data.get('premium', False)
         self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
 
+    @deprecated()
     def get_relationship(self, user_id):
         """Retrieves the :class:`Relationship` if applicable.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -501,12 +507,17 @@ class ClientUser(BaseUser):
 
         self._update(data)
 
+    @deprecated()
     async def create_group(self, *recipients):
         r"""|coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
         of type :attr:`RelationshipType.friend`.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -541,10 +552,15 @@ class ClientUser(BaseUser):
         data = await self._state.http.start_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
 
+    @deprecated()
     async def edit_settings(self, **kwargs):
         """|coro|
 
         Edits the client user's settings.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -736,10 +752,15 @@ class User(BaseUser, discord.abc.Messageable):
         """
         return self._state.user.get_relationship(self.id)
 
+    @deprecated()
     async def mutual_friends(self):
         """|coro|
 
         Gets all mutual friends of this user.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -761,8 +782,13 @@ class User(BaseUser, discord.abc.Messageable):
         mutuals = await state.http.get_mutual_friends(self.id)
         return [User(state=state, data=friend) for friend in mutuals]
 
+    @deprecated()
     def is_friend(self):
         """:class:`bool`: Checks if the user is your friend.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -773,8 +799,13 @@ class User(BaseUser, discord.abc.Messageable):
             return False
         return r.type is RelationshipType.friend
 
+    @deprecated()
     def is_blocked(self):
         """:class:`bool`: Checks if the user is blocked.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -785,10 +816,15 @@ class User(BaseUser, discord.abc.Messageable):
             return False
         return r.type is RelationshipType.blocked
 
+    @deprecated()
     async def block(self):
         """|coro|
 
         Blocks the user.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -804,10 +840,15 @@ class User(BaseUser, discord.abc.Messageable):
 
         await self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
 
+    @deprecated()
     async def unblock(self):
         """|coro|
 
         Unblocks the user.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -822,10 +863,15 @@ class User(BaseUser, discord.abc.Messageable):
         """
         await self._state.http.remove_relationship(self.id)
 
+    @deprecated()
     async def remove_friend(self):
         """|coro|
 
         Removes the user as a friend.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -840,10 +886,15 @@ class User(BaseUser, discord.abc.Messageable):
         """
         await self._state.http.remove_relationship(self.id)
 
+    @deprecated()
     async def send_friend_request(self):
         """|coro|
 
         Sends the user a friend request.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 
@@ -858,10 +909,15 @@ class User(BaseUser, discord.abc.Messageable):
         """
         await self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
 
+    @deprecated()
     async def profile(self):
         """|coro|
 
         Gets the user's profile.
+
+        .. warning::
+
+            This method is deprecated.
 
         .. note::
 

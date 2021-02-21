@@ -25,12 +25,17 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .enums import RelationshipType, try_enum
+from . import utils
 
 class Relationship:
     """Represents a relationship in Discord.
 
     A relationship is like a friendship, a person who is blocked, etc.
     Only non-bot accounts can have relationships.
+
+    .. warning::
+
+        This class is deprecated.
 
     Attributes
     -----------
@@ -50,10 +55,15 @@ class Relationship:
     def __repr__(self):
         return '<Relationship user={0.user!r} type={0.type!r}>'.format(self)
 
+    @utils.deprecated()
     async def delete(self):
         """|coro|
 
         Deletes the relationship.
+
+        .. warning::
+
+            This method is deprecated.
 
         Raises
         ------
@@ -63,11 +73,16 @@ class Relationship:
 
         await self._state.http.remove_relationship(self.user.id)
 
+    @utils.deprecated()
     async def accept(self):
         """|coro|
 
         Accepts the relationship request. e.g. accepting a
         friend request.
+
+        .. warning::
+
+            This method is deprecated.
 
         Raises
         -------
