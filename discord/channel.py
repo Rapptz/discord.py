@@ -347,7 +347,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         bulk: :class:`bool`
             If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
             a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
-            fall back to single delete if current account is a user bot, or if messages are
+            fall back to single delete if current account is a user bot (now deprecated), or if messages are
             older than two weeks.
 
         Raises

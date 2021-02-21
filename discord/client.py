@@ -1391,13 +1391,13 @@ class Client:
 
         Gets an arbitrary user's profile.
 
-        .. note::
-
-            This can only be used by non-bot accounts.
-
         .. warning::
 
             This method is deprecated.
+
+        .. note::
+
+            This can only be used by non-bot accounts.
 
         Parameters
         ------------

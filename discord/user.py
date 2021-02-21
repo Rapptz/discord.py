@@ -322,14 +322,28 @@ class ClientUser(BaseUser):
         Specifies if the user is a verified account.
     email: Optional[:class:`str`]
         The email the user used when registering.
+
+        .. warning::
+
+            This attribute is deprecated.
+
     locale: Optional[:class:`str`]
         The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
+
+        .. warning::
+
+            This attribute is deprecated.
+
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
+
+        .. warning::
+
+            This attribute is deprecated.
     """
     __slots__ = BaseUser.__slots__ + \
                 ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
@@ -382,6 +396,10 @@ class ClientUser(BaseUser):
     def relationships(self):
         """List[:class:`User`]: Returns all the relationships that the user has.
 
+        .. warning::
+
+            This property is deprecated.
+
         .. note::
 
             This can only be used by non-bot accounts.
@@ -392,6 +410,10 @@ class ClientUser(BaseUser):
     def friends(self):
         r"""List[:class:`User`]: Returns all the users that the user is friends with.
 
+        .. warning::
+
+            This property is deprecated.
+
         .. note::
 
             This can only be used by non-bot accounts.
@@ -401,6 +423,10 @@ class ClientUser(BaseUser):
     @property
     def blocked(self):
         r"""List[:class:`User`]: Returns all the users that the user has blocked.
+
+        .. warning::
+
+            This property is deprecated.
 
         .. note::
 
@@ -415,6 +441,10 @@ class ClientUser(BaseUser):
 
         If a bot account is used then a password field is optional,
         otherwise it is required.
+
+        .. warning::
+
+            The user account-only fields are deprecated.
 
         .. note::
 
