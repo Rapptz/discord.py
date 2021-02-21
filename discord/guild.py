@@ -1347,7 +1347,7 @@ class Guild(Hashable):
         """|coro|
 
         Retrieves the :class:`BanEntry` for a user, which is a namedtuple
-        with a ``user`` and ``reason`` field. See :meth:`bans` for more
+        with a :attr:`~BanEntry.user` and :attr:`~BanEntry.reason` field. See :meth:`bans` for more
         information.
 
         You must have the :attr:`~Permissions.ban_members` permission
@@ -1369,8 +1369,8 @@ class Guild(Hashable):
 
         Returns
         -------
-        BanEntry
-            The BanEntry object for the specified user.
+        :class:`BanEntry`
+            The :class:`BanEntry` object for the specified user.
         """
         data = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
