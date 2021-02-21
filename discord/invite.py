@@ -370,7 +370,7 @@ class Invite(Hashable):
         return hash(self.code)
 
     @property
-    def type(self):
+    def target_user_type(self):
         """:class:`InviteUserTarget`: The invite's Discord type.
 
         .. versionadded:: 1.7
