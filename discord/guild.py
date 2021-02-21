@@ -1346,9 +1346,7 @@ class Guild(Hashable):
     async def fetch_ban(self, user):
         """|coro|
 
-        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
-        with a :attr:`~BanEntry.user` and :attr:`~BanEntry.reason` field. See :meth:`bans` for more
-        information.
+        Retrieves the :class:`BanEntry` for a user.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
@@ -1381,12 +1379,7 @@ class Guild(Hashable):
     async def bans(self):
         """|coro|
 
-        Retrieves all the users that are banned from the guild.
-
-        This coroutine returns a :class:`list` of :class:`BanEntry` objects, which is a
-        namedtuple with a :attr:`~BanEntry.user` field to denote the :class:`User`
-        that got banned along with a :class:`~BanEntry.reason` field specifying
-        why the user was banned that could be set to ``None``.
+        Retrieves all the users that are banned from the guild as a :class:`list` of :class:`BanEntry`.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
