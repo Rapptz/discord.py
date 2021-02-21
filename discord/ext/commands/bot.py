@@ -659,7 +659,11 @@ class BotBase(GroupMixin):
             The extension or its setup function had an execution error.
         """
 
-        name = importlib.util.resolve_name(name, package)
+        try:
+            name = importlib.util.resolve_name(name, package)
+        except ImportError:
+            raise errors.ExtensionNotFound(name)
+
         if name in self.__extensions:
             raise errors.ExtensionAlreadyLoaded(name)
 
@@ -695,11 +699,17 @@ class BotBase(GroupMixin):
 
         Raises
         -------
+        ExtensionNotFound
+            The name of the extension could not be resolved using the provided ``package`` parameter.
         ExtensionNotLoaded
             The extension was not loaded.
         """
 
-        name = importlib.util.resolve_name(name, package)
+        try:
+            name = importlib.util.resolve_name(name, package)
+        except ImportError:
+            raise errors.ExtensionNotFound(name)
+
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
@@ -740,7 +750,11 @@ class BotBase(GroupMixin):
             The extension setup function had an execution error.
         """
 
-        name = importlib.util.resolve_name(name, package)
+        try:
+            name = importlib.util.resolve_name(name, package)
+        except ImportError:
+            raise errors.ExtensionNotFound(name)
+
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
