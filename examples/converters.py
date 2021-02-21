@@ -67,8 +67,9 @@ class ChannelOrMemberConverter(commands.Converter):
         else:
             return channel
 
-        # In the case that it was not converted we should return None for expliciness' sake.
-        return None
+        # In the case that it was not converted we can return None or raise an error.
+        # I will raise an error.
+        raise commands.BadArgument('No Member or TextChannel could be converted from "{}"'.format(argument))
 
 
 
@@ -79,8 +80,6 @@ async def lockdown(ctx: commands.Context, argument: ChannelOrMemberConverter):
     # What will happen during command invocation is that the `argument` above will be passed to
     # `ChannelOrMemberConverter.convert` and the conversion will go through the process defined there.
 
-    if argument is None:
-        return await ctx.send('No channel or member found with this argument.')
     await ctx.send('Locking down {}!'.format(argument.mention))
 
 @bot.command()
