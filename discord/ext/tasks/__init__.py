@@ -173,7 +173,7 @@ class Loop:
         """Optional[List[:class:`datetime.time`]]: Read-only list for the exact times this loop runs at.
         ``None`` if relative times were passed instead.
 
-        .. versionadded:: 1.7.0
+        .. versionadded:: 1.7
         """
         return self._time.copy()
 
@@ -531,7 +531,7 @@ class Loop:
             value of :class:`datetime.time` should be passed.
             This cannot be used in conjunction with the relative time parameters.
 
-            .. versionadded:: 1.7.0
+            .. versionadded:: 1.7
 
             .. note::
 
@@ -580,7 +580,7 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True
         value of :class:`datetime.time` should be passed.
         This cannot be used in conjunction with the relative time parameters.
 
-        .. versionadded:: 1.7.0
+        .. versionadded:: 1.7
         
         .. note::
 
