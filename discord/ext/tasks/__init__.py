@@ -478,6 +478,7 @@ class Loop:
         else:
             next_date = now.date()
 
+        self._time_index += 1
         return datetime.datetime.combine(next_date, next_time)
 
     def _prepare_time_index(self):
