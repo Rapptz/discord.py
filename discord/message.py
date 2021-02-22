@@ -726,9 +726,6 @@ class Message:
 
         if self.type is MessageType.guild_discovery_grave_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
-        
-        if self.type is MessageType.thread_created:
-            return '{0.author.name} started a thread'.format(self)
 
     async def delete(self, *, delay=None):
         """|coro|
