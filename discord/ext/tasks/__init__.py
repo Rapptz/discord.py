@@ -31,6 +31,7 @@ import logging
 import sys
 import traceback
 
+from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class Loop:
 
     The main interface to create this is through :func:`loop`.
     """
-    def __init__(self, coro, seconds, hours, minutes, count, reconnect, loop):
+    def __init__(self, coro, seconds, hours, minutes, time, count, reconnect, loop):
         self.coro = coro
         self.reconnect = reconnect
         self.loop = loop
@@ -65,7 +66,7 @@ class Loop:
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
 
-        self.change_interval(seconds=seconds, minutes=minutes, hours=hours)
+        self.change_interval(seconds=seconds, minutes=minutes, hours=hours, time=time)
         self._last_iteration_failed = False
         self._last_iteration = None
         self._next_iteration = None
@@ -88,9 +89,14 @@ class Loop:
         await self._call_loop_function('before_loop')
         sleep_until = discord.utils.sleep_until
         self._last_iteration_failed = False
-        self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
+        if self._time is not None:
+            # the time index should be prepared every time the internal loop is started
+            self._prepare_time_index()
+            self._next_iteration = self._get_next_sleep_time()
+        else:
+            self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
-            await asyncio.sleep(0) # allows canceling in before_loop
+            await sleep_until(self._next_iteration) # allows canceling in before_loop
             while True:
                 if not self._last_iteration_failed:
                     self._last_iteration = self._next_iteration
@@ -140,6 +146,40 @@ class Loop:
         copy._error = self._error
         setattr(obj, self.coro.__name__, copy)
         return copy
+
+    @property
+    def seconds(self):
+        """
+        Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of seconds
+        between each iteration. ``None`` if an explicit ``time`` value was passed instead.
+        """
+        return self._seconds
+    
+    @property
+    def minutes(self):
+        """
+        Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of minutes
+        between each iteration. ``None`` if an explicit ``time`` value was passed instead.
+        """
+        return self._minutes
+    
+    @property
+    def hours(self):
+        """
+        Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of hours
+        between each iteration. ``None`` if an explicit ``time`` value was passed instead.
+        """
+        return self._hours
+
+    @property
+    def time(self):
+        """
+        Optional[List[:class:`datetime.time`]]: Read-only list for the exact times this loop runs at.
+        ``None`` if relative times were passed instead.
+
+        .. versionadded:: 1.7.0
+        """
+        return self._time.copy()
 
     @property
     def current_loop(self):
@@ -426,9 +466,53 @@ class Loop:
         return coro
 
     def _get_next_sleep_time(self):
-        return self._last_iteration + datetime.timedelta(seconds=self._sleep)
+        if self._sleep is not None:
+            return self._last_iteration + datetime.timedelta(seconds=self._sleep)
 
-    def change_interval(self, *, seconds=0, minutes=0, hours=0):
+        if self._time_index > len(self._time):
+            self._time_index = 0
+
+        # microseconds in calculation can sometimes lead to sleep time being too small
+        now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+
+        next_time = self._time[self._time_index]
+        if next_time == 0:
+            # we can assume that the earliest time should be scheduled for tomorrow
+            next_date = now + datetime.timedelta(days=1)
+        else:
+            next_date = now.date()
+
+        return datetime.datetime.combine(next_date, next_time)
+
+    def _prepare_time_index(self):
+        # pre-condition: self._time is set
+        time_now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).timetz()
+        for idx, time in enumerate(self._time):
+            if time >= time_now:
+                self._time_index = idx
+                break
+        else:
+            self._time_index = 0
+
+    def _get_time_parameter(self, time, *, inst=isinstance, dt=datetime.time, utc=datetime.timezone.utc):
+        if inst(time, dt):
+            ret = time if time.tzinfo is not None else time.replace(tzinfo=utc)
+            return [ret]
+        if not inst(time, Sequence):
+            raise TypeError('time parameter must be datetime.time or a sequence of datetime.time')
+        if not time:
+            raise ValueError('time parameter must not be an empty sequence.')
+
+        ret = []
+        for index, t in enumerate(time):
+            if not inst(t, dt):
+                raise TypeError('index %d of time sequence expected %r not %r' % (index, dt, type(t)))
+            ret.append(t if t.tzinfo is not None else t.replace(tzinfo=utc))
+
+        ret = sorted(set(ret)) # de-dupe and sort times
+        return ret
+
+    def change_interval(self, *, seconds=0, minutes=0, hours=0, time=None):
         """Changes the interval for the sleep time.
 
         .. note::
@@ -440,40 +524,72 @@ class Loop:
 
         Parameters
         ------------
-        seconds: :class:`float`
+        seconds: Union[:class:`int`, :class:`float`]
             The number of seconds between every iteration.
-        minutes: :class:`float`
+        minutes: Union[:class:`int`, :class:`float`]
             The number of minutes between every iteration.
-        hours: :class:`float`
+        hours: Union[:class:`int`, :class:`float`]
             The number of hours between every iteration.
+        time: Union[:class:`datetime.time`, Sequnce[:class:`datetime.time`]]
+            The exact times to run this loop at. Either a non-empty list or a single
+            value of :class:`datetime.time` should be passed.
+            This cannot be used in conjunction with the relative time parameters.
+
+            .. versionadded:: 1.7.0
+
+            .. note::
+
+                Duplicate times will be ignored, and only run once.
 
         Raises
         -------
         ValueError
             An invalid value was given.
+        TypeError
+            An invalid value for the ``time`` parameter was passed, or the
+            ``time`` parameter was passed in conjunction with relative time parameters.
         """
 
-        sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
-        if sleep < 0:
-            raise ValueError('Total number of seconds cannot be less than zero.')
+        if time is None:
+            sleep = seconds + (minutes * 60.0) + (hours * 3600.0)
+            if sleep < 0:
+                raise ValueError('Total number of seconds cannot be less than zero.')
 
-        self._sleep = sleep
-        self.seconds = seconds
-        self.hours = hours
-        self.minutes = minutes
+            self._sleep = sleep
+            self._seconds = seconds
+            self._hours = hours
+            self._minutes = minutes
+            self._time = None
+        else:
+            if any((seconds, minutes, hours)):
+                raise TypeError('Cannot mix explicit time with relative time')
+            self._time = self._get_time_parameter(time)
+            self._sleep = self._seconds = self._minutes = self._hours = None
 
-def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None):
+
+def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
     Parameters
     ------------
-    seconds: :class:`float`
+    seconds: Union[:class:`int`, :class:`float`]
         The number of seconds between every iteration.
-    minutes: :class:`float`
+    minutes: Union[:class:`int`, :class:`float`]
         The number of minutes between every iteration.
-    hours: :class:`float`
+    hours: Union[:class:`int`, :class:`float`]
         The number of hours between every iteration.
+    time: Union[:class:`datetime.time`, Sequence[:class:`datetime.time`]]
+        The exact times to run this loop at. Either a non-empty list or a single
+        value of :class:`datetime.time` should be passed.
+        This cannot be used in conjunction with the relative time parameters.
+
+        .. versionadded:: 1.7.0
+        
+        .. note::
+
+            Duplicate times will be ignored, and only run once.
+
     count: Optional[:class:`int`]
         The number of loops to do, ``None`` if it should be an
         infinite loop.
@@ -490,7 +606,8 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
     ValueError
         An invalid value was given.
     TypeError
-        The function was not a coroutine.
+        The function was not a coroutine, or ``times`` parameter was
+        passed in conjunction with relative time parameters.
     """
     def decorator(func):
         kwargs = {
@@ -498,6 +615,7 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, reconnect=True, loop=None
             'minutes': minutes,
             'hours': hours,
             'count': count,
+            'time': time,
             'reconnect': reconnect,
             'loop': loop
         }
