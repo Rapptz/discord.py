@@ -2091,6 +2091,20 @@ of :class:`enum.Enum`.
 
         Represents a sticker with a lottie image.
 
+.. class:: InviteUserTarget
+
+    Represents the type of target an invite contains.
+
+    .. versionadded:: 1.7
+
+    .. attribute:: unknown
+
+        Represents the default case for invite objects.
+
+    .. attribute:: stream
+
+        Represents the invite directing to a stream.
+
 Async Iterator
 ----------------
 
