@@ -1285,9 +1285,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         add a recipient to the group, you must have a relationship
         with the user of type :attr:`RelationshipType.friend`.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         Parameters
         -----------
@@ -1312,9 +1310,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Removes recipients from this group.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         Parameters
         -----------
@@ -1339,9 +1335,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         Edits the group.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         Parameters
         -----------

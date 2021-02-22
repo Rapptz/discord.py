@@ -323,9 +323,7 @@ class ClientUser(BaseUser):
     email: Optional[:class:`str`]
         The email the user used when registering.
 
-        .. warning::
-
-            This attribute is deprecated.
+        .. deprecated:: 1.7
 
     locale: Optional[:class:`str`]
         The IETF language tag used to identify the language the user is using.
@@ -334,16 +332,12 @@ class ClientUser(BaseUser):
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
 
-        .. warning::
-
-            This attribute is deprecated.
+        .. deprecated:: 1.7
 
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
 
-        .. warning::
-
-            This attribute is deprecated.
+        .. deprecated:: 1.7
     """
     __slots__ = BaseUser.__slots__ + \
                 ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
@@ -372,9 +366,7 @@ class ClientUser(BaseUser):
     def get_relationship(self, user_id):
         """Retrieves the :class:`Relationship` if applicable.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -396,9 +388,7 @@ class ClientUser(BaseUser):
     def relationships(self):
         """List[:class:`User`]: Returns all the relationships that the user has.
 
-        .. warning::
-
-            This property is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -410,9 +400,7 @@ class ClientUser(BaseUser):
     def friends(self):
         r"""List[:class:`User`]: Returns all the users that the user is friends with.
 
-        .. warning::
-
-            This property is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -424,9 +412,7 @@ class ClientUser(BaseUser):
     def blocked(self):
         r"""List[:class:`User`]: Returns all the users that the user has blocked.
 
-        .. warning::
-
-            This property is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -545,9 +531,7 @@ class ClientUser(BaseUser):
         provided. These recipients must be have a relationship
         of type :attr:`RelationshipType.friend`.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -588,9 +572,7 @@ class ClientUser(BaseUser):
 
         Edits the client user's settings.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -788,9 +770,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Gets all mutual friends of this user.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -816,9 +796,7 @@ class User(BaseUser, discord.abc.Messageable):
     def is_friend(self):
         """:class:`bool`: Checks if the user is your friend.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -833,9 +811,7 @@ class User(BaseUser, discord.abc.Messageable):
     def is_blocked(self):
         """:class:`bool`: Checks if the user is blocked.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -852,9 +828,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Blocks the user.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -876,9 +850,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Unblocks the user.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -899,9 +871,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Removes the user as a friend.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -922,9 +892,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Sends the user a friend request.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -945,9 +913,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         Gets the user's profile.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 

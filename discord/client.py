@@ -1391,9 +1391,7 @@ class Client:
 
         Gets an arbitrary user's profile.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         .. note::
 

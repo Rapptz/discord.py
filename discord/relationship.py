@@ -33,9 +33,7 @@ class Relationship:
     A relationship is like a friendship, a person who is blocked, etc.
     Only non-bot accounts can have relationships.
 
-    .. warning::
-
-        This class is deprecated.
+    .. deprecated:: 1.7
 
     Attributes
     -----------
@@ -61,9 +59,7 @@ class Relationship:
 
         Deletes the relationship.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         Raises
         ------
@@ -80,9 +76,7 @@ class Relationship:
         Accepts the relationship request. e.g. accepting a
         friend request.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         Raises
         -------

@@ -1252,9 +1252,7 @@ class Message(Hashable):
 
         The user must not be a bot user.
 
-        .. warning::
-
-            This method is deprecated.
+        .. deprecated:: 1.7
 
         Raises
         -------
