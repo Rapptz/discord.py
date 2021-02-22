@@ -549,7 +549,6 @@ def escape_mentions(text):
     """
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', text)
 
-
 class _Unset:
     ...
 
