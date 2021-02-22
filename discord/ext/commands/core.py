@@ -1342,6 +1342,8 @@ class Group(GroupMixin, Command):
             injected = hooked_wrapped_callback(self, ctx, self.callback)
             await injected(*ctx.args, **ctx.kwargs)
 
+        ctx.invoked_parents.append(ctx.invoked_with)
+
         if trigger and ctx.invoked_subcommand:
             ctx.invoked_with = trigger
             await ctx.invoked_subcommand.invoke(ctx)
@@ -1379,6 +1381,8 @@ class Group(GroupMixin, Command):
             finally:
                 if call_hooks:
                     await self.call_after_hooks(ctx)
+
+        ctx.invoked_parents.append(ctx.invoked_with)
 
         if trigger and ctx.invoked_subcommand:
             ctx.invoked_with = trigger
