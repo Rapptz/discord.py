@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data
+from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, _unset
 from .enums import VoiceRegion
 from .guild import Guild
 
@@ -105,7 +105,9 @@ class Template:
 
     def __init__(self, *, state, data):
         self._state = state
-
+        self._store(data)
+    
+    def _store(self, data):
         self.code = data['code']
         self.uses = data['usage_count']
         self.name =  data['name']
@@ -117,11 +119,17 @@ class Template:
         self.updated_at = parse_time(data.get('updated_at'))
 
         id = _get_as_snowflake(data, 'source_guild_id')
-        source_serialised = data['serialized_source_guild']
-        source_serialised['id'] = id
-        state = _PartialTemplateState(state=self._state)
 
-        self.source_guild = Guild(data=source_serialised, state=state)
+        guild = self._state._get_guild(id)
+
+        if guild is None:
+            source_serialised = data['serialized_source_guild']
+            source_serialised['id'] = id
+            state = _PartialTemplateState(state=self._state)
+
+            guild = Guild(data=source_serialised, state=state)
+        
+        self.source_guild = guild
 
     def __repr__(self):
         return '<Template code={0.code!r} uses={0.uses} name={0.name!r}' \
@@ -167,4 +175,86 @@ class Template:
             region = region.value
 
         data = await self._state.http.create_from_template(self.code, name, region, icon)
-        return Guild(data=data, state=self._state)
+        return Guild(data=data, state=self._state)#
+    
+    async def sync(self):
+        """|coro|
+        
+        Sync the template to the guild's current state.
+
+        You must have the :attr:`~Permissions.manage_guild` permission in the
+        source guild to do this.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        HTTPException
+            Editing the template failed.
+        Forbidden
+            You don't have permissions to edit the template.
+        NotFound
+            This template does not exist.
+        """
+
+        data = await self._state.http.sync_template(self.source_guild.id, self.code)
+
+        self._store(data)
+
+    async def edit(self, *, name=None, description=_unset):
+        """|coro|
+        
+        Edit the template metadata.
+        
+        You must have the :attr:`~Permissions.manage_guild` permission in the
+        source guild to do this.
+
+        .. versionadded:: 1.7
+        
+        Parameters
+        ------------
+        name: Optional[:class:`str`]
+            The template's new name.
+        description: Optional[:class:`str`]
+            The template's description.
+
+        Raises
+        -------
+        HTTPException
+            Editing the template failed.
+        Forbidden
+            You don't have permissions to edit the template.
+        NotFound
+            This template does not exist.
+        """
+        payload = {
+            'name': name or self.name
+        }
+
+        if description is not _unset:
+            payload['description'] = description
+        
+        data = await self._state.http.edit_template(self.source_guild.id, self.code, payload)
+
+        self._store(data)
+    
+    async def delete(self):
+        """|coro|
+        
+        Delete the template.
+        
+        You must have the :attr:`~Permissions.manage_guild` permission in the
+        source guild to do this.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        HTTPException
+            Editing the template failed.
+        Forbidden
+            You don't have permissions to edit the template.
+        NotFound
+            This template does not exist.
+        """
+        await self._state.http.delete_template(self.source_guild.id, self.code)
