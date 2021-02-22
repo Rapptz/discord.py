@@ -150,14 +150,16 @@ class Enum(metaclass=EnumMeta):
 
 
 class ChannelType(Enum):
-    text     = 0
-    private  = 1
-    voice    = 2
-    group    = 3
-    category = 4
-    news     = 5
-    store    = 6
-    thread   = 7
+    text                = 0
+    private             = 1
+    voice               = 2
+    group               = 3
+    category            = 4
+    news                = 5
+    store               = 6
+    announcement_thread = 10
+    public_thread       = 11
+    private_thread      = 12
 
     def __str__(self):
         return self.name
@@ -176,6 +178,7 @@ class MessageType(Enum):
     premium_guild_tier_2       = 10
     premium_guild_tier_3       = 11
     channel_follow_add         = 12
+    thread_created             = 18
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
