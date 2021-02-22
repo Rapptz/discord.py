@@ -495,6 +495,8 @@ class Client:
             Keyword argument that specifies if the account logging on is a bot
             token or not.
 
+            .. deprecated:: 1.7
+
         Raises
         ------
         :exc:`.LoginFailure`
