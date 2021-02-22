@@ -149,32 +149,28 @@ class Loop:
 
     @property
     def seconds(self):
-        """
-        Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of seconds
+        """Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of seconds
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
         """
         return self._seconds
     
     @property
     def minutes(self):
-        """
-        Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of minutes
+        """Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of minutes
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
         """
         return self._minutes
     
     @property
     def hours(self):
-        """
-        Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of hours
+        """Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of hours
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
         """
         return self._hours
 
     @property
     def time(self):
-        """
-        Optional[List[:class:`datetime.time`]]: Read-only list for the exact times this loop runs at.
+        """Optional[List[:class:`datetime.time`]]: Read-only list for the exact times this loop runs at.
         ``None`` if relative times were passed instead.
 
         .. versionadded:: 1.7.0
