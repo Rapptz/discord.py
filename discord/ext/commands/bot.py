@@ -626,11 +626,11 @@ class BotBase(GroupMixin):
 
     def _resolve_name(self, name, package):
         try:
-            name = importlib.util.resolve_name(name, package)
+            return importlib.util.resolve_name(name, package)
         except ImportError:
             raise errors.ExtensionNotFound(name)
 
-    def load_extension(self, name, package=None):
+    def load_extension(self, name, *, package=None):
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
@@ -657,7 +657,8 @@ class BotBase(GroupMixin):
         --------
         ExtensionNotFound
             The extension could not be imported.
-            This is also raised if the name of the extension could not be resolved using the provided ``package`` parameter.
+            This is also raised if the name of the extension could not
+            be resolved using the provided ``package`` parameter.
         ExtensionAlreadyLoaded
             The extension is already loaded.
         NoEntryPointError
@@ -676,7 +677,7 @@ class BotBase(GroupMixin):
 
         self._load_from_module_spec(spec, name)
 
-    def unload_extension(self, name, package=None):
+    def unload_extension(self, name, *, package=None):
         """Unloads an extension.
 
         When the extension is unloaded, all commands, listeners, and cogs are
@@ -703,7 +704,8 @@ class BotBase(GroupMixin):
         Raises
         -------
         ExtensionNotFound
-            The name of the extension could not be resolved using the provided ``package`` parameter.
+            The name of the extension could not
+            be resolved using the provided ``package`` parameter.
         ExtensionNotLoaded
             The extension was not loaded.
         """
@@ -716,7 +718,7 @@ class BotBase(GroupMixin):
         self._remove_module_references(lib.__name__)
         self._call_module_finalizers(lib, name)
 
-    def reload_extension(self, name, package=None):
+    def reload_extension(self, name, *, package=None):
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
@@ -743,7 +745,8 @@ class BotBase(GroupMixin):
             The extension was not loaded.
         ExtensionNotFound
             The extension could not be imported.
-            This is also raised if the name of the extension could not be resolved using the provided ``package`` parameter.
+            This is also raised if the name of the extension could not
+            be resolved using the provided ``package`` parameter.
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
