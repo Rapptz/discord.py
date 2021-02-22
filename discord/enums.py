@@ -176,6 +176,8 @@ class MessageType(Enum):
     premium_guild_tier_2       = 10
     premium_guild_tier_3       = 11
     channel_follow_add         = 12
+    reply                      = 19
+    application_command        = 20
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
