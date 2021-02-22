@@ -371,7 +371,7 @@ class Invite(Hashable):
 
     @property
     def target_user_type(self):
-        """:class:`InviteUserTarget`: The invite's Discord type.
+        """:class:`InviteUserTarget`: The invite's :attr:`target_user` type.
 
         .. versionadded:: 1.7
         """
