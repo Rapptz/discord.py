@@ -748,7 +748,7 @@ class CustomActivity(BaseActivity):
         return '<CustomActivity name={0.name!r} emoji={0.emoji!r}>'.format(self)
 
 
-def create_activity(data):
+def create_activity(data, state):
     if not data:
         return None
 
@@ -761,13 +761,17 @@ def create_activity(data):
         try:
             name = data.pop('name')
         except KeyError:
-            return Activity(**data)
+            ret = Activity(**data)
         else:
-            return CustomActivity(name=name, **data)
+            ret = CustomActivity(name=name, **data)
     elif game_type is ActivityType.streaming:
         if 'url' in data:
             return Streaming(**data)
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
-    return Activity(**data)
+    ret = Activity(**data)
+
+    if isinstance(ret.emoji, PartialEmoji):
+        ret.emoji._state = state
+    return ret

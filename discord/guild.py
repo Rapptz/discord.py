@@ -1317,7 +1317,7 @@ class Guild(Hashable):
     async def fetch_member(self, member_id):
         """|coro|
 
-        Retrieves a :class:`Member` from a guild ID, and a member ID.
+        Retreives a :class:`Member` from a guild ID, and a member ID.
 
         .. note::
 

@@ -149,7 +149,7 @@ class WidgetMember(BaseUser):
         except KeyError:
             self.activity = None
         else:
-            self.activity = create_activity(game)
+            self.activity = create_activity(game, state)
 
         self.connected_channel = connected_channel
 

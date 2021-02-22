@@ -731,7 +731,7 @@ class Client:
         """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
         """
-        return create_activity(self._connection._activity)
+        return create_activity(self._connection._activity, self._connection)
 
     @activity.setter
     def activity(self, value):
