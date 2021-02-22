@@ -415,6 +415,9 @@ class Message(Hashable):
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
+        
+        .. deprecated:: 1.7
+
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
