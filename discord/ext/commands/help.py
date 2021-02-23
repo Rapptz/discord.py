@@ -274,7 +274,11 @@ class HelpCommand:
         Defaults to ``False``.
     verify_checks: Optional[:class:`bool`]
         Specifies if commands should have their :attr:`.Command.checks` called
-        and verified. Defaults to ``True``.
+        and verified. If True; always calls :attr:`.Commands.checks`.
+        If None; only calls :attr:`.Commands.checks` in a guild setting.
+        If False; never calls :attr:`.Commands.checks`. Defaults to ``True``.
+
+        ..versionchanged:: 1.7
     command_attrs: :class:`dict`
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing
