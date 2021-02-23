@@ -2099,7 +2099,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: unknown
 
-        Represents the default case for invite objects.
+        The invite doesn't target anyone or anything.
 
     .. attribute:: stream
 
