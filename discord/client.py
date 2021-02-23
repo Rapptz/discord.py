@@ -431,7 +431,7 @@ class Client:
 
         Raises
         -------
-        InvalidArgument
+        :exc:`.InvalidArgument`
             If any guild is unavailable in the collection.
         """
         if any(g.unavailable for g in guilds):
