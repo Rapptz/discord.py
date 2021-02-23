@@ -93,9 +93,9 @@ class Converter:
 
         Raises
         -------
-        CommandError
+        :exc:`.CommandError`
             A generic exception occurred when converting the argument.
-        BadArgument
+        :exc:`.BadArgument`
             The converter failed to convert the argument.
         """
         raise NotImplementedError('Derived classes need to implement this.')

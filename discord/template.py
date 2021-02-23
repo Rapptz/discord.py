@@ -147,9 +147,9 @@ class Template:
 
         Raises
         -------
-        HTTPException
+        :exc:`.HTTPException`
             Guild creation failed.
-        InvalidArgument
+        :exc:`.InvalidArgument`
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns
