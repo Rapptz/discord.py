@@ -495,6 +495,8 @@ class Client:
             Keyword argument that specifies if the account logging on is a bot
             token or not.
 
+            .. deprecated:: 1.7
+
         Raises
         ------
         :exc:`.LoginFailure`
@@ -1385,10 +1387,13 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
+    @utils.deprecated()
     async def fetch_user_profile(self, user_id):
         """|coro|
 
         Gets an arbitrary user's profile.
+
+        .. deprecated:: 1.7
 
         .. note::
 

@@ -33,6 +33,7 @@ from .enums import DefaultAvatar, RelationshipType, UserFlags, HypeSquadHouse, P
 from .errors import ClientException
 from .colour import Colour
 from .asset import Asset
+from .utils import deprecated
 
 class Profile(namedtuple('Profile', 'flags user mutual_guilds connected_accounts premium_since')):
     __slots__ = ()
@@ -321,14 +322,22 @@ class ClientUser(BaseUser):
         Specifies if the user is a verified account.
     email: Optional[:class:`str`]
         The email the user used when registering.
+
+        .. deprecated:: 1.7
+
     locale: Optional[:class:`str`]
         The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     premium: :class:`bool`
         Specifies if the user is a premium user (e.g. has Discord Nitro).
+
+        .. deprecated:: 1.7
+
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (e.g. Nitro or Nitro Classic). Could be None if the user is not premium.
+
+        .. deprecated:: 1.7
     """
     __slots__ = BaseUser.__slots__ + \
                 ('email', 'locale', '_flags', 'verified', 'mfa_enabled',
@@ -353,8 +362,11 @@ class ClientUser(BaseUser):
         self.premium = data.get('premium', False)
         self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
 
+    @deprecated()
     def get_relationship(self, user_id):
         """Retrieves the :class:`Relationship` if applicable.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -376,6 +388,8 @@ class ClientUser(BaseUser):
     def relationships(self):
         """List[:class:`User`]: Returns all the relationships that the user has.
 
+        .. deprecated:: 1.7
+
         .. note::
 
             This can only be used by non-bot accounts.
@@ -386,6 +400,8 @@ class ClientUser(BaseUser):
     def friends(self):
         r"""List[:class:`User`]: Returns all the users that the user is friends with.
 
+        .. deprecated:: 1.7
+
         .. note::
 
             This can only be used by non-bot accounts.
@@ -395,6 +411,8 @@ class ClientUser(BaseUser):
     @property
     def blocked(self):
         r"""List[:class:`User`]: Returns all the users that the user has blocked.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -409,6 +427,10 @@ class ClientUser(BaseUser):
 
         If a bot account is used then a password field is optional,
         otherwise it is required.
+
+        .. warning::
+
+            The user account-only fields are deprecated.
 
         .. note::
 
@@ -501,12 +523,15 @@ class ClientUser(BaseUser):
 
         self._update(data)
 
+    @deprecated()
     async def create_group(self, *recipients):
         r"""|coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
         of type :attr:`RelationshipType.friend`.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -541,10 +566,13 @@ class ClientUser(BaseUser):
         data = await self._state.http.start_group(self.id, users)
         return GroupChannel(me=self, data=data, state=self._state)
 
+    @deprecated()
     async def edit_settings(self, **kwargs):
         """|coro|
 
         Edits the client user's settings.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -748,10 +776,13 @@ class User(BaseUser, discord.abc.Messageable):
         """
         return self._state.user.get_relationship(self.id)
 
+    @deprecated()
     async def mutual_friends(self):
         """|coro|
 
         Gets all mutual friends of this user.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -773,8 +804,11 @@ class User(BaseUser, discord.abc.Messageable):
         mutuals = await state.http.get_mutual_friends(self.id)
         return [User(state=state, data=friend) for friend in mutuals]
 
+    @deprecated()
     def is_friend(self):
         """:class:`bool`: Checks if the user is your friend.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -785,8 +819,11 @@ class User(BaseUser, discord.abc.Messageable):
             return False
         return r.type is RelationshipType.friend
 
+    @deprecated()
     def is_blocked(self):
         """:class:`bool`: Checks if the user is blocked.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -797,10 +834,13 @@ class User(BaseUser, discord.abc.Messageable):
             return False
         return r.type is RelationshipType.blocked
 
+    @deprecated()
     async def block(self):
         """|coro|
 
         Blocks the user.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -816,10 +856,13 @@ class User(BaseUser, discord.abc.Messageable):
 
         await self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value)
 
+    @deprecated()
     async def unblock(self):
         """|coro|
 
         Unblocks the user.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -834,10 +877,13 @@ class User(BaseUser, discord.abc.Messageable):
         """
         await self._state.http.remove_relationship(self.id)
 
+    @deprecated()
     async def remove_friend(self):
         """|coro|
 
         Removes the user as a friend.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -852,10 +898,13 @@ class User(BaseUser, discord.abc.Messageable):
         """
         await self._state.http.remove_relationship(self.id)
 
+    @deprecated()
     async def send_friend_request(self):
         """|coro|
 
         Sends the user a friend request.
+
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -870,10 +919,13 @@ class User(BaseUser, discord.abc.Messageable):
         """
         await self._state.http.send_friend_request(username=self.name, discriminator=self.discriminator)
 
+    @deprecated()
     async def profile(self):
         """|coro|
 
         Gets the user's profile.
+
+        .. deprecated:: 1.7
 
         .. note::
 

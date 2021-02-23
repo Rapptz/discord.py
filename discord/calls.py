@@ -36,6 +36,8 @@ class CallMessage:
     This is only received in cases where the message type is equivalent to
     :attr:`MessageType.call`.
 
+    .. deprecated:: 1.7
+
     Attributes
     -----------
     ended_timestamp: Optional[:class:`datetime.datetime`]
@@ -53,12 +55,18 @@ class CallMessage:
 
     @property
     def call_ended(self):
-        """:class:`bool`: Indicates if the call has ended."""
+        """:class:`bool`: Indicates if the call has ended.
+        
+        .. deprecated:: 1.7
+        """
         return self.ended_timestamp is not None
 
     @property
     def channel(self):
-        r""":class:`GroupChannel`\: The private channel associated with this message."""
+        r""":class:`GroupChannel`\: The private channel associated with this message.
+        
+        .. deprecated:: 1.7
+        """
         return self.message.channel
 
     @property
@@ -67,6 +75,8 @@ class CallMessage:
 
         If the call has not ended then the current duration will
         be returned.
+
+        .. deprecated:: 1.7
 
         Returns
         ---------
@@ -82,6 +92,8 @@ class GroupCall:
     """Represents the actual group call from Discord.
 
     This is accompanied with a :class:`CallMessage` denoting the information.
+
+    .. deprecated:: 1.7
 
     Attributes
     -----------
@@ -122,7 +134,10 @@ class GroupCall:
 
     @property
     def connected(self):
-        """List[:class:`User`]: A property that returns all users that are currently in this call."""
+        """List[:class:`User`]: A property that returns all users that are currently in this call.
+        
+        .. deprecated:: 1.7
+        """
         ret = [u for u in self.channel.recipients if self.voice_state_for(u) is not None]
         me = self.channel.me
         if self.voice_state_for(me) is not None:
@@ -132,14 +147,20 @@ class GroupCall:
 
     @property
     def channel(self):
-        r""":class:`GroupChannel`\: Returns the channel the group call is in."""
+        r""":class:`GroupChannel`\: Returns the channel the group call is in.
+        
+        .. deprecated:: 1.7
+        """
         return self.call.channel
 
+    @utils.deprecated()
     def voice_state_for(self, user):
         """Retrieves the :class:`VoiceState` for a specified :class:`User`.
 
         If the :class:`User` has no voice state then this function returns
         ``None``.
+
+        .. deprecated:: 1.7
 
         Parameters
         ------------

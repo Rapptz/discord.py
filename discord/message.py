@@ -415,6 +415,9 @@ class Message(Hashable):
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
+        
+        .. deprecated:: 1.7
+
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
@@ -1244,12 +1247,15 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
+    @utils.deprecated()
     async def ack(self):
         """|coro|
 
         Marks this message as read.
 
         The user must not be a bot user.
+
+        .. deprecated:: 1.7
 
         Raises
         -------
