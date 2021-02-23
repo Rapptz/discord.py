@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, _unset
+from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data
 from .enums import VoiceRegion
 from .guild import Guild
 
@@ -126,7 +126,6 @@ class Template:
             source_serialised = data['serialized_source_guild']
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
-
             guild = Guild(data=source_serialised, state=state)
         
         self.source_guild = guild
@@ -198,10 +197,9 @@ class Template:
         """
 
         data = await self._state.http.sync_template(self.source_guild.id, self.code)
-
         self._store(data)
 
-    async def edit(self, *, name=None, description=_unset):
+    async def edit(self, **kwargs):
         """|coro|
         
         Edit the template metadata.
@@ -227,15 +225,7 @@ class Template:
         NotFound
             This template does not exist.
         """
-        payload = {
-            'name': name or self.name
-        }
-
-        if description is not _unset:
-            payload['description'] = description
-        
-        data = await self._state.http.edit_template(self.source_guild.id, self.code, payload)
-
+        data = await self._state.http.edit_template(self.source_guild.id, self.code, kwargs)
         self._store(data)
     
     async def delete(self):

@@ -548,8 +548,3 @@ def escape_mentions(text):
         The text with the mentions removed.
     """
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', text)
-
-class _Unset:
-    ...
-
-_unset = _Unset()
