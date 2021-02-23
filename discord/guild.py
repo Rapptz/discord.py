@@ -1460,6 +1460,29 @@ class Guild(Hashable):
 
         data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
+    
+    async def templates(self):
+        """|coro|
+        
+        Gets the list of templates from this guild.
+
+        Requires :attr:`~.Permissions.manage_guild` permissions.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the templates.
+        
+        Returns
+        --------
+        List[:class:`Template`]
+            The templates for this guild.
+        """
+        from .template import Template
+        data = await self._state.http.guild_templates(self.id)
+        return [Template(data=d, state=self._state) for d in data]
 
     async def webhooks(self):
         """|coro|
@@ -1546,6 +1569,36 @@ class Guild(Hashable):
             result.append(Invite(state=self._state, data=invite))
 
         return result
+    
+    async def create_template(self, *, name, description=None):
+        """|coro|
+        
+        Creates a template for the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.7
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the template.
+        description: Optional[:class:`str`]
+            The description of the template.
+        """
+        from .template import Template
+        
+        payload = {
+            'name': name
+        }
+
+        if description:
+            payload['description'] = description
+        
+        data = await self._state.http.create_template(self.id, payload)
+
+        return Template(state=self._state, data=data)
 
     async def create_integration(self, *, type, id):
         """|coro|

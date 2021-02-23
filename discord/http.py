@@ -670,6 +670,28 @@ class HTTPClient:
     def get_template(self, code):
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
 
+    def guild_templates(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/templates', guild_id=guild_id))
+
+    def create_template(self, guild_id, payload):
+        return self.request(Route('POST', '/guilds/{guild_id}/templates', guild_id=guild_id), json=payload)
+
+    def sync_template(self, guild_id, code):
+        return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
+
+    def edit_template(self, guild_id, code, payload):
+        valid_keys = ( 
+            'name', 
+            'description',
+        )
+        payload = {
+            k: v for k, v in payload.items() if k in valid_keys
+        }
+        return self.request(Route('PATCH', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code), json=payload)
+
+    def delete_template(self, guild_id, code):
+        return self.request(Route('DELETE', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
+
     def create_from_template(self, code, name, region, icon):
         payload = {
             'name': name,
