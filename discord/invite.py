@@ -370,14 +370,6 @@ class Invite(Hashable):
         return hash(self.code)
 
     @property
-    def target_user_type(self):
-        """:class:`InviteUserTarget`: The invite's :attr:`target_user` type.
-
-        .. versionadded:: 1.7
-        """
-        return try_enum(InviteUserTarget, self._target_user_type)
-
-    @property
     def id(self):
         """:class:`str`: Returns the proper code portion of the invite."""
         return self.code
