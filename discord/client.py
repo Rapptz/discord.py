@@ -850,7 +850,7 @@ class Client:
             be used for that.
 
         Yields
-        ------
+        -------
         :class:`.abc.GuildChannel`
             A channel the client can 'access'.
         """
@@ -869,7 +869,7 @@ class Client:
                     yield member
 
         Yields
-        ------
+        -------
         :class:`.Member`
             A member the client can see.
         """
@@ -1121,7 +1121,7 @@ class Client:
             Getting the guilds failed.
 
         Yields
-        --------
+        -------
         :class:`.Guild`
             The guild with the guild data parsed.
         """

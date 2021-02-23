@@ -1200,7 +1200,7 @@ class GroupMixin:
             Duplicates due to aliases are no longer returned
 
         Yields
-        ------
+        -------
         Union[:class:`.Command`, :class:`.Group`]
             A command or group from the internal list of commands.
         """

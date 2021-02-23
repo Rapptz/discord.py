@@ -180,7 +180,7 @@ class Reaction:
             Getting the users for the reaction failed.
 
         Yields
-        --------
+        -------
         Union[:class:`User`, :class:`Member`]
             The member (if retrievable) or the user that has reacted
             to this message. The case where it can be a :class:`Member` is

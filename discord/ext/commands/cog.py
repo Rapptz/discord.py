@@ -229,7 +229,7 @@ class Cog(metaclass=CogMeta):
         """An iterator that recursively walks through this cog's commands and subcommands.
 
         Yields
-        ------
+        -------
         Union[:class:`.Command`, :class:`.Group`]
             A command or group from the cog.
         """

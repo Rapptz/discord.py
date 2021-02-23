@@ -1291,7 +1291,7 @@ class Guild(Hashable):
             Getting the members failed.
 
         Yields
-        ------
+        -------
         :class:`.Member`
             The member with the member data parsed.
 
@@ -2043,7 +2043,7 @@ class Guild(Hashable):
             An error occurred while fetching the audit logs.
 
         Yields
-        --------
+        -------
         :class:`AuditLogEntry`
             The audit log entry.
         """
