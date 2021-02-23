@@ -42,20 +42,20 @@ async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
 class ChannelOrMemberConverter(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str):
         # In this example we have made a custom converter.
-        # Specifically - to check if an input is convertable to a
-        # `discord.Member` or `discord.TextChannel` instance from a
-        # single input.
-        # E.g. we have an ID we want to add to a list of ignored IDs, or similar
+        # This checks if an input is convertible to a
+        # `discord.Member` or `discord.TextChannel` instance from the
+        # input the user has given us using the pre-existing converters
+        # that the library provides.
 
         member_converter = commands.MemberConverter()
         try:
             # Try and convert to a Member instance.
+            # If this fails, then an exception is raised.
+            # Otherwise, we just return the converted member value.
             member = await member_converter.convert(ctx, argument)
         except commands.MemberNotFound:
-            # Could not convert to a Member instance.
             pass
         else:
-            # We have our `member` so lets return here.
             return member
 
         # Do the same for TextChannel...
@@ -67,18 +67,19 @@ class ChannelOrMemberConverter(commands.Converter):
         else:
             return channel
 
-        # In the case that it was not converted we can return None or raise an error.
-        # I will raise an error.
+        # If the value could not be converted we can raise an error
+        # so our error handlers can deal with it in one place.
+        # The error has to be CommandError derived, so BadArgument works fine here.
         raise commands.BadArgument('No Member or TextChannel could be converted from "{}"'.format(argument))
 
 
 
 @bot.command()
 async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
-    # So from the command signature, you can see that for `target` we have typehinted
-    # the custom converter we defined previously.
+    # This command signature utilises the custom converter written above
     # What will happen during command invocation is that the `target` above will be passed to
-    # `ChannelOrMemberConverter.convert` and the conversion will go through the process defined there.
+    # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and 
+    # the conversion will go through the process defined there.
 
     await target.send('Hello, {}!'.format(target.name))
 
@@ -92,10 +93,7 @@ async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, dis
     # NOTE: If a Union typehint converter fails it will raise `commands.BadUnionArgument`
     # instead of `commands.BadArgument`.
 
-    # This is a an example of a Union converter to native discord.py types. For more flexibility please see the
-    # previous Custom Converter example.
-
-    # Let's check the type we actually got...
+    # To check the resulting type, `isinstance` is used
     if isinstance(target, discord.Member):
         await ctx.send('Member found: {}, adding them to the ignore list.'.format(target.mention))
     elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
