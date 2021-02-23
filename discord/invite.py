@@ -312,7 +312,7 @@ class Invite(Hashable):
         self.inviter = inviter_data or self._state.store_user(inviter_data)
         self.channel = data.get('channel')
         target_user_data = data.get('target_user')
-        self.target_user = target_user_data or self._state.store_user(target_user_data)
+        self.target_user = target_user_data and self._state.store_user(target_user_data)
         self._target_user_type = data.get('target_user_type', 0)
 
     @classmethod
